@@ -1,0 +1,8 @@
+Wed Aug  1 19:03:08 2012 ayoung
+
+	* import libmagic 5.11 (freebsd.org)
+
+                - exe path unconditional within path.
+
+                - global functions renamed file_xxx, magic_file_xxx
+

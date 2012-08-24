@@ -1,0 +1,12 @@
+Fri Aug 10 01:55:15 2012 ayoung
+
+	* mc.keymap.default
+
+                +DriveChangeDrive = alt-d
+
+	* sfs.ini
+
+                fromdos => dos2unix               
+                todos => unixdos
+
+

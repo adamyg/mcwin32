@@ -1,0 +1,101 @@
+/*
+ * windows resource file
+ * This file is part of the Midnight Commander.
+ */
+
+#include "config.h"
+#include "buildinfo.h"
+
+#ifndef  WINDRES
+#include "windows.h"
+#include "winver.h"
+#endif
+
+/* 
+ *	English (U.S.) resources 
+ */
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+
+#ifdef _WIN32
+#ifndef WINDRES
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#endif
+#pragma code_page(1252)
+#endif /* _WIN32 */
+
+/*
+ *	Version Information
+ */
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION	RC_FILEVERSION
+	PRODUCTVERSION	RC_PRODUCTVERSION
+	FILEFLAGSMASK	VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS	(VS_FF_SPECIALBUILD|VS_FF_DEBUG)
+#else
+	FILEFLAGS	(VS_FF_SPECIALBUILD)
+#endif
+	FILEOS		VOS_NT_WINDOWS32
+	FILETYPE	VFT_APP
+	FILESUBTYPE	VFT2_UNKNOWN
+	BEGIN
+		BLOCK	"StringFileInfo"
+		BEGIN
+			BLOCK	"040904E4"
+			BEGIN
+				VALUE "CompanyName",		"The Free Software Foundation, Inc."
+
+				VALUE "FileDescription",	"GNU Midnight Commander"
+
+				VALUE "FileVersion",		VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER
+
+				VALUE "InternalName",		"Midnight Commander"
+
+				VALUE "Copyright", \
+					"Copyright (C) 1994 - 2012, Free Software Foundation, and others. "\
+					"Copyright (C) 1990, 1993, The Regents of the University of California. "\
+					"Copyright (C) 2012, Adam Young. All rights reserved. "\
+					"Licensed under GNU General Public License version 3.0. "\
+					"This is free software; see the source for copying conditions. "\
+					"There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."\
+					"see <http://www.gnu.org/licenses/> for details"
+
+				VALUE "Maintainers",		"mc-devel@gnome.org"
+
+				VALUE "LegalTrademarks",	"see GNU General Public License"
+
+				VALUE "OriginalFilename",	"mc.exe"
+
+				VALUE "ProductName",		"GNU Midnight Commander"
+
+				VALUE "ProductVersion",		VERSION ", Win32"
+
+				VALUE "SpecialBuild",		MC_CONFIGURE_ARGS
+			END
+		END
+
+		/* The following line should only be modified for localized versions.     */
+		/* It consists of any number of WORD,WORD pairs, with each pair           */
+		/* describing a language,codepage combination supported by the file.      */
+		/*                                                                        */
+		/* For example, a file might have values "0x409,1252" indicating that it  */
+		/* supports English language (0x409) in the Windows ANSI codepage (1252). */
+
+		BLOCK	"VarFileInfo"
+		BEGIN
+			VALUE "Translation", 0x409, 1252
+		END
+	END
+
+/*
+ *	Icons
+ */
+
+0	ICON	DISCARDABLE	"art/mcnew.ico"
+1	ICON	DISCARDABLE	"art/mclogo.ico"
+2	ICON	DISCARDABLE	"art/mcold.ico"
+
+#endif	/* English (U.S.) resources */
+

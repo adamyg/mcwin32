@@ -1,0 +1,73 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id:$
+# Makefile common for MC WIN32
+#
+#
+
+# File extensions
+
+C=		.c
+H=		.h
+O=		.obj
+A=		.lib
+LP=		lib
+E=		.exe
+
+CLEAN=		objects/*.pdb bin/*.pdb bin/*.ilk bin/*.exp *.err
+
+# Compilers, programs
+
+AR=		lib
+RM=		rm
+CP=		cp
+RC=		rc
+MKDIR=		mkdir.exe
+RMDIR=		rmdir.exe
+
+# Directories
+
+D_BIN=		$(ROOT)/bin
+D_INC=		$(ROOT)/include
+D_OBJ=		$(ROOT)/object
+D_LIB=		$(ROOT)/lib
+D_SHARE=	$(ROOT)/share
+LW=		$(D_LIB)/$(LP)
+
+# Common flags
+##		MSVC=1
+
+ifdef MSVC
+CC=		cl
+ISWITCH		=-I
+OSWITCH		=-Fo
+XSWITCH		=-Fe
+
+COPT=		-nologo
+#CDEBUG=	-Zi -GZ -MDd
+CDEBUG=		-Zi -RTC1 -MDd
+CWARN=		-W3
+LDEBUG=		-Zi -GZ
+LDOPT=		-nologo
+
+else
+CC		=wcl386
+ISWITCH		=-i=
+OSWITCH		=-fo=
+XSWITCH		=-fe=
+
+COPT		=-q -j -ei -6r -ecc -ofr -zlf -bt=nt -bm -za99 -aa
+CDEBUG		=-d2 -hc -db
+CWARN		=-W3
+LDEBUG		=-q -6r -ecc -ofr -zlf -bcl=nt -bm -k4m -hc
+ifdef MAPFILE
+LDEBUG		+=-Fm=$(MAPFILE)
+endif
+
+LDOPT		=-q -d2 -hc -db
+endif
+
+XLDLIBS=\
+	advapi32.lib shlwapi.lib psapi.lib mpr.lib ole32.lib \
+	shfolder.lib ws2_32.lib user32.lib shell32.lib wsock32.lib
+
+#end

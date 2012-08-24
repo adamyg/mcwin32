@@ -1,0 +1,25 @@
+Source
+=======
+
+Win32 native port for Busybox (latest build can be found in the below link)
+
+https://github.com/pclouds/busybox-w32
+
+
+Status
+======
+
+I would consider this port experimental. Things may work, or may not.
+Things may never work because of huge differences between Linux and
+Windows. Or things may work in future, if you report the faults to
+busybox@busybox.net, especially with patches.
+
+pclouds@gmail.com
+15/04/2010
+
+Limitation
+==========
+
+ - Use forward slashes. Backslash support is very limited.
+ - Do not do wild things with Windows drive notation, like archiving a
+   whole drive. If you want it, tell us, preferably with patches.

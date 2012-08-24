@@ -1,0 +1,143 @@
+
+This file contains:
+
+        - Build requirements for GNU Midnight Commander
+        - Installation instructions for GNU Midnight Commander
+        - Where to get more information on GNU Midnight Commander
+        - Notes about GNU Midnight Commander installation
+        - Obtaining related software
+
+
+Build requirements for GNU Midnight Commander
+----------------------------------------------------
+
+   The following external requirements/packages need to be available
+
+        - glib2
+        - busybox-win32
+        - make / binutils
+        - perl
+        - supported compiler tool-chain
+        - Inno
+
+
+Installation instructions for GNU Midnight Commander
+----------------------------------------------------
+
+    To compile this package:
+
+        1. Install the required packages, 
+
+                Confirm/update as required the installation paths with the
+                ./win32/Makefile
+
+                        GTKINSTALL - base path of the glib installation.
+
+
+                Other components are assumed to be within the current active
+                PATH, including
+
+                        perl, make, busybox, compiler, rc
+
+
+                Modify either Makefile and/or Makefile.common as needed.
+
+
+        2. 'make all' within the win32 source tree ./win32
+
+        3. mc-win32-setup.exe
+
+
+Obtaining related software
+----------------------------------------------------
+
+   o glib
+
+        The only "hard" dependency of GNU Midnight Commander is glib
+
+        Minimal version of glib: 2.8.x
+        Recommended version: 2.14.x and higher.
+
+        Newer versions may work, but haven't been tested.
+
+        You can get glib from
+
+                ftp://ftp.gtk.org/pub/glib/
+
+        or use the current pre-build win23 packages available from
+
+                https://live.gnome.org/GTK+/Win32/MSVCCompilationOfGTKStack
+
+        at present only the following components are required           
+
+                intl.dll
+                libglib-2.0-0.dll
+
+
+   o busybox-win32
+
+        Busybox is utilised both during make operations, plus is packaged
+        with the Midnight commander setup for run-time execution by the shell
+        sub-system of unix style scripts, for example by the internal vfs
+        implementation (i.e. gz decompression).
+
+        BusyBox combines tiny versions of many common UNIX utilities into a
+        single small executable. It provides minimalist replacements for most
+        of the utilities you usually find in bzip2, coreutils, dhcp, 
+        diffutils, e2fsprogs, file, findutils, gawk, grep, inetutils, less, 
+        modutils, net-tools, procps, sed, shadow, sysklogd, sysvinit, tar, 
+        util-linux, and vim. The utilities in BusyBox often have fewer
+        options than their full-featured cousins; however, the options that
+        are included provide the expected functionality and behave very much
+        like their larger counterparts.
+
+        The current distribution is available from
+
+                https://github.com/pclouds/busybox-w32
+
+
+   o make / binutils
+
+        You can retrieve the required system applications from
+
+                http://gnuwin32.sourceforge.net/packages.html
+
+        the best installation solution is thru the getgnuwin32, which is an
+        "Automated gnuwin32 download tool", available at
+
+                http://sourceforge.net/projects/getgnuwin32/
+
+
+   o perl
+
+        A local perl installation is required during the build process.
+
+        ActivePerl is the leading commercial-grade distribution of the open source Perl
+        scripting language. Download ActivePerl Community Edition free binaries for
+        your development projects and internal deployments.
+
+        You can retrieve the required installation packages from
+
+                http://www.activestate.com/
+
+
+   o compiler
+
+        Currently tested against the following tool chains
+
+                o Open Watcom C/C++ 1.9
+
+                o Microsoft Express C/C++ v8.0 / 2010
+
+
+   o inno
+
+        Inno Setup is a free installer for Windows programs. First introduced
+        in 1997, Inno Setup today rivals and even surpasses many commercial
+        installers in feature set and stability.
+
+                www.jrsoftware.org/isinfo.php/
+
+
+Last update 14/08/12
+

@@ -1,0 +1,34 @@
+Fri Aug 24 01:02:30 2012 adamy
+
+	* initial reparse support
+
+Tue Aug 21 04:05:31 2012 adamy
+
+        * force refresh within keyboard handler.
+
+Thu Aug 16 23:46:52 2012 adamy
+
+	* gettext/locale support enabled -- prelim.
+
+Wed Aug 15 00:36:55 2012 adamy
+
+	* build 159
+
+                - additional UNC support, local shares available under //<hostname>/
+
+                - build number exported (e.g. --help).
+
+
+Tue Aug 14 16:39:56 2012 adamy
+
+	* build 157
+
+                - home directory search order, HOME then PERSONAL (fix ch ~).
+
+                        HOME
+                        $PERSONAL/home
+                        $PERSONAL
+                        c:/
+
+
+

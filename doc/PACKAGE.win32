@@ -1,0 +1,70 @@
+
+Package List
+
+        busybox.exe
+        file.exe
+        intl.dll
+        libglib-2.0-0.dll
+        man2hlp.pl
+        mc.exe
+        mc.map
+        package.lst
+        zlib1.dll
+
+
+doc/
+
+        COPYING
+        FAQ
+        HACKING
+        INSTALL.win32
+        LICENSE.busybox
+        MAINTAINERS
+        NEWS
+        NEWS.win32
+        README
+        README.busybox
+        README.win32
+        TODO
+
+etc/
+
+        ChangeLog.txt
+        edit.indent.rc
+        filehighlight.ini
+        magic.mgc
+        mc.ext
+        mc.keymap
+        mc.keymap.default
+        mc.keymap.emacs
+        mc.menu
+        mc.menu.sr
+        mcedit.menu
+        sfs.ini
+
+plugin/
+
+        archive.sh
+        doc.sh
+        extfs.d
+        fish
+        image.sh
+        misc.sh
+        package.sh
+        sound.sh
+        text.sh
+        video.sh
+        web.sh
+
+
+share/
+
+        help
+        hints
+        macros.d
+        man
+        mc.charsets
+        mc.lib
+        mc.macros
+        skins
+        syntax
