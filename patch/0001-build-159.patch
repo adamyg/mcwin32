@@ -1,0 +1,2282 @@
+From f1a627527979d71e41bbd9cbaf5929714f40a9e8 Mon Sep 17 00:00:00 2001
+From: unknown <adamy@users.sourceforge.net>
+Date: Fri, 24 Aug 2012 01:40:52 +0100
+Subject: [PATCH] build 159
+
+---
+ lib/global.h                 |  20 ++++-
+ lib/keybind.c                |   9 +-
+ lib/keybind.h                |   7 +-
+ lib/util.h                   |   4 +
+ lib/vfs/direntry.c           |   3 +
+ lib/vfs/interface.c          | 210 ++++++++++++++++++++++++-------------------
+ lib/vfs/parse_ls_vga.c       |   5 +-
+ lib/vfs/path.c               |  64 ++++++++++++-
+ lib/vfs/xdirentry.h          |   3 +
+ lib/widget/dialog-switch.c   |   7 +-
+ lib/widget/quick.h           | 114 +++++++++++++++++++++++
+ lib/widget/wtools.c          |  12 +++
+ src/args.c                   |   7 +-
+ src/cons.handler.c           |   4 +
+ src/consaver/cons.saver.h    |   5 ++
+ src/diffviewer/search.c      |  25 ++++++
+ src/diffviewer/ydiff.c       |  19 ++++
+ src/editor/editcmd.c         |  45 ++++++++++
+ src/editor/editcmd_dialogs.c |  95 ++++++++++++++++++++
+ src/editor/editoptions.c     |  30 +++++++
+ src/editor/spell_dialogs.c   |   4 +
+ src/filemanager/boxes.c      |  99 ++++++++++++++++++++
+ src/filemanager/cmd.c        |  12 +++
+ src/filemanager/ext.c        |  72 ++++++++++++++-
+ src/filemanager/file.c       |   2 +-
+ src/filemanager/filegui.c    |  33 ++++++-
+ src/filemanager/filenot.c    |   3 +-
+ src/filemanager/hotlist.c    |  30 +++++++
+ src/filemanager/listmode.c   |   4 +-
+ src/filemanager/midnight.c   |  23 ++++-
+ src/filemanager/option.c     |  77 ++++++++++++++++
+ src/filemanager/panel.c      |   8 ++
+ src/keybind-defaults.c       |   6 ++
+ src/main.c                   |  10 +++
+ src/textconf.c               |  25 ++++++
+ src/viewer/dialogs.c         |  39 ++++++++
+ src/viewer/growbuf.c         |  13 +--
+ 37 files changed, 1031 insertions(+), 117 deletions(-)
+ create mode 100644 lib/skin/skin.h
+
+diff --git a/lib/global.h b/lib/global.h
+index d8e2bef..9858338 100644
+--- a/lib/global.h
++++ b/lib/global.h
+@@ -24,10 +24,16 @@
+ /*** typedefs(not structures) and defined constants **********************************************/
+ 
+ /* The O_BINARY definition was taken from gettext */
++#if defined(__WATCOMC__) //WIN32/APY
++#include <fcntl.h>
++#include <inttypes.h>
++
++#elif defined(_MSC_VER)
+ #if !defined O_BINARY && defined _O_BINARY
+   /* For MSC-compatible compilers.  */
+ #define O_BINARY _O_BINARY
+ #endif
++#endif
+ #ifdef __BEOS__
+   /* BeOS 5 has O_BINARY, but is has no effect.  */
+ #undef O_BINARY
+@@ -42,7 +48,11 @@
+ #ifdef O_NDELAY                 /* SYSV */
+ #define O_NONBLOCK O_NDELAY
+ #else /* BSD */
++#ifdef WIN32 //WIN32/APY
++#define O_NONBLOCK 0
++#else
+ #define O_NONBLOCK FNDELAY
++#endif
+ #endif /* !O_NDELAY */
+ #endif /* !O_NONBLOCK */
+ 
+@@ -63,9 +73,10 @@
+ #endif
+ 
+ /* Solaris9 doesn't have PRIXMAX */
+-#ifndef PRIXMAX
+-#define PRIXMAX PRIxMAX
+-#endif
++//APY, removed
++//  #ifndef PRIXMAX
++//  #define PRIXMAX PRIxMAX
++//  #endif
+ 
+ #ifdef ENABLE_NLS
+ #include <libintl.h>
+@@ -121,6 +132,9 @@
+ /* OS specific defines */
+ #define PATH_SEP '/'
+ #define PATH_SEP_STR "/"
++#if defined(WIN32) //APY,path
++#define PATH_SEP_STR2 "\\"
++#endif
+ #define PATH_ENV_SEP ':'
+ #define TMPDIR_DEFAULT "/tmp"
+ #define SCRIPT_SUFFIX ""
+diff --git a/lib/keybind.c b/lib/keybind.c
+index 7957769..8c2293a 100644
+--- a/lib/keybind.c
++++ b/lib/keybind.c
+@@ -180,7 +180,7 @@ static name_keymap_t command_names[] = {
+     {"PanelListingChange", CK_PanelListingChange},
+     {"PanelListing", CK_PanelListing},
+ #ifdef LISTMODE_EDITOR
+-    {"ListMode", CK_ListMode}.
++    {"ListMode", CK_ListMode}, //APY, optional
+ #endif
+     {"OptionsPanel", CK_OptionsPanel},
+     {"CdQuick", CK_CdQuick},
+@@ -355,6 +355,13 @@ static name_keymap_t command_names[] = {
+     {"Merge", CK_Merge},
+ #endif /* USE_DIFF_VIEW */
+ 
++#if defined(WIN32) //APY, drive
++    /* Change drive */
++    {"DriveChangeA", CK_DriveChangeA},
++    {"DriveChangeA", CK_DriveChangeB},
++    {"DriveChange", CK_DriveChange},
++#endif
++
+     {NULL, CK_IgnoreKey}
+ };
+ 
+diff --git a/lib/keybind.h b/lib/keybind.h
+index 1258b44..392281a 100644
+--- a/lib/keybind.h
++++ b/lib/keybind.h
+@@ -328,7 +328,12 @@ enum
+     CK_HunkNext,
+     CK_HunkPrev,
+     CK_EditOther,
+-    CK_Merge
++    CK_Merge,
++
++    /* Change drive support (WIN32/APY) */
++    CK_DriveChange = 800,
++    CK_DriveChangeA,
++    CK_DriveChangeB
+ };
+ 
+ /*** structures declarations (and typedefs of structures)*****************************************/
+diff --git a/lib/skin/skin.h b/lib/skin/skin.h
+new file mode 100644
+index 0000000..e69de29
+diff --git a/lib/util.h b/lib/util.h
+index f64f45c..56d880c 100644
+--- a/lib/util.h
++++ b/lib/util.h
+@@ -9,7 +9,11 @@
+ 
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#if defined(HAVE_INTTYPES_H) /*WIN32/APY*/
+ #include <inttypes.h>           /* uintmax_t */
++#else
++typedef unsigned long long uintmax_t;
++#endif
+ #include <unistd.h>
+ 
+ #include "lib/vfs/vfs.h"
+diff --git a/lib/vfs/direntry.c b/lib/vfs/direntry.c
+index 016f96d..9f5d074 100644
+--- a/lib/vfs/direntry.c
++++ b/lib/vfs/direntry.c
+@@ -56,6 +56,9 @@
+ 
+ #include <config.h>
+ 
++#if defined(WIN32)
++#include <sys/socket.h>
++#endif
+ #include <errno.h>
+ #include <fcntl.h>              /* include fcntl.h -> sys/fcntl.h only       */
+                                 /* includes fcntl.h see IEEE Std 1003.1-2008 */
+diff --git a/lib/vfs/interface.c b/lib/vfs/interface.c
+index 24874c3..604e457 100644
+--- a/lib/vfs/interface.c
++++ b/lib/vfs/interface.c
+@@ -221,42 +221,6 @@ mc_open (const vfs_path_t * vpath, int flags, ...)
+ 
+ /* --------------------------------------------------------------------------------------------- */
+ 
+-/* *INDENT-OFF* */
+-
+-#define MC_NAMEOP(name, inarg, callarg) \
+-int mc_##name inarg \
+-{ \
+-    int result; \
+-    const vfs_path_element_t *path_element; \
+-\
+-    if (vpath == NULL) \
+-        return -1; \
+-\
+-    path_element = vfs_path_get_by_index (vpath, -1); \
+-    if (!vfs_path_element_valid (path_element)) \
+-    { \
+-        return -1; \
+-    } \
+-\
+-    result = path_element->class->name != NULL ? path_element->class->name callarg : -1; \
+-    if (result == -1) \
+-        errno = path_element->class->name != NULL ? vfs_ferrno (path_element->class) : E_NOTSUPP; \
+-    return result; \
+-}
+-
+-MC_NAMEOP (chmod, (const vfs_path_t *vpath, mode_t mode), (vpath, mode))
+-MC_NAMEOP (chown, (const vfs_path_t *vpath, uid_t owner, gid_t group), (vpath, owner, group))
+-MC_NAMEOP (utime, (const vfs_path_t *vpath, struct utimbuf * times), (vpath, times))
+-MC_NAMEOP (readlink, (const vfs_path_t *vpath, char *buf, size_t bufsiz), (vpath, buf, bufsiz))
+-MC_NAMEOP (unlink, (const vfs_path_t *vpath), (vpath))
+-MC_NAMEOP (mkdir, (const vfs_path_t *vpath, mode_t mode), (vpath, mode))
+-MC_NAMEOP (rmdir, (const vfs_path_t *vpath), (vpath))
+-MC_NAMEOP (mknod, (const vfs_path_t *vpath, mode_t mode, dev_t dev), (vpath, mode, dev))
+-
+-/* *INDENT-ON* */
+-
+-/* --------------------------------------------------------------------------------------------- */
+-
+ int
+ mc_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2)
+ {
+@@ -272,6 +236,7 @@ mc_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2)
+         path_element = vfs_path_get_by_index (vpath2, -1);
+         if (vfs_path_element_valid (path_element))
+         {
++#undef symlink
+             result =
+                 path_element->class->symlink != NULL ?
+                 path_element->class->symlink (vpath1, vpath2) : -1;
+@@ -287,61 +252,6 @@ mc_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2)
+ 
+ /* --------------------------------------------------------------------------------------------- */
+ 
+-/* *INDENT-OFF* */
+-
+-#define MC_HANDLEOP(name, inarg, callarg) \
+-ssize_t mc_##name inarg \
+-{ \
+-    struct vfs_class *vfs; \
+-    int result; \
+-    if (handle == -1) \
+-        return -1; \
+-    vfs = vfs_class_find_by_handle (handle); \
+-    if (vfs == NULL) \
+-        return -1; \
+-    result = vfs->name != NULL ? vfs->name callarg : -1; \
+-    if (result == -1) \
+-        errno = vfs->name != NULL ? vfs_ferrno (vfs) : E_NOTSUPP; \
+-    return result; \
+-}
+-
+-MC_HANDLEOP (read, (int handle, void *buffer, size_t count), (vfs_class_data_find_by_handle (handle), buffer, count))
+-MC_HANDLEOP (write, (int handle, const void *buf, size_t nbyte), (vfs_class_data_find_by_handle (handle), buf, nbyte))
+-
+-/* --------------------------------------------------------------------------------------------- */
+-
+-#define MC_RENAMEOP(name) \
+-int mc_##name (const vfs_path_t *vpath1, const vfs_path_t *vpath2) \
+-{ \
+-    int result; \
+-    const vfs_path_element_t *path_element1; \
+-    const vfs_path_element_t *path_element2; \
+-\
+-    if (vpath1 == NULL || vpath2 == NULL) \
+-        return -1; \
+-\
+-    path_element1 = vfs_path_get_by_index (vpath1, - 1); \
+-    path_element2 = vfs_path_get_by_index (vpath2, - 1); \
+-\
+-    if (!vfs_path_element_valid (path_element1) || !vfs_path_element_valid (path_element2) || \
+-        path_element1->class != path_element2->class) \
+-    { \
+-        errno = EXDEV; \
+-        return -1; \
+-    }\
+-\
+-    result = path_element1->class->name != NULL \
+-        ? path_element1->class->name (vpath1, vpath2) \
+-        : -1; \
+-    if (result == -1) \
+-        errno = path_element1->class->name != NULL ? vfs_ferrno (path_element1->class) : E_NOTSUPP; \
+-    return result; \
+-}
+-
+-MC_RENAMEOP (link)
+-MC_RENAMEOP (rename)
+-
+-/* *INDENT-ON* */
+ 
+ /* --------------------------------------------------------------------------------------------- */
+ 
+@@ -869,11 +779,18 @@ mc_tmpdir (void)
+         st.st_uid == getuid () && (st.st_mode & 0777) == 0700)
+         return tmpdir;
+ 
++#if defined(WIN32) //APY, conf
++    sys_tmp = getenv ("MC_TMPDIR");
++    if (!sys_tmp)
++        sys_tmp = getenv ("TMPDIR");
++    if (!sys_tmp || sys_tmp[1] != ':' || 
++            (sys_tmp[2] != '/' && sys_tmp[2] != '\\'))
++        sys_tmp = TMPDIR_DEFAULT;
++#else
+     sys_tmp = getenv ("TMPDIR");
+     if (!sys_tmp || sys_tmp[0] != '/')
+-    {
+         sys_tmp = TMPDIR_DEFAULT;
+-    }
++#endif
+ 
+     pwd = getpwuid (getuid ());
+ 
+@@ -962,3 +879,110 @@ mc_tmpdir (void)
+ }
+ 
+ /* --------------------------------------------------------------------------------------------- */
++
++//WIN32/APY, interface
++
++#undef chmod
++#undef chown
++#undef utime
++#undef readlink
++#undef link
++#undef unlink
++#undef rename
++#undef mkdir
++#undef rmdir
++#undef mkmod
++#undef read
++#undef write
++
++/* *INDENT-OFF* */
++
++#define MC_NAMEOP(name, inarg, callarg) \
++int mc_##name inarg \
++{ \
++    int result; \
++    const vfs_path_element_t *path_element; \
++\
++    if (vpath == NULL) \
++        return -1; \
++\
++    path_element = vfs_path_get_by_index (vpath, -1); \
++    if (!vfs_path_element_valid (path_element)) \
++    { \
++        return -1; \
++    } \
++\
++    result = path_element->class->name != NULL ? path_element->class->name callarg : -1; \
++    if (result == -1) \
++        errno = path_element->class->name != NULL ? vfs_ferrno (path_element->class) : E_NOTSUPP; \
++    return result; \
++}
++
++MC_NAMEOP (chmod, (const vfs_path_t *vpath, mode_t mode), (vpath, mode))
++MC_NAMEOP (chown, (const vfs_path_t *vpath, uid_t owner, gid_t group), (vpath, owner, group))
++MC_NAMEOP (utime, (const vfs_path_t *vpath, struct utimbuf * times), (vpath, times))
++MC_NAMEOP (readlink, (const vfs_path_t *vpath, char *buf, size_t bufsiz), (vpath, buf, bufsiz))
++MC_NAMEOP (unlink, (const vfs_path_t *vpath), (vpath))
++MC_NAMEOP (mkdir, (const vfs_path_t *vpath, mode_t mode), (vpath, mode))
++MC_NAMEOP (rmdir, (const vfs_path_t *vpath), (vpath))
++MC_NAMEOP (mknod, (const vfs_path_t *vpath, mode_t mode, dev_t dev), (vpath, mode, dev))
++
++/* *INDENT-ON* */
++
++/* --------------------------------------------------------------------------------------------- */
++
++/* *INDENT-OFF* */
++
++#define MC_HANDLEOP(name, inarg, callarg) \
++ssize_t mc_##name inarg \
++{ \
++    struct vfs_class *vfs; \
++    int result; \
++    if (handle == -1) \
++        return -1; \
++    vfs = vfs_class_find_by_handle (handle); \
++    if (vfs == NULL) \
++        return -1; \
++    result = vfs->name != NULL ? vfs->name callarg : -1; \
++    if (result == -1) \
++        errno = vfs->name != NULL ? vfs_ferrno (vfs) : E_NOTSUPP; \
++    return result; \
++}
++
++MC_HANDLEOP (read, (int handle, void *buffer, size_t count), (vfs_class_data_find_by_handle (handle), buffer, count))
++MC_HANDLEOP (write, (int handle, const void *buf, size_t nbyte), (vfs_class_data_find_by_handle (handle), buf, nbyte))
++
++/* --------------------------------------------------------------------------------------------- */
++
++#define MC_RENAMEOP(name) \
++int mc_##name (const vfs_path_t *vpath1, const vfs_path_t *vpath2) \
++{ \
++    int result; \
++    const vfs_path_element_t *path_element1; \
++    const vfs_path_element_t *path_element2; \
++\
++    if (vpath1 == NULL || vpath2 == NULL) \
++        return -1; \
++\
++    path_element1 = vfs_path_get_by_index (vpath1, - 1); \
++    path_element2 = vfs_path_get_by_index (vpath2, - 1); \
++\
++    if (!vfs_path_element_valid (path_element1) || !vfs_path_element_valid (path_element2) || \
++        path_element1->class != path_element2->class) \
++    { \
++        errno = EXDEV; \
++        return -1; \
++    }\
++\
++    result = path_element1->class->name != NULL \
++        ? path_element1->class->name (vpath1, vpath2) \
++        : -1; \
++    if (result == -1) \
++        errno = path_element1->class->name != NULL ? vfs_ferrno (path_element1->class) : E_NOTSUPP; \
++    return result; \
++}
++
++MC_RENAMEOP (link)
++MC_RENAMEOP (rename)
++
++/* *INDENT-ON* */
+diff --git a/lib/vfs/parse_ls_vga.c b/lib/vfs/parse_ls_vga.c
+index e5f7d62..0cc0948 100644
+--- a/lib/vfs/parse_ls_vga.c
++++ b/lib/vfs/parse_ls_vga.c
+@@ -681,12 +681,15 @@ vfs_parse_ls_lga (const char *p, struct stat * s, char **filename, char **linkna
+     char *t = NULL;
+     const char *line = p;
+     size_t skipped;
++    mode_t mode;
+ 
+     if (strncmp (p, "total", 5) == 0)
+         return FALSE;
+ 
+-    if (!vfs_parse_filetype (p, &skipped, &s->st_mode))
++    mode = s->st_mode;          // WIN32/APY, st_mode type may not be mode_t
++    if (!vfs_parse_filetype (p, &skipped, &mode))
+         goto error;
++    s->st_mode = mode;
+     p += skipped;
+ 
+     if (*p == ' ')              /* Notwell 4 */
+diff --git a/lib/vfs/path.c b/lib/vfs/path.c
+index 25696e1..070ec7b 100644
+--- a/lib/vfs/path.c
++++ b/lib/vfs/path.c
+@@ -32,6 +32,9 @@
+ 
+ 
+ #include <config.h>
++#if defined(WIN32) //APY, drive
++#include <ctype.h>
++#endif
+ 
+ #include "lib/global.h"
+ #include "lib/strutil.h"
+@@ -131,6 +134,20 @@ _vfs_split_with_semi_skip_count (char *path, const char **inpath, const char **o
+  * @return newly allocated string
+  */
+ 
++#if defined(WIN32) //APY, drive
++static __inline int
++drive_or_unc(const char *path)
++{
++    if (*path) {                                /* //<server> or X:... */
++        if ((PATH_SEP == path[0] && PATH_SEP == path[1]) ||
++                (isalpha((unsigned char)path[0]) && ':' == path[1])) {
++            return TRUE;
++        }
++    }
++    return FALSE;
++}
++#endif
++
+ static char *
+ vfs_canon (const char *path)
+ {
+@@ -138,12 +155,21 @@ vfs_canon (const char *path)
+         vfs_die ("Cannot canonicalize NULL");
+ 
+     /* Relative to current directory */
++#if defined(WIN32) //APY, drive
++    if (!drive_or_unc(path))
++#else
+     if (*path != PATH_SEP)
++#endif
+     {
+         char *result, *local;
+ 
+         local = tilde_expand (path);
++
++#if defined(WIN32) //APY, drive
++        if (!drive_or_unc(local) && *local != PATH_SEP)
++#else
+         if (*local != PATH_SEP)
++#endif
+         {
+             char *curr_dir;
+ 
+@@ -445,6 +471,12 @@ vfs_path_from_str_uri_parser (char *path, vfs_path_flag_t flags)
+         char *slash_pointer;
+         struct vfs_s_subclass *sub = NULL;
+ 
++#if defined(WIN32) //APY, drive
++        if (url_delimiter == (path + 1) && isalpha((unsigned char)*path)) {
++            break;
++        }
++#endif
++
+         while (real_vfs_prefix_start > path && *(real_vfs_prefix_start) != PATH_SEP)
+             real_vfs_prefix_start--;
+         vfs_prefix_start = real_vfs_prefix_start;
+@@ -619,6 +651,31 @@ vfs_path_strip_home (const char *dir)
+     } \
+ }
+ 
++//WIN32 APY, drive
++static void
++append_from_path(const char *appendfrom, const int is_relative,
++        const vfs_path_flag_t flags, GString *buffer, const int element_index, const vfs_path_element_t *element)
++{
++    if ((flags & VPF_STRIP_HOME) && element_index == 0 && (element->class->flags & VFSF_LOCAL) != 0)
++    {
++        char *stripped_home_str;
++        stripped_home_str = vfs_path_strip_home (appendfrom);
++        g_string_append (buffer, stripped_home_str);
++        g_free (stripped_home_str);
++    }
++    else
++    {
++        if ((!is_relative) && (*appendfrom != PATH_SEP) && (*appendfrom != '\0')
++            && (buffer->len == 0 || buffer->str[buffer->len - 1] != PATH_SEP))
++
++#if defined(WIN32) //APY, drive
++            if (element_index > 0 || ':' != appendfrom[1] || 0 == isalpha((unsigned char)appendfrom[0]))
++#endif
++                g_string_append_c (buffer, PATH_SEP);
++        g_string_append (buffer, appendfrom);
++    }
++}
++
+ char *
+ vfs_path_to_str_flags (const vfs_path_t * vpath, int elements_count, vfs_path_flag_t flags)
+ {
+@@ -676,13 +733,15 @@ vfs_path_to_str_flags (const vfs_path_t * vpath, int elements_count, vfs_path_fl
+                 g_string_append (buffer, element->encoding);
+             }
+             str_vfs_convert_from (element->dir.converter, element->path, recode_buffer);
+-            vfs_append_from_path (recode_buffer->str, is_relative);
++            append_from_path (recode_buffer->str, is_relative, flags, buffer, element_index, element);
++//          vfs_append_from_path (recode_buffer->str, is_relative);
+             g_string_set_size (recode_buffer, 0);
+         }
+         else
+ #endif
+         {
+-            vfs_append_from_path (element->path, is_relative);
++            append_from_path (element->path, is_relative, flags, buffer, element_index, element);
++//          vfs_append_from_path (element->path, is_relative);
+         }
+     }
+     g_string_free (recode_buffer, TRUE);
+@@ -723,6 +782,7 @@ vfs_path_to_str (const vfs_path_t * vpath)
+ }
+ 
+ /* --------------------------------------------------------------------------------------------- */
++
+ /**
+  * Split path string to path elements with flags for change parce process.
+  *
+diff --git a/lib/vfs/xdirentry.h b/lib/vfs/xdirentry.h
+index 7b06dea..0aaa9c1 100644
+--- a/lib/vfs/xdirentry.h
++++ b/lib/vfs/xdirentry.h
+@@ -10,6 +10,9 @@
+ 
+ #include <stdio.h>
+ #include <sys/types.h>
++#if defined(HAVE_SYS_TIME_H)
++#include <sys/time.h> /*WIN32/APY, timeval */
++#endif
+ 
+ #include "lib/global.h"         /* GList */
+ #include "lib/vfs/path.h"       /* vfs_path_t */
+diff --git a/lib/widget/dialog-switch.c b/lib/widget/dialog-switch.c
+index 7d851a7..1d9ca31 100644
+--- a/lib/widget/dialog-switch.c
++++ b/lib/widget/dialog-switch.c
+@@ -37,7 +37,9 @@
+ #ifdef HAVE_SYS_IOCTL_H
+ #include <sys/ioctl.h>
+ #endif
++#if defined(HAVE_TERMIOS_H) //APY,optional
+ #include <termios.h>
++#endif
+ 
+ #include "lib/global.h"
+ #include "lib/tty/tty.h"        /* LINES, COLS */
+@@ -121,7 +123,7 @@ dialog_switch_goto (GList * dlg)
+ 
+ /* --------------------------------------------------------------------------------------------- */
+ 
+-#if defined TIOCGWINSZ
++#if defined(TIOCGWINSZ) || defined(WIN32)
+ static void
+ dlg_resize_cb (void *data, void *user_data)
+ {
+@@ -375,8 +377,7 @@ dialog_change_screen_size (void)
+ {
+     mc_global.tty.winch_flag = FALSE;
+ #if defined(HAVE_SLANG) || NCURSES_VERSION_MAJOR >= 4
+-#if defined TIOCGWINSZ
+-
++#if defined(TIOCGWINSZ) || defined(WIN32)
+ #ifndef NCURSES_VERSION
+     tty_noraw_mode ();
+     tty_reset_screen ();
+diff --git a/lib/widget/quick.h b/lib/widget/quick.h
+index ba852a4..2baea10 100644
+--- a/lib/widget/quick.h
++++ b/lib/widget/quick.h
+@@ -238,4 +238,118 @@ quick_dialog (QuickDialog * qd)
+     return quick_dialog_skip (qd, 0);
+ }
+ 
++
++#if defined(WIN32)  //APY, QUICK
++
++__inline QuickWidget *
++QUICK_PUSH_CHECKBOX (QuickWidget *cursor,
++        const int x, const int xdiv, const int y, const int ydiv, const char *txt, int * state)
++{
++    QuickWidget widget = {0};
++    widget.widget_type      = quick_checkbox;
++    widget.relative_x       = x;
++    widget.x_divisions      = xdiv;
++    widget.relative_y       = y;
++    widget.y_divisions      = ydiv;
++    widget.u.checkbox.text  = txt;
++    widget.u.checkbox.state = state;
++    *cursor = widget;
++    return ++cursor;
++}
++
++
++__inline QuickWidget *
++QUICK_PUSH_BUTTON (QuickWidget *cursor,
++        int x, int xdiv, int y, int ydiv, const char *txt, int act, bcback_fn cb) {
++    QuickWidget widget = {0};
++    widget.widget_type      = quick_button;
++    widget.relative_x       = x;
++    widget.x_divisions      = xdiv;
++    widget.relative_y       = y;
++    widget.y_divisions      = ydiv;
++    widget.u.button.text    = txt;
++    widget.u.button.action  = act;
++    widget.u.button.callback = cb;
++    *cursor = widget;
++    return ++cursor;
++}
++
++
++__inline QuickWidget *
++QUICK_PUSH_INPUT (QuickWidget *cursor,
++        int x, int xdiv, int y, int ydiv, const char *txt, int len, int flags, const char *histname, char **res) {
++    QuickWidget widget = {0};
++    widget.widget_type      = quick_input;
++    widget.relative_x       = x;
++    widget.x_divisions      = xdiv;
++    widget.relative_y       = y;
++    widget.y_divisions      = ydiv;
++    widget.u.input.text     = txt;
++    widget.u.input.len      = len;
++    widget.u.input.flags    = flags;
++    widget.u.input.histname = histname;
++    widget.u.input.result   = res;
++    *cursor = widget;
++    return ++cursor;
++}
++
++
++__inline QuickWidget *
++QUICK_PUSH_LABEL (QuickWidget *cursor,
++        int x, int xdiv, int y, int ydiv, const char *txt) {
++    QuickWidget widget = {0};
++    widget.widget_type      = quick_label;
++    widget.relative_x       = x;
++    widget.x_divisions      = xdiv;
++    widget.relative_y       = y;
++    widget.y_divisions      = ydiv;
++    widget.u.label.text     = txt;
++    *cursor = widget;
++    return ++cursor;
++}
++
++
++__inline QuickWidget *
++QUICK_PUSH_RADIO (QuickWidget *cursor,
++        int x, int xdiv, int y, int ydiv, int cnt, const char **items, int *val) {
++    QuickWidget widget = {0};
++    widget.widget_type      = quick_radio;
++    widget.relative_x       = x;
++    widget.x_divisions      = xdiv;
++    widget.relative_y       = y;
++    widget.y_divisions      = ydiv;
++    widget.u.radio.count    = cnt;
++    widget.u.radio.items    = items;
++    widget.u.radio.value    = val;
++    *cursor = widget;
++    return ++cursor;
++}
++
++
++__inline QuickWidget *
++QUICK_PUSH_GROUPBOX (QuickWidget *cursor,
++        int x, int xdiv, int y, int ydiv, int w, int h, const char *txt) {
++    QuickWidget widget = {0};
++    widget.widget_type      = quick_groupbox;
++    widget.relative_x       = x;
++    widget.x_divisions      = xdiv;
++    widget.relative_y       = y;
++    widget.y_divisions      = ydiv;
++    widget.u.groupbox.width = w;
++    widget.u.groupbox.height = h;
++    widget.u.groupbox.title = txt;
++    *cursor = widget;
++    return ++cursor;
++}
++
++
++__inline QuickWidget *
++QUICK_PUSH_END (QuickWidget *cursor) {
++    QuickWidget widget = {0};
++    widget.widget_type = quick_end;
++    *cursor = widget;
++    return ++cursor;
++}
++
++#endif /* WIN32 */
+ #endif /* MC__QUICK_H */
+diff --git a/lib/widget/wtools.c b/lib/widget/wtools.c
+index 3d902a2..2c27dfe 100644
+--- a/lib/widget/wtools.c
++++ b/lib/widget/wtools.c
+@@ -184,6 +184,9 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
+ {
+     char *my_str;
+     int flags = (strip_password) ? 4 : 0;
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[5], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         /* 0 */ QUICK_BUTTON (6, 64, 1, 0, N_("&Cancel"), B_CANCEL, NULL),
+         /* 1 */ QUICK_BUTTON (3, 64, 1, 0, N_("&OK"), B_ENTER, NULL),
+@@ -191,6 +194,7 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
+         /* 3 */ QUICK_LABEL (3, 64, 2, 0, ""),
+         QUICK_END
+     };
++#endif
+ 
+     int b0_len, b1_len, b_len, gap;
+     char histname[64] = "inp|";
+@@ -199,6 +203,14 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
+     int i;
+     char *p_text;
+     int ret;
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /* 0 */ QUICK_PUSH_BUTTON (quick_cursor, 6, 64, 1, 0, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = /* 1 */ QUICK_PUSH_BUTTON (quick_cursor, 3, 64, 1, 0, N_("&OK"), B_ENTER, NULL);
++    quick_cursor = /* 2 */ QUICK_PUSH_INPUT (quick_cursor,  3, 64, 0, 0, def_text, 58, flags, NULL, &my_str);
++    quick_cursor = /* 3 */ QUICK_PUSH_LABEL (quick_cursor, 3, 64, 2, 0, "");
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+ 
+     /* buttons */
+ #ifdef ENABLE_NLS
+diff --git a/src/args.c b/src/args.c
+index b1991dd..e8d7d96 100644
+--- a/src/args.c
++++ b/src/args.c
+@@ -407,7 +407,12 @@ mc_args_add_extended_info_to_help (void)
+                                                    ("\n"
+                                                     "Please send any bug reports (including the output of `mc -V')\n"
+                                                     "as tickets at www.midnight-commander.org\n"));
++
++#if defined(BUILD_NUMBER) //WIN32/APY, build
++    mc_args__loc__header_string = g_strdup_printf (_("GNU Midnight Commander %s (build: %s)\n"), VERSION, BUILD_NUMBER);
++#else
+     mc_args__loc__header_string = g_strdup_printf (_("GNU Midnight Commander %s\n"), VERSION);
++#endif
+ 
+ #if GLIB_CHECK_VERSION(2,12,0)
+     g_option_context_set_description (context, mc_args__loc__footer_string);
+@@ -716,7 +721,7 @@ mc_setup_by_args (int argc, char **argv, GError ** error)
+ 
+     if (mc_args__netfs_logfile != NULL)
+     {
+-        vfs_path_t *vpath;
++        vfs_path_t *vpath = NULL; //APY
+ #ifdef ENABLE_VFS_FTP
+         vpath = vfs_path_from_str ("ftp://");
+         mc_setctl (vpath, VFS_SETCTL_LOGFILE, (void *) mc_args__netfs_logfile);
+diff --git a/src/cons.handler.c b/src/cons.handler.c
+index f194b44..23e1fcf 100644
+--- a/src/cons.handler.c
++++ b/src/cons.handler.c
+@@ -457,6 +457,8 @@ show_console_contents (int starty, unsigned char begin_line, unsigned char end_l
+     show_console_contents_linux (starty, begin_line, end_line);
+ #elif defined (__FreeBSD__)
+     show_console_contents_freebsd (starty, begin_line, end_line);
++#elif defined (WIN32) //APY, console support
++    show_console_contents_win32 (starty, begin_line, end_line);
+ #else
+     mc_global.tty.console_flag = '\0';
+ #endif
+@@ -476,6 +478,8 @@ handle_console (console_action_t action)
+     handle_console_linux (action);
+ #elif defined (__FreeBSD__)
+     handle_console_freebsd (action);
++#elif defined (WIN32) //APY, console support
++    handle_console_win32 (action);
+ #endif
+ }
+ 
+diff --git a/src/consaver/cons.saver.h b/src/consaver/cons.saver.h
+index 56319ad..146c889 100644
+--- a/src/consaver/cons.saver.h
++++ b/src/consaver/cons.saver.h
+@@ -42,5 +42,10 @@ void show_console_contents (int starty, unsigned char begin_line, unsigned char
+ void handle_console (console_action_t action);
+ #endif /* !LINUX_CONS_SAVER_C */
+ 
++#if defined(WIN32) //APY, console support
++void show_console_contents_win32 (int starty, unsigned char begin_line, unsigned char end_line);
++void handle_console_win32 (console_action_t action);
++#endif
++
+ /*** inline functions ****************************************************************************/
+ #endif /* MC__CONS_SAVER_H */
+diff --git a/src/diffviewer/search.c b/src/diffviewer/search.c
+index 40e10b4..98811f4 100644
+--- a/src/diffviewer/search.c
++++ b/src/diffviewer/search.c
+@@ -99,6 +99,14 @@ mcdiffview_dialog_search (WDiff * dview)
+     size_t num_of_types;
+     gchar **list_of_types = mc_search_get_types_strings_array (&num_of_types);
+ 
++#if defined(WIN32) //APY, QUICK
++#ifdef HAVE_CHARSET
++    QuickWidget search_widgets[10],
++#else
++    QuickWidget search_widgets[9],
++#endif
++            *search_cursor = search_widgets;
++#else
+     QuickWidget search_widgets[] = {
+         /* 0 */
+         QUICK_BUTTON (3, SEARCH_DLG_WIDTH, SEARCH_DLG_HEIGHT - 3, SEARCH_DLG_HEIGHT, DLG_BTN1_text,
+@@ -133,6 +141,7 @@ mcdiffview_dialog_search (WDiff * dview)
+         QUICK_LABEL (3, SEARCH_DLG_WIDTH, 2, SEARCH_DLG_HEIGHT, N_("Enter search string:")),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog search_input = {
+         SEARCH_DLG_WIDTH, SEARCH_DLG_HEIGHT, -1, -1,
+@@ -140,6 +149,22 @@ mcdiffview_dialog_search (WDiff * dview)
+         search_widgets, NULL, NULL, FALSE
+     };
+ 
++#if defined(WIN32) //APY, QUICK
++    search_cursor = /* 0 */ QUICK_PUSH_BUTTON (search_cursor, 3, SEARCH_DLG_WIDTH, SEARCH_DLG_HEIGHT - 3, SEARCH_DLG_HEIGHT, DLG_BTN1_text, B_CANCEL, NULL);;
++    search_cursor = /* 1 */ QUICK_PUSH_BUTTON (search_cursor, 3, SEARCH_DLG_WIDTH, SEARCH_DLG_HEIGHT - 3, SEARCH_DLG_HEIGHT, DLG_BTN2_text, B_ENTER, NULL);
++#ifdef HAVE_CHARSET
++    search_cursor = /* 2 */ QUICK_PUSH_CHECKBOX (search_cursor, 33, SEARCH_DLG_WIDTH, 8, SEARCH_DLG_HEIGHT, N_("&All charsets"), &mcdiffview_search_options.all_codepages);
++#endif
++    search_cursor = /* 3 */ QUICK_PUSH_CHECKBOX (search_cursor, 33, SEARCH_DLG_WIDTH, 7, SEARCH_DLG_HEIGHT, N_("&Whole words"), &mcdiffview_search_options.whole_words);
++    search_cursor = /* 4 */ QUICK_PUSH_CHECKBOX (search_cursor, 33, SEARCH_DLG_WIDTH, 6, SEARCH_DLG_HEIGHT, N_("&Backwards"), &mcdiffview_search_options.backwards);
++    search_cursor = /* 5 */ QUICK_PUSH_CHECKBOX (search_cursor, 33, SEARCH_DLG_WIDTH, 5, SEARCH_DLG_HEIGHT, N_("Cas&e sensitive"), &mcdiffview_search_options.case_sens);
++    search_cursor = /* 6 */ QUICK_PUSH_RADIO (search_cursor, 3, SEARCH_DLG_WIDTH, 5, SEARCH_DLG_HEIGHT, num_of_types, (const char **) list_of_types, (int *) &mcdiffview_search_options.type);
++    search_cursor = /* 7 */ QUICK_PUSH_INPUT (search_cursor, 3, SEARCH_DLG_WIDTH, 3, SEARCH_DLG_HEIGHT, INPUT_LAST_TEXT, SEARCH_DLG_WIDTH - 6, 0, MC_HISTORY_SHARED_SEARCH, &exp);
++    search_cursor = /* 8 */ QUICK_PUSH_LABEL (search_cursor, 3, SEARCH_DLG_WIDTH, 2, SEARCH_DLG_HEIGHT, N_("Enter search string:"));
++    search_cursor = QUICK_PUSH_END (search_cursor); 
++    g_assert(search_cursor == search_widgets + G_N_ELEMENTS(search_widgets));
++#endif
++
+     mcdiffview_dialog_fix_buttons_positions (&search_input);
+ 
+     qd_result = quick_dialog (&search_input);
+diff --git a/src/diffviewer/ydiff.c b/src/diffviewer/ydiff.c
+index 538751a..ee43fe1 100644
+--- a/src/diffviewer/ydiff.c
++++ b/src/diffviewer/ydiff.c
+@@ -2308,6 +2308,9 @@ dview_diff_options (WDiff * dview)
+         N_("&Minimal (Find a smaller set of change)")
+     };
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget diffopt_widgets[11], *diffopt_cursor = diffopt_widgets;
++#else
+     QuickWidget diffopt_widgets[] = {
+         QUICK_BUTTON (6, 10, 14, OPTY, N_("&Cancel"), B_CANCEL, NULL),
+         QUICK_BUTTON (2, 10, 14, OPTY, N_("&OK"), B_ENTER, NULL),
+@@ -2329,6 +2332,7 @@ dview_diff_options (WDiff * dview)
+ 
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog diffopt = {
+         OPTX, OPTY, -1, -1,
+@@ -2336,6 +2340,21 @@ dview_diff_options (WDiff * dview)
+         diffopt_widgets, NULL, NULL, FALSE
+     };
+ 
++#if defined(WIN32) //APY, QUICK
++    diffopt_cursor = /* 0  */ QUICK_PUSH_BUTTON (diffopt_cursor, 6, 10, 14, OPTY, N_("&Cancel"), B_CANCEL, NULL);
++    diffopt_cursor = /* 1  */ QUICK_PUSH_BUTTON (diffopt_cursor, 2, 10, 14, OPTY, N_("&OK"), B_ENTER, NULL);
++    diffopt_cursor = /* 2  */ QUICK_PUSH_CHECKBOX (diffopt_cursor, 3, OPTX, 12, OPTY, N_("Strip &trailing carriage return"), &dview->opt.strip_trailing_cr);
++    diffopt_cursor = /* 3  */ QUICK_PUSH_CHECKBOX (diffopt_cursor, 3, OPTX, 11, OPTY, N_("Ignore all &whitespace"), &dview->opt.ignore_all_space);
++    diffopt_cursor = /* 4  */ QUICK_PUSH_CHECKBOX (diffopt_cursor, 3, OPTX, 10, OPTY, N_("Ignore &space change"), &dview->opt.ignore_space_change);
++    diffopt_cursor = /* 5  */ QUICK_PUSH_CHECKBOX (diffopt_cursor, 3, OPTX, 9, OPTY, N_("Ignore tab &expansion"), &dview->opt.ignore_tab_expansion);
++    diffopt_cursor = /* 6  */ QUICK_PUSH_CHECKBOX (diffopt_cursor, 3, OPTX, 8, OPTY, N_("&Ignore case"), &dview->opt.ignore_case);
++    diffopt_cursor = /* 7  */ QUICK_PUSH_LABEL (diffopt_cursor, 3, OPTX, 7, OPTY, N_("Diff extra options"));
++    diffopt_cursor = /* 8  */ QUICK_PUSH_RADIO (diffopt_cursor, 3, OPTX, 3, OPTY, 3, (const char **) quality_str, (int *) &dview->opt.quality);
++    diffopt_cursor = /* 9  */ QUICK_PUSH_LABEL (diffopt_cursor, 3, OPTX, 2, OPTY, N_("Diff algorithm"));
++    diffopt_cursor = QUICK_PUSH_END (diffopt_cursor);
++    g_assert(diffopt_cursor == diffopt_widgets + G_N_ELEMENTS(diffopt_widgets));
++#endif
++
+     if (quick_dialog (&diffopt) != B_CANCEL)
+     {
+         dview_reread (dview);
+diff --git a/src/editor/editcmd.c b/src/editor/editcmd.c
+index 4ca6cee..46c54e2 100644
+--- a/src/editor/editcmd.c
++++ b/src/editor/editcmd.c
+@@ -427,6 +427,9 @@ edit_get_save_file_as (WEdit * edit)
+         N_("&Macintosh format (CR)")
+     };
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[7], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         QUICK_BUTTON (6, 10, DLG_HEIGHT - 3, DLG_HEIGHT, N_("&Cancel"), B_CANCEL, NULL),
+         QUICK_BUTTON (2, 10, DLG_HEIGHT - 3, DLG_HEIGHT, N_("&OK"), B_ENTER, NULL),
+@@ -437,12 +440,24 @@ edit_get_save_file_as (WEdit * edit)
+         QUICK_LABEL (3, DLG_WIDTH, DLG_HEIGHT - 12, DLG_HEIGHT, N_("Enter file name:")),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog Quick_options = {
+         DLG_WIDTH, DLG_HEIGHT, -1, -1,
+         N_("Save As"), "[Save File As]",
+         quick_widgets, NULL, NULL, FALSE
+     };
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 6, 10, DLG_HEIGHT - 3, DLG_HEIGHT, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 2, 10, DLG_HEIGHT - 3, DLG_HEIGHT, N_("&OK"), B_ENTER, NULL);
++    quick_cursor = QUICK_PUSH_RADIO (quick_cursor, 5, DLG_WIDTH, DLG_HEIGHT - 8, DLG_HEIGHT, LB_NAMES, lb_names, (int *) &cur_lb);
++    quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, DLG_WIDTH, DLG_HEIGHT - 9, DLG_HEIGHT, N_("Change line breaks to:"));
++    quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 3, DLG_WIDTH, DLG_HEIGHT - 11, DLG_HEIGHT, filename, DLG_WIDTH - 6, 0,
++                                     "save-as", &filename_res);
++    quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, DLG_WIDTH, DLG_HEIGHT - 12, DLG_HEIGHT, N_("Enter file name:"));
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+ 
+     if (quick_dialog (&Quick_options) != B_CANCEL)
+     {
+@@ -1563,6 +1578,9 @@ edit_save_mode_cmd (void)
+         N_("&Do backups with following extension:")
+     };
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget widgets[6], *quick_cursor = widgets;
++#else
+     QuickWidget widgets[] = {
+         /* 0 */
+         QUICK_BUTTON (18, DLG_X, DLG_Y - 3, DLG_Y, N_("&Cancel"), B_CANCEL, NULL),
+@@ -1576,6 +1594,7 @@ edit_save_mode_cmd (void)
+         QUICK_RADIO (4, DLG_X, 3, DLG_Y, 3, str, &option_save_mode),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog dialog = {
+         DLG_X, DLG_Y, -1, -1, N_("Edit Save Mode"),
+@@ -1585,6 +1604,15 @@ edit_save_mode_cmd (void)
+     size_t i;
+     size_t maxlen = 0;
+     size_t w0, w1, b_len, w3;
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /* 0 */ QUICK_PUSH_BUTTON (quick_cursor, 18, DLG_X, DLG_Y - 3, DLG_Y, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = /* 1 */ QUICK_PUSH_BUTTON (quick_cursor, 6, DLG_X, DLG_Y - 3, DLG_Y, N_("&OK"), B_ENTER, NULL);
++    quick_cursor = /* 2 */ QUICK_PUSH_CHECKBOX (quick_cursor, 4, DLG_X, 8, DLG_Y, N_("Check &POSIX new line"), &option_check_nl_at_eof);
++    quick_cursor = /* 3 */ QUICK_PUSH_INPUT (quick_cursor, 8, DLG_X, 6, DLG_Y, option_backup_ext, 9, 0, "edit-backup-ext", &str_result);
++    quick_cursor = /* 4 */ QUICK_PUSH_RADIO (quick_cursor, 4, DLG_X, 3, DLG_Y, 3, str, &option_save_mode);
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == widgets + G_N_ELEMENTS(widgets));
++#endif
+ 
+ #ifdef HAVE_ASSERT_H
+     assert (option_backup_ext != NULL);
+@@ -3296,6 +3324,9 @@ edit_mail_dialog (WEdit * edit)
+     static char *mail_subject_last = 0;
+     static char *mail_to_last = 0;
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[10], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         /* 0 */ QUICK_BUTTON (6, 10, 9, MAIL_DLG_HEIGHT, N_("&Cancel"), B_CANCEL, NULL),
+         /* 1 */ QUICK_BUTTON (2, 10, 9, MAIL_DLG_HEIGHT, N_("&OK"), B_ENTER, NULL),
+@@ -3309,11 +3340,25 @@ edit_mail_dialog (WEdit * edit)
+         /* 8 */ QUICK_LABEL (3, 50, 2, MAIL_DLG_HEIGHT, N_("mail -s <subject> -c <cc> <to>")),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog Quick_input = {
+         50, MAIL_DLG_HEIGHT, -1, -1, N_("Mail"),
+         "[Input Line Keys]", quick_widgets, NULL, NULL, FALSE
+     };
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 6, 10, 9, MAIL_DLG_HEIGHT, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 2, 10, 9, MAIL_DLG_HEIGHT, N_("&OK"), B_ENTER, NULL);
++    quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 3, 50, 8, MAIL_DLG_HEIGHT, "", 44, 0, "mail-dlg-input", &tmail_cc);
++    quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, 50, 7, MAIL_DLG_HEIGHT, N_("Copies to"));
++    quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 3, 50, 6, MAIL_DLG_HEIGHT, "", 44, 0, "mail-dlg-input-2", &tmail_subject);
++    quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, 50, 5, MAIL_DLG_HEIGHT, N_("Subject"));
++    quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 3, 50, 4, MAIL_DLG_HEIGHT, "", 44, 0, "mail-dlg-input-3", &tmail_to);
++    quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, 50, 3, MAIL_DLG_HEIGHT, N_("To"));
++    quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, 50, 2, MAIL_DLG_HEIGHT, N_("mail -s <subject> -c <cc> <to>"));
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+ 
+     quick_widgets[2].u.input.text = mail_cc_last ? mail_cc_last : "";
+     quick_widgets[4].u.input.text = mail_subject_last ? mail_subject_last : "";
+diff --git a/src/editor/editcmd_dialogs.c b/src/editor/editcmd_dialogs.c
+index de2fe04..5bd8a5d 100644
+--- a/src/editor/editcmd_dialogs.c
++++ b/src/editor/editcmd_dialogs.c
+@@ -106,6 +106,15 @@ editcmd_dialog_replace_show (WEdit * edit, const char *search_default, const cha
+         gchar **list_of_types = mc_search_get_types_strings_array (&num_of_types);
+         int REPLACE_DLG_HEIGHT = REPLACE_DLG_MIN_HEIGHT + num_of_types - REPLACE_DLG_HEIGHT_SUPPLY;
+ 
++#if defined(WIN32) //APY, QUICK
++#ifdef HAVE_CHARSET
++        QuickWidget quick_widgets[13],
++#else
++        QuickWidget quick_widgets[12],
++#endif
++                *quick_cursor = quick_widgets;
++
++#else
+         QuickWidget quick_widgets[] = {
+             /*  0 */ QUICK_BUTTON (6, 10, 13, REPLACE_DLG_HEIGHT, N_("&Cancel"), B_CANCEL, NULL),
+             /*  1 */ QUICK_BUTTON (2, 10, 13, REPLACE_DLG_HEIGHT, N_("&OK"), B_ENTER, NULL),
+@@ -140,11 +149,30 @@ editcmd_dialog_replace_show (WEdit * edit, const char *search_default, const cha
+                                   MC_HISTORY_SHARED_SEARCH, search_text),
+             QUICK_END
+         };
++#endif
+ 
+         QuickDialog Quick_input = {
+             REPLACE_DLG_WIDTH, REPLACE_DLG_HEIGHT, -1, -1, N_("Replace"),
+             "[Input Line Keys]", quick_widgets, NULL, NULL, FALSE
+         };
++#if defined(WIN32) //APY, QUICK
++        quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 6, 10, 13, REPLACE_DLG_HEIGHT, N_("&Cancel"), B_CANCEL, NULL);
++        quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 2, 10, 13, REPLACE_DLG_HEIGHT, N_("&OK"), B_ENTER, NULL);
++#ifdef HAVE_CHARSET
++        quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, REPLACE_DLG_WIDTH, 11, REPLACE_DLG_HEIGHT,N_("&All charsets"), &edit_search_options.all_codepages);
++#endif
++        quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, REPLACE_DLG_WIDTH, 10, REPLACE_DLG_HEIGHT,N_("&Whole words"), &edit_search_options.whole_words);
++        quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, REPLACE_DLG_WIDTH, 9, REPLACE_DLG_HEIGHT, N_("In se&lection"), &edit_search_options.only_in_selection);
++        quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, REPLACE_DLG_WIDTH, 8, REPLACE_DLG_HEIGHT, N_("&Backwards"), &edit_search_options.backwards);
++        quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, REPLACE_DLG_WIDTH, 7, REPLACE_DLG_HEIGHT, N_("Cas&e sensitive"), &edit_search_options.case_sens);
++        quick_cursor = QUICK_PUSH_RADIO (quick_cursor, 3, REPLACE_DLG_WIDTH, 7, REPLACE_DLG_HEIGHT, num_of_types, (const char **) list_of_types, (int *) &edit_search_options.type);
++        quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, REPLACE_DLG_WIDTH, 4, REPLACE_DLG_HEIGHT, N_("Enter replacement string:"));
++        quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 3, REPLACE_DLG_WIDTH, 5, REPLACE_DLG_HEIGHT, replace_default, REPLACE_DLG_WIDTH - 6, 0, "replace", replace_text);
++        quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, REPLACE_DLG_WIDTH, 2, REPLACE_DLG_HEIGHT, N_("Enter search string:"));
++        quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 3, REPLACE_DLG_WIDTH, 3, REPLACE_DLG_HEIGHT, search_default, REPLACE_DLG_WIDTH - 6, 0, MC_HISTORY_SHARED_SEARCH, search_text);
++        quick_cursor = QUICK_PUSH_END (quick_cursor);
++        g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+ 
+         if (quick_dialog (&Quick_input) != B_CANCEL)
+         {
+@@ -174,6 +202,15 @@ editcmd_dialog_search_show (WEdit * edit)
+ 
+     int dialog_result;
+ 
++#if defined(WIN32) //APY, QUICK
++#ifdef HAVE_CHARSET
++        QuickWidget quick_widgets[12],
++#else
++        QuickWidget quick_widgets[13],
++#endif
++                *quick_cursor = quick_widgets;
++
++#else
+     QuickWidget quick_widgets[] = {
+         /* 0 */
+         QUICK_BUTTON (6, 10, 11, SEARCH_DLG_HEIGHT, N_("&Cancel"), B_CANCEL, NULL),
+@@ -210,6 +247,7 @@ editcmd_dialog_search_show (WEdit * edit)
+         QUICK_LABEL (3, SEARCH_DLG_WIDTH, 2, SEARCH_DLG_HEIGHT, N_("Enter search string:")),
+         QUICK_END
+     };
++#endif
+ 
+ #ifdef HAVE_CHARSET
+     size_t last_checkbox = 7;
+@@ -224,7 +262,46 @@ editcmd_dialog_search_show (WEdit * edit)
+ 
+ #ifdef ENABLE_NLS
+     char **list_of_types_nls;
++#endif
++
++#if defined(WIN32) //APY, QUICK
++        /* 0 */
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 6, 10, 11, SEARCH_DLG_HEIGHT, N_("&Cancel"), B_CANCEL, NULL),
++        /* 1 */
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 4, 10, 11, SEARCH_DLG_HEIGHT, N_("&Find all"), B_USER, NULL),
++        /* 2 */
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 2, 10, 11, SEARCH_DLG_HEIGHT, N_("&OK"), B_ENTER, NULL),
++#ifdef HAVE_CHARSET
++        /* 3 */
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, SEARCH_DLG_WIDTH, 9, SEARCH_DLG_HEIGHT, N_("&All charsets"),
++                        &edit_search_options.all_codepages),
++#endif
++        /* 4 */
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, SEARCH_DLG_WIDTH, 8, SEARCH_DLG_HEIGHT, N_("&Whole words"),
++                        &edit_search_options.whole_words),
++        /* 5 */
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, SEARCH_DLG_WIDTH, 7, SEARCH_DLG_HEIGHT, N_("In se&lection"),
++                        &edit_search_options.only_in_selection),
++        /* 6 */
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, SEARCH_DLG_WIDTH, 6, SEARCH_DLG_HEIGHT, N_("&Backwards"),
++                        &edit_search_options.backwards),
++        /* 7 */
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 33, SEARCH_DLG_WIDTH, 5, SEARCH_DLG_HEIGHT, N_("Cas&e sensitive"),
++                        &edit_search_options.case_sens),
++        /* 8 */
++    quick_cursor = QUICK_PUSH_RADIO (quick_cursor, 3, SEARCH_DLG_WIDTH, 5, SEARCH_DLG_HEIGHT,
++                        num_of_types, (const char **) list_of_types,
++                        (int *) &edit_search_options.type),
++        /* 9 */
++    quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 3, SEARCH_DLG_WIDTH, 3, SEARCH_DLG_HEIGHT,
++                        INPUT_LAST_TEXT, SEARCH_DLG_WIDTH - 6, 0,
++                        MC_HISTORY_SHARED_SEARCH, &search_text),
++        /* 10 */
++    quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, SEARCH_DLG_WIDTH, 2, SEARCH_DLG_HEIGHT, N_("Enter search string:")),
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++#endif
+ 
++#ifdef ENABLE_NLS
+     /* header title */
+     Quick_input.title = _(Quick_input.title);
+     /* buttons */
+@@ -583,6 +660,11 @@ editcmd_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text
+     char *repl_from, *repl_to;
+     char tmp[BUF_MEDIUM];
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[8],
++                *quick_cursor = quick_widgets;
++
++#else
+     QuickWidget quick_widgets[] = {
+         /* 0 */ QUICK_BUTTON (44, dlg_width, 6, dlg_height, N_("&Cancel"), B_CANCEL, NULL),
+         /* 1 */ QUICK_BUTTON (29, dlg_width, 6, dlg_height, N_("&Skip"), B_SKIP_REPLACE, NULL),
+@@ -593,6 +675,19 @@ editcmd_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text
+         /* 6 */ QUICK_LABEL (3, dlg_width, 4, dlg_height, NULL),
+         QUICK_END
+     };
++#endif
++
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /* 0 */ QUICK_PUSH_BUTTON (quick_cursor, 44, dlg_width, 6, dlg_height, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = /* 1 */ QUICK_PUSH_BUTTON (quick_cursor, 29, dlg_width, 6, dlg_height, N_("&Skip"), B_SKIP_REPLACE, NULL);
++    quick_cursor = /* 2 */ QUICK_PUSH_BUTTON (quick_cursor, 21, dlg_width, 6, dlg_height, N_("A&ll"), B_REPLACE_ALL, NULL);
++    quick_cursor = /* 3 */ QUICK_PUSH_BUTTON (quick_cursor, 4, dlg_width, 6, dlg_height, N_("&Replace"), B_ENTER, NULL);
++    quick_cursor = /* 4 */ QUICK_PUSH_LABEL (quick_cursor, 3, dlg_width, 2, dlg_height, NULL);
++    quick_cursor = /* 5 */ QUICK_PUSH_LABEL (quick_cursor, 3, dlg_width, 3, dlg_height, N_("Replace with:"));
++    quick_cursor = /* 6 */ QUICK_PUSH_LABEL (quick_cursor, 3, dlg_width, 4, dlg_height, NULL);
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+ 
+ #ifdef ENABLE_NLS
+     for (i = 0; i < 4; i++)
+diff --git a/src/editor/editoptions.c b/src/editor/editoptions.c
+index e58846b..48e7b4b 100644
+--- a/src/editor/editoptions.c
++++ b/src/editor/editoptions.c
+@@ -124,6 +124,10 @@ edit_options_dialog (Dlg_head * h)
+     int wrap_mode = 0;
+     int old_syntax_hl;
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[21],
++        *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         /*  0 */ QUICK_BUTTON (6, 10, OPT_DLG_H - 3, OPT_DLG_H, N_("&Cancel"), B_CANCEL, NULL),
+         /*  1 */ QUICK_BUTTON (2, 10, OPT_DLG_H - 3, OPT_DLG_H, N_("&OK"), B_ENTER, NULL),
+@@ -162,6 +166,7 @@ edit_options_dialog (Dlg_head * h)
+         /* 19 */ QUICK_LABEL (3, OPT_DLG_W, 3, OPT_DLG_H, N_("Wrap mode")),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog Quick_options = {
+         OPT_DLG_W, OPT_DLG_H, -1, -1, N_("Editor options"),
+@@ -178,6 +183,31 @@ edit_options_dialog (Dlg_head * h)
+     }
+ #endif /* ENABLE_NLS */
+ 
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /*  0 */ QUICK_PUSH_BUTTON (quick_cursor, 6, 10, OPT_DLG_H - 3, OPT_DLG_H, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = /*  1 */ QUICK_PUSH_BUTTON (quick_cursor, 2, 10, OPT_DLG_H - 3, OPT_DLG_H, N_("&OK"), B_ENTER, NULL);
++    quick_cursor = /*  2 */ QUICK_PUSH_LABEL (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 12, OPT_DLG_H, N_("Word wrap line length:"));
++    quick_cursor = /*  3 */ QUICK_PUSH_INPUT (quick_cursor, OPT_DLG_W / 2 + 25, OPT_DLG_W, 12, OPT_DLG_H, wrap_length, OPT_DLG_W / 2 - 4 - 24, 0, "edit-word-wrap", &p);
++    quick_cursor = /*  4 */ QUICK_PUSH_CHECKBOX (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 11, OPT_DLG_H, N_("&Group undo"), &option_group_undo);
++    quick_cursor = /*  5 */ QUICK_PUSH_CHECKBOX (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 10, OPT_DLG_H, N_("Cursor beyond end of line"), &option_cursor_beyond_eol);
++    quick_cursor = /*  6 */ QUICK_PUSH_CHECKBOX (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 9, OPT_DLG_H, N_("Pers&istent selection"), &option_persistent_selections);
++    quick_cursor = /*  7 */ QUICK_PUSH_CHECKBOX (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 8, OPT_DLG_H, N_("Synta&x highlighting"), &option_syntax_highlighting);
++    quick_cursor = /*  8 */ QUICK_PUSH_CHECKBOX (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 7, OPT_DLG_H, N_("Visible tabs"), &visible_tabs);
++    quick_cursor = /*  9 */ QUICK_PUSH_CHECKBOX (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 6, OPT_DLG_H, N_("Visible trailing spaces"), &visible_tws);
++    quick_cursor = /* 10 */ QUICK_PUSH_CHECKBOX (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 5, OPT_DLG_H, N_("Save file &position"), &option_save_position);
++    quick_cursor = /* 11 */ QUICK_PUSH_CHECKBOX (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 4, OPT_DLG_H, N_("Confir&m before saving"), &edit_confirm_save);
++    quick_cursor = /* 12 */ QUICK_PUSH_CHECKBOX (quick_cursor, OPT_DLG_W / 2 + 1, OPT_DLG_W, 3, OPT_DLG_H, N_("&Return does autoindent"), &option_return_does_auto_indent);
++    quick_cursor = /* 13 */ QUICK_PUSH_LABEL (quick_cursor, 3, OPT_DLG_W, 11, OPT_DLG_H, N_("Tab spacing:"));
++    quick_cursor = /* 14 */ QUICK_PUSH_INPUT (quick_cursor, 3 + 24, OPT_DLG_W, 11, OPT_DLG_H, tab_spacing, OPT_DLG_W / 2 - 4 - 24, 0, "edit-tab-spacing", &q);
++    quick_cursor = /* 15 */ QUICK_PUSH_CHECKBOX (quick_cursor, 3, OPT_DLG_W, 10, OPT_DLG_H, N_("Fill tabs with &spaces"), &option_fill_tabs_with_spaces);
++    quick_cursor = /* 16 */ QUICK_PUSH_CHECKBOX (quick_cursor, 3, OPT_DLG_W, 9, OPT_DLG_H, N_("&Backspace through tabs"), &option_backspace_through_tabs);
++    quick_cursor = /* 17 */ QUICK_PUSH_CHECKBOX (quick_cursor, 3, OPT_DLG_W, 8, OPT_DLG_H, N_("&Fake half tabs"), &option_fake_half_tabs);
++    quick_cursor = /* 18 */ QUICK_PUSH_RADIO (quick_cursor, 4, OPT_DLG_W, 4, OPT_DLG_H, 3, wrap_str, &wrap_mode);
++    quick_cursor = /* 19 */ QUICK_PUSH_LABEL (quick_cursor, 3, OPT_DLG_W, 3, OPT_DLG_H, N_("Wrap mode"));
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
++
+     g_snprintf (wrap_length, sizeof (wrap_length), "%d", option_word_wrap_line_length);
+     g_snprintf (tab_spacing, sizeof (tab_spacing), "%d", option_tab_spacing);
+ 
+diff --git a/src/editor/spell_dialogs.c b/src/editor/spell_dialogs.c
+index 2ebf020..d6fe6cc 100644
+--- a/src/editor/spell_dialogs.c
++++ b/src/editor/spell_dialogs.c
+@@ -103,7 +103,11 @@ spell_dialog_spell_suggest_show (WEdit * edit, const char *word, char **new_word
+     max_btn_len = max (replace_len, skip_len);
+     max_btn_len = max (max_btn_len, cancel_len);
+ 
++#ifdef HAVE_ASPELL //WIN32/APY, optional aspell
+     lang_label = g_strdup_printf ("%s: %s", _("Language"), aspell_get_lang ());
++#else
++    lang_label = g_strdup_printf ("%s: %s", _("Language"), "not available");
++#endif
+     word_label = g_strdup_printf ("%s: %s", _("Misspelled"), word);
+     word_label_len = str_term_width1 (word_label) + 5;
+ 
+diff --git a/src/filemanager/boxes.c b/src/filemanager/boxes.c
+index 742beb3..a42833b 100644
+--- a/src/filemanager/boxes.c
++++ b/src/filemanager/boxes.c
+@@ -601,6 +601,9 @@ sort_box (panel_sort_info_t * info)
+         int ok_len, cancel_len;
+         gsize i;
+ 
++#if defined(WIN32) //APY, QUICK
++        QuickWidget quick_widgets[7], *quick_cursor = quick_widgets;
++#else
+         QuickWidget quick_widgets[] = {
+             /* 0 */
+             QUICK_BUTTON (0, dlg_width, dlg_height - 3, dlg_height, N_("&Cancel"), B_CANCEL, NULL),
+@@ -618,6 +621,7 @@ sort_box (panel_sort_info_t * info)
+             QUICK_RADIO (4, dlg_width, 3, dlg_height, 0, NULL, &sort_idx),
+             QUICK_END
+         };
++#endif
+ 
+         QuickDialog quick_dlg = {
+             dlg_width, dlg_height, -1, -1,
+@@ -625,6 +629,16 @@ sort_box (panel_sort_info_t * info)
+             quick_widgets, NULL, NULL, TRUE
+         };
+ 
++#if defined(WIN32) //APY, QUICK
++        quick_cursor = /* 0 */ QUICK_PUSH_BUTTON (quick_cursor, 0, dlg_width, dlg_height, dlg_height, N_("&Cancel"), B_CANCEL, NULL);
++        quick_cursor = /* 1 */ QUICK_PUSH_BUTTON (quick_cursor, 0, dlg_width, dlg_height, dlg_height, N_("&OK"), B_ENTER, NULL);
++        quick_cursor = /* 2 */ QUICK_PUSH_CHECKBOX (quick_cursor, 0, dlg_width, 5, dlg_height, N_("&Reverse"), &info->reverse);
++        quick_cursor = /* 3 */ QUICK_PUSH_CHECKBOX (quick_cursor, 0, dlg_width, 4, dlg_height, N_("Case sensi&tive"), &info->case_sensitive);
++        quick_cursor = /* 4 */ QUICK_PUSH_CHECKBOX (quick_cursor, 0, dlg_width, 3, dlg_height, N_("Executable &first"), &info->exec_first);
++        quick_cursor = /* 5 */ QUICK_PUSH_RADIO (quick_cursor, 4, dlg_width, 3, dlg_height, 0, NULL, &sort_idx);
++        quick_cursor = QUICK_PUSH_END (quick_cursor);
++        g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+         quick_widgets[5].u.radio.items = sort_orders_names;
+         quick_widgets[5].u.radio.count = sort_names_num;
+ 
+@@ -690,6 +704,9 @@ confirm_box (void)
+ {
+     const char *title = _("Confirmation");
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget conf_widgets[9], *conf_cursor = conf_widgets;
++#else
+     QuickWidget conf_widgets[] = {
+         /* 0 */ QUICK_BUTTON (29, 46, 10, 13, N_("&Cancel"), B_CANCEL, NULL),
+         /* 1 */ QUICK_BUTTON (12, 46, 10, 13, N_("&OK"), B_ENTER, NULL),
+@@ -704,6 +721,7 @@ confirm_box (void)
+         /* 7 */ QUICK_CHECKBOX (3, 46, 3, 13, N_("Confirmation|&Delete"), &confirm_delete),
+         QUICK_END
+     };
++#endif
+ 
+     const size_t w_num = sizeof (conf_widgets) / sizeof (conf_widgets[0]) - 1;
+ 
+@@ -714,6 +732,18 @@ confirm_box (void)
+     size_t i;
+     int maxlen = 0;
+     int cancel_len, ok_len, blen;
++#if defined(WIN32) //APY, QUICK
++    conf_cursor = QUICK_PUSH_BUTTON (conf_cursor, 29, 46, 10, 13, N_("&Cancel"), B_CANCEL, NULL);
++    conf_cursor = QUICK_PUSH_BUTTON (conf_cursor, 12, 46, 10, 13, N_("&OK"), B_ENTER, NULL);
++    conf_cursor = QUICK_PUSH_CHECKBOX (conf_cursor, 3, 46, 8, 13, N_("Confirmation|&History cleanup"), &mc_global.widget.confirm_history_cleanup);
++    conf_cursor = QUICK_PUSH_CHECKBOX (conf_cursor, 3, 46, 7, 13, N_("Confirmation|Di&rectory hotlist delete"), &confirm_directory_hotlist_delete);
++    conf_cursor = QUICK_PUSH_CHECKBOX (conf_cursor, 3, 46, 6, 13, N_("Confirmation|E&xit"), &confirm_exit);
++    conf_cursor = QUICK_PUSH_CHECKBOX (conf_cursor, 3, 46, 5, 13, N_("Confirmation|&Execute"), &confirm_execute);
++    conf_cursor = QUICK_PUSH_CHECKBOX (conf_cursor, 3, 46, 4, 13, N_("Confirmation|O&verwrite"), &confirm_overwrite);
++    conf_cursor = QUICK_PUSH_CHECKBOX (conf_cursor, 3, 46, 3, 13, N_("Confirmation|&Delete"), &confirm_delete);
++    conf_cursor = QUICK_PUSH_END (conf_cursor);
++    g_assert(conf_cursor == conf_widgets + G_N_ELEMENTS(conf_widgets));
++#endif
+ 
+ #ifdef ENABLE_NLS
+     title = _(title);
+@@ -778,6 +808,9 @@ display_bits_box (void)         /* AB:FIXME: test dialog */
+         N_("7 bits")
+     };
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget display_widgets[5], *display_cursor = display_widgets;
++#else
+     QuickWidget display_widgets[] = {
+         /* 0 */ QUICK_BUTTON (15, DISPX, DISPY - 3, DISPY, N_("&Cancel"), B_CANCEL, NULL),
+         /* 1 */ QUICK_BUTTON (29, DISPX, DISPY - 3, DISPY, N_("&OK"), B_ENTER, NULL),
+@@ -785,6 +818,7 @@ display_bits_box (void)         /* AB:FIXME: test dialog */
+         /* 3 */ QUICK_RADIO (3, DISPX, 3, DISPY, 4, display_bits_str, &current_mode),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog display_bits = {
+         DISPX, DISPY, -1, -1, _("Display bits"),
+@@ -797,7 +831,18 @@ display_bits_box (void)         /* AB:FIXME: test dialog */
+ 
+ #ifdef ENABLE_NLS
+     static gboolean i18n_flag = FALSE;
++#endif
++
++#if defined(WIN32) //APY, QUICK
++    *display_cursor++ = QUICK_PUSH_BUTTON (15, DISPX, DISPY - 3, DISPY, N_("&Cancel"), B_CANCEL, NULL);
++    *display_cursor++ = QUICK_PUSH_BUTTON (29, DISPX, DISPY - 3, DISPY, N_("&OK"), B_ENTER, NULL);
++    *display_cursor++ = QUICK_PUSH_CHECKBOX (3, DISPX, 8, DISPY, N_("F&ull 8 bits input"), &new_meta);
++    *display_cursor++ = QUICK_PUSH_RADIO (3, DISPX, 3, DISPY, 4, display_bits_str, &current_mode);
++    *display_cursor++ = QUICK_PUSH_END ();
++    g_assert(display_cursor == display_widgets + G_N_ELEMENTS(display_widgets));
++#endif
+ 
++#ifdef ENABLE_NLS
+     if (!i18n_flag)
+     {
+         for (i = 0; i < 3; i++)
+@@ -935,6 +980,14 @@ configure_vfs (void)
+     char buffer3[BUF_TINY];
+ #endif
+ 
++#if defined(WIN32) //APY, QUICK
++#ifdef ENABLE_VFS_FTP
++    QuickWidget confvfs_widgets[16],
++#else
++    QuickWidget confvfs_widgets[6],
++#endif
++                    *confvfs_cursor = confvfs_widgets;
++#else
+     QuickWidget confvfs_widgets[] = {
+         /*  0 */ QUICK_BUTTON (30, VFSX, VFSY - 3, VFSY, N_("&Cancel"), B_CANCEL, NULL),
+         /*  1 */ QUICK_BUTTON (12, VFSX, VFSY - 3, VFSY, N_("&OK"), B_ENTER, NULL),
+@@ -961,6 +1014,7 @@ configure_vfs (void)
+         /* 14 */ QUICK_LABEL (4, VFSX, 3, VFSY, N_("Timeout for freeing VFSs:")),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog confvfs_dlg = {
+         VFSX, VFSY, -1, -1, N_("Virtual File System Setting"),
+@@ -973,6 +1027,27 @@ configure_vfs (void)
+         NULL,
+         FALSE
+     };
++#if defined(WIN32) //APY, QUICK
++    confvfs_cursor = /*  0 */ QUICK_PUSH_BUTTON (confvfs_cursor, 30, VFSX, VFSY - 3, VFSY, N_("&Cancel"), B_CANCEL, NULL);
++    confvfs_cursor = /*  1 */ QUICK_PUSH_BUTTON (confvfs_cursor, 12, VFSX, VFSY - 3, VFSY, N_("&OK"), B_ENTER, NULL);
++#ifdef ENABLE_VFS_FTP
++    confvfs_cursor = /*  2 */ QUICK_PUSH_CHECKBOX (confvfs_cursor, 4, VFSX, 12, VFSY, N_("Use passive mode over pro&xy"), &ftpfs_use_passive_connections_over_proxy);
++    confvfs_cursor = /*  3 */ QUICK_PUSH_CHECKBOX (confvfs_cursor, 4, VFSX, 11, VFSY, N_("Use &passive mode"), &ftpfs_use_passive_connections);
++    confvfs_cursor = /*  4 */ QUICK_PUSH_CHECKBOX (confvfs_cursor, 4, VFSX, 10, VFSY, N_("&Use ~/.netrc"), &ftpfs_use_netrc);
++    confvfs_cursor = /*  5 */ QUICK_PUSH_INPUT (confvfs_cursor, 4, VFSX, 9, VFSY, ftpfs_proxy_host, 48, 0, "input-ftp-proxy", &ret_ftp_proxy);
++    confvfs_cursor = /*  6 */ QUICK_PUSH_CHECKBOX (confvfs_cursor, 4, VFSX, 8, VFSY, N_("&Always use ftp proxy"), &ftpfs_always_use_proxy);
++    confvfs_cursor = /*  7 */ QUICK_PUSH_LABEL (confvfs_cursor, 49, VFSX, 7, VFSY, N_("sec"));
++    confvfs_cursor = /*  8 */ QUICK_PUSH_INPUT (confvfs_cursor, 38, VFSX, 7, VFSY, buffer3, 10, 0, "input-timeout", &ret_directory_timeout);
++    confvfs_cursor = /*  9 */ QUICK_PUSH_LABEL (confvfs_cursor, 4, VFSX, 7, VFSY, N_("ftpfs directory cache timeout:"));
++    confvfs_cursor = /* 10 */ QUICK_PUSH_INPUT (confvfs_cursor, 4, VFSX, 6, VFSY, ftpfs_anonymous_passwd, 48, 0, "input-passwd", &ret_passwd);
++    confvfs_cursor = /* 11 */ QUICK_PUSH_LABEL (confvfs_cursor, 4, VFSX, 5, VFSY, N_("ftp anonymous password:"));
++#endif
++    confvfs_cursor = /* 12 */ QUICK_PUSH_LABEL (confvfs_cursor, 49, VFSX, 3, VFSY, N_("sec"));
++    confvfs_cursor = /* 13 */ QUICK_PUSH_INPUT (confvfs_cursor, 38, VFSX, 3, VFSY, buffer2, 10, 0, "input-timo-vfs", &ret_timeout);
++    confvfs_cursor = /* 14 */ QUICK_PUSH_LABEL (confvfs_cursor, 4, VFSX, 3, VFSY, N_("Timeout for freeing VFSs:"));
++    confvfs_cursor = QUICK_PUSH_END (confvfs_cursor);
++    g_assert(confvfs_cursor == confvfs_widgets + G_N_ELEMENTS(confvfs_widgets));
++#endif
+ 
+ #ifdef ENABLE_VFS_FTP
+     g_snprintf (buffer3, sizeof (buffer3), "%i", ftpfs_directory_timeout);
+@@ -1026,16 +1101,26 @@ cd_dialog (void)
+     {
+         char *my_str;
+ 
++#if defined(WIN32) //APY, QUICK
++        QuickWidget quick_widgets[3], *quick_cursor = quick_widgets;
++#else
+         QuickWidget quick_widgets[] = {
+             /* 0 */ QUICK_INPUT (4 + len, xlen, 2, ylen, "", xlen - 7 - len, 2, "input", &my_str),
+             /* 1 */ QUICK_LABEL (3, xlen, 2, ylen, label),
+             QUICK_END
+         };
++#endif
+ 
+         QuickDialog Quick_input = {
+             xlen, ylen, 2, LINES - 2 - ylen, _("Quick cd"),
+             "[Quick cd]", quick_widgets, NULL, NULL, TRUE
+         };
++#if defined(WIN32) //APY, QUICK
++        quick_cursor = /* 0 */ QUICK_PUSH_INPUT (quick_cursor, 4 + len, xlen, 2, ylen, "", xlen - 7 - len, 2, "input", &my_str);
++        quick_cursor = /* 1 */ QUICK_PUSH_LABEL (quick_cursor, 3, xlen, 2, ylen, label);
++        quick_cursor = QUICK_PUSH_END (quick_cursor);
++        g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+ 
+         return (quick_dialog (&Quick_input) != B_CANCEL) ? my_str : NULL;
+     }
+@@ -1050,6 +1135,9 @@ symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
+     char *existing = vfs_path_to_str (existing_vpath);
+     char *new = vfs_path_to_str (new_vpath);
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[7], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         /* 0 */ QUICK_BUTTON (50, 80, 6, 8, N_("&Cancel"), B_CANCEL, NULL),
+         /* 1 */ QUICK_BUTTON (16, 80, 6, 8, N_("&OK"), B_ENTER, NULL),
+@@ -1060,11 +1148,22 @@ symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
+                              N_("Existing filename (filename symlink will point to):")),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog Quick_input = {
+         64, 12, -1, -1, N_("Symbolic link"),
+         "[File Menu]", quick_widgets, NULL, NULL, FALSE
+     };
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /* 0 */ QUICK_PUSH_BUTTON (quick_cursor, 50, 80, 6, 8, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = /* 1 */ QUICK_PUSH_BUTTON (quick_cursor, 16, 80, 6, 8, N_("&OK"), B_ENTER, NULL);
++    quick_cursor = /* 2 */ QUICK_PUSH_INPUT (quick_cursor, 4, 80, 5, 8, new, 58, 0, "input-1", ret_new);
++    quick_cursor = /* 3 */ QUICK_PUSH_LABEL (quick_cursor, 4, 80, 4, 8, N_("Symbolic link filename:"));
++    quick_cursor = /* 4 */ QUICK_PUSH_INPUT (quick_cursor, 4, 80, 3, 8, existing, 58, 0, "input-2", ret_existing);
++    quick_cursor = /* 5 */ QUICK_PUSH_LABEL (quick_cursor, 4, 80, 2, 8, N_("Existing filename (filename symlink will point to):"));
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+ 
+     if (quick_dialog (&Quick_input) == B_CANCEL)
+     {
+diff --git a/src/filemanager/cmd.c b/src/filemanager/cmd.c
+index b8c8c77..d1e902b 100644
+--- a/src/filemanager/cmd.c
++++ b/src/filemanager/cmd.c
+@@ -220,6 +220,9 @@ select_unselect_cmd (const char *title, const char *history_name, gboolean do_se
+     mc_search_t *search;
+     int i;
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[5], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         QUICK_CHECKBOX (3, DX, DY - 3, DY, N_("&Using shell patterns"), &shell_patterns),
+         QUICK_CHECKBOX (DX / 2 + 1, DX, DY - 4, DY, N_("&Case sensitive"), &case_sens),
+@@ -227,11 +230,20 @@ select_unselect_cmd (const char *title, const char *history_name, gboolean do_se
+         QUICK_INPUT (3, DX, DY - 5, DY, INPUT_LAST_TEXT, DX - 6, 0, history_name, &reg_exp),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog quick_dlg = {
+         DX, DY, -1, -1, title,
+         "[Select/Unselect Files]", quick_widgets, NULL, NULL, FALSE
+     };
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /* 0 */ QUICK_PUSH_CHECKBOX (quick_cursor, 3, DX, DY - 3, DY, N_("&Using shell patterns"), &shell_patterns),
++    quick_cursor = /* 1 */ QUICK_PUSH_CHECKBOX (quick_cursor, DX / 2 + 1, DX, DY - 4, DY, N_("&Case sensitive"), &case_sens),
++    quick_cursor = /* 2 */ QUICK_PUSH_CHECKBOX (quick_cursor, 3, DX, DY - 4, DY, N_("&Files only"), &files_only),
++    quick_cursor = /* 3 */ QUICK_PUSH_INPUT (quick_cursor, 3, DX, DY - 5, DY, INPUT_LAST_TEXT, DX - 6, 0, history_name, &reg_exp),
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+ 
+     if (quick_dialog (&quick_dlg) == B_CANCEL)
+         return;
+diff --git a/src/filemanager/ext.c b/src/filemanager/ext.c
+index 1a52031..e3880ee 100644
+--- a/src/filemanager/ext.c
++++ b/src/filemanager/ext.c
+@@ -38,6 +38,11 @@
+ #include <string.h>
+ #include <unistd.h>
+ 
++#if defined(USE_LIBMAGIC) //WIN32/APY,libmagic
++#include <magic.h>
++#elif defined(WIN32)
++#error libmagic not defined ...
++#endif
+ #include "lib/global.h"
+ #include "lib/tty/tty.h"
+ #include "lib/search.h"
+@@ -378,6 +383,10 @@ exec_extension_cd (void)
+ static void
+ exec_extension (const vfs_path_t * filename_vpath, const char *lc_data, int start_line)
+ {
++#if defined(WIN32) // APY, command
++    static const char EXTHELPERSDIR[] = "@EXTHELPERSDIR@";
++    const char *cursor;
++#endif
+     char *shell_string, *export_variables;
+     vfs_path_t *temp_file_name_vpath = NULL;
+     int cmd_file_fd;
+@@ -433,14 +442,42 @@ exec_extension (const vfs_path_t * filename_vpath, const char *lc_data, int star
+         g_free (export_variables);
+     }
+ 
++#if defined(WIN32) // APY, command
++    if (NULL != (cursor = strstr(shell_string, EXTHELPERSDIR))) {
++        /*
++         *  Dynamically replace EXTHELPERDIR references, allowing for variable 
++         *  installation configuration.
++         *
++         *      <prefix>"<libexedir>/<postfix>" ....
++         */
++        const char *exthelperdir = mc_LIBEXECDIR();
++        const int prefix = cursor - shell_string;
++        char *t_shell_string;
++        int postfix = 0;
++
++        cursor += sizeof(EXTHELPERSDIR) - 1;
++        if (*cursor == PATH_SEP) ++cursor;
++        while (cursor[postfix] && ' ' != cursor[postfix]) {
++            ++postfix;
++        }
++                                                /* rebuild path specification */
++        t_shell_string = g_strdup_printf ("%.*s\"%s%c%.*s\"%s",
++                prefix, shell_string, exthelperdir, PATH_SEP, postfix, cursor, cursor + postfix);
++
++        fputs (t_shell_string, cmd_file);
++        g_free (t_shell_string);
++    }
++#else
+     fputs (shell_string, cmd_file);
++#endif
+     g_free (shell_string);
+ 
+     /*
+      * Make the script remove itself when it finishes.
+      * Don't do it for the viewer - it may need to rerun the script,
+-     * so we clean up after calling view().
++     * so we clean up after calling view(), nor WIN32 as self-deletion is not possible.
+      */
++#if !defined(WIN32) // APY, command
+     if (!run_view)
+     {
+         char *file_name;
+@@ -449,6 +486,7 @@ exec_extension (const vfs_path_t * filename_vpath, const char *lc_data, int star
+         fprintf (cmd_file, "\n/bin/rm -f %s\n", file_name);
+         g_free (file_name);
+     }
++#endif
+ 
+     fclose (cmd_file);
+ 
+@@ -483,6 +521,9 @@ exec_extension (const vfs_path_t * filename_vpath, const char *lc_data, int star
+                                        LINES - mc_global.keybar_visible -
+                                        output_lines - 1, LINES - mc_global.keybar_visible - 1);
+         }
++#if defined(WIN32) // APY, command
++        mc_unlink (temp_file_name_vpath);
++#endif
+     }
+ 
+     g_free (cmd);
+@@ -546,14 +587,39 @@ get_popen_information (const char *cmd_file, const char *args, char *buf, int bu
+ static int
+ get_file_type_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
+ {
++#if defined(HAVE_LIBMAGIC) //WIN32/APY, libmagic
++    static struct magic_set *ms;                /* oneshot */
++    const char *m;
+     char *tmp;
++
++    if (NULL == ms) {
++        if (NULL == (ms = magic_open(MAGIC_NONE)) ||
++                magic_load(ms, mc_MAGICPATH()) == -1) {
++            message (1, MSG_ERROR,
++                _(" Cannot load magic db \"%s\"\n %s "),
++                mc_MAGICPATH(), (ms ? magic_error(ms) : _("cannot initialise")) );
++        }
++    }
++    buf[0] = 0;
++    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), 0);
++    if (ms != NULL && (m = magic_file(ms, tmp)) != NULL) {
++        strncat(buf, m, buflen);
++    } else {
++        strncat(buf, "unknown", buflen);
++    }
++    g_free (tmp);
++    return 1;
++
++#else
+     int ret;
++    char *tmp;
+ 
+     tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), 0);
+     ret = get_popen_information (FILE_CMD, tmp, buf, buflen);
+     g_free (tmp);
+ 
+     return ret;
++#endif
+ }
+ 
+ /* --------------------------------------------------------------------------------------------- */
+@@ -906,7 +972,11 @@ regex_command (const vfs_path_t * filename_vpath, const char *action)
+             }
+             else if (strncmp (p, "shell/", 6) == 0)
+             {
++#if defined(__WATCOMC__) //APY, calling
++                int (__watcall * cmp_func) (const char *s1, const char *s2, size_t n) = strncmp;
++#else
+                 int (*cmp_func) (const char *s1, const char *s2, size_t n) = strncmp;
++#endif
+ 
+                 p += 6;
+                 case_insense = (strncmp (p, "i/", 2) == 0);
+diff --git a/src/filemanager/file.c b/src/filemanager/file.c
+index 7647a7c..e47c395 100644
+--- a/src/filemanager/file.c
++++ b/src/filemanager/file.c
+@@ -477,7 +477,7 @@ static FileProgressStatus
+ progress_update_one (FileOpTotalContext * tctx, FileOpContext * ctx, off_t add)
+ {
+     struct timeval tv_current;
+-    static struct timeval tv_start = { };
++    static struct timeval tv_start = {0}; //WIN32/APY, zero init list
+ 
+     tctx->progress_count++;
+     tctx->progress_bytes += (uintmax_t) add;
+diff --git a/src/filemanager/filegui.c b/src/filemanager/filegui.c
+index eb7374d..e3656f1 100644
+--- a/src/filemanager/filegui.c
++++ b/src/filemanager/filegui.c
+@@ -243,7 +243,8 @@ filegui__check_attrs_on_fs (const char *fs_path)
+     if (!setup_copymove_persistent_attr)
+         return FALSE;
+ 
+-    if (statfs (fs_path, &stfs) != 0)
++//APY, FIX was statfs()
++    if (statvfs (fs_path, &stfs) != 0)
+         return TRUE;
+ 
+ #ifdef __linux__
+@@ -1013,6 +1014,17 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
+     char *def_text_secure;
+     int val;
+ 
++#ifdef ENABLE_BACKGROUND
++#define FMD_WIDGETS 13
++#define OFFSET 0
++#else
++#define FMD_WIDGETS 12
++#define OFFSET 1
++#endif
++
++#if defined(WIN32) //APY, QUICK
++    QuickWidget fmd_widgets[FMD_WIDGETS], *quick_cursor = fmd_widgets;
++#else
+     QuickWidget fmd_widgets[] = {
+         /* 0 */ QUICK_BUTTON (42, 64, 10, FMDY, N_("&Cancel"), B_CANCEL, NULL),
+ #ifdef ENABLE_BACKGROUND
+@@ -1045,6 +1057,25 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
+         QUICK_LABEL (3, FMDX, 2, FMDY, fmd_buf),
+         QUICK_END
+     };
++#endif
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /*  0 */ QUICK_PUSH_BUTTON (quick_cursor, 42, 64, 10, FMDY, N_("&Cancel"), B_CANCEL, NULL);
++#ifdef ENABLE_BACKGROUND
++    quick_cursor = /*  1 */ QUICK_PUSH_BUTTON (quick_cursor, 25, 64, 10, FMDY, N_("&Background"), B_USER, NULL);
++#endif
++    quick_cursor = /*  2 */ QUICK_PUSH_BUTTON (quick_cursor, 14, FMDX, 10, FMDY, N_("&OK"), B_ENTER, NULL);
++    quick_cursor = /*  3 */ QUICK_PUSH_CHECKBOX (quick_cursor, 42, FMDX, 8, FMDY, N_("&Stable Symlinks"), &ctx->stable_symlinks);
++    quick_cursor = /*  4 */ QUICK_PUSH_CHECKBOX (quick_cursor, 31, FMDX, 7, FMDY, N_("Di&ve into subdir if exists"), &ctx->dive_into_subdirs);
++    quick_cursor = /*  5 */ QUICK_PUSH_CHECKBOX (quick_cursor, 3, FMDX, 8, FMDY, N_("Preserve &attributes"), &ctx->op_preserve);
++    quick_cursor = /*  6 */ QUICK_PUSH_CHECKBOX (quick_cursor, 3, FMDX, 7, FMDY, N_("Follow &links"), &ctx->follow_links);
++    quick_cursor = /*  7 */ QUICK_PUSH_INPUT (quick_cursor, 3, FMDX, 6, FMDY, "", 58, 0, "input2", &dest_dir);
++    quick_cursor = /*  8 */ QUICK_PUSH_LABEL (quick_cursor, 3, FMDX, 5, FMDY, N_("to:"));
++    quick_cursor = /*  9 */ QUICK_PUSH_CHECKBOX (quick_cursor, 37, FMDX, 4, FMDY, N_("&Using shell patterns"), &source_easy_patterns);
++    quick_cursor = /* 10 */ QUICK_PUSH_INPUT (quick_cursor, 3, FMDX, 3, FMDY, easy_patterns ? "*" : "^(.*)$", 58, 0, "input-def", &source_mask);
++    quick_cursor = /* 11 */ QUICK_PUSH_LABEL (quick_cursor, 3, FMDX, 2, FMDY, fmd_buf);
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == fmd_widgets + G_N_ELEMENTS(fmd_widgets));
++#endif
+ 
+     g_return_val_if_fail (ctx != NULL, NULL);
+ 
+diff --git a/src/filemanager/filenot.c b/src/filemanager/filenot.c
+index 721ab21..8f9535d 100644
+--- a/src/filemanager/filenot.c
++++ b/src/filemanager/filenot.c
+@@ -65,7 +65,8 @@ get_absolute_name (const vfs_path_t * vpath)
+     if (*(vfs_path_get_by_index (vpath, 0)->path) == PATH_SEP)
+         return vfs_path_clone (vpath);
+ 
+-    return vfs_path_append_vpath_new (vfs_get_raw_current_dir (), vpath);
++//APY, bugfix. missing NULL
++    return vfs_path_append_vpath_new (vfs_get_raw_current_dir (), vpath, NULL);
+ }
+ 
+ /* --------------------------------------------------------------------------------------------- */
+diff --git a/src/filemanager/hotlist.c b/src/filemanager/hotlist.c
+index 1b78d4e..68d0218 100644
+--- a/src/filemanager/hotlist.c
++++ b/src/filemanager/hotlist.c
+@@ -1025,6 +1025,9 @@ add_new_entry_input (const char *header, const char *text1, const char *text2,
+ #define RELATIVE_Y_LABEL_PTH 3
+ #define RELATIVE_Y_INPUT_PTH 4
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[8], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         /* 0 */ QUICK_BUTTON (55, 80, RELATIVE_Y_BUTTONS, 0, N_("&Cancel"), B_CANCEL, NULL),
+         /* 1 */ QUICK_BUTTON (30, 80, RELATIVE_Y_BUTTONS, 0, N_("&Insert"), B_INSERT, NULL),
+@@ -1035,6 +1038,7 @@ add_new_entry_input (const char *header, const char *text1, const char *text2,
+         /* 6 */ QUICK_LABEL (4, 80, 2, 0, text1),
+         QUICK_END
+     };
++#endif
+ 
+     int len;
+     int i;
+@@ -1045,6 +1049,18 @@ add_new_entry_input (const char *header, const char *text1, const char *text2,
+     static gboolean i18n_flag = FALSE;
+ #endif /* ENABLE_NLS */
+ 
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /* 0 */ QUICK_PUSH_BUTTON (quick_cursor, 55, 80, RELATIVE_Y_BUTTONS, 0, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = /* 1 */ QUICK_PUSH_BUTTON (quick_cursor, 30, 80, RELATIVE_Y_BUTTONS, 0, N_("&Insert"), B_INSERT, NULL);
++    quick_cursor = /* 2 */ QUICK_PUSH_BUTTON (quick_cursor, 10, 80, RELATIVE_Y_BUTTONS, 0, N_("&Append"), B_APPEND, NULL);
++    quick_cursor = /* 3 */ QUICK_PUSH_INPUT (quick_cursor, 4, 80, RELATIVE_Y_INPUT_PTH, 0, *r2, 58, 2, "input-pth", r2);
++    quick_cursor = /* 4 */ QUICK_PUSH_LABEL (quick_cursor, 4, 80, 3, 0, text2);
++    quick_cursor = /* 5 */ QUICK_PUSH_INPUT (quick_cursor, 4, 80, 3, 0, *r1, 58, 0, "input-lbl", r1);
++    quick_cursor = /* 6 */ QUICK_PUSH_LABEL (quick_cursor, 4, 80, 2, 0, text1);
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
++
+     len = str_term_width1 (header);
+     str_msg_term_size (text1, &lines1, &cols1);
+     str_msg_term_size (text2, &lines2, &cols2);
+@@ -1121,6 +1137,9 @@ add_new_entry_cmd (void)
+ static int
+ add_new_group_input (const char *header, const char *label, char **result)
+ {
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[6], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         /* 0 */ QUICK_BUTTON (55, 80, 1, 0, N_("&Cancel"), B_CANCEL, NULL),
+         /* 1 */ QUICK_BUTTON (30, 80, 1, 0, N_("&Insert"), B_INSERT, NULL),
+@@ -1129,6 +1148,7 @@ add_new_group_input (const char *header, const char *label, char **result)
+         /* 4 */ QUICK_LABEL (4, 80, 2, 0, label),
+         QUICK_END
+     };
++#endif
+ 
+     int len;
+     int i;
+@@ -1139,6 +1159,16 @@ add_new_group_input (const char *header, const char *label, char **result)
+     static gboolean i18n_flag = FALSE;
+ #endif /* ENABLE_NLS */
+ 
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /* 0 */ QUICK_PUSH_BUTTON (quick_cursor, 55, 80, 1, 0, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = /* 1 */ QUICK_PUSH_BUTTON (quick_cursor, 30, 80, 1, 0, N_("&Insert"), B_INSERT, NULL);
++    quick_cursor = /* 2 */ QUICK_PUSH_BUTTON (quick_cursor, 10, 80, 1, 0, N_("&Append"), B_APPEND, NULL);
++    quick_cursor = /* 3 */ QUICK_PUSH_INPUT (quick_cursor, 4, 80, 0, 0, "", 58, 0, "input", result);
++    quick_cursor = /* 4 */ QUICK_PUSH_LABEL (quick_cursor, 4, 80, 2, 0, label);
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
++
+     len = str_term_width1 (header);
+     str_msg_term_size (label, &lines, &cols);
+     len = max (max (len, cols) + 4, 64);
+diff --git a/src/filemanager/listmode.c b/src/filemanager/listmode.c
+index ded78c7..90ebb89 100644
+--- a/src/filemanager/listmode.c
++++ b/src/filemanager/listmode.c
+@@ -75,7 +75,9 @@ struct listmode_button
+ {
+     int ret_cmd, flags, y, x;
+     char *text;
+-    bcback callback;
++//WIN32/APY, missing declaration
++    dlg_cb_fn callback;
++//  bcback callback;
+ };
+ 
+ struct listmode_label
+diff --git a/src/filemanager/midnight.c b/src/filemanager/midnight.c
+index 0432564..d668a40 100644
+--- a/src/filemanager/midnight.c
++++ b/src/filemanager/midnight.c
+@@ -84,6 +84,14 @@
+ #include "src/diffviewer/ydiff.h"
+ #endif
+ 
++#ifdef LISTMODE_EDITOR //APY, missing prototypes
++#include "src/filemanager/listmode.h"
++#endif
++
++#if defined(WIN32) //APY, drive
++#include "drive.h"
++#endif
++
+ #include "src/consaver/cons.saver.h"    /* show_console_contents */
+ 
+ #include "midnight.h"
+@@ -1021,7 +1029,7 @@ mc_maybe_editor_or_viewer (void)
+ 
+ /* --------------------------------------------------------------------------------------------- */
+ 
+-static gboolean
++/*WIN32, static*/ gboolean
+ quit_cmd_internal (int quiet)
+ {
+     int q = quit;
+@@ -1389,6 +1397,19 @@ midnight_execute_cmd (Widget * sender, unsigned long command)
+     case CK_Cancel:
+         /* don't close panels due to SIGINT */
+         break;
++
++#if defined(WIN32) //APY, drive
++    case CK_DriveChangeA:
++        drive_cmd_a();
++        break;
++    case CK_DriveChangeB:
++        drive_cmd_b();
++        break;
++    case CK_DriveChange:
++        drive_cmd();
++        break;
++#endif
++
+     default:
+         res = MSG_NOT_HANDLED;
+     }
+diff --git a/src/filemanager/option.c b/src/filemanager/option.c
+index 28240d3..2e79650 100644
+--- a/src/filemanager/option.c
++++ b/src/filemanager/option.c
+@@ -120,6 +120,10 @@ configure_box (void)
+ 
+     int pause_options_num = G_N_ELEMENTS (pause_options);
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[26],
++            *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         /* buttons */
+         QUICK_BUTTON (38, dlg_width, dlg_height - 3, dlg_height, N_("&Cancel"), B_CANCEL, NULL),
+@@ -171,6 +175,7 @@ configure_box (void)
+                         N_("File operation options")),
+         QUICK_END
+     };
++#endif
+ 
+     const size_t qw_num = G_N_ELEMENTS (quick_widgets) - 1;
+ 
+@@ -183,6 +188,43 @@ configure_box (void)
+     int b0_len, b1_len;
+     int b_len, c_len, g_len, l_len;
+     size_t i;
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 38, dlg_width, dlg_height - 3, dlg_height, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 14, dlg_width, dlg_height - 3, dlg_height, N_("&OK"), B_ENTER, NULL);
++
++    /* other options */
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 12, dlg_height, N_("A&uto save setup"), &auto_save_setup);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 11, dlg_height, N_("Sa&fe delete"), &safe_delete);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 10, dlg_height, N_("Cd follows lin&ks"), &mc_global.vfs.cd_symlinks);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 9, dlg_height, N_("Rotating d&ash"), &nice_rotating_dash);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 8, dlg_height, N_("Co&mplete: show all"), &mc_global.widget.show_all_if_ambiguous);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 7, dlg_height, N_("Shell &patterns"), &easy_patterns);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 6, dlg_height, N_("&Drop down menus"), &drop_menus);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 5, dlg_height, N_("Auto m&enus"), &auto_menu);   
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 4, dlg_height, N_("Use internal vie&w"), &use_internal_view);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 3, dlg_height, N_("Use internal edi&t"), &use_internal_edit);
++    quick_cursor = QUICK_PUSH_GROUPBOX (quick_cursor, dlg_width / 2, dlg_width, 2, dlg_height, dlg_width / 2 - 4, 16, N_("Other options"));
++   
++    /* pause options */
++    quick_cursor = QUICK_PUSH_RADIO (quick_cursor, 5, dlg_width, 14, dlg_height, pause_options_num, pause_options, &pause_after_run);
++    quick_cursor = QUICK_PUSH_GROUPBOX (quick_cursor, 3, dlg_width, 13, dlg_height, dlg_width / 2 - 4, 5, N_("Pause after run"));
++
++    /* Esc key mode */
++    quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 10, dlg_width, 11, dlg_height, (const char *) time_out, 8, 0, MC_HISTORY_ESC_TIMEOUT, &time_out_new);
++    quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 5, dlg_width, 11, dlg_height, N_("Timeout:"));
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 10, dlg_height, N_("S&ingle press"), &old_esc_mode);
++    quick_cursor = QUICK_PUSH_GROUPBOX (quick_cursor, 3, dlg_width, 9, dlg_height, dlg_width / 2 - 4, 4, N_("Esc key mode"));
++
++    /* file operation options */
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 7, dlg_height, N_("Preallocate &space"), &mc_global.vfs.preallocate_space);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 6, dlg_height, N_("Mkdi&r autoname"), &auto_fill_mkdir_name);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 5, dlg_height, N_("Classic pro&gressbar"), &classic_progressbar);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 4, dlg_height, N_("Compute tota&ls"), &file_op_compute_totals);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 3, dlg_height, N_("&Verbose operation"), &verbose);
++    quick_cursor = QUICK_PUSH_GROUPBOX (quick_cursor, 3, dlg_width, 2, dlg_height, dlg_width / 2 - 4, 7, N_("File operation options"));
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
+ 
+ #ifdef ENABLE_NLS
+     for (i = 0; i < qw_num; i++)
+@@ -310,6 +352,9 @@ panel_options_box (void)
+         N_("Use panel sort mo&de")
+     };
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[23], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         /* buttons */
+         QUICK_BUTTON (38, dlg_width, dlg_height - 3, dlg_height, N_("&Cancel"), B_CANCEL, NULL),
+@@ -361,6 +406,7 @@ panel_options_box (void)
+                         N_("Main options")),
+         QUICK_END
+     };
++#endif
+ 
+     const size_t qw_num = G_N_ELEMENTS (quick_widgets) - 1;
+ 
+@@ -374,6 +420,37 @@ panel_options_box (void)
+     int b_len, c_len, g_len;
+     size_t i;
+ 
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = /*  0 */ QUICK_PUSH_BUTTON (quick_cursor, 38, dlg_width, dlg_height - 3, dlg_height, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = /*  1 */ QUICK_PUSH_BUTTON (quick_cursor, 14, dlg_width, dlg_height - 3, dlg_height, N_("&OK"), B_ENTER, NULL);
++    /* quick search */
++    quick_cursor = /*  2 */ QUICK_PUSH_RADIO (quick_cursor, dlg_width / 2 + 2, dlg_width, 12, dlg_height, QSEARCH_NUM, qsearch_options, (int *) &panels_options.qsearch_mode);
++    quick_cursor = /*  3 */ QUICK_PUSH_GROUPBOX (quick_cursor, dlg_width / 2, dlg_width, 11, dlg_height, dlg_width / 2 - 4, QSEARCH_NUM + 2, N_("Quick search"));
++    /* file highlighting */
++    quick_cursor = /*  4 */ QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 9, dlg_height, N_("&Permissions"), &panels_options.permission_mode);
++    quick_cursor = /*  5 */ QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 8, dlg_height, N_("File &types"), &panels_options.filetype_mode);
++    quick_cursor = /*  6 */ QUICK_PUSH_GROUPBOX (quick_cursor, dlg_width / 2, dlg_width, 7, dlg_height, dlg_width / 2 - 4, 4, N_("File highlight"));
++    /* navigation */
++    quick_cursor = /*  7 */ QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 5, dlg_height, N_("&Mouse page scrolling"), &panels_options.mouse_move_pages);
++    quick_cursor = /*  8 */ QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 4, dlg_height, N_("Pa&ge scrolling"), &panels_options.scroll_pages);
++    quick_cursor = /*  9 */ QUICK_PUSH_CHECKBOX (quick_cursor, dlg_width / 2 + 2, dlg_width, 3, dlg_height, N_("L&ynx-like motion"), &panels_options.navigate_with_arrows);
++    quick_cursor = /* 10 */ QUICK_PUSH_GROUPBOX (quick_cursor, dlg_width / 2, dlg_width, 2, dlg_height, dlg_width / 2 - 4, 5, N_("Navigation"));
++    /* main panel options */
++    quick_cursor = /* 11 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 12, dlg_height, N_("A&uto save panels setup"), &panels_options.auto_save_setup);
++    quick_cursor = /* 12 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 11, dlg_height, N_("Simple s&wap"), &simple_swap);
++    quick_cursor = /* 13 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 10, dlg_height, N_("Re&verse files only"), &panels_options.reverse_files_only);
++    quick_cursor = /* 14 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 9, dlg_height, N_("Ma&rk moves down"), &panels_options.mark_moves_down);
++    quick_cursor = /* 15 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 8, dlg_height, N_("&Fast dir reload"), &panels_options.fast_reload);
++    quick_cursor = /* 16 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 7, dlg_height, N_("Show &hidden files"), &panels_options.show_dot_files);
++    quick_cursor = /* 17 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 6, dlg_height, N_("Show &backup files"), &panels_options.show_backups);
++    quick_cursor = /* 18 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 5, dlg_height, N_("Mi&x all files"), &panels_options.mix_all_files);
++    quick_cursor = /* 19 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 4, dlg_height, N_("Use SI si&ze units"), &panels_options.kilobyte_si);
++    quick_cursor = /* 20 */ QUICK_PUSH_CHECKBOX (quick_cursor, 5, dlg_width, 3, dlg_height, N_("Show mi&ni-status"), &panels_options.show_mini_info);
++    quick_cursor = /* 21 */ QUICK_PUSH_GROUPBOX (quick_cursor, 3, dlg_width, 2, dlg_height, dlg_width / 2 - 4, 14, N_("Main options"));
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
++
+ #ifdef ENABLE_NLS
+     for (i = 0; i < qw_num; i++)
+         switch (i)
+diff --git a/src/filemanager/panel.c b/src/filemanager/panel.c
+index f7c5bc4..f5ca18d 100644
+--- a/src/filemanager/panel.c
++++ b/src/filemanager/panel.c
+@@ -1532,7 +1532,11 @@ panel_get_title_without_hotkey (const char *title)
+ 
+     hkey = strchr (translated_title, '&');
+     if ((hkey != NULL) && (hkey[1] != '\0'))
++#if defined(WIN32) //APY, void pointer usage
++        memmove ((void *) hkey, (char *) hkey + 1, strlen (hkey));
++#else
+         memmove ((void *) hkey, (void *) hkey + 1, strlen (hkey));
++#endif
+ 
+     return translated_title;
+ }
+@@ -2612,7 +2616,11 @@ do_enter_on_file_entry (file_entry * fe)
+ 
+     {
+         char *tmp = name_quote (fe->fname, 0);
++#if defined(WIN32) //APY, path
++        char *cmd = g_strconcat (".", PATH_SEP_STR2, tmp, (char *) NULL);
++#else
+         char *cmd = g_strconcat (".", PATH_SEP_STR, tmp, (char *) NULL);
++#endif
+         g_free (tmp);
+         shell_execute (cmd, 0);
+         g_free (cmd);
+diff --git a/src/keybind-defaults.c b/src/keybind-defaults.c
+index 6fb7920..0185349 100644
+--- a/src/keybind-defaults.c
++++ b/src/keybind-defaults.c
+@@ -130,6 +130,12 @@ static const global_keymap_ini_t default_main_keymap[] = {
+     {"SelectInvert", "kpasterisk"},
+     /* List of screens */
+     {"ScreenList", "alt-prime"},
++#if defined(WIN32) //APY, drive
++    /* Change drive */
++    {"DriveChangeA", "alt-f1"},
++    {"DriveChangeA", "alt-f2"},
++    {"DriveChange", "alt-d"},
++#endif
+     {NULL, NULL}
+ };
+ 
+diff --git a/src/main.c b/src/main.c
+index 7c95fac..faf5e2f 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -190,7 +190,11 @@ OS_Setup (void)
+     else
+         mc_global.sysconfig_dir = g_strdup (SYSCONFDIR);
+ 
++#if defined(MC_DATADIR) //WIN32, namespace
++    mc_global.share_data_dir = g_strdup (MC_DATADIR);
++#else
+     mc_global.share_data_dir = g_strdup (DATADIR);
++#endif
+ 
+     /* Set up temporary directory */
+     mc_tmpdir ();
+@@ -413,6 +417,9 @@ update_xterm_title_path (void)
+ int
+ main (int argc, char *argv[])
+ {
++#if defined(WIN32) //APY, config
++    extern void WIN32_Setup(void);
++#endif
+     GError *error = NULL;
+     int exit_code = EXIT_FAILURE;
+ 
+@@ -423,6 +430,9 @@ main (int argc, char *argv[])
+ 
+     /* do this before args parsing */
+     str_init_strings (NULL);
++#if defined(WIN32) //APY, config
++    WIN32_Setup();
++#endif
+ 
+     if (!mc_args_parse (&argc, &argv, "mc", &error))
+     {
+diff --git a/src/textconf.c b/src/textconf.c
+index 9c25ef3..b01af0d 100644
+--- a/src/textconf.c
++++ b/src/textconf.c
+@@ -197,6 +197,10 @@ show_datadirs_extended (void)
+     PRINTF2 ("fish:", LIBEXECDIR, FISH_PREFIX "/");
+ #endif
+ #endif /* ENABLE_VFS_EXTFS || defiined ENABLE_VFS_FISH */
++#if defined(HAVE_LIBMAGIC) //WIN32/APY, libmagic
++    PRINTF2 ("magic:", mc_MAGICPATH(), "");
++#endif
++
+     (void) puts ("");
+ 
+     PRINTF_GROUP (_("User data"));
+@@ -213,6 +217,27 @@ show_datadirs_extended (void)
+ #ifdef USE_INTERNAL_EDIT
+     PRINTF ("mcedit macros:", mc_config_get_data_path (), MC_MACRO_FILE);
+     PRINTF ("mcedit external macros:", mc_config_get_data_path (), MC_EXTMACRO_FILE ".*");
++#if defined(WIN32) //APY, conf
++    {
++        static const struct {
++            const char *desc, *key;
++        } editpaths[] = {
++            { "syntax:",      EDIT_SYNTAX_FILE  },
++            { "clip:",        EDIT_CLIP_FILE    },
++            { "block:",       EDIT_BLOCK_FILE   },
++            { "temp:",        EDIT_TEMP_FILE    },
++            { "global-menu:", EDIT_GLOBAL_MENU  },
++            { "local-menu:",  EDIT_LOCAL_MENU   },
++            { "home-menu:",   EDIT_HOME_MENU    }
++            };
++
++        for (int i = 0; i < (sizeof(editpaths)/sizeof(editpaths[i])); ++i) {
++            char *f = mc_config_get_full_path (editpaths[i].key);
++            printf ("\tmcedit %-8s %s\n", editpaths[i].desc, (f ? f : "n/a"));
++            g_free (f);
++        }
++    }
++#endif  //WIN32
+ #endif
+     PRINTF_SECTION2 (_("Cache directory:"), mc_config_get_cache_path ());
+ 
+diff --git a/src/viewer/dialogs.c b/src/viewer/dialogs.c
+index 59ce4ec..9cdb547 100644
+--- a/src/viewer/dialogs.c
++++ b/src/viewer/dialogs.c
+@@ -88,6 +88,15 @@ mcview_dialog_search (mcview_t * view)
+     gchar **list_of_types = mc_search_get_types_strings_array (&num_of_types);
+     int SEARCH_DLG_HEIGHT = SEARCH_DLG_MIN_HEIGHT + num_of_types - SEARCH_DLG_HEIGHT_SUPPLY;
+ 
++#ifdef HAVE_CHARSET
++#define QUICK_WIDGETS 10
++#else
++#define QUICK_WIDGETS 9
++#endif
++
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[QUICK_WIDGETS], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         QUICK_BUTTON (6, 10, SEARCH_DLG_HEIGHT - 3, SEARCH_DLG_HEIGHT, N_("&Cancel"), B_CANCEL,
+                       NULL),
+@@ -110,6 +119,7 @@ mcview_dialog_search (mcview_t * view)
+         QUICK_LABEL (3, SEARCH_DLG_WIDTH, 2, SEARCH_DLG_HEIGHT, N_("Enter search string:")),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog Quick_input = {
+         SEARCH_DLG_WIDTH, SEARCH_DLG_HEIGHT, -1, -1,
+@@ -117,6 +127,22 @@ mcview_dialog_search (mcview_t * view)
+         quick_widgets, NULL, NULL, FALSE
+     };
+ 
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 6, 10, SEARCH_DLG_HEIGHT - 3, SEARCH_DLG_HEIGHT, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 2, 10, SEARCH_DLG_HEIGHT - 3, SEARCH_DLG_HEIGHT, N_("&OK"), B_ENTER, NULL);
++#ifdef HAVE_CHARSET
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, SEARCH_DLG_WIDTH / 2 + 3, SEARCH_DLG_WIDTH, 8, SEARCH_DLG_HEIGHT, N_("&All charsets"), &mcview_search_options.all_codepages);
++#endif
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, SEARCH_DLG_WIDTH / 2 + 3, SEARCH_DLG_WIDTH, 7, SEARCH_DLG_HEIGHT, N_("&Whole words"), &mcview_search_options.whole_words);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, SEARCH_DLG_WIDTH / 2 + 3, SEARCH_DLG_WIDTH, 6, SEARCH_DLG_HEIGHT, N_("&Backwards"), &mcview_search_options.backwards);
++    quick_cursor = QUICK_PUSH_CHECKBOX (quick_cursor, SEARCH_DLG_WIDTH / 2 + 3, SEARCH_DLG_WIDTH, 5, SEARCH_DLG_HEIGHT, N_("Cas&e sensitive"), &mcview_search_options.case_sens);
++    quick_cursor = QUICK_PUSH_RADIO (quick_cursor, 3, SEARCH_DLG_WIDTH, 5, SEARCH_DLG_HEIGHT, num_of_types, (const char **) list_of_types, (int *) &mcview_search_options.type);
++    quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 3, SEARCH_DLG_WIDTH, 3, SEARCH_DLG_HEIGHT, INPUT_LAST_TEXT, SEARCH_DLG_WIDTH - 6, 0, MC_HISTORY_SHARED_SEARCH, &exp);
++    quick_cursor = QUICK_PUSH_LABEL (quick_cursor, 3, SEARCH_DLG_WIDTH, 2, SEARCH_DLG_HEIGHT, N_("Enter search string:"));
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
++
+     qd_result = quick_dialog (&Quick_input);
+     g_strfreev (list_of_types);
+ 
+@@ -190,6 +216,9 @@ mcview_dialog_goto (mcview_t * view, off_t * offset)
+     int qd_result;
+     gboolean res = FALSE;
+ 
++#if defined(WIN32) //APY, QUICK
++    QuickWidget quick_widgets[5], *quick_cursor = quick_widgets;
++#else
+     QuickWidget quick_widgets[] = {
+         QUICK_BUTTON (6, 10, goto_dlg_height - 3, goto_dlg_height, N_("&Cancel"), B_CANCEL, NULL),
+         QUICK_BUTTON (2, 10, goto_dlg_height - 3, goto_dlg_height, N_("&OK"), B_ENTER, NULL),
+@@ -199,6 +228,7 @@ mcview_dialog_goto (mcview_t * view, off_t * offset)
+                      INPUT_LAST_TEXT, goto_dlg_width - 6, 0, MC_HISTORY_VIEW_GOTO, &exp),
+         QUICK_END
+     };
++#endif
+ 
+     QuickDialog Quick_input = {
+         goto_dlg_width, goto_dlg_height, -1, -1,
+@@ -206,6 +236,15 @@ mcview_dialog_goto (mcview_t * view, off_t * offset)
+         quick_widgets, NULL, NULL, FALSE
+     };
+ 
++#if defined(WIN32) //APY, QUICK
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 6, 10, goto_dlg_height - 3, goto_dlg_height, N_("&Cancel"), B_CANCEL, NULL);
++    quick_cursor = QUICK_PUSH_BUTTON (quick_cursor, 2, 10, goto_dlg_height - 3, goto_dlg_height, N_("&OK"), B_ENTER, NULL);
++    quick_cursor = QUICK_PUSH_RADIO (quick_cursor, 3, goto_dlg_width, 4, goto_dlg_height, num_of_types, (const char **) mc_view_goto_str, (int *) &current_goto_type);
++    quick_cursor = QUICK_PUSH_INPUT (quick_cursor, 3, goto_dlg_width, 2, goto_dlg_height, INPUT_LAST_TEXT, goto_dlg_width - 6, 0, MC_HISTORY_VIEW_GOTO, &exp);
++    quick_cursor = QUICK_PUSH_END (quick_cursor);
++    g_assert(quick_cursor == quick_widgets + G_N_ELEMENTS(quick_widgets));
++#endif
++
+ #ifdef ENABLE_NLS
+     for (i = 0; i < num_of_types; i++)
+         mc_view_goto_str[i] = _(mc_view_goto_str[i]);
+diff --git a/src/viewer/growbuf.c b/src/viewer/growbuf.c
+index 64ccc9f..aa54db3 100644
+--- a/src/viewer/growbuf.c
++++ b/src/viewer/growbuf.c
+@@ -137,8 +137,9 @@ mcview_growbuf_read_until (mcview_t * view, off_t ofs)
+             g_ptr_array_add (view->growbuf_blockptr, newblock);
+             view->growbuf_lastindex = 0;
+         }
+-        p = g_ptr_array_index (view->growbuf_blockptr,
+-                               view->growbuf_blockptr->len - 1) + view->growbuf_lastindex;
++//WIN32/APY, void ptr
++        p = ((byte *)g_ptr_array_index (view->growbuf_blockptr,
++                               view->growbuf_blockptr->len - 1)) + view->growbuf_lastindex;
+ 
+         bytesfree = VIEW_PAGE_SIZE - view->growbuf_lastindex;
+ 
+@@ -205,14 +206,14 @@ mcview_get_byte_growing_buffer (mcview_t * view, off_t byte_index, int *retval)
+     if (pageno < (off_t) view->growbuf_blockptr->len - 1)
+     {
+         if (retval != NULL)
+-            *retval = *((byte *) (g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex));
++            *retval = *((byte *) (((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno)) + pageindex));
+         return TRUE;
+     }
+     if (pageno == (off_t) view->growbuf_blockptr->len - 1
+         && pageindex < (off_t) view->growbuf_lastindex)
+     {
+         if (retval != NULL)
+-            *retval = *((byte *) (g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex));
++            *retval = *((byte *) (((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno)) + pageindex));
+         return TRUE;
+     }
+     return FALSE;
+@@ -237,10 +238,10 @@ mcview_get_ptr_growing_buffer (mcview_t * view, off_t byte_index)
+     if (view->growbuf_blockptr->len == 0)
+         return NULL;
+     if (pageno < (off_t) view->growbuf_blockptr->len - 1)
+-        return (char *) (g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex);
++        return (char *) (((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno)) + pageindex);
+     if (pageno == (off_t) view->growbuf_blockptr->len - 1
+         && pageindex < (off_t) view->growbuf_lastindex)
+-        return (char *) (g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex);
++        return (char *) (((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno)) + pageindex);
+     return NULL;
+ }
+ 
+-- 
+1.7.11.msysgit.1
+
