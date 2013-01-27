@@ -15,11 +15,11 @@
 #include <buildinfo.h>
 
 #define PACKAGE             "mc-win32-native"
-#define VERSION             "4.8.4"
+#define VERSION             "4.8.7"
 
 #ifdef  RC_INVOKED                              /* see: mc.rc */
-#define RC_PRODUCTVERSION   4,8,4,0
-#define RC_FILEVERSION      4,8,4,1
+#define RC_PRODUCTVERSION   4,8,7,0
+#define RC_FILEVERSION      4,8,7,1
 #endif
 
 #define MC_CONFIGURE_ARGS   "win32-native"
@@ -40,11 +40,13 @@ const char *                mc_LOCALEDIR(void);
 const char *                mc_MAGICPATH(void);
 const char *                mc_LIBEXECDIR(void);
 char *                      mc_USERCONFIGDIR(const char *subdir);
+const char *                mc_EXTHELPERSDIR(void);
 
 #define SYSCONFDIR          mc_SYSCONFDIR()     /* /etc/mc */
 #define MC_DATADIR          mc_DATADIR()        /* /usr/share/mc */
 #define LOCALEDIR           mc_LOCALEDIR()      /* /usr/share/locale */
 #define LIBEXECDIR          mc_LIBEXECDIR()     /* /lib/mc */
+#define EXTHELPERSDIR       mc_EXTHELPERSDIR()  /* ???, 4.8.7 */
 
 extern FILE *               mc_popen(const char *cmd, const char *mode);
 extern int                  mc_pclose(FILE *file);
@@ -124,6 +126,8 @@ extern int                  mc_pclose(FILE *file);
 #undef  ENABLE_VFS_SFTP
 #undef  ENABLE_VFS_SMB
 #undef  ENABLE_VFS_UNDELFS
+
+#define SIG_ATOMIC_VOLATILE_T int
 
 #endif  /*CONFIG_H_INCLUDED*/
 

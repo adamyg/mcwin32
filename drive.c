@@ -57,8 +57,8 @@
 #include "drive.h"
 
 static void             drive_sel (WPanel *panel);
-static int              drive_dlg_callback (Dlg_head *h, Widget * sender, dlg_msg_t msg, int parm, void *data);
-static void             drive_dlg_refresh (Dlg_head *h);
+static cb_ret_t         drive_dlg_callback (Widget * h, Widget * sender, widget_msg_t msg, int parm, void *data);
+static void             drive_dlg_refresh (Widget * h);
 
 
 void
@@ -100,10 +100,10 @@ drive_cmd_b(void)
 
 static void
 drive_sel(WPanel *panel)
-{   
+{
     char buffer[7], drives[27 * 8] = {0};       /* temporary and drive buffer */
     int x_pos, y_pos, y_height, x_width;
-    struct Dlg_head *drive_dlg;
+    WDialog *drive_dlg;
     int totaldrives, d;
     const char *path;
     GQueue *buttons;
@@ -193,7 +193,7 @@ drive_sel(WPanel *panel)
                 w32_getcwd(t_cwd, sizeof(t_cwd));
                 if (toupper(*t_cwd) != *path) {
                     char t_path[MAX_PATH];
-                    
+
                     if (! w32_getcwdd(*path, t_path, sizeof(t_path))) {
                         t_path[0] = *path;
                         t_path[1] = ':';
@@ -227,30 +227,32 @@ drive_sel(WPanel *panel)
 }
 
 
-static int
-drive_dlg_callback (Dlg_head *h, Widget * sender, dlg_msg_t msg, int parm, void *data)
+static cb_ret_t
+drive_dlg_callback (Widget * h, Widget * sender, widget_msg_t msg, int parm, void *data)
 {
+    WDialog *d = DIALOG (h);
+
     switch (msg) {
-    case DLG_DRAW:
+    case MSG_DRAW:
         drive_dlg_refresh (h);
         return MSG_HANDLED;
 
-    case DLG_KEY:
+    case MSG_KEY:
         switch (parm) {
         case KEY_LEFT:
         case KEY_UP:
-            dlg_one_down (h);                   /* prev drive button */
+            dlg_one_down (d);                   /* prev drive button */
             return MSG_HANDLED;
 
         case KEY_RIGHT:
         case KEY_DOWN:
-            dlg_one_up (h);                     /* next drive button */
+            dlg_one_up (d);                     /* next drive button */
             return MSG_HANDLED;
         }
         return MSG_NOT_HANDLED;
 
     default:
-        return default_dlg_callback (h, sender, msg, parm, data);
+        return widget_default_callback (h, sender, msg, parm, data);
     }
     /*NOTREACHED*/
     return 0;
@@ -258,15 +260,16 @@ drive_dlg_callback (Dlg_head *h, Widget * sender, dlg_msg_t msg, int parm, void 
 
 
 static void
-drive_dlg_refresh (Dlg_head *h)
+drive_dlg_refresh (Widget *h)
 {
-    common_dialog_repaint (h);
+    WDialog *d = DIALOG (h);
 
+    dlg_default_repaint (d);
     tty_setcolor (dialog_colors[0]);
-    dlg_erase (h);
-    draw_box (h, 1, 1, h->lines - 2, h->cols - 2, FALSE);
+    dlg_erase (d);
+    draw_box (d, 1, 1, h->lines - 2, h->cols - 2, FALSE);
     tty_setcolor (dialog_colors[2]);
-    dlg_move (h, 1, h->cols/2 - 7);             /* center title */
+    widget_move (h, 1, h->cols/2 - 7);          /* center title */
     tty_print_string (" Change Drive ");
 }
 

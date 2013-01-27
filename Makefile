@@ -1,6 +1,6 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
 # $Id:$
-# Midnight command WIN32 builds 4.8.4, as at 23/08/12
+# Midnight command WIN32 builds 4.8.7, as at 27/01/13
 #
 #
 #
@@ -13,7 +13,7 @@ include		Makefile.common
 
 PERL=		perl
 BUSYBOX=	$(shell which busybox)
-MCSOURCE=	../mc-current
+MCSOURCE=	../mc
 GTKINSTALL=	../gtk
 
 CINCLUDE=	$(ISWITCH).\
@@ -29,7 +29,6 @@ endif
 CEXTRA=		-DHAVE_CONFIG_H
 CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA)
 LDLIBS=		$(GTKINSTALL)/lib/glib-2.0.lib $(GTKINSTALL)/lib/intl.lib $(XLDLIBS)
-##LDLIBS=		$(GTKINSTALL)/lib/glib-2.0.lib $(XLDLIBS)
 LDFLAGS=	$(LDOPT) $(LDEBUG) $(LDLIBS)
 
 ifndef MSVC
@@ -62,9 +61,9 @@ MC_SRC=	\
 	$(D_OBJ)/main$(O)			\
 	$(D_OBJ)/selcodepage$(O)		\
 	$(D_OBJ)/setup$(O)			\
-	$(D_OBJ)/subshell$(O)			\
 	$(D_OBJ)/textconf$(O)			\
 	$(D_OBJ)/util$(O)
+#	$(D_OBJ)/subshell$(O)			\
 #	$(D_OBJ)/background$(O)
 
 D_OBJFM=	$(D_OBJ)/filemanager
@@ -89,7 +88,6 @@ MC_FILEMANAGER=\
 	$(D_OBJFM)/listmode$(O)			\
 	$(D_OBJFM)/midnight$(O)			\
 	$(D_OBJFM)/mountlist$(O)		\
-	$(D_OBJFM)/option$(O)			\
 	$(D_OBJFM)/panel$(O)			\
 	$(D_OBJFM)/panelize$(O)			\
 	$(D_OBJFM)/tree$(O)			\
@@ -112,10 +110,10 @@ MC_EDITOR=\
 	$(D_OBJED)/editoptions$(O)		\
 	$(D_OBJED)/editwidget$(O)		\
 	$(D_OBJED)/etags$(O)			\
+	$(D_OBJED)/spell$(O)			\
 	$(D_OBJED)/spell_dialogs$(O)		\
 	$(D_OBJED)/syntax$(O)			\
 	$(D_OBJED)/wordproc$(O)
-#	$(D_OBJED)/spell$(O)
 
 D_OBJVW=	$(D_OBJ)/viewer
 

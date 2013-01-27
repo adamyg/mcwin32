@@ -9,7 +9,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{CBB4464D-7081-4F1D-9F6D-F5288A4A9B82}
 AppName=GNU Midnight Commander
-AppVersion=4.8.4 (beta) (build: {#BUILD_DATE}-{#BUILD_NUMBER})
+AppVersion=4.8.7 (beta) (build: {#BUILD_DATE}-{#BUILD_NUMBER})
 ;   AppVerName= ...
 AppPublisher=The Free Software Foundation, Inc.
 AppPublisherURL=https://www.midnight-commander.org/
@@ -24,14 +24,15 @@ OutputDir=.
 OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
 Compression=lzma
 SolidCompression=yes
+ChangesEnvironment=true
 
 UninstallDisplayIcon={app}\mc.exe
-
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
+Name: modifypath; Description: Add application directory to your environmental path; Flags: unchecked
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
@@ -55,3 +56,14 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\GNU Midnight Comma
 
 [Run]
 Filename: "{app}\mc.exe"; Description: "{cm:LaunchProgram,GNU Midnight Commander}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+const
+    ModPathName = 'modifypath';
+    ModPathType = 'user';
+function ModPathDir(): TArrayOfString;
+begin
+    setArrayLength(Result, 1)
+    Result[0] := ExpandConstant('{app}');
+end;
+#include "modpath.iss"

@@ -596,6 +596,31 @@ mc_LIBEXECDIR(void)
 
 
 /**
+ *  Retrieve global/share plugin configuration path, equivalent to '/lib/mc'.
+ *
+ *      <EXEPATH>
+ *          <exepath>\etc\
+ *
+ *      <INSTALLPATH>
+ *          X:\Program Files\<Midnight Commander>\etc
+ *
+ *              SHGetFolderPath(CSIDL_PROGRAM_FILES)
+ *              or getenv(ProgramFiles)
+ *
+ *      <APPDATA>
+ *          X:\Documents and Settings\All Users\Application Data\<Midnight Commander>\etc\
+ *
+ *              SHGetFolderPath(CSIDL_COMMON_APPDATA)
+ *              or getenv(ALLUSERSPROFILE)
+ */
+const char *
+mc_EXTHELPERSDIR(void)
+{   
+    return mc_LIBEXECDIR();                     // one and the same ....
+}
+
+
+/**
  *  Retrieve the user specific configuration path.
  *
  *      <SYSCONFDIR>

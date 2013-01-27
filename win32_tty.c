@@ -91,6 +91,19 @@ tty_shutdown(void)
 
 
 void
+tty_change_screen_size (void)
+{
+    SLsmg_reinit_smg ();
+
+#ifdef ENABLE_SUBSHELL
+    if (mc_global.tty.use_subshell) {
+        tty_resize (mc_global.tty.subshell_pty);
+    }
+#endif
+}
+
+
+void
 tty_reset_prog_mode(void)
 {
     SLsmg_reinit_smg();

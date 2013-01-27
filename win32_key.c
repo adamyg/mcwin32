@@ -757,19 +757,20 @@ got_interrupt (void)
  *      EV_NONE if non-blocking or interrupt set and nothing was done
  */
 static void
-tty_check_winch(void)
+check_winch(void)
 {
-    CONSOLE_SCREEN_BUFFER_INFO sbinfo;
-    HANDLE hConsole;
-    int rows, cols;
+    if (0 == mc_global.tty.winch_flag) {
+        CONSOLE_SCREEN_BUFFER_INFO sbinfo = {0};
+        HANDLE hConsole;
+        int rows, cols;
 
-    win32APICALL_HANDLE(hConsole, GetStdHandle(STD_OUTPUT_HANDLE));
-    win32APICALL(GetConsoleScreenBufferInfo(hConsole, &sbinfo));
-    rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
-    cols = 1 + sbinfo.srWindow.Right - sbinfo.srWindow.Left;
-    if (COLS != cols || LINES != rows) {
-        COLS = cols, LINES = rows;
-        mc_global.tty.winch_flag = TRUE;        /* generate signal */
+        win32APICALL_HANDLE(hConsole, GetStdHandle(STD_OUTPUT_HANDLE));
+        win32APICALL(GetConsoleScreenBufferInfo(hConsole, &sbinfo));
+        rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
+        cols = 1 + sbinfo.srWindow.Right - sbinfo.srWindow.Left;
+        if (COLS != cols || LINES != rows) {
+            mc_global.tty.winch_flag = TRUE;    /* generate signal */
+        }
     }
 }
 
@@ -786,8 +787,6 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
 {
     extern gboolean mc_args__nomouse;           /* args.c */
 
-    INPUT_RECORD k;
-    DWORD count, rc;
     static int dirty = 3;
     static int clicks = 0;
     DWORD timeout = 1000;
@@ -814,14 +813,17 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
         return EV_NONE;
     }
 
-    timeout = block ? 1000 : 0;                 /* one second or non-blocking */
+    timeout = (block ? 1000 : 0);               /* one second or non-blocking */
     while (1) {
+        INPUT_RECORD k = {0};
+        DWORD count = 0, rc;
+
         rc = WaitForSingleObject(hConsole, timeout);
 
         if (rc == WAIT_OBJECT_0 &&
-                PeekConsoleInput(hConsole, &k, 1, &count) && count == 1) {
+                PeekConsoleInput(hConsole, &k, 1, &count) && 1 == count) {
 
-            tty_check_winch();
+            check_winch();
 
             switch (k.EventType) {
             case KEY_EVENT:
@@ -881,6 +883,14 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
                     }
                 }
                 break;
+
+            case WINDOW_BUFFER_SIZE_EVENT:
+                (void)ReadConsoleInput(hConsole, &k, 1, &count);
+                mc_global.tty.winch_flag = TRUE;
+                break;
+
+            case FOCUS_EVENT:
+                /*FALLTHRU*/
 
             default:
                 (void)ReadConsoleInput(hConsole, &k, 1, &count);
@@ -1080,11 +1090,11 @@ get_key_code (int no_delay)
                         return c;
                     }
                 }
-                tty_check_winch();
+                check_winch();
                 break;
 
             default:
-                tty_check_winch();
+                check_winch();
                 break;
             }
         }
