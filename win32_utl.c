@@ -104,6 +104,7 @@ static const char *     busybox_cmds[] = {      /* redirected commands (see vfs/
         "xzcat", "zcat"
         };
 static const char       bin_sh[] = "/bin/sh";
+static const char       cmd_sh[] = "cmd.exe";
 
 #define PE_BUFFER_SIZE          4096            /* pipe limit, plus terminator */
 
@@ -211,37 +212,59 @@ set_busybox(void)
 static void
 set_tmpdir(void)
 {
-    char buffer[MAX_PATH] = {0}, sysdir[MAX_PATH] = {0};
-    const char *tmpdir;
-    struct passwd *pwd;
-    struct stat st = {0};
+    if (NULL == getenv("MC_TMPDIR")) {
+        const char *tmpdir = mc_TMPDIR();
 
-    if (NULL != getenv("MC_TMPDIR")) return;
+        if (tmpdir && *tmpdir) {
 
-    tmpdir = getenv("TMP");                     /* determine the temp directory */
-    if (!tmpdir) tmpdir = getenv("TEMP");
-    if (!tmpdir) tmpdir = getenv("TMPDIR");
-    if (!tmpdir) {
-        if (w32_getsysdir (SYSDIR_TEMP, sysdir, sizeof(sysdir)) > 0) {
-            tmpdir = sysdir;
-        }
+            char buffer[MAX_PATH] = {0};
+            struct passwd *pwd;
+            struct stat st = {0};
+
+            pwd = getpwuid (getuid ());             /* check permissions */
+            snprintf (buffer, sizeof (buffer), "%s%cmc-%s", tmpdir, PATH_SEP, pwd->pw_name);
+            buffer[sizeof(buffer) - 1] = 0;
+            canonicalize_pathname (buffer);
+            if (0 == lstat(buffer, &st)) {
+                if (! S_ISDIR(st.st_mode)) {
+                tmpdir = NULL;
+                }
+            } else if (0 != w32_mkdir (buffer, S_IRWXU)) {
+                tmpdir = NULL;
+            }
+
+            if (tmpdir) my_setpathenv("MC_TMPDIR", tmpdir, TRUE);
+        }    
     }
-    if (!tmpdir) tmpdir = getenv("USERPROFILE");
-    if (!tmpdir) tmpdir = TMPDIR_DEFAULT;
+}
 
-    pwd = getpwuid (getuid ());                 /* check permissions */
-    snprintf (buffer, sizeof (buffer), "%s%cmc-%s", tmpdir, PATH_SEP, pwd->pw_name);
-    buffer[sizeof(buffer) - 1] = 0;
-    canonicalize_pathname (buffer);
-    if (0 == lstat(buffer, &st)) {
-        if (! S_ISDIR(st.st_mode)) {
-            tmpdir = NULL;
+
+const char *
+mc_TMPDIR(void)
+{
+    static char x_buffer[MAX_PATH];
+
+    if (0 == x_buffer[0]) {
+        char sysdir[MAX_PATH] = {0};
+        const char *tmpdir;
+
+        tmpdir = getenv("TMP");                     /* determine the temp directory */
+        if (!tmpdir) tmpdir = getenv("TEMP");
+        if (!tmpdir) tmpdir = getenv("TMPDIR");
+        if (!tmpdir) {
+            if (w32_getsysdir (SYSDIR_TEMP, sysdir, sizeof(sysdir)) > 0) {
+                tmpdir = sysdir;
+            }
         }
-    } else if (w32_mkdir (buffer, S_IRWXU) != 0) {
-        tmpdir = NULL;
+        if (!tmpdir) tmpdir = getenv("USERPROFILE");
+        if (!tmpdir) tmpdir = TMPDIR_DEFAULT;
+
+        strncpy(x_buffer, tmpdir, sizeof(x_buffer));
+        x_buffer[sizeof(x_buffer) - 1] = 0;
+        unixpath(x_buffer);
     }
 
-    if (tmpdir) my_setpathenv("MC_TMPDIR", tmpdir, TRUE);
+    return (x_buffer[0] ? x_buffer : NULL);
 }
 
 
@@ -888,7 +911,7 @@ int
 my_system(int flags, const char *shell, const char *cmd)
 {
     const char *busybox = getenv("MC_BUSYBOX");
-    int ret = -1;
+    int shelllen, ret = -1;
 
     if ((flags & EXECUTE_INTERNAL) && cmd)  {
         printf("%s\n", cmd);                    /* echo command */
@@ -961,6 +984,28 @@ my_system(int flags, const char *shell, const char *cmd)
         //
             }
             /*XXX - others? */
+        }
+    }
+
+    /*
+     *  If <cmd.exe> < ...>
+     *  convert any / to \ in first word
+     */
+    shelllen = strlen(shell);
+    if ((shelllen -= (sizeof(cmd_sh)-1)) >= 0 &&
+            0 == _strnicmp(shell + shelllen, cmd_sh, sizeof(cmd_sh)-1)) {
+        char *t_cmd, *cursor;
+
+        if (NULL != (t_cmd = strdup(cmd))) {
+            for (cursor = t_cmd; *cursor && *cursor != ' '; *cursor) {
+                if ('/' == *cursor) *cursor = '\\';
+                ++cursor;
+            }
+            key_shell_mode();
+            ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
+            key_prog_mode();
+            free(t_cmd);
+            return ret;
         }
     }
 

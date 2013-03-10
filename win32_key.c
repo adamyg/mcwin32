@@ -162,76 +162,76 @@ static const struct {
     { VK_F20,           MOD_FUNC,       "F20",          KEY_F(20) }
     };
 
-/*  
+/*
  *  source: lib/tty/key.c
- *  
+ *
  *      This table is a mapping between names and the constants we use
  *      We use this to allow users to define alternate definitions for
  *      certain keys that may be missing from the terminal database.
  */
 const key_code_name_t   key_name_conv_tab[] = {
-    /* 
+    /*
      *  KEY_F(0) is not here, since we are mapping it to f10, so there is no reason
-     *  to define f0 as well. Also, it makes Learn keys a bunch of problems :( 
+     *  to define f0 as well. Also, it makes Learn keys a bunch of problems :(
      */
-    { KEY_F (1),         "f1",          N_("Function key 1"),       "F1"},
-    { KEY_F (2),         "f2",          N_("Function key 2"),       "F2"},
-    { KEY_F (3),         "f3",          N_("Function key 3"),       "F3"},
-    { KEY_F (4),         "f4",          N_("Function key 4"),       "F4"},
-    { KEY_F (5),         "f5",          N_("Function key 5"),       "F5"},
-    { KEY_F (6),         "f6",          N_("Function key 6"),       "F6"},
-    { KEY_F (7),         "f7",          N_("Function key 7"),       "F7"},
-    { KEY_F (8),         "f8",          N_("Function key 8"),       "F8"},
-    { KEY_F (9),         "f9",          N_("Function key 9"),       "F9"},
-    { KEY_F (10),        "f10",         N_("Function key 10"),      "F10"},
-    { KEY_F (11),        "f11",         N_("Function key 11"),      "F11"},
-    { KEY_F (12),        "f12",         N_("Function key 12"),      "F12"},
-    { KEY_F (13),        "f13",         N_("Function key 13"),      "F13"},
-    { KEY_F (14),        "f14",         N_("Function key 14"),      "F14"},
-    { KEY_F (15),        "f15",         N_("Function key 15"),      "F15"},
-    { KEY_F (16),        "f16",         N_("Function key 16"),      "F16"},
-    { KEY_F (17),        "f17",         N_("Function key 17"),      "F17"},
-    { KEY_F (18),        "f18",         N_("Function key 18"),      "F18"},
-    { KEY_F (19),        "f19",         N_("Function key 19"),      "F19"},
-    { KEY_F (20),        "f20",         N_("Function key 20"),      "F20"},
-    { KEY_BACKSPACE,     "backspace",   N_("Backspace key"),        "Backspace"},
-    { KEY_END,           "end",         N_("End key"),              "End"},
-    { KEY_UP,            "up",          N_("Up arrow key"),         "Up"},
-    { KEY_DOWN,          "down",        N_("Down arrow key"),       "Down"},
-    { KEY_LEFT,          "left",        N_("Left arrow key"),       "Left"},
-    { KEY_RIGHT,         "right",       N_("Right arrow key"),      "Right"},
-    { KEY_HOME,          "home",        N_("Home key"),             "Home"},
-    { KEY_NPAGE,         "pgdn",        N_("Page Down key"),        "PgDn"},
-    { KEY_PPAGE,         "pgup",        N_("Page Up key"),          "PgUp"},
-    { KEY_IC,            "insert",      N_("Insert key"),           "Ins"},
-    { KEY_DC,            "delete",      N_("Delete key"),           "Del"},
-    { ALT ('\t'),        "complete",    N_("Completion/M-tab"),     "Meta-Tab"},
-    { KEY_BTAB,          "backtab",     N_("Back Tabulation S-tab"), "Shift-Tab"},
-    { KEY_KP_ADD,        "kpplus",      N_("+ on keypad"),          "+"},
-    { KEY_KP_SUBTRACT,   "kpminus",     N_("- on keypad"),          "-"},
-    { (int) '/',         "kpslash",     N_("Slash on keypad"),      "/"},
-    { KEY_KP_MULTIPLY,   "kpasterisk",  N_("* on keypad"),          "*"},
+    { KEY_F (1),        "f1",           N_("Function key 1"),       "F1"},
+    { KEY_F (2),        "f2",           N_("Function key 2"),       "F2"},
+    { KEY_F (3),        "f3",           N_("Function key 3"),       "F3"},
+    { KEY_F (4),        "f4",           N_("Function key 4"),       "F4"},
+    { KEY_F (5),        "f5",           N_("Function key 5"),       "F5"},
+    { KEY_F (6),        "f6",           N_("Function key 6"),       "F6"},
+    { KEY_F (7),        "f7",           N_("Function key 7"),       "F7"},
+    { KEY_F (8),        "f8",           N_("Function key 8"),       "F8"},
+    { KEY_F (9),        "f9",           N_("Function key 9"),       "F9"},
+    { KEY_F (10),       "f10",          N_("Function key 10"),      "F10"},
+    { KEY_F (11),       "f11",          N_("Function key 11"),      "F11"},
+    { KEY_F (12),       "f12",          N_("Function key 12"),      "F12"},
+    { KEY_F (13),       "f13",          N_("Function key 13"),      "F13"},
+    { KEY_F (14),       "f14",          N_("Function key 14"),      "F14"},
+    { KEY_F (15),       "f15",          N_("Function key 15"),      "F15"},
+    { KEY_F (16),       "f16",          N_("Function key 16"),      "F16"},
+    { KEY_F (17),       "f17",          N_("Function key 17"),      "F17"},
+    { KEY_F (18),       "f18",          N_("Function key 18"),      "F18"},
+    { KEY_F (19),       "f19",          N_("Function key 19"),      "F19"},
+    { KEY_F (20),       "f20",          N_("Function key 20"),      "F20"},
+    { KEY_BACKSPACE,    "backspace",    N_("Backspace key"),        "Backspace"},
+    { KEY_END,          "end",          N_("End key"),              "End"},
+    { KEY_UP,           "up",           N_("Up arrow key"),         "Up"},
+    { KEY_DOWN,         "down",         N_("Down arrow key"),       "Down"},
+    { KEY_LEFT,         "left",         N_("Left arrow key"),       "Left"},
+    { KEY_RIGHT,        "right",        N_("Right arrow key"),      "Right"},
+    { KEY_HOME,         "home",         N_("Home key"),             "Home"},
+    { KEY_NPAGE,        "pgdn",         N_("Page Down key"),        "PgDn"},
+    { KEY_PPAGE,        "pgup",         N_("Page Up key"),          "PgUp"},
+    { KEY_IC,           "insert",       N_("Insert key"),           "Ins"},
+    { KEY_DC,           "delete",       N_("Delete key"),           "Del"},
+    { ALT ('\t'),       "complete",     N_("Completion/M-tab"),     "Meta-Tab"},
+    { KEY_BTAB,         "backtab",      N_("Back Tabulation S-tab"), "Shift-Tab"},
+    { KEY_KP_ADD,       "kpplus",       N_("+ on keypad"),          "+"},
+    { KEY_KP_SUBTRACT,  "kpminus",      N_("- on keypad"),          "-"},
+    { (int) '/',        "kpslash",      N_("Slash on keypad"),      "/"},
+    { KEY_KP_MULTIPLY,  "kpasterisk",   N_("* on keypad"),          "*"},
 
     /* From here on, these won't be shown in Learn keys (no space) */
-    { ESC_CHAR,          "escape",      N_("Escape key"),           "Esc"},
-    { KEY_LEFT,          "kpleft",      N_("Left arrow keypad"),    "Left"},
-    { KEY_RIGHT,         "kpright",     N_("Right arrow keypad"),   "Right"},
-    { KEY_UP,            "kpup",        N_("Up arrow keypad"),      "Up"},
-    { KEY_DOWN,          "kpdown",      N_("Down arrow keypad"),    "Down"},
-    { KEY_HOME,          "kphome",      N_("Home on keypad"),       "Home"},
-    { KEY_END,           "kpend",       N_("End on keypad"),        "End"},
-    { KEY_NPAGE,         "kpnpage",     N_("Page Down keypad"),     "PgDn"},
-    { KEY_PPAGE,         "kpppage",     N_("Page Up keypad"),       "PgUp"},
-    { KEY_IC,            "kpinsert",    N_("Insert on keypad"),     "Ins"},
-    { KEY_DC,            "kpdelete",    N_("Delete on keypad"),     "Del"},
-    { (int) '\n',        "kpenter",     N_("Enter on keypad"),      "Enter"},
-    { KEY_F (21),        "f21",         N_("Function key 21"),      "F21"},
-    { KEY_F (22),        "f22",         N_("Function key 22"),      "F22"},
-    { KEY_F (23),        "f23",         N_("Function key 23"),      "F23"},
-    { KEY_F (24),        "f24",         N_("Function key 24"),      "F24"},
-    { KEY_A1,            "a1",          N_("A1 key"), "A1"},
-    { KEY_C1,            "c1",          N_("C1 key"), "C1"},
-      
+    { ESC_CHAR,         "escape",       N_("Escape key"),           "Esc"},
+    { KEY_LEFT,         "kpleft",       N_("Left arrow keypad"),    "Left"},
+    { KEY_RIGHT,        "kpright",      N_("Right arrow keypad"),   "Right"},
+    { KEY_UP,           "kpup",         N_("Up arrow keypad"),      "Up"},
+    { KEY_DOWN,         "kpdown",       N_("Down arrow keypad"),    "Down"},
+    { KEY_HOME,         "kphome",       N_("Home on keypad"),       "Home"},
+    { KEY_END,          "kpend",        N_("End on keypad"),        "End"},
+    { KEY_NPAGE,        "kpnpage",      N_("Page Down keypad"),     "PgDn"},
+    { KEY_PPAGE,        "kpppage",      N_("Page Up keypad"),       "PgUp"},
+    { KEY_IC,           "kpinsert",     N_("Insert on keypad"),     "Ins"},
+    { KEY_DC,           "kpdelete",     N_("Delete on keypad"),     "Del"},
+    { (int) '\n',       "kpenter",      N_("Enter on keypad"),      "Enter"},
+    { KEY_F (21),       "f21",          N_("Function key 21"),      "F21"},
+    { KEY_F (22),       "f22",          N_("Function key 22"),      "F22"},
+    { KEY_F (23),       "f23",          N_("Function key 23"),      "F23"},
+    { KEY_F (24),       "f24",          N_("Function key 24"),      "F24"},
+    { KEY_A1,           "a1",           N_("A1 key"), "A1"},
+    { KEY_C1,           "c1",           N_("C1 key"), "C1"},
+
     /* Alternative label */
     { ESC_CHAR,         "esc",          N_("Escape key"), "Esc"},
     { KEY_BACKSPACE,    "bs",           N_("Backspace key"), "Bakspace"},
@@ -276,12 +276,12 @@ const key_code_name_t   key_name_conv_tab[] = {
     { (int) '@',        "at",           N_("At sign"), "@"},
 
     /* meta keys */
-    { KEY_M_CTRL,        "control",     N_("Ctrl"),     "C" },
-    { KEY_M_CTRL,        "ctrl",        N_("Ctrl"),     "C" },
-    { KEY_M_ALT,         "meta",        N_("Alt"),      "M" },
-    { KEY_M_ALT,         "alt",         N_("Alt"),      "M" },
-    { KEY_M_ALT,         "ralt",        N_("Alt"),      "M" },
-    { KEY_M_SHIFT,       "shift",       N_("Shift"),    "S" },
+    { KEY_M_CTRL,       "control",      N_("Ctrl"),     "C" },
+    { KEY_M_CTRL,       "ctrl",         N_("Ctrl"),     "C" },
+    { KEY_M_ALT,        "meta",         N_("Alt"),      "M" },
+    { KEY_M_ALT,        "alt",          N_("Alt"),      "M" },
+    { KEY_M_ALT,        "ralt",         N_("Alt"),      "M" },
+    { KEY_M_SHIFT,      "shift",        N_("Shift"),    "S" },
 
     { 0, NULL, NULL, NULL}
     };
@@ -321,7 +321,7 @@ static void             CtrlBreak(void);
  */
 void
 init_key (void)
-{   
+{
     hConsole = GetStdHandle (STD_INPUT_HANDLE);
     mc_global.tty.console_flag = '\001';        /* console save/restore, toggle available */
     tty_reset_prog_mode ();
@@ -397,7 +397,7 @@ key_code_comparator_by_code (const void *p1, const void *p2)
 }
 
 
-static void 
+static void
 lookup_sort (const int order)
 {
     register size_t i;
@@ -833,7 +833,7 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
             case MOUSE_EVENT:
                 ReadConsoleInput(hConsole, &k, 1, &count);
                 if (event && !mc_args__nomouse) {
-                    
+
                     event->x = k.Event.MouseEvent.dwMousePosition.X + 1;
                     event->y = k.Event.MouseEvent.dwMousePosition.Y + 1;
                     event->type = 0;
@@ -972,7 +972,7 @@ CtrlHandler(DWORD fdwCtrlType)
     default:
 	break;
     }
-    return FALSE;   
+    return FALSE;
 }
 
 
@@ -1036,7 +1036,7 @@ key_mapwin32(
                     }
 
                 } else if (w32Keys[i].mods == MOD_ALL) {
-                    if (ch == (31 & 'd')) {     
+                    if (ch == (31 & 'd')) {
                         /* Ctrl-d is delete */
 	                ch = KEY_DC;
 	                mod &= ~KEY_M_CTRL;

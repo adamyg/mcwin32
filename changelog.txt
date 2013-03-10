@@ -1,3 +1,24 @@
+Sat Mar  9 00:48:59 2013 ayoung
+
+        * build 180, port bug fix
+
+	        - my_system() convert slashes of leading word of 'cmd.exe' expressions.
+
+	        - g_mktemp() replacement, needed for correct fdopen() operation.
+
+Wed Feb  6 00:10:27 2013 ayoung
+
+	* build 178, port bug fix
+
+                - TMPDIR logic corrected, remove startup warning regarding inability to access /tmp
+                - console.saver.c enabled
+
+Mon Jan 28 21:09:43 2013 ayoung
+
+	* build 176 
+
+                - port bug fix, 163:editcmd_dialog.c
+
 Sun Jan 27 22:27:50 2013 ayoung
 
 	* build 174

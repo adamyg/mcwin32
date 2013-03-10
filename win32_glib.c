@@ -79,7 +79,7 @@ libintl_fprintf (FILE *file, const char *format, ...)
 {
     va_list ap;
     int ret;
-    
+
 #undef vfprintf
     va_start(ap, format);
     ret = vfprintf(file, format, ap);
@@ -105,6 +105,16 @@ g_get_current_dir (void)
     char cwd[1024];
     w32_getcwd(cwd, sizeof(cwd));
     return g_strdup(cwd);
+}
+
+
+/*  
+ *  g_mktemps replacement
+ */
+int
+g_mkstemp (char *path)
+{
+    return w32_mkstemp(path);
 }
 
 
@@ -180,6 +190,8 @@ g_get_user_config_dir (void)
 /*
  *  g_build_filename() replacement
  */
+extern void canonicalize_pathname (char *path); /*FIXME*/
+
 char *
 g_build_filename (const gchar *first_element, ...)
 {
@@ -187,7 +199,7 @@ g_build_filename (const gchar *first_element, ...)
     GString *path;
     char *ret;
     va_list ap;
-    
+
     if (NULL == (element = (const char *)first_element)) {
         return NULL;
     }
@@ -227,5 +239,3 @@ g_build_filename (const gchar *first_element, ...)
     return ret;
 }
 /*end*/
-
-
