@@ -7,6 +7,7 @@
             get_group
             get_user_permissions
             save_stop_handler
+            my_systemv_flags
             my_system
             tilde_expand
             open_error_pipe
@@ -234,7 +235,7 @@ set_tmpdir(void)
             }
 
             if (tmpdir) my_setpathenv("MC_TMPDIR", tmpdir, TRUE);
-        }    
+        }
     }
 }
 
@@ -638,7 +639,7 @@ mc_LIBEXECDIR(void)
  */
 const char *
 mc_EXTHELPERSDIR(void)
-{   
+{
     return mc_LIBEXECDIR();                     // one and the same ....
 }
 
@@ -861,7 +862,7 @@ get_user_permissions(struct stat *st)
         uid = geteuid ();
 
         ngroups = getgroups (0, NULL);
-        if (ngroups == -1) {
+        if (-1 == ngroups) {
             ngroups = 0;                        /* ignore errors */
         }
 
@@ -872,7 +873,7 @@ get_user_permissions(struct stat *st)
 
         if (ngroups != 0) {
             ngroups = getgroups (ngroups, groups);
-            if (ngroups == -1) {
+            if (-1 == ngroups) {
                 ngroups = 0;                    /* ignore errors */
             }
         }
@@ -905,7 +906,60 @@ save_stop_handler(void)
 
 
 /**
- *  system() implementation
+ * Call external programs with flags and with array of strings as parameters.
+ *
+ * @parameter flags   addition conditions for running external programs.
+ * @parameter command shell (if flags contain EXECUTE_AS_SHELL), command to run otherwise.
+ *                    Shell (or command) will be found in paths described in PATH variable
+ *                    (if shell parameter doesn't begin from path delimiter)
+ * @parameter argv    Array of strings (NULL-terminated) with parameters for command
+ * @return 0 if successfull, -1 otherwise
+ */
+
+int
+my_systemv_flags (int flags, const char *command, char *const argv[])
+{
+    GPtrArray *args_array;
+    char *cmd = 0;
+    int status = 0;
+
+    if (argv) {
+        const char *str;
+        unsigned idx, slen = 0;
+        char *cursor;
+
+        for (idx = 0; NULL != (str = argv[idx]); ++idx)
+            if (*str) {
+                slen += strlen(str) + 1;
+            }
+
+        cursor = cmd = g_malloc(slen);
+
+        for (idx = 0; NULL != (str = argv[idx]); ++idx)
+            if (*str) {
+                slen = strlen(str);
+                if (cursor != cmd) *cursor++ = ' ';
+                memcpy(cursor, argv[idx], slen);
+                cursor += slen;
+            }
+
+        *cursor = '\0';
+    }
+    status = my_system (flags, command, (cmd ? cmd : ""));
+    g_free (cmd);
+    return status;
+}
+
+
+/**
+ * Call external programs.
+ *
+ * @parameter flags   addition conditions for running external programs.
+ * @parameter shell   shell (if flags contain EXECUTE_AS_SHELL), command to run otherwise.
+ *                    Shell (or command) will be found in paths described in PATH variable
+ *                    (if shell parameter doesn't begin from path delimiter)
+ * @parameter command Command for shell (or first parameter for command, if flags contain EXECUTE_AS_SHELL)
+ * @return 0 if successfull, -1 otherwise
  */
 int
 my_system(int flags, const char *shell, const char *cmd)
@@ -997,9 +1051,8 @@ my_system(int flags, const char *shell, const char *cmd)
         char *t_cmd, *cursor;
 
         if (NULL != (t_cmd = strdup(cmd))) {
-            for (cursor = t_cmd; *cursor && *cursor != ' '; *cursor) {
+            for (cursor = t_cmd; *cursor && *cursor != ' '; ++cursor) {
                 if ('/' == *cursor) *cursor = '\\';
-                ++cursor;
             }
             key_shell_mode();
             ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
@@ -1159,7 +1212,7 @@ close_error_pipe(int error, const char *text)
 
     } else {                                    /* Show given text and possible message from pipe */
         const size_t textlen = strlen(text);
-        
+
         if (textlen + len < sizeof(pe_buffer)) {
             memmove(pe_buffer + textlen + 1, (const char *)pe_buffer, len);
             memmove(pe_buffer, text, textlen);
@@ -1338,11 +1391,11 @@ tilde_expand(const char *directory)
         ++directory;
     }
 
-    if (PATH_SEP == *directory) {               /* / ==> x:/ */   
-                                                
+    if (PATH_SEP == *directory) {               /* / ==> x:/ */
+
         if (PATH_SEP != directory[1] ||         /* preserve URL's (//<server) */
                 0 == directory[2] || PATH_SEP == directory[2]) {
-                                
+
             const char *cwd = vfs_get_current_dir ();
 
             if (':' == cwd[1]) {
@@ -1433,15 +1486,15 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
     }
 
     /* Detect and preserve UNC paths: //server/... */
-    if ((flags & CANON_PATH_GUARDUNC) && 
+    if ((flags & CANON_PATH_GUARDUNC) &&
                 lpath[0] == PATH_SEP && lpath[1] == PATH_SEP && lpath[2]) {
         p = lpath + 2;
         while (p[0] && p[0] != '/') {
             ++p;
         }
         if (p[0] == '/' && p > orgpath + 2) {
-            lpath = p;                          
-            unc = TRUE;                     
+            lpath = p;
+            unc = TRUE;
         }
     }
 

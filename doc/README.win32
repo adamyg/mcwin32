@@ -1,12 +1,17 @@
 
-GNU Midnight Commander for Win32 (build: 173) - 4.8.7
-
-GNU Midnight Commander for Win32 (build: 159) - 4.8.4
+Native GNU Midnight Commander for Win32
 
 -------------------------------- 
 
 Windows XP+/32 bit native port of GNU Midnight Commander, based on the
 current 4.8.x development stream.
+
+        Version         Latest Build
+
+        4.8.11          183
+        4.8.8           181
+        4.8.7           180
+        4.8.4           159
 
 Midnight Commander (also known as mc) is a free cross-platform orthodox
 file manager and a clone of Norton Commander.
@@ -65,7 +70,7 @@ Commander, including:
 
         o Midnight Commander Draft Documentation
 
-                
+
                 https://www.midnight-commander.org/wiki/doc
 
         o FAQ

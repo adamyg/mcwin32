@@ -33,17 +33,29 @@
 #define _CRT_SECURE_NO_DEPRECATE                /* disable deprecate warnings */
 #endif
 
+#if defined(MC_DEFAULT_CHARSET)
+#if defined(DEFAULT_CHARSET)
+#undef DEFAULT_CHARSET                         /* conflict with mc headers */
+#endif
+#endif /*MC_DEFAULT_CHARSET*/
+
 #if !defined(HAVE_WINSOCK2_H_INCLUDED)
 #define HAVE_WINSOCK2_H_INCLUDED
 #undef gethostname                              /* unistd.h name mangling */
 #include <winsock2.h>
 #include <ws2tcpip.h>                           /* getaddrinfo() */
-#endif
+#endif /*HAVE_WINSOCK2_H_INCLUDED*/
+
 
 #if !defined(HAVE_WINDOWS_H_INCLUDED)
 #define HAVE_WINDOWS_H_INCLUDED
 #define WINDOWS_MEAN_AND_LEAN
 #include <windows.h>
 #endif /*HAVE_WINDOWS_H_INCLUDED*/
+
+#if defined(MC_DEFAULT_CHARSET)
+#undef DEFAULT_CHARSET                         /* conflict with mc headers */
+#define DEFAULT_CHARSET MC_DEFAULT_CHARSET
+#endif /*MC_DEFAULT_CHARSET*/
 
 #endif /*LIBW32_WIN32_INCLUDE_H_INCLUDED*/

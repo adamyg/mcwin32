@@ -33,6 +33,9 @@
         void        numeric_keypad_mode (void);
         void        application_keypad_mode (void);
 
+        void        enable_bracketed_paste (void);
+        void        disable_bracketed_paste (void);
+
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
@@ -1147,9 +1150,22 @@ numeric_keypad_mode (void)
 {
 }
 
-
 void
 application_keypad_mode (void)
+{
+}
+
+/* ----------------------------------------------------------------------------------- */
+
+gboolean bracketed_pasting_in_progress = FALSE;
+
+void
+enable_bracketed_paste (void)
+{
+}
+
+void
+disable_bracketed_paste (void)
 {
 }
 

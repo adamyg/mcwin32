@@ -893,6 +893,7 @@ static BOOL
 d_Wow64DisableWow64FsRedirection(PVOID *OldValue)
 {
     if (NULL == x_Wow64DisableWow64FsRedirection) {
+#if (DISABLED)
         HINSTANCE hinst;                        // Vista+
 
         if (0 == (hinst = LoadLibrary("Kernel32")) ||
@@ -907,6 +908,10 @@ d_Wow64DisableWow64FsRedirection(PVOID *OldValue)
             x_Wow64RevertWow64FsRedirection = NULL;
             FreeLibrary(hinst);
         }
+#else
+        x_Wow64DisableWow64FsRedirection = my_Wow64DisableWow64FsRedirection;
+        x_Wow64RevertWow64FsRedirection = NULL;
+#endif
     }
     return x_Wow64DisableWow64FsRedirection(OldValue);
 }

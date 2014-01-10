@@ -139,7 +139,7 @@ drive_sel(WPanel *panel)
 
     do_refresh ();
     drive_dlg =
-        create_dlg(TRUE, y_pos, x_pos, y_height, x_width, dialog_colors,
+        dlg_create(TRUE, y_pos, x_pos, y_height, x_width, dialog_colors,
                 drive_dlg_callback, NULL, "[Chdrive]", _("Chdrive command"), 0);
 
     /*
@@ -180,7 +180,7 @@ drive_sel(WPanel *panel)
     g_queue_free (buttons);
 
     /* do action */
-    run_dlg (drive_dlg);
+    dlg_run (drive_dlg);
 
     if (drive_dlg->ret_value != B_CANCEL) {
         const int is_right = (panel == right_panel ? 1 : 0);
@@ -222,7 +222,7 @@ drive_sel(WPanel *panel)
         }
     }
 
-    destroy_dlg (drive_dlg);
+    dlg_destroy (drive_dlg);
     repaint_screen ();
 }
 
@@ -260,6 +260,12 @@ drive_dlg_callback (Widget * h, Widget * sender, widget_msg_t msg, int parm, voi
 
 
 static void
+draw_box(Widget *wh, int y, int x, int h, int w, int fill)
+{
+    tty_draw_box (wh->y + y, wh->x + x, h, w, fill);
+}
+
+static void
 drive_dlg_refresh (Widget *h)
 {
     WDialog *d = DIALOG (h);
@@ -267,10 +273,9 @@ drive_dlg_refresh (Widget *h)
     dlg_default_repaint (d);
     tty_setcolor (dialog_colors[0]);
     dlg_erase (d);
-    draw_box (d, 1, 1, h->lines - 2, h->cols - 2, FALSE);
+    draw_box (h, 1, 1, h->lines - 2, h->cols - 2, FALSE);
     tty_setcolor (dialog_colors[2]);
     widget_move (h, 1, h->cols/2 - 7);          /* center title */
     tty_print_string (" Change Drive ");
 }
-
 

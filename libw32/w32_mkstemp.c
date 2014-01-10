@@ -84,6 +84,7 @@
 static int                  gettemp(char *path, register int *fd, int temporary);
 
 
+int
 #if defined(__WATCOMC__)
 w32_mkstemp(char *path)
 #else

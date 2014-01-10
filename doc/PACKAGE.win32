@@ -11,7 +11,6 @@ Package List
         package.lst
         zlib1.dll
 
-
 doc/
 
         COPYING
@@ -55,7 +54,6 @@ plugin/
         text.sh
         video.sh
         web.sh
-
 
 share/
 

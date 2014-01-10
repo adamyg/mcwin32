@@ -15,11 +15,11 @@
 #include <buildinfo.h>
 
 #define PACKAGE             "mc-win32-native"
-#define VERSION             "4.8.7"
+#define VERSION             "4.8.11"            /* 28/12/13 */
 
 #ifdef  RC_INVOKED                              /* see: mc.rc */
-#define RC_PRODUCTVERSION   4,8,7,0
-#define RC_FILEVERSION      4,8,7,1
+#define RC_PRODUCTVERSION   4,8,11,0
+#define RC_FILEVERSION      4,8,11,1
 #endif
 
 #define MC_CONFIGURE_ARGS   "win32-native"

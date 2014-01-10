@@ -102,10 +102,10 @@ MC_EDITOR=\
 	$(D_OBJED)/bookmark$(O)			\
 	$(D_OBJED)/choosesyntax$(O)		\
 	$(D_OBJED)/edit$(O)			\
+	$(D_OBJED)/editbuffer$(O)		\
 	$(D_OBJED)/editcmd$(O)			\
 	$(D_OBJED)/editcmd_dialogs$(O)		\
 	$(D_OBJED)/editdraw$(O)			\
-	$(D_OBJED)/editkeys$(O)			\
 	$(D_OBJED)/editmenu$(O)			\
 	$(D_OBJED)/editoptions$(O)		\
 	$(D_OBJED)/editwidget$(O)		\
@@ -114,6 +114,8 @@ MC_EDITOR=\
 	$(D_OBJED)/spell_dialogs$(O)		\
 	$(D_OBJED)/syntax$(O)			\
 	$(D_OBJED)/wordproc$(O)
+
+#488	$(D_OBJED)/editkeys$(O)			\
 
 D_OBJVW=	$(D_OBJ)/viewer
 
@@ -216,6 +218,8 @@ MC_LIBMC=\
 	$(D_OBJMC)/strutil_strutilascii$(O)	\
 	$(D_OBJMC)/strutil_strutilutf8$(O)	\
 	$(D_OBJMC)/strutil_strverscmp$(O)	\
+	$(D_OBJMC)/strutil_replace$(O)		\
+	$(D_OBJMC)/strutil_xstrtol$(O)		\
 	\
 	$(D_OBJMC)/tty_color$(O)		\
 	$(D_OBJMC)/tty_color-internal$(O)	\

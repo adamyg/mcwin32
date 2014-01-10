@@ -42,7 +42,7 @@
 #include "lib/global.h"
 #include "lib/tty/win.h"
 
-char *smcup = NULL;				/* usage tty.c */
+char *smcup = NULL;                             /* usage tty.c */
 char *rmcup = NULL;
 
 

@@ -1,3 +1,20 @@
+Sat Dec 28 12:52:59 2013 ayoung
+
+	* build 182
+
+                - 4.8.11 snap-shot merge
+
+                - busybox version changed (busybox-w32-TIG-1226-g3fd3465.exe)
+
+                                http://intgat.tigress.co.uk/rmy/busybox/index.html
+                        older:  https://github.com/pclouds/busybox-w32
+
+Sun Jun 30 19:09:11 2013 ayoung
+
+	* build 181
+
+                - 4.8.8 snap-shot
+
 Sat Mar  9 00:48:59 2013 ayoung
 
         * build 180, port bug fix
