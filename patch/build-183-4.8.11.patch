@@ -1,0 +1,2468 @@
+From 4351a8e821694b67f11a8507609c450eff0fd49f Mon Sep 17 00:00:00 2001
+From: ayoung <ayoung.mob@gmail.com>
+Date: Sat, 28 Dec 2013 13:30:17 +0000
+Subject: [PATCH] Signed-off-by: ayoung <ayoung.mob@gmail.com>
+
+---
+ lib/global.h                 |  15 +++
+ lib/keybind.c                |   9 +-
+ lib/keybind.h                |   7 +-
+ lib/tty/x11conn.c            |   5 +
+ lib/vfs/interface.c          |  42 ++++++--
+ lib/vfs/parse_ls_vga.c       |   5 +-
+ lib/vfs/path.c               |  57 ++++++++++-
+ lib/vfs/xdirentry.h          |   3 +
+ lib/widget/quick.h           | 233 +++++++++++++++++++++++++++++++++++++++++
+ lib/widget/wtools.c          |  13 +++
+ misc/mc.keymap.default       |   5 +
+ misc/mc.keymap.emacs         |   1 +
+ src/args.c                   |   4 +
+ src/cons.handler.c           |   4 +
+ src/diffviewer/search.c      |  30 ++++++
+ src/diffviewer/ydiff.c       |  21 ++++
+ src/editor/editcmd.c         |  54 +++++++++-
+ src/editor/editcmd_dialogs.c |  84 +++++++++++++++
+ src/editor/editoptions.c     |  40 ++++++++
+ src/editor/spell.c           |   4 +
+ src/editor/spell_dialogs.c   |   4 +
+ src/filemanager/boxes.c      | 239 ++++++++++++++++++++++++++++++++++++++++++-
+ src/filemanager/cmd.c        |  17 +++
+ src/filemanager/ext.c        |  76 ++++++++++++++
+ src/filemanager/file.c       |   2 +-
+ src/filemanager/filegui.c    |  38 +++++++
+ src/filemanager/hotlist.c    |  32 ++++++
+ src/filemanager/listmode.c   |  35 ++++---
+ src/filemanager/midnight.c   |  22 +++-
+ src/filemanager/panel.c      |   4 +-
+ src/keybind-defaults.c       |   6 ++
+ src/main.c                   |  10 ++
+ src/textconf.c               |  25 +++++
+ src/viewer/dialogs.c         |  42 ++++++++
+ src/viewer/growbuf.c         |  10 +-
+ 35 files changed, 1163 insertions(+), 35 deletions(-)
+
+diff --git a/lib/global.h b/lib/global.h
+index 66828e5..59b9c49 100644
+--- a/lib/global.h
++++ b/lib/global.h
+@@ -27,10 +27,16 @@
+ /*** typedefs(not structures) and defined constants **********************************************/
+ 
+ /* The O_BINARY definition was taken from gettext */
++#if defined(__WATCOMC__) //WIN32/APY
++#include <fcntl.h>
++#include <inttypes.h>
++
++#elif defined(_MSC_VER)
+ #if !defined O_BINARY && defined _O_BINARY
+   /* For MSC-compatible compilers.  */
+ #define O_BINARY _O_BINARY
+ #endif
++#endif
+ #ifdef __BEOS__
+   /* BeOS 5 has O_BINARY, but is has no effect.  */
+ #undef O_BINARY
+@@ -45,7 +51,11 @@
+ #ifdef O_NDELAY                 /* SYSV */
+ #define O_NONBLOCK O_NDELAY
+ #else /* BSD */
++#ifdef WIN32 //WIN32/APY
++#define O_NONBLOCK 0
++#else
+ #define O_NONBLOCK FNDELAY
++#endif
+ #endif /* !O_NDELAY */
+ #endif /* !O_NONBLOCK */
+ 
+@@ -66,9 +76,11 @@
+ #endif
+ 
+ /* Solaris9 doesn't have PRIXMAX */
++#ifndef __WATCOMC__ //WIN32, fix
+ #ifndef PRIXMAX
+ #define PRIXMAX PRIxMAX
+ #endif
++#endif
+ 
+ #ifdef ENABLE_NLS
+ #include <libintl.h>
+@@ -128,6 +140,9 @@
+ /* OS specific defines */
+ #define PATH_SEP '/'
+ #define PATH_SEP_STR "/"
++#if defined(WIN32) //APY,path
++#define PATH_SEP_STR2 "\\"
++#endif
+ #define PATH_ENV_SEP ':'
+ #define TMPDIR_DEFAULT "/tmp"
+ #define SCRIPT_SUFFIX ""
+diff --git a/lib/keybind.c b/lib/keybind.c
+index eedea6b..a0b63ba 100644
+--- a/lib/keybind.c
++++ b/lib/keybind.c
+@@ -180,7 +180,7 @@ static name_keymap_t command_names[] = {
+     {"PanelListingChange", CK_PanelListingChange},
+     {"PanelListing", CK_PanelListing},
+ #ifdef LISTMODE_EDITOR
+-    {"ListMode", CK_ListMode}.
++    {"ListMode", CK_ListMode}, //APY, optional
+ #endif
+     {"OptionsPanel", CK_OptionsPanel},
+     {"CdQuick", CK_CdQuick},
+@@ -356,6 +356,13 @@ static name_keymap_t command_names[] = {
+     {"MergeOther", CK_MergeOther},
+ #endif /* USE_DIFF_VIEW */
+ 
++#if defined(WIN32) //APY, drive
++    /* Change drive */
++    {"DriveChangeA", CK_DriveChangeA},
++    {"DriveChangeB", CK_DriveChangeB},
++    {"DriveChange", CK_DriveChange},
++#endif
++
+     {NULL, CK_IgnoreKey}
+ };
+ 
+diff --git a/lib/keybind.h b/lib/keybind.h
+index 5bfb81b..b5a2d2c 100644
+--- a/lib/keybind.h
++++ b/lib/keybind.h
+@@ -329,7 +329,12 @@ enum
+     CK_HunkPrev,
+     CK_EditOther,
+     CK_Merge,
+-    CK_MergeOther
++    CK_MergeOther,
++
++    /* Change drive support (WIN32/APY) */
++    CK_DriveChange = 800,
++    CK_DriveChangeA,
++    CK_DriveChangeB
+ };
+ 
+ /*** structures declarations (and typedefs of structures)*****************************************/
+diff --git a/lib/tty/x11conn.c b/lib/tty/x11conn.c
+index 0ce1f22..3317b3e 100644
+--- a/lib/tty/x11conn.c
++++ b/lib/tty/x11conn.c
+@@ -31,6 +31,8 @@
+ 
+ #include <config.h>
+ 
++#if defined(WIN32) //WIN32
++#else
+ #include <setjmp.h>
+ #include <X11/Xlib.h>
+ #ifdef HAVE_GMODULE
+@@ -246,3 +248,6 @@ mc_XQueryPointer (Display * display, Window win, Window * root_return,
+ }
+ 
+ /* --------------------------------------------------------------------------------------------- */
++
++#endif  //WIN32
++
+diff --git a/lib/vfs/interface.c b/lib/vfs/interface.c
+index 3ed5cd0..9b623a5 100644
+--- a/lib/vfs/interface.c
++++ b/lib/vfs/interface.c
+@@ -76,6 +76,29 @@ struct dirent *mc_readdir_result = NULL;
+ /*** file scope functions ************************************************************************/
+ /* --------------------------------------------------------------------------------------------- */
+ 
++#if defined(WIN32)
++#undef  mkdir
++#undef  rmdir
++#undef  read
++#undef  link
++#undef  unlink
++#undef  readlink
++#undef  symlink
++#undef  utime
++#undef  write
++#define MKDIR           w32_mkdir
++#define LINK            w32_link
++#define UNLINK          w32_unlink
++#define WRITE           w32_write
++#define READ            w32_read
++#else
++#define MKDIR           mkdir
++#define LINK            link
++#define UNLINK          unlink
++#define WRITE           write
++#define READ            read
++#endif
++
+ static vfs_path_t *
+ mc_def_getlocalcopy (const vfs_path_t * filename_vpath)
+ {
+@@ -95,7 +118,7 @@ mc_def_getlocalcopy (const vfs_path_t * filename_vpath)
+ 
+     while ((i = mc_read (fdin, buffer, sizeof (buffer))) > 0)
+     {
+-        if (write (fdout, buffer, i) != i)
++        if (WRITE (fdout, buffer, i) != i)
+             goto fail;
+     }
+     if (i == -1)
+@@ -149,7 +172,7 @@ mc_def_ungetlocalcopy (const vfs_path_t * filename_vpath,
+         fdout = mc_open (filename_vpath, O_WRONLY | O_TRUNC);
+         if (fdout == -1)
+             goto failed;
+-        while ((i = read (fdin, buffer, sizeof (buffer))) > 0)
++        while ((i = READ (fdin, buffer, sizeof (buffer))) > 0)
+             if (mc_write (fdout, buffer, (size_t) i) != i)
+                 goto failed;
+         if (i == -1)
+@@ -167,7 +190,7 @@ mc_def_ungetlocalcopy (const vfs_path_t * filename_vpath,
+             goto failed;
+         }
+     }
+-    unlink (local);
++    UNLINK (local);
+     return 0;
+ 
+   failed:
+@@ -176,7 +199,7 @@ mc_def_ungetlocalcopy (const vfs_path_t * filename_vpath,
+         mc_close (fdout);
+     if (fdin != -1)
+         close (fdin);
+-    unlink (local);
++    UNLINK (local);
+     return -1;
+ }
+ 
+@@ -825,11 +848,18 @@ mc_tmpdir (void)
+         st.st_uid == getuid () && (st.st_mode & 0777) == 0700)
+         return tmpdir;
+ 
++#if defined(WIN32)
++    if (NULL == (sys_tmp = mc_TMPDIR())) {
++        sys_tmp = TMPDIR_DEFAULT;
++    }
++#else
++#error
+     sys_tmp = getenv ("TMPDIR");
+     if (!sys_tmp || sys_tmp[0] != '/')
+     {
+         sys_tmp = TMPDIR_DEFAULT;
+     }
++#endif
+ 
+     pwd = getpwuid (getuid ());
+ 
+@@ -853,7 +883,7 @@ mc_tmpdir (void)
+     else
+     {
+         /* Need to create directory */
+-        if (mkdir (buffer, S_IRWXU) != 0)
++        if (MKDIR (buffer, S_IRWXU) != 0)
+         {
+             fprintf (stderr,
+                      _("Cannot create temporary directory %s: %s\n"),
+@@ -887,7 +917,7 @@ mc_tmpdir (void)
+             if (test_fd != -1)
+             {
+                 close (test_fd);
+-                unlink (test_fn);
++                UNLINK (test_fn);
+                 fallback_ok = TRUE;
+             }
+         }
+diff --git a/lib/vfs/parse_ls_vga.c b/lib/vfs/parse_ls_vga.c
+index 98a0e88..9c91d38 100644
+--- a/lib/vfs/parse_ls_vga.c
++++ b/lib/vfs/parse_ls_vga.c
+@@ -681,12 +681,15 @@ vfs_parse_ls_lga (const char *p, struct stat * s, char **filename, char **linkna
+     char *t = NULL;
+     const char *line = p;
+     size_t skipped;
++    mode_t mode;
+ 
+     if (strncmp (p, "total", 5) == 0)
+         return FALSE;
+ 
+-    if (!vfs_parse_filetype (p, &skipped, &s->st_mode))
++    mode = s->st_mode;          /* WIN32, st_mode type may not be mode_t */
++    if (!vfs_parse_filetype (p, &skipped, &mode))
+         goto error;
++    s->st_mode = mode;
+     p += skipped;
+ 
+     if (*p == ' ')              /* Notwell 4 */
+diff --git a/lib/vfs/path.c b/lib/vfs/path.c
+index 9e49b16..d328683 100644
+--- a/lib/vfs/path.c
++++ b/lib/vfs/path.c
+@@ -32,6 +32,9 @@
+ 
+ 
+ #include <config.h>
++#if defined(WIN32) //APY, drive
++#include <ctype.h>
++#endif
+ 
+ #include "lib/global.h"
+ #include "lib/strutil.h"
+@@ -131,6 +134,20 @@ _vfs_split_with_semi_skip_count (char *path, const char **inpath, const char **o
+  * @return newly allocated string
+  */
+ 
++#if defined(WIN32) //APY, drive
++static __inline int
++drive_or_unc(const char *path)
++{
++    if (*path) {                                /* //<server> or X:... */
++        if ((PATH_SEP == path[0] && PATH_SEP == path[1]) ||
++                (isalpha((unsigned char)path[0]) && ':' == path[1])) {
++            return TRUE;
++        }
++    }
++    return FALSE;
++}
++#endif
++
+ static char *
+ vfs_canon (const char *path)
+ {
+@@ -138,7 +155,11 @@ vfs_canon (const char *path)
+         vfs_die ("Cannot canonicalize NULL");
+ 
+     /* Relative to current directory */
++#if defined(WIN32) //APY, drive
++    if (!drive_or_unc(path))
++#else
+     if (*path != PATH_SEP)
++#endif
+     {
+         char *result, *local;
+ 
+@@ -450,6 +471,12 @@ vfs_path_from_str_uri_parser (char *path, vfs_path_flag_t flags)
+         char *slash_pointer;
+         struct vfs_s_subclass *sub = NULL;
+ 
++#if defined(WIN32) //APY, drive
++        if (url_delimiter == (path + 1) && isalpha((unsigned char)*path)) {
++            break;
++        }
++#endif
++
+         while (real_vfs_prefix_start > path && *(real_vfs_prefix_start) != PATH_SEP)
+             real_vfs_prefix_start--;
+         vfs_prefix_start = real_vfs_prefix_start;
+@@ -615,6 +642,30 @@ vfs_path_strip_home (const char *dir)
+     } \
+ }
+ 
++//WIN32 APY, drive
++static void
++append_from_path(const char *appendfrom, const int is_relative,
++        const vfs_path_flag_t flags, GString *buffer, const int element_index, const vfs_path_element_t *element)
++{
++    if ((flags & VPF_STRIP_HOME) && element_index == 0 && (element->class->flags & VFSF_LOCAL) != 0)
++    {
++        char *stripped_home_str;
++        stripped_home_str = vfs_path_strip_home (appendfrom);
++        g_string_append (buffer, stripped_home_str);
++        g_free (stripped_home_str);
++    }
++    else
++    {
++        if ((!is_relative) && (*appendfrom != PATH_SEP) && (*appendfrom != '\0')
++            && (buffer->len == 0 || buffer->str[buffer->len - 1] != PATH_SEP))
++
++#if defined(WIN32) //APY, drive
++            if (element_index > 0 || ':' != appendfrom[1] || 0 == isalpha((unsigned char)appendfrom[0]))
++#endif
++                g_string_append_c (buffer, PATH_SEP);
++        g_string_append (buffer, appendfrom);
++    }
++}
+ /**
+  * Convert first elements_count elements from vfs_path_t to string representation with flags.
+  *
+@@ -682,13 +733,15 @@ vfs_path_to_str_flags (const vfs_path_t * vpath, int elements_count, vfs_path_fl
+                 g_string_append (buffer, element->encoding);
+             }
+             str_vfs_convert_from (element->dir.converter, element->path, recode_buffer);
+-            vfs_append_from_path (recode_buffer->str, is_relative);
++            append_from_path (recode_buffer->str, is_relative, flags, buffer, element_index, element);
++//WIN32     vfs_append_from_path (recode_buffer->str, is_relative);
+             g_string_set_size (recode_buffer, 0);
+         }
+         else
+ #endif
+         {
+-            vfs_append_from_path (element->path, is_relative);
++            append_from_path (element->path, is_relative, flags, buffer, element_index, element);
++//WIN32     vfs_append_from_path (element->path, is_relative);
+         }
+     }
+     g_string_free (recode_buffer, TRUE);
+diff --git a/lib/vfs/xdirentry.h b/lib/vfs/xdirentry.h
+index c1b2c9b..d47cdd3 100644
+--- a/lib/vfs/xdirentry.h
++++ b/lib/vfs/xdirentry.h
+@@ -10,6 +10,9 @@
+ 
+ #include <stdio.h>
+ #include <sys/types.h>
++//WIN,fix
++#include <sys/time.h>
++#include <time.h>
+ 
+ #include "lib/global.h"         /* GList */
+ #include "lib/vfs/path.h"       /* vfs_path_t */
+diff --git a/lib/widget/quick.h b/lib/widget/quick.h
+index a88763a..a5baa02 100644
+--- a/lib/widget/quick.h
++++ b/lib/widget/quick.h
+@@ -338,6 +338,239 @@ typedef struct
+     mouse_h mouse;
+ } quick_dialog_t;
+ 
++/*** WIN32 ****/
++
++#if defined(WIN32)
++inline quick_widget_t *
++XQUICK_CHECKBOX(quick_widget_t *qc,
++    const char *txt, int *st, unsigned long *id_)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_checkbox;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = id_;
++    tqc.u.checkbox.text = txt;
++    tqc.u.checkbox.state = st;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_BUTTON(quick_widget_t *qc, 
++    const char *txt, int act, bcback_fn cb, unsigned long *id_)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_button;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = id_;
++    tqc.u.button.text = txt;
++    tqc.u.button.action = act;
++    tqc.u.button.callback = cb;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_INPUT(quick_widget_t *qc, 
++    const char *txt, int flags_, const char *hname, char **res, unsigned long *id_)
++{
++    quick_widget_t tqc = {0};
++
++    tqc.widget_type = quick_input;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = id_;
++    tqc.u.input.label_text = NULL;
++    tqc.u.input.label_location = input_label_none;
++    tqc.u.input.label = NULL;
++    tqc.u.input.text = txt;
++    tqc.u.input.flags = flags_;
++    tqc.u.input.histname = hname;
++    tqc.u.input.result = res;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_LABELED_INPUT(quick_widget_t *qc, 
++    const char *label_, quick_input_label_location_t label_loc, 
++    const char *txt, int flags_, const char *hname, char **res, unsigned long *id_)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_input;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = id_;
++    tqc.u.input.label_text = label_;
++    tqc.u.input.label_location = label_loc;
++    tqc.u.input.label = NULL;
++    tqc.u.input.text = txt;
++    tqc.u.input.flags = flags_;
++    tqc.u.input.histname = hname;
++    tqc.u.input.result = res;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_LABEL(quick_widget_t *qc, 
++    const char *txt, unsigned long *id_)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_label;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = id_;
++    tqc.u.label.text = txt;
++    tqc.u.label.input = NULL;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_RADIO(quick_widget_t *qc, 
++    int cnt, const char **items_, int *val, unsigned long *id_)
++{
++    quick_widget_t tqc = {0};
++
++    tqc.widget_type = quick_radio;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = id_;
++    tqc.u.radio.count = cnt;
++    tqc.u.radio.items = items_;
++    tqc.u.radio.value = val;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_START_GROUPBOX(quick_widget_t *qc, const char *t)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_start_groupbox;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = NULL;
++    tqc.u.groupbox.title = t;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_STOP_GROUPBOX(quick_widget_t *qc)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_stop_groupbox;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = NULL;
++    tqc.u.input.text = NULL;
++    tqc.u.input.flags = 0;
++    tqc.u.input.histname = NULL;
++    tqc.u.input.result = NULL;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_SEPARATOR(quick_widget_t *qc, gboolean line_)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_separator;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = NULL;
++    tqc.u.separator.space = TRUE;
++    tqc.u.separator.line = line_;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_START_COLUMNS(quick_widget_t *qc)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_start_columns;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = NULL;
++    tqc.u.input.text = NULL;
++    tqc.u.input.flags = 0;
++    tqc.u.input.histname = NULL;
++    tqc.u.input.result = NULL;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_NEXT_COLUMN(quick_widget_t *qc)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_next_column;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = NULL;
++    tqc.u.input.text = NULL;
++    tqc.u.input.flags = 0;
++    tqc.u.input.histname = NULL;
++    tqc.u.input.result = NULL;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_STOP_COLUMNS(quick_widget_t *qc)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_stop_columns;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = NULL;
++    tqc.u.input.text = NULL;
++    tqc.u.input.flags = 0;
++    tqc.u.input.histname = NULL;
++    tqc.u.input.result = NULL;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_START_BUTTONS(quick_widget_t *qc, gboolean space_, gboolean line_)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_buttons;
++    tqc.options = 0;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    tqc.id = NULL;
++    tqc.u.separator.space = space_;
++    tqc.u.separator.line = line_;
++    *qc = tqc;
++    return ++qc;
++}
++
++inline quick_widget_t *
++XQUICK_BUTTONS_OK_CANCEL(quick_widget_t *qc)
++{
++    qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
++    qc = XQUICK_BUTTON (qc, N_("&OK"), B_ENTER, NULL, NULL);
++    qc = XQUICK_BUTTON (qc, N_("&Cancel"), B_CANCEL, NULL, NULL);
++    return qc;
++}
++
++inline quick_widget_t *
++XQUICK_END(quick_widget_t *qc)
++{
++    quick_widget_t tqc = {0};
++    tqc.widget_type = quick_end;
++    tqc.pos_flags = WPOS_KEEP_DEFAULT;
++    *qc = tqc;
++    return ++qc;
++}
++#endif  //WIN32
++
+ /*** global variables defined in .c file *********************************************************/
+ 
+ /*** declarations of public functions ************************************************************/
+diff --git a/lib/widget/wtools.c b/lib/widget/wtools.c
+index e01d05c..4592a84 100644
+--- a/lib/widget/wtools.c
++++ b/lib/widget/wtools.c
+@@ -43,6 +43,7 @@
+ #include "lib/strutil.h"
+ #include "lib/util.h"           /* tilde_expand() */
+ #include "lib/widget.h"
++#include "lib/widget/quick.h"   // missing
+ #include "lib/event.h"          /* mc_event_raise() */
+ 
+ /*** global variables ****************************************************************************/
+@@ -207,6 +208,10 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
+     }
+ 
+     {
++#if defined(WIN32)  //WIN32,quick
++        quick_widget_t quick_widgets[5],
++            *qcursor = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABELED_INPUT (p_text, input_label_above, def_text, flags, histname, &my_str,
+@@ -215,12 +220,20 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, COLS / 2, header,
+             help, quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qcursor = XQUICK_LABELED_INPUT (qcursor, p_text, input_label_above, def_text, flags, histname, &my_str, NULL),
++        qcursor = XQUICK_BUTTONS_OK_CANCEL (qcursor);
++        qcursor = XQUICK_END (qcursor);
++        assert(qcursor == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif
++
+         ret = quick_dialog (&qdlg);
+     }
+ 
+diff --git a/misc/mc.keymap.default b/misc/mc.keymap.default
+index 9d1bb60..759cdce 100644
+--- a/misc/mc.keymap.default
++++ b/misc/mc.keymap.default
+@@ -52,6 +52,9 @@ ScreenList = alt-prime
+ # ConnectSmb =
+ # Undelete =
+ ExtendedKeyMap = ctrl-x
++DriveChange = alt-d
++DriveChangeA = alt-f1
++DriveChangeB = alt-f2
+ 
+ [main:xmap]
+ ChangeMode = c
+@@ -123,6 +126,8 @@ Bottom = alt-gt; end; c1
+ # SortByMTime =
+ # ScrollLeft =
+ # ScrollRight =
++DriveChangeA = alt-f1
++DriveChangeB = alt-f2
+ 
+ [dialog]
+ Ok = enter
+diff --git a/misc/mc.keymap.emacs b/misc/mc.keymap.emacs
+index 6d503b4..2dbff3a 100644
+--- a/misc/mc.keymap.emacs
++++ b/misc/mc.keymap.emacs
+@@ -52,6 +52,7 @@ ScreenList = alt-prime
+ # ConnectSmb =
+ # Undelete =
+ ExtendedKeyMap = ctrl-x
++DriveChange = alt-d
+ 
+ [main:xmap]
+ ChangeMode = c
+diff --git a/src/args.c b/src/args.c
+index b9ffad0..5a8fd4f 100644
+--- a/src/args.c
++++ b/src/args.c
+@@ -409,7 +409,11 @@ mc_args_add_extended_info_to_help (void)
+                                                    ("\n"
+                                                     "Please send any bug reports (including the output of `mc -V')\n"
+                                                     "as tickets at www.midnight-commander.org\n"));
++#if defined(BUILD_NUMBER) //WIN32/APY, build
++    mc_args__loc__header_string = g_strdup_printf (_("GNU Midnight Commander %s (build: %s)\n"), VERSION, BUILD_NUMBER);
++#else
+     mc_args__loc__header_string = g_strdup_printf (_("GNU Midnight Commander %s\n"), VERSION);
++#endif
+ 
+     g_option_context_set_description (context, mc_args__loc__footer_string);
+     g_option_context_set_summary (context, mc_args__loc__header_string);
+diff --git a/src/cons.handler.c b/src/cons.handler.c
+index a2a283d..55953f0 100644
+--- a/src/cons.handler.c
++++ b/src/cons.handler.c
+@@ -462,6 +462,8 @@ show_console_contents (int starty, unsigned char begin_line, unsigned char end_l
+     show_console_contents_linux (starty, begin_line, end_line);
+ #elif defined (__FreeBSD__)
+     show_console_contents_freebsd (starty, begin_line, end_line);
++#elif defined (WIN32)
++    show_console_contents_win32 (starty, begin_line, end_line);
+ #else
+     mc_global.tty.console_flag = '\0';
+ #endif
+@@ -481,6 +483,8 @@ handle_console (console_action_t action)
+     handle_console_linux (action);
+ #elif defined (__FreeBSD__)
+     handle_console_freebsd (action);
++#elif defined (WIN32)
++    handle_console_win32 (action);
+ #endif
+ }
+ 
+diff --git a/src/diffviewer/search.c b/src/diffviewer/search.c
+index 902a5a9..80dd588 100644
+--- a/src/diffviewer/search.c
++++ b/src/diffviewer/search.c
+@@ -80,6 +80,14 @@ mcdiffview_dialog_search (WDiff * dview)
+     list_of_types = mc_search_get_types_strings_array (&num_of_types);
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++#ifdef HAVE_CHARSET
++        quick_widget_t quick_widgets[12],
++#else
++        quick_widget_t quick_widgets[11],
++#endif
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABELED_INPUT (N_("Enter search string:"), input_label_above,
+@@ -100,6 +108,8 @@ mcdiffview_dialog_search (WDiff * dview)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32
++
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 58,
+@@ -107,6 +117,26 @@ mcdiffview_dialog_search (WDiff * dview)
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_LABELED_INPUT (qc, N_("Enter search string:"), input_label_above,
++                                       INPUT_LAST_TEXT, 0, MC_HISTORY_SHARED_SEARCH, &exp, NULL);
++        qc = XQUICK_SEPARATOR (qc, TRUE);
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =    XQUICK_RADIO (qc, num_of_types, (const char **) list_of_types,
++                                  (int *) &mcdiffview_search_options.type, NULL);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =    XQUICK_CHECKBOX (qc, N_("Cas&e sensitive"), &mcdiffview_search_options.case_sens, NULL);
++        qc =    XQUICK_CHECKBOX (qc, N_("&Backwards"), &mcdiffview_search_options.backwards, NULL);
++        qc =    XQUICK_CHECKBOX (qc, N_("&Whole words"), &mcdiffview_search_options.whole_words, NULL);
++#ifdef HAVE_CHARSET
++        qc =    XQUICK_CHECKBOX (qc, N_("&All charsets"), &mcdiffview_search_options.all_codepages, NULL);
++#endif
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif
++
+         qd_result = quick_dialog (&qdlg);
+     }
+ 
+diff --git a/src/diffviewer/ydiff.c b/src/diffviewer/ydiff.c
+index 2fd6f1c..94a445c 100644
+--- a/src/diffviewer/ydiff.c
++++ b/src/diffviewer/ydiff.c
+@@ -2354,6 +2354,10 @@ dview_diff_options (WDiff * dview)
+         N_("&Minimal (Find a smaller set of change)")
+     };
+ 
++#if defined(WIN32)  //WIN32, quick
++    quick_widget_t quick_widgets[12],
++        *qc = quick_widgets;
++#else
+     quick_widget_t quick_widgets[] = {
+         /* *INDENT-OFF* */
+         QUICK_START_GROUPBOX (N_("Diff algorithm")),
+@@ -2371,6 +2375,7 @@ dview_diff_options (WDiff * dview)
+         QUICK_END
+         /* *INDENT-ON* */
+     };
++#endif  //WIN32
+ 
+     quick_dialog_t qdlg = {
+         -1, -1, 56,
+@@ -2378,6 +2383,22 @@ dview_diff_options (WDiff * dview)
+         quick_widgets, NULL, NULL
+     };
+ 
++#if defined(WIN32)  //WIN32, quick
++    qc = XQUICK_START_GROUPBOX (qc, N_("Diff algorithm"));
++    qc =     XQUICK_RADIO (qc, 3, (const char **) quality_str, (int *) &dview->opt.quality, NULL);
++    qc = XQUICK_STOP_GROUPBOX (qc);
++    qc = XQUICK_START_GROUPBOX (qc, N_("Diff extra options"));
++    qc =     XQUICK_CHECKBOX (qc, N_("&Ignore case"), &dview->opt.ignore_case, NULL);
++    qc =     XQUICK_CHECKBOX (qc, N_("Ignore tab &expansion"), &dview->opt.ignore_tab_expansion, NULL);
++    qc =     XQUICK_CHECKBOX (qc, N_("Ignore &space change"), &dview->opt.ignore_space_change, NULL);
++    qc =     XQUICK_CHECKBOX (qc, N_("Ignore all &whitespace"), &dview->opt.ignore_all_space, NULL);
++    qc =     XQUICK_CHECKBOX (qc, N_("Strip &trailing carriage return"), &dview->opt.strip_trailing_cr, NULL);
++    qc = XQUICK_STOP_GROUPBOX (qc);
++    qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++    qc = XQUICK_END (qc);
++    assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif
++
+     if (quick_dialog (&qdlg) != B_CANCEL)
+         dview_reread (dview);
+ }
+diff --git a/src/editor/editcmd.c b/src/editor/editcmd.c
+index e170e06..8c1c425 100644
+--- a/src/editor/editcmd.c
++++ b/src/editor/editcmd.c
+@@ -460,6 +460,10 @@ edit_get_save_file_as (WEdit * edit)
+     filename = vfs_path_to_str (edit->filename_vpath);
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[6+2],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABELED_INPUT (N_("Enter file name:"), input_label_above,  filename, 0, "save-as",
+@@ -471,6 +475,7 @@ edit_get_save_file_as (WEdit * edit)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 64,
+@@ -478,6 +483,17 @@ edit_get_save_file_as (WEdit * edit)
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_LABELED_INPUT (qc, N_("Enter file name:"), input_label_above,  filename, 0, "save-as",
++                                       &filename_res, NULL);
++        qc = XQUICK_SEPARATOR (qc, TRUE),
++        qc = XQUICK_LABEL (qc, N_("Change line breaks to:"), NULL);
++        qc = XQUICK_RADIO (qc, LB_NAMES, lb_names, (int *) &cur_lb, NULL);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
+         if (quick_dialog (&qdlg) != B_CANCEL)
+         {
+             char *fname;
+@@ -1599,6 +1615,10 @@ edit_save_mode_cmd (void)
+ #endif
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[6+2],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_RADIO (3, str, &option_save_mode, &edit_save_mode_radio_id),
+@@ -1610,6 +1630,7 @@ edit_save_mode_cmd (void)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 38,
+@@ -1617,6 +1638,17 @@ edit_save_mode_cmd (void)
+             quick_widgets, edit_save_mode_callback, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_RADIO (qc, 3, str, &option_save_mode, &edit_save_mode_radio_id),
++        qc = XQUICK_INPUT (qc, option_backup_ext, 0, "edit-backup-ext", &str_result,
++                                &edit_save_mode_input_id);
++        qc = XQUICK_SEPARATOR (qc, TRUE);
++        qc = XQUICK_CHECKBOX (qc, N_("Check &POSIX new line"), &option_check_nl_at_eof, NULL);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
+         if (quick_dialog (&qdlg) != B_CANCEL)
+         {
+             g_free (option_backup_ext);
+@@ -3303,7 +3335,10 @@ edit_mail_dialog (WEdit * edit)
+     static char *mail_subject_last = 0;
+     static char *mail_to_last = 0;
+ 
+-
++#if defined(WIN32)  //WIN32, quick
++    quick_widget_t quick_widgets[6+2],
++        *qc = quick_widgets;
++#else
+     quick_widget_t quick_widgets[] = {
+         /* *INDENT-OFF* */
+         QUICK_LABEL (N_("mail -s <subject> -c <cc> <to>"), NULL),
+@@ -3320,6 +3355,7 @@ edit_mail_dialog (WEdit * edit)
+         QUICK_END
+         /* *INDENT-ON* */
+     };
++#endif  //WIN32
+ 
+     quick_dialog_t qdlg = {
+         -1, -1, 50,
+@@ -3327,6 +3363,22 @@ edit_mail_dialog (WEdit * edit)
+         quick_widgets, NULL, NULL
+     };
+ 
++#if defined(WIN32)  //WIN32, quick
++    qc = XQUICK_LABEL (qc, N_("mail -s <subject> -c <cc> <to>"), NULL);
++    qc = XQUICK_LABELED_INPUT (qc, N_("To"), input_label_above,
++                                   mail_to_last != NULL ? mail_to_last : "", 0,
++                                   "mail-dlg-input-3", &tmail_to, NULL);
++    qc = XQUICK_LABELED_INPUT (qc, N_("Subject"), input_label_above,
++                                   mail_subject_last != NULL ? mail_subject_last : "", 0,
++                                   "mail-dlg-input-2", &tmail_subject, NULL);
++    qc = XQUICK_LABELED_INPUT (qc, N_("Copies to"), input_label_above,
++                                   mail_cc_last != NULL ? mail_cc_last  : "", 0,
++                                   "mail-dlg-input", &tmail_cc, NULL);
++    qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++    qc = XQUICK_END (qc);
++    assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
+     if (quick_dialog (&qdlg) != B_CANCEL)
+     {
+         g_free (mail_cc_last);
+diff --git a/src/editor/editcmd_dialogs.c b/src/editor/editcmd_dialogs.c
+index aa9f145..5d4ffb6 100644
+--- a/src/editor/editcmd_dialogs.c
++++ b/src/editor/editcmd_dialogs.c
+@@ -99,6 +99,14 @@ editcmd_dialog_search_show (WEdit * edit)
+     list_of_types = mc_search_get_types_strings_array (&num_of_types);
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++#ifdef HAVE_CHARSET
++        quick_widget_t quick_widgets[16],
++#else
++        quick_widget_t quick_widgets[15],
++#endif
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABELED_INPUT (N_("Enter search string:"), input_label_above,
+@@ -123,6 +131,7 @@ editcmd_dialog_search_show (WEdit * edit)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN332
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 58,
+@@ -130,6 +139,30 @@ editcmd_dialog_search_show (WEdit * edit)
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_LABELED_INPUT (qc, N_("Enter search string:"), input_label_above,
++                                       INPUT_LAST_TEXT, 0, MC_HISTORY_SHARED_SEARCH, &search_text, NULL);
++        qc = XQUICK_SEPARATOR (qc, TRUE);
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =      XQUICK_RADIO (qc, num_of_types, (const char **) list_of_types,
++                                    (int *) &edit_search_options.type, NULL);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =      XQUICK_CHECKBOX (qc, N_("Cas&e sensitive"), &edit_search_options.case_sens, NULL);
++        qc =      XQUICK_CHECKBOX (qc, N_("&Backwards"), &edit_search_options.backwards, NULL);
++        qc =      XQUICK_CHECKBOX (qc, N_("In se&lection"), &edit_search_options.only_in_selection, NULL);
++        qc =      XQUICK_CHECKBOX (qc, N_("&Whole words"), &edit_search_options.whole_words, NULL);
++#ifdef HAVE_CHARSET
++        qc =     XQUICK_CHECKBOX (qc, N_("&All charsets"), &edit_search_options.all_codepages, NULL);
++#endif
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
++        qc =      XQUICK_BUTTON (qc, N_("&OK"), B_ENTER, NULL, NULL);
++        qc =      XQUICK_BUTTON (qc, N_("&Find all"), B_USER, NULL, NULL);
++        qc =      XQUICK_BUTTON (qc, N_("&Cancel"), B_CANCEL, NULL, NULL);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
+         dialog_result = quick_dialog (&qdlg);
+     }
+ 
+@@ -189,6 +222,14 @@ editcmd_dialog_replace_show (WEdit * edit, const char *search_default, const cha
+     list_of_types = mc_search_get_types_strings_array (&num_of_types);
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++#ifdef HAVE_CHARSET
++        quick_widget_t quick_widgets[14+2],
++#else
++        quick_widget_t quick_widgets[13+2],
++#endif
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABELED_INPUT (N_("Enter search string:"), input_label_above,
+@@ -212,6 +253,7 @@ editcmd_dialog_replace_show (WEdit * edit, const char *search_default, const cha
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN332
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 58,
+@@ -219,6 +261,29 @@ editcmd_dialog_replace_show (WEdit * edit, const char *search_default, const cha
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_LABELED_INPUT (qc, N_("Enter search string:"), input_label_above,
++                                       search_default, 0, MC_HISTORY_SHARED_SEARCH, search_text, NULL);
++        qc = XQUICK_LABELED_INPUT (qc, N_("Enter replacement string:"), input_label_above,
++                                       replace_default, 0, "replace", replace_text, NULL);
++        qc = XQUICK_SEPARATOR (qc, TRUE);
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =    XQUICK_RADIO (qc, num_of_types, (const char **) list_of_types,
++                                  (int *) &edit_search_options.type, NULL);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =    XQUICK_CHECKBOX (qc, N_("Cas&e sensitive"), &edit_search_options.case_sens, NULL);
++        qc =    XQUICK_CHECKBOX (qc, N_("&Backwards"), &edit_search_options.backwards, NULL);
++        qc =    XQUICK_CHECKBOX (qc, N_("In se&lection"), &edit_search_options.only_in_selection, NULL);
++        qc =    XQUICK_CHECKBOX (qc, N_("&Whole words"), &edit_search_options.whole_words, NULL);
++#ifdef HAVE_CHARSET
++        qc =    XQUICK_CHECKBOX (qc, N_("&All charsets"), &edit_search_options.all_codepages, NULL);
++#endif
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
+         if (quick_dialog (&qdlg) != B_CANCEL)
+             edit->replace_mode = 0;
+         else
+@@ -264,6 +329,10 @@ editcmd_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text
+     repl_to = g_strdup (str_trunc (tmp, dlg_width - 7));
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[9],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABEL (repl_from, NULL),
+@@ -277,6 +346,7 @@ editcmd_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN332
+ 
+         quick_dialog_t qdlg = {
+             ypos, xpos, -1,
+@@ -284,6 +354,20 @@ editcmd_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_LABEL (qc, repl_from, NULL);
++        qc = XQUICK_LABEL (qc, N_("Replace with:"), NULL);
++        qc = XQUICK_LABEL (qc, repl_to, NULL);
++        qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
++        qc =      XQUICK_BUTTON (qc, N_("&Replace"), B_ENTER, NULL, NULL);
++        qc =      XQUICK_BUTTON (qc, N_("A&ll"), B_REPLACE_ALL, NULL, NULL);
++        qc =      XQUICK_BUTTON (qc, N_("&Skip"), B_SKIP_REPLACE, NULL, NULL);
++        qc =      XQUICK_BUTTON (qc, N_("&Cancel"), B_CANCEL, NULL, NULL);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
++
+         retval = quick_dialog (&qdlg);
+     }
+ 
+diff --git a/src/editor/editoptions.c b/src/editor/editoptions.c
+index 3e0cf7b..4b68b78 100644
+--- a/src/editor/editoptions.c
++++ b/src/editor/editoptions.c
+@@ -34,6 +34,7 @@
+ #include <config.h>
+ 
+ #include <stdlib.h>             /* atoi(), NULL */
++#include <assert.h>             //WIN32, quick
+ 
+ #include "lib/global.h"
+ #include "lib/widget.h"
+@@ -143,6 +144,10 @@ edit_options_dialog (WDialog * h)
+         wrap_mode = 0;
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[28],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_START_COLUMNS,
+@@ -182,6 +187,7 @@ edit_options_dialog (WDialog * h)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 74,
+@@ -189,6 +195,40 @@ edit_options_dialog (WDialog * h)
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("Wrap mode"));
++        qc =         XQUICK_RADIO (qc, 3, wrap_str, &wrap_mode, NULL);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc =     XQUICK_SEPARATOR (qc, FALSE);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("Tabulation"));
++        qc =         XQUICK_CHECKBOX (qc, N_("&Fake half tabs"), &option_fake_half_tabs, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("&Backspace through tabs"), &option_backspace_through_tabs, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Fill tabs with &spaces"), &option_fill_tabs_with_spaces, NULL),
++        qc =         XQUICK_LABELED_INPUT (qc, N_("Tab spacing:"), input_label_left, tab_spacing, 0,
++                                               "edit-tab-spacing", &q, NULL);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("Other options")),
++        qc =         XQUICK_CHECKBOX (qc, N_("&Return does autoindent"), &option_return_does_auto_indent, NULL); 
++        qc =         XQUICK_CHECKBOX (qc, N_("Confir&m before saving"), &edit_confirm_save, NULL); 
++        qc =         XQUICK_CHECKBOX (qc, N_("Save file &position"), &option_save_position, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("&Visible trailing spaces"), &visible_tws, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Visible &tabs"), &visible_tabs, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Synta&x highlighting"), &option_syntax_highlighting, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("C&ursor after inserted block"), &option_cursor_after_inserted_block, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Pers&istent selection"), &option_persistent_selections, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Cursor be&yond end of line"), &option_cursor_beyond_eol, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("&Group undo"), &option_group_undo, NULL);
++        qc =         XQUICK_LABELED_INPUT (qc, N_("Word wrap line length:"), input_label_left,
++                                               wrap_length, 0, "edit-word-wrap", &p, NULL);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
+         if (quick_dialog (&qdlg) == B_CANCEL)
+             return;
+     }
+diff --git a/src/editor/spell.c b/src/editor/spell.c
+index 8d8ec40..317b42b 100644
+--- a/src/editor/spell.c
++++ b/src/editor/spell.c
+@@ -25,6 +25,8 @@
+ 
+ #include <config.h>
+ 
++#if defined(HAVE_ASPELL) //WIN32
++
+ #include <stdlib.h>
+ #include <string.h>
+ #include <gmodule.h>
+@@ -567,4 +569,6 @@ aspell_add_to_dict (const char *word, int word_size)
+     return TRUE;
+ }
+ 
++#endif  //HAVE_ASPELL
++
+ /* --------------------------------------------------------------------------------------------- */
+diff --git a/src/editor/spell_dialogs.c b/src/editor/spell_dialogs.c
+index aa32e2a..e5d1efb 100644
+--- a/src/editor/spell_dialogs.c
++++ b/src/editor/spell_dialogs.c
+@@ -101,7 +101,11 @@ spell_dialog_spell_suggest_show (WEdit * edit, const char *word, char **new_word
+     max_btn_len = max (replace_len, skip_len);
+     max_btn_len = max (max_btn_len, cancel_len);
+ 
++#if defined(HAVE_ASPELL) //WIN32
+     lang_label = g_strdup_printf ("%s: %s", _("Language"), aspell_get_lang ());
++#else
++    lang_label = g_strdup_printf ("%s: %s", _("Language"), "n/a");
++#endif
+     word_label = g_strdup_printf ("%s: %s", _("Misspelled"), word);
+     word_label_len = str_term_width1 (word_label) + 5;
+ 
+diff --git a/src/filemanager/boxes.c b/src/filemanager/boxes.c
+index db01587..5810623 100644
+--- a/src/filemanager/boxes.c
++++ b/src/filemanager/boxes.c
+@@ -450,6 +450,10 @@ configure_box (void)
+         char time_out[BUF_TINY] = "";
+         char *time_out_new;
+ 
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[35+2],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_START_COLUMNS,
+@@ -493,6 +497,7 @@ configure_box (void)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 60,
+@@ -500,6 +505,47 @@ configure_box (void)
+             quick_widgets, configure_callback, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("File operations"));
++        qc =         XQUICK_CHECKBOX (qc, N_("&Verbose operation"), &verbose, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Compute tota&ls"), &file_op_compute_totals, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Classic pro&gressbar"), &classic_progressbar, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Mkdi&r autoname"), &auto_fill_mkdir_name, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Preallocate &space"), &mc_global.vfs.preallocate_space, NULL);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("Esc key mode"));
++        qc =         XQUICK_CHECKBOX (qc, N_("S&ingle press"), &old_esc_mode, &configure_old_esc_mode_id);
++        qc =         XQUICK_LABELED_INPUT (qc, N_("Timeout:"), input_label_left,
++                                           (const char *) time_out, 0, MC_HISTORY_ESC_TIMEOUT,
++                                           &time_out_new, &configure_time_out_id);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("Pause after run"));
++        qc =         XQUICK_RADIO (qc, pause_options_num, pause_options, &pause_after_run, NULL);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("Other options"));
++        qc =         XQUICK_CHECKBOX (qc, N_("Use internal edi&t"), &use_internal_edit, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Use internal vie&w"), &use_internal_view, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Auto m&enus"), &auto_menu, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("&Drop down menus"), &drop_menus, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Shell &patterns"), &easy_patterns, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Co&mplete: show all"), &mc_global.widget.show_all_if_ambiguous, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Rotating d&ash"), &nice_rotating_dash, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Cd follows lin&ks"), &mc_global.vfs.cd_symlinks, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Sa&fe delete"), &safe_delete, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("A&uto save setup"), &auto_save_setup, NULL);
++        qc =         XQUICK_SEPARATOR (qc, FALSE);
++        qc =         XQUICK_SEPARATOR (qc, FALSE);
++        qc =         XQUICK_SEPARATOR (qc, FALSE);
++        qc =         XQUICK_SEPARATOR (qc, FALSE);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif
++
+         g_snprintf (time_out, sizeof (time_out), "%d", old_esc_mode_timeout);
+ 
+ #ifndef USE_INTERNAL_EDIT
+@@ -538,6 +584,10 @@ panel_options_box (void)
+                                       "simple_swap", FALSE) ? 1 : 0;
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[31+2],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_START_COLUMNS,
+@@ -578,6 +628,7 @@ panel_options_box (void)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 60,
+@@ -585,6 +636,41 @@ panel_options_box (void)
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("Main options"));
++        qc =         XQUICK_CHECKBOX (qc, N_("Show mi&ni-status"), &panels_options.show_mini_info, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Use SI si&ze units"), &panels_options.kilobyte_si, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Mi&x all files"), &panels_options.mix_all_files, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Show &backup files"), &panels_options.show_backups, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Show &hidden files"), &panels_options.show_dot_files, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("&Fast dir reload"), &panels_options.fast_reload, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Ma&rk moves down"), &panels_options.mark_moves_down, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Re&verse files only"), &panels_options.reverse_files_only, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Simple s&wap"), &simple_swap, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("A&uto save panels setup"), &panels_options.auto_save_setup, NULL);
++        qc =         XQUICK_SEPARATOR (qc, FALSE);
++        qc =         XQUICK_SEPARATOR (qc, FALSE);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("Navigation"));
++        qc =         XQUICK_CHECKBOX (qc, N_("L&ynx-like motion"), &panels_options.navigate_with_arrows, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("Pa&ge scrolling"), &panels_options.scroll_pages, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("&Mouse page scrolling"), &panels_options.mouse_move_pages, NULL);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("File highlight"));
++        qc =         XQUICK_CHECKBOX (qc, N_("File &types"), &panels_options.filetype_mode, NULL);
++        qc =         XQUICK_CHECKBOX (qc, N_("&Permissions"), &panels_options.permission_mode, NULL);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc =     XQUICK_START_GROUPBOX (qc, N_("Quick search"));
++        qc =         XQUICK_RADIO (qc, QSEARCH_NUM, qsearch_options, (int *) &panels_options.qsearch_mode, NULL);
++        qc =     XQUICK_STOP_GROUPBOX (qc);
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
+         if (quick_dialog (&qdlg) != B_ENTER)
+             return;
+     }
+@@ -649,6 +735,10 @@ panel_listing_box (WPanel * panel, char **userp, char **minip, int *use_msformat
+             N_("&User defined:")
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[7+2],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_RADIO (LIST_TYPES, list_types, &result, &panel_listing_types_id),
+@@ -662,6 +752,7 @@ panel_listing_box (WPanel * panel, char **userp, char **minip, int *use_msformat
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32, quick
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 48,
+@@ -669,6 +760,19 @@ panel_listing_box (WPanel * panel, char **userp, char **minip, int *use_msformat
+             quick_widgets, panel_listing_callback, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_RADIO (qc, LIST_TYPES, list_types, &result, &panel_listing_types_id);
++        qc = XQUICK_INPUT (qc, panel->user_format, INPUT_COMPLETE_DEFAULT, "user-fmt-input",
++                                &panel_user_format, &panel_user_format_id);
++        qc = XQUICK_SEPARATOR (qc, TRUE);
++        qc = XQUICK_CHECKBOX (qc, N_("User &mini status"), &mini_user_status, &mini_user_status_id);
++        qc = XQUICK_INPUT (qc, panel->user_status_format[panel->list_type], INPUT_COMPLETE_DEFAULT,
++                            "mini_input", &mini_user_format, &mini_user_format_id);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32, quick
++
+         /* get hotkey of user-defined format string */
+         cp = strchr (_(list_types[panel_listing_user_idx]), '&');
+         if (cp != NULL && *++cp != '\0')
+@@ -727,6 +831,10 @@ sort_box (panel_sort_info_t * info)
+         }
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[9+2],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_START_COLUMNS,
+@@ -740,6 +848,7 @@ sort_box (panel_sort_info_t * info)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32, quick
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 40,
+@@ -747,6 +856,19 @@ sort_box (panel_sort_info_t * info)
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =    XQUICK_RADIO (qc, sort_names_num, sort_orders_names, &sort_idx, NULL);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =    XQUICK_CHECKBOX (qc, N_("Executable &first"), &info->exec_first, NULL);
++        qc =    XQUICK_CHECKBOX (qc, N_("Cas&e sensitive"), &info->case_sensitive, NULL);
++        qc =    XQUICK_CHECKBOX (qc, N_("&Reverse"), &info->reverse, NULL);
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END(qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32, quick
++
+         if (quick_dialog (&qdlg) != B_CANCEL)
+             result = panel_get_field_by_title_hotkey (sort_orders_names[sort_idx]);
+ 
+@@ -764,6 +886,10 @@ sort_box (panel_sort_info_t * info)
+ void
+ confirm_box (void)
+ {
++#if defined(WIN32)  //WIN32, quick
++    quick_widget_t quick_widgets[8+2],
++        *qc = quick_widgets;
++#else
+     quick_widget_t quick_widgets[] = {
+         /* *INDENT-OFF* */
+         /* TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix */
+@@ -779,6 +905,7 @@ confirm_box (void)
+         QUICK_END
+         /* *INDENT-ON* */
+     };
++#endif  //WIN32
+ 
+     quick_dialog_t qdlg = {
+         -1, -1, 46,
+@@ -786,6 +913,20 @@ confirm_box (void)
+         quick_widgets, NULL, NULL
+     };
+ 
++#if defined(WIN32)  //WIN32, quick
++    qc = XQUICK_CHECKBOX (qc, N_("Confirmation|&Delete"), &confirm_delete, NULL);
++    qc = XQUICK_CHECKBOX (qc, N_("Confirmation|O&verwrite"), &confirm_overwrite, NULL);
++    qc = XQUICK_CHECKBOX (qc, N_("Confirmation|&Execute"), &confirm_execute, NULL);
++    qc = XQUICK_CHECKBOX (qc, N_("Confirmation|E&xit"), &confirm_exit, NULL);
++    qc = XQUICK_CHECKBOX (qc, N_("Confirmation|Di&rectory hotlist delete"),
++                              &confirm_directory_hotlist_delete, NULL);
++    qc = XQUICK_CHECKBOX (qc, N_("Confirmation|&History cleanup"),
++                              &mc_global.widget.confirm_history_cleanup, NULL);
++    qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++    qc = XQUICK_END (qc);
++    assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32, quick
++
+     (void) quick_dialog (&qdlg);
+ }
+ 
+@@ -805,6 +946,10 @@ display_bits_box (void)
+         N_("7 &bits")
+     };
+ 
++#if defined(WIN32)  //WIN32, quick
++    quick_widget_t quick_widgets[5+2],
++        *qc = quick_widgets;
++#else
+     quick_widget_t quick_widgets[] = {
+         /* *INDENT-OFF* */
+         QUICK_RADIO (4, display_bits_str, &current_mode, NULL),
+@@ -814,6 +959,7 @@ display_bits_box (void)
+         QUICK_END
+         /* *INDENT-ON* */
+     };
++#endif  //WIN32,quick
+ 
+     quick_dialog_t qdlg = {
+         -1, -1, 46,
+@@ -821,6 +967,15 @@ display_bits_box (void)
+         quick_widgets, NULL, NULL
+     };
+ 
++#if defined(WIN32)  //WIN32, quick
++    qc = XQUICK_RADIO (qc, 4, display_bits_str, &current_mode, NULL);
++    qc = XQUICK_SEPARATOR (qc, TRUE);
++    qc = XQUICK_CHECKBOX (qc, N_("F&ull 8 bits input"), &new_meta, NULL);
++    qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++    qc = XQUICK_END (qc);
++    assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32, quick
++
+     if (mc_global.full_eight_bits)
+         current_mode = 0;
+     else if (mc_global.eight_bit_clean)
+@@ -859,6 +1014,10 @@ display_bits_box (void)
+     {
+         int new_meta;
+ 
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[13+2],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_START_COLUMNS,
+@@ -876,6 +1035,7 @@ display_bits_box (void)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32,quick
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 46,
+@@ -883,6 +1043,23 @@ display_bits_box (void)
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =      XQUICK_LABEL (qc, N_("Input / display codepage:"), NULL);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =      XQUICK_LABEL (qc, cpname, &disp_bits_name_id);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =      XQUICK_BUTTON (qc, N_("&Select"), B_USER, sel_charset_button, NULL);
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_SEPARATOR (qc, TRUE);
++        qc =      XQUICK_CHECKBOX (qc, N_("F&ull 8 bits input"), &new_meta, NULL);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32, quick
++
+         new_meta = !use_8th_bit_as_meta;
+         application_keypad_mode ();
+ 
+@@ -970,6 +1147,14 @@ configure_vfs (void)
+         char *ret_directory_timeout;
+ #endif /* ENABLE_VFS_FTP */
+ 
++#if defined(WIN32)  //WIN32, quick
++#ifdef ENABLE_VFS_FTP
++        quick_widget_t quick_widgets[11+2],
++#else
++        quick_widget_t quick_widgets[3+2],
++#endif
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABELED_INPUT (N_("Timeout for freeing VFSs (sec):"), input_label_left,
+@@ -993,6 +1178,7 @@ configure_vfs (void)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32, quick
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 56,
+@@ -1003,9 +1189,32 @@ configure_vfs (void)
+ #else
+             NULL,
+ #endif
+-            NULL,
++            NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_LABELED_INPUT (qc, N_("Timeout for freeing VFSs (sec):"), input_label_left,
++                                        buffer2, 0, "input-timo-vfs", &ret_timeout, NULL);
++#ifdef ENABLE_VFS_FTP
++        qc = XQUICK_SEPARATOR (qc, TRUE);
++        qc = XQUICK_LABELED_INPUT (qc, N_("FTP anonymous password:"), input_label_left,
++                                        ftpfs_anonymous_passwd, 0, "input-passwd", &ret_passwd, NULL);
++        qc = XQUICK_LABELED_INPUT (qc, N_("FTP directory cache timeout (sec):"), input_label_left,
++                                        buffer3, 0, "input-timeout", &ret_directory_timeout, NULL);
++        qc = XQUICK_CHECKBOX (qc, N_("&Always use ftp proxy:"), &ftpfs_always_use_proxy,
++                                    &ftpfs_always_use_proxy_id);
++        qc = XQUICK_INPUT (qc, ftpfs_proxy_host, 0, "input-ftp-proxy", &ret_ftp_proxy,
++                                &ftpfs_proxy_host_id);
++        qc = XQUICK_CHECKBOX (qc, N_("&Use ~/.netrc"), &ftpfs_use_netrc, NULL);
++        qc = XQUICK_CHECKBOX (qc, N_("Use &passive mode"), &ftpfs_use_passive_connections, NULL);
++        qc = XQUICK_CHECKBOX (qc, N_("Use passive mode over pro&xy"),
++                                    &ftpfs_use_passive_connections_over_proxy, NULL);
++#endif /* ENABLE_VFS_FTP */
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32, quick
++
+ #ifdef ENABLE_VFS_FTP
+         if (!ftpfs_always_use_proxy)
+             quick_widgets[5].options = W_DISABLED;
+@@ -1040,10 +1249,15 @@ cd_dialog (void)
+     const Widget *w = WIDGET (current_panel);
+     char *my_str;
+ 
++#if defined(WIN32)  //WIN32, quick
++    quick_widget_t quick_widgets[2],
++            *qc = quick_widgets;
++#else
+     quick_widget_t quick_widgets[] = {
+         QUICK_LABELED_INPUT (N_("cd"), input_label_left, "", 2, "input", &my_str, NULL),
+         QUICK_END
+     };
++#endif  //WIN32, quick
+ 
+     quick_dialog_t qdlg = {
+         w->y + w->lines - 6, w->x, w->cols,
+@@ -1051,6 +1265,12 @@ cd_dialog (void)
+         quick_widgets, NULL, NULL
+     };
+ 
++#if defined(WIN32)  //WIN32, quick
++    qc = XQUICK_LABELED_INPUT (qc, N_("cd"), input_label_left, "", 2, "input", &my_str, NULL);
++    qc = XQUICK_END (qc);
++    assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32, quick
++
+     return (quick_dialog (&qdlg) != B_CANCEL) ? my_str : NULL;
+ }
+ 
+@@ -1067,6 +1287,10 @@ symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
+     new = vfs_path_to_str (new_vpath);
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[5+2],
++                *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABELED_INPUT (N_("Existing filename (filename symlink will point to):"),
+@@ -1079,6 +1303,7 @@ symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32, quick
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 64,
+@@ -1086,6 +1311,18 @@ symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_LABELED_INPUT (qc, N_("Existing filename (filename symlink will point to):"),
++                                       input_label_above,
++                                       existing, 0, "input-2", ret_existing, NULL);
++        qc = XQUICK_SEPARATOR (qc, FALSE);
++        qc = XQUICK_LABELED_INPUT (qc, N_("Symbolic link filename:"), input_label_above,
++                                        new, 0, "input-1", ret_new, NULL);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32, quick
++
+         if (quick_dialog (&qdlg) == B_CANCEL)
+         {
+             *ret_new = NULL;
+diff --git a/src/filemanager/cmd.c b/src/filemanager/cmd.c
+index af1b0c3..32f1a57 100644
+--- a/src/filemanager/cmd.c
++++ b/src/filemanager/cmd.c
+@@ -216,6 +216,10 @@ select_unselect_cmd (const char *title, const char *history_name, gboolean do_se
+     mc_search_t *search;
+     int i;
+ 
++#if defined(WIN32)  //WIN32, quick
++    quick_widget_t quick_widgets[8],
++        *qc = quick_widgets;
++#else
+     quick_widget_t quick_widgets[] = {
+         /* *INDENT-OFF* */
+         QUICK_INPUT (INPUT_LAST_TEXT, 0, history_name, &reg_exp, NULL),
+@@ -228,6 +232,7 @@ select_unselect_cmd (const char *title, const char *history_name, gboolean do_se
+         QUICK_END
+         /* *INDENT-ON* */
+     };
++#endif  //WIN32, quick
+ 
+     quick_dialog_t qdlg = {
+         -1, -1, 50,
+@@ -235,6 +240,18 @@ select_unselect_cmd (const char *title, const char *history_name, gboolean do_se
+         quick_widgets, NULL, NULL
+     };
+ 
++#if defined(WIN32)  //WIN32, quick
++    qc = XQUICK_INPUT (qc, INPUT_LAST_TEXT, 0, history_name, &reg_exp, NULL);
++    qc = XQUICK_START_COLUMNS (qc);
++    qc =      XQUICK_CHECKBOX (qc, N_("&Files only"), &files_only, NULL);
++    qc =      XQUICK_CHECKBOX (qc, N_("&Using shell patterns"), &shell_patterns, NULL);
++    qc = XQUICK_NEXT_COLUMN (qc);
++    qc =      XQUICK_CHECKBOX (qc, N_("&Case sensitive"), &case_sens, NULL);
++    qc = XQUICK_STOP_COLUMNS (qc);
++    qc = XQUICK_END (qc);
++    assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32, quick
++
+     if (quick_dialog (&qdlg) == B_CANCEL)
+         return;
+ 
+diff --git a/src/filemanager/ext.c b/src/filemanager/ext.c
+index d2978d2..17a4673 100644
+--- a/src/filemanager/ext.c
++++ b/src/filemanager/ext.c
+@@ -38,6 +38,11 @@
+ #include <string.h>
+ #include <unistd.h>
+ 
++#if defined(USE_LIBMAGIC) //WIN32/APY,libmagic
++#include <magic.h>
++#elif defined(WIN32)
++#error libmagic not defined ...
++#endif
+ #include "lib/global.h"
+ #include "lib/tty/tty.h"
+ #include "lib/search.h"
+@@ -332,6 +337,7 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t * filename_vpath)
+     return g_string_free (shell_string, FALSE);
+ }
+ 
++
+ /* --------------------------------------------------------------------------------------------- */
+ 
+ static void
+@@ -456,11 +462,43 @@ exec_extension (const vfs_path_t * filename_vpath, const char *lc_data, int star
+     fputs (shell_string, cmd_file);
+     g_free (shell_string);
+ 
++#if defined(WIN32) // APY, command
++    { static const char XEXTHELPERSDIR[] = "@EXTHELPERSDIR@";
++      const char *cursor;
++
++      if (NULL != (cursor = strstr(shell_string, XEXTHELPERSDIR))) {
++        /*
++         *  Dynamically replace EXTHELPERDIR references, allowing for variable 
++         *  installation configuration.
++         *
++         *      <prefix>"<libexedir>/<postfix>" ....
++         */
++        const char *exthelperdir = mc_LIBEXECDIR();
++        const int prefix = cursor - shell_string;
++        char *t_shell_string;
++        int postfix = 0;
++
++        cursor += sizeof(XEXTHELPERSDIR) - 1;
++        if (*cursor == PATH_SEP) ++cursor;
++        while (cursor[postfix] && ' ' != cursor[postfix]) {
++            ++postfix;
++        }
++                                                /* rebuild path specification */
++        t_shell_string = g_strdup_printf ("%.*s\"%s%c%.*s\"%s",
++                prefix, shell_string, exthelperdir, PATH_SEP, postfix, cursor, cursor + postfix);
++
++        fputs (t_shell_string, cmd_file);
++        g_free (t_shell_string);
++      }
++    }
++#endif //WIN32
++
+     /*
+      * Make the script remove itself when it finishes.
+      * Don't do it for the viewer - it may need to rerun the script,
+      * so we clean up after calling view().
+      */
++#if !defined(WIN32) // APY, command
+     if (!run_view)
+     {
+         char *file_name;
+@@ -469,6 +507,7 @@ exec_extension (const vfs_path_t * filename_vpath, const char *lc_data, int star
+         fprintf (cmd_file, "\n/bin/rm -f %s\n", file_name);
+         g_free (file_name);
+     }
++#endif //WIN32
+ 
+     fclose (cmd_file);
+ 
+@@ -503,6 +542,14 @@ exec_extension (const vfs_path_t * filename_vpath, const char *lc_data, int star
+                                        LINES - mc_global.keybar_visible -
+                                        output_lines - 1, LINES - mc_global.keybar_visible - 1);
+         }
++#if defined(WIN32) // APY, command
++        { char *file_name;
++
++          file_name = vfs_path_to_str (temp_file_name_vpath);
++          w32_unlink (file_name);
++          g_free (file_name);
++        } 
++#endif //WIN32
+     }
+ 
+     g_free (cmd);
+@@ -566,14 +613,39 @@ get_popen_information (const char *cmd_file, const char *args, char *buf, int bu
+ static int
+ get_file_type_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
+ {
++#if defined(HAVE_LIBMAGIC) //WIN32/APY, libmagic
++    static struct magic_set *ms;                /* oneshot */
++    const char *m;
+     char *tmp;
++
++    if (NULL == ms) {
++        if (NULL == (ms = magic_open(MAGIC_NONE)) ||
++                magic_load(ms, mc_MAGICPATH()) == -1) {
++            message (1, MSG_ERROR,
++                _(" Cannot load magic db \"%s\"\n %s "),
++                mc_MAGICPATH(), (ms ? magic_error(ms) : _("cannot initialise")) );
++        }
++    }
++    buf[0] = 0;
++    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), 0);
++    if (ms != NULL && (m = magic_file(ms, tmp)) != NULL) {
++        strncat(buf, m, buflen);
++    } else {
++        strncat(buf, "unknown", buflen);
++    }
++    g_free (tmp);
++    return 1;
++
++#else
+     int ret;
++    char *tmp;
+ 
+     tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), 0);
+     ret = get_popen_information (FILE_CMD, tmp, buf, buflen);
+     g_free (tmp);
+ 
+     return ret;
++#endif
+ }
+ 
+ /* --------------------------------------------------------------------------------------------- */
+@@ -926,7 +998,11 @@ regex_command (const vfs_path_t * filename_vpath, const char *action)
+             }
+             else if (strncmp (p, "shell/", 6) == 0)
+             {
++#if defined(__WATCOMC__) //APY, calling
++                int (__watcall * cmp_func) (const char *s1, const char *s2, size_t n) = strncmp;
++#else
+                 int (*cmp_func) (const char *s1, const char *s2, size_t n) = strncmp;
++#endif
+ 
+                 p += 6;
+                 case_insense = (strncmp (p, "i/", 2) == 0);
+diff --git a/src/filemanager/file.c b/src/filemanager/file.c
+index 452303e..b699ca4 100644
+--- a/src/filemanager/file.c
++++ b/src/filemanager/file.c
+@@ -477,7 +477,7 @@ static FileProgressStatus
+ progress_update_one (FileOpTotalContext * tctx, FileOpContext * ctx, off_t add)
+ {
+     struct timeval tv_current;
+-    static struct timeval tv_start = { };
++    static struct timeval tv_start = {0};   //WIN32, fix
+ 
+     tctx->progress_count++;
+     tctx->progress_bytes += (uintmax_t) add;
+diff --git a/src/filemanager/filegui.c b/src/filemanager/filegui.c
+index b9fcfeb..89b1a06 100644
+--- a/src/filemanager/filegui.c
++++ b/src/filemanager/filegui.c
+@@ -1177,6 +1177,14 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
+         int val;
+         struct stat buf;
+ 
++#if defined(WIN32)  //WIN32, quick
++#ifdef ENABLE_BACKGROUND
++        quick_widget_t quick_widgets[20],
++#else
++        quick_widget_t quick_widgets[19],
++#endif
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABELED_INPUT (fmd_buf, input_label_above,
+@@ -1206,6 +1214,7 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, fmd_xlen,
+@@ -1213,6 +1222,35 @@ file_mask_dialog (FileOpContext * ctx, FileOperation operation,
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_LABELED_INPUT (qc, fmd_buf, input_label_above,
++                                    easy_patterns ? "*" : "^(.*)$", 0, "input-def", &source_mask,
++                                    NULL);
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =      XQUICK_SEPARATOR (qc, FALSE);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =      XQUICK_CHECKBOX (qc, N_("&Using shell patterns"), &source_easy_patterns, NULL);
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_LABELED_INPUT (qc, N_("to:"), input_label_above,
++                                       def_text_secure, 0, "input2", &dest_dir, NULL);
++        qc = XQUICK_SEPARATOR (qc, TRUE);
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =      XQUICK_CHECKBOX (qc, N_("Follow &links"), &ctx->follow_links, NULL);
++        qc =      XQUICK_CHECKBOX (qc, N_("Preserve &attributes"), &ctx->op_preserve, NULL);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =      XQUICK_CHECKBOX (qc, N_("Di&ve into subdir if exists"), &ctx->dive_into_subdirs, NULL);
++        qc =      XQUICK_CHECKBOX (qc, N_("&Stable symlinks"), &ctx->stable_symlinks, NULL);
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
++        qc =      XQUICK_BUTTON (qc, N_("&OK"), B_ENTER, NULL, NULL);
++#ifdef ENABLE_BACKGROUND
++        qc =      XQUICK_BUTTON (qc, N_("&Background"), B_USER, NULL, NULL);
++#endif /* ENABLE_XBACKGROUND */
++        qc =      XQUICK_BUTTON (qc, N_("&Cancel"), B_CANCEL, NULL, NULL);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif
++
+       ask_file_mask:
+         val = quick_dialog_skip (&qdlg, 4);
+ 
+diff --git a/src/filemanager/hotlist.c b/src/filemanager/hotlist.c
+index 6139edd..28f9ce8 100644
+--- a/src/filemanager/hotlist.c
++++ b/src/filemanager/hotlist.c
+@@ -958,6 +958,10 @@ static int
+ add_new_entry_input (const char *header, const char *text1, const char *text2,
+                      const char *help, char **r1, char **r2)
+ {
++#if defined(WIN32)  //WIN32, quick
++    quick_widget_t quick_widgets[8],
++        *qc = quick_widgets;
++#else
+     quick_widget_t quick_widgets[] = {
+         /* *INDENT-OFF* */
+         QUICK_LABELED_INPUT (text1, input_label_above, *r1, 0, "input-lbl", r1, NULL),
+@@ -970,6 +974,7 @@ add_new_entry_input (const char *header, const char *text1, const char *text2,
+         QUICK_END
+         /* *INDENT-ON* */
+     };
++#endif  //WIN32
+ 
+     quick_dialog_t qdlg = {
+         -1, -1, 64,
+@@ -979,6 +984,18 @@ add_new_entry_input (const char *header, const char *text1, const char *text2,
+ 
+     int ret;
+ 
++#if defined(WIN32)  //WIN32, quick
++    qc = XQUICK_LABELED_INPUT (qc, text1, input_label_above, *r1, 0, "input-lbl", r1, NULL);
++    qc = XQUICK_SEPARATOR (qc, FALSE);
++    qc = XQUICK_LABELED_INPUT (qc, text2, input_label_above, *r2, 0, "input-lbl", r2, NULL);
++    qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
++    qc =      XQUICK_BUTTON (qc, N_("&Append"), B_APPEND, NULL, NULL);
++    qc =      XQUICK_BUTTON (qc, N_("&Insert"), B_INSERT, NULL, NULL);
++    qc =      XQUICK_BUTTON (qc, N_("&Cancel"), B_CANCEL, NULL, NULL);
++    qc = XQUICK_END (qc); 
++    assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif
++
+     ret = quick_dialog (&qdlg);
+ 
+     return (ret != B_CANCEL) ? ret : 0;
+@@ -1021,6 +1038,10 @@ add_new_entry_cmd (void)
+ static int
+ add_new_group_input (const char *header, const char *label, char **result)
+ {
++#if defined(WIN32)  //WIN32, quick
++    quick_widget_t quick_widgets[6],
++        *qc = quick_widgets;
++#else
+     quick_widget_t quick_widgets[] = {
+         /* *INDENT-OFF* */
+         QUICK_LABELED_INPUT (label, input_label_above, "", 0, "input", result, NULL),
+@@ -1031,6 +1052,7 @@ add_new_group_input (const char *header, const char *label, char **result)
+         QUICK_END
+         /* *INDENT-ON* */
+     };
++#endif  //WIN32
+ 
+     quick_dialog_t qdlg = {
+         -1, -1, 64,
+@@ -1040,6 +1062,16 @@ add_new_group_input (const char *header, const char *label, char **result)
+ 
+     int ret;
+ 
++#if defined(WIN32)  //WIN32, quick
++    qc = XQUICK_LABELED_INPUT (qc, label, input_label_above, "", 0, "input", result, NULL);
++    qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
++    qc =      XQUICK_BUTTON (qc, N_("&Append"), B_APPEND, NULL, NULL);
++    qc =      XQUICK_BUTTON (qc, N_("&Insert"), B_INSERT, NULL, NULL);
++    qc =      XQUICK_BUTTON (qc, N_("&Cancel"), B_CANCEL, NULL, NULL);
++    qc = XQUICK_END (qc);
++    assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif
++
+     ret = quick_dialog (&qdlg);
+ 
+     return (ret != B_CANCEL) ? ret : 0;
+diff --git a/src/filemanager/listmode.c b/src/filemanager/listmode.c
+index 0af5845..429775f 100644
+--- a/src/filemanager/listmode.c
++++ b/src/filemanager/listmode.c
+@@ -45,7 +45,7 @@
+ 
+ #include "lib/tty/tty.h"
+ #include "lib/tty/key.h"
+-#include "lib/skin/skin.h"
++//missing,  #include "lib/skin/skin.h"
+ 
+ /* Needed for the extern declarations of integer parameters */
+ #include "dir.h"
+@@ -75,7 +75,10 @@ struct listmode_button
+ {
+     int ret_cmd, flags, y, x;
+     char *text;
+-    bcback callback;
++//WIN32, fix
++//  bcback callback;    
++    bcback_fn callback;
++
+ };
+ 
+ struct listmode_label
+@@ -90,18 +93,18 @@ static WListbox *l_listmode;
+ 
+ static WLabel *pname;
+ 
+-static char *listmode_section = "[Listing format edit]";
++static const char *listmode_section = "[Listing format edit]";
+ 
+-static char *s_genwidth[2] = { "Half width", "Full width" };
++static const char *s_genwidth[2] = { "Half width", "Full width" };
+ 
+ static WRadio *radio_genwidth;
+-static char *s_columns[2] = { "One column", "Two columns" };
++static const char *s_columns[2] = { "One column", "Two columns" };
+ 
+ static WRadio *radio_columns;
+-static char *s_justify[3] = { "Left justified", "Default justification", "Right justified" };
++static const char *s_justify[3] = { "Left justified", "Default justification", "Right justified" };
+ 
+ static WRadio *radio_justify;
+-static char *s_itemwidth[3] = { "Free width", "Fixed width", "Growable width" };
++static const char *s_itemwidth[3] = { "Free width", "Fixed width", "Growable width" };
+ 
+ static WRadio *radio_itemwidth;
+ 
+@@ -111,7 +114,7 @@ static WRadio *radio_itemwidth;
+ static char *
+ select_new_item (void)
+ {
+-    char **possible_items;
++    const char **possible_items;    //APY,fix
+     char *ret = NULL;
+     int i;
+     Listbox *mylistbox;
+@@ -128,14 +131,14 @@ select_new_item (void)
+     if (i >= 0)
+         ret = g_strdup (possible_items[i]);
+ 
+-    g_strfreev (possible_items);
++    g_strfreev ((char **)possible_items);
+     return ret;
+ }
+ 
+ /* --------------------------------------------------------------------------------------------- */
+ 
+ static int
+-bplus_cback (int action)
++bplus_cback (struct WButton *b, int action)
+ {
+     return 0;
+ }
+@@ -143,7 +146,7 @@ bplus_cback (int action)
+ /* --------------------------------------------------------------------------------------------- */
+ 
+ static int
+-bminus_cback (int action)
++bminus_cback (struct WButton *b, int action)
+ {
+     return 0;
+ }
+@@ -151,7 +154,7 @@ bminus_cback (int action)
+ /* --------------------------------------------------------------------------------------------- */
+ 
+ static int
+-badd_cback (int action)
++badd_cback (struct WButton *b, int action)
+ {
+     char *s = select_new_item ();
+     if (s)
+@@ -165,7 +168,7 @@ badd_cback (int action)
+ /* --------------------------------------------------------------------------------------------- */
+ 
+ static int
+-bremove_cback (int action)
++bremove_cback (struct WButton *b, int action)
+ {
+     listbox_remove_current (l_listmode);
+     return 0;
+@@ -197,6 +200,9 @@ init_listmode (char *oldlistformat)
+ 
+     do_refresh ();
+ 
++#ifndef DLG_REVERSE
++#define DLG_REVERSE 0   //WIN32,missing
++#endif
+     listmode_dlg =
+         create_dlg (TRUE, 0, 0, 22, 74, dialog_colors, NULL, NULL, listmode_section,
+                     "Listing format edit", DLG_CENTER | DLG_REVERSE);
+@@ -287,7 +293,8 @@ collect_new_format (void)
+     char *newformat;
+     int i;
+     char *last;
+-    char *text, *extra;
++    char *text;
++    void *extra;
+ 
+     newformat = g_malloc (1024);
+     if (radio_genwidth->sel)
+diff --git a/src/filemanager/midnight.c b/src/filemanager/midnight.c
+index a63d6f6..ae5e079 100644
+--- a/src/filemanager/midnight.c
++++ b/src/filemanager/midnight.c
+@@ -63,6 +63,9 @@
+ #include "src/keybind-defaults.h"
+ #include "lib/keybind.h"
+ #include "lib/event.h"
++#ifdef LISTMODE_EDITOR
++#include "listmode.h"           /* missing */
++#endif
+ 
+ #include "tree.h"
+ #include "boxes.h"              /* sort_box(), tree_box() */
+@@ -1026,7 +1029,7 @@ mc_maybe_editor_or_viewer (void)
+ 
+ /* --------------------------------------------------------------------------------------------- */
+ 
+-static gboolean
++/*static, WIN32*/ gboolean
+ quit_cmd_internal (int quiet)
+ {
+     int q = quit;
+@@ -1105,6 +1108,12 @@ update_dirty_panels (void)
+ 
+ /* --------------------------------------------------------------------------------------------- */
+ 
++#if defined(WIN32)
++extern void drive_cmd_a(void);
++extern void drive_cmd_b(void);
++extern void drive_cmd(void);
++#endif
++
+ static cb_ret_t
+ midnight_execute_cmd (Widget * sender, unsigned long command)
+ {
+@@ -1394,6 +1403,17 @@ midnight_execute_cmd (Widget * sender, unsigned long command)
+     case CK_Cancel:
+         /* don't close panels due to SIGINT */
+         break;
++#if defined(WIN32) //APY, drive
++    case CK_DriveChangeA:
++        drive_cmd_a();
++        break;
++    case CK_DriveChangeB:
++        drive_cmd_b();
++        break;
++    case CK_DriveChange:
++        drive_cmd();
++        break;
++#endif
+     default:
+         res = MSG_NOT_HANDLED;
+     }
+diff --git a/src/filemanager/panel.c b/src/filemanager/panel.c
+index 6c0532d..d469b0f 100644
+--- a/src/filemanager/panel.c
++++ b/src/filemanager/panel.c
+@@ -1541,7 +1541,9 @@ panel_get_title_without_hotkey (const char *title)
+ 
+     hkey = strchr (translated_title, '&');
+     if ((hkey != NULL) && (hkey[1] != '\0'))
+-        memmove ((void *) hkey, (void *) hkey + 1, strlen (hkey));
++//WIN32, void
++//      memmove ((void *) hkey, (void *) hkey + 1, strlen (hkey));
++        memmove ((void *) hkey, (unsigned char *) hkey + 1, strlen (hkey));
+ 
+     return translated_title;
+ }
+diff --git a/src/keybind-defaults.c b/src/keybind-defaults.c
+index 7ad1f55..0b51453 100644
+--- a/src/keybind-defaults.c
++++ b/src/keybind-defaults.c
+@@ -130,6 +130,12 @@ static const global_keymap_ini_t default_main_keymap[] = {
+     {"SelectInvert", "kpasterisk"},
+     /* List of screens */
+     {"ScreenList", "alt-prime"},
++#if defined(WIN32) //APY, drive
++    /* Change drive */
++    {"DriveChange", "alt-d"},
++    {"DriveChangeA", "alt-f1"},
++    {"DriveChangeB", "alt-f2"},
++#endif
+     {NULL, NULL}
+ };
+ 
+diff --git a/src/main.c b/src/main.c
+index 573fa21..01c7fa6 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -151,7 +151,11 @@ OS_Setup (void)
+     else
+         mc_global.sysconfig_dir = g_strdup (SYSCONFDIR);
+ 
++#if defined(MC_DATADIR) //WIN32,namespace
++    mc_global.share_data_dir = g_strdup (MC_DATADIR);
++#else
+     mc_global.share_data_dir = g_strdup (DATADIR);
++#endif
+ 
+     /* Set up temporary directory */
+     mc_tmpdir ();
+@@ -238,6 +242,9 @@ init_sigchld (void)
+ int
+ main (int argc, char *argv[])
+ {
++#if defined(WIN32) //APY, config
++    extern void WIN32_Setup(void);
++#endif //WIN32
+     GError *error = NULL;
+     gboolean config_migrated = FALSE;
+     char *config_migrate_msg;
+@@ -250,6 +257,9 @@ main (int argc, char *argv[])
+     (void) bindtextdomain (PACKAGE, LOCALEDIR);
+     (void) textdomain (PACKAGE);
+ 
++#if defined(WIN32) //APY, config
++    WIN32_Setup();
++#endif
+     /* do this before args parsing */
+     str_init_strings (NULL);
+ 
+diff --git a/src/textconf.c b/src/textconf.c
+index 6c41d66..a9edb5a 100644
+--- a/src/textconf.c
++++ b/src/textconf.c
+@@ -199,6 +199,10 @@ show_datadirs_extended (void)
+     PRINTF2 ("fish:", LIBEXECDIR, FISH_PREFIX "/");
+ #endif
+ #endif /* ENABLE_VFS_EXTFS || defiined ENABLE_VFS_FISH */
++#if defined(HAVE_LIBMAGIC) //WIN32/APY, libmagic
++    PRINTF2 ("magic:", mc_MAGICPATH(), "");
++#endif
++
+     (void) puts ("");
+ 
+     PRINTF_GROUP (_("User data"));
+@@ -215,6 +219,27 @@ show_datadirs_extended (void)
+ #ifdef USE_INTERNAL_EDIT
+     PRINTF ("mcedit macros:", mc_config_get_data_path (), MC_MACRO_FILE);
+     PRINTF ("mcedit external macros:", mc_config_get_data_path (), MC_EXTMACRO_FILE ".*");
++#if defined(WIN32) //APY, conf
++    {
++        static const struct {
++            const char *desc, *key;
++        } editpaths[] = {
++            { "syntax:",      EDIT_SYNTAX_FILE  },
++            { "clip:",        EDIT_CLIP_FILE    },
++            { "block:",       EDIT_BLOCK_FILE   },
++            { "temp:",        EDIT_TEMP_FILE    },
++            { "global-menu:", EDIT_GLOBAL_MENU  },
++            { "local-menu:",  EDIT_LOCAL_MENU   },
++            { "home-menu:",   EDIT_HOME_MENU    }
++            };
++
++        for (int i = 0; i < (sizeof(editpaths)/sizeof(editpaths[i])); ++i) {
++            char *f = mc_config_get_full_path (editpaths[i].key);
++            printf ("\tmcedit %-8s %s\n", editpaths[i].desc, (f ? f : "n/a"));
++            g_free (f);
++        }
++    }
++#endif  //WIN32
+ #endif
+     PRINTF_SECTION2 (_("Cache directory:"), mc_config_get_cache_path ());
+ 
+diff --git a/src/viewer/dialogs.c b/src/viewer/dialogs.c
+index 7a251bb..dfc0336 100644
+--- a/src/viewer/dialogs.c
++++ b/src/viewer/dialogs.c
+@@ -85,6 +85,14 @@ mcview_dialog_search (mcview_t * view)
+     list_of_types = mc_search_get_types_strings_array (&num_of_types);
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++#ifdef HAVE_CHARSET
++        quick_widget_t quick_widgets[12+2],
++#else
++        quick_widget_t quick_widgets[11+2],
++#endif
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_LABELED_INPUT (N_("Enter search string:"), input_label_above,
+@@ -105,6 +113,7 @@ mcview_dialog_search (mcview_t * view)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 58,
+@@ -112,6 +121,26 @@ mcview_dialog_search (mcview_t * view)
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_LABELED_INPUT (qc, N_("Enter search string:"), input_label_above,
++                                       INPUT_LAST_TEXT, 0, MC_HISTORY_SHARED_SEARCH, &exp, NULL);
++        qc = XQUICK_SEPARATOR (qc, TRUE);
++        qc = XQUICK_START_COLUMNS (qc);
++        qc =    XQUICK_RADIO (qc, num_of_types, (const char **) list_of_types,
++                                (int *) &mcview_search_options.type, NULL);
++        qc = XQUICK_NEXT_COLUMN (qc);
++        qc =    XQUICK_CHECKBOX (qc, N_("Cas&e sensitive"), &mcview_search_options.case_sens, NULL);
++        qc =    XQUICK_CHECKBOX (qc, N_("&Backwards"), &mcview_search_options.backwards, NULL);
++        qc =    XQUICK_CHECKBOX (qc, N_("&Whole words"), &mcview_search_options.whole_words, NULL);
++#ifdef HAVE_CHARSET
++        qc =    XQUICK_CHECKBOX (qc, N_("&All charsets"), &mcview_search_options.all_codepages, NULL);
++#endif
++        qc = XQUICK_STOP_COLUMNS (qc);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
+         qd_result = quick_dialog (&qdlg);
+     }
+ 
+@@ -195,6 +224,10 @@ mcview_dialog_goto (mcview_t * view, off_t * offset)
+ #endif
+ 
+     {
++#if defined(WIN32)  //WIN32, quick
++        quick_widget_t quick_widgets[4+2],
++            *qc = quick_widgets;
++#else
+         quick_widget_t quick_widgets[] = {
+             /* *INDENT-OFF* */
+             QUICK_INPUT (INPUT_LAST_TEXT, 0, MC_HISTORY_VIEW_GOTO, &exp, NULL),
+@@ -204,6 +237,7 @@ mcview_dialog_goto (mcview_t * view, off_t * offset)
+             QUICK_END
+             /* *INDENT-ON* */
+         };
++#endif  //WIN32
+ 
+         quick_dialog_t qdlg = {
+             -1, -1, 40,
+@@ -211,6 +245,14 @@ mcview_dialog_goto (mcview_t * view, off_t * offset)
+             quick_widgets, NULL, NULL
+         };
+ 
++#if defined(WIN32)  //WIN32, quick
++        qc = XQUICK_INPUT (qc, INPUT_LAST_TEXT, 0, MC_HISTORY_VIEW_GOTO, &exp, NULL);
++        qc = XQUICK_RADIO (qc, num_of_types, (const char **) mc_view_goto_str, (int *) &current_goto_type, NULL);
++        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
++        qc = XQUICK_END (qc);
++        assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
++#endif  //WIN32
++
+         /* run dialog */
+         qd_result = quick_dialog (&qdlg);
+     }
+diff --git a/src/viewer/growbuf.c b/src/viewer/growbuf.c
+index 64ccc9f..b2ffe7e 100644
+--- a/src/viewer/growbuf.c
++++ b/src/viewer/growbuf.c
+@@ -137,7 +137,7 @@ mcview_growbuf_read_until (mcview_t * view, off_t ofs)
+             g_ptr_array_add (view->growbuf_blockptr, newblock);
+             view->growbuf_lastindex = 0;
+         }
+-        p = g_ptr_array_index (view->growbuf_blockptr,
++        p = (byte *)g_ptr_array_index (view->growbuf_blockptr,
+                                view->growbuf_blockptr->len - 1) + view->growbuf_lastindex;
+ 
+         bytesfree = VIEW_PAGE_SIZE - view->growbuf_lastindex;
+@@ -205,14 +205,14 @@ mcview_get_byte_growing_buffer (mcview_t * view, off_t byte_index, int *retval)
+     if (pageno < (off_t) view->growbuf_blockptr->len - 1)
+     {
+         if (retval != NULL)
+-            *retval = *((byte *) (g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex));
++            *retval = *((byte *) ((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex));
+         return TRUE;
+     }
+     if (pageno == (off_t) view->growbuf_blockptr->len - 1
+         && pageindex < (off_t) view->growbuf_lastindex)
+     {
+         if (retval != NULL)
+-            *retval = *((byte *) (g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex));
++            *retval = *((byte *) ((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex));
+         return TRUE;
+     }
+     return FALSE;
+@@ -237,10 +237,10 @@ mcview_get_ptr_growing_buffer (mcview_t * view, off_t byte_index)
+     if (view->growbuf_blockptr->len == 0)
+         return NULL;
+     if (pageno < (off_t) view->growbuf_blockptr->len - 1)
+-        return (char *) (g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex);
++        return (char *) ((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex);
+     if (pageno == (off_t) view->growbuf_blockptr->len - 1
+         && pageindex < (off_t) view->growbuf_lastindex)
+-        return (char *) (g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex);
++        return (char *) ((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex);
+     return NULL;
+ }
+ 
+-- 
+1.7.11.msysgit.1
+
