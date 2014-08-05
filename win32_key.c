@@ -508,9 +508,9 @@ lookup_key (const char *name, char **label)
             key = lookup_keyname (g_strstrip (*p), &idx);
 
             if (key == KEY_M_ALT)
-                use_meta = idx;
+                use_meta  = idx;
             else if (key == KEY_M_CTRL)
-                use_ctrl = idx;
+                use_ctrl  = idx;
             else if (key == KEY_M_SHIFT)
                 use_shift = idx;
             else
@@ -1031,10 +1031,12 @@ key_mapwin32(
             if ((ch = w32Keys[i].key) >= 0) {
                                                 /* apply modifiers */
                 if (w32Keys[i].mods == MOD_FUNC) {
-                    if (ch >= KEY_F(1) && ch <= KEY_F(10) && (mod == KEY_M_SHIFT))  {
-                        ch += 10;               /* .. convert Shift+Fn to F(n+10) */
+                    if (ch >= KEY_F(1) && ch <= KEY_F(10) && (mod == KEY_M_SHIFT)) {
+                        /* convert Shift+Fn to F(n+10) */
+                        ch += 10;
 
-                    } else {                    /* .. otherwise, apply ignoring Shift */
+                    } else {
+                        /* otherwise, apply ignoring Shift */
                         ch |= (mod & ~KEY_M_SHIFT);
                     }
 

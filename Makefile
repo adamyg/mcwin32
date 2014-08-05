@@ -110,12 +110,13 @@ MC_EDITOR=\
 	$(D_OBJED)/editoptions$(O)		\
 	$(D_OBJED)/editwidget$(O)		\
 	$(D_OBJED)/etags$(O)			\
+	$(D_OBJED)/format$(O)			\
 	$(D_OBJED)/spell$(O)			\
 	$(D_OBJED)/spell_dialogs$(O)		\
-	$(D_OBJED)/syntax$(O)			\
-	$(D_OBJED)/wordproc$(O)
+	$(D_OBJED)/syntax$(O)
 
-#488	$(D_OBJED)/editkeys$(O)			\
+#4.8.11	$(D_OBJED)/wordproc$(O)
+#488	$(D_OBJED)/editkeys$(O)
 
 D_OBJVW=	$(D_OBJ)/viewer
 
@@ -183,6 +184,7 @@ MC_LIBMC=\
 	$(D_OBJMC)/lib_logging$(O)		\
 	$(D_OBJMC)/lib_serialize$(O)		\
 	$(D_OBJMC)/lib_timefmt$(O)		\
+	$(D_OBJMC)/lib_timer$(O)		\
 	$(D_OBJMC)/lib_util$(O)			\
 	\
 	$(D_OBJMC)/event_event$(O)		\
@@ -389,6 +391,7 @@ CONFIGURATION=\
 	$(CFG_ETC_MAGIC)			\
 	$(CFG_SHARE)				\
 	$(CFG_SHARE_HELP)			\
+	$(CFG_SHARE_NEWS)			\
 	$(CFG_SHARE_HINTS)			\
 	$(CFG_SHARE_SKINS)			\
 	$(CFG_SHARE_SYNTAX)			\

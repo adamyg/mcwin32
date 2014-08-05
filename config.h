@@ -1,6 +1,6 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
-/* 
+/*
  *  WIN32 config.h
  */
 
@@ -15,11 +15,11 @@
 #include <buildinfo.h>
 
 #define PACKAGE             "mc-win32-native"
-#define VERSION             "4.8.11"            /* 28/12/13 */
+#define VERSION             "4.8.12"            /* 5 Aug 14 */
 
 #ifdef  RC_INVOKED                              /* see: mc.rc */
-#define RC_PRODUCTVERSION   4,8,11,0
-#define RC_FILEVERSION      4,8,11,1
+#define RC_PRODUCTVERSION   4,8,12,0
+#define RC_FILEVERSION      4,8,12,1
 #endif
 
 #define MC_CONFIGURE_ARGS   "win32-native"
