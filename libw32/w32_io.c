@@ -711,7 +711,7 @@ w32_symlink(const char *name1, const char *name2)
         errno = ENAMETOOLONG;
 
     else if (GetFileAttributes(name2) != 0xffffffff)
-        errno = EACCES;
+        errno = EEXIST; /*EACCES*/
 
     else if (CreateShortcut(name2, name1, "", name1) == FALSE)
         errno = EIO;
