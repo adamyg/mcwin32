@@ -7,6 +7,7 @@
         g_snprintf
         g_vsnprintf
         g_string_append_vprintf
+        g_error_new_valist
         g_get_user_config_dir
 
         * Address PATH_SEP and va_list usage.
@@ -108,7 +109,7 @@ g_get_current_dir (void)
 }
 
 
-/*  
+/*
  *  g_mktemps replacement
  */
 int
@@ -178,6 +179,23 @@ g_string_append_vprintf (GString *string, const gchar *format, va_list ap)
 
 
 /*
+ *  g_error_new_valist() replacement
+ */
+GError *
+g_error_new_valist (GQuark domain, gint code, const gchar * format, va_list ap)
+{
+    char *message;
+    GError *ret_value;
+
+    message = g_strdup_vprintf (format, ap);
+    ret_value = g_error_new_literal (domain, code, message);
+    g_free (message);
+
+    return ret_value;
+}
+
+
+/*
  *  g_get_user_config_dir() replacement
  */
 const char *
@@ -239,3 +257,4 @@ g_build_filename (const gchar *first_element, ...)
     return ret;
 }
 /*end*/
+
