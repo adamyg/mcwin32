@@ -1,0 +1,23 @@
+SED_PARAMETERS = \
+	-e "s/%DATE_OF_MAN_PAGE%/$${MAN_DATE}/g" \
+	-e "s/%DISTR_VERSION%/@DISTR_VERSION@/g" \
+	-e "s{%prefix%{@prefix@{g" \
+	-e "s{%sysconfdir%{@sysconfdir@{g" \
+	-e "s{%libexecdir%{@libexecdir@{g"
+
+MAN_DATE_CMD = \
+	LC_ALL=$(DATE_LANG) @PERL@ -MPOSIX -e '\
+	    @fi=lstat("'$${MAN_FILE}'"); \
+	    print POSIX::strftime("$(DATE_FORMAT)", localtime($$fi[9]));' 2>/dev/null
+
+mc.1: $(srcdir)/mc.1.in
+	MAN_FILE=$<; MAN_DATE=$$($(MAN_DATE_CMD)); \
+	sed $(SED_PARAMETERS) $< > $@
+
+mcedit.1: $(srcdir)/mcedit.1.in
+	MAN_FILE=$<; MAN_DATE=$$($(MAN_DATE_CMD)); \
+	sed $(SED_PARAMETERS) $< > $@
+
+mcview.1: $(srcdir)/mcview.1.in
+	MAN_FILE=$<; MAN_DATE=$$($(MAN_DATE_CMD)); \
+	sed $(SED_PARAMETERS) $< > $@

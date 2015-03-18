@@ -1,0 +1,4401 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+# Keith Bowes <zooplah@gmail.com>, 2011
+msgid ""
+msgstr ""
+"Project-Id-Version: Midnight Commander\n"
+"Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
+"POT-Creation-Date: 2014-07-25 10:37+0400\n"
+"PO-Revision-Date: 2014-03-05 22:46+0000\n"
+"Last-Translator: Keith Bowes <zooplah@gmail.com>\n"
+"Language-Team: Esperanto (http://www.transifex.com/projects/p/mc/language/"
+"eo/)\n"
+"Language: eo\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+msgid "Warning: cannot load codepages list"
+msgstr "Averto: ne eblas ŝargi liston da kodpaĝoj"
+
+msgid "7-bit ASCII"
+msgstr "7-bita Askio"
+
+#, c-format
+msgid "Cannot translate from %s to %s"
+msgstr "Ne eblas traduki el %s al %s"
+
+msgid "Event system already initialized"
+msgstr "Eventosistemo jam startigita"
+
+msgid "Failed to initialize event system"
+msgstr "Malsukcesis startigi la eventosistemon"
+
+msgid "Event system not initialized"
+msgstr "Eventosistemo ne jam startigita"
+
+msgid "Check input data! Some of parameters are NULL!"
+msgstr "Kontrolu enmeton! Iuj parametroj estis NUL!"
+
+#, c-format
+msgid "Unable to create group '%s' for events!"
+msgstr "Ne eblas krei grupon '%s' por eventoj!"
+
+#, c-format
+msgid "Unable to create event '%s'!"
+msgstr "Ne eblas krei eventon '%s'!"
+
+#, c-format
+msgid ""
+"File \"%s\" is already being edited.\n"
+"User: %s\n"
+"Process ID: %d"
+msgstr ""
+"Dosiero \"%s\" jam estas redaktata.\n"
+"Uzanto: %s\n"
+"Proceza identigilo: %d"
+
+msgid "File locked"
+msgstr "Dosiero fiksita"
+
+msgid "&Grab lock"
+msgstr "&Ekkapti fiksilon"
+
+msgid "&Ignore lock"
+msgstr "&Ignori fiksilon"
+
+#, c-format
+msgid "Cannot create %s directory"
+msgstr "Ne eblas krei dosierujon %s"
+
+msgid "FATAL: not a directory:"
+msgstr "PEREIGA: ne estas dosierujo:"
+
+#, c-format
+msgid "An error occurred while migrating user settings: %s"
+msgstr "Eraro okazis dum migrigi uzanto-agordon: %s"
+
+#, c-format
+msgid ""
+"Your old settings were migrated from %s\n"
+"to Freedesktop recommended dirs.\n"
+"To get more info, please visit\n"
+"http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html"
+msgstr ""
+"Via eksaj agordaĵoj estis migrintaj el %s\n"
+"al dosierujoj rekomendataj de Freedesktop.\n"
+"Por akiri pliajn informojn, bonvolu viziti\n"
+"http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html"
+
+#, c-format
+msgid ""
+"Your old settings were migrated from %s\n"
+"to %s\n"
+msgstr ""
+"Via eksa agordo estis elmigrinta el %s\n"
+"al %s\n"
+
+msgid "Search string not found"
+msgstr "Serĉita ĉeno ne trovita"
+
+msgid "Not implemented yet"
+msgstr "Ne jam realigita"
+
+msgid "Num of replace tokens not equal to num of found tokens"
+msgstr "Nombro da anstataŭotaj eroj ne egalas nombron da trovitaj eroj"
+
+#, c-format
+msgid "Invalid token number %d"
+msgstr "Nevalida era numero %d"
+
+msgid "Regular expression error"
+msgstr "Regulesprima eraro"
+
+msgid "No&rmal"
+msgstr "&Normala"
+
+msgid "Re&gular expression"
+msgstr "Re&gulesprimo"
+
+msgid "He&xadecimal"
+msgstr "&Deksesuma"
+
+msgid "Wil&dcard search"
+msgstr "Ĵo&kera ŝerco"
+
+#, c-format
+msgid ""
+"Unable to load '%s' skin.\n"
+"Default skin has been loaded"
+msgstr ""
+"Ne eblas ŝargi etoson '%s'.\n"
+"Apriora etoso estas ŝargita"
+
+#, c-format
+msgid ""
+"Unable to parse '%s' skin.\n"
+"Default skin has been loaded"
+msgstr ""
+"Ne eblas interpreti etoson '%s'.\n"
+"Apriora etoso estas ŝargita"
+
+#, c-format
+msgid ""
+"Unable to use '%s' skin with 256 colors support\n"
+"on non-256 colors terminal.\n"
+"Default skin has been loaded"
+msgstr ""
+"Ne eblas uzi 256-koloran etoson '%s'.\n"
+"ĉe terminalo kun malpli da koloroj.\n"
+"Uzanta la aprioran etoson"
+
+msgid "Escape"
+msgstr "Eskapa klavo"
+
+msgid "Function key 1"
+msgstr "Funkcia klavo 1"
+
+msgid "Function key 2"
+msgstr "Funkcia klavo 2"
+
+msgid "Function key 3"
+msgstr "Funkcia klavo 3"
+
+msgid "Function key 4"
+msgstr "Funkcia klavo 4"
+
+msgid "Function key 5"
+msgstr "Funkcia klavo 5"
+
+msgid "Function key 6"
+msgstr "Funkcia klavo 6"
+
+msgid "Function key 7"
+msgstr "Funkcia klavo 7"
+
+msgid "Function key 8"
+msgstr "Funkcia klavo 8"
+
+msgid "Function key 9"
+msgstr "Funkcia klavo 9"
+
+msgid "Function key 10"
+msgstr "Funkcia klavo 10"
+
+msgid "Function key 11"
+msgstr "Funkcia klavo 11"
+
+msgid "Function key 12"
+msgstr "Funkcia klavo 12"
+
+msgid "Function key 13"
+msgstr "Funkcia klavo 13"
+
+msgid "Function key 14"
+msgstr "Funkcia klavo 14"
+
+msgid "Function key 15"
+msgstr "Funkcia klavo 15"
+
+msgid "Function key 16"
+msgstr "Funkcia klavo 16"
+
+msgid "Function key 17"
+msgstr "Funkcia klavo 17"
+
+msgid "Function key 18"
+msgstr "Funkcia klavo 18"
+
+msgid "Function key 19"
+msgstr "Funkcia klavo 19"
+
+msgid "Function key 20"
+msgstr "Funkcia klavo 20"
+
+msgid "Completion/M-tab"
+msgstr "Kompletiga klavo"
+
+msgid "BackTab/S-tab"
+msgstr "Inversa tabado/S-tabo"
+
+msgid "Backspace"
+msgstr "Retropaŝa klavo"
+
+msgid "Up arrow"
+msgstr "Supra sagoklavo"
+
+msgid "Down arrow"
+msgstr "Malsupra sagoklavo"
+
+msgid "Left arrow"
+msgstr "Maldekstra sagoklavo"
+
+msgid "Right arrow"
+msgstr "Dekstra sagoklavo"
+
+msgid "Insert"
+msgstr "Enmeta klavo"
+
+msgid "Delete"
+msgstr "Foriga klavo"
+
+msgid "Home"
+msgstr "Hejma klavo"
+
+msgid "End key"
+msgstr "Finiga klavo"
+
+msgid "Page Up"
+msgstr "Klavo por suprenigi je ekranpleno"
+
+msgid "Page Down"
+msgstr "Klavo por malsuprenigi je ekranpleno"
+
+msgid "/ on keypad"
+msgstr "/ ĉe cifera klavaro"
+
+msgid "* on keypad"
+msgstr "* ĉe cifera klavaro"
+
+msgid "- on keypad"
+msgstr "- ĉe cifera klavaro"
+
+msgid "+ on keypad"
+msgstr "+ ĉe cifera klavaro"
+
+msgid "Left arrow keypad"
+msgstr "Maldekstra sagoklavo [cifera klavaro]"
+
+msgid "Right arrow keypad"
+msgstr "Dekstra sagoklavo [cifera klavaro]"
+
+msgid "Up arrow keypad"
+msgstr "Supra sagoklavo [cifera klavaro]"
+
+msgid "Down arrow keypad"
+msgstr "Suba sagoklavo [cifera klavaro]"
+
+msgid "Home on keypad"
+msgstr "Hejma klavo [cifera klavaro]"
+
+msgid "End on keypad"
+msgstr "Finiga klavo [cifera klavaro]"
+
+msgid "Page Down keypad"
+msgstr "Klavo por malsuprenigi je ekranpleno [cifera klavaro]"
+
+msgid "Page Up keypad"
+msgstr "Klavo por suprenigi je ekranpleno [cifera klavaro]"
+
+msgid "Insert on keypad"
+msgstr "Enmeta klavo [cifera klavaro]"
+
+msgid "Delete on keypad"
+msgstr "Foriga klavo [cifera klavaro]"
+
+msgid "Enter on keypad"
+msgstr "Enen-klavo [cifera klavaro]"
+
+msgid "Function key 21"
+msgstr "Funkcia klavo 21"
+
+msgid "Function key 22"
+msgstr "Funkcia klavo 22"
+
+msgid "Function key 23"
+msgstr "Funkcia klavo 23"
+
+msgid "Function key 24"
+msgstr "Funkcia klavo 24"
+
+msgid "A1 key"
+msgstr "Klavo A1"
+
+msgid "C1 key"
+msgstr "Klavo C1"
+
+msgid "Asterisk"
+msgstr "Steleto"
+
+msgid "Minus"
+msgstr "Minus"
+
+msgid "Plus"
+msgstr "Plus"
+
+msgid "Dot"
+msgstr "Punkto"
+
+msgid "Less than"
+msgstr "Malpli ol"
+
+msgid "Great than"
+msgstr "Pli ol"
+
+msgid "Equal"
+msgstr "Egalsigno"
+
+msgid "Comma"
+msgstr "Komo"
+
+msgid "Apostrophe"
+msgstr "Apostrofo"
+
+msgid "Colon"
+msgstr "Dupunkto"
+
+msgid "Exclamation mark"
+msgstr "Krisigno"
+
+msgid "Question mark"
+msgstr "Demandosigno"
+
+msgid "Ampersand"
+msgstr "Kaj-signo"
+
+msgid "Dollar sign"
+msgstr "Dolara signo"
+
+msgid "Quotation mark"
+msgstr "Citilo"
+
+msgid "Percent sign"
+msgstr "Elcenta signo"
+
+msgid "Caret"
+msgstr "Ĉapelo"
+
+msgid "Tilda"
+msgstr "Tildo"
+
+msgid "Prime"
+msgstr "Ĉefo"
+
+msgid "Underline"
+msgstr "Substreko"
+
+msgid "Understrike"
+msgstr "Superstreko"
+
+msgid "Pipe"
+msgstr "Dukto"
+
+msgid "Left parenthesis"
+msgstr "Maldekstra ronda krampo"
+
+msgid "Right parenthesis"
+msgstr "Dekstra ronda krampo"
+
+msgid "Left bracket"
+msgstr "Maldekstra rekta krampo"
+
+msgid "Right bracket"
+msgstr "Dekstra rekta krampo"
+
+msgid "Left brace"
+msgstr "Maldekstra kuniga krampo"
+
+msgid "Right brace"
+msgstr "Dekstra kuniga krampo"
+
+msgid "Enter"
+msgstr "Enen-klavo"
+
+msgid "Tab key"
+msgstr "Tabo"
+
+msgid "Space key"
+msgstr "Spaceto"
+
+msgid "Slash key"
+msgstr "Oblikvo"
+
+msgid "Backslash key"
+msgstr "Deklivo"
+
+msgid "Number sign #"
+msgstr "Numersigno"
+
+#. TRANSLATORS: Please translate as in "at sign" (@).
+msgid "At sign"
+msgstr "Po-signo"
+
+msgid "Ctrl"
+msgstr "Stirklavo"
+
+msgid "Alt"
+msgstr "Alternativo"
+
+msgid "Shift"
+msgstr "Uskleca inversigilo"
+
+msgid "The TERM environment variable is unset!\n"
+msgstr "La medivariablo TERM ne estas valorizita!\n"
+
+#, c-format
+msgid ""
+"Screen size %dx%d is not supported.\n"
+"Check the TERM environment variable.\n"
+msgstr ""
+"Ekrangrando %dx%d ne estas regata.\n"
+"Kontroli la medivariablon TERM.\n"
+
+msgid "Warning"
+msgstr "Averto"
+
+msgid "Pipe failed"
+msgstr "Dukto malsukcesis"
+
+msgid "Dup failed"
+msgstr "Duplikato malsukcesis"
+
+msgid "Error dup'ing old error pipe"
+msgstr "Erara dum duplikati malnovan eraran dukton"
+
+#, c-format
+msgid "Directory cache expired for %s"
+msgstr "Dosieruja tenejo eksvalidiĝis por %s"
+
+msgid "bytes transferred"
+msgstr "bajtoj transigitaj"
+
+msgid "Starting linear transfer..."
+msgstr "Komencanta linian transigon..."
+
+msgid "Getting file"
+msgstr "Ricevanta dosieron"
+
+msgid "Changes to file lost"
+msgstr "Ŝanĝoj de la dosiero perditaj"
+
+#, c-format
+msgid "%s is not a directory\n"
+msgstr "%s ne estas dosierujo\n"
+
+#, c-format
+msgid "Directory %s is not owned by you\n"
+msgstr "Dosierujo %s ne estas estrata de vi\n"
+
+#, c-format
+msgid "Cannot set correct permissions for directory %s\n"
+msgstr "Ne eblas elekti la ĝustajn permesojn por dosierujo %s\n"
+
+#, c-format
+msgid "Cannot create temporary directory %s: %s\n"
+msgstr "Ne eblas krei provizoran dosierujon %s: %s\n"
+
+#, c-format
+msgid "Temporary files will be created in %s\n"
+msgstr "Provizoraj dosieroj kreiĝos en %s\n"
+
+#, c-format
+msgid "Temporary files will not be created\n"
+msgstr "Provizoraj dosieroj ne kreiĝos\n"
+
+#, c-format
+msgid "Press any key to continue..."
+msgstr "Premu iun klavon por daŭri..."
+
+msgid "Cannot parse:"
+msgstr "Ne eblas analizi:"
+
+msgid "More parsing errors will be ignored."
+msgstr "Pli da analizaj eraroj estos ignorotaj."
+
+msgid "Internal error:"
+msgstr "Interna eraro:"
+
+msgid "Password:"
+msgstr "Pasvorto:"
+
+msgid "Screens"
+msgstr "Ekranplenoj"
+
+msgid "History"
+msgstr "Historio"
+
+#. TRANSLATORS: no need to translate 'DialogTitle', it's just a context prefix
+msgid "DialogTitle|History cleanup"
+msgstr "DialogTitle|Historia purigado"
+
+msgid "Do you want clean this history?"
+msgstr "Ĉu vi volas purigi ĉi tiun historion?"
+
+msgid "&Yes"
+msgstr "&Jes"
+
+msgid "&No"
+msgstr "&Ne"
+
+msgid "&OK"
+msgstr "&Bone"
+
+msgid "&Cancel"
+msgstr "N&uligi"
+
+msgid "Background process:"
+msgstr "Fona procezo:"
+
+msgid "Error"
+msgstr "Eraro"
+
+#, c-format
+msgid "%d: %s"
+msgstr ""
+
+msgid "&Abort"
+msgstr "Ĉ&esigi"
+
+msgid "Displays the current version"
+msgstr "Eligi la uzatan eldonon"
+
+msgid "Print data directory"
+msgstr "Eligi datuman dosierujon"
+
+msgid "Print extended info about used data directories"
+msgstr "Eligi vastajn informojn pri uzataj datumaj dosierujoj"
+
+msgid "Print configure options"
+msgstr "Eligi muntajn agordaĵojn"
+
+msgid "Print last working directory to specified file"
+msgstr "Eligi lastan labordosierujon al specifan dosieron"
+
+msgid "Enables subshell support (default)"
+msgstr "Aktivigi subŝelon (apriore)"
+
+msgid "Disables subshell support"
+msgstr "Malaktivigi subŝelon"
+
+msgid "Log ftp dialog to specified file"
+msgstr "Protokoli FTP-dialogon al specifa dosiero"
+
+msgid "Set debug level"
+msgstr "Specifi senerarigan nivelon"
+
+msgid "Launches the file viewer on a file"
+msgstr "Plenumigi la dosiero-legilon je la dosiero"
+
+msgid "Edit files"
+msgstr "Redakti dosierojn"
+
+msgid "Forces xterm features"
+msgstr "Devigi xterm-trajtojn"
+
+msgid "Disable X11 support"
+msgstr "Malaktivigi X11-regon"
+
+msgid "Tries to use an old highlight mouse tracking"
+msgstr "Provi uzi antaŭan reĝimon de musa spurado"
+
+msgid "Disable mouse support in text version"
+msgstr "Malebligi musan regon en teksta variaĵo"
+
+msgid "Tries to use termcap instead of terminfo"
+msgstr "Provi uzi termcap-on anstataŭ terminfo-on"
+
+msgid "To run on slow terminals"
+msgstr "Por plenumiĝi en malrapidaj terminaloj"
+
+msgid "Use stickchars to draw"
+msgstr "Ornami sole per askiaj signoj"
+
+msgid "Resets soft keys on HP terminals"
+msgstr "Restarigi molajn klavojn en HP-terminaloj"
+
+msgid "Load definitions of key bindings from specified file"
+msgstr "Ŝargi difinojn de klavaj asignoj el specifa dosiero"
+
+msgid "Don't load definitions of key bindings from file, use defaults"
+msgstr "Ne ŝargi difinojn de klavaj asignoj el specifa dosiero; uzi aŭtomatajn"
+
+msgid "Requests to run in black and white"
+msgstr "Peti plenumiĝi unukolore"
+
+msgid "Request to run in color mode"
+msgstr "Peti plenumiĝi bunte"
+
+msgid "Specifies a color configuration"
+msgstr "Specifi koloran agordon"
+
+msgid "Show mc with specified skin"
+msgstr "Montri kun specifa etoso"
+
+#. TRANSLATORS: don't translate keywords
+#, fuzzy
+msgid ""
+"--colors KEYWORD={FORE},{BACK},{ATTR}:KEYWORD2=...\n"
+"\n"
+"{FORE}, {BACK} and {ATTR} can be omitted, and the default will be used\n"
+"\n"
+" Keywords:\n"
+"   Global:       errors, disabled, reverse, gauge, header\n"
+"                 input, inputmark, inputunchanged, commandlinemark\n"
+"                 bbarhotkey, bbarbutton, statusbar\n"
+"   File display: normal, selected, marked, markselect\n"
+"   Dialog boxes: dnormal, dfocus, dhotnormal, dhotfocus, errdhotnormal,\n"
+"                 errdhotfocus\n"
+"   Menus:        menunormal, menuhot, menusel, menuhotsel, menuinactive\n"
+"   Popup menus:  pmenunormal, pmenusel, pmenutitle\n"
+"   Editor:       editnormal, editbold, editmarked, editwhitespace,\n"
+"                 editlinestate, editbg, editframe, editframeactive\n"
+"                 editframedrag\n"
+"   Viewer:       viewnormal,viewbold, viewunderline, viewselected\n"
+"   Help:         helpnormal, helpitalic, helpbold, helplink, helpslink\n"
+msgstr ""
+"--colors Ŝlosilvorto={teksto},{fono},{atributo}:Ŝlosilvorto2=...\n"
+"Se {teksto}, {fono} aŭ {attr} estas ellasitaj, la aprioraj estas uzotaj\n"
+"\n"
+" Ŝlosilvortoj:\n"
+"   Tutprograma:        errors, disabled, reverse, gauge, header\n"
+"                       input, inputmark, inputunchanged, commandlinemark\n"
+"                       bbarhotkey, bbarhotbutton, statusbar\n"
+"   Dosieradministrado: normal, selected, marked, markselect\n"
+"   Menuoj:             menunormal, menuhot, menusel, menuhotsel, "
+"menuinactive\n"
+"   Ŝprucmenuoj:        pmenunormal, pmenusel, pmenutitle\n"
+"   Tekstoredaktilo:    editnormal, editbold, editmarked, editwhitespace\n"
+"                       editlinestate, editbg, editframe, editframeactive\n"
+"                       editframedrag\n"
+"   Tekstolegilo:       viewbold, viewunderline, viewselected\n"
+"   Helpilo:            helpnormal, helpitalic, helpbold, helplink, "
+"helpslink\n"
+
+#. TRANSLATORS: don't translate color names and attributes
+msgid ""
+"Standard Colors:\n"
+"   black, gray, red, brightred, green, brightgreen, brown,\n"
+"   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n"
+"   brightcyan, lightgray and white\n"
+"\n"
+"Extended colors, when 256 colors are available:\n"
+"   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
+"\n"
+"Attributes:\n"
+"   bold, underline, reverse, blink; append more with '+'\n"
+msgstr ""
+"Ordinaraj koloroj:\n"
+"   black, gray, red, brightred, green, brightgreen, brown,\n"
+"   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n"
+"   brightcyan, lightgray kaj white\n"
+"\n"
+"Aliaj koloroj, kiam 256 koloroj haveblas:\n"
+"   color16 ĝis color255, aŭ rgb000 ĝis rgb555 kaj gray0 ĝis gray23\n"
+"\n"
+"Attributes:\n"
+"   bold, underline, reverse, blink; almeti plian per '+'\n"
+
+msgid "Color options"
+msgstr "Kolora agordo"
+
+msgid "+number"
+msgstr "+numero"
+
+msgid "[this_dir] [other_panel_dir]"
+msgstr "[maldekstra_flanko] [dekstra_flanko]"
+
+msgid "Set initial line number for the internal editor"
+msgstr "Agordi komencan lininumeron por la interna tekstoredaktilo"
+
+msgid ""
+"\n"
+"Please send any bug reports (including the output of 'mc -V')\n"
+"as tickets at www.midnight-commander.org\n"
+msgstr ""
+"\n"
+"Bonvolu sendi ĉiujn raportojn pri eraroj (inkluzivu la eligon de 'mc -V')\n"
+"kiel biletojn en www.midnight-commander.org\n"
+
+#, c-format
+msgid "GNU Midnight Commander %s\n"
+msgstr "Midnight Commander de GNU, %s\n"
+
+msgid "Main options"
+msgstr "Ĉefa agordo"
+
+msgid "Terminal options"
+msgstr "Terminala agordo"
+
+msgid "Arguments parse error!"
+msgstr "Eraro dum analizi parametrojn!"
+
+msgid "No arguments given to the viewer."
+msgstr "Neniuj parametroj donitaj al la legilo."
+
+msgid "Two files are required to evoke the diffviewer."
+msgstr "Du dosieroj estas bezonitaj por voki la flikaĵo-legilon."
+
+msgid "Background process error"
+msgstr "Eraro ĉe fona procezo"
+
+msgid "Unknown error in child"
+msgstr "Nekonata eraro en ido"
+
+msgid "Child died unexpectedly"
+msgstr "Ido mortis neatendite"
+
+msgid "Background protocol error"
+msgstr "Eraro ĉe fona protokolo"
+
+msgid "Reading failed"
+msgstr "Legado malsukcesis"
+
+msgid ""
+"Background process sent us a request for more arguments\n"
+"than we can handle."
+msgstr ""
+"Fona procezo sendis al ni peton por pli da parametroj\n"
+"ol ni povas trakti."
+
+msgid "&Dismiss"
+msgstr "&Kaŝi"
+
+msgid "Enter search string:"
+msgstr "Enmetu serĉan ĉenon:"
+
+msgid "Cas&e sensitive"
+msgstr "N&e ignori usklecon"
+
+msgid "&Backwards"
+msgstr "D&orsen"
+
+msgid "&Whole words"
+msgstr "Tutaj &vortoj"
+
+msgid "&All charsets"
+msgstr "Ĉ&iuj signaroj"
+
+msgid "Search"
+msgstr "Serĉo"
+
+msgid "Search is disabled"
+msgstr "Serĉo estas malebligita"
+
+#, c-format
+msgid ""
+"Cannot create temporary diff file\n"
+"%s"
+msgstr ""
+"Ne eblas krei provizoran flikaĵo-dosieron\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create backup file\n"
+"%s%s\n"
+"%s"
+msgstr ""
+"Ne eblas krei sekurkopion\n"
+"%s%s\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create temporary merge file\n"
+"%s"
+msgstr ""
+"Ne eblas krei provizoran kunfandan dosieron\n"
+"%s"
+
+msgid "&Fastest (Assume large files)"
+msgstr "Plej &rapida (supozas grandajn dosierojn)"
+
+msgid "&Minimal (Find a smaller set of change)"
+msgstr "&Minimuma (trovi pli malgrandan aron da ŝanĝoj)"
+
+msgid "Diff algorithm"
+msgstr "Diff-algoritmo"
+
+msgid "Diff extra options"
+msgstr "Diff: aldonaj agordaĵoj"
+
+msgid "&Ignore case"
+msgstr "&Ignori usklecon"
+
+msgid "Ignore tab &expansion"
+msgstr "Ignori taban &etendadon"
+
+msgid "Ignore &space change"
+msgstr "Ignori &spacajn ŝanĝojn"
+
+msgid "Ignore all &whitespace"
+msgstr "I&gnori ĉiujn blankospacojn"
+
+msgid "Strip &trailing carriage return"
+msgstr "&Forigi postan novlinion"
+
+msgid "Diff Options"
+msgstr "Diff-aj agordaĵoj"
+
+msgid "Edit"
+msgstr "Redakti"
+
+msgid "Edit is disabled"
+msgstr "Redakti estas malaktivigita"
+
+msgid "Goto line (left)"
+msgstr "Iri linion (maldekstra)"
+
+msgid "Goto line (right)"
+msgstr "Iri linion (dekstra)"
+
+msgid "Enter line:"
+msgstr "Enmeti linion:"
+
+msgid "ButtonBar|Help"
+msgstr "ButtonBar|Helpo"
+
+msgid "ButtonBar|Save"
+msgstr "ButtonBar|Konservi"
+
+msgid "ButtonBar|Edit"
+msgstr "ButtonBar|Redakti"
+
+msgid "ButtonBar|Merge"
+msgstr "ButtonBar|Kunfandi"
+
+msgid "ButtonBar|Search"
+msgstr "ButtonBar|Serĉi"
+
+msgid "ButtonBar|Options"
+msgstr "ButtonBar|Agordo"
+
+msgid "ButtonBar|Quit"
+msgstr "ButtonBar|Eliri"
+
+msgid "Quit"
+msgstr "Eliri"
+
+msgid "File(s) was modified. Save with exit?"
+msgstr "Dosiero(j) estis modifita(j). Ĉu konservi kun eliro?"
+
+msgid ""
+"Midnight Commander is being shut down.\n"
+"Save modified file(s)?"
+msgstr ""
+"Midnight Commander estas elirinta.\n"
+"Ĉu konservi modifita(j)n dosiero(j)n?"
+
+msgid "Diff:"
+msgstr "Diff:"
+
+#, c-format
+msgid "\"%s\" is a directory"
+msgstr "\"%s\" estas dosierujo"
+
+#, c-format
+msgid ""
+"Cannot stat \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas trovi je \"%s\"\n"
+"%s"
+
+msgid "Diff viewer: invalid mode"
+msgstr "Diff-legilo: neprava reĝimo"
+
+msgid "Two files are needed to compare"
+msgstr "Du dosieroj estas bezonataj por kompari"
+
+msgid "Choose syntax highlighting"
+msgstr "Elekti sintaksan prilumadon"
+
+msgid "< Auto >"
+msgstr "< Aŭtomata >"
+
+msgid "< Reload Current Syntax >"
+msgstr "< Reŝargi nunan sintakson >"
+
+#, c-format
+msgid "Loading: %3d%%"
+msgstr ""
+
+#, fuzzy
+msgid "Loading..."
+msgstr "&Kodoprezento..."
+
+#, c-format
+msgid "Cannot open %s for reading"
+msgstr "Ne eblas malfermi je %s por legi"
+
+#, fuzzy
+msgid "Load file"
+msgstr "Ŝargi sintakso-dosieron"
+
+#, c-format
+msgid "Error reading %s"
+msgstr "Eraro legi je %s"
+
+#, c-format
+msgid "Cannot get size/permissions for %s"
+msgstr "Ne eblas akiri grandon/permesojn por %s"
+
+#, c-format
+msgid "\"%s\" is not a regular file"
+msgstr "\"%s\" estas ne normala dosiero"
+
+#, c-format
+msgid ""
+"File \"%s\" is too large.\n"
+"Open it anyway?"
+msgstr ""
+"Dosiero \"%s\" estas tro granda.\n"
+"Ĉu senkonsidere malfermi ĝin?"
+
+#, c-format
+msgid "Error reading from pipe: %s"
+msgstr "Eraro dum legi de dukto: %s"
+
+#, c-format
+msgid "Cannot open pipe for reading: %s"
+msgstr "Ne eblas malfermi dukton por legi: %s"
+
+#, fuzzy, c-format
+msgid "Searching %s: %3d%%"
+msgstr "Serĉanta en %s"
+
+#, c-format
+msgid "Searching %s"
+msgstr "Serĉanta en %s"
+
+msgid "File has hard-links. Detach before saving?"
+msgstr "Dosiero havas malmolajn ligilojn. Ĉu elmeti antaŭ ol konservi?"
+
+msgid "The file has been modified in the meantime. Save anyway?"
+msgstr "La dosiero estis ekstere modifita. Ĉu senkonsidere konservi?"
+
+#, c-format
+msgid "Error writing to pipe: %s"
+msgstr "Eraro dum skribi al dukto: %s"
+
+#, c-format
+msgid "Cannot open pipe for writing: %s"
+msgstr "Ne eblas malfermi dukton por skribi: %s"
+
+#, c-format
+msgid "Cannot open file for writing: %s"
+msgstr "Ne eblas malfermi dosieron por skribi: %s"
+
+#, fuzzy
+msgid "The file you are saving does not end with a newline."
+msgstr "La dosiero, kiun vi estas konservanta, ne finiĝas per nova linio"
+
+msgid "C&ontinue"
+msgstr "D&aŭrigi"
+
+msgid "&Do not change"
+msgstr "&Ne ŝanĝu"
+
+msgid "&Unix format (LF)"
+msgstr "&Uniksa formato"
+
+msgid "&Windows/DOS format (CR LF)"
+msgstr "&Vindozo/DOS-a formato"
+
+msgid "&Macintosh format (CR)"
+msgstr "&Makintoŝa formato"
+
+msgid "Enter file name:"
+msgstr "Enmeti dosiernomon:"
+
+msgid "Change line breaks to:"
+msgstr "ŝanĝi linirompojn al:"
+
+msgid "Save As"
+msgstr "Konservi kiel"
+
+msgid "Block is large, you may not be able to undo this action"
+msgstr "Bloko estas tra granda, do vi eble ne povos malfari tiun agon"
+
+#, fuzzy
+msgid "Collect completions"
+msgstr "Kolora agordo"
+
+msgid "&Quick save"
+msgstr "&Rapida konservado"
+
+msgid "&Safe save"
+msgstr "&Sekura konservado"
+
+msgid "&Do backups with following extension:"
+msgstr "&Fari sekurkopiojn kun la jena sufikso:"
+
+msgid "Check &POSIX new line"
+msgstr "Kontroli la novan linion laŭ &POSIX"
+
+msgid "Edit Save Mode"
+msgstr "Reĝimo de redakta konservado"
+
+msgid "Save as"
+msgstr "Konservi kiel"
+
+msgid "Cannot save: destination is not a regular file"
+msgstr "Ne eblas konservi: celo ne estas normala dosiero"
+
+msgid "A file already exists with this name"
+msgstr "Dosiero kun tiu nomo jam ekzistas"
+
+msgid "&Overwrite"
+msgstr "&Anstataŭigi"
+
+msgid "Cannot save file"
+msgstr "Ne eblas konservi dosieron"
+
+msgid "Delete macro"
+msgstr "Forigi makroon"
+
+msgid "Press macro hotkey:"
+msgstr "Premu makroan klavkomandon:"
+
+msgid "Macro not deleted"
+msgstr "Makroo ne forigita"
+
+msgid "Save macro"
+msgstr "Konservi makroon"
+
+msgid "Press the macro's new hotkey:"
+msgstr "Premu la novan klavkomandon de la makroo:"
+
+msgid "Repeat last commands"
+msgstr "Refari lastajn komandojn"
+
+msgid "Repeat times:"
+msgstr "Refari (n-fojojn):"
+
+#, c-format
+msgid "Confirm save file: \"%s\""
+msgstr "Konfirmi konservi dosieron: \"%s\""
+
+msgid "Save file"
+msgstr "Konservi dosieron"
+
+msgid "&Save"
+msgstr "&Konservi"
+
+msgid "Load"
+msgstr "Ŝargi"
+
+msgid "Syntax file edit"
+msgstr "Sintakso-dosiera redaktado"
+
+msgid "Which syntax file you want to edit?"
+msgstr "Kiun sintakso-dosiero vi volas redakti?"
+
+msgid "&User"
+msgstr "&Uzanto"
+
+msgid "&System wide"
+msgstr "&Tutsistema"
+
+msgid "Menu edit"
+msgstr "Menua redaktilo"
+
+msgid "Which menu file do you want to edit?"
+msgstr "Kiun menuo-dosiero vi volas redakti?"
+
+msgid "&Local"
+msgstr "&Loka"
+
+msgid "Replace"
+msgstr "Anstataŭigi"
+
+#, c-format
+msgid "%ld replacements made"
+msgstr "%ld anstataŭigoj faritaj"
+
+msgid "[NoName]"
+msgstr "[Sennoma]"
+
+#, c-format
+msgid ""
+"File %s was modified.\n"
+"Save before close?"
+msgstr ""
+"Dosiero %s estis modifita.\n"
+"Ĉu konservi antaŭ ol fermi?"
+
+msgid "Close file"
+msgstr "Fermi dosieron"
+
+#, c-format
+msgid ""
+"Midnight Commander is being shut down.\n"
+"Save modified file %s?"
+msgstr ""
+"Midnight Commander estas haltigita.\n"
+"Ĉu konservi modifitan dosieron %s?"
+
+msgid "This function is not implemented"
+msgstr "Tiu funkcio ne estas realigita"
+
+msgid "Copy to clipboard"
+msgstr "Enpoŝigi"
+
+msgid "Unable to save to file"
+msgstr "Ne eblas konservi al dosiero"
+
+msgid "Cut to clipboard"
+msgstr "Tranĉi en poŝon"
+
+msgid "Goto line"
+msgstr "Iri linion"
+
+msgid "Save block"
+msgstr "Konservi blokon"
+
+msgid "Insert file"
+msgstr "Enmeti dosieron"
+
+msgid "Cannot insert file"
+msgstr "Ne eblas enmeti dosieron"
+
+msgid "Sort block"
+msgstr "Ordigi blokon"
+
+msgid "You must first highlight a block of text"
+msgstr "Vi devas antaŭe elekti blokon da teksto"
+
+msgid "Run sort"
+msgstr "Rula ordigo"
+
+msgid "Enter sort options (see manpage) separated by whitespace:"
+msgstr ""
+"Enmetu ordigajn agordaĵon (vidu man-paĝon) apartigante per blankospacoj:"
+
+msgid "Sort"
+msgstr "Ordigi"
+
+msgid "Cannot execute sort command"
+msgstr "Ne eblas plenumi ordigan komandon"
+
+#, c-format
+msgid "Sort returned non-zero: %s"
+msgstr "Ordigo ne donis nulon: %s"
+
+msgid "Paste output of external command"
+msgstr "Alglui eligon de ekstera komando"
+
+msgid "Enter shell command(s):"
+msgstr "Enmetu ŝela(j)n komando(j)n"
+
+msgid "External command"
+msgstr "Ekstera komando"
+
+msgid "Cannot execute command"
+msgstr "Ne eblas plenumi komandon"
+
+msgid "mail -s <subject> -c <cc> <to>"
+msgstr "mail -s <temo> -c <aliaj_ricevontoj> <al>"
+
+msgid "To"
+msgstr "Al"
+
+msgid "Subject"
+msgstr "Temo"
+
+msgid "Copies to"
+msgstr "Kopioj al"
+
+msgid "Mail"
+msgstr "Retpoŝto"
+
+msgid "Insert literal"
+msgstr "Enmeti laŭvortaĵon"
+
+msgid "Press any key:"
+msgstr "Premu iun klavon:"
+
+msgid ""
+"Current text was modified without a file save.\n"
+"Continue discards these changes"
+msgstr ""
+"Aktuala teksto estis modifita sen dosiera konservado.\n"
+"Daŭrigi forviŝas tiujn ŝanĝojn"
+
+msgid "In se&lection"
+msgstr "En e&lekto"
+
+msgid "&Find all"
+msgstr "&Trovi ĉion"
+
+msgid "Enter replacement string:"
+msgstr "Enmetu anstataŭigan ĉenon:"
+
+msgid "Replace with:"
+msgstr "Anstataŭigi per:"
+
+msgid "&Replace"
+msgstr "&Anstataŭigi"
+
+msgid "A&ll"
+msgstr "Ĉ&io"
+
+msgid "&Skip"
+msgstr "&Preterpasi"
+
+msgid "Confirm replace"
+msgstr "Konfirmi anstataŭigon"
+
+msgid "Cancel"
+msgstr "Nuligi"
+
+msgid ""
+"Current text was modified without a file save.\n"
+"Continue discards these changes."
+msgstr ""
+"Aktuala teksto estis modifita sen dosiera konservado.\n"
+"Daŭri forviŝos tiujn ŝanĝojn."
+
+msgid "NoName"
+msgstr "Sennoma"
+
+msgid "&Open file..."
+msgstr "&Malfermi dosieron..."
+
+msgid "&New"
+msgstr "&Nova"
+
+msgid "&Close"
+msgstr "&Fermi"
+
+msgid "Save &as..."
+msgstr "K&onservi kiel..."
+
+msgid "&Insert file..."
+msgstr "Enmeti &dosieron..."
+
+msgid "Cop&y to file..."
+msgstr "Kop&ii al dosiero..."
+
+msgid "&User menu..."
+msgstr "&Uzanto-menuo..."
+
+msgid "A&bout..."
+msgstr "&Pri..."
+
+msgid "&Quit"
+msgstr "&Eliri"
+
+msgid "&Undo"
+msgstr "&Malfari"
+
+msgid "&Redo"
+msgstr "&Refari"
+
+msgid "&Toggle ins/overw"
+msgstr "Inversigi (e&nmeti/anstataŭigi)"
+
+msgid "To&ggle mark"
+msgstr "Inversi&gi markon"
+
+msgid "&Mark columns"
+msgstr "M&arki kolumnojn"
+
+msgid "Mark &all"
+msgstr "Marki ĉ&ion"
+
+msgid "Unmar&k"
+msgstr "Ma&lmarki"
+
+msgid "Cop&y"
+msgstr "&Kopii"
+
+msgid "Mo&ve"
+msgstr "Mo&vi"
+
+msgid "&Delete"
+msgstr "F&origi"
+
+msgid "Co&py to clipfile"
+msgstr "Ko&pii al poŝa dosiero"
+
+msgid "&Cut to clipfile"
+msgstr "El&tranĉi al poŝa dosiero"
+
+msgid "Pa&ste from clipfile"
+msgstr "Alglui al poŝa do&siero"
+
+msgid "&Beginning"
+msgstr "Komen&co"
+
+msgid "&End"
+msgstr "&Fino"
+
+msgid "&Search..."
+msgstr "&Serĉi..."
+
+msgid "Search &again"
+msgstr "Serĉi &denove"
+
+msgid "&Replace..."
+msgstr "&Anstataŭigi"
+
+msgid "&Toggle bookmark"
+msgstr "&Inversigi legosignon"
+
+msgid "&Next bookmark"
+msgstr "S&ekva legosigno"
+
+msgid "&Prev bookmark"
+msgstr "A&ntaŭa legosigno"
+
+msgid "&Flush bookmarks"
+msgstr "&Forviŝi legosignojn"
+
+msgid "&Go to line..."
+msgstr "&Iri al linio..."
+
+msgid "&Toggle line state"
+msgstr "Inversigi &linian staton"
+
+msgid "Go to matching &bracket"
+msgstr "Iri al kongrua &krampo"
+
+msgid "Toggle s&yntax highlighting"
+msgstr "(Mal)ŝalti &sintaksan prilumadon"
+
+msgid "&Find declaration"
+msgstr "&Trovi deklaron"
+
+msgid "Back from &declaration"
+msgstr "Posten el &deklaro"
+
+msgid "For&ward to declaration"
+msgstr "A&ntaŭen al deklaro"
+
+msgid "Encod&ing..."
+msgstr "Kodo&prezento..."
+
+msgid "&Refresh screen"
+msgstr "Refreŝigi &ekranon"
+
+msgid "&Start/Stop record macro"
+msgstr "Komenci/Ĉesi registran &makroon"
+
+msgid "Delete macr&o..."
+msgstr "Forigi makr&oon..."
+
+msgid "Record/Repeat &actions"
+msgstr "Registri/refari &agojn"
+
+msgid "S&pell check"
+msgstr "&Literumilo"
+
+msgid "C&heck word"
+msgstr "&Kontroli vorton"
+
+msgid "Change spelling &language..."
+msgstr "Ŝanĝi literumilan l&ingvon..."
+
+msgid "&Mail..."
+msgstr "&Retpoŝtilo..."
+
+msgid "Insert &literal..."
+msgstr "Enmeti &laŭvortaĵon..."
+
+msgid "Insert &date/time"
+msgstr "Enmeti &daton/tempon"
+
+msgid "&Format paragraph"
+msgstr "&Formati alineon"
+
+msgid "&Sort..."
+msgstr "&Ordigi"
+
+msgid "&Paste output of..."
+msgstr "Al&glui eligon el..."
+
+msgid "&External formatter"
+msgstr "&Ekstera aranĝilo"
+
+msgid "&Move"
+msgstr "&Movi"
+
+msgid "&Resize"
+msgstr "&Regrandigi"
+
+msgid "&Toggle fullscreen"
+msgstr "&Inversigi tutekranecon"
+
+msgid "&Next"
+msgstr "&Sekva"
+
+msgid "&Previous"
+msgstr "&Antaŭa"
+
+msgid "&List..."
+msgstr "&Listo..."
+
+msgid "&General..."
+msgstr "Ĝ&enerala..."
+
+msgid "Save &mode..."
+msgstr "Konservi &reĝimon..."
+
+msgid "Learn &keys..."
+msgstr "&Lerni klavojn..."
+
+msgid "Syntax &highlighting..."
+msgstr "Sintaksa &prilumado..."
+
+msgid "S&yntax file"
+msgstr "S&intakso-dosiero"
+
+msgid "&Menu file"
+msgstr "&Menuo-dosiero"
+
+msgid "&Save setup"
+msgstr "&Konservi agordon"
+
+msgid "&File"
+msgstr "&Dosiero"
+
+msgid "&Edit"
+msgstr "&Redakti"
+
+msgid "&Search"
+msgstr "&Serĉi"
+
+msgid "&Command"
+msgstr "&Komandoj"
+
+msgid "For&mat"
+msgstr "&Formato"
+
+msgid "&Window"
+msgstr "Fe&nestro"
+
+msgid "&Options"
+msgstr "&Agordo"
+
+msgid "&None"
+msgstr "&Neniu"
+
+msgid "&Dynamic paragraphing"
+msgstr "Dinamika &alineado"
+
+msgid "Type &writer wrap"
+msgstr "&Tajpila linifaldo"
+
+msgid "Wrap mode"
+msgstr "Linifalda reĝimo"
+
+msgid "Tabulation"
+msgstr "Tabado"
+
+msgid "&Fake half tabs"
+msgstr "&Falsaj duontaboj"
+
+msgid "&Backspace through tabs"
+msgstr "&Retropaŝi tra taboj"
+
+msgid "Fill tabs with &spaces"
+msgstr "Plenigi tabojn per &spacetoj"
+
+msgid "Tab spacing:"
+msgstr "Taba spaco:"
+
+msgid "Other options"
+msgstr "Aliaj agordaĵoj"
+
+msgid "&Return does autoindent"
+msgstr "&Enen-klavo ne aŭtomate deŝovas"
+
+msgid "Confir&m before saving"
+msgstr "Konfirmi antaŭ &ol konservado"
+
+msgid "Save file &position"
+msgstr "Konservi dosieran &pozicion"
+
+msgid "&Visible trailing spaces"
+msgstr "V&ideblaj postaj spacetoj"
+
+msgid "Visible &tabs"
+msgstr "&Videblaj taboj"
+
+msgid "Synta&x highlighting"
+msgstr "Sinta&ksa prilumado"
+
+msgid "C&ursor after inserted block"
+msgstr "K&ursoro post enmetita bloko"
+
+msgid "Pers&istent selection"
+msgstr "&Daŭra elektado"
+
+msgid "Cursor be&yond end of line"
+msgstr "Kursoro preter &linifino"
+
+msgid "&Group undo"
+msgstr "&Grupa malfaro"
+
+msgid "Word wrap line length:"
+msgstr "Linifalda longo:"
+
+msgid "Editor options"
+msgstr "Redaktilaj agordaĵoj"
+
+msgid ""
+"A user friendly text editor\n"
+"written for the Midnight Commander."
+msgstr ""
+"Afabla tekstoredaktilo\n"
+"verkita por Midnight Commander."
+
+msgid "Copyright (C) 1996-2014 the Free Software Foundation"
+msgstr "Kopirajto (C) 1996–2014 la Fondaĵo pri liberaj programoj"
+
+msgid "About"
+msgstr "Pri"
+
+msgid "Open files"
+msgstr "Malfermi dosierojn"
+
+msgid "Edit: "
+msgstr "Redakti: "
+
+msgid "ButtonBar|Mark"
+msgstr "ButtonBar|Mark"
+
+msgid "ButtonBar|Replac"
+msgstr "ButtonBar|Anstataŭigi"
+
+msgid "ButtonBar|Copy"
+msgstr "ButtonBar|Kopii"
+
+msgid "ButtonBar|Move"
+msgstr "ButtonBar|Movi"
+
+msgid "ButtonBar|Delete"
+msgstr "ButtonBar|Forigi"
+
+msgid "ButtonBar|PullDn"
+msgstr "ButtonBar|Menuzono"
+
+msgid "Breton"
+msgstr ""
+
+msgid "Czech"
+msgstr ""
+
+msgid "Welsh"
+msgstr ""
+
+msgid "Danish"
+msgstr ""
+
+msgid "German"
+msgstr ""
+
+msgid "Greek"
+msgstr ""
+
+msgid "English"
+msgstr ""
+
+msgid "British English"
+msgstr ""
+
+msgid "Canadian English"
+msgstr ""
+
+msgid "American English"
+msgstr ""
+
+msgid "Esperanto"
+msgstr ""
+
+msgid "Spanish"
+msgstr ""
+
+msgid "Faroese"
+msgstr ""
+
+msgid "French"
+msgstr ""
+
+msgid "Italian"
+msgstr ""
+
+msgid "Dutch"
+msgstr ""
+
+msgid "Norwegian"
+msgstr ""
+
+msgid "Polish"
+msgstr ""
+
+msgid "Portuguese"
+msgstr ""
+
+msgid "Romanian"
+msgstr ""
+
+msgid "Russian"
+msgstr ""
+
+msgid "Slovak"
+msgstr ""
+
+msgid "Swedish"
+msgstr ""
+
+msgid "Ukrainian"
+msgstr ""
+
+msgid "&Add word"
+msgstr "&Aldoni vorton"
+
+msgid "Language"
+msgstr "Lingvo"
+
+msgid "Misspelled"
+msgstr "Misliterumita"
+
+msgid "Check word"
+msgstr "Kontroli vorton"
+
+msgid "Suggest"
+msgstr "Proponi"
+
+msgid "Select language"
+msgstr "Elekti lingvon"
+
+msgid "Load syntax file"
+msgstr "Ŝargi sintakso-dosieron"
+
+#, c-format
+msgid ""
+"Cannot open file %s\n"
+"%s"
+msgstr ""
+"Ne eblas malfermi dosieron %s\n"
+"%s"
+
+#, c-format
+msgid "Error in file %s on line %d"
+msgstr "Eraro en dosiero %s ĉe linio %d"
+
+msgid ""
+"The Commander can't change to the directory that\n"
+"the subshell claims you are in. Perhaps you have\n"
+"deleted your working directory, or given yourself\n"
+"extra access permissions with the \"su\" command?"
+msgstr ""
+"La ŝelo ne povas ŝanĝiĝi al la dosiero, kie\n"
+"la subŝelo asertas, ke vi estas. Eble vi\n"
+"forigis vian labordosierujon, aŭ donis al vi\n"
+"aldonajn atingopermesojn per la komando \"su\"."
+
+#, c-format
+msgid "Cannot fetch a local copy of %s"
+msgstr "Ne eblas atingi lokan kopion de %s"
+
+msgid "The shell is already running a command"
+msgstr "La ŝelo jam plenumas komandon"
+
+#, c-format
+msgid "Type 'exit' to return to the Midnight Commander"
+msgstr "Tajpu \"exit\" por reiri al Midnight Commander"
+
+msgid "Set &all"
+msgstr "Fari ĉ&ion"
+
+msgid "S&kip"
+msgstr "P&reterpasi"
+
+msgid "&Set"
+msgstr "&Fari"
+
+msgid "owner"
+msgstr "estro"
+
+msgid "group"
+msgstr "grupo"
+
+msgid "other"
+msgstr "aliaj"
+
+msgid "Flag"
+msgstr "Markoj"
+
+msgid "Chown advanced command"
+msgstr "[chown] altnivelaj komandoj"
+
+#, c-format
+msgid ""
+"Cannot chmod \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas ŝanĝi permesojn de \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot chown \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas ŝanĝi estrecon de \"%s\"\n"
+"%s"
+
+msgid "Other 8 bit"
+msgstr "Alia 8-bita"
+
+msgid "Running"
+msgstr "Plenumanta"
+
+msgid "Stopped"
+msgstr "Ĉesigita"
+
+msgid "&Never"
+msgstr "&Neniam"
+
+msgid "On dum&b terminals"
+msgstr "En sen&cerbaj terminaloj"
+
+msgid "Alwa&ys"
+msgstr "Ĉ&iam"
+
+msgid "File operations"
+msgstr "Dosieraj operacioj"
+
+msgid "&Verbose operation"
+msgstr "&Klariga funkciado"
+
+msgid "Compute tota&ls"
+msgstr "K&omputi kiomojn"
+
+msgid "Classic pro&gressbar"
+msgstr "Malnova pro&gesilo"
+
+msgid "Mkdi&r autoname"
+msgstr "&Aŭtomate nomi novan dosierujon"
+
+msgid "&Preallocate space"
+msgstr "Generi spacon antaŭ o&l fari ion"
+
+msgid "Esc key mode"
+msgstr "Eskapo-klava reĝimo"
+
+msgid "S&ingle press"
+msgstr "Unuopa &premo"
+
+msgid "Timeout:"
+msgstr "Valida periodo:"
+
+msgid "Pause after run"
+msgstr "Paŭzo post plenumo"
+
+msgid "Use internal edi&t"
+msgstr "Uzi internan &tekstoredaktilon"
+
+msgid "Use internal vie&w"
+msgstr "U&zi internan legilon"
+
+msgid "A&sk new file name"
+msgstr "&Peti novan dosiernomon"
+
+msgid "Auto m&enus"
+msgstr "Aŭtomataj m&enuoj"
+
+msgid "&Drop down menus"
+msgstr "Etendiĝantaj &menuoj"
+
+msgid "S&hell patterns"
+msgstr "Ŝelaj ŝablono&j"
+
+msgid "Co&mplete: show all"
+msgstr "Kompleta: mont&ri ĉion"
+
+msgid "Rotating d&ash"
+msgstr "Turniĝanta &streko"
+
+msgid "Cd follows lin&ks"
+msgstr "Dosieruja ŝanĝo sek&vas ligilojn"
+
+msgid "Sa&fe delete"
+msgstr "Sendanĝera &forigo"
+
+msgid "A&uto save setup"
+msgstr "Aŭtomate konservi agor&don"
+
+msgid "Configure options"
+msgstr "Agordaĵoj"
+
+msgid "< Default >"
+msgstr "< Apriora >"
+
+msgid "Skins"
+msgstr "Etosoj"
+
+msgid "Skin:"
+msgstr "Etoso:"
+
+msgid "Appearance"
+msgstr "Aspekto"
+
+msgid "Case &insensitive"
+msgstr "&Ignori usklecon"
+
+msgid "Use panel sort mo&de"
+msgstr "Uzi reĝimon de flanka or&digo"
+
+msgid "Show mi&ni-status"
+msgstr "Montri &miniaturan statlinion"
+
+msgid "Use SI si&ze units"
+msgstr "U&zi metrajn unuojn de grando"
+
+msgid "Mi&x all files"
+msgstr "Miksi ĉiujn d&osierojn"
+
+msgid "Show &backup files"
+msgstr "Montri &sekurkopiojn"
+
+msgid "Show &hidden files"
+msgstr "Montri kaŝita&jn dosierojn"
+
+msgid "&Fast dir reload"
+msgstr "Rapide reŝar&gi dosierujojn"
+
+msgid "Ma&rk moves down"
+msgstr "Mar&ko movas suben"
+
+msgid "Re&verse files only"
+msgstr "Nur in&versigi dosierojn"
+
+msgid "Simple s&wap"
+msgstr "Simpla i&nterŝanĝo"
+
+msgid "A&uto save panels setup"
+msgstr "&Aŭtomate konservi flankan agordon"
+
+msgid "Navigation"
+msgstr "Navigo"
+
+msgid "L&ynx-like motion"
+msgstr "&Linko-simila movo"
+
+msgid "Pa&ge scrolling"
+msgstr "Paĝa &rulumado"
+
+msgid "&Mouse page scrolling"
+msgstr "Per&musa paĝa rulumado"
+
+msgid "File highlight"
+msgstr "Dosiera prilumado"
+
+msgid "File &types"
+msgstr "Dosier&tipoj"
+
+msgid "&Permissions"
+msgstr "&Permesoj"
+
+msgid "Quick search"
+msgstr "Rapida serĉo"
+
+msgid "Panel options"
+msgstr "Flankaj agordaĵoj"
+
+msgid "Information"
+msgstr "Informoj"
+
+msgid ""
+"Using the fast reload option may not reflect the exact\n"
+"directory contents. In this case you'll need to do a\n"
+"manual reload of the directory. See the man page for\n"
+"the details."
+msgstr ""
+"Uzi la elekton Rapida Reŝargo eble ne spegulas la precizan\n"
+"dosierujan enhavon. Tiuokaze vi bezonos permane\n"
+"reŝargi la dosierujon. Vidu la man-paĝon por\n"
+"la detaloj."
+
+msgid "&Full file list"
+msgstr "&Kompleta dosierlisto"
+
+msgid "&Brief file list"
+msgstr "&Mallonga dosierlisto"
+
+msgid "&Long file list"
+msgstr "&Longa dosierlisto"
+
+msgid "&User defined:"
+msgstr "&Uzanto difinata:"
+
+msgid "User &mini status"
+msgstr "Miniatura &stato de uzanto"
+
+msgid "Listing mode"
+msgstr "Lista reĝimo"
+
+msgid "Executable &first"
+msgstr "P&lenumebla unue"
+
+msgid "&Reverse"
+msgstr "In&versigi"
+
+msgid "Sort order"
+msgstr "Ordigi laŭ"
+
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
+msgid "Confirmation|&Delete"
+msgstr "&Forigi"
+
+msgid "Confirmation|O&verwrite"
+msgstr "&Anstataŭi"
+
+msgid "Confirmation|&Execute"
+msgstr "&Plenumigi"
+
+msgid "Confirmation|E&xit"
+msgstr "&Eliri"
+
+msgid "Confirmation|Di&rectory hotlist delete"
+msgstr "&Dosierujo-rapidolistan forigi"
+
+msgid "Confirmation|&History cleanup"
+msgstr "&Historion purigi"
+
+msgid "Confirmation"
+msgstr "Konfirmo"
+
+msgid "&UTF-8 output"
+msgstr "&UTF-8-a eligo"
+
+msgid "&Full 8 bits output"
+msgstr "&Plena 8-bita eligo"
+
+msgid "&ISO 8859-1"
+msgstr "&ISO-8859-1"
+
+msgid "7 &bits"
+msgstr "7-&bitaj"
+
+msgid "F&ull 8 bits input"
+msgstr "&Plena 8-bita enmeto"
+
+msgid "Display bits"
+msgstr "Elmontraj bitoj"
+
+msgid "Input / display codepage:"
+msgstr "Enmeta / elmontra kodpaĝo:"
+
+msgid "Directory tree"
+msgstr "Dosieruja arbo"
+
+msgid "Timeout for freeing VFSs (sec):"
+msgstr "Periodo antaŭ ol liberigi virtualajn dosiersistemojn (sekunde):"
+
+msgid "FTP anonymous password:"
+msgstr "sennoma FTP-pasvorto:"
+
+msgid "FTP directory cache timeout (sec):"
+msgstr "ftpfs-dosierujo tenejo eksvalidiĝos (sekunde):"
+
+msgid "&Always use ftp proxy:"
+msgstr "Ĉiam &uzi FTP-retperanton:"
+
+msgid "&Use ~/.netrc"
+msgstr "Uzi je ~/.&netrc"
+
+msgid "Use &passive mode"
+msgstr "Uzi &pasivan reĝimon"
+
+msgid "Use passive mode over pro&xy"
+msgstr "Uzi pasivan reĝimon &tra retperanto"
+
+msgid "Virtual File System Setting"
+msgstr "Agordaĵoj pri virtualaj dosiersistemoj"
+
+msgid "cd"
+msgstr "dosieruja ŝanĝo"
+
+msgid "Quick cd"
+msgstr "Rapida dosierujo-ŝanĝo"
+
+msgid "Existing filename (filename symlink will point to):"
+msgstr "Jama dosiernomo:"
+
+msgid "Symbolic link filename:"
+msgstr "Mola ligilo dosiernomo:"
+
+msgid "Symbolic link"
+msgstr "Mola ligilo"
+
+msgid "&Stop"
+msgstr "Ĉ&esigi"
+
+msgid "&Resume"
+msgstr "&Rekomenci"
+
+msgid "&Kill"
+msgstr "&Mortigi"
+
+msgid "Background jobs"
+msgstr "F&onaj taskoj"
+
+#, c-format
+msgid "Password for \\\\%s\\%s"
+msgstr "Pasvorto por \\\\%s\\%s"
+
+msgid "Domain:"
+msgstr "Domajno:"
+
+msgid "Username:"
+msgstr "Salutnomo:"
+
+msgid "SMB authentication"
+msgstr "SMB-atestado"
+
+msgid "set &user ID on execution"
+msgstr "agordi &uzantan identigilon dum plenumigo"
+
+msgid "set &group ID on execution"
+msgstr "&agordi grupan identigilon dum plenumigo"
+
+msgid "stick&y bit"
+msgstr "&gluema bito"
+
+msgid "&read by owner"
+msgstr "&legi laŭ estro"
+
+msgid "&write by owner"
+msgstr "&skribi laŭ estro"
+
+msgid "e&xecute/search by owner"
+msgstr "&plenumi/serĉi laŭ estro"
+
+msgid "rea&d by group"
+msgstr "l&egi laŭ grupo"
+
+msgid "write by grou&p"
+msgstr "skribi laŭ g&rupo"
+
+msgid "execu&te/search by group"
+msgstr "ple&numi/serĉi laŭ grupo"
+
+msgid "read &by others"
+msgstr "leg&i laŭ aliaj"
+
+msgid "wr&ite by others"
+msgstr "s&kribi laŭ aliaj"
+
+msgid "execute/searc&h by others"
+msgstr "plenu&mi/serĉi laŭ aliaj"
+
+msgid "Name:"
+msgstr "Nomo:"
+
+msgid "Permissions (octal):"
+msgstr "Permesoj (Okuma):"
+
+msgid "Owner name:"
+msgstr "Estra nomo:"
+
+msgid "Group name:"
+msgstr "Grupa nomo:"
+
+msgid "&Marked all"
+msgstr "&Marki ĉion"
+
+msgid "S&et marked"
+msgstr "&Elekti markitajn"
+
+msgid "C&lear marked"
+msgstr "&Forviŝi markitajn"
+
+msgid "Chmod command"
+msgstr "Komando chmod"
+
+msgid "Permission"
+msgstr "Permeso"
+
+msgid "File"
+msgstr "Dosiero"
+
+msgid "Set &groups"
+msgstr "Elekti &grupojn"
+
+msgid "Set &users"
+msgstr "&Elekti uzantojn"
+
+msgid "Name"
+msgstr "Nomo"
+
+msgid "Owner name"
+msgstr "Estra nomo"
+
+msgid "Group name"
+msgstr "Grupa nomo"
+
+msgid "Size"
+msgstr "Grando"
+
+msgid "Chown command"
+msgstr "Komando chown"
+
+msgid "User name"
+msgstr "Salutnomo"
+
+msgid "<Unknown user>"
+msgstr "<Nekonata uzanto>"
+
+msgid "<Unknown group>"
+msgstr "<Nekonata grupo>"
+
+msgid "Enter machine name (F1 for details):"
+msgstr "Enmetu servilan nomon (F1 por detaloj):"
+
+msgid "Files tagged, want to cd?"
+msgstr "Dosieroj markitaj, ĉu vi volas al ŝanĝi la dosierujon?"
+
+msgid "Cannot change directory"
+msgstr "Ne eblas ŝanĝi dosierujon"
+
+msgid "Filter"
+msgstr "Filtri"
+
+msgid "Set expression for filtering filenames"
+msgstr "Agordi esprimon por filtri dosiernomojn"
+
+#, c-format
+msgid "Link %s to:"
+msgstr "Ligi je %s al:"
+
+msgid "Link"
+msgstr "Ligi"
+
+#, c-format
+msgid "link: %s"
+msgstr "ligilo: %s"
+
+#, c-format
+msgid "symlink: %s"
+msgstr "mola ligilo: %s"
+
+#, c-format
+msgid "Cannot chdir to \"%s\""
+msgstr "Ne eblas ŝanĝi dosierujon al \"%s\""
+
+msgid "View file"
+msgstr "Vidi dosieron"
+
+msgid "Filename:"
+msgstr "Dosiernomo:"
+
+msgid "Filtered view"
+msgstr "Filtrita vido"
+
+msgid "Filter command and arguments:"
+msgstr "Filtraj komando kaj parametroj:"
+
+msgid "Edit file"
+msgstr "Redakti dosieron"
+
+msgid "Create a new Directory"
+msgstr "Krei novan dosierujon"
+
+msgid "Enter directory name:"
+msgstr "Enmetu dosierujan nomon:"
+
+msgid "Extension file edit"
+msgstr "sufikso-dosiera redaktilo"
+
+msgid "Which extension file you want to edit?"
+msgstr "Kiun etendaĵan dosieron vi volas redakti?"
+
+msgid "&System Wide"
+msgstr "Tut&sisteme"
+
+msgid "Highlighting groups file edit"
+msgstr "Prilumi grupojn en dosiera redaktado"
+
+msgid "Which highlighting file you want to edit?"
+msgstr "Kiun prilumo-dosiero vi volas redakti?"
+
+msgid "Compare directories"
+msgstr "Kompari dosierujojn"
+
+msgid "Select compare method:"
+msgstr "Elektu komparan metodon:"
+
+msgid "&Quick"
+msgstr "&Rapida"
+
+msgid "&Size only"
+msgstr "Nur laŭ &grando"
+
+msgid "&Thorough"
+msgstr "&Funde"
+
+msgid ""
+"Both panels should be in the listing mode\n"
+"to use this command"
+msgstr ""
+"Ambaŭ flankoj estu en la lista reĝimo\n"
+"por uzi ĉi tiun komandon"
+
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+"Ne xterm-fenestron aŭ linuksan terminalon;\n"
+"la flankojn oni ne povis inversigi."
+
+#, c-format
+msgid "Symlink '%s' points to:"
+msgstr "Mola ligilo '%s' alidirektas al:"
+
+msgid "Edit symlink"
+msgstr "Redakti molan ligilon"
+
+#, c-format
+msgid "edit symlink, unable to remove %s: %s"
+msgstr "redakti molan ligilon, ne eblas forigi %s: %s"
+
+#, c-format
+msgid "edit symlink: %s"
+msgstr "redakti molan ligilon: %s"
+
+#, c-format
+msgid "'%s' is not a symbolic link"
+msgstr "'%s' ne estas mola ligilo"
+
+msgid "FTP to machine"
+msgstr "FTP al servilo"
+
+msgid "SFTP to machine"
+msgstr "SFTP al servilo"
+
+msgid "Shell link to machine"
+msgstr "Ŝela ligilo al servilo"
+
+msgid "SMB link to machine"
+msgstr "SMB-ligilo al servilo"
+
+msgid "Undelete files on an ext2 file system"
+msgstr "Remeti dosierojn en ext2-dosiersistemon"
+
+msgid ""
+"Enter device (without /dev/) to undelete\n"
+"files on: (F1 for details)"
+msgstr ""
+"Enmetu aparaton (sen /dev/) por reatingi\n"
+"dosierojn: (F1 por detaloj)"
+
+msgid "Directory scanning"
+msgstr "Dosieruja skanado"
+
+msgid "Setup"
+msgstr "Agordo"
+
+#, c-format
+msgid "Setup saved to %s"
+msgstr "Agordo konservita al %s"
+
+#, c-format
+msgid "Unable to save setup to %s"
+msgstr "Ne eblas konservi al dosiero %s"
+
+msgid "Cannot execute commands on non-local filesystems"
+msgstr "Ne eblas plenumi komandojn en foraj dosiersistemoj"
+
+#, c-format
+msgid ""
+"Cannot chdir to \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas ŝanĝi dosierujon al \"%s\"\n"
+"%s"
+
+msgid "Cannot read directory contents"
+msgstr "Ne eblas legi dosierujan enhavon"
+
+msgid "Parameter"
+msgstr "Parametro"
+
+#, c-format
+msgid ""
+"Cannot create temporary command file\n"
+"%s"
+msgstr ""
+"Ne eblas krei provizoran komandodosieron\n"
+"%s"
+
+#, c-format
+msgid " %s%s file error"
+msgstr " %s%s: dosiera eraro"
+
+#, c-format
+msgid ""
+"The format of the %smc.ext file has changed with version 3.0. It seems that "
+"the installation failed. Please fetch a fresh copy from the Midnight "
+"Commander package."
+msgstr ""
+"La aranĝo de la dosiero %smc.ext ŝanĝiĝis en eldono 3.0. Ŝajne la instalado "
+"malsukcesis. Bonvolu havigi al vi freŝan ekzempleron de la pako Midnight "
+"Commander."
+
+#, c-format
+msgid "%s file error"
+msgstr "%s dosiera eraro"
+
+#, c-format
+msgid ""
+"The format of the %s file has changed with version 3.0. You may either want "
+"to copy it from %smc.ext or use that file as an example of how to write it."
+msgstr ""
+"La aranĝo de la dosiero %s ŝanĝiĝis en eldono 3.0. Vi eble povos aŭ kopii "
+"ĝin el %smc.txt aŭ uzi tiun dosieron kiel ekzemplon."
+
+msgid "DialogTitle|Copy"
+msgstr "DialogTitle|Kopii"
+
+msgid "DialogTitle|Move"
+msgstr "DialogujoTitolo|Movi"
+
+msgid "DialogTitle|Delete"
+msgstr "DosierTitolo|Forigi"
+
+msgid "FileOperation|Copy"
+msgstr "Dosieroperacio|Kopii"
+
+msgid "FileOperation|Move"
+msgstr "Dosieroperacio|Movi"
+
+msgid "FileOperation|Delete"
+msgstr "Dosieroperacio|forigi"
+
+#, no-c-format
+msgid "%o %f%n\"%s\"%m"
+msgstr "%o %f%n\"%s\"%m"
+
+#, no-c-format
+msgid "%o %d %f%m"
+msgstr "%o %d %f%m"
+
+msgid "file"
+msgstr "dosieron"
+
+msgid "files"
+msgstr "dosierojn"
+
+msgid "directory"
+msgstr "dosierujon"
+
+msgid "directories"
+msgstr "dosierujojn"
+
+msgid "files/directories"
+msgstr "dosier(uj)ojn"
+
+#. TRANSLATORS: keep leading space here to split words in Copy/Move dialog
+msgid " with source mask:"
+msgstr " kun fonta masko:"
+
+msgid "Cannot make the hardlink"
+msgstr "Ne eblas fari la malmolan ligilon"
+
+#, c-format
+msgid ""
+"Cannot read source link \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas legi fontan ligilon \"%s\"\n"
+"%s"
+
+msgid ""
+"Cannot make stable symlinks acrossnon-local filesystems:\n"
+"\n"
+"Option Stable Symlinks will be disabled"
+msgstr ""
+"Ne eblas fari stabilajn molajn ligilojn inter foraj dosiersistemoj:\n"
+"\n"
+"La agordaĵo \"Stabilaj molaj ligiloj\" estos malebligitaj"
+
+#, c-format
+msgid ""
+"Cannot create target symlink \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas krei celan molan ligilon \"%s\"\n"
+"%s"
+
+msgid "Ski&p all"
+msgstr "Preter&lasi ĉion"
+
+msgid "&Retry"
+msgstr "&Reprovi"
+
+#, c-format
+msgid ""
+"Directory \"%s\" not empty.\n"
+"Delete it recursively?"
+msgstr ""
+"Dosierujo \"%s\" ne vaka.\n"
+"Ĉu forigi ĝin funde?"
+
+#, c-format
+msgid ""
+"Background process:\n"
+"Directory \"%s\" not empty.\n"
+"Delete it recursively?"
+msgstr ""
+"Fona procezo:\n"
+"Dosierujo \"%s\" ne vaka.\n"
+"Ĉu forigi ĝin funde?"
+
+msgid "Non&e"
+msgstr "Neni&o"
+
+#, c-format
+msgid ""
+"Cannot stat file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas trovi dosieron \"%s\n"
+"%s"
+
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same file"
+msgstr ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same file"
+
+#, c-format
+msgid "Cannot overwrite directory \"%s\""
+msgstr "Ne eblas anstataŭigi dosierujon \"%s\""
+
+#, c-format
+msgid ""
+"Cannot move file \"%s\" to \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas movi dosieron \"%s\" al \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot remove file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas forigi dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot delete file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas forigi dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot remove directory \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas forigi dosierujon \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot overwrite directory \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas anstataŭigi dosierujon \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot stat source file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas trovi fontan dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create special file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas trovi specialan dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot chown target file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas ŝanĝi estrecon de cela dosiero \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot chmod target file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas ŝanĝi permesojn de cela dosiero \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot open source file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas malfermi fontan dosieron \"%s\"\n"
+"%s"
+
+msgid "Reget failed, about to overwrite file"
+msgstr "Denova akirado malsukcesis, anstataŭigos dosieron"
+
+#, c-format
+msgid ""
+"Cannot fstat source file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas trovi fontan dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create target file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas krei celan dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot fstat target file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas trovi celan dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot preallocate space for target file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas generi spacon por cela dosiero \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot read source file\"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas legi fontan dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot write target file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas skribi celan dosieron \"%s\"\n"
+"%s"
+
+msgid "(stalled)"
+msgstr "(paŭzinta)"
+
+#, c-format
+msgid ""
+"Cannot close source file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas fermi fontan dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot close target file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas fermi celan dosieron \"%s\"\n"
+"%s"
+
+msgid "Incomplete file was retrieved. Keep it?"
+msgstr "Nekompleta dosiero estis akirita. Ĉu teni ĝin?"
+
+msgid "&Keep"
+msgstr "&Teni"
+
+#, c-format
+msgid ""
+"Cannot stat source directory \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas trovi fontan dosierujon \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Source \"%s\" is not a directory\n"
+"%s"
+msgstr ""
+"Fonto \"%s\" ne estas dosierujo\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot copy cyclic symbolic link\n"
+"\"%s\""
+msgstr ""
+"Ne eblas kopii ciklan molan ligilon\n"
+"\"%s\""
+
+#, c-format
+msgid ""
+"Destination \"%s\" must be a directory\n"
+"%s"
+msgstr ""
+"Celo \"%s\" devas esti dosierujo\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create target directory \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas krei celan dosierujon \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot chown target directory \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas ŝanĝi estrecon de cela dosierujo \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same directory"
+msgstr ""
+"\"%s\"\n"
+"kaj\n"
+"\"%s\"\n"
+"estas la sama dosierujo"
+
+#, c-format
+msgid ""
+"Cannot overwrite file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas anstataŭigi dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot move directory \"%s\" to \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas movi dosierujon \"%s\" al \"%s\"\n"
+"%s"
+
+#, fuzzy, c-format
+msgid "Directories: %zd, total size: %s"
+msgstr ""
+"%s\n"
+"Dosierujoj: %zd, ĉioma grando: %s"
+
+msgid "Cannot operate on \"..\"!"
+msgstr "Ne eblas operacii je \"..\"!"
+
+msgid "Sorry, I could not put the job in background"
+msgstr "Bedaŭrinde mi ne povis meti la taskon en la fonon"
+
+msgid "S&uspend"
+msgstr "&Paŭzigi"
+
+msgid "Con&tinue"
+msgstr "&Daŭrigi"
+
+#, c-format
+msgid "%d:%02d.%02d"
+msgstr "%d:%02d.%02d"
+
+#, c-format
+msgid "ETA %s"
+msgstr "Taskita resto: %s"
+
+#, c-format
+msgid "%.2f MB/s"
+msgstr "%.2f MB/s"
+
+#, c-format
+msgid "%.2f KB/s"
+msgstr "%.2f KB/s"
+
+#, c-format
+msgid "%ld B/s"
+msgstr "%ld B/s"
+
+msgid "Target file already exists!"
+msgstr "Cela dosiero jam ekzistas!"
+
+#, c-format
+msgid "New     : %s, size %s"
+msgstr "Nova: %s, grando %s"
+
+#, c-format
+msgid "Existing: %s, size %s"
+msgstr "Jama: %s, grando %s"
+
+msgid "Overwrite this target?"
+msgstr "Ĉu anstataŭigi ĉi tiun celon?"
+
+msgid "A&ppend"
+msgstr "Al&meti"
+
+msgid "&Reget"
+msgstr "&Reakiri"
+
+msgid "Overwrite all targets?"
+msgstr "Ĉu anstataŭigi ĉiujn celojn?"
+
+msgid "&Update"
+msgstr "&Aktualigi"
+
+msgid "If &size differs"
+msgstr "Se &grando malsamas"
+
+msgid "File exists"
+msgstr "Dosiero ekzistas"
+
+msgid "Background process: File exists"
+msgstr "Fona procezo: Dosiero ekzistas"
+
+#, c-format
+msgid "Files processed: %zu/%zu"
+msgstr "Dosieroj traktitaj: %zu/%zu"
+
+#, c-format
+msgid "Files processed: %zu"
+msgstr "Dosieroj traktitaj: %zu"
+
+#, c-format
+msgid "Time: %s %s"
+msgstr "Tempo: %s %s"
+
+#, c-format
+msgid "Time: %s %s (%s)"
+msgstr "Tempo: %s %s (%s)"
+
+#, c-format
+msgid "Time: %s"
+msgstr "Tempo: %s"
+
+#, c-format
+msgid "Time: %s (%s)"
+msgstr "Tempo: %s (%s)"
+
+#, c-format
+msgid " Total: %s "
+msgstr " Kiomo: %s "
+
+#, c-format
+msgid " Total: %s/%s "
+msgstr " Kiomo: %s el %s "
+
+msgid "Source"
+msgstr "Fonto"
+
+msgid "Target"
+msgstr "Celo"
+
+#, fuzzy
+msgid "Deleting"
+msgstr "Foriga klavo"
+
+msgid "&Using shell patterns"
+msgstr "U&zi ŝelajn ŝablonojn"
+
+msgid "to:"
+msgstr "al:"
+
+msgid "Follow &links"
+msgstr "Sekvi &Ligilojn"
+
+msgid "Preserve &attributes"
+msgstr "Konservi &atributojn"
+
+msgid "Di&ve into subdir if exists"
+msgstr "Plo&nĝi en subdosierujon se ĝi ekzistas"
+
+msgid "&Stable symlinks"
+msgstr "&Stabilaj molaj ligiloj"
+
+msgid "&Background"
+msgstr "&Fone"
+
+#, c-format
+msgid "Invalid source pattern '%s'"
+msgstr "Nevalida celan ŝablonon '%s'"
+
+msgid "&Chdir"
+msgstr "Ŝanĝi dosieru&jon"
+
+msgid "&Again"
+msgstr "&Denove"
+
+msgid "Pane&lize"
+msgstr "F&lankigi"
+
+msgid "&View - F3"
+msgstr "&Vidi - F3"
+
+msgid "&Edit - F4"
+msgstr "&Redakti - F4"
+
+#, c-format
+msgid "Found: %ld"
+msgstr "Trovita: %ld"
+
+msgid "Malformed regular expression"
+msgstr "Misformita regulesprimo"
+
+msgid "File name:"
+msgstr "Dosiernomo:"
+
+msgid "&Find recursively"
+msgstr "&Trovi rekursie"
+
+msgid "S&kip hidden"
+msgstr "P&reterpasi kaŝitan"
+
+msgid "Content:"
+msgstr "Enhavo:"
+
+msgid "Sea&rch for content"
+msgstr "Se&rĉi por enhavo"
+
+msgid "Case sens&itive"
+msgstr "&Ignori usklecon"
+
+msgid "A&ll charsets"
+msgstr "Ĉ&iuj signaroj"
+
+msgid "Fir&st hit"
+msgstr "Unu&a rezulto"
+
+msgid "&Tree"
+msgstr "&Arbo"
+
+msgid "Find File"
+msgstr "Trovi dosieron"
+
+msgid "Start at:"
+msgstr "Komenci je:"
+
+msgid "Ena&ble ignore directories:"
+msgstr "&Aktivigi ignorajn dosierujojn:"
+
+#, c-format
+msgid "Grepping in %s"
+msgstr "Grep-anta en %s"
+
+msgid "Finished"
+msgstr "Finita"
+
+#, c-format
+msgid "Finished (ignored %zd directory)"
+msgid_plural "Finished (ignored %zd directories)"
+msgstr[0] "Finita (ignoris %zd dosierujo)"
+msgstr[1] "Finita (ignoris %zd dosierujojn)"
+
+msgid "Searching"
+msgstr "Serĉanta"
+
+msgid "Change &to"
+msgstr "Ŝanĝi &al"
+
+msgid "&Free VFSs now"
+msgstr "&Nun liberigi virtualajn dosiersistemojn"
+
+msgid "&Refresh"
+msgstr "&Refreŝigi"
+
+msgid "&Add current"
+msgstr "&Aldoni nunan"
+
+msgid "&Up"
+msgstr "&Supren"
+
+msgid "New &group"
+msgstr "Nova &grupo"
+
+msgid "New &entry"
+msgstr "&Nova ero"
+
+msgid "&Insert"
+msgstr "&Enmeti"
+
+msgid "&Remove"
+msgstr "&Forigi"
+
+msgid "Subgroup - press ENTER to see list"
+msgstr "Subgrupo - premu enen-klavon por vidi liston"
+
+msgid "Active VFS directories"
+msgstr "[Virtualaj dosiersistemoj] Aktivaj dosierujoj"
+
+msgid "Directory hotlist"
+msgstr "Dosieruja rapidolisto"
+
+msgid "Top level group"
+msgstr "Plej supra grupo"
+
+msgid "Directory path"
+msgstr "Dosieruja vojo"
+
+#, c-format
+msgid "Moving %s"
+msgstr "Movanta je %s"
+
+msgid "Directory label"
+msgstr "Dosieruja etikedo"
+
+msgid "&Append"
+msgstr "&Almeti"
+
+msgid "New hotlist entry"
+msgstr "Nova rapidolista ero"
+
+msgid "Directory label:"
+msgstr "Dosieruja etikedo:"
+
+msgid "Directory path:"
+msgstr "Dosieruja vojo:"
+
+msgid "New hotlist group"
+msgstr "Nova rapidolista grupo"
+
+msgid "Name of new group:"
+msgstr "Nomo de nova grupo:"
+
+#, c-format
+msgid "Are you sure you want to remove entry \"%s\"?"
+msgstr "Ĉu vi certas, ke vi volas forigi la eron \"%s\"?"
+
+#, c-format
+msgid ""
+"Group \"%s\" is not empty.\n"
+"Remove it?"
+msgstr ""
+"Grupo \"%s\" ne vakas.\n"
+"Ĉu forigi ĝin?"
+
+msgid "Hotlist Load"
+msgstr "Ŝargi rapidoliston"
+
+#, c-format
+msgid ""
+"MC was unable to write %s file,\n"
+"your old hotlist entries were not deleted"
+msgstr ""
+"MC ne povis skribi al la dosiero %s,\n"
+"viaj malnovaj rapidolistaj eroj ne estis forigitaj"
+
+#, c-format
+msgid "Label for \"%s\":"
+msgstr "Etikedo por \"%s\":"
+
+msgid "Add to hotlist"
+msgstr "Aldoni al rapidolisto"
+
+#, c-format
+msgid "Midnight Commander %s"
+msgstr "Midnight Commander %s"
+
+#, c-format
+msgid "File: %s"
+msgstr "Dosiero: %s"
+
+msgid "No node information"
+msgstr "Neniuj nodaj informoj"
+
+msgid "Free nodes:"
+msgstr "Liberaj nodoj:"
+
+msgid "No space information"
+msgstr "Neniuj spacaj informoj"
+
+#, c-format
+msgid "Free space: %s/%s (%d%%)"
+msgstr "Restanta spaco: %s el %s (%d%%)"
+
+#, c-format
+msgid "Type:      %s"
+msgstr "Tipo:      %s"
+
+msgid "non-local vfs"
+msgstr "fora virtuala dosiersistemo"
+
+#, c-format
+msgid "Device:    %s"
+msgstr "Aparato:    %s"
+
+#, c-format
+msgid "Filesystem: %s"
+msgstr "Dosiersistemo: %s"
+
+#, c-format
+msgid "Accessed:  %s"
+msgstr "Atingita:  %s"
+
+#, c-format
+msgid "Modified:  %s"
+msgstr "Modifita:  %s"
+
+#. TRANSLATORS: Time of last status change as in stat(2) man.
+#, c-format
+msgid "Changed:   %s"
+msgstr "Ŝanĝita:   %s"
+
+#, c-format
+msgid "Dev. type: major %lu, minor %lu"
+msgstr "Aparata tipo: granda %lu, malgranda %lu"
+
+#, c-format
+msgid "Size:      %s"
+msgstr "Grando:      %s"
+
+#, c-format
+msgid " (%ld block)"
+msgid_plural " (%ld blocks)"
+msgstr[0] " (%ld bloko)"
+msgstr[1] " (%ld blokoj)"
+
+#, c-format
+msgid "Owner:     %s/%s"
+msgstr "Estro:     %s/%s"
+
+#, c-format
+msgid "Links:     %d"
+msgstr "Ligiloj:     %d"
+
+#, c-format
+msgid "Mode:      %s (%04o)"
+msgstr "Permesoj:      %s (%04o)"
+
+#, c-format
+msgid "Location:  %Xh:%Xh"
+msgstr "Loko:  %Xh:%Xh"
+
+msgid "&Equal split"
+msgstr "&Same granda"
+
+msgid "&Menubar visible"
+msgstr "Menu&linio videbla"
+
+msgid "Command &prompt"
+msgstr "Malsupra &komandlinio"
+
+msgid "&Keybar visible"
+msgstr "Kl&avlinia videbla"
+
+msgid "H&intbar visible"
+msgstr "Kons&ilstrio videbla"
+
+msgid "&XTerm window title"
+msgstr "Fenestra titolo en &XTerm"
+
+msgid "&Show free space"
+msgstr "Montri liberan spa&con"
+
+msgid "Panel split"
+msgstr "Flanka splito"
+
+msgid "Console output"
+msgstr "Terminala eligo"
+
+msgid "&Vertical"
+msgstr "&Vertikala"
+
+msgid "&Horizontal"
+msgstr "&Horizontala"
+
+msgid "Output lines:"
+msgstr "Eligaj linioj:"
+
+msgid "Layout"
+msgstr "Aranĝo"
+
+msgid "File listin&g"
+msgstr "&Dosiero listo"
+
+msgid "&Quick view"
+msgstr "Rapida &vido"
+
+msgid "&Info"
+msgstr "&Informoj"
+
+msgid "&Listing mode..."
+msgstr "&Lista reĝimo..."
+
+msgid "&Sort order..."
+msgstr "&Ordigi laŭ..."
+
+msgid "&Filter..."
+msgstr "&Filtri..."
+
+msgid "&Encoding..."
+msgstr "&Kodoprezento..."
+
+msgid "FT&P link..."
+msgstr "FT&P-ligilo..."
+
+msgid "S&hell link..."
+msgstr "Ŝ&ela ligilo..."
+
+msgid "S&FTP link..."
+msgstr "&SFTP-ligilo..."
+
+msgid "SM&B link..."
+msgstr "SM&B-a ligilo..."
+
+msgid "Paneli&ze"
+msgstr "&Flankigi"
+
+msgid "&Rescan"
+msgstr "&Refreŝigi"
+
+msgid "&View"
+msgstr "&Vidi"
+
+msgid "Vie&w file..."
+msgstr "Vidi do&sieron..."
+
+msgid "&Filtered view"
+msgstr "&Filtrita vido"
+
+msgid "&Copy"
+msgstr "&Kopii"
+
+msgid "C&hmod"
+msgstr "Ŝanĝi &permesojn"
+
+msgid "&Link"
+msgstr "&Ligilo"
+
+msgid "&Symlink"
+msgstr "&Mola ligilo"
+
+msgid "Relative symlin&k"
+msgstr "&Relativa mola ligilo"
+
+msgid "Edit s&ymlink"
+msgstr "Re&dakti molan ligilon"
+
+msgid "Ch&own"
+msgstr "Ŝanĝi estre&con"
+
+msgid "&Advanced chown"
+msgstr "&Altnivele ŝanĝi estrecon"
+
+msgid "&Rename/Move"
+msgstr "Al&inomi/Movi"
+
+msgid "&Mkdir"
+msgstr "&Novan dosierujon"
+
+msgid "&Quick cd"
+msgstr "Rapide ŝanĝi dosieru&jon"
+
+msgid "Select &group"
+msgstr "Elekti &grupon"
+
+msgid "U&nselect group"
+msgstr "Malelekti gr&upon"
+
+msgid "&Invert selection"
+msgstr "Inversigi elek&ton"
+
+msgid "E&xit"
+msgstr "&Eliri"
+
+msgid "&User menu"
+msgstr "&Uzanto-menuo"
+
+msgid "&Directory tree"
+msgstr "&Dosieruja arbo"
+
+msgid "&Find file"
+msgstr "&Trovi dosieron"
+
+msgid "S&wap panels"
+msgstr "In&versigi flankojn"
+
+msgid "Switch &panels on/off"
+msgstr "(Mal)ŝalti &flankojn"
+
+msgid "&Compare directories"
+msgstr "&Kompari dosierujojn"
+
+msgid "C&ompare files"
+msgstr "K&ompari dosierojn"
+
+msgid "E&xternal panelize"
+msgstr "&Eksterigi flankojn"
+
+msgid "Show directory s&izes"
+msgstr "Montri dosierujajn g&randojn"
+
+msgid "Command &history"
+msgstr "Komanda &historio"
+
+msgid "Di&rectory hotlist"
+msgstr "Dosieru&ja rapidolisto"
+
+msgid "&Active VFS list"
+msgstr "Listo de &aktivaj virtualaj dosiersistemoj"
+
+msgid "&Background jobs"
+msgstr "Fo&naj taskoj"
+
+msgid "Screen lis&t"
+msgstr "&Paĝa listo"
+
+msgid "&Undelete files (ext2fs only)"
+msgstr "Reat&ingi dosierojn (nur en ext2fs)"
+
+msgid "&Listing format edit"
+msgstr "Redakti &listan aranĝon"
+
+msgid "Edit &extension file"
+msgstr "Redakti &sufikso-dosieron"
+
+msgid "Edit &menu file"
+msgstr "Redakti &menuo-dosieron"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Redakti pri&lumo-grupan dosieron"
+
+msgid "&Configuration..."
+msgstr "Ag&ordo..."
+
+msgid "&Layout..."
+msgstr "&Aranĝo..."
+
+msgid "&Panel options..."
+msgstr "&Flankaj agordaĵoj..."
+
+msgid "C&onfirmation..."
+msgstr "Ko&nfirmo..."
+
+msgid "&Appearance..."
+msgstr "A&spekto..."
+
+msgid "&Display bits..."
+msgstr "&Elmontraj bitoj..."
+
+msgid "&Virtual FS..."
+msgstr "&Virtualaj dosiersistemoj..."
+
+msgid "Panels:"
+msgstr "Flankoj:"
+
+#, c-format
+msgid "You have %zd opened screen. Quit anyway?"
+msgid_plural "You have %zd opened screens. Quit anyway?"
+msgstr[0] "%zd paĝo estas malfermita. Ĉu senkonsidere eliri?"
+msgstr[1] "%zd paĝoj estas malfermitaj. Ĉu senkonsidere eliri?"
+
+msgid "The Midnight Commander"
+msgstr "Midnight Commander"
+
+msgid "Do you really want to quit the Midnight Commander?"
+msgstr "Ĉu vi efektive volas eliri el Midnight Commander?"
+
+msgid "&Above"
+msgstr "&Supra"
+
+msgid "&Left"
+msgstr "&Maldekstra"
+
+msgid "&Below"
+msgstr "S&uba"
+
+msgid "&Right"
+msgstr "D&ekstra"
+
+msgid "ButtonBar|Menu"
+msgstr "ButtonBar|Menuo"
+
+msgid "ButtonBar|View"
+msgstr "ButtonBar|Vidi"
+
+msgid "ButtonBar|RenMov"
+msgstr "ButtonBar|Movi"
+
+msgid "ButtonBar|Mkdir"
+msgstr "ButtonBar|Mkdir"
+
+msgid "Memory exhausted!"
+msgstr "Memoro eluzita!"
+
+#. TRANSLATORS: one single character to represent 'unsorted' sort mode
+#. TRANSLATORS: no need to translate 'sort', it's just a context prefix
+msgid "sort|u"
+msgstr "sort|n"
+
+msgid "&Unsorted"
+msgstr "Ne&ordigita"
+
+#. TRANSLATORS: one single character to represent 'name' sort mode
+#. TRANSLATORS: no need to translate 'sort', it's just a context prefix
+msgid "sort|n"
+msgstr "sort|n"
+
+msgid "&Name"
+msgstr "&Nomo"
+
+#. TRANSLATORS: one single character to represent 'version' sort mode
+#. TRANSLATORS: no need to translate 'sort', it's just a context prefix
+msgid "sort|v"
+msgstr "sort|e"
+
+msgid "&Version"
+msgstr "&Eldono"
+
+#. TRANSLATORS: one single character to represent 'extension' sort mode
+#. TRANSLATORS: no need to translate 'sort', it's just a context prefix
+msgid "sort|e"
+msgstr "sort|a"
+
+msgid "E&xtension"
+msgstr "&Aldonaĵo"
+
+#. TRANSLATORS: one single character to represent 'size' sort mode
+#. TRANSLATORS: no need to translate 'sort', it's just a context prefix
+msgid "sort|s"
+msgstr "sort|g"
+
+msgid "&Size"
+msgstr "&Grando"
+
+msgid "Block Size"
+msgstr "Bloka grando"
+
+#. TRANSLATORS: one single character to represent 'Modify time' sort mode
+#. TRANSLATORS: no need to translate 'sort', it's just a context prefix
+msgid "sort|m"
+msgstr "sort|m"
+
+msgid "&Modify time"
+msgstr "&Modifo-tempo"
+
+#. TRANSLATORS: one single character to represent 'Access time' sort mode
+#. TRANSLATORS: no need to translate 'sort', it's just a context prefix
+msgid "sort|a"
+msgstr "sort|a"
+
+msgid "&Access time"
+msgstr "A&tingo-tempo"
+
+#. TRANSLATORS: one single character to represent 'Change time' sort mode
+#. TRANSLATORS: no need to translate 'sort', it's just a context prefix
+msgid "sort|h"
+msgstr "sort|ŝ"
+
+msgid "C&hange time"
+msgstr "Ŝanĝo-tem&po"
+
+msgid "Perm"
+msgstr "Perm"
+
+msgid "Nl"
+msgstr "Nl"
+
+#. TRANSLATORS: one single character to represent 'inode' sort mode
+#. TRANSLATORS: no need to translate 'sort', it's just a context prefix
+msgid "sort|i"
+msgstr "sort|i"
+
+msgid "&Inode"
+msgstr "&Inode"
+
+msgid "UID"
+msgstr "Uzanta identigilo"
+
+msgid "GID"
+msgstr "GID"
+
+msgid "Owner"
+msgstr "Estro"
+
+msgid "Group"
+msgstr "Grupo"
+
+msgid "[dev]"
+msgstr "[aparato]"
+
+msgid "UP--DIR"
+msgstr "SUPREN"
+
+msgid "SYMLINK"
+msgstr "MOLA LIGILO"
+
+msgid "SUB-DIR"
+msgstr "SUB-DOSIERUJO"
+
+msgid "<readlink failed>"
+msgstr "<legi ligilon malsukcesis>"
+
+#, c-format
+msgid "%s byte"
+msgid_plural "%s bytes"
+msgstr[0] "%s bajto"
+msgstr[1] "%s bajtoj"
+
+#, c-format
+msgid "%s in %d file"
+msgid_plural "%s in %d files"
+msgstr[0] "%s en %d dosiero"
+msgstr[1] "%s en %d dosieroj"
+
+msgid "Panelize"
+msgstr "F&lankigi"
+
+msgid "Unknown tag on display format:"
+msgstr "Nekonata etikedo en elmontra formato:"
+
+msgid "&Files only"
+msgstr "Nur &dosierujoj"
+
+msgid "&Case sensitive"
+msgstr "&Usklecon ignori"
+
+msgid "Select"
+msgstr "Elekti"
+
+msgid "Unselect"
+msgstr "Malelekti"
+
+msgid "Do you really want to execute?"
+msgstr "Ĉu vi efekti volas plenumigi?"
+
+msgid "User supplied format looks invalid, reverting to default."
+msgstr "Uzanto havigita formato aspektas nevalide, restarigante la aprioran."
+
+msgid "&Add new"
+msgstr "&Aldoni novan"
+
+msgid "External panelize"
+msgstr "Eksterigi flankojn"
+
+msgid "Other command"
+msgstr "Alia komando"
+
+msgid "Command"
+msgstr "Komando"
+
+msgid "Add to external panelize"
+msgstr "Aldoni al eksteraj flankoj"
+
+msgid "Enter command label:"
+msgstr "Enmetu komandan etikedon:"
+
+msgid "Cannot invoke command."
+msgstr "Ne eblas plenumi komandon."
+
+msgid "Pipe close failed"
+msgstr "Dukta fermo malsukcesis"
+
+msgid "Cannot run external panelize in a non-local directory"
+msgstr "Ne eblas plenumi eksterajn flanojn en fora dosierujo"
+
+msgid "Modified git files"
+msgstr "Modifitaj git-dosieroj"
+
+msgid "Find rejects after patching"
+msgstr "Trovi rifuzojn post flikado"
+
+msgid "Find *.orig after patching"
+msgstr "Trovi originalajn post flikado"
+
+msgid "Find SUID and SGID programs"
+msgstr "Trovi SUID- kaj SGID-programojn"
+
+#, c-format
+msgid ""
+"Cannot open the %s file for writing:\n"
+"%s\n"
+msgstr ""
+"Ne eblas malfermi la dosieron %s por skribi:\n"
+"%s\n"
+
+#, c-format
+msgid "Copy \"%s\" directory to:"
+msgstr "Kopii dosierujon \"%s\" al:"
+
+#, c-format
+msgid "Move \"%s\" directory to:"
+msgstr "Movi dosierujon \"%s\" al:"
+
+#, c-format
+msgid ""
+"Cannot stat the destination\n"
+"%s"
+msgstr ""
+"Ne eblas trovi la celon\n"
+"%s"
+
+#, c-format
+msgid "Delete %s?"
+msgstr "Ĉu forigi je %s?"
+
+msgid "ButtonBar|Static"
+msgstr "ButtonBar|Statika"
+
+msgid "ButtonBar|Dynamc"
+msgstr "ButtonBar|Dinamika"
+
+msgid "ButtonBar|Rescan"
+msgstr "ButtonBar|Refreŝigi"
+
+msgid "ButtonBar|Forget"
+msgstr "ButtonBar|Forgesi"
+
+msgid "ButtonBar|Rmdir"
+msgstr "ButtonBar|ForDujo"
+
+#, c-format
+msgid ""
+"Cannot write to the %s file:\n"
+"%s\n"
+msgstr ""
+"Ne eblas skribi al la dosiero %s:\n"
+"%s\n"
+
+msgid "Debug"
+msgstr "Senerarigi"
+
+msgid "ERROR:"
+msgstr "ERARO:"
+
+msgid "True:"
+msgstr "Vera:"
+
+msgid "False:"
+msgstr "Malvera:"
+
+msgid "Error calling program"
+msgstr "Eraro dum programa plenumo"
+
+msgid "Warning -- ignoring file"
+msgstr "Averto -- ignoranta dosieron"
+
+#, c-format
+msgid ""
+"File %s is not owned by root or you or is world writable.\n"
+"Using it may compromise your security"
+msgstr ""
+"Dosiero %s estas posedata de nek la ĉefuzanto nek vi aŭ estas universale "
+"skribebla.\n"
+"Uzi ĝin eble kompromitos vian sekurecon"
+
+msgid "Format error on file Extensions File"
+msgstr "Formata eraro en sufikso-dosiero"
+
+#, c-format
+msgid "The %%var macro has no default"
+msgstr "La makroo %%var havas neniun aprioraĵon"
+
+#, c-format
+msgid "The %%var macro has no variable"
+msgstr "La makroo %%var havas neniun variablon"
+
+#, c-format
+msgid ""
+"Cannot open file%s\n"
+"%s"
+msgstr ""
+"Ne eblas malfermi dosieron%s\n"
+"%s"
+
+#, c-format
+msgid "No suitable entries found in %s"
+msgstr "Neniuj taŭgaj eroj trovitaj en %s"
+
+msgid "User menu"
+msgstr "Uzanto-menuo"
+
+msgid "Help file format error\n"
+msgstr "Eraro ĉe la helpdosiera formato\n"
+
+msgid "Internal bug: Double start of link area"
+msgstr "Interna eraro: Duobla komenco de liga regiono"
+
+#, c-format
+msgid "Cannot find node %s in help file"
+msgstr "Ne eblas trovi nodon %s en helpa dosiero"
+
+msgid "Help"
+msgstr "Helpo"
+
+msgid "ButtonBar|Index"
+msgstr "ButtonBar|Indekso"
+
+msgid "ButtonBar|Prev"
+msgstr "ButtonBar|Antaŭa"
+
+msgid "Learn keys"
+msgstr "Lerni klavojn"
+
+msgid "Teach me a key"
+msgstr "Lernigi al mi klavon"
+
+#, c-format
+msgid ""
+"Please press the %s\n"
+"and then wait until this message disappears.\n"
+"\n"
+"Then, press it again to see if OK appears\n"
+"next to its button.\n"
+"\n"
+"If you want to escape, press a single Escape key\n"
+"and wait as well."
+msgstr ""
+"Bonvolu premu je %s\n"
+"kaj tiam atendu ĝis ĉi tiu mesaĝo malaperas.\n"
+"\n"
+"Tiam, denove premu ĝin por vidi se \"Bone\" aperas\n"
+"apud ĝia butono.\n"
+"\n"
+"Se vi volas eskapi, unufoje premu la klavon Eskapo\n"
+"kaj ankaŭ atendu."
+
+msgid "Cannot accept this key"
+msgstr "Ne eblas akcepti tiun klavon"
+
+#, c-format
+msgid "You have entered \"%s\""
+msgstr "Vi enmetis je \"%s\""
+
+#. TRANSLATORS: This label appears near learned keys.  Keep it short.
+msgid "OK"
+msgstr "Bone"
+
+msgid ""
+"It seems that all your keys already\n"
+"work fine. That's great."
+msgstr ""
+"Ŝajnas, ke ĉiuj el viaj klavoj jam\n"
+"bone funkcias. Tio estas bonega."
+
+msgid "&Discard"
+msgstr "&Forviŝi"
+
+msgid ""
+"Great! You have a complete terminal database!\n"
+"All your keys work well."
+msgstr ""
+"Bonege! Vi havas kompletan terminalan datumbazon!\n"
+"Ĉiuj el viaj klavoj funkcias bone."
+
+msgid ""
+"Press all the keys mentioned here. After you have done it, check\n"
+"which keys are not marked with OK. Press space on the missing\n"
+"key, or click with the mouse to define it. Move around with Tab."
+msgstr ""
+"Premu ĉiujn el la klavoj menciitaj supre. Post tiu faro, kontrolu kiujn\n"
+"klavojn estos markitaj per \"Bone\". Premu la spacetklavon por manka\n"
+"klavo aŭ alklaku per muso por difini ĝin. Movi inter la eroj per tabo."
+
+#, c-format
+msgid ""
+"Failed to run:\n"
+"%s\n"
+msgstr ""
+"Malsukcesis plenumigi:\n"
+"%s\n"
+
+msgid "Home directory path is not absolute"
+msgstr "Hejma-dosieruja vojo ne estas absoluta"
+
+#, c-format
+msgid ""
+"\n"
+"Failed while close:\n"
+"%s\n"
+msgstr ""
+"\n"
+"Malsukcesi dum fermi:\n"
+"%s\n"
+
+msgid "Choose codepage"
+msgstr "Elekti kodpaĝon"
+
+msgid "-  < No translation >"
+msgstr "- < Neniu traduko >"
+
+msgid "%b %e  %Y"
+msgstr "%b %e  %Y"
+
+msgid "%b %e %H:%M"
+msgstr "%b %e %H:%M"
+
+#, c-format
+msgid ""
+"Cannot save file %s:\n"
+"%s"
+msgstr ""
+"Ne eblas konservi dosieron %s:\n"
+"%s"
+
+msgid ""
+"GNU Midnight Commander is already\n"
+"running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+"Midnight Commander de GNU jam estas\n"
+"plenumiĝi en ĉi tiu terminalo.\n"
+"Subŝelo estos malebligita."
+
+#, c-format
+msgid "Cannot open named pipe %s\n"
+msgstr "Ne eblas malfermi nomitan dukton %s\n"
+
+msgid "The shell is still active. Quit anyway?"
+msgstr "La ŝelo estas aktiva. Ĉu senkonsidere eliri?"
+
+#, c-format
+msgid "Warning: Cannot change to %s.\n"
+msgstr "Averto: Ne eblas ŝanĝi al %s.\n"
+
+msgid "Using the S-Lang library with terminfo database\n"
+msgstr "Uzanta la bibliotekon S-Lang kun terminfo-datumbazo\n"
+
+msgid "Using the ncurses library\n"
+msgstr "Uzanta la bibliotekon ncurses\n"
+
+msgid "Using the ncursesw library\n"
+msgstr "Uzanta la bibliotekon ncursesw\n"
+
+msgid "With builtin Editor\n"
+msgstr "Kun interna tekstoredaktilo\n"
+
+msgid "With optional subshell support\n"
+msgstr "Kun laŭvola subŝelo\n"
+
+msgid "With subshell support as default\n"
+msgstr "Kun aŭtomata subŝelo\n"
+
+msgid "With support for background operations\n"
+msgstr "Kun rego de fonaj operacioj\n"
+
+msgid "With mouse support on xterm and Linux console\n"
+msgstr "Kun musa rego ĉe terminaloj xterm-aj kaj linuksaj\n"
+
+msgid "With mouse support on xterm\n"
+msgstr "Kun musa rego ĉe xterm\n"
+
+msgid "With support for X11 events\n"
+msgstr "Kun rego de X11-eventoj\n"
+
+msgid "With internationalization support\n"
+msgstr "Kun internaciiga rego\n"
+
+msgid "With multiple codepages support\n"
+msgstr "Kun rego de pluraj kodpaĝoj\n"
+
+#, c-format
+msgid "Built with GLib %d.%d.%d\n"
+msgstr "Muntita kun GLib %d.%d.%d\n"
+
+#, c-format
+msgid "Virtual File Systems:"
+msgstr "Virtualaj dosiersistemoj:"
+
+#, c-format
+msgid "Data types:"
+msgstr "Datumtipoj:"
+
+msgid "Root directory:"
+msgstr "Radika dosierujo:"
+
+msgid "System data"
+msgstr "Sistemaj datumoj"
+
+msgid "Config directory:"
+msgstr "Agorda dosierujo:"
+
+msgid "Data directory:"
+msgstr "Datuma dosierujo:"
+
+msgid "File extension handlers:"
+msgstr "Dosiersufiksaj traktiloj:"
+
+msgid "VFS plugins and scripts:"
+msgstr "Kromprogramoj kaj programetoj por VFS:"
+
+msgid "User data"
+msgstr "Uzanto-datumoj"
+
+msgid "Cache directory:"
+msgstr "Teneja dosierujo:"
+
+#, c-format
+msgid ""
+"Cannot open cpio archive\n"
+"%s"
+msgstr ""
+"Ne eblas malfermi cpio-dosieron\n"
+"%s"
+
+#, c-format
+msgid ""
+"Premature end of cpio archive\n"
+"%s"
+msgstr ""
+"Tro baldaŭa fino de cpio-dosiero\n"
+"%s"
+
+#, c-format
+msgid ""
+"Inconsistent hardlinks of\n"
+"%s\n"
+"in cpio archive\n"
+"%s"
+msgstr ""
+"Malkonsekvencaj malmolaj ligiloj de\n"
+"%s\n"
+"en cpio-dosiero\n"
+"%s"
+
+#, c-format
+msgid "%s contains duplicate entries! Skipping!"
+msgstr "%s enhavas duplikatajn erojn! Preterpasanta!"
+
+#, c-format
+msgid ""
+"Corrupted cpio header encountered in\n"
+"%s"
+msgstr ""
+"Putrigita cpio-kapo renkontita en\n"
+"%s"
+
+#, c-format
+msgid ""
+"Unexpected end of file\n"
+"%s"
+msgstr ""
+"Neatendita dosierfino\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot open %s archive\n"
+"%s"
+msgstr ""
+"Ne eblas malfermi dosiero %s\n"
+"%s"
+
+msgid "Inconsistent extfs archive"
+msgstr "Malkonsekvenca extfs-dosieron"
+
+#, c-format
+msgid "Warning: cannot open %s directory\n"
+msgstr "Averto: ne eblas malfermi dosierujon %s\n"
+
+#, c-format
+msgid "fish: Disconnecting from %s"
+msgstr "fish: Malkonektiĝanta de %s"
+
+msgid "fish: Waiting for initial line..."
+msgstr "fish: Atendanta komencan linion..."
+
+msgid "Sorry, we cannot do password authenticated connections for now."
+msgstr "Bedaŭrinde ni ne povas nun fari pasvortajn atestadajn konektojn."
+
+#, c-format
+msgid "fish: Password is required for %s"
+msgstr "fish: Pasvorto estas postulita por %s"
+
+msgid "fish: Sending password..."
+msgstr "fish: Sendanta pasvorton..."
+
+msgid "fish: Sending initial line..."
+msgstr "fish: Sendanta komencan linion..."
+
+msgid "fish: Handshaking version..."
+msgstr "fish: Konsentanta eldonon..."
+
+msgid "fish: Getting host info..."
+msgstr "fish: Akiranta gastiganto-informojn..."
+
+#, c-format
+msgid "fish: Reading directory %s..."
+msgstr "fish: Leganta dosierujon %s..."
+
+#, c-format
+msgid "%s: done."
+msgstr "%s: finita."
+
+#, c-format
+msgid "%s: failure"
+msgstr "%s: malsukceso"
+
+#, c-format
+msgid "fish: store %s: sending command..."
+msgstr "fish: teno %s: sendanta komandon..."
+
+msgid "fish: Local read failed, sending zeros"
+msgstr "fish: Loka legado malsukcesis, sendanta nulojn"
+
+msgid "fish: storing file"
+msgstr "fish: konservanta dosieron"
+
+msgid "Aborting transfer..."
+msgstr "Ĉesiganta transigon..."
+
+msgid "Error reported after abort."
+msgstr "Eraro raportita post ĉesigo."
+
+msgid "Aborted transfer would be successful."
+msgstr "Ĉesigita transigo estus sukcesa."
+
+#, c-format
+msgid "ftpfs: Disconnecting from %s"
+msgstr "ftpfs: Malkonektiĝanta de %s"
+
+#, c-format
+msgid "FTP: Password required for %s"
+msgstr "FTP: Pasvorto postulita por %s"
+
+msgid "ftpfs: sending login name"
+msgstr "ftpfs: sendi salutnomon"
+
+msgid "ftpfs: sending user password"
+msgstr "ftpfs: sendi pasvorton"
+
+#, c-format
+msgid "FTP: Account required for user %s"
+msgstr "FTP: Konto postulita por uzanto %s"
+
+msgid "Account:"
+msgstr "Konto:"
+
+msgid "ftpfs: sending user account"
+msgstr "ftpfs: sendi uzantan konton"
+
+msgid "ftpfs: logged in"
+msgstr "ftpfs: ensalutita"
+
+#, c-format
+msgid "ftpfs: Login incorrect for user %s "
+msgstr "ftpfs: Ensaluto malĝusta por uzanto %s "
+
+msgid "ftpfs: Invalid host name."
+msgstr "ftpfs: Nevalida retnodnomo."
+
+#, c-format
+msgid "ftpfs: %s"
+msgstr "ftpfs: %s"
+
+#, c-format
+msgid "ftpfs: making connection to %s"
+msgstr "ftpfs: konektiĝanta al %s"
+
+msgid "ftpfs: connection interrupted by user"
+msgstr "ftpfs: konekto interrompita de uzanto"
+
+#, c-format
+msgid "ftpfs: connection to server failed: %s"
+msgstr "ftpfs: konekto al servilo fiaskis: %s"
+
+#, c-format
+msgid "Waiting to retry... %d (Control-G to cancel)"
+msgstr "Atendanta por reprovi... %d (Stirklavo-G por nuligi)"
+
+msgid "ftpfs: invalid address family"
+msgstr "ftpfs: nevalida familio"
+
+#, c-format
+msgid "ftpfs: could not create socket: %s"
+msgstr "ftpfs: ne eblas krei konektingon: %s"
+
+msgid "ftpfs: could not setup passive mode"
+msgstr "ftpfs: ne eblas starigi pasivan reĝimon"
+
+msgid "ftpfs: aborting transfer."
+msgstr "ftps: ĉesigantan transigon."
+
+#, c-format
+msgid "ftpfs: abort error: %s"
+msgstr "ftpfs: ĉesiga eraro: %s"
+
+msgid "ftpfs: abort failed"
+msgstr "ftpfs: ĉesiga malsukceso"
+
+msgid "ftpfs: CWD failed."
+msgstr "ftpfs: CWD malsukcesis."
+
+msgid "ftpfs: couldn't resolve symlink"
+msgstr "ftpfs: ne eblas solvi molan ligilon"
+
+msgid "Resolving symlink..."
+msgstr "Solvanta molan ligilon..."
+
+#, c-format
+msgid "ftpfs: Reading FTP directory %s... %s%s"
+msgstr "ftpfs: Leganta FTP-dosierujon %s... %s%s"
+
+msgid "(strict rfc959)"
+msgstr "(severa rfc959)"
+
+msgid "(chdir first)"
+msgstr "(ŝanĝi dosierujon unue)"
+
+msgid "ftpfs: failed; nowhere to fallback to"
+msgstr "ftpfs: malsukcesis; neniuj pluaj litoj"
+
+msgid "ftpfs: storing file"
+msgstr "ftpfs: konservanta dosieron"
+
+msgid ""
+"~/.netrc file has incorrect mode\n"
+"Remove password or correct mode"
+msgstr ""
+"~/.netrc havas neĝustan reĝimon\n"
+"Forigi pasvorton aŭ alĝustigi reĝimon"
+
+#, c-format
+msgid "%s: Warning: file %s not found\n"
+msgstr "%s: Averto: dosiero %s ne trovita\n"
+
+#, c-format
+msgid ""
+"Warning: Invalid line in %s:\n"
+"%s\n"
+msgstr ""
+"Averto: Nevalida linio en %s:\n"
+"%s\n"
+
+#, c-format
+msgid ""
+"Warning: Invalid flag %c in %s:\n"
+"%s\n"
+msgstr ""
+"Averto: Nevalida marko %c in %s:\n"
+"%s\n"
+
+#, c-format
+msgid "sftp: an error occurred while reading %s: %s"
+msgstr "sftp: Eraro okazis dum lego de %s: %s"
+
+msgid "sftp: Unable to get current user name."
+msgstr "sftp: Ne eblas atingi la aktualan salutnomon."
+
+msgid "sftp: Invalid host name."
+msgstr "sftp: Nevalida retnodnomo."
+
+msgid "sftp: Invalid port value."
+msgstr "sftp: Nevalida pordnumero."
+
+#, c-format
+msgid "sftp: %s"
+msgstr "sftp: %s"
+
+#, c-format
+msgid "sftp: making connection to %s"
+msgstr "sftp: konektiĝanta al %s"
+
+msgid "sftp: connection interrupted by user"
+msgstr "sftp: konekto interrompita de uzanto"
+
+#, c-format
+msgid "sftp: connection to server failed: %s"
+msgstr "sftp: konekto al servilo fiaskis: %s"
+
+#, c-format
+msgid "sftp: Enter passphrase for %s "
+msgstr "sftp: Enmetu pasfrazon por %s "
+
+msgid "sftp: Passphrase is empty."
+msgstr "sftp: Pasfrazo estas vaka."
+
+#, c-format
+msgid "sftp: Enter password for %s "
+msgstr "sftp: Enmetu pasvorton por %s"
+
+msgid "sftp: Password is empty."
+msgstr "sftp: Pasvorto estas vaka."
+
+#, c-format
+msgid "sftp: Failure establishing SSH session: (%d)"
+msgstr "sftp: Malsukcesis starigi SSH-seancon: (%d)"
+
+msgid "sftp: No file handler data present for reading file"
+msgstr "sftp: Neniu dosiertraktila datumo ĉeestas por legi dosieron"
+
+#, c-format
+msgid "sftp: (Ctrl-G break) Listing... %s"
+msgstr "sftp: (Stir-G rompi) Listo... %s"
+
+msgid "sftp: Listing done."
+msgstr "sftp: Listado finita."
+
+#, c-format
+msgid "reconnect to %s failed"
+msgstr "rekonektiĝi al %s malsukcesis"
+
+msgid "Authentication failed"
+msgstr "Atestado malsukcesis"
+
+#, c-format
+msgid "Error %s creating directory %s"
+msgstr "Eraro %s dum krei dosierujon %s"
+
+#, c-format
+msgid "Error %s removing directory %s"
+msgstr "Eraro %s dum forigi dosierujon %s"
+
+#, c-format
+msgid "%s opening remote file %s"
+msgstr "%s malfermanta forajn dosierojn %s"
+
+#, c-format
+msgid "%s removing remote file %s"
+msgstr "%s dum forigi forajn dosierojn %s"
+
+#, c-format
+msgid "%s renaming files\n"
+msgstr "%s alinomanta dosierojn\n"
+
+#, c-format
+msgid ""
+"Cannot open tar archive\n"
+"%s"
+msgstr ""
+"Ne eblas malfermi tar-dosieron\n"
+"%s"
+
+msgid "Inconsistent tar archive"
+msgstr "Malkonsekvenca tar-dosiero"
+
+msgid "Unexpected EOF on archive file"
+msgstr "Neatendita dosierfino en dosiero"
+
+#, c-format
+msgid ""
+"%s\n"
+"doesn't look like a tar archive."
+msgstr ""
+"%s\n"
+"ne aspektas kiel tar-dosieron."
+
+msgid "undelfs: error"
+msgstr "undelfs: eraro"
+
+msgid "not enough memory"
+msgstr "ne sufiĉan memoron"
+
+msgid "while allocating block buffer"
+msgstr "dum okupi blokan bufron"
+
+#, c-format
+msgid "open_inode_scan: %d"
+msgstr "open_inode_scan: %d"
+
+#, c-format
+msgid "while starting inode scan %d"
+msgstr "dum komenci inode-skanon %d"
+
+#, c-format
+msgid "undelfs: loading deleted files information %d inodes"
+msgstr "undelfs: ŝargis forigitajn dosierajn informojn [%d inode-oj]"
+
+#, c-format
+msgid "while calling ext2_block_iterate %d"
+msgstr "dum voki al ext2_block_iterate %d"
+
+msgid "no more memory while reallocating array"
+msgstr "ne plu memoro dum okupi tabelon"
+
+#, c-format
+msgid "while doing inode scan %d"
+msgstr "dum fari inode-skanon %d"
+
+#, c-format
+msgid "Cannot open file %s"
+msgstr "Ne eblas malfermi dosieron %s"
+
+msgid "undelfs: reading inode bitmap..."
+msgstr "undelfs: leganta inode-bitmapon..."
+
+#, c-format
+msgid ""
+"Cannot load inode bitmap from:\n"
+"%s"
+msgstr ""
+"Ne eblas ŝargi inode-bitmapon el:\n"
+"%s"
+
+msgid "undelfs: reading block bitmap..."
+msgstr "undelfs: leganta blokan bitmapon..."
+
+#, c-format
+msgid ""
+"Cannot load block bitmap from:\n"
+"%s"
+msgstr ""
+"Ne eblas ŝargi blokan bitmapon el:\n"
+"%s"
+
+msgid "vfs_info is not fs!"
+msgstr "vfs_info estas ne fs!"
+
+msgid "You have to chdir to extract files first"
+msgstr "Vi devas ŝanĝi dosierujon antaŭ ol eltiri dosierujojn"
+
+msgid "while iterating over blocks"
+msgstr "dum trairi blokojn"
+
+#, c-format
+msgid "Cannot open file \"%s\""
+msgstr "Ne eblas malfermi dosieron \"%s\""
+
+msgid "Ext2lib error"
+msgstr "Ext2lib: eraro"
+
+msgid "Invalid value"
+msgstr "Nevalida valoro"
+
+msgid "File was modified. Save with exit?"
+msgstr "Dosiero estis modifita. Ĉu konservi dum eliro?"
+
+msgid "&Cancel quit"
+msgstr "Ne &eliri"
+
+msgid ""
+"Midnight Commander is being shut down.\n"
+"Save modified file?"
+msgstr ""
+"Midnight Commander estas elirinta.\n"
+"Ĉu konservi modifitan dosieron?"
+
+msgid "Cannot spawn child process"
+msgstr "Ne eblas krei idan procezon"
+
+msgid "Empty output from child filter"
+msgstr "Vaka eligo el ida filtrilo"
+
+msgid "&Line number (decimal)"
+msgstr "&Linia numero (dekuma)"
+
+msgid "Pe&rcents"
+msgstr "&Elcentoj"
+
+msgid "&Decimal offset"
+msgstr "&Dekuma deŝovo"
+
+msgid "He&xadecimal offset"
+msgstr "Dek&sesuma deŝovo"
+
+msgid "Goto"
+msgstr "Iri"
+
+msgid "ButtonBar|Ascii"
+msgstr "ButtonBar|Askia"
+
+msgid "ButtonBar|HxSrch"
+msgstr "ButtonBar|Dekses"
+
+msgid "ButtonBar|UnWrap"
+msgstr "ButtonBar|Malfaldi"
+
+msgid "ButtonBar|Wrap"
+msgstr "ButtonBar|Faldi"
+
+msgid "ButtonBar|Hex"
+msgstr "ButtonBar|Dekses"
+
+msgid "ButtonBar|Goto"
+msgstr "ButtonBar|Iri"
+
+msgid "ButtonBar|Raw"
+msgstr "ButtonBar|Nuda"
+
+msgid "ButtonBar|Parse"
+msgstr "ButtonBar|Analizi"
+
+msgid "ButtonBar|Unform"
+msgstr "Buttonbar|Malform"
+
+msgid "ButtonBar|Format"
+msgstr "ButtonBar|Format"
+
+#, c-format
+msgid ""
+"Error while closing the file:\n"
+"%s\n"
+"Data may have been written or not"
+msgstr ""
+"Eraro dum fermi la dosieron:\n"
+"%s\n"
+"Datumo eble ne estis skribita"
+
+#, c-format
+msgid ""
+"Cannot save file:\n"
+"%s"
+msgstr ""
+"Ne eblas konservi dosieron:\n"
+"%s"
+
+msgid "View: "
+msgstr "Vidi: "
+
+#, c-format
+msgid ""
+"Cannot open \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas malfermi je \"%s\"\n"
+"%s"
+
+msgid "Cannot view: not a regular file"
+msgstr "Ne eblas vidi: ne normala dosiero"
+
+#, c-format
+msgid ""
+"Cannot open \"%s\" in parse mode\n"
+"%s"
+msgstr ""
+"Ne eblas malfermi je \"%s\" laŭ analiza reĝimo\n"
+"%s"
+
+msgid "Search done"
+msgstr "Serĉo finita"
+
+msgid "Continue from beginning?"
+msgstr "Ĉu deiri de la komenco?"
+
+msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
+msgstr "Ne eblas atingi lokan kopion de /ftp://some.host/editme.txt"
+
+#~ msgid "&Select"
+#~ msgstr "&Elekti"
+
+#~ msgid "Seeking to search result"
+#~ msgstr "Trovanta en serĉa rezulto"
