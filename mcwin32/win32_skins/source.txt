@@ -1,0 +1,27 @@
+
+        Ajnasz Skin 
+        Jedi Skin 
+
+                http://ooommm.org/sudelwiki/Midnight_Commander
+
+        bluemoon
+
+                http://zool.in.ua/software-en-US/bluemoon/
+
+                also http://code.google.com/p/jcoffeehome/source/browse/
+                        trunk/tools/linux/userHome/.mc/skins/bluemoon.ini?spec=svn225&r=225
+
+        darkone
+
+                http://blog.miranda.or.at/2010/04/editing-skins-for-midnight-commander
+
+
+        ovidiu
+
+                http://blog.mybox.ro/2010/05/10/skins-and-color-themes-for-midnight-commander/
+
+
+        elite-commander
+
+
+                http://blog.yjl.im/2010/01/elite-commander-skin-for-midnight.html

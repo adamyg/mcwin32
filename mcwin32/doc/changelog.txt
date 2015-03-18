@@ -1,0 +1,84 @@
+Tue Aug  5 15:21:01 2014 ayoung
+
+	* build 185
+
+                - 4.8.12 snap-shot merge
+
+Sat Dec 28 12:52:59 2013 ayoung
+
+	* build 182
+
+                - 4.8.11 snap-shot merge
+
+                - busybox version changed (busybox-w32-TIG-1226-g3fd3465.exe)
+
+                                http://intgat.tigress.co.uk/rmy/busybox/index.html
+                        older:  https://github.com/pclouds/busybox-w32
+
+Sun Jun 30 19:09:11 2013 ayoung
+
+	* build 181
+
+                - 4.8.8 snap-shot
+
+Sat Mar  9 00:48:59 2013 ayoung
+
+        * build 180, port bug fix
+
+	        - my_system() convert slashes of leading word of 'cmd.exe' expressions.
+
+	        - g_mktemp() replacement, needed for correct fdopen() operation.
+
+Wed Feb  6 00:10:27 2013 ayoung
+
+	* build 178, port bug fix
+
+                - TMPDIR logic corrected, remove startup warning regarding inability to access /tmp
+                - console.saver.c enabled
+
+Mon Jan 28 21:09:43 2013 ayoung
+
+	* build 176 
+
+                - port bug fix, 163:editcmd_dialog.c
+
+Sun Jan 27 22:27:50 2013 ayoung
+
+	* build 174
+
+	        - 4.8.7 source import/merge
+
+Fri Aug 24 01:02:30 2012 adamy
+
+	* initial reparse support
+
+Tue Aug 21 04:05:31 2012 adamy
+
+        * force refresh within keyboard handler.
+
+Thu Aug 16 23:46:52 2012 adamy
+
+	* gettext/locale support enabled -- prelim.
+
+Wed Aug 15 00:36:55 2012 adamy
+
+	* build 159
+
+                - additional UNC support, local shares available under //<hostname>/
+
+                - build number exported (e.g. --help).
+
+
+Tue Aug 14 16:39:56 2012 adamy
+
+	* build 157
+
+                - home directory search order, HOME then PERSONAL (fix ch ~).
+
+                        HOME
+                        $PERSONAL/home
+                        $PERSONAL
+                        c:/
+
+
+
