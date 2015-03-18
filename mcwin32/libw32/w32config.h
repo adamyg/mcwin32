@@ -4,7 +4,7 @@
 /*
  * win32 <config.h> implementation
  *
- * Copyright (c) 2007, 2012, Adam Young.
+ * Copyright (c) 2007, 2012 - 2015 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

@@ -5,7 +5,7 @@
 # Note, script assumes the consumption of C/C++ based source usage
 # on other source shall have undefined results.
 #
-# Copyright (c) 2012, Adam Young.
+# Copyright (c) 2012 - 2015, Adam Young.
 # All Rights Reserved
 #
 #
