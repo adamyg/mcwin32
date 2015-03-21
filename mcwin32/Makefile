@@ -1,6 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id:$
-# Midnight command WIN32 builds 4.8.7, as at 27/01/13
+# Midnight command WIN32 builds 4.8.13, as at 21/03/15
 #
 #
 #
@@ -13,7 +12,8 @@ include		Makefile.common
 
 PERL=		perl
 BUSYBOX=	$(shell which busybox)
-MCSOURCE=	../mc
+MCSOURCE=	../mcsrc
+#MCSOURCE=	../mcmerge
 GTKINSTALL=	../gtk
 
 CINCLUDE=	$(ISWITCH).\
@@ -276,7 +276,7 @@ MC_LIBMC=\
 #	vfs/ftpfs
 #	vfs/sfs
 #	vfs/sftpfs	TODO -- libssh2
-#		- $(D_OBJVFS)/sftpfs_config_parcer$(O)
+#		- $(D_OBJVFS)/sftpfs_config_parser$(O)
 #		- $(D_OBJVFS)/sftpfs_connection$(O)
 #		- $(D_OBJVFS)/sftpfs_dir$(O)
 #		- $(D_OBJVFS)/sftpfs_file$(O)

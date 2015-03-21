@@ -1,3 +1,26 @@
+Fri Mar 20 22:37:14 2015 ayoung
+
+	* build 187
+
+                - 4.8.13 merge
+
+                - busybox upgrade,
+                        busybox-w32-TIG-1764-g74ba8c7.exe
+
+                     source:
+                        https://github.com/rmyorston/busybox-w32
+                        http://intgat.tigress.co.uk/rmy/files/busybox/
+
+Wed Mar 18 23:21:46 2015 ayoung
+
+	* build 186
+
+                - ticket #8, Crash during 'mc --config'
+
+                - ticket #7, MC crashes when MCEDIT menu Options>General... is selected
+
+                - syslink() EEXISTS errno mapping.
+
 Tue Aug  5 15:21:01 2014 ayoung
 
 	* build 185
@@ -38,7 +61,7 @@ Wed Feb  6 00:10:27 2013 ayoung
 
 Mon Jan 28 21:09:43 2013 ayoung
 
-	* build 176 
+	* build 176
 
                 - port bug fix, 163:editcmd_dialog.c
 

@@ -135,8 +135,7 @@ resolve_symlinks (const vfs_path_t * vpath)
         *q = 0;
         if (mc_lstat (vpath, &mybuf) < 0)
         {
-            g_free (buf);
-            buf = NULL;
+            MC_PTR_FREE (buf);
             goto ret;
         }
         if (!S_ISLNK (mybuf.st_mode))
@@ -148,8 +147,7 @@ resolve_symlinks (const vfs_path_t * vpath)
             len = mc_readlink (vpath, buf2, MC_MAXPATHLEN - 1);
             if (len < 0)
             {
-                g_free (buf);
-                buf = NULL;
+                MC_PTR_FREE (buf);
                 goto ret;
             }
             buf2[len] = 0;
@@ -720,12 +718,12 @@ skip_numbers (const char *s)
  * "control sequence", in a sort of pidgin BNF, as follows:
  *
  * control-seq = Esc non-'['
- *             | Esc '[' (0 or more digits or ';' or '?') (any other char)
+ *             | Esc '[' (0 or more digits or ';' or ':' or '?') (any other char)
  *
- * This scheme works for all the terminals described in my termcap /
- * terminfo databases, except the Hewlett-Packard 70092 and some Wyse
- * terminals.  If I hear from a single person who uses such a terminal
- * with MC, I'll be glad to add support for it.  (Dugan)
+ * The 256-color and true-color escape sequences should allow either ';' or ':' inside as separator,
+ * actually, ':' is the more correct according to ECMA-48.
+ * Some terminal emulators (e.g. xterm, gnome-terminal) support this.
+ *
  * Non-printable characters are also removed.
  */
 
@@ -747,7 +745,7 @@ strip_ctrl_codes (char *s)
             if (*(++r) == '[' || *r == '(')
             {
                 /* strchr() matches trailing binary 0 */
-                while (*(++r) != '\0' && strchr ("0123456789;?", *r) != NULL)
+                while (*(++r) != '\0' && strchr ("0123456789;:?", *r) != NULL)
                     ;
             }
             else if (*r == ']')

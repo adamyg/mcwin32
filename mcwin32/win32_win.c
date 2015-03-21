@@ -11,7 +11,7 @@
    The Free Software Foundation, Inc.
 
    Written by:
-   Adam Young 2012-2013
+   Adam Young 2012-2015
 
    This file is part of the Midnight Commander.
 

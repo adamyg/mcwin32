@@ -9,7 +9,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{CBB4464D-7081-4F1D-9F6D-F5288A4A9B82}
 AppName=GNU Midnight Commander
-AppVersion=4.8.12 (build: {#BUILD_DATE}-{#BUILD_NUMBER})
+AppVersion=4.8.13 (build: {#BUILD_DATE}-{#BUILD_NUMBER})
 ;   AppVerName= ...
 AppPublisher=The Free Software Foundation, Inc.
 AppPublisherURL=https://www.midnight-commander.org/
