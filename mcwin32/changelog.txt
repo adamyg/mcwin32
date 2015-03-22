@@ -1,8 +1,16 @@
-Fri Mar 20 22:37:14 2015 ayoung
+Sun Mar 22 03:39:34 2015 ayoung
 
 	* build 187
 
-                - 4.8.13 merge
+            Bug Fixes
+                - ticket #9
+
+            New
+                - <Shift-Return> maximize.
+
+                - <Alt-0..9> function key emulation.
+
+                - 4.8.13 merge.
 
                 - busybox upgrade,
                         busybox-w32-TIG-1764-g74ba8c7.exe

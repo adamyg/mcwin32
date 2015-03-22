@@ -59,6 +59,7 @@
 
  */
 
+#define _WIN32_WINNT 0x500
 #include <config.h>
 #include "win32.h"
 
@@ -92,7 +93,7 @@ extern void                 EnterDebugger(void);
 
 #include "src/filemanager/midnight.h"           /* left/right panel */
 
-extern gboolean     quit_cmd_internal (gboolean quiet);
+extern gboolean             quit_cmd_internal (gboolean quiet);
 
 #ifdef USE_VFS
 #include "vfs/gc.h"
@@ -111,8 +112,7 @@ extern gboolean     quit_cmd_internal (gboolean quiet);
  *      ENTER keys in the keypad.
  */
 
-#define W32KEYS \
-            ((int)(sizeof(w32Keys)/sizeof(w32Keys[0])))
+#define W32KEYS     ((int)(sizeof(w32Keys)/sizeof(w32Keys[0])))
 
 static const struct {
     WORD            vk;                 /* windows virtual key code */
@@ -177,106 +177,106 @@ const key_code_name_t   key_name_conv_tab[] = {
      *  KEY_F(0) is not here, since we are mapping it to f10, so there is no reason
      *  to define f0 as well. Also, it makes Learn keys a bunch of problems :(
      */
-    { KEY_F (1),        "f1",           N_("Function key 1"),       "F1"},
-    { KEY_F (2),        "f2",           N_("Function key 2"),       "F2"},
-    { KEY_F (3),        "f3",           N_("Function key 3"),       "F3"},
-    { KEY_F (4),        "f4",           N_("Function key 4"),       "F4"},
-    { KEY_F (5),        "f5",           N_("Function key 5"),       "F5"},
-    { KEY_F (6),        "f6",           N_("Function key 6"),       "F6"},
-    { KEY_F (7),        "f7",           N_("Function key 7"),       "F7"},
-    { KEY_F (8),        "f8",           N_("Function key 8"),       "F8"},
-    { KEY_F (9),        "f9",           N_("Function key 9"),       "F9"},
-    { KEY_F (10),       "f10",          N_("Function key 10"),      "F10"},
-    { KEY_F (11),       "f11",          N_("Function key 11"),      "F11"},
-    { KEY_F (12),       "f12",          N_("Function key 12"),      "F12"},
-    { KEY_F (13),       "f13",          N_("Function key 13"),      "F13"},
-    { KEY_F (14),       "f14",          N_("Function key 14"),      "F14"},
-    { KEY_F (15),       "f15",          N_("Function key 15"),      "F15"},
-    { KEY_F (16),       "f16",          N_("Function key 16"),      "F16"},
-    { KEY_F (17),       "f17",          N_("Function key 17"),      "F17"},
-    { KEY_F (18),       "f18",          N_("Function key 18"),      "F18"},
-    { KEY_F (19),       "f19",          N_("Function key 19"),      "F19"},
-    { KEY_F (20),       "f20",          N_("Function key 20"),      "F20"},
-    { KEY_BACKSPACE,    "backspace",    N_("Backspace key"),        "Backspace"},
-    { KEY_END,          "end",          N_("End key"),              "End"},
-    { KEY_UP,           "up",           N_("Up arrow key"),         "Up"},
-    { KEY_DOWN,         "down",         N_("Down arrow key"),       "Down"},
-    { KEY_LEFT,         "left",         N_("Left arrow key"),       "Left"},
-    { KEY_RIGHT,        "right",        N_("Right arrow key"),      "Right"},
-    { KEY_HOME,         "home",         N_("Home key"),             "Home"},
-    { KEY_NPAGE,        "pgdn",         N_("Page Down key"),        "PgDn"},
-    { KEY_PPAGE,        "pgup",         N_("Page Up key"),          "PgUp"},
-    { KEY_IC,           "insert",       N_("Insert key"),           "Ins"},
-    { KEY_DC,           "delete",       N_("Delete key"),           "Del"},
-    { ALT ('\t'),       "complete",     N_("Completion/M-tab"),     "Meta-Tab"},
-    { KEY_BTAB,         "backtab",      N_("Back Tabulation S-tab"), "Shift-Tab"},
-    { KEY_KP_ADD,       "kpplus",       N_("+ on keypad"),          "+"},
-    { KEY_KP_SUBTRACT,  "kpminus",      N_("- on keypad"),          "-"},
-    { (int) '/',        "kpslash",      N_("Slash on keypad"),      "/"},
-    { KEY_KP_MULTIPLY,  "kpasterisk",   N_("* on keypad"),          "*"},
+    { KEY_F (1),        "f1",           N_("Function key 1"),       "F1" },
+    { KEY_F (2),        "f2",           N_("Function key 2"),       "F2" },
+    { KEY_F (3),        "f3",           N_("Function key 3"),       "F3" },
+    { KEY_F (4),        "f4",           N_("Function key 4"),       "F4" },
+    { KEY_F (5),        "f5",           N_("Function key 5"),       "F5" },
+    { KEY_F (6),        "f6",           N_("Function key 6"),       "F6" },
+    { KEY_F (7),        "f7",           N_("Function key 7"),       "F7" },
+    { KEY_F (8),        "f8",           N_("Function key 8"),       "F8" },
+    { KEY_F (9),        "f9",           N_("Function key 9"),       "F9" },
+    { KEY_F (10),       "f10",          N_("Function key 10"),      "F10" },
+    { KEY_F (11),       "f11",          N_("Function key 11"),      "F11" },
+    { KEY_F (12),       "f12",          N_("Function key 12"),      "F12" },
+    { KEY_F (13),       "f13",          N_("Function key 13"),      "F13" },
+    { KEY_F (14),       "f14",          N_("Function key 14"),      "F14" },
+    { KEY_F (15),       "f15",          N_("Function key 15"),      "F15" },
+    { KEY_F (16),       "f16",          N_("Function key 16"),      "F16" },
+    { KEY_F (17),       "f17",          N_("Function key 17"),      "F17" },
+    { KEY_F (18),       "f18",          N_("Function key 18"),      "F18" },
+    { KEY_F (19),       "f19",          N_("Function key 19"),      "F19" },
+    { KEY_F (20),       "f20",          N_("Function key 20"),      "F20" },
+    { KEY_BACKSPACE,    "backspace",    N_("Backspace key"),        "Backspace" },
+    { KEY_END,          "end",          N_("End key"),              "End" },
+    { KEY_UP,           "up",           N_("Up arrow key"),         "Up" },
+    { KEY_DOWN,         "down",         N_("Down arrow key"),       "Down" },
+    { KEY_LEFT,         "left",         N_("Left arrow key"),       "Left" },
+    { KEY_RIGHT,        "right",        N_("Right arrow key"),      "Right" },
+    { KEY_HOME,         "home",         N_("Home key"),             "Home" },
+    { KEY_NPAGE,        "pgdn",         N_("Page Down key"),        "PgDn" },
+    { KEY_PPAGE,        "pgup",         N_("Page Up key"),          "PgUp" },
+    { KEY_IC,           "insert",       N_("Insert key"),           "Ins" },
+    { KEY_DC,           "delete",       N_("Delete key"),           "Del" },
+    { ALT ('\t'),       "complete",     N_("Completion/M-tab"),     "Meta-Tab" },
+    { KEY_BTAB,         "backtab",      N_("Back Tabulation S-tab"), "Shift-Tab" },
+    { KEY_KP_ADD,       "kpplus",       N_("+ on keypad"),          "+" },
+    { KEY_KP_SUBTRACT,  "kpminus",      N_("- on keypad"),          "-" },
+    { (int) '/',        "kpslash",      N_("Slash on keypad"),      "/" },
+    { KEY_KP_MULTIPLY,  "kpasterisk",   N_("* on keypad"),          "*" },
 
     /* From here on, these won't be shown in Learn keys (no space) */
-    { ESC_CHAR,         "escape",       N_("Escape key"),           "Esc"},
-    { KEY_LEFT,         "kpleft",       N_("Left arrow keypad"),    "Left"},
-    { KEY_RIGHT,        "kpright",      N_("Right arrow keypad"),   "Right"},
-    { KEY_UP,           "kpup",         N_("Up arrow keypad"),      "Up"},
-    { KEY_DOWN,         "kpdown",       N_("Down arrow keypad"),    "Down"},
-    { KEY_HOME,         "kphome",       N_("Home on keypad"),       "Home"},
-    { KEY_END,          "kpend",        N_("End on keypad"),        "End"},
-    { KEY_NPAGE,        "kpnpage",      N_("Page Down keypad"),     "PgDn"},
-    { KEY_PPAGE,        "kpppage",      N_("Page Up keypad"),       "PgUp"},
-    { KEY_IC,           "kpinsert",     N_("Insert on keypad"),     "Ins"},
-    { KEY_DC,           "kpdelete",     N_("Delete on keypad"),     "Del"},
-    { (int) '\n',       "kpenter",      N_("Enter on keypad"),      "Enter"},
-    { KEY_F (21),       "f21",          N_("Function key 21"),      "F21"},
-    { KEY_F (22),       "f22",          N_("Function key 22"),      "F22"},
-    { KEY_F (23),       "f23",          N_("Function key 23"),      "F23"},
-    { KEY_F (24),       "f24",          N_("Function key 24"),      "F24"},
-    { KEY_A1,           "a1",           N_("A1 key"), "A1"},
-    { KEY_C1,           "c1",           N_("C1 key"), "C1"},
+    { ESC_CHAR,         "escape",       N_("Escape key"),           "Esc" },
+    { KEY_LEFT,         "kpleft",       N_("Left arrow keypad"),    "Left" },
+    { KEY_RIGHT,        "kpright",      N_("Right arrow keypad"),   "Right" },
+    { KEY_UP,           "kpup",         N_("Up arrow keypad"),      "Up" },
+    { KEY_DOWN,         "kpdown",       N_("Down arrow keypad"),    "Down" },
+    { KEY_HOME,         "kphome",       N_("Home on keypad"),       "Home" },
+    { KEY_END,          "kpend",        N_("End on keypad"),        "End" },
+    { KEY_NPAGE,        "kpnpage",      N_("Page Down keypad"),     "PgDn" },
+    { KEY_PPAGE,        "kpppage",      N_("Page Up keypad"),       "PgUp" },
+    { KEY_IC,           "kpinsert",     N_("Insert on keypad"),     "Ins" },
+    { KEY_DC,           "kpdelete",     N_("Delete on keypad"),     "Del" },
+    { (int) '\n',       "kpenter",      N_("Enter on keypad"),      "Enter" },
+    { KEY_F (21),       "f21",          N_("Function key 21"),      "F21" },
+    { KEY_F (22),       "f22",          N_("Function key 22"),      "F22" },
+    { KEY_F (23),       "f23",          N_("Function key 23"),      "F23" },
+    { KEY_F (24),       "f24",          N_("Function key 24"),      "F24" },
+    { KEY_A1,           "a1",           N_("A1 key"), "A1" },
+    { KEY_C1,           "c1",           N_("C1 key"), "C1" },
 
     /* Alternative label */
-    { ESC_CHAR,         "esc",          N_("Escape key"), "Esc"},
-    { KEY_BACKSPACE,    "bs",           N_("Backspace key"), "Bakspace"},
-    { KEY_IC,           "ins",          N_("Insert key"), "Ins"},
-    { KEY_DC,           "del",          N_("Delete key"), "Del"},
-    { (int) '+',        "plus",         N_("Plus"), "+"},
-    { (int) '-',        "minus",        N_("Minus"), "-"},
-    { (int) '*',        "asterisk",     N_("Asterisk"), "*"},
-    { (int) '.',        "dot",          N_("Dot"), "."},
-    { (int) '<',        "lt",           N_("Less than"), "<"},
-    { (int) '>',        "gt",           N_("Great than"), ">"},
-    { (int) '=',        "equal",        N_("Equal"), "="},
-    { (int) ',',        "comma",        N_("Comma"), ","},
-    { (int) '\'',       "apostrophe",   N_("Apostrophe"), "\'"},
-    { (int) ':',        "colon",        N_("Colon"), ":"},
-    { (int) '!',        "exclamation",  N_("Exclamation mark"), "!"},
-    { (int) '?',        "question",     N_("Question mark"), "?"},
-    { (int) '&',        "ampersand",    N_("Ampersand"), "&"},
-    { (int) '$',        "dollar",       N_("Dollar sign"), "$"},
-    { (int) '"',        "quota",        N_("Quotation mark"), "\""},
-    { (int) '%',        "percent",      N_("Percent sign"), "%"},
-    { (int) '^',        "caret",        N_("Caret"), "^"},
-    { (int) '~',        "tilda",        N_("Tilda"), "~"},
-    { (int) '`',        "prime",        N_("Prime"), "`"},
-    { (int) '_',        "underline",    N_("Underline"), "_"},
-    { (int) '_',        "understrike",  N_("Understrike"), "_"},
-    { (int) '|',        "pipe",         N_("Pipe"), "|"},
-    { (int) '(',        "lparenthesis", N_("Left parenthesis"), "("},
-    { (int) ')',        "rparenthesis", N_("Right parenthesis"), ")"},
-    { (int) '[',        "lbracket",     N_("Left bracket"), "["},
-    { (int) ']',        "rbracket",     N_("Right bracket"), "]"},
-    { (int) '{',        "lbrace",       N_("Left brace"), "{"},
-    { (int) '}',        "rbrace",       N_("Right brace"), "}"},
-    { (int) '\n',       "enter",        N_("Enter"), "Enter"},
-    { (int) '\t',       "tab",          N_("Tab key"), "Tab"},
-    { (int) ' ',        "space",        N_("Space key"), "Space"},
-    { (int) '/',        "slash",        N_("Slash key"), "/"},
-    { (int) '\\',       "backslash",    N_("Backslash key"), "\\"},
-    { (int) '#',        "number",       N_("Number sign #"), "#"},
-    { (int) '#',        "hash",         N_("Number sign #"), "#"},
+    { ESC_CHAR,         "esc",          N_("Escape key"), "Esc" },
+    { KEY_BACKSPACE,    "bs",           N_("Backspace key"), "Bakspace" },
+    { KEY_IC,           "ins",          N_("Insert key"), "Ins" },
+    { KEY_DC,           "del",          N_("Delete key"), "Del" },
+    { (int) '+',        "plus",         N_("Plus"), "+" },
+    { (int) '-',        "minus",        N_("Minus"), "-" },
+    { (int) '*',        "asterisk",     N_("Asterisk"), "*" },
+    { (int) '.',        "dot",          N_("Dot"), "." },
+    { (int) '<',        "lt",           N_("Less than"), "<" },
+    { (int) '>',        "gt",           N_("Great than"), ">" },
+    { (int) '=',        "equal",        N_("Equal"), "=" },
+    { (int) ',',        "comma",        N_("Comma"), "," },
+    { (int) '\'',       "apostrophe",   N_("Apostrophe"), "\'" },
+    { (int) ':',        "colon",        N_("Colon"), ":" },
+    { (int) '!',        "exclamation",  N_("Exclamation mark"), "!" },
+    { (int) '?',        "question",     N_("Question mark"), "?" },
+    { (int) '&',        "ampersand",    N_("Ampersand"), "&" },
+    { (int) '$',        "dollar",       N_("Dollar sign"), "$" },
+    { (int) '"',        "quota",        N_("Quotation mark"), "\"" },
+    { (int) '%',        "percent",      N_("Percent sign"), "%" },
+    { (int) '^',        "caret",        N_("Caret"), "^" },
+    { (int) '~',        "tilda",        N_("Tilda"), "~" },
+    { (int) '`',        "prime",        N_("Prime"), "`" },
+    { (int) '_',        "underline",    N_("Underline"), "_" },
+    { (int) '_',        "understrike",  N_("Understrike"), "_" },
+    { (int) '|',        "pipe",         N_("Pipe"), "|" },
+    { (int) '(',        "lparenthesis", N_("Left parenthesis"), "(" },
+    { (int) ')',        "rparenthesis", N_("Right parenthesis"), ")" },
+    { (int) '[',        "lbracket",     N_("Left bracket"), "[" },
+    { (int) ']',        "rbracket",     N_("Right bracket"), "]" },
+    { (int) '{',        "lbrace",       N_("Left brace"), "{" },
+    { (int) '}',        "rbrace",       N_("Right brace"), "}" },
+    { (int) '\n',       "enter",        N_("Enter"), "Enter" },
+    { (int) '\t',       "tab",          N_("Tab key"), "Tab" },
+    { (int) ' ',        "space",        N_("Space key"), "Space" },
+    { (int) '/',        "slash",        N_("Slash key"), "/" },
+    { (int) '\\',       "backslash",    N_("Backslash key"), "\\" },
+    { (int) '#',        "number",       N_("Number sign #"), "#" },
+    { (int) '#',        "hash",         N_("Number sign #"), "#" },
     /* TRANSLATORS: Please translate as in "at sign" (@). */
-    { (int) '@',        "at",           N_("At sign"), "@"},
+    { (int) '@',        "at",           N_("At sign"), "@" },
 
     /* meta keys */
     { KEY_M_CTRL,       "control",      N_("Ctrl"),     "C" },
@@ -286,7 +286,7 @@ const key_code_name_t   key_name_conv_tab[] = {
     { KEY_M_ALT,        "ralt",         N_("Alt"),      "M" },
     { KEY_M_SHIFT,      "shift",        N_("Shift"),    "S" },
 
-    { 0, NULL, NULL, NULL}
+    { 0, NULL, NULL, NULL }
     };
 
 
@@ -831,6 +831,11 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
             switch (k.EventType) {
             case KEY_EVENT:
                 c = get_key_code(1);
+                if (c == (KEY_M_SHIFT|'\n')) {  /* <Shift-Return> */
+                    mc_global.tty.winch_flag = TRUE;
+                    SLsmg_togglesize ();
+                    c = 0;
+                }
                 break;
 
             case MOUSE_EVENT:
@@ -901,7 +906,7 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
             }
 
         } else if (rc == WAIT_FAILED) {
-	    fprintf (stderr,
+            fprintf (stderr,
                 "Console handle no longer valid, assuming EOF on stdin and exiting\n");
             exit (1);
         }
@@ -973,7 +978,7 @@ CtrlHandler(DWORD fdwCtrlType)
         return FALSE;
 
     default:
-	break;
+        break;
     }
     return FALSE;
 }
@@ -1001,12 +1006,15 @@ CtrlBreak(void)
  */
 static int
 key_mapwin32(
-    unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned AsciiChar )
+    unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned AsciiChar)
 {
+#if (XXX)
+    static int wasescape = 0;
+#endif
     int mod = 0, ch = -1;
     int i;
 
-    /* modifiers */
+    /* Modifiers */
     if (dwCtrlKeyState &
             (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) {
         mod |= KEY_M_ALT;
@@ -1021,8 +1029,21 @@ key_mapwin32(
         mod |= KEY_M_SHIFT;
     }
 
-    /* virtual keys */
-    for (i = W32KEYS-1; i >= 0; i--)
+    /* Filter escapes */
+#if (XXX)
+    if (VK_ESCAPE == AsciiChar && 0 == mod) {
+        if (wasescape) {
+            wasescape = 0;
+            return ESC_CHAR;                    /* ESC, ESC */
+        }
+        ++wasescape;
+        return -1;
+    }
+#endif
+
+
+    /* Virtual keys */
+    for (i = W32KEYS-1; i >= 0; i--) {
         if (w32Keys[i].vk == wVirtKeyCode &&
                 ((w32Keys[i].mods == MOD_ALL || w32Keys[i].mods == MOD_FUNC) ||
                     (w32Keys[i].mods == MOD_ENHANCED && (dwCtrlKeyState & (ENHANCED_KEY))) ||
@@ -1043,19 +1064,19 @@ key_mapwin32(
                 } else if (w32Keys[i].mods == MOD_ALL) {
                     if (ch == (31 & 'd')) {
                         /* Ctrl-d is delete */
-	                ch = KEY_DC;
-	                mod &= ~KEY_M_CTRL;
+                        ch = KEY_DC;
+                        mod &= ~KEY_M_CTRL;
                     }
 
                     else if (ch == (31 & 'h')) {
                         /* Ctrl-h is backspace */
-	                ch = KEY_BACKSPACE;
-	                mod &= ~KEY_M_CTRL;
+                        ch = KEY_BACKSPACE;
+                        mod &= ~KEY_M_CTRL;
                     }
 
                     else if (ch == KEY_BACKSPACE && (mod & KEY_M_SHIFT)) {
                         /* Shift+BackSpace is backspace */
-	                mod &= ~KEY_M_SHIFT;
+                        mod &= ~KEY_M_SHIFT;
                     }
 
                     ch |= mod;
@@ -1063,13 +1084,43 @@ key_mapwin32(
             }
             break;
         }
+    }
 
-    /* ascii */
-    if (ch == -1 && (AsciiChar & 0xff)) {
+    /* Convert esc-digits to F-keys */
+#if (XXX)
+    if (wasescape) {
+        if (-1 == ch && 0 == mod) {
+            if (AsciiChar >= '0' && AsciiChar <= '9') {
+                if (AsciiChar >= '1') {         /* F1..F9 */
+                    ch = KEY_F(AsciiChar - '1');
+                } else {
+                    ch = KEY_F(10);             /* F10 */
+                }
+            }
+        }
+        wasescape = 0;
+    }
+#endif  /*XXX*/
+
+    /* Convert alt-digits to F-keys */
+    if (-1 == ch && KEY_M_ALT == mod) {
+        if (AsciiChar >= '0' && AsciiChar <= '9') {
+            if (AsciiChar >= '1') {
+                ch = KEY_F(AsciiChar - '1');    /* F1..F9 */
+            } else {
+                ch = KEY_F(10);                 /* F10 */
+            }
+            mod = 0;
+        }
+    }
+
+    /* Ascii */
+    if (-1 == ch && (AsciiChar & 0xff)) {
         ch = AsciiChar;                         /* ASCII value */
         ch |= (mod & ~KEY_M_SHIFT);             /* .. and modifiers (ignore shift) */
     }
-    return (ch);
+
+    return ch;
 }
 
 
@@ -1152,6 +1203,7 @@ numeric_keypad_mode (void)
 {
 }
 
+
 void
 application_keypad_mode (void)
 {
@@ -1172,4 +1224,6 @@ disable_bracketed_paste (void)
 }
 
 /*end*/
+
+
 

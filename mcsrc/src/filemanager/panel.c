@@ -2425,7 +2425,7 @@ panel_select_unselect_files (WPanel * panel, const char *title, const char *hist
     int i;
 
 #if defined(WIN32)  //WIN32, quick
-    quick_widget_t quick_widgets[8+2],
+    quick_widget_t quick_widgets[8],
         *qc = quick_widgets;
 #else
     quick_widget_t quick_widgets[] = {
@@ -2453,6 +2453,7 @@ panel_select_unselect_files (WPanel * panel, const char *title, const char *hist
     qc =    XQUICK_CHECKBOX (qc, N_("&Case sensitive"), &case_sens, NULL);
     qc = XQUICK_STOP_COLUMNS (qc);
     qc = XQUICK_END (qc);
+  //printf("offset: %u\n", qc - quick_widgets);
     assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif
 

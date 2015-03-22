@@ -22,11 +22,12 @@
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  */
 
+#define _WIN32_WINNT 0x500
 #include "win32_internal.h"
 
 #include <unistd.h>
@@ -41,9 +42,6 @@
 
 #define SLSMSG_ALT_CHARS            22
 #define SLSMSG_ALT_BASE             0xFDD0
-
-//#define SLSMG_NEWLINE_PRINTABLE   0x01
-//#define SLSMG_NEWLINE_SCROLLS     0x02
 
 #define UNICODE_HI_SURROGATE_START  0xD800
 #define UNICODE_HI_SURROGATE_END    0xDBFF
@@ -62,51 +60,54 @@ int SLsmg_Display_Alt_Chars         = 0;
 int SLsmg_Newline_Behavior          = 0;
 int SLsmg_Backspace_Moves           = 0;
 
-int SLtt_Screen_Rows                = 0;    
+int SLtt_Screen_Rows                = 0;
 int SLtt_Screen_Cols                = 0;
 int SLtt_Ignore_Beep                = 0;
-int SLtt_Use_Ansi_Colors            = 1;        // full color support       
+int SLtt_Use_Ansi_Colors            = 1;        // full color support
 int SLtt_Try_Termcap                = 0;
+int SLtt_Maximised                  = -1;
+int SLtt_OldScreen_Rows             = -1;
+int SLtt_OldScreen_Cols             = -1;
 
 static const uint32_t   acs_characters[128] = { /* alternative character map to unicode */
 
      /*
-      * NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL     
+      * NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL
       * BS      HT      NL      VT      NP      CR      SO      SI
-      * DLE     DC1     DC2     DC3     DC4     NAK     SYN     ETB     
+      * DLE     DC1     DC2     DC3     DC4     NAK     SYN     ETB
       * CAN     EM      SUB     ESC     FS      GS      RS      US
       */
-        0,      1,      2,      3,      4,      5,      6,      7,      
+        0,      1,      2,      3,      4,      5,      6,      7,
         8,      9,      10,     11,     12,     13,     14,     15,
-        16,     17,     18,     19,     20,     21,     22,     23,     
+        16,     17,     18,     19,     20,     21,     22,     23,
         24,     25,     26,     27,     28,     29,     30,     31,
-    
+
      /*
       * SP      !       "       #       $       %       &       '
-      * (       )       *       +       ,       -       .       /       
-      * 0       1       2       3       4       5       6       7       
+      * (       )       *       +       ,       -       .       /
+      * 0       1       2       3       4       5       6       7
       * 8       9       :       ;       <       =       >       ?
-      * @       A       B       C       D       E       F       G       
+      * @       A       B       C       D       E       F       G
       * H       I       J       K       L       M       N       O
-      * P       Q       R       S       T       U       V       W       
+      * P       Q       R       S       T       U       V       W
       * X       Y       Z       [       \       ]       ^       _
-      * `       a       b       c       d       e       f       g       
+      * `       a       b       c       d       e       f       g
       * h       i       j       k       l       m       n       o
-      * p       q       r       s       t       u       v       w       
+      * p       q       r       s       t       u       v       w
       * x       y       z       {       |       }       ~       DEL
       */
 
-        ' ',    '!',    '"',    '#',    '$',    '%',    '&',    '\'',   
-        '(',    ')',    '*',    0x2192, 0x2190, 0x2191, 0x2193, '/',    
-        0x2588, '1',    '2',    '3',    '4',    '5',    '6',    '7', 
-        '8',    '9',    ':',    ';',    '<',    '=',    '>',    '?', 
-        '@',    'A',    'B',    'C',    'D',    'E',    'F',    'G', 
-        'H',    'I',    'J',    'K',    'L',    'M',    'N',    'O', 
+        ' ',    '!',    '"',    '#',    '$',    '%',    '&',    '\'',
+        '(',    ')',    '*',    0x2192, 0x2190, 0x2191, 0x2193, '/',
+        0x2588, '1',    '2',    '3',    '4',    '5',    '6',    '7',
+        '8',    '9',    ':',    ';',    '<',    '=',    '>',    '?',
+        '@',    'A',    'B',    'C',    'D',    'E',    'F',    'G',
+        'H',    'I',    'J',    'K',    'L',    'M',    'N',    'O',
         'P',    'Q',    'R',    'S',    'T',    'U',    'V',    'W',
         'X',    'Y',    'Z',    '[',    '\\',   ']',    '^',    '_',
-        0x2666, 0x2592, 'b',    'c',    'd',    'e',    0x00b0, 0x00b1, 
-        0x2591, 0x00a4, 0x2518, 0x2510, 0x250c, 0x2514, 0x253c, 0x23ba, 
-        0x23bb, 0x2500, 0x23bc, 0x23bd, 0x251c, 0x2524, 0x2534, 0x252c, 
+        0x2666, 0x2592, 'b',    'c',    'd',    'e',    0x00b0, 0x00b1,
+        0x2591, 0x00a4, 0x2518, 0x2510, 0x250c, 0x2514, 0x253c, 0x23ba,
+        0x23bb, 0x2500, 0x23bc, 0x23bd, 0x251c, 0x2524, 0x2534, 0x252c,
         0x2502, 0x2264, 0x2265, 0x03c0, 0x2260, 0x00a3, 0x00b7, 127
         };
 
@@ -126,15 +127,16 @@ static void             Copyout(unsigned offset, unsigned len);
 static const void *     utf8_decode_raw(const void *src, const void *cpend, int32_t *cooked, int32_t *raw);
 static const void *     utf8_decode_safe(const void *src, const void *cpend, int32_t *cooked);
 
-static struct {                         /* Video state */
+static struct {                                 /* Video state */
     int                 inited;
     HANDLE              handle;
+    HANDLE              wHandle;                // Underlying window handle.
     CONSOLE_CURSOR_INFO cinfo;
     COORD               ccoord;
-    int                 s_rows, s_cols; /* Video display */
+    int                 s_rows, s_cols;         /* Video display */
     ULONG               size;
     CHAR_INFO *         image;
-    int                 codepage;       /* Font code page */
+    int                 codepage;               /* Font code page */
 
     SLtt_Char_Type      c_colours[MAXCOLOURS];
     SLtt_Char_Type      c_color;
@@ -166,7 +168,7 @@ static const struct attrmap background[] = {
     { "magenta",        BACKGROUND_BLUE | BACKGROUND_RED },
     { "brown",          BACKGROUND_RED | BACKGROUND_GREEN },
     { "gray",           BACKGROUND_INTENSITY },
-    
+
     { "brightblue",     BACKGROUND_INTENSITY | BACKGROUND_BLUE },
     { "brightgreen",    BACKGROUND_INTENSITY | BACKGROUND_GREEN  },
     { "brightcyan",     BACKGROUND_INTENSITY | BACKGROUND_BLUE | BACKGROUND_GREEN },
@@ -174,7 +176,7 @@ static const struct attrmap background[] = {
     { "brightmagenta",  BACKGROUND_INTENSITY | BACKGROUND_BLUE | BACKGROUND_RED},
     { "yellow",         BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN },
     { "lightgray",      BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE },
-    
+
     { "white",          BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE },
 
     { "default",        0 },
@@ -191,7 +193,7 @@ static const struct attrmap foreground[] = {
     { "magenta",        FOREGROUND_BLUE | FOREGROUND_RED },
     { "brown",          FOREGROUND_RED | FOREGROUND_GREEN },
     { "gray",           FOREGROUND_INTENSITY },
-    
+
     { "brightblue",     FOREGROUND_INTENSITY | FOREGROUND_BLUE },
     { "brightgreen",    FOREGROUND_INTENSITY | FOREGROUND_GREEN  },
     { "brightcyan",     FOREGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_GREEN },
@@ -199,7 +201,7 @@ static const struct attrmap foreground[] = {
     { "brightmagenta",  FOREGROUND_INTENSITY | FOREGROUND_BLUE | FOREGROUND_RED},
     { "yellow",         FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN },
     { "lightgray",      FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE },
-    
+
     { "white",          FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE },
 
     { "default",        FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE }
@@ -226,15 +228,16 @@ vio_init(void)
         int l;
 
         vio.handle = hConsole;
+        vio.wHandle = GetConsoleWindow();       // underlying console window handle
         vio.codepage = GetConsoleOutputCP();
         vio.size = rows * cols;
 
         oimage = vio.image;
-        vio.image = malloc( vio.size * sizeof(CHAR_INFO) );
-        
+        vio.image = malloc(vio.size * sizeof(CHAR_INFO));
+
         if (oimage) {                           /* screen has resized */
             CHAR_INFO blank = {' ', FOREGROUND_INTENSITY};
-            int r, c, cnt = 
+            int r, c, cnt =
                 (cols > vio.s_cols ? vio.s_cols : cols) * sizeof(CHAR_INFO);
 
             for (r = 0; r < rows; r++) {
@@ -273,9 +276,62 @@ vio_init(void)
     }
 
                                                 /* default colour */
-    SLtt_set_color(0, NULL, "lightgray", "black");    
+    SLtt_set_color(0, NULL, "lightgray", "black");
     SLtt_Screen_Rows = vio.s_rows;
     SLtt_Screen_Cols = vio.s_cols;
+}
+
+
+static void
+vio_setsize(int rows, int cols)
+{
+    const int orows = vio.s_rows, ocols = vio.s_cols;
+    HANDLE cHandle = vio.handle;
+    SMALL_RECT rect = {0, 0, 0, 0};
+    COORD msize, nbufsz;
+    int bufwin = FALSE;
+
+    msize = GetLargestConsoleWindowSize(cHandle);
+
+    if (rows <= 0) rows = orows;                // current
+    else if (rows >= msize.Y) rows = msize.Y-1; // limit
+
+    if (cols <= 0) cols = ocols;                // current
+    else if (cols >= msize.X) cols = msize.X-1; // limit
+
+    rect.Top    = 0;
+    rect.Bottom = (SHORT)(rows - 1);
+    rect.Left   = 0;
+    rect.Right  = (SHORT)(cols - 1);
+
+    nbufsz.Y    = (SHORT)rows;
+    nbufsz.X    = (SHORT)cols;
+
+    if (orows <= rows) {
+        if (ocols <= cols) {                    // +cols, +rows
+            bufwin = TRUE;
+
+        } else {                                // -cols, -rows
+            SMALL_RECT nwinsz = {0, 0, (SHORT)(cols - 1), (SHORT)(orows - 1)};
+            SetConsoleWindowInfo(cHandle, TRUE, &nwinsz);
+            bufwin = TRUE;
+        }
+    } else {
+        if (ocols <= cols) {                    // +cols, -rows
+            SMALL_RECT nwinsz = {0, 0, (SHORT)(ocols - 1), (SHORT)(rows- 1)};
+            SetConsoleWindowInfo(cHandle, TRUE, &nwinsz);
+            bufwin = TRUE;
+
+        } else {                                // -cols, -rows
+            SetConsoleWindowInfo(cHandle, TRUE, &rect);
+            SetConsoleScreenBufferSize(cHandle, nbufsz);
+        }
+    }
+
+    if (bufwin) {                               // set buffer and window
+        SetConsoleScreenBufferSize(cHandle, nbufsz);
+        SetConsoleWindowInfo(cHandle, TRUE, &rect);
+    }
 }
 
 
@@ -293,14 +349,14 @@ vio_reset(void)
 }
 
 
+
 static void
 vio_setcursor(int col, int row)
 {
     COORD coord;
-
     coord.X = col;
     coord.Y = row;
-    SetConsoleCursorPosition( vio.handle, coord );
+    SetConsoleCursorPosition(vio.handle, coord);
 }
 
 
@@ -329,6 +385,11 @@ SLsmg_reinit_smg(void)
 void
 SLsmg_reset_smg(void)
 {
+    if (1 == SLtt_Maximised) {
+        vio_setsize(SLtt_OldScreen_Rows, SLtt_OldScreen_Cols);
+        ShowWindow(vio.wHandle, /*SW_RESTORE*/ SW_NORMAL);
+        SLtt_Maximised = 0;
+    }
     vio_reset();
 }
 
@@ -358,7 +419,7 @@ Copyin(unsigned pos, unsigned cnt)
     const int rows = vio.s_rows, cols = vio.s_cols;
     COORD is = {0}, ic = {0};
     SMALL_RECT wr = {0};
-    
+
     assert(pos < vio.size);
     assert(0 == (pos % cols));
     assert((pos + cnt) <= vio.size);
@@ -370,7 +431,7 @@ Copyin(unsigned pos, unsigned cnt)
 
     is.Y      = vio.s_rows - wr.Top;            /* size of image */
     is.X      = vio.s_cols;
-    
+
     ic.X      = 0;                              /* top left src cell in image */
     ic.Y      = 0;
 
@@ -397,7 +458,7 @@ Copyout(unsigned pos, unsigned cnt)
 
     is.Y      = vio.s_rows - wr.Top;            /* size of image */
     is.X      = vio.s_cols;
-    
+
     ic.X      = 0;                              /* top left src cell in image */
     ic.Y      = 0;
 
@@ -414,7 +475,7 @@ SLtt_set_color(
     unsigned b, f;
 
     (void) what;
-    
+
     if (obj < 0 || obj >= MAXCOLOURS) {
         assert(0);
         return;
@@ -431,9 +492,44 @@ SLtt_set_color(
             attr |= foreground[f].win;
             break;
         }
-    
-    vio.c_colours[obj] =                        // black/black --> grey/black ... 
-        (attr ? attr : FOREGROUND_INTENSITY);          
+
+    vio.c_colours[obj] =                        // black/black --> grey/black ...
+        (attr ? attr : FOREGROUND_INTENSITY);
+}
+
+
+void
+SLsmg_togglesize (void)
+{
+    // min/max
+    if (!vio.inited) return;
+
+    if (SLtt_Maximised <= 0) {
+        if (-1 == SLtt_Maximised) {
+            SLtt_OldScreen_Rows = SLtt_Screen_Rows;
+            SLtt_OldScreen_Cols = SLtt_Screen_Cols;
+        }
+        vio_setsize(0xffff, 0xffff);
+        SLtt_Maximised = 1;
+
+    } else {
+        vio_setsize(SLtt_OldScreen_Rows, SLtt_OldScreen_Cols);
+        SLtt_Maximised = 0;
+    }
+
+    // reinitialise
+    if (1 == SLtt_Maximised) {
+        HWND hWnd = vio.wHandle;
+        RECT r;
+
+        GetWindowRect(hWnd, &r);
+        ShowWindow(hWnd, SW_MAXIMIZE);
+        MoveWindow(hWnd, 0, 0, r.right, r.bottom, TRUE);
+    } else {
+        ShowWindow(vio.wHandle, /*SW_RESTORE*/ SW_NORMAL);
+    }
+    vio_init();
+    vio.c_trashed = 1;
 }
 
 
@@ -455,14 +551,14 @@ SLtt_set_mono(int obj, char *name, SLtt_Char_Type c)
 }
 
 
-void  
+void
 SLsmg_set_char_set(int alt_charset)
 {
     SLsmg_Display_Alt_Chars = alt_charset;
 }
 
 
-int              
+int
 SLsmg_get_char_set(void)
 {
     return SLsmg_Display_Alt_Chars;
@@ -492,7 +588,7 @@ SLtt_tgetnum(const char *key)
 
 
 char *
-SLtt_tigetent (const char *key)
+SLtt_tigetent(const char *key)
 {
     return NULL;
 }
@@ -597,7 +693,7 @@ static __inline int
 CHAR_UPDATE(CHAR_INFO *cursor, unsigned ch, int color)
 {
     CHAR_INFO text;
-    
+
     CHAR_BUILD(ch, color, &text);
     if (! CHAR_COMPARE(cursor, &text)) {
         *cursor = text;
@@ -691,7 +787,7 @@ top:                                            /* get here only on newline */
             ++col;
 
         } else if ((ch == '\t') && (SLsmg_Tab_Width > 0)) {
-            int nexttab = 
+            int nexttab =
                     SLsmg_Tab_Width - ((col + SLsmg_Tab_Width) % SLsmg_Tab_Width);
             CHAR_INFO t_text;
 
@@ -847,7 +943,7 @@ void
 SLsmg_draw_object(int r, int c, SLwchar_Type object)
 {
     if (0 == vio.inited) return;
-    vio.c_row = r; 
+    vio.c_row = r;
     vio.c_col = c;
     write_char(alt_lookup(object), 1);
 }
@@ -869,7 +965,7 @@ SLsmg_draw_hline(int cnt)
     }
 
     if (cmax > cmin) {
-        vio.c_col = cmin; 
+        vio.c_col = cmin;
         write_char(ch, cmax - cmin);
     }
     vio.c_col = endcol;
@@ -895,7 +991,7 @@ SLsmg_draw_vline(int cnt)
         vio.c_col = col;
         write_char(ch, 1);
     }
-    
+
     vio.c_row = endrow;
 }
 
@@ -930,7 +1026,7 @@ SLsmg_fill_region (int r, int c, unsigned nr, unsigned nc, unsigned ch)
 
     if (1 == cliptoarena(r, nr, 0, vio.s_rows, &rmin, &rmax) &&
             1 == cliptoarena(c, nc, 0, vio.s_cols, &cmin, &cmax)) {
-    
+
         const int color = vio.c_color;
 
         for (r = rmin; r < rmax; ++r) {

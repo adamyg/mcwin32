@@ -117,6 +117,7 @@ extern int              SLtt_Use_Ansi_Colors;
 extern int              SLsmg_init_smg (void);
 extern int              SLsmg_reinit_smg (void);
 extern void             SLsmg_reset_smg (void);
+extern void             SLsmg_togglesize (void);
 
 extern void             SLsmg_refresh (void);
 extern void             SLsmg_gotorc (int, int);

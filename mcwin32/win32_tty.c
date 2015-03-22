@@ -93,7 +93,7 @@ tty_shutdown(void)
 void
 tty_change_screen_size (void)
 {
-    SLsmg_reinit_smg ();
+    SLsmg_reinit_smg();
 
 #ifdef ENABLE_SUBSHELL
     if (mc_global.tty.use_subshell) {
@@ -169,14 +169,14 @@ tty_baudrate(void)
 
 
 int
-tty_reset_screen(void)
+tty_reset_screen (void)
 {
     return 0;
 }
 
 
 void
-tty_touch_screen(void)
+tty_touch_screen (void)
 {
     SLsmg_touch_lines(0, LINES);
     SLsmg_touch_screen();
@@ -184,14 +184,14 @@ tty_touch_screen(void)
 
 
 void
-tty_gotoyx(int y, int x)
+tty_gotoyx (int y, int x)
 {
     SLsmg_gotorc(y, x);
 }
 
 
 void
-tty_getyx(int *py, int *px)
+tty_getyx (int *py, int *px)
 {
     *py = SLsmg_get_row();
     *px = SLsmg_get_column();
@@ -234,7 +234,7 @@ tty_draw_hline (int y, int x, int ch, int len)
 
 
 void
-tty_draw_vline(int y, int x, int ch, int len)
+tty_draw_vline (int y, int x, int ch, int len)
 {
     int y1;
 
