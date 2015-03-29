@@ -1,3 +1,13 @@
+Sun Mar 29 02:48:16 2015 ayoung
+
+	* build 188
+
+                - 256/italic color support.
+
+                - additional glib() va_list issues.
+
+                - save/restore unicode support.
+
 Sun Mar 22 03:39:34 2015 ayoung
 
 	* build 187

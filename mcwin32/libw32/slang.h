@@ -44,12 +44,13 @@ extern int              SLtt_Ignore_Beep;
 extern int              SLtt_Use_Ansi_Colors;
 #define                 SLtt_Has_Alt_Charset 1
 
-#define SLTT_BOLD_MASK	        0x01000000UL
+#define SLTT_BOLD_MASK	        0x01000000UL    /* Bold/Italic */
 #define SLTT_BLINK_MASK	        0x02000000UL
-#define SLTT_ULINE_MASK	        0x04000000UL
-#define SLTT_REV_MASK	        0x08000000UL
-#define SLTT_ALTC_MASK          0x10000000UL
+#define SLTT_ULINE_MASK	        0x04000000UL    /* Underline */
+#define SLTT_REV_MASK	        0x08000000UL    /* Reverse */
+#define SLTT_ALTC_MASK          0x10000000UL    /* Alternative Character */
 #define __SLTT_ATTR_MASK        0x1F000000UL
+#define SLTT_ATTRIBUTE          0x80000000UL    /* internal attribute, otherwise native */
 
 /* VT100-compatible symbols -- box chars */
 #define XTERM_ACS_ULCORNER      'l'
@@ -90,6 +91,24 @@ extern int              SLtt_Use_Ansi_Colors;
 #define XTERM_ACS_PI            '{'
 #define XTERM_ACS_NEQUAL        '|'
 #define XTERM_ACS_STERLING      '}'
+
+#define SLSMG_COLOR_BLACK       0
+#define SLSMG_COLOR_RED         1
+#define SLSMG_COLOR_GREEN       2
+#define SLSMG_COLOR_BROWN       3
+#define SLSMG_COLOR_BLUE        4
+#define SLSMG_COLOR_MAGENTA     5
+#define SLSMG_COLOR_CYAN        6
+#define SLSMG_COLOR_LGRAY       7
+#define SLSMG_COLOR_GRAY        8
+
+#define SLSMG_COLOR_BRIGHT_RED      9
+#define SLSMG_COLOR_BRIGHT_GREEN    10
+#define SLSMG_COLOR_BRIGHT_BROWN    11
+#define SLSMG_COLOR_BRIGHT_BLUE     12
+#define SLSMG_COLOR_BRIGHT_MAGENTA  13
+#define SLSMG_COLOR_BRIGHT_CYAN     14
+#define SLSMG_COLOR_BRIGHT_WHITE    15
 
 #define SLSMG_HLINE_CHAR        XTERM_ACS_HLINE
 #define SLSMG_VLINE_CHAR        XTERM_ACS_VLINE

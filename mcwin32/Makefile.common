@@ -56,7 +56,7 @@ OSWITCH		=-fo=
 XSWITCH		=-fe=
 
 #COPT		=-q -j -ei -6r -ecc -ofr -zlf -bt=nt -bm -za99 -aa
-COPT		=-q -j -ei -6r -ecc -ofr -of+ -zlf -bt=nt -bm -za99 -aa
+COPT		=-q -j -ei -6r -ecc -ofr -of+ -zlf -bt=nt -bm -za99 -aa -sg -zw
 CDEBUG		=-d2 -hc -db
 CWARN		=-W3
 LDEBUG		=-q -6r -ecc -ofr -zlf -bcl=nt -bm -k4m -hc

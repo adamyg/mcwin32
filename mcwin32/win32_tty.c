@@ -5,8 +5,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by:
-   Adam Young 2012
+   Written by: Adam Young 2012 - 2015
 
    This file is part of the Midnight Commander.
 
@@ -55,7 +54,7 @@ static CONSOLE_CURSOR_INFO origInfo;
 
 
 void
-tty_init(gboolean mouse_enable, gboolean is_xterm)
+tty_init (gboolean mouse_enable, gboolean is_xterm)
 {
     if (getenv("TERM") == NULL) {
         putenv("TERM=dos");
@@ -74,17 +73,13 @@ tty_init(gboolean mouse_enable, gboolean is_xterm)
         exit (EXIT_FAILURE);
     }
 
-//  if (mc_global.tty.ugly_line_drawing) {
-//      SLtt_Has_Alt_Charset = 0;
-//  }
-//  SLtt_Blink_Mode = tty_use_256colors ()? 1 : 0;
-
+  //SLtt_Blink_Mode = tty_use_256colors () ? 1 : 0;
     SLsmg_touch_screen();
 }
 
 
 void
-tty_shutdown(void)
+tty_shutdown (void)
 {
     SLsmg_reset_smg();
 }
@@ -104,7 +99,7 @@ tty_change_screen_size (void)
 
 
 void
-tty_reset_prog_mode(void)
+tty_reset_prog_mode (void)
 {
     SLsmg_reinit_smg();
     SLsmg_touch_screen();
@@ -117,7 +112,7 @@ tty_reset_prog_mode(void)
 
 
 void
-tty_reset_shell_mode(void)
+tty_reset_shell_mode (void)
 {
     if (origTitle[0]) SetConsoleTitleA(origTitle);
     key_shell_mode();
@@ -125,44 +120,44 @@ tty_reset_shell_mode(void)
 
 
 void
-tty_raw_mode(void)
+tty_raw_mode (void)
 {
 }
 
 
 void
-tty_noraw_mode(void)
+tty_noraw_mode (void)
 {
 }
 
 
 void
-tty_noecho(void)
+tty_noecho (void)
 {
 }
 
 
 int
-tty_flush_input(void)
+tty_flush_input (void)
 {
     return 0;
 }
 
 
 void
-tty_keypad(gboolean set)
+tty_keypad (gboolean set)
 {
 }
 
 
 void
-tty_nodelay(gboolean set)
+tty_nodelay (gboolean set)
 {
 }
 
 
 int
-tty_baudrate(void)
+tty_baudrate (void)
 {
     return SLang_TT_Baud_Rate;
 }
@@ -303,7 +298,7 @@ void
 tty_print_alt_char (int c, gboolean single)
 {
     int alt = -1;
-    
+
     switch (c) {
     case ACS_VLINE:
         alt = mc_tty_frm[single ? MC_TTY_FRM_VERT : MC_TTY_FRM_DVERT];
@@ -346,22 +341,10 @@ tty_print_alt_char (int c, gboolean single)
 
 
 void
-tty_print_anychar(int c)
+tty_print_anychar (int c)
 {
     if (c > 255) {
-
-//      const int res = g_unichar_to_utf8 (c, str);
-//      char str[6 + 1];
-//
-//      if (res == 0) {
-//          str[0] = '.';
-//          str[1] = '\0';
-//      } else {
-//          str[res] = '\0';
-//      }
-//      SLsmg_write_string ((char *) str_term_form (str));
         SLsmg_write_char ((int) ((unsigned int) c));
-
     } else {
         if (c < 0 || !isprint((int)c)) {
             c = '.';
@@ -422,7 +405,7 @@ mc_tty_normalize_lines_char (const char *str)
         { "\342\224\202", SLSMG_VLINE_CHAR  },
         { "\342\224\274", SLSMG_PLUS_CHAR   },
         { NULL, 0 }
-    };
+        };
     char *str2;
     int res;
 
@@ -453,13 +436,14 @@ tty_beep (void)
 
 
 static void
-vio_save(void)
+vio_save (void)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO sbinfo;
     COORD iSz, iPs;
     SMALL_RECT wRec;
     int rows, cols;
+    WORD rc;
 
     /*
      *  Size arena
@@ -470,9 +454,9 @@ vio_save(void)
 
     if (!origImage || origRows != rows || origCols != cols) {
         CHAR_INFO *newImage;
-        
+
         if (rows <= 0 || cols <= 0 ||
-                (newImage = malloc(rows * cols * sizeof(CHAR_INFO))) == NULL) {
+                NULL == (newImage = malloc(rows * cols * sizeof(CHAR_INFO)))) {
             return;
         }
         free(origImage);
@@ -480,11 +464,20 @@ vio_save(void)
     }
 
     /*
+     *  Save cursor
+     */
+    GetConsoleCursorInfo(hConsole, &origInfo);
+    origCoord.X = sbinfo.dwCursorPosition.X;
+    origCoord.Y = sbinfo.dwCursorPosition.Y;
+    origRows = rows;
+    origCols = cols;
+
+    /*
      *  Save image
      */
-    wRec.Left   = 0;                            /* source screen rectangle */
-    wRec.Right  = cols - 1;
-    wRec.Top    = 0;
+    wRec.Left = 0;                              /* source screen rectangle */
+    wRec.Right = cols - 1;
+    wRec.Top = 0;
     wRec.Bottom = rows - 1;
 
     iSz.Y = rows;                               /* size of image */
@@ -492,22 +485,12 @@ vio_save(void)
     iPs.X = 0;                                  /* top left src cell in image */
     iPs.Y = 0;
 
-                                                /* read in image */
-    ReadConsoleOutput(hConsole, origImage, iSz, iPs, &wRec);
-    origRows = rows;
-    origCols = cols;
-
-    /*
-     *  Save cursor
-     */
-    GetConsoleCursorInfo(hConsole, &origInfo);
-    origCoord.X = sbinfo.dwCursorPosition.X;
-    origCoord.Y = sbinfo.dwCursorPosition.Y;
+    ReadConsoleOutputW(hConsole, origImage, iSz, iPs, &wRec);
 }
 
 
 static void
-vio_setcursor(HANDLE hConsole, int col, int row)
+vio_setcursor (HANDLE hConsole, int col, int row)
 {
     COORD coord;
 
@@ -518,7 +501,7 @@ vio_setcursor(HANDLE hConsole, int col, int row)
 
 
 static void
-vio_restore(void)
+vio_restore (void)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO sbinfo = {0};
@@ -574,7 +557,7 @@ vio_restore(void)
     iPs.X       = 0;                            /* top left src cell in image */
     iPs.Y       = 0;
                                                 /* write out image */
-    WriteConsoleOutput(hConsole, origImage, iSz, iPs, &wRec);
+    WriteConsoleOutputW(hConsole, origImage, iSz, iPs, &wRec);
 
     /*
      *  Restore cursor
@@ -618,3 +601,4 @@ handle_console_win32 (console_action_t action)
     }
 }
 /*end*/
+

@@ -3,9 +3,11 @@
    win32 glib patches
 
         g_get_current_dir
+        g_strdup_printf
         g_strdup_vprintf
         g_snprintf
         g_vsnprintf
+        g_string_append_printf
         g_string_append_vprintf
         g_error_new_valist
         g_get_user_config_dir
@@ -15,8 +17,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by:
-   Adam Young 2012
+   Written by: Adam Young 2012-2015
 
    This file is part of the Midnight Commander.
 
@@ -120,6 +121,23 @@ g_mkstemp (char *path)
 
 
 /*
+ *  g_strdup_printf() replacement.
+ */
+char *
+g_strdup_printf (const char *format, ...)
+{
+    char buffer[4 * 1024];
+    va_list ap;
+
+    va_start(ap, format);
+    _vsnprintf(buffer, sizeof(buffer), format, ap);
+    buffer[sizeof(buffer) - 1] = 0;
+    va_end(ap);
+    return g_strdup(buffer);
+}
+
+
+/*
  *  g_strdup_vprintf() replacement.
  */
 char *
@@ -162,6 +180,23 @@ g_vsnprintf (gchar *string, gulong n, const char *format, va_list ap)
     return _vsnprintf(string, n, format, ap);
 }
 
+
+
+/*
+ *  g_string_append_printf() replacement
+ */
+void
+g_string_append_printf (GString *string, const gchar *format, ...)
+{
+    char buffer[4 * 1024];
+    va_list ap;
+
+    va_start(ap, format);
+    _vsnprintf(buffer, sizeof(buffer), format, ap);
+    buffer[sizeof(buffer) - 1] = 0;
+    va_end(ap);
+    g_string_append (string, buffer);
+}
 
 
 /*
@@ -257,4 +292,5 @@ g_build_filename (const gchar *first_element, ...)
     return ret;
 }
 /*end*/
+
 
