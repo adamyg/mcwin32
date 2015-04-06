@@ -5,12 +5,13 @@
 # Translators:
 # Panos Bouklis <panos@echidna-band.com>, 2012
 # Slava Zanko <slavazanko@gmail.com>, 2011
+# Γιάννης Ανθυμίδης <yannanth@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2014-07-25 10:37+0400\n"
-"PO-Revision-Date: 2014-09-04 10:10+0000\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2015-02-26 09:48+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Greek (http://www.transifex.com/projects/p/mc/language/el/)\n"
 "MIME-Version: 1.0\n"
@@ -333,6 +334,9 @@ msgstr "Απόστροφος"
 msgid "Colon"
 msgstr ""
 
+msgid "Semicolon"
+msgstr ""
+
 msgid "Exclamation mark"
 msgstr "Θαυμαστικό"
 
@@ -425,6 +429,27 @@ msgstr ""
 msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
+msgstr ""
+
+msgid "Cannot create pipe descriptor"
+msgstr ""
+
+msgid "Cannot parse command for pipe"
+msgstr ""
+
+msgid "Cannot create pipe streams"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in select() reading data from a child process:\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in waitpid():\n"
+"%s"
 msgstr ""
 
 msgid "Warning"
@@ -641,7 +666,7 @@ msgid ""
 "   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
 "\n"
 "Attributes:\n"
-"   bold, underline, reverse, blink; append more with '+'\n"
+"   bold, italic, underline, reverse, blink; append more with '+'\n"
 msgstr ""
 
 msgid "Color options"
@@ -681,6 +706,12 @@ msgstr "Δεν έχουν δοθεί ορίσματα στον προβολέα.
 msgid "Two files are required to evoke the diffviewer."
 msgstr ""
 
+msgid "Background protocol error"
+msgstr "Σφάλμα πρωτοκόλλου παρασκηνίου"
+
+msgid "Reading failed"
+msgstr "Η ανάγνωση απέτυχε"
+
 msgid "Background process error"
 msgstr "Σφάλμα διαδικασίας παρασκηνίου"
 
@@ -689,12 +720,6 @@ msgstr ""
 
 msgid "Child died unexpectedly"
 msgstr ""
-
-msgid "Background protocol error"
-msgstr "Σφάλμα πρωτοκόλλου παρασκηνίου"
-
-msgid "Reading failed"
-msgstr "Η ανάγνωση απέτυχε"
 
 msgid ""
 "Background process sent us a request for more arguments\n"
@@ -1467,7 +1492,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2014 the Free Software Foundation"
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1654,6 +1679,12 @@ msgid ""
 "%s"
 msgstr "Αδυναμία chown \"%s\"\n%s"
 
+msgid "< Default >"
+msgstr ""
+
+msgid "Skins"
+msgstr ""
+
 msgid "Other 8 bit"
 msgstr ""
 
@@ -1736,12 +1767,6 @@ msgid "A&uto save setup"
 msgstr ""
 
 msgid "Configure options"
-msgstr ""
-
-msgid "< Default >"
-msgstr ""
-
-msgid "Skins"
 msgstr ""
 
 msgid "Skin:"
@@ -3006,7 +3031,7 @@ msgid "C&hmod"
 msgstr "C&hmod"
 
 msgid "&Link"
-msgstr "&Δεσμός"
+msgstr "Δεσμό&ς"
 
 msgid "&Symlink"
 msgstr ""
@@ -3426,12 +3451,6 @@ msgstr ""
 #, c-format
 msgid "The %%var macro has no variable"
 msgstr ""
-
-#, c-format
-msgid ""
-"Cannot open file%s\n"
-"%s"
-msgstr "Αδυναμία ανοίγματος αρχείου %s\n%s"
 
 #, c-format
 msgid "No suitable entries found in %s"
@@ -3865,9 +3884,6 @@ msgstr ""
 msgid "sftp: Invalid host name."
 msgstr ""
 
-msgid "sftp: Invalid port value."
-msgstr ""
-
 #, c-format
 msgid "sftp: %s"
 msgstr ""
@@ -4040,12 +4056,6 @@ msgid ""
 "Save modified file?"
 msgstr "Το Midnight Commander τερματίζεται.\nΑποθήκευση τροποποιημένου αρχείου;"
 
-msgid "Cannot spawn child process"
-msgstr ""
-
-msgid "Empty output from child filter"
-msgstr ""
-
 msgid "&Line number"
 msgstr ""
 
@@ -4089,6 +4099,12 @@ msgid "ButtonBar|Unform"
 msgstr ""
 
 msgid "ButtonBar|Format"
+msgstr ""
+
+#, c-format
+msgid ""
+"Failed to read data from child stdout:\n"
+"%s"
 msgstr ""
 
 #, c-format

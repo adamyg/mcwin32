@@ -8,7 +8,7 @@ the current 4.8.x development stream.
 
         Version         Latest Build
 
-        4.8.13-beta     187
+        4.8.13          188,187 (beta)
         4.8.12          186
         4.8.11          183
         4.8.8           181

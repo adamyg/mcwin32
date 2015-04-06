@@ -22,7 +22,7 @@ static void
 w32InitTrace(void)
 {
     if (! w32x_tracing_started)  {
-        if (NULL != (w32x_trace_f = fopen(TRACE_FILE, "wt"))) {
+        if (NULL == (w32x_trace_f = fopen(TRACE_FILE, "wt"))) {
             printf("Midnight Commander[DEBUG]: Can't open trace file '" TRACE_FILE "': %s \n", strerror(errno));
         }
         atexit (&w32EndTrace);
@@ -47,27 +47,33 @@ w32EndTrace(void)
 void
 w32_Trace (const char *fmt, ...)
 {
+    char *vp, buffer[1024];
     va_list ap;
-    char buffer[1024];
-    char *vp;
+    size_t len;
 
     if (!w32x_tracing_started) {
         w32InitTrace();
     }
 
     va_start(ap, fmt);
-    _vsnprintf(buffer, sizeof(buffer), fmt, ap);
+    len = _vsnprintf(buffer, sizeof(buffer), fmt, ap);
     buffer[sizeof(buffer)-1]=0;
     vp = buffer;
-#ifdef WIN32                                    /* Write Output to Debug monitor also */
+#ifdef WIN32                                    /* also write Output to Debug monitor */
     OutputDebugString (vp);
 #if !defined(_MSC_VER) || (_MSC_VER > 800)
-        OutputDebugString ("\n");
+        if (len >= sizeof(buffer) || buffer[len-1] != '\n') {
+            OutputDebugString ("\n");
+        }
 #endif
 #endif
 
     if (w32x_trace_f) {
-        fprintf (w32x_trace_f, "%s\n", vp);
+        if (len >= sizeof(buffer) || buffer[len-1] != '\n') {
+            fprintf (w32x_trace_f, "%s\n", vp);
+        } else {
+            fputs (vp, w32x_trace_f);
+        }
     }
 }
 
@@ -103,7 +109,7 @@ w32_TraceOff(void)
  */
 void
 w32_TraceAPICall(
-        const char* name, int line, const char* file)
+    const char* name, int line, const char* file)
 {
     w32_Trace("%s(%d): Call to Win32 API Failed. \"%s\".", file, line, name);
     w32_Trace("        System Error (%d): %s. ", GetLastError(), GetLastErrorText());
@@ -120,7 +126,7 @@ w32_TraceAPICall(
  */
 void
 w32_AssertionFailed(
-        const char* name, int line, const char* file)
+    const char* name, int line, const char* file)
 {
     w32_Trace("%s(%d): Assertion failed! \"%s\".", file, line, name);
 }

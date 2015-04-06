@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2014-07-25 10:37+0400\n"
-"PO-Revision-Date: 2014-09-04 10:10+0000\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2015-02-26 09:48+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Basque (http://www.transifex.com/projects/p/mc/language/eu/)\n"
 "MIME-Version: 1.0\n"
@@ -333,6 +333,9 @@ msgstr "Apostrofe"
 msgid "Colon"
 msgstr "Bi puntu"
 
+msgid "Semicolon"
+msgstr ""
+
 msgid "Exclamation mark"
 msgstr "Harridura marka"
 
@@ -426,6 +429,27 @@ msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
 msgstr "%dx%d pantaila-neurria ez da onartzen.\nEgiaztatu TERM ingurune-aldagaia.\n"
+
+msgid "Cannot create pipe descriptor"
+msgstr ""
+
+msgid "Cannot parse command for pipe"
+msgstr ""
+
+msgid "Cannot create pipe streams"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in select() reading data from a child process:\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in waitpid():\n"
+"%s"
+msgstr ""
 
 msgid "Warning"
 msgstr "Abisua"
@@ -641,8 +665,8 @@ msgid ""
 "   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
 "\n"
 "Attributes:\n"
-"   bold, underline, reverse, blink; append more with '+'\n"
-msgstr "Kolore estandarrak:\n   black, gray, red, brightred, green, brightgreen, brown,\n   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n   brightcyan, lightgray eta white\n\nKolore hedatuak, 256 kolore eskuragarri daudenean:\n   color16-tik color255-ra, edo rgb000-tik rgb555-ra eta gray0-tik gray23-ra\n\nEzaugarriak:\n   bold, underline, reverse, blink; erantsi gehiago '+' erabiliz\n"
+"   bold, italic, underline, reverse, blink; append more with '+'\n"
+msgstr ""
 
 msgid "Color options"
 msgstr "Koloreen aukerak"
@@ -681,6 +705,12 @@ msgstr "Ez zaizkio argumentuak eman erakusleari."
 msgid "Two files are required to evoke the diffviewer."
 msgstr "Bi fitxategi behar dira diffviwer erabiltzeko"
 
+msgid "Background protocol error"
+msgstr "Hondoko protokolo baten akatsa"
+
+msgid "Reading failed"
+msgstr "Irakurtzeak huts egin du"
+
 msgid "Background process error"
 msgstr "Hondoko prozesu baten akatsa"
 
@@ -689,12 +719,6 @@ msgstr "Akats ezezaguna umean"
 
 msgid "Child died unexpectedly"
 msgstr "Umea ustekabean hil da"
-
-msgid "Background protocol error"
-msgstr "Hondoko protokolo baten akatsa"
-
-msgid "Reading failed"
-msgstr "Irakurtzeak huts egin du"
 
 msgid ""
 "Background process sent us a request for more arguments\n"
@@ -1467,7 +1491,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2014 the Free Software Foundation"
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1654,6 +1678,12 @@ msgid ""
 "%s"
 msgstr "\"%s\"-ren jabea ezin aldatu (\"chown\")\n%s"
 
+msgid "< Default >"
+msgstr ""
+
+msgid "Skins"
+msgstr ""
+
 msgid "Other 8 bit"
 msgstr "Beste 8 bit"
 
@@ -1737,12 +1767,6 @@ msgstr "A&uto gorde ezarpena"
 
 msgid "Configure options"
 msgstr "Konfiguratu aukerak"
-
-msgid "< Default >"
-msgstr ""
-
-msgid "Skins"
-msgstr ""
 
 msgid "Skin:"
 msgstr ""
@@ -3428,12 +3452,6 @@ msgid "The %%var macro has no variable"
 msgstr "%%var makroak ez dauka aldagairik"
 
 #, c-format
-msgid ""
-"Cannot open file%s\n"
-"%s"
-msgstr "%s fitxategia ezin ireki\n%s"
-
-#, c-format
 msgid "No suitable entries found in %s"
 msgstr "%s-(e)n ez dira sarrera egokiak aurkitu"
 
@@ -3865,9 +3883,6 @@ msgstr ""
 msgid "sftp: Invalid host name."
 msgstr ""
 
-msgid "sftp: Invalid port value."
-msgstr ""
-
 #, c-format
 msgid "sftp: %s"
 msgstr ""
@@ -4040,12 +4055,6 @@ msgid ""
 "Save modified file?"
 msgstr "Midnight Commander itzaltzen ari da.\nGorde aldatutako fitxategia?"
 
-msgid "Cannot spawn child process"
-msgstr "Ezin sortu ume prozesua"
-
-msgid "Empty output from child filter"
-msgstr "Ume iragazkiaren irteera hutsa"
-
 msgid "&Line number"
 msgstr ""
 
@@ -4090,6 +4099,12 @@ msgstr "FormGabe"
 
 msgid "ButtonBar|Format"
 msgstr "Format"
+
+#, c-format
+msgid ""
+"Failed to read data from child stdout:\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""

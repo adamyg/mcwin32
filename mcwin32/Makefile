@@ -13,7 +13,7 @@ include		Makefile.common
 PERL=		perl
 BUSYBOX=	$(shell which busybox)
 MCSOURCE=	../mcsrc
-#MCSOURCE=	../mcmerge
+##MCSOURCE=	../mcmerge
 GTKINSTALL=	../gtk
 
 CINCLUDE=	$(ISWITCH).\
@@ -120,7 +120,11 @@ MC_EDITOR=\
 
 D_OBJVW=	$(D_OBJ)/viewer
 
+#4.8.14 -$(D_OBJVW)/viewer_plain$(O)
+#	+$(D_OBJVW)/viewer_ascii$(O)
+
 MC_VIEWER=\
+	$(D_OBJVW)/viewer_ascii$(O)		\
 	$(D_OBJVW)/viewer_actions_cmd$(O)	\
 	$(D_OBJVW)/viewer_coord_cache$(O)	\
 	$(D_OBJVW)/viewer_datasource$(O)	\
@@ -132,7 +136,6 @@ MC_VIEWER=\
 	$(D_OBJVW)/viewer_mcviewer$(O)		\
 	$(D_OBJVW)/viewer_move$(O)		\
 	$(D_OBJVW)/viewer_nroff$(O)		\
-	$(D_OBJVW)/viewer_plain$(O)		\
 	$(D_OBJVW)/viewer_search$(O)
 
 MC_DIFFVIEWER=\
@@ -169,6 +172,7 @@ MC_OBJS=\
 #		+ $(D_OBJ)/win32_key$(O)
 #		+ $(D_OBJ)/win32_tty$(O)
 #		+ $(D_OBJ)/win32_win$(O)
+#		+ $(D_OBJ)/win32_pipe$(O)
 #	lib/vfs
 #	lib/widget
 #
@@ -236,6 +240,7 @@ MC_LIBMC=\
 	$(D_OBJMC)/win32_win$(O)		\
 	$(D_OBJMC)/win32_utl$(O)		\
 	$(D_OBJMC)/win32_glib$(O)		\
+	$(D_OBJMC)/win32_pipe$(O)		\
 	\
 	$(D_OBJMC)/vfs_direntry$(O)		\
 	$(D_OBJMC)/vfs_gc$(O)			\
@@ -309,6 +314,7 @@ OBJS=		$(MC_OBJS)
 # configuration
 
 HINTS_SRC=		$(MCSOURCE)/doc/hints
+HINTS_L10N_SRC=		$(MCSOURCE)/doc/hints/l10n
 MAN_SRC=		$(MCSOURCE)/doc/man
 HLP_SRC=		$(MCSOURCE)/doc/hlp
 EXTD_SRC=		$(MCSOURCE)/misc/ext.d
@@ -356,6 +362,9 @@ CFG_SHARE_HELP=\
 CFG_SHARE_HINTS:=	$(addprefix $(D_SHARE)/hints/, \
 				$(notdir $(wildcard $(HINTS_SRC)/mc.hint*)))
 
+CFG_SHARE_HINTS_L10N:=	$(addprefix $(D_SHARE)/hints/, \
+				$(notdir $(wildcard $(HINTS_L10N_SRC)/mc.hint*)))
+
 CFG_SHARE_SKINS:=	$(addprefix $(D_SHARE)/skins/, \
 				$(notdir $(wildcard $(SKINS_SRC)/*.ini)))
 
@@ -379,12 +388,15 @@ CFG_DOC=\
 	$(D_DOC)/COPYING			\
 	$(D_DOC)/HACKING			\
 	$(D_DOC)/MAINTAINERS			\
+	$(D_DOC)/AUTHORS			\
 	$(D_DOC)/NEWS				\
+	$(D_DOC)/NEWS.OLD			\
 	$(D_DOC)/README				\
 	$(D_DOC)/TODO
 
 CFG_DOC+=		$(addprefix $(D_DOC)/, \
 				$(notdir $(wildcard $(WIN32_DOC_SRC)/*)))
+CFG_DOC+=		$(D_BIN)/changelog.txt
 
 CONFIGURATION=\
 	$(CFG_ETC)				\
@@ -393,6 +405,7 @@ CONFIGURATION=\
 	$(CFG_SHARE_HELP)			\
 	$(CFG_SHARE_NEWS)			\
 	$(CFG_SHARE_HINTS)			\
+	$(CFG_SHARE_HINTS_L10N)			\
 	$(CFG_SHARE_SKINS)			\
 	$(CFG_SHARE_SYNTAX)			\
 	$(CFG_SHARE_MACROS_D)			\
@@ -542,6 +555,11 @@ $(D_BIN)/man2hlp.pl:		$(MCSOURCE)/src/man2hlp/man2hlp.in
 #########################################################################################
 # resources
 
+# .. bin
+$(D_BIN)/changelog.txt :	./changelog.txt
+	@echo importing $@ ..
+	@$(CP) $^ $@
+
 # .. etc
 $(D_ETC)/% :			$(MISC_SRC)/%
 	@echo importing $@ ..
@@ -604,6 +622,11 @@ $(D_SHARE)/help/mc.hlp.%:	$(MAN_SRC)/%/mc.1.in $(HLP_SRC)/%/xnc.hlp
 	@busybox dos2unix $@
 
 # .. share/hints
+$(D_SHARE)/hints/% :		$(HINTS_L10N_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@busybox dos2unix $@
+
 $(D_SHARE)/hints/% :		$(HINTS_SRC)/%
 	@echo importing $@ ..
 	@$(CP) $^ $@
@@ -627,7 +650,11 @@ $(D_SHARE)/macros.d/% :		$(MACROSDATA_SRC)/%
 	@$(CP) $^ $@
 	@busybox dos2unix $@
 
-# .. doc
+# .. docs
+$(D_DOC)/AUTHORS :		$(MCSOURCE)/AUTHORS
+	@echo importing $@ ..
+	@$(CP) $^ $@
+
 $(D_DOC)/% :			$(WIN32_DOC_SRC)/%
 	@echo importing $@ ..
 	@$(CP) $^ $@

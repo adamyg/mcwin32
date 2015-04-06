@@ -15,11 +15,11 @@
 #include <buildinfo.h>
 
 #define PACKAGE             "mc-win32-native"
-#define VERSION             "4.8.13"            /* 20 March 15 */
+#define VERSION             "4.8.14"            /* 30 March 15 */
 
 #ifdef  RC_INVOKED                              /* see: mc.rc */
-#define RC_PRODUCTVERSION   4,8,13,0
-#define RC_FILEVERSION      4,8,13,1
+#define RC_PRODUCTVERSION   4,8,14,0
+#define RC_FILEVERSION      4,8,14,1
 #endif
 
 #define MC_CONFIGURE_ARGS   "win32-native"
@@ -49,13 +49,13 @@ const char *                mc_EXTHELPERSDIR(void);
 #define LIBEXECDIR          mc_LIBEXECDIR()     /* /lib/mc */
 #define EXTHELPERSDIR       mc_EXTHELPERSDIR()  /* ???, 4.8.7 */
 
-extern FILE *               mc_popen(const char *cmd, const char *mode);
-extern int                  mc_pclose(FILE *file);
+extern FILE *               win32_popen(const char *cmd, const char *mode);
+extern int                  win32_pclose(FILE *file);
 
-#define popen(__cmd,__mode) mc_popen(__cmd, __mode)
-#define pclose(__file)      mc_pclose(__file)
+#define popen(__cmd,__mode) win32_popen(__cmd, __mode)
+#define pclose(__file)      win32_pclose(__file)
 
-#endif
+#endif /*RC_INVOKED*/
 
 
 /*
@@ -116,6 +116,7 @@ extern int                  mc_pclose(FILE *file);
 
 #define ENABLE_NLS
 #undef  ENABLE_BACKGROUND
+#undef  ENABLE_SUBSHELL
 
 #define ENABLE_VFS 1
 #define ENABLE_VFS_CPIO 1

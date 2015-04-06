@@ -1,3 +1,17 @@
+Mon Apr  6 02:44:48 2015 ayoung
+
+	* build 189
+
+                - 2.8.14 merge
+
+                        win32_pipe.c: mc_popen/mc_pread/mc_pclose() implementation
+
+                - imported AUTHORS and NEWS.OLD.
+
+                - busybox-w32-TIG-1658-g067f2e7.exe (2014/12/18),
+                        rolled back version, crashes noted on newer
+                        version under xp.
+
 Sun Mar 29 02:48:16 2015 ayoung
 
 	* build 188
@@ -66,16 +80,15 @@ Sat Mar  9 00:48:59 2013 ayoung
 
         * build 180, port bug fix
 
-	        - my_system() convert slashes of leading word of 'cmd.exe' expressions.
-
-	        - g_mktemp() replacement, needed for correct fdopen() operation.
+                - my_system() convert slashes of leading word of 'cmd.exe' expressions.
+                - g_mktemp() replacement, needed for correct fdopen() operation.
 
 Wed Feb  6 00:10:27 2013 ayoung
 
 	* build 178, port bug fix
 
-                - TMPDIR logic corrected, remove startup warning regarding inability to access /tmp
-                - console.saver.c enabled
+                - TMPDIR logic corrected, remove startup warning regarding inability to access /tmp.
+                - 'console.saver.c' enabled.
 
 Mon Jan 28 21:09:43 2013 ayoung
 
@@ -87,7 +100,7 @@ Sun Jan 27 22:27:50 2013 ayoung
 
 	* build 174
 
-	        - 4.8.7 source import/merge
+                - 4.8.7 source import/merge.
 
 Fri Aug 24 01:02:30 2012 adamy
 

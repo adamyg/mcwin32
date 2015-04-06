@@ -13,9 +13,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2014-07-25 10:37+0400\n"
-"PO-Revision-Date: 2014-09-04 10:10+0000\n"
-"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2015-02-26 22:52+0000\n"
+"Last-Translator: David Martin <dhmartina@yahoo.es>\n"
 "Language-Team: Spanish (http://www.transifex.com/projects/p/mc/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -337,6 +337,9 @@ msgstr "Apóstrofo"
 msgid "Colon"
 msgstr "Dos puntos"
 
+msgid "Semicolon"
+msgstr "Punto y coma"
+
 msgid "Exclamation mark"
 msgstr "Exclamación"
 
@@ -430,6 +433,27 @@ msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
 msgstr "El tamaño de ventana %dx%d no está soportado.\nVerifique el valor de la variable de entorno TERM.\n"
+
+msgid "Cannot create pipe descriptor"
+msgstr "Imposible crear descriptor de tubería"
+
+msgid "Cannot parse command for pipe"
+msgstr "Imposible tratar la orden para la tubería"
+
+msgid "Cannot create pipe streams"
+msgstr "Imposible crear flujo de tubería"
+
+#, c-format
+msgid ""
+"Unexpected error in select() reading data from a child process:\n"
+"%s"
+msgstr "Error inesperado en select() leyendo datos del proceso hijo:\n%s"
+
+#, c-format
+msgid ""
+"Unexpected error in waitpid():\n"
+"%s"
+msgstr "Error inesperado en waitpid():\n%s"
 
 msgid "Warning"
 msgstr "¡ Atención !"
@@ -645,8 +669,8 @@ msgid ""
 "   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
 "\n"
 "Attributes:\n"
-"   bold, underline, reverse, blink; append more with '+'\n"
-msgstr "Colores estándar:\n   black, gray, red, brightred, green, brightgreen, brown,\n   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n   brightcyan, lightgray and white\n\nColores extendidos, cuando estén disponibles 256 colores:\n   color16 a color255, o rgb000 a rgb555 y gray0 a gray23\n\nAtributos:\n   bold, underline, reverse, blink; añadir más empleando '+'\n"
+"   bold, italic, underline, reverse, blink; append more with '+'\n"
+msgstr "Colores estándar:\n   black, gray, red, brightred, green, brightgreen, brown,\n   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n   brightcyan, lightgray and white\n\nColores extendidos, cuando estén disponibles 256 colores:\n   color16 a color255, o rgb000 a rgb555 y gray0 a gray23\n\nAtributos:\n   bold, italic, underline, reverse, blink; añadir más empleando '+'\n"
 
 msgid "Color options"
 msgstr "Opciones de color"
@@ -685,6 +709,12 @@ msgstr "No se han pasado argumentos al visor."
 msgid "Two files are required to evoke the diffviewer."
 msgstr "Se necesitan dos archivos para comparar."
 
+msgid "Background protocol error"
+msgstr "Error de protocolo en proceso en 2º plano"
+
+msgid "Reading failed"
+msgstr "Error en la lectura"
+
 msgid "Background process error"
 msgstr "Error en un proceso en 2º plano"
 
@@ -693,12 +723,6 @@ msgstr "Error desconocido en el proceso hijo"
 
 msgid "Child died unexpectedly"
 msgstr "El proceso hijo feneció inesperadamente"
-
-msgid "Background protocol error"
-msgstr "Error de protocolo en proceso en 2º plano"
-
-msgid "Reading failed"
-msgstr "Error en la lectura"
 
 msgid ""
 "Background process sent us a request for more arguments\n"
@@ -1471,8 +1495,8 @@ msgid ""
 "written for the Midnight Commander."
 msgstr "Un editor de texto amigable\npara Midnight Commander."
 
-msgid "Copyright (C) 1996-2014 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2014 the Free Software Foundation"
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
+msgstr "Copyright (C) 1996-2015 the Free Software Foundation"
 
 msgid "About"
 msgstr "Acerca de..."
@@ -1658,6 +1682,12 @@ msgid ""
 "%s"
 msgstr "Imposible cambiar el dueño de «%s»\n%s"
 
+msgid "< Default >"
+msgstr "< Por defecto >"
+
+msgid "Skins"
+msgstr "Skins"
+
 msgid "Other 8 bit"
 msgstr "Otro (8 bit)"
 
@@ -1741,12 +1771,6 @@ msgstr "auto-guarda con&Figuración"
 
 msgid "Configure options"
 msgstr "Configuración"
-
-msgid "< Default >"
-msgstr "< Por defecto >"
-
-msgid "Skins"
-msgstr "Skins"
 
 msgid "Skin:"
 msgstr "Skin:"
@@ -3432,12 +3456,6 @@ msgid "The %%var macro has no variable"
 msgstr "La macro %%var no contiene variables"
 
 #, c-format
-msgid ""
-"Cannot open file%s\n"
-"%s"
-msgstr "Imposible abrir el archivo %s\n%s"
-
-#, c-format
 msgid "No suitable entries found in %s"
 msgstr "No se encuentran entradas apropiadas en %s"
 
@@ -3869,9 +3887,6 @@ msgstr "sftp: No se pudo obtener el nombre de usuario actual."
 msgid "sftp: Invalid host name."
 msgstr "sftp: Nombre de máquina incorrecto"
 
-msgid "sftp: Invalid port value."
-msgstr "sftp: Número de puerto no válido"
-
 #, c-format
 msgid "sftp: %s"
 msgstr "sftp: %s"
@@ -4044,14 +4059,8 @@ msgid ""
 "Save modified file?"
 msgstr "Saliendo de Midnight Commander.\n¿Desea guardar el archivo modificado?"
 
-msgid "Cannot spawn child process"
-msgstr "Imposible ejecutar el proceso hijo"
-
-msgid "Empty output from child filter"
-msgstr "Salida del filtro vacía"
-
 msgid "&Line number"
-msgstr ""
+msgstr "número de &Línea"
 
 msgid "Pe&rcents"
 msgstr "po&Rcentaje del archivo"
@@ -4094,6 +4103,12 @@ msgstr "SinFor"
 
 msgid "ButtonBar|Format"
 msgstr "Format"
+
+#, c-format
+msgid ""
+"Failed to read data from child stdout:\n"
+"%s"
+msgstr "Fallo de lectura sobre la salida estándar del proceso hijo:\n%s"
 
 #, c-format
 msgid ""

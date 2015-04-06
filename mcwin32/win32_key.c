@@ -39,8 +39,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by:
-   Adam Young 2012
+   Written by: Adam Young 2012 - 2015
 
    This file is part of the Midnight Commander.
 
@@ -83,6 +82,7 @@ extern void                 EnterDebugger(void);
 #endif
 
 #include "lib/global.h"
+
 #include "lib/vfs/vfs.h"                        /* vfs_timeout_handler */
 #include "lib/widget.h"                         /* mc_refresh() */
 
@@ -898,7 +898,11 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
                 break;
 
             case FOCUS_EVENT:
-                /*FALLTHRU*/
+                (void)ReadConsoleInput(hConsole, &k, 1, &count);
+                if (k.Event.FocusEvent.bSetFocus) {
+                    SLsmg_touch_screen();
+                }
+                break;
 
             default:
                 (void)ReadConsoleInput(hConsole, &k, 1, &count);

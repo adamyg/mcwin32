@@ -238,7 +238,7 @@ w32_popen(const char *cmd, const char *mode)
     //
     args.argv = argv;                           // argument vector
     args._dwFlags =                             // creation flags
-            CREATE_DEFAULT_ERROR_MODE|CREATE_NO_WINDOW;
+        CREATE_DEFAULT_ERROR_MODE|CREATE_NO_WINDOW;
 
     if ((void *)-1 == pipe_queue) {
         InitializeCriticalSection(&pipe_guard);

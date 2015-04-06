@@ -44,13 +44,13 @@ extern int              SLtt_Ignore_Beep;
 extern int              SLtt_Use_Ansi_Colors;
 #define                 SLtt_Has_Alt_Charset 1
 
-#define SLTT_BOLD_MASK	        0x01000000UL    /* Bold/Italic */
+#define SLTT_BOLD_MASK	        0x01000000UL    /* Bold */
 #define SLTT_BLINK_MASK	        0x02000000UL
 #define SLTT_ULINE_MASK	        0x04000000UL    /* Underline */
 #define SLTT_REV_MASK	        0x08000000UL    /* Reverse */
-#define SLTT_ALTC_MASK          0x10000000UL    /* Alternative Character */
-#define __SLTT_ATTR_MASK        0x1F000000UL
-#define SLTT_ATTRIBUTE          0x80000000UL    /* internal attribute, otherwise native */
+#define SLTT_ITALIC_MASK        0x10000000UL    /* Italic (4.8.14) */ 
+#define SLTT_ALTC_MASK          0x20000000UL    /* Alternative Character */
+#define SLTT_ATTRIBUTE          0x80000000UL    /* Internal attribute, otherwise native */
 
 /* VT100-compatible symbols -- box chars */
 #define XTERM_ACS_ULCORNER      'l'
@@ -158,6 +158,8 @@ extern int              SLsmg_get_row (void);
 extern int              SLsmg_get_column (void);
 extern void             SLsmg_fill_region (int, int, unsigned int, unsigned int, SLwchar_Type);
 
+extern int              SLtt_set_font (const char *font);
+extern const char *     SLtt_get_font (char *buffer, size_t buflen);
 extern void             SLtt_set_color (int, const char *, const char *, const char *);
 extern void             SLtt_set_mono (int, char *, SLtt_Char_Type);
 extern void             SLtt_add_color_attribute (int, SLtt_Char_Type);

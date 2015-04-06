@@ -46,6 +46,14 @@ typedef struct win32_spawn {
     unsigned long       _dwProcessId;           /* reserved */
 } win32_spawn_t;
 
+typedef struct {
+    win32_spawn_t       spawn;
+    HANDLE              hInput;
+    HANDLE              hOutput;
+    HANDLE              hError;
+    HANDLE              hProc;
+} win32_exec_t;
+
 #if !defined(WNOHANG)
 #define WNOHANG         1
 #endif
@@ -59,6 +67,8 @@ int                     w32_shell (const char *shell, const char *cmd,
 
 int                     w32_spawn (win32_spawn_t *args, int Stdout, int Stderr, int *Stdin);
 int                     w32_spawn2 (win32_spawn_t *args, int *Stdin, int *Stdout, int *Stderr);
+
+int                     w32_exec (win32_exec_t *args);
 
 HANDLE                  w32_child_exec (struct win32_spawn *args, HANDLE hStdin, HANDLE hStdOut, HANDLE hStdErr);
 int                     w32_child_wait (HANDLE hProc, int *status, int nowait);

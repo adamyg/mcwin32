@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2014-07-25 10:37+0400\n"
-"PO-Revision-Date: 2014-09-04 10:10+0000\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2015-02-26 09:48+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/projects/p/mc/language/uk/)\n"
 "MIME-Version: 1.0\n"
@@ -334,6 +334,9 @@ msgstr "'"
 msgid "Colon"
 msgstr ":"
 
+msgid "Semicolon"
+msgstr ""
+
 msgid "Exclamation mark"
 msgstr "!"
 
@@ -427,6 +430,27 @@ msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
 msgstr "Розмір екрана %dx%d не підтримується.\nПеревірте змінну оточення TERM.\n"
+
+msgid "Cannot create pipe descriptor"
+msgstr ""
+
+msgid "Cannot parse command for pipe"
+msgstr ""
+
+msgid "Cannot create pipe streams"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in select() reading data from a child process:\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in waitpid():\n"
+"%s"
+msgstr ""
 
 msgid "Warning"
 msgstr "Попередження"
@@ -642,8 +666,8 @@ msgid ""
 "   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
 "\n"
 "Attributes:\n"
-"   bold, underline, reverse, blink; append more with '+'\n"
-msgstr "Стандартні кольори:\n   black, gray, red, brightred, green, brightgreen, brown,\n   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n   brightcyan, lightgray і white\n\nРозширені кольори, якщо термінал підтримує 256 кольорів:\n   від color16 до color255, або від rgb000 до rgb555 і від gray0 до gray23\n\nАтрибути:\n   bold, underline, reverse, blink; додавайте більше за допомогою символу «+»\n"
+"   bold, italic, underline, reverse, blink; append more with '+'\n"
+msgstr ""
 
 msgid "Color options"
 msgstr "Параметри кольору"
@@ -682,6 +706,12 @@ msgstr "Переглядачу не передано жодних аргумен
 msgid "Two files are required to evoke the diffviewer."
 msgstr "Необхідно вказати 2 файли для різницевого перегляду."
 
+msgid "Background protocol error"
+msgstr "Сталася помилка фонового протоколу"
+
+msgid "Reading failed"
+msgstr "Сталася помилка зчитування"
+
 msgid "Background process error"
 msgstr "Сталася помилка фонового процесу"
 
@@ -690,12 +720,6 @@ msgstr "Сталася невідома помилка у нащадку"
 
 msgid "Child died unexpectedly"
 msgstr "Процес-нащадок неочікувано закінчився"
-
-msgid "Background protocol error"
-msgstr "Сталася помилка фонового протоколу"
-
-msgid "Reading failed"
-msgstr "Сталася помилка зчитування"
 
 msgid ""
 "Background process sent us a request for more arguments\n"
@@ -1468,7 +1492,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr "Дружній до користувача редактор тексту\nнаписаний для Midnight Commander."
 
-msgid "Copyright (C) 1996-2014 the Free Software Foundation"
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1655,6 +1679,12 @@ msgid ""
 "%s"
 msgstr "Не вдалося змінити власника «%s» \n%s"
 
+msgid "< Default >"
+msgstr ""
+
+msgid "Skins"
+msgstr ""
+
 msgid "Other 8 bit"
 msgstr "Інше 8-розрядне"
 
@@ -1738,12 +1768,6 @@ msgstr "&Автозбереження параметрів"
 
 msgid "Configure options"
 msgstr "Параметри конфігурації"
-
-msgid "< Default >"
-msgstr ""
-
-msgid "Skins"
-msgstr ""
 
 msgid "Skin:"
 msgstr ""
@@ -3434,12 +3458,6 @@ msgid "The %%var macro has no variable"
 msgstr "Макрос %%var не має змінної"
 
 #, c-format
-msgid ""
-"Cannot open file%s\n"
-"%s"
-msgstr "Не вдалося відкрити файл %s\n%s"
-
-#, c-format
 msgid "No suitable entries found in %s"
 msgstr "У %s не знайдено потрібних записів"
 
@@ -3871,9 +3889,6 @@ msgstr "sftp: Неможливо отримати ім’я поточного �
 msgid "sftp: Invalid host name."
 msgstr "sftp: Неправильне ім’я хоста."
 
-msgid "sftp: Invalid port value."
-msgstr "sftp: Неправильний порт."
-
 #, c-format
 msgid "sftp: %s"
 msgstr "sftp: %s"
@@ -4046,12 +4061,6 @@ msgid ""
 "Save modified file?"
 msgstr "Виконується вихід із Midnight Commander.\nЗберегти змінений файл?"
 
-msgid "Cannot spawn child process"
-msgstr "Не вдалося створити процес-нащадок"
-
-msgid "Empty output from child filter"
-msgstr "Фільтр-нащадок не повернув даних"
-
 msgid "&Line number"
 msgstr ""
 
@@ -4096,6 +4105,12 @@ msgstr "ButtonBar|НеФормат."
 
 msgid "ButtonBar|Format"
 msgstr "ButtonBar|Формат."
+
+#, c-format
+msgid ""
+"Failed to read data from child stdout:\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""

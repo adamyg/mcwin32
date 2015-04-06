@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2014-07-25 10:37+0400\n"
-"PO-Revision-Date: 2014-09-04 10:10+0000\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2015-02-26 09:48+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/mc/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
@@ -335,6 +335,9 @@ msgstr "Apóstrofo"
 msgid "Colon"
 msgstr "Dois pontos"
 
+msgid "Semicolon"
+msgstr ""
+
 msgid "Exclamation mark"
 msgstr "Ponto de exclamação"
 
@@ -428,6 +431,27 @@ msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
 msgstr "Tamanho da tela %d x %d não é suportado. \nVerifique a variável de ambiente TERM.\n"
+
+msgid "Cannot create pipe descriptor"
+msgstr ""
+
+msgid "Cannot parse command for pipe"
+msgstr ""
+
+msgid "Cannot create pipe streams"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in select() reading data from a child process:\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in waitpid():\n"
+"%s"
+msgstr ""
 
 msgid "Warning"
 msgstr "Aviso"
@@ -643,7 +667,7 @@ msgid ""
 "   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
 "\n"
 "Attributes:\n"
-"   bold, underline, reverse, blink; append more with '+'\n"
+"   bold, italic, underline, reverse, blink; append more with '+'\n"
 msgstr ""
 
 msgid "Color options"
@@ -683,6 +707,12 @@ msgstr "Nenhum argumento passado para o visualizador"
 msgid "Two files are required to evoke the diffviewer."
 msgstr "Dois arquivos são necessários para chamar o diffviewer"
 
+msgid "Background protocol error"
+msgstr "Erro no protocolo de plano de fundo"
+
+msgid "Reading failed"
+msgstr "Falhou a leitura"
+
 msgid "Background process error"
 msgstr "Erro no processo de plano de fundo"
 
@@ -691,12 +721,6 @@ msgstr "Erro desconhecido no child"
 
 msgid "Child died unexpectedly"
 msgstr "child terminou inesperadamente"
-
-msgid "Background protocol error"
-msgstr "Erro no protocolo de plano de fundo"
-
-msgid "Reading failed"
-msgstr "Falhou a leitura"
 
 msgid ""
 "Background process sent us a request for more arguments\n"
@@ -1469,7 +1493,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2014 the Free Software Foundation"
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1656,6 +1680,12 @@ msgid ""
 "%s"
 msgstr "Não foi possível executar chown \"%s\"\n%s"
 
+msgid "< Default >"
+msgstr ""
+
+msgid "Skins"
+msgstr ""
+
 msgid "Other 8 bit"
 msgstr "Outro 8 bit"
 
@@ -1739,12 +1769,6 @@ msgstr ""
 
 msgid "Configure options"
 msgstr "Configurar Opções"
-
-msgid "< Default >"
-msgstr ""
-
-msgid "Skins"
-msgstr ""
 
 msgid "Skin:"
 msgstr ""
@@ -3430,12 +3454,6 @@ msgid "The %%var macro has no variable"
 msgstr ""
 
 #, c-format
-msgid ""
-"Cannot open file%s\n"
-"%s"
-msgstr ""
-
-#, c-format
 msgid "No suitable entries found in %s"
 msgstr ""
 
@@ -3867,9 +3885,6 @@ msgstr ""
 msgid "sftp: Invalid host name."
 msgstr ""
 
-msgid "sftp: Invalid port value."
-msgstr ""
-
 #, c-format
 msgid "sftp: %s"
 msgstr ""
@@ -4042,12 +4057,6 @@ msgid ""
 "Save modified file?"
 msgstr "Midnight Commander está sendo finalizado.\nSalvar arquivo modificado?"
 
-msgid "Cannot spawn child process"
-msgstr ""
-
-msgid "Empty output from child filter"
-msgstr ""
-
 msgid "&Line number"
 msgstr ""
 
@@ -4091,6 +4100,12 @@ msgid "ButtonBar|Unform"
 msgstr ""
 
 msgid "ButtonBar|Format"
+msgstr ""
+
+#, c-format
+msgid ""
+"Failed to read data from child stdout:\n"
+"%s"
 msgstr ""
 
 #, c-format

@@ -42,5 +42,10 @@ void show_console_contents (int starty, unsigned char begin_line, unsigned char 
 void handle_console (console_action_t action);
 #endif /* !LINUX_CONS_SAVER_C */
 
+#if defined(WIN32)
+void show_console_contents_win32 (int starty, unsigned char begin_line, unsigned char end_line);
+void handle_console_win32 (console_action_t action);
+#endif
+
 /*** inline functions ****************************************************************************/
 #endif /* MC__CONS_SAVER_H */

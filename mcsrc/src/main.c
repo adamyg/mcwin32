@@ -1,9 +1,8 @@
 /*
    Main program for the Midnight Commander
 
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2009, 2011
-   The Free Software Foundation, Inc.
+   Copyright (C) 1994-2015
+   Free Software Foundation, Inc.
 
    Written by:
    Miguel de Icaza, 1994, 1995, 1996, 1997
@@ -48,6 +47,7 @@
 #include "lib/tty/tty.h"
 #include "lib/tty/key.h"        /* For init_key() */
 #include "lib/tty/mouse.h"      /* init_mouse() */
+#include "lib/timer.h"
 #include "lib/skin.h"
 #include "lib/filehighlight.h"
 #include "lib/fileloc.h"
@@ -170,7 +170,7 @@ sigchld_handler_no_subshell (int sig)
 #ifdef __linux__
     int pid, status;
 
-    if (!mc_global.tty.console_flag != '\0')
+    if (mc_global.tty.console_flag == '\0')
         return;
 
     /* COMMENT: if it were true that after the call to handle_console(..INIT)
@@ -184,7 +184,6 @@ sigchld_handler_no_subshell (int sig)
 
     if (pid == cons_saver_pid)
     {
-
         if (WIFSTOPPED (status))
         {
             /* Someone has stopped cons.saver - restart it */
@@ -250,6 +249,8 @@ main (int argc, char *argv[])
     char *config_migrate_msg;
     int exit_code = EXIT_FAILURE;
 
+    mc_global.timer = mc_timer_new ();
+
     /* We had LC_CTYPE before, LC_ALL includs LC_TYPE as well */
 #ifdef HAVE_SETLOCALE
     (void) setlocale (LC_ALL, "");
@@ -260,6 +261,7 @@ main (int argc, char *argv[])
 #if defined(WIN32) //APY, config
     WIN32_Setup();
 #endif
+
     /* do this before args parsing */
     str_init_strings (NULL);
 
@@ -271,6 +273,7 @@ main (int argc, char *argv[])
         g_free (mc_global.tty.shell);
       startup_exit_ok:
         str_uninit_strings ();
+        mc_timer_destroy (mc_global.timer);
         return exit_code;
     }
 
@@ -279,8 +282,8 @@ main (int argc, char *argv[])
 
     if (!g_path_is_absolute (mc_config_get_home_dir ()))
     {
-        mcerror = g_error_new (MC_ERROR, 0, "%s: %s", _("Home directory path is not absolute"),
-                             mc_config_get_home_dir ());
+        mc_propagate_error (&mcerror, 0, "%s: %s", _("Home directory path is not absolute"),
+                            mc_config_get_home_dir ());
         mc_event_deinit (NULL);
         goto startup_exit_falure;
     }
@@ -295,8 +298,7 @@ main (int argc, char *argv[])
         goto startup_exit_falure;
 
     mc_config_init_config_paths (&mcerror);
-    if (mcerror == NULL)
-        config_migrated = mc_config_migrate_from_old_place (&mcerror, &config_migrate_msg);
+    config_migrated = mc_config_migrate_from_old_place (&mcerror, &config_migrate_msg);
     if (mcerror != NULL)
     {
         mc_event_deinit (NULL);
@@ -305,15 +307,36 @@ main (int argc, char *argv[])
 
     vfs_init ();
     vfs_plugins_init ();
+
+    load_setup ();
+
+    /* Must be done after load_setup because depends on mc_global.vfs.cd_symlinks */
     vfs_setup_work_dir ();
+
+    /* Resolve the other_dir panel option. Must be done after vfs_setup_work_dir */
+    {
+        char *buffer;
+        vfs_path_t *vpath;
+
+        buffer = mc_config_get_string (mc_panels_config, "Dirs", "other_dir", ".");
+        vpath = vfs_path_from_str (buffer);
+        if (vfs_file_is_local (vpath))
+            saved_other_dir = buffer;
+        else
+            g_free (buffer);
+        vfs_path_free (vpath);
+    }
 
     /* Set up temporary directory after VFS initialization */
     mc_tmpdir ();
 
-    /* do this after vfs initialization due to mc_setctl() call in mc_setup_by_args() */
+    /* do this after vfs initialization and vfs working directory setup
+       due to mc_setctl() and mcedit_arg_vpath_new() calls in mc_setup_by_args() */
     if (!mc_setup_by_args (argc, argv, &mcerror))
     {
         vfs_shut ();
+        done_setup ();
+        g_free (saved_other_dir);
         mc_event_deinit (NULL);
         goto startup_exit_falure;
     }
@@ -366,14 +389,12 @@ main (int argc, char *argv[])
     tty_init_colors (mc_global.tty.disable_colors, mc_args__force_colors);
 
     mc_skin_init (NULL, &mcerror);
-    if (mcerror != NULL)
-    {
-        message (D_ERROR, _("Warning"), "%s", mcerror->message);
-        g_error_free (mcerror);
-        mcerror = NULL;
-    }
-
     dlg_set_default_colors ();
+    input_set_default_colors ();
+    if (mc_global.mc_run_mode == MC_RUN_FULL)
+        command_set_default_colors ();
+
+    mc_error_message (&mcerror);
 
 #ifdef ENABLE_SUBSHELL
     /* Done here to ensure that the subshell doesn't  */
@@ -495,6 +516,8 @@ main (int argc, char *argv[])
         g_error_free (mcerror);
         exit_code = EXIT_FAILURE;
     }
+
+    mc_timer_destroy (mc_global.timer);
 
     (void) putchar ('\n');      /* Hack to make shell's prompt start at left of screen */
 

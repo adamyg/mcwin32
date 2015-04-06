@@ -141,7 +141,11 @@
 #define PATH_SEP '/'
 #define PATH_SEP_STR "/"
 #if defined(WIN32) //APY,path
+#define PATH_SEP2 '/'
 #define PATH_SEP_STR2 "\\"
+#define IS_PATH_SEP(c) ((c) == PATH_SEP || (c) == PATH_SEP2)
+#else
+#define IS_PATH_SEP(c) ((c) == PATH_SEP)
 #endif
 #define PATH_ENV_SEP ':'
 #define TMPDIR_DEFAULT "/tmp"
@@ -194,6 +198,8 @@ typedef enum
 typedef struct
 {
     mc_run_mode_t mc_run_mode;
+    /* global timer */
+    struct mc_timer_t *timer;
     /* Used so that widgets know if they are being destroyed or shut down */
     gboolean midnight_shutdown;
 
@@ -227,7 +233,7 @@ typedef struct
     /* Set if the nice and useful keybar is visible */
     int keybar_visible;
 
-#ifdef ENABLE_BACKGROUND
+#if defined(ENABLE_BACKGROUND) || defined(WIN32)
     /* If true, this is a background process */
     gboolean we_are_background;
 #endif                          /* ENABLE_BACKGROUND */
@@ -256,7 +262,7 @@ typedef struct
         /* colors specified on the command line: they override any other setting */
         char *command_line_colors;
 
-#ifndef LINUX_CONS_SAVER_C
+#if !defined(LINUX_CONS_SAVER_C) || defined(WIN32)
         /* Used only in mc, not in cons.saver */
         char console_flag;
 #endif                          /* !LINUX_CONS_SAVER_C */

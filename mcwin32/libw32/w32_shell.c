@@ -22,7 +22,7 @@
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  */
@@ -49,7 +49,6 @@ typedef struct {
     HANDLE              hDupPipe;
     int                 fd;
 } Redirect_t;
-
 
 static const char *     OutDirect(const char *path, int *append);
 static void             ShellCleanup(void *p);
@@ -231,233 +230,135 @@ ShellCleanup(void *p)
 
 
 /*
- *  Spawn -- spawn a child process
+ *  Spawn -- spawn a child process, using the specified libc handles with
+ *      redirection threads piping the underlying output to them.
  *
  *  Parameters:
- *      Stdout -        [in]  Process 'stdout' file descriptor.
- *      Stderr -        [in]  Optional, process 'stderr' file descritor.
- *      *Stdin -        [out] Storage to processes 'stdin' pipe.
+ *      Stdout -    [in]  Process 'stdout' file descriptor.
+ *      Stderr -    [in]  Optional, process 'stderr' file descritor.
+ *      Stdin -     [out] Storage to the processes 'stdin' pipe.
+ *
+ *  Returns:
+ *      Non-zero on success, otherwise 0 on error.
  */
 int
 w32_spawn(
     win32_spawn_t *args, int Stdout, int Stderr, int *Stdin)
 {
-    HANDLE hOutputReadTmp = 0, hOutputRead, hOutputWrite;
-    HANDLE hErrorReadTmp = 0, hErrorRead, hErrorWrite;
-    HANDLE hInputWriteTmp = 0, hInputRead, hInputWrite;
-    HANDLE hProc = 0;
+    assert(Stdout >= 0);
+    assert(Stderr >= 0);
+    assert(Stdin);
 
-    //  Clear result
-    //
-    *Stdin = -1;                                // file descriptors
-
-    //  Create the child output pipe.
-    //
-    if (! Pipe(&hOutputReadTmp, &hOutputWrite)) {
-         InternalError("createPipe (stdout)");
+    if (Stdout < 0 || Stderr < 0 || NULL == Stdin) {
+        return 0;
     }
 
-    //  Either,
-    //      Create a duplicate of the output write handle for the std error write handle. This is
-    //      necessary in case the child application closes one of its std output handles.
-    //  or,
-    //      Create stderr pipe, if stderr redirection is required.
-    //
-    if (Stderr == -1) {                         // no 'stderr' redirection
-        if (! Dup(hOutputWrite, &hErrorWrite, TRUE)) {
-            InternalError("DuplicateHandle (stdout)");
-        }
+    *Stdin = -1;                                // file descriptors
 
-    } else {                                    // stderr redirection
-        if (! Pipe(&hErrorReadTmp, &hErrorWrite)) {
-            InternalError("createPipe (stderr)");
-        }
+    return w32_spawn2(args, Stdin, &Stdout, &Stderr);
+}
+
+
+/*
+ *  Spawn -- spawn a child process, returning libc handles with
+ *      redirection threads piping the underlying output to them.
+ *
+ *  Parameters:
+ *      Stdin -     [in/out] Storage to the processes 'stdin' pipe.
+ *      Stdout -    [in/out] Storage to the processes 'stdout' pipe.
+ *      Stderr -    [in/out] Optional, storage to processes the 'stderr' pipe.
+ *
+ *  Returns:
+ *      Non-zero process handle on success, otherwise 0 on error.
+ */
+int
+w32_spawn2(
+    win32_spawn_t *args, int *Stdin, int *Stdout, int *Stderr)
+{
+    int in = -1, out = -1, err = -1;
+    HANDLE hInputWriteTmp, hInputRead, hInputWrite,
+        hErrorReadTmp, hErrorRead, hErrorWrite,
+        hOutputReadTmp, hOutputRead, hOutputWrite;
+    HANDLE hProc;
+
+    if (NULL == Stdin || NULL == Stdout) {      // must be supplied
+        return 0;
     }
 
     //  Create the child input pipe.
     //
     if (! Pipe(&hInputRead, &hInputWriteTmp)) {
-        InternalError("Pipe");
+        InternalError("pipe (stdin)");
     }
 
-    //  Create new output read handle and the input write handles. Set the Properties to FALSE.
-    //  Otherwise, the child inherits the properties and, as a result, non-closeable handles to
-    //  the pipes are created.
+    //  Create the child output pipe.
     //
-                                                // stdout
-    if (! Dup(hOutputReadTmp, &hOutputRead, FALSE)) {
-        InternalError("DupliateHandle (stdout)");  
+    if (! Pipe(&hOutputReadTmp, &hOutputWrite )) {
+        InternalError("spawn: pipe (stdout)");
     }
 
-    if (Stderr >= 0) {                          // stderr
+    //  Create the child error pipe.
+    //
+    //      Either,
+    //          Create a duplicate of the output write handle for the
+    //          std error write handle. This is necessary in case the
+    //          child application closes one of its std output handles.
+    //      or
+    //          Create stderr pipe, if stderr redirection is required.
+    //
+    if (! Stderr) {                             // no 'stderr' redirection
+        if (! Dup(hOutputWrite, &hErrorWrite, TRUE)) {
+            InternalError("spawn: dup (stdout)");
+        }
+    } else {                                    // stderr redirection
+        if (! Pipe(&hErrorReadTmp, &hErrorWrite)) {
+            InternalError("spawn: pipe (stderr)");
+        }
+    }
+
+    //  Create new output read handle and the input write handles. Set
+    //  the Properties to FALSE. Otherwise, the child inherits the
+    //  properties and, as a result, non-closeable handles to the pipes
+    //  are created.
+    //
+    if (! Dup(hInputWriteTmp, &hInputWrite, FALSE)) InternalError("spawn: dup (stdin)");
+    if (! Dup(hOutputReadTmp, &hOutputRead, FALSE)) InternalError("spawn: dup (stdout)");
+    if (Stderr) {
         if (! Dup(hErrorReadTmp, &hErrorRead, FALSE)) {
-            InternalError("DupliateHandle (stderr)");
+            InternalError("spawn: dup (stderr)");
         }
     } else {
         hErrorRead = 0;
     }
 
-                                                // stdin
-    if (! Dup(hInputWriteTmp, &hInputWrite, FALSE)) {
-        InternalError("DupliateHandle (stdin)");
-    } else {
-        *Stdin = _open_osfhandle((intptr_t) hInputWrite, _O_NOINHERIT);
-    }
-
-
-    //  Close inheritable copies of the handles you do not want to be inherited.
+    //  Close inheritable copies of the handles you do
+    //  not want to be inherited.
     //
-    if (! CloseHandle(hOutputReadTmp)) {
-        InternalError("closeHandle (stdput1)");
-    }
-    if (Stderr >= 0) {
-        if (!CloseHandle(hErrorReadTmp)) {
-            InternalError("closeHandle (stderr1)");
-        }
-    }
-    if (!CloseHandle(hInputWriteTmp)) {
-        InternalError("closeHandle (stdin1)");
+    Close2(hOutputReadTmp, "spawn (stdput1)");
+    Close2(hInputWriteTmp, "spawn (stdin1)");
+    if (Stderr) {
+        Close2(hErrorReadTmp, "spawn (stderr1)");
     }
 
-    //  Create child process.
+    //  Open LIBC compatible handles (if required) and launch child process
     //
-    hProc = w32_child_exec(args, hInputRead, hOutputWrite, hErrorWrite);
+    if ((*Stdin  >= 0 ||
+            (in  = _open_osfhandle((long)hInputWrite, _O_NOINHERIT)) >= 0) &&
+        (*Stdout >= 0 ||
+            (out = _open_osfhandle((long)hOutputRead, _O_NOINHERIT)) >= 0) &&
+        (Stderr == NULL || *Stderr >= 0 ||
+            (err = _open_osfhandle((long)hErrorRead, _O_NOINHERIT)) >= 0)) {
+        hProc = w32_child_exec(args, hInputRead, hOutputWrite, hErrorWrite);
+    }
 
     //  Close pipe handles (do not continue to modify the parent).
     //  You need to make sure that no handles to the write end of the
     //  output pipe are maintained in this process or else the pipe will
     //  not close when the child process exits and the ReadFile will hang.
     //
-    if (! CloseHandle(hOutputWrite)) InternalError("closeHandle (stdout2)");
-    if (! CloseHandle(hErrorWrite)) InternalError("closeHandle (stderr2)");
-    if (! CloseHandle(hInputRead)) InternalError("closeHandle (stdin2)");
+    Close(hInputRead); Close(hOutputWrite); Close(hErrorWrite);
 
-    //  Launch the thread that gets the input and sends it to the child.
-    //
-    if (hProc) {
-        StartRedirectThread("stdout", hOutputRead, Stdout, (Stderr >= 0 ? INVALID_HANDLE_VALUE : hErrorRead));
-        if (Stderr >= 0) {
-            StartRedirectThread("stderr", hErrorRead, Stderr, INVALID_HANDLE_VALUE);
-        }
-
-    } else {
-        if (! CloseHandle(hOutputRead)) {
-            InternalError("closeHandle (stdout3)");
-        }
-        if (Stderr >= 0) {
-            if (! CloseHandle(hErrorRead)) {
-                InternalError("closeHandle (stderr3)");
-            }
-        }
-        _close(*Stdin);
-        *Stdin = -1;
-    }
-    return (int)(hProc);
-}
-
-
-/*
- *  Spawn -- spawn a child process
- *
- *  Parameters:
- *    *Stdin            [in/out] Storage to processes 'stdin' pipe.
- *    *Stdout           [in/out] Storage to processes 'stdout' pipe.
- *    *Stderr           [in/out] Optional, storage to processes 'stderr' pipe.
- */
-int
-w32_spawn2(
-    win32_spawn_t *args, int *Stdin, int *Stdout, int *Stderr)
-{
-    HANDLE hInputWriteTmp, hInputRead, hInputWrite;
-    HANDLE hErrorReadTmp,  hErrorRead, hErrorWrite;
-    HANDLE hOutputReadTmp, hOutputRead, hOutputWrite;
-    HANDLE hProc;
-    int in, out, err;
-
-    // Clear result
-    //
-    in = out = err = -1;                        // file descriptors
-
-    if (NULL == Stdin || NULL == Stdout) {      // must be supplied
-        return -1;
-    }
-
-    // Create the child input pipe.
-    //
-    if (! Pipe(&hInputRead, &hInputWriteTmp)) {
-        InternalError("pipe (stdin)");
-    }
-
-    // Create the child output pipe.
-    //
-    if (! Pipe(&hOutputReadTmp, &hOutputWrite )) {
-        InternalError("pipe (stdout)");
-    }
-
-    // Create the child error pipe.
-    //
-    //  Either,
-    //      Create a duplicate of the output write handle for the
-    //      std error write handle. This is necessary in case the
-    //      child application closes one of its std output handles.
-    //  or
-    //      Create stderr pipe, if stderr redirection is required.
-    //
-    if (! Stderr) {                             // no 'stderr' redirection
-        if (! Dup(hOutputWrite, &hErrorWrite, TRUE)) {
-            InternalError("dup (stdout)");
-        }
-    } else {                                    // stderr redirection
-        if (! Pipe(&hErrorReadTmp, &hErrorWrite)) {
-            InternalError("pipe (stderr)");
-        }
-    }
-
-    // Create new output read handle and the input write handles. Set
-    // the Properties to FALSE. Otherwise, the child inherits the
-    // properties and, as a result, non-closeable handles to the pipes
-    // are created.
-    //
-    if (! Dup(hInputWriteTmp, &hInputWrite, FALSE)) InternalError("dup (stdin)");
-    if (! Dup(hOutputReadTmp, &hOutputRead, FALSE)) InternalError("dup (stdout)");
-    if (Stderr) {
-        if (! Dup(hErrorReadTmp, &hErrorRead, FALSE)) {
-            InternalError("dup (stderr)");
-        }
-    } else {
-        hErrorRead = 0;
-    }
-
-    // Close inheritable copies of the handles you do
-    // not want to be inherited.
-    //
-    if (! CloseHandle(hOutputReadTmp)) InternalError("close (stdput1)");
-    if (Stderr) {
-        if (! CloseHandle(hErrorReadTmp)) InternalError("close (stderr1)");
-    }
-    if (!CloseHandle(hInputWriteTmp)) InternalError("close (stdin1)");
-
-    // Open LIBC compatible handles (if required) and launch child process
-    //
-    if ((*Stdin >= 0 ||
-            (in  = _open_osfhandle((long)hInputWrite, _O_NOINHERIT)) >= 0) &&
-        (*Stdout >= 0 ||
-            (out = _open_osfhandle((long)hOutputRead, _O_NOINHERIT)) >= 0) &&
-        (Stderr == NULL || *Stderr >= 0 ||
-            (err = _open_osfhandle((long)hErrorRead, _O_NOINHERIT))  >= 0)) {
-        hProc = w32_child_exec(args, hInputRead, hOutputWrite, hErrorWrite);
-    }
-
-    // Close pipe handles (do not continue to modify the parent).
-    // You need to make sure that no handles to the write end of the
-    // output pipe are maintained in this process or else the pipe will
-    // not close when the child process exits and the ReadFile will hang.
-    //
-    if (!CloseHandle(hInputRead)) InternalError("close (stdin2)");
-    if (!CloseHandle(hOutputWrite)) InternalError("close (stdout2)");
-    if (!CloseHandle(hErrorWrite)) InternalError("close (stderr2)");
-
-    // Launch the thread(s) that gets the input and sends it to the child.
+    //  Launch the thread(s) that gets the input and sends it to the child.
     //
     //      Theses are only required if the caller supplied the out/err fds.
     //
@@ -474,13 +375,13 @@ w32_spawn2(
             StartRedirectThread("stdout", hOutputRead, *Stdout,
                 (Stderr ? INVALID_HANDLE_VALUE : hErrorRead) );
         } else {
-            assert( out >= 0);
+            assert(out >= 0);
             *Stdout = out;
         }
 
         if (Stderr) {
             if (*Stderr >= 0) {
-                assert( err == -1);
+                assert(err == -1);
                 StartRedirectThread("stderr",
                     hErrorRead, *Stderr, INVALID_HANDLE_VALUE);
             } else {
@@ -492,16 +393,71 @@ w32_spawn2(
         }
 
     } else {
-        if (!CloseHandle(hInputWrite)) InternalError("close (stdin3)");
-        if (!CloseHandle(hOutputRead)) InternalError("close (stdout3)");
+        Close(hInputWrite);
+        Close(hOutputRead);
         if (Stderr) {
-            if (!CloseHandle(hErrorRead)) InternalError("close (stderr3)");
+            Close(hErrorRead);
         }
-        if (in >= 0) WIN32_CLOSE(in);
-        if (out >= 0) WIN32_CLOSE(out);
-        if (err >= 0) WIN32_CLOSE(err);
     }
     return (int)(hProc);
+}
+
+
+/*
+ *  Exec -- exec a child process, returning native win32 handles.
+ *
+ *  Parameters:
+ *      args -      [in/out] Spawn arguments.
+ *
+ *  Returns:
+ *      Non-zero on success, otherwise 0 on error.
+ */
+int
+w32_exec(win32_exec_t *args)
+{
+    HANDLE hInputWriteTmp, hInputRead, hInputWrite,
+        hErrorReadTmp, hErrorRead, hErrorWrite,
+        hOutputReadTmp, hOutputRead, hOutputWrite;
+
+    //  Create the child input/out/err pipe.
+    //
+    if (! Pipe(&hInputRead, &hInputWriteTmp) ||
+            ! Pipe(&hOutputReadTmp, &hOutputWrite) ||
+            ! Pipe(&hErrorReadTmp, &hErrorWrite)) {
+        InternalError("exec: pipe");
+    }
+
+    //  Create new output read handle and the input write handles, set as non
+    //  inheritable. Otherwise, the child inherits the properties and, as a result,
+    //  non-closeable handles to the pipes are created.
+    //
+    if (! Dup(hInputWriteTmp, &hInputWrite, FALSE) ||
+            ! Dup(hOutputReadTmp, &hOutputRead, FALSE) ||
+            ! Dup(hErrorReadTmp, &hErrorRead, FALSE)) {
+        InternalError("exec: dup");
+    }
+    Close(hOutputReadTmp); Close(hInputWriteTmp); Close(hErrorReadTmp);
+
+    //  Execute child.
+    //
+    args->hProc =
+        w32_child_exec(&args->spawn, hInputRead, hOutputWrite, hErrorWrite);
+
+    //  Close pipe handles.
+    //
+    Close(hInputRead); Close(hOutputWrite); Close(hErrorWrite);
+
+    //  Completion.
+    //
+    if (0 == args->hProc) {
+        Close(hInputWrite); Close(hOutputRead); Close(hErrorRead);
+        return 0;
+    }
+
+    args->hInput = hInputWrite;
+    args->hOutput = hOutputRead;
+    args->hError = hErrorRead;
+    return 1;
 }
 
 
@@ -552,7 +508,7 @@ Close(HANDLE handle)
 {
     if (handle != INVALID_HANDLE_VALUE) {
         if (! CloseHandle(handle)) {
-            InternalError("Close()");
+            InternalError("closehandle()");
         }
     }
 }
@@ -567,7 +523,10 @@ Close2(HANDLE handle, const char *desc)
 {
     if (handle != INVALID_HANDLE_VALUE) {
         if (! CloseHandle(handle)) {
-            InternalError(desc);
+            char buffer[512];
+            _snprintf(buffer, sizeof(buffer), "closehandle(%s)", desc);
+            buffer[sizeof(buffer)-1]=0;
+            InternalError(buffer);
         }
     }
 }
@@ -615,7 +574,7 @@ RedirectThread(LPVOID p)
             if (GetLastError() == ERROR_BROKEN_PIPE) {
                 break;                          // pipe done
             }
-            InternalError("ReadFile");             // .. something bad
+            InternalError("ReadFile");          // .. something bad
         }
 
                                                 // redirect write loop
@@ -651,8 +610,8 @@ DisplayError(
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
         NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpvMessageBuffer, 0, NULL);
 
-    _snprintf( szPrintBuffer, sizeof(szPrintBuffer),
-        "Interna Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
+    _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
+        "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
         args ? args : "", args ? "\n" : "");
 
     WriteConsole(hOutput, szPrintBuffer,

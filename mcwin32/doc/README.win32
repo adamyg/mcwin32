@@ -3,11 +3,12 @@ Native GNU Midnight Commander for Win32
 
 --------------------------------
 
-Windows XP+/32 bit native port of GNU Midnight Commander, based on the
-current 4.8.x development stream.
+Windows XP+/32 bit native port of GNU Midnight Commander, based on
+the current 4.8.x development stream.
 
         Version         Latest Build
 
+        4.8.13-beta     188,187
         4.8.12          186
         4.8.11          183
         4.8.8           181
@@ -69,14 +70,15 @@ Getting Started
 There are a numerious resources detailing working with Midnight
 Commander, including:
 
-        o Midnight Commander Draft Documentation
+
+   o Midnight Commander Draft Documentation
 
 
-                https://www.midnight-commander.org/wiki/doc
+        https://www.midnight-commander.org/wiki/doc
 
-        o FAQ
+   o FAQ
 
-                see 'docs' within the installation directory.
+        see 'docs' within the installation directory.
 
 
 Source
@@ -85,20 +87,20 @@ Source
 Window native port for GNU Midnight Commander, the latest build can be
 found in the below link:
 
-        http://sourceforge.net/projects/mcwin32/
+   http://sourceforge.net/projects/mcwin32/
 
 
 Specific information regarding the base Midnight Commander 4.8.x engine,
 can be found at the following
 
-        http://en.wikipedia.org/wiki/Midnight_Commander
+   http://en.wikipedia.org/wiki/Midnight_Commander
 
-        www.midnight-commander.org
+   www.midnight-commander.org
 
 
 Older information is available at
 
-        www.gnu.org/software/mc
+   www.gnu.org/software/mc
 
 
 
@@ -153,4 +155,5 @@ A few items are unix specific (e.g. chown), which shall be updated over
 time.
 
 -end-
+
 

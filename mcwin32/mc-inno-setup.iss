@@ -37,16 +37,17 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: ".\bin\mc.exe";       DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\mc.map";       DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\busybox.exe";  DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\file.exe";     DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\*.dll";        DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\man2hlp.pl";   DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\etc\*";        DestDir: "{app}\etc"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: ".\bin\plugin\*";     DestDir: "{app}\plugin"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: ".\bin\share\*";      DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: ".\bin\doc\*";        DestDir: "{app}\doc"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: ".\bin\changelog.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\mc.exe";        DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\mc.map";        DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\file.exe";      DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\*.dll";         DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\man2hlp.pl";    DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\etc\*";         DestDir: "{app}\etc"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: ".\bin\plugin\*";      DestDir: "{app}\plugin"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: ".\bin\share\*";       DestDir: "{app}\share"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: ".\bin\doc\*";         DestDir: "{app}\doc"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

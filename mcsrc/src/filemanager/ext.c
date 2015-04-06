@@ -1,7 +1,7 @@
 /*
    Extension dependent execution.
 
-   Copyright (C) 1994-2014
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -83,7 +83,7 @@
 
 /*** file scope type declarations ****************************************************************/
 
-typedef char *(*quote_func_t) (const char *name, int quote_percent);
+typedef char *(*quote_func_t) (const char *name, gboolean quote_percent);
 
 /*** file scope variables ************************************************************************/
 
@@ -143,7 +143,7 @@ static char *
 exec_get_file_name (const vfs_path_t * filename_vpath)
 {
     if (!do_local_copy)
-        return quote_func (vfs_path_get_last_path_str (filename_vpath), 0);
+        return quote_func (vfs_path_get_last_path_str (filename_vpath), FALSE);
 
     if (localfilecopy_vpath == NULL)
     {
@@ -156,7 +156,7 @@ exec_get_file_name (const vfs_path_t * filename_vpath)
         localmtime = mystat.st_mtime;
     }
 
-    return quote_func (vfs_path_get_last_path_str (localfilecopy_vpath), 0);
+    return quote_func (vfs_path_get_last_path_str (localfilecopy_vpath), FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -640,7 +640,7 @@ get_file_type_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
     int ret;
     char *tmp;
 
-    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), 0);
+    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), FALSE);
     ret = get_popen_information (FILE_CMD, tmp, buf, buflen);
     g_free (tmp);
 
@@ -661,8 +661,8 @@ get_file_encoding_local (const vfs_path_t * filename_vpath, char *buf, int bufle
     char *tmp, *lang, *args;
     int ret;
 
-    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), 0);
-    lang = name_quote (autodetect_codeset, 0);
+    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), FALSE);
+    lang = name_quote (autodetect_codeset, FALSE);
     args = g_strconcat (" -L", lang, " -i ", tmp, (char *) NULL);
 
     ret = get_popen_information ("enca", args, buf, buflen);

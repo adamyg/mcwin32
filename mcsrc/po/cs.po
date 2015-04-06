@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2014-07-25 10:37+0400\n"
-"PO-Revision-Date: 2014-09-04 10:10+0000\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2015-02-26 09:48+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Czech (http://www.transifex.com/projects/p/mc/language/cs/)\n"
 "MIME-Version: 1.0\n"
@@ -333,6 +333,9 @@ msgstr "Apostrof"
 msgid "Colon"
 msgstr "Dvojtečka"
 
+msgid "Semicolon"
+msgstr ""
+
 msgid "Exclamation mark"
 msgstr "Vykřičník"
 
@@ -426,6 +429,27 @@ msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
 msgstr "Velikost obrazovky %d×%d není podporovaná.\nPrověřte nastavení proměnné prostředí TERM.\n"
+
+msgid "Cannot create pipe descriptor"
+msgstr ""
+
+msgid "Cannot parse command for pipe"
+msgstr ""
+
+msgid "Cannot create pipe streams"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in select() reading data from a child process:\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Unexpected error in waitpid():\n"
+"%s"
+msgstr ""
 
 msgid "Warning"
 msgstr "Varování"
@@ -641,8 +665,8 @@ msgid ""
 "   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
 "\n"
 "Attributes:\n"
-"   bold, underline, reverse, blink; append more with '+'\n"
-msgstr "Standartní barvy:\n   černá, šedá, červená, světlečervená, zelená, světlezelená, hnědá,\n   žlutá, modrá, světlemodrá, červenorudá, světle-červenorudá, modrozelená,\n   světle-modrozelená, světle-šedá a bílá\n\nRozšířené barvy, pokud je dostupných 256 barev:\n   color16 až color255, nebo rgb000 až rgb555 a gray0 až gray23\n\nVlastnosti:\n   tučné, podtržené, obrácené, blikající; přidejte další pomocí '+'\n"
+"   bold, italic, underline, reverse, blink; append more with '+'\n"
+msgstr ""
 
 msgid "Color options"
 msgstr "Možnosti barev"
@@ -681,6 +705,12 @@ msgstr "Prohlížeči nebyly zadány žádné parametry"
 msgid "Two files are required to evoke the diffviewer."
 msgstr "Dva soubory jsou potřeba k vyvolání prohlížeče změn"
 
+msgid "Background protocol error"
+msgstr "Chyba protokolu na pozadí"
+
+msgid "Reading failed"
+msgstr "Čtení selhalo"
+
 msgid "Background process error"
 msgstr "Chyba procesu na pozadí"
 
@@ -689,12 +719,6 @@ msgstr "Neznámá chyba v potomku procesu"
 
 msgid "Child died unexpectedly"
 msgstr "Potomek procesu neočekávaně umřel"
-
-msgid "Background protocol error"
-msgstr "Chyba protokolu na pozadí"
-
-msgid "Reading failed"
-msgstr "Čtení selhalo"
 
 msgid ""
 "Background process sent us a request for more arguments\n"
@@ -1467,7 +1491,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2014 the Free Software Foundation"
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1654,6 +1678,12 @@ msgid ""
 "%s"
 msgstr "Nelze změnit vlastníka souboru „%s“\n%s"
 
+msgid "< Default >"
+msgstr ""
+
+msgid "Skins"
+msgstr ""
+
 msgid "Other 8 bit"
 msgstr "Ostatní 8 bitů"
 
@@ -1737,12 +1767,6 @@ msgstr "&Automatické ukládání parametrů"
 
 msgid "Configure options"
 msgstr "Změna nastavení"
-
-msgid "< Default >"
-msgstr ""
-
-msgid "Skins"
-msgstr ""
 
 msgid "Skin:"
 msgstr ""
@@ -3433,12 +3457,6 @@ msgid "The %%var macro has no variable"
 msgstr "Makro %%var nemá proměnnou"
 
 #, c-format
-msgid ""
-"Cannot open file%s\n"
-"%s"
-msgstr "Nelze otevřít soubor %s\n%s"
-
-#, c-format
 msgid "No suitable entries found in %s"
 msgstr "V %s nejsou odpovídající položky"
 
@@ -3870,9 +3888,6 @@ msgstr ""
 msgid "sftp: Invalid host name."
 msgstr ""
 
-msgid "sftp: Invalid port value."
-msgstr ""
-
 #, c-format
 msgid "sftp: %s"
 msgstr ""
@@ -4045,12 +4060,6 @@ msgid ""
 "Save modified file?"
 msgstr "Midnight Commander se ukončuje.\nUložit upravený soubor?"
 
-msgid "Cannot spawn child process"
-msgstr "Nelze vytvořit proces potomka"
-
-msgid "Empty output from child filter"
-msgstr "Prázdný výstup z filtru potomka"
-
 msgid "&Line number"
 msgstr ""
 
@@ -4095,6 +4104,12 @@ msgstr "TlačítkováLišta|Odform"
 
 msgid "ButtonBar|Format"
 msgstr "TlačítkováLišta|Formát"
+
+#, c-format
+msgid ""
+"Failed to read data from child stdout:\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""

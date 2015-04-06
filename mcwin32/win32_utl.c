@@ -21,8 +21,8 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by:
-   Adam Young 2012
+   Written by: Adam Young 2012 - 2015
+
    Portions sourced from lib/utilunix.c, see for additional information.
 
    This file is part of the Midnight Commander.
@@ -112,7 +112,7 @@ static const char       cmd_sh[] = "cmd.exe";
 static CRITICAL_SECTION pe_guard;
 static int              pe_open = -1;
 static FILE *           pe_stream = NULL;
-static char             pe_buffer[ PE_BUFFER_SIZE+1024+1 ];
+static char             pe_buffer[ PE_BUFFER_SIZE + 1024 + 1 ];
 
 
 /**
@@ -1103,18 +1103,20 @@ system_SET(int argc, const char **argv)
 }
 
 
+
 /**
  *  popen() implementation
  */
 FILE *
-mc_popen(const char *cmd, const char *mode)
+win32_popen(const char *cmd, const char *mode)
 {
     const char *busybox = getenv("MC_BUSYBOX");
     const char *space;
     FILE *file = NULL;
 
-    if (busybox && NULL != (space = strchr(cmd, ' ')) &&
-            space == (cmd + (sizeof(bin_sh) - 1)) && 0 == strncmp(cmd, bin_sh, sizeof(bin_sh)-1)) {
+    if (busybox && *busybox &&
+            NULL != (space = strchr(cmd, ' ')) &&
+                space == (cmd + (sizeof(bin_sh) - 1)) && 0 == strncmp(cmd, bin_sh, sizeof(bin_sh)-1)) {
         /*
          *  If <cmd> </bin/sh ...>
          *  execute as <shell> <busybox sh ...>
@@ -1152,7 +1154,7 @@ mc_popen(const char *cmd, const char *mode)
  *  pclose() implementation
  */
 int
-mc_pclose(FILE *file)
+win32_pclose(FILE *file)
 {
     EnterCriticalSection(&pe_guard);
     pe_stream = NULL;

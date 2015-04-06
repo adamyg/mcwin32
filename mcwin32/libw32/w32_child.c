@@ -547,27 +547,42 @@ w32_child_exec(
     char *argblk;
     char *envblk;
 
-    /* Set up the start up info struct */
+    /* 
+     *  Set up the start up info struct 
+     *      USESTDHANDLES,
+     *          The hStdInput, hStdOutput, and hStdError members contain additional information.
+     *
+     *          If this flag is specified when calling one of the process creation functions, 
+     *          the handles must be inheritable and the function's bInheritHandles parameter 
+     *          must be set to TRUE. For more information;
+     */
     (void) memset(&si, 0, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
+    si.wShowWindow = SW_HIDE;                   //SW_NORMAL, SW_SHOWMINIMIZED
+    si.hStdInput  = hStdIn;
+    si.hStdOutput = hStdOut;
+    si.hStdError  = hStdErr;
+
+    if (hStdIn)  { DWORD flags; assert(GetHandleInformation(hStdIn,  &flags) && (HANDLE_FLAG_INHERIT & flags)); }
+    if (hStdOut) { DWORD flags; assert(GetHandleInformation(hStdOut, &flags) && (HANDLE_FLAG_INHERIT & flags)); }
+    if (hStdErr) { DWORD flags; assert(GetHandleInformation(hStdErr, &flags) && (HANDLE_FLAG_INHERIT & flags)); }
 
     si.dwFlags = STARTF_USESTDHANDLES;
-    si.hStdOutput  = hStdOut;
-    si.hStdInput   = hStdIn;
-    si.hStdError   = hStdErr;
+    si.dwFlags |= STARTF_USESHOWWINDOW;
 
-    si.dwFlags    |= STARTF_USESHOWWINDOW;
-    si.wShowWindow = SW_HIDE;                   //SW_NORMAL, SW_SHOWMINIMIZED
-
-    /* Build env and command line. */
+    /* 
+     *  Build env and command line. 
+     */
     if (BuildVectors(args, &argblk, &envblk) != 0) {
         InternalError("building arg and env");
     }
 
-    /* Launch the process that you want to redirect. */
+    /* 
+     *  Launch the process that you want to redirect. 
+     */
     if (0 == (hProc = ExecChild(args, NULL, argblk, envblk, &si, &pi))) {
         const char *path, *cmd =
-                        (args->argv ? args->argv[0] : args->cmd);
+                (args->argv ? args->argv[0] : args->cmd);
         char *pfin, *buf = NULL;
 
         //  Complete if,
@@ -642,6 +657,7 @@ ExecChild(win32_spawn_t *args,
             pi)) {                              // [out] process information.
         args->_dwProcessId = pi->dwProcessId;
         hProc = pi->hProcess;
+
     } else if (WASNOT_ENOENT()) {               // XXX, current or hStdError ??
         DisplayError(GetStdHandle(STD_OUTPUT_HANDLE), "CreateProcess", argv);
     }
@@ -693,7 +709,7 @@ w32_child_wait(HANDLE hProc, int *status, int nowait)
     /*
      *  Explicitly check for process_id being -1 or -2.
      *
-     *  In Windows NT, -1 is a handle on the current process, -2 is a h
+     *  In Windows NT, -1 is a handle on the current process, -2 is the
      *  current thread, and it is perfectly legal to to wait (forever) on either.
      */
     if ((int)hProc == -1 || (int)hProc == -2) {
