@@ -1,3 +1,9 @@
+Mon Jul 13 23:32:02 2015 ayoung
+
+	* build xxx
+
+		- improved raster font support (256 color mode).
+
 Mon Apr  6 02:44:48 2015 ayoung
 
 	* build 189

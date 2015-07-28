@@ -1006,7 +1006,7 @@ CtrlBreak(void)
 
 
 /*
- *  Translate the key press into a CRISP identifier.
+ *  Translate the key press into a keycode.
  */
 static int
 key_mapwin32(
@@ -1228,6 +1228,3 @@ disable_bracketed_paste (void)
 }
 
 /*end*/
-
-
-

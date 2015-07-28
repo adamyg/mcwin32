@@ -334,7 +334,8 @@ CFG_ETC=\
 	$(D_ETC)/filehighlight.ini		\
 	$(D_ETC)/mc.ext				\
 	$(D_ETC)/mc.keymap			\
-	$(D_ETC)/mc.keymap.emacs		\
+	$(D_ETC)/mc.emacs.keymap		\
+	$(D_ETC)/mc.default.keymap		\
 	$(D_ETC)/mc.menu			\
 	$(D_ETC)/mc.menu.sr			\
 	$(D_ETC)/mcedit.menu			\

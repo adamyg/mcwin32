@@ -44,6 +44,8 @@
 #include "slang.h"
 #include "w32_trace.h"
 
+#include "unicode_cp437.h"
+
 #define WIN32_CONSOLEEXT                        /* extended console */
 #define WIN32_CONSOLE256                        /* enable 256 color console support */
 
@@ -54,7 +56,7 @@
 #define WIN32_COLORS                16
 #endif
 
-//  #define DO_TRACE_LOG
+#define DO_TRACE_LOG
 #if defined(DO_TRACE_LOG)
 #define TRACE_LOG(_x)               w32_Trace _x;
 #else
@@ -63,9 +65,6 @@
 
 #define MAXROWS                     500
 #define MAXCOLORS                   256
-
-#define SLSMSG_ALT_CHARS            22
-#define SLSMSG_ALT_BASE             0xFDD0
 
 #define UNICODE_HI_SURROGATE_START  0xD800
 #define UNICODE_HI_SURROGATE_END    0xDBFF
@@ -77,6 +76,8 @@
 #define UNICODE_REPLACECTRL         0x1a        /* substitute */
 #define UNICODE_REPLACEFULL         0xff1f      /* full-width '?' */
 #define UNICODE_MAX                 0x10ffff
+
+#define ISACS                       0x1000000   /* ACS mapped character */
 
 #if ((defined(_MSC_VER) && (_MSC_VER < 1600)) || defined(__MINGW32__)) && \
             !defined(CONSOLE_OVERSTRIKE)
@@ -126,7 +127,47 @@ int SLtt_Maximised                  = -1;
 int SLtt_OldScreen_Rows             = -1;
 int SLtt_OldScreen_Cols             = -1;
 
-static const uint32_t   acs_characters[128] = { /* alternative character map to unicode */
+static const uint32_t   acs_oem[128] = {        /* alternative character map to OEM/CP437 */
+     /*
+      * NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL
+      * BS      HT      NL      VT      NP      CR      SO      SI
+      * DLE     DC1     DC2     DC3     DC4     NAK     SYN     ETB
+      * CAN     EM      SUB     ESC     FS      GS      RS      US
+      */
+        0x00,   0x01,   0x02,   0x03,   0x04,   0x05,   0x06,   0x07,
+        0x08,   0x09,   0x0a,   0x0b,   0x0c,   0x0d,   0x0e,   0x0f,
+        0x10,   0x11,   0x12,   0x13,   0x14,   0x15,   0x16,   0x17,
+        0x18,   0x19,   0x1a,   0x1b,   0x1c,   0x1d,   0x1e,   0x1f,
+
+     /*
+      * SP      !       "       #       $       %       &       '
+      * (       )       *       +       ,       -       .       /
+      * 0       1       2       3       4       5       6       7
+      * 8       9       :       ;       <       =       >       ?
+      * @       A       B       C       D       E       F       G
+      * H       I       J       K       L       M       N       O
+      * P       Q       R       S       T       U       V       W
+      * X       Y       Z       [       \       ]       ^       _
+      * `       a       b       c       d       e       f       g
+      * h       i       j       k       l       m       n       o
+      * p       q       r       s       t       u       v       w
+      * x       y       z       {       |       }       ~       DEL
+      */
+        ' ',    '!',    '"',    '#',    '$',    '%',    '&',    '\'',
+        '(',    ')',    '*',    0x1a,   0x1b,   0x18,   0x19,   '/',
+        0xdb,   '1',    '2',    '3',    '4',    '5',    '6',    '7',
+        '8',    '9',    ':',    ';',    '<',    '=',    '>',    '?',
+        '@',    '+',    '+',    '+',    '+',    0xce,   '+',    '+',
+        '+',    '+',    0xd9,   0xbf,   0xda,   0xc0,   0xc5,   'O',
+        'P',    0xc4,   0xcd,   'S',    0xc3,   0xb4,   0xc2,   0xc1,
+        0xb3,   0xba,   'Z',    '[',    '\\',   ']',    '^',    '_',
+        0x04,   0xb1,   'b',    'c',    'd',    'e',    0xf8,   0xf1,
+        0xb0,   '#',    0xd9,   0xbf,   0xda,   0xc0,   0xc5,   '~',
+        '-',    0xc4,   '-',    '_',    0xc3,   0xb4,   0xc1,   0xc2,
+        0xb3,   0xf3,   0xf2,   0xe3,   '!',    0x9c,   0xf9,   0x7f,
+        };
+
+static const uint32_t   acs_unicode[128] = {    /* alternative character map to unicode */
 
      /*
       * NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL
@@ -183,8 +224,8 @@ static uint32_t         acs_lookup(uint32_t ch);
 static uint32_t         unicode_map(uint32_t ch);
 static int              compute_clip(int coord, int n, int start, int end, int *coordmin, int *coordmax);
 
-static void             CHAR_BUILD(uint32_t ch, int color, CHAR_INFO *ci);
-static BOOL             CHAR_COMPARE(const CHAR_INFO *c1, const CHAR_INFO *c2);
+static __inline void    CHAR_BUILD(uint32_t ch, int color, CHAR_INFO *ci);
+static __inline BOOL    CHAR_COMPARE(const CHAR_INFO *c1, const CHAR_INFO *c2);
 static __inline int     CHAR_UPDATE(CHAR_INFO *cursor, unsigned ch, int color);
 
 static void             write_char(SLwchar_Type ch, unsigned cnt);
@@ -203,6 +244,7 @@ static void             UnderOutEx(unsigned pos, unsigned cnt);
 static int              consolefontset(int height, int width, const char *facename);
 static void             consolefontsenum(void);
 static HFONT            consolefontcreate(int height, int width, int weight, int italic, const char *facename);
+static BOOL             GetConsoleFontInfoEx(HANDLE chandle, BOOL flag, DWORD count, CONSOLE_FONT_INFOEX *cfix);
 #endif
 
 static const void *     utf8_decode_raw(const void *src, const void *cpend, int32_t *cooked, int32_t *raw);
@@ -269,7 +311,7 @@ static struct {                                 /* Video state */
     int32_t             fcheight;
     int32_t             fcfamily;
     int32_t             fcweight;
-    uint32_t            fcflags;
+    uint32_t            fcflags;                /* FCNxxx */
     char                fcfacename[LF_FACESIZE+1];
     struct fcname {
         const char *    name;
@@ -306,6 +348,7 @@ static struct {                                 /* Video state */
     unsigned            codepage;               /* Font code page */
     unsigned            maxcolors;              /* Maximum colors supported (16 or 256) */
     unsigned            activecolors;           /* Active colors (16 or 256) */
+    const uint32_t *    acsmap;                 /* Alternative character map */
 
     SLtt_Char_Type      c_color;                /* Current color 'attribute' */
     struct colorgfbg    c_colors[MAXCOLORS];    /* 16color attributes */
@@ -616,24 +659,16 @@ vio_profile(int rebuild)
             TRACE_LOG(("  GetCurrentConsoleFontEx:      %p\n", vio.GetCurrentConsoleFontEx))
             TRACE_LOG(("  GetConsoleScreenBufferInfoEx: %p\n", vio.GetConsoleScreenBufferInfoEx))
             TRACE_LOG(("  SetConsoleFont:               %p\n", vio.SetConsoleFont))
-            TRACE_LOG(("  SetConsoleFontEx:             %p\n", vio.SetCurrentConsoleFontEx))
+            TRACE_LOG(("  SetCurrentConsoleFontEx:      %p\n", vio.SetCurrentConsoleFontEx))
         }
         vio.dynamic = TRUE;
     }
 
-    //  SetConsoleOutputCP()
-    //      UTF7                = 0xfde8    65000
-    //      UTF8                = 0xfde9    65001
-    //      UTF16               = 0x4b0     1200
-    //      UTF16_BIGENDIAN     = 0x4b1     1201
-    //      UTF32               =           12000
-    //      UTF32_BIGENDIAN     =           12001
+    //  CodePage
     //
-    //  EnumSystemCodePages()
-    //      test for support
-    //
+    TRACE_LOG(("CodePage: %u\n", (unsigned)GetConsoleOutputCP()))
     if (0 == (vio.codepage = GetConsoleOutputCP())) {
-        vio.codepage = 437;
+        vio.codepage = 437;                     // default windows/dos code page.
     }
 
     //  Font configuration
@@ -672,7 +707,6 @@ vio_profile(int rebuild)
                 vio.fcwidth   = coord.X;        // cfix.dwFontSize.X;
                 vio.fcfamily  = cfix.FontFamily;
                 vio.fcweight  = cfix.FontWeight;
-                vio.fcfamily  = -1;
                 wcstombs(vio.fcfacename, cfix.FaceName, sizeof(vio.fcfacename));
             }
 
@@ -715,7 +749,6 @@ vio_profile(int rebuild)
             }
 
             if (vio.GetConsoleFontInfoEx) {     // extension
-                fonts->cbSize = sizeof(vio.fonts);
                 if (vio.GetConsoleFontInfoEx(chandle, 0, count, fonts)) {
                     vio.fontnumber = count;
                 }
@@ -728,7 +761,7 @@ vio_profile(int rebuild)
                 vio.fontnumber = count;
             }
 
-            if (count) {
+            if (vio.fontnumber) {
                 //
                 //  Generally the first entry represents a <Terminal> entry,
                 //  with secondary elements representing True-Type fonts.
@@ -768,9 +801,69 @@ vio_profile(int rebuild)
 #endif
             }
         }
+
+        // alternatice character map
+        //
+        vio.acsmap =                            // FIXME, RASTER otherwise UNICODE
+            (0 == stricmp("Terminal", vio.fcfacename) ? acs_oem : acs_unicode);
     }
 }
 
+
+static BOOL
+GetConsoleFontInfoEx(HANDLE chandle, BOOL flag, DWORD count, CONSOLE_FONT_INFOEX *cfix)
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi = {0};
+    CONSOLE_FONT_INFOEX cfi = {0};
+    WINDOWPLACEMENT wp = {0};
+    HANDLE whandle = vio.whandle;
+    DWORD fontNumber;
+    char facename[32] = {0};
+
+    cfi.cbSize = sizeof(cfi);
+    if (! vio.GetNumberOfConsoleFonts ||
+            ! vio.GetCurrentConsoleFontEx ||
+            ! vio.SetConsoleFont ||
+            ! vio.GetCurrentConsoleFontEx(chandle, FALSE, &cfi) ||
+            0 == (fontNumber = vio.GetNumberOfConsoleFonts())) {
+        TRACE_LOG(("GetConsoleFontInfoEx(n/a)\n"))
+        return FALSE;
+    }
+
+    wp.length = sizeof(wp);
+    GetWindowPlacement(whandle, &wp);
+    GetConsoleScreenBufferInfo(chandle, &csbi);
+    SendMessage(whandle, WM_SETREDRAW, FALSE, 0);
+    ShowWindow(whandle, SW_MINIMIZE);
+
+    TRACE_LOG(("GetConsoleFontInfoEx (%u of %u)\n", (unsigned)count, (unsigned)fontNumber))
+    TRACE_LOG(("  Idx   Wx H   Family Weight FontName\n"))
+
+    if (fontNumber > count) {
+	fontNumber = count;
+    }
+
+    for (DWORD nFont = 0; nFont < fontNumber; ++nFont, ++cfix) {
+
+        if (vio.SetConsoleFont(chandle, nFont)) {
+            cfix->cbSize = sizeof(*cfix);
+            vio.GetCurrentConsoleFontEx(chandle, flag, cfix);
+        }
+
+        wcstombs(facename, (const void *)cfix->FaceName, sizeof(facename));
+        TRACE_LOG(("  [%2u] %2ux%2u %6u %6u  <%s>\n",
+        (unsigned)nFont, (unsigned)cfix->dwFontSize.X, (unsigned)cfix->dwFontSize.Y,
+                (unsigned)cfix->FontFamily, (unsigned)cfix->FontWeight, facename));
+    }
+
+    vio.SetConsoleFont(chandle, cfi.nFont);
+    SetConsoleWindowInfo(chandle, TRUE, &csbi.srWindow);
+    SetConsoleCursorPosition(chandle, csbi.dwCursorPosition);
+    ShowWindow(whandle, SW_NORMAL);
+    SendMessage(whandle, WM_SETREDRAW, TRUE, 0);
+
+    return fontNumber;
+}
 
 
 static void
@@ -867,7 +960,7 @@ rgb_search(int maxval, const struct rgbvalue *rgb)
         double distance, tmp;
 
         tmp = red   - (int)table->red;
-	distance  = tmp * tmp;
+        distance  = tmp * tmp;
         tmp = green - (int)table->green;
         distance += tmp * tmp;
         tmp = blue  - (int)table->blue;
@@ -1318,14 +1411,14 @@ CopyOutEx(size_t pos, size_t cnt)
             return;
         }
     }
-    oldfont = SelectObject(wdc, vio.fnHandle);
+    oldfont = SelectObject(wdc, vio.fnHandle);  // base font
 
     do {
         int start = -1, col = 0, len = 0;
         WORD attributes = 0;                    // attribute accum
 
         while (col < cols) {
-            while (col < cols) {
+            do {
                 const CHAR_INFO cell = *cursor++;
 
                 if (start >= 0) {
@@ -1345,7 +1438,7 @@ CopyOutEx(size_t pos, size_t cnt)
                 attributes = cell.Attributes;
                 start = col++;
                 len = 1;
-            }
+	    } while (col < cols);
 
             if (start >= 0) {                   // write text
                 COLORREF bg, fg;
@@ -1413,8 +1506,8 @@ CopyOutEx(size_t pos, size_t cnt)
 
     } while (cursor < end);
 
-    SelectObject(wdc, oldfont);
-    DeleteDC(wdc);
+    SelectObject(wdc, oldfont);                 // restore original font (normally system).
+    DeleteDC(wdc);                              // release device resources.
 }
 #endif  //CONSOLE256
 
@@ -1576,6 +1669,7 @@ consolefontsenum(void)
                 valueName[0] = '\0';
                 if (ERROR_SUCCESS ==
                         (rc = RegEnumValueA(hKey, i, valueName, &cchValueName, NULL, &type, data, &cchData))) {
+                    data[cchData] = 0;
                     TRACE_LOG(("  %02u: %s=<%s>\n", names, valueName, data))
                     if (REG_SZ == type && '0' == valueName[0]) {
                         //
@@ -1583,7 +1677,6 @@ consolefontsenum(void)
                         //  00      Consolas
                         //  9xx     ... others ...
                         //
-                        data[cchData] = 0;
                         fcnpush(_strdup((const char *)data), 0);
                         ++names;
                     }
@@ -1623,7 +1716,8 @@ consolefontsenum(void)
 
     fcnpush("Consolas", 0);                     // consolas Font Pack for Microsoft Visual Studio.
 
-    fcnpush("Terminal", 0);                     // implied rastor font.
+    fcnpush("Terminal", FCNRASTER);             // implied rastor font.
+
 
     //  Determine availability
     //
@@ -1688,6 +1782,7 @@ consolefontset(int height, int width, const char *facename)
         width = (int)((float)rect.right/vio.cols);
     }
 
+    // match
     do {
 #define WEIGHT_REGULAR  FW_REGULAR
 #define WEIGHT_BOLD     FW_MEDIUM
@@ -1753,6 +1848,7 @@ consolefontset(int height, int width, const char *facename)
             if (vio.fbHandle) DeleteObject(vio.fbHandle);
             DeleteObject(vio.fnHandle);
         }
+
         vio.fcwidth  = (int)size.cx;            // tm.tmMaxCharWidth
         vio.fcheight = (int)size.cy;            // tm.tmHeight
         vio.fiHandle = fiHandle;
@@ -1793,10 +1889,17 @@ consolefontset(int height, int width, const char *facename)
 
     ReleaseDC(whandle, wdc);
 
+    // apply result
     strncpy(vio.fcfacename, (const char *)t_facename, sizeof(vio.fcfacename));
-    vio.fcflags  = (fcname ? fcname->flags : 0);
+    if (fcname) {
+        vio.fcflags = fcname->flags;
+    } else {
+        vio.fcflags =
+            (0 == stricmp("Terminal", vio.fcfacename) ? FCNRASTER : 0);
+    }
     vio.fcheight = height;
     vio.fcwidth  = width;
+    vio.acsmap = (vio.fcflags & FCNRASTER ? acs_oem : acs_unicode);
 
     TRACE_LOG(("Console Font: <%s>, %dx%d\n", vio.fcfacename, vio.fcwidth, vio.fcheight))
     return 0;
@@ -1806,21 +1909,28 @@ consolefontset(int height, int width, const char *facename)
 static HFONT
 consolefontcreate(int height, int width, int weight, int italic, const char *facename)
 {
-    TRACE_LOG(("Create Font: <%s> %dx%d, Weight:%d, Italic:%d\n", facename, width, height, weight, italic))
+    const BOOL isTerminal =                     // special terminal/raster support.
+        (0 == strcmp(facename, "Terminal"));
 
-    return CreateFontA(
+    HFONT hFont = CreateFontA(
         height, width,                          // logic (device dependent pixels) height and width
         0, 0, weight,
         (italic ? TRUE : FALSE),                // italic, underline, strikeout
             FALSE,
             FALSE,
-        ANSI_CHARSET,                           // DEFAULT, ANSI, OEM ...
-        (0 == strcmp(facename, "Terminal") ?
+        (isTerminal ?
+            OEM_CHARSET : ANSI_CHARSET),        // DEFAULT, ANSI, OEM ...
+        (isTerminal ?
             OUT_RASTER_PRECIS : OUT_TT_PRECIS),
         CLIP_DEFAULT_PRECIS,                    // default clipping behavior.
         ANTIALIASED_QUALITY,                    // PROOF
         FF_MODERN,                              // DECORATIVE, DONTCARE, MODERN, ROMAN, SCRIPT, SWISS
         facename);
+
+    TRACE_LOG(("Create Font: <%s> %dx%d, Weight:%d, Italic:%d (%u)\n", \
+        facename, width, height, weight, italic, (unsigned)hFont))
+
+    return hFont;
 }
 
 
@@ -2040,12 +2150,37 @@ SLsmg_normal_video(void)
 }
 
 
-
 static uint32_t
 acs_lookup(uint32_t ch)
 {
-    if (ch <= 127) {
-        ch = acs_characters[ch];
+    if (ch <= 127) {                            // OEM or UNICODE selection required
+        assert(vio.acsmap);
+        ch = vio.acsmap[ ch ] | ISACS;
+    }
+    return ch;
+}
+
+
+static uint32_t
+unicode_lookup(const struct unicode_table *table, const size_t count, const uint32_t ch)
+{
+    if (table && count) {
+        size_t first = 0, last = count - 1;
+
+        while (first <= last) {
+            const size_t middle = (first + last) / 2;
+            const struct unicode_table *elm = table + middle;
+            const uint32_t unicode = elm->unicode;
+
+            if (ch == unicode) {
+                return elm->ch;
+
+            } else if (ch > unicode) {
+                first = middle + 1;
+            } else {
+                last  = middle - 1;
+            }
+        }
     }
     return ch;
 }
@@ -2054,33 +2189,45 @@ acs_lookup(uint32_t ch)
 static uint32_t
 unicode_map(uint32_t ch)
 {
-    if (ch > 0x255) {
+    if (ch > 0x7f) {
+        //
+        //  OEM mapping
+        //
+        if (ISACS & ch) {
+            ch &= ~ISACS;
+
+        } else if (acs_oem == vio.acsmap) {
+            ch = unicode_lookup(unicode_cp437, (sizeof(unicode_cp437)/sizeof(unicode_cp437[0])), ch);
+        }
+
         //
         //  Remap characters not available on standard console fonts.
         //    o Small box characters.
         //    o Misc
         //
-        switch (ch) {
-        case 0x22C5:        // DOT OPERATOR
-            ch = 0x00B7;
-            break;
-        case 0x2715:        // MULTIPLICATION X
-            ch = 0x2573;    // 'x'
-            break;
-        case 0x25B4:        // BLACK UP-POINTING SMALL TRIANGLE
-            ch = 0x25B2;    // BLACK UP-POINTING TRIANGLE
-            break;
-        case 0x25B8:        // BLACK RIGHT-POINTING SMALL TRIANGLE
-            ch = 0x25BA;    // BLACK RIGHT-POINTING POINTER
-            break;
-        case 0x25BE:        // BLACK DOWN-POINTING SMALL TRIANGLE
-            ch = 0x25BC;    // BLACK DOWN-POINTING TRIANGLE
-            break;
-        case 0x25C2:        // BLACK LEFT-POINTING SMALL TRIANGLE
-            ch = 0x25C4;    // BLACK LEFT-POINTING POINTER
-            break;
-        default:
-            break;
+        if (ch > 0xff) {
+            switch (ch) {
+            case 0x22C5:        // DOT OPERATOR
+                ch = 0xB7;
+                break;
+            case 0x2715:        // MULTIPLICATION X
+                ch = 0x2573;    // 'x'
+                break;
+            case 0x25B4:        // BLACK UP-POINTING SMALL TRIANGLE
+                ch = 0x25B2;    // BLACK UP-POINTING TRIANGLE
+                break;
+            case 0x25B8:        // BLACK RIGHT-POINTING SMALL TRIANGLE
+                ch = 0x25BA;    // BLACK RIGHT-POINTING POINTER
+                break;
+            case 0x25BE:        // BLACK DOWN-POINTING SMALL TRIANGLE
+                ch = 0x25BC;    // BLACK DOWN-POINTING TRIANGLE
+                break;
+            case 0x25C2:        // BLACK LEFT-POINTING SMALL TRIANGLE
+                ch = 0x25C4;    // BLACK LEFT-POINTING POINTER
+                break;
+            default:
+                break;
+            }
         }
     }
     return ch;
@@ -2105,7 +2252,7 @@ cliptoarena(
 }
 
 
-static void
+static __inline void
 CHAR_BUILD(uint32_t ch, int color, CHAR_INFO *ci)
 {
     ci->Attributes =
@@ -2115,7 +2262,7 @@ CHAR_BUILD(uint32_t ch, int color, CHAR_INFO *ci)
 }
 
 
-static BOOL
+static __inline BOOL
 CHAR_COMPARE(const CHAR_INFO *c1, const CHAR_INFO *c2)
 {
     return (c1->Attributes == c2->Attributes && c1->Char.UnicodeChar == c2->Char.UnicodeChar);
@@ -2200,10 +2347,7 @@ top:                                            /* get here only on newline */
             if ((t_str = utf8_decode_safe(str - 1, send, &cooked)) > str) {
                 str = t_str;
 
-                cooked = unicode_map(cooked);
-                if (SLsmg_Display_Alt_Chars) {
-                    cooked = acs_lookup(cooked);
-                }
+                if (SLsmg_Display_Alt_Chars) cooked = acs_lookup(cooked);
                 if (CHAR_UPDATE(cursor, cooked, color)) {
                     flags |= TOUCHED;
                 }
@@ -2619,5 +2763,5 @@ utf8_decode_safe(const void *src, const void *cpend, int32_t *cooked)
     *cooked = result;
     return ret;
 }
-
 /*end*/
+
