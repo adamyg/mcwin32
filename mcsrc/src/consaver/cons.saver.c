@@ -11,7 +11,7 @@
 
    Partly rewritten by Jakub Jelinek <jakub@redhat.com>.
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -64,7 +64,9 @@
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
+#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
+#endif
 #include <termios.h>
 
 #include "lib/unixcompat.h"     /* STDERR_FILENO */
@@ -184,9 +186,13 @@ main (int argc, char **argv)
         die ();
     if (fstat (console_fd, &st) < 0 || !S_ISCHR (st.st_mode))
         die ();
+#ifdef HAVE_STRUCT_STAT_ST_RDEV
     if ((st.st_rdev & 0xff00) != 0x0400)
         die ();
     console_minor = (int) (st.st_rdev & 0x00ff);
+#else
+    console_minor = 1;          /* FIXME */
+#endif
     if (console_minor < 1 || console_minor > 63)
         die ();
     if (st.st_uid != uid)
@@ -206,7 +212,6 @@ main (int argc, char **argv)
         break;
     default:
         die ();
-        break;
     }
 
     snprintf (console_name, sizeof (console_name), p, console_minor);
@@ -266,6 +271,8 @@ main (int argc, char **argv)
             break;
         case CONSOLE_CONTENTS:
             send_contents (buffer + 4, winsz.ws_col, winsz.ws_row);
+            break;
+        default:
             break;
         }
 

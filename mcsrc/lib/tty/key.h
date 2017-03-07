@@ -61,8 +61,8 @@ extern const key_code_name_t key_name_conv_tab[];
 extern int old_esc_mode_timeout;
 
 extern int double_click_speed;
-extern int old_esc_mode;
-extern int use_8th_bit_as_meta;
+extern gboolean old_esc_mode;
+extern gboolean use_8th_bit_as_meta;
 extern int mou_auto_repeat;
 
 extern gboolean bracketed_pasting_in_progress;
@@ -88,7 +88,6 @@ typedef int (*select_fn) (int fd, void *info);
 /* Channel manipulation */
 void add_select_channel (int fd, select_fn callback, void *info);
 void delete_select_channel (int fd);
-void remove_select_channel (int fd);
 
 /* Activate/deactivate the channel checking */
 void channels_up (void);

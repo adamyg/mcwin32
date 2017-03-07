@@ -114,8 +114,13 @@ noconv:
 }
 
 #else
+/*
+ *  avoid empty object warnings
+ */
+extern void __stdlibrary_has_strtoull(void);
+
 void
-__stdlibrary_has_strtoll(void)
+__stdlibrary_has_strtoull(void)
 {
 }
 #endif

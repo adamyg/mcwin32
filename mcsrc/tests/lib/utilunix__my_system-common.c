@@ -1,7 +1,7 @@
 /*
    lib - common code for testing lib/utilinux:my_system() function
 
-   Copyright (C) 2013-2015
+   Copyright (C) 2013-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -63,7 +63,7 @@ sigaction (int signum, const struct sigaction *act, struct sigaction *oldact)
 
     /* store signum */
     tmp_signum = g_new (int, 1);
-    memcpy (tmp_signum, &signum, sizeof (int));
+    memcpy (tmp_signum, &signum, sizeof (*tmp_signum));
     if (sigaction_signum__captured != NULL)
         g_ptr_array_add (sigaction_signum__captured, tmp_signum);
 
@@ -71,7 +71,7 @@ sigaction (int signum, const struct sigaction *act, struct sigaction *oldact)
     if (act != NULL)
     {
         tmp_act = g_new (struct sigaction, 1);
-        memcpy (tmp_act, act, sizeof (struct sigaction));
+        memcpy (tmp_act, act, sizeof (*tmp_act));
     }
     else
         tmp_act = NULL;
@@ -82,7 +82,7 @@ sigaction (int signum, const struct sigaction *act, struct sigaction *oldact)
     if (oldact != NULL)
     {
         tmp_act = g_new (struct sigaction, 1);
-        memcpy (tmp_act, oldact, sizeof (struct sigaction));
+        memcpy (tmp_act, oldact, sizeof (*tmp_act));
     }
     else
         tmp_act = NULL;
@@ -105,12 +105,15 @@ sigaction__deinit (void)
 {
     g_ptr_array_foreach (sigaction_signum__captured, (GFunc) g_free, NULL);
     g_ptr_array_free (sigaction_signum__captured, TRUE);
+    sigaction_signum__captured = NULL;
 
     g_ptr_array_foreach (sigaction_act__captured, (GFunc) g_free, NULL);
     g_ptr_array_free (sigaction_act__captured, TRUE);
+    sigaction_act__captured = NULL;
 
     g_ptr_array_foreach (sigaction_oldact__captured, (GFunc) g_free, NULL);
     g_ptr_array_free (sigaction_oldact__captured, TRUE);
+    sigaction_oldact__captured = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -131,14 +134,14 @@ signal (int signum, sighandler_t handler)
 
     /* store signum */
     tmp_signum = g_new (int, 1);
-    memcpy (tmp_signum, &signum, sizeof (int));
+    memcpy (tmp_signum, &signum, sizeof (*tmp_signum));
     g_ptr_array_add (signal_signum__captured, tmp_signum);
 
     /* store handler */
     if (handler != SIG_DFL)
     {
         tmp_handler = g_new (sighandler_t, 1);
-        memcpy (tmp_handler, handler, sizeof (sighandler_t));
+        memcpy (tmp_handler, handler, sizeof (*tmp_handler));
     }
     else
         tmp_handler = (void *) SIG_DFL;
@@ -159,9 +162,11 @@ signal__deinit (void)
 {
     g_ptr_array_foreach (signal_signum__captured, (GFunc) g_free, NULL);
     g_ptr_array_free (signal_signum__captured, TRUE);
+    signal_signum__captured = NULL;
 
     g_ptr_array_foreach (signal_handler__captured, (GFunc) g_free, NULL);
     g_ptr_array_free (signal_handler__captured, TRUE);
+    signal_handler__captured = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -220,7 +225,8 @@ execvp__deinit (void)
 {
     g_ptr_array_foreach (execvp__args__captured, (GFunc) g_free, NULL);
     g_ptr_array_free (execvp__args__captured, TRUE);
-    g_free (execvp__file__captured);
+    execvp__args__captured = NULL;
+    MC_PTR_FREE (execvp__file__captured);
 }
 
 /* --------------------------------------------------------------------------------------------- */

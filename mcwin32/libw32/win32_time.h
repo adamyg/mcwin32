@@ -5,7 +5,7 @@
 /*
  * win32 time functionality.
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -34,16 +34,16 @@
 
 __BEGIN_DECLS
 
-unsigned int            sleep(unsigned int);
+LIBW32_API unsigned int sleep(unsigned int);
 
 struct timeval;
 struct timezone;
 
-int                     gettimeofday(struct timeval *tv, struct timezone *tz);
+LIBW32_API int          gettimeofday(struct timeval *tv, struct timezone *tz);
 
 struct utimbuf;
 
-int                     w32_utime(const char *path, const struct utimbuf *times);
+LIBW32_API int          w32_utime(const char *path, const struct utimbuf *times);
 
 __END_DECLS
 

@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Functions for datasources
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -74,7 +74,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_set_datasource_stdio_pipe (mcview_t * view, mc_pipe_t * p)
+mcview_set_datasource_stdio_pipe (WView * view, mc_pipe_t * p)
 {
     p->out.len = MC_PIPE_BUFSIZE;
     p->out.null_term = FALSE;
@@ -92,7 +92,7 @@ mcview_set_datasource_stdio_pipe (mcview_t * view, mc_pipe_t * p)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_datasource_none (mcview_t * view)
+mcview_set_datasource_none (WView * view)
 {
     view->datasource = DS_NONE;
 }
@@ -100,7 +100,7 @@ mcview_set_datasource_none (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 off_t
-mcview_get_filesize (mcview_t * view)
+mcview_get_filesize (WView * view)
 {
     switch (view->datasource)
     {
@@ -114,9 +114,7 @@ mcview_get_filesize (mcview_t * view)
     case DS_STRING:
         return view->ds_string_len;
     default:
-#ifdef HAVE_ASSERT_H
-        assert (!"Unknown datasource type");
-#endif
+        g_assert (!"Unknown datasource type");
         return 0;
     }
 }
@@ -124,7 +122,7 @@ mcview_get_filesize (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_update_filesize (mcview_t * view)
+mcview_update_filesize (WView * view)
 {
     if (view->datasource == DS_FILE)
     {
@@ -137,11 +135,9 @@ mcview_update_filesize (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-mcview_get_ptr_file (mcview_t * view, off_t byte_index)
+mcview_get_ptr_file (WView * view, off_t byte_index)
 {
-#ifdef HAVE_ASSERT_H
-    assert (view->datasource == DS_FILE);
-#endif
+    g_assert (view->datasource == DS_FILE);
 
     mcview_file_load_data (view, byte_index);
     if (mcview_already_loaded (view->ds_file_offset, byte_index, view->ds_file_datalen))
@@ -151,17 +147,12 @@ mcview_get_ptr_file (mcview_t * view, off_t byte_index)
 
 /* --------------------------------------------------------------------------------------------- */
 
-int
-mcview_get_utf (mcview_t * view, off_t byte_index, int *char_length, gboolean * result)
+gboolean
+mcview_get_utf (WView * view, off_t byte_index, int *ch, int *ch_len)
 {
     gchar *str = NULL;
-    int res = -1;
-    gunichar ch;
-    gchar *next_ch = NULL;
+    int res;
     gchar utf8buf[UTF8_CHAR_LEN + 1];
-
-    *char_length = 0;
-    *result = FALSE;
 
     switch (view->datasource)
     {
@@ -176,11 +167,14 @@ mcview_get_utf (mcview_t * view, off_t byte_index, int *char_length, gboolean * 
         str = mcview_get_ptr_string (view, byte_index);
         break;
     case DS_NONE:
+    default:
         break;
     }
 
+    *ch = 0;
+
     if (str == NULL)
-        return 0;
+        return FALSE;
 
     res = g_utf8_get_char_validated (str, -1);
 
@@ -188,6 +182,7 @@ mcview_get_utf (mcview_t * view, off_t byte_index, int *char_length, gboolean * 
     {
         /* Retry with explicit bytes to make sure it's not a buffer boundary */
         int i;
+
         for (i = 0; i < UTF8_CHAR_LEN; i++)
         {
             if (mcview_get_byte (view, byte_index + i, &res))
@@ -205,28 +200,29 @@ mcview_get_utf (mcview_t * view, off_t byte_index, int *char_length, gboolean * 
 
     if (res < 0)
     {
-        ch = *str;
-        *char_length = 1;
+        *ch = (unsigned char) (*str);
+        *ch_len = 1;
     }
     else
     {
-        ch = res;
+        gchar *next_ch = NULL;
+
+        *ch = res;
         /* Calculate UTF-8 char length */
         next_ch = g_utf8_next_char (str);
-        *char_length = next_ch - str;
+        *ch_len = next_ch - str;
     }
-    *result = TRUE;
-    return ch;
+
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-mcview_get_ptr_string (mcview_t * view, off_t byte_index)
+mcview_get_ptr_string (WView * view, off_t byte_index)
 {
-#ifdef HAVE_ASSERT_H
-    assert (view->datasource == DS_STRING);
-#endif
+    g_assert (view->datasource == DS_STRING);
+
     if (byte_index >= 0 && byte_index < (off_t) view->ds_string_len)
         return (char *) (view->ds_string_data + byte_index);
     return NULL;
@@ -235,7 +231,7 @@ mcview_get_ptr_string (mcview_t * view, off_t byte_index)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_get_byte_string (mcview_t * view, off_t byte_index, int *retval)
+mcview_get_byte_string (WView * view, off_t byte_index, int *retval)
 {
     char *p;
 
@@ -247,21 +243,19 @@ mcview_get_byte_string (mcview_t * view, off_t byte_index, int *retval)
         return FALSE;
 
     if (retval != NULL)
-        *retval = *p;
+        *retval = (unsigned char) (*p);
     return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_get_byte_none (mcview_t * view, off_t byte_index, int *retval)
+mcview_get_byte_none (WView * view, off_t byte_index, int *retval)
 {
     (void) &view;
     (void) byte_index;
 
-#ifdef HAVE_ASSERT_H
-    assert (view->datasource == DS_NONE);
-#endif
+    g_assert (view->datasource == DS_NONE);
 
     if (retval != NULL)
         *retval = -1;
@@ -271,16 +265,13 @@ mcview_get_byte_none (mcview_t * view, off_t byte_index, int *retval)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_byte (mcview_t * view, off_t offset, byte b)
+mcview_set_byte (WView * view, off_t offset, byte b)
 {
     (void) &b;
-#ifndef HAVE_ASSERT_H
-    (void) offset;
-#else
-    assert (offset < mcview_get_filesize (view));
-    assert (view->datasource == DS_FILE);
 
-#endif
+    g_assert (offset < mcview_get_filesize (view));
+    g_assert (view->datasource == DS_FILE);
+
     view->ds_file_datalen = 0;  /* just force reloading */
 }
 
@@ -288,15 +279,13 @@ mcview_set_byte (mcview_t * view, off_t offset, byte b)
 
 /*static */
 void
-mcview_file_load_data (mcview_t * view, off_t byte_index)
+mcview_file_load_data (WView * view, off_t byte_index)
 {
     off_t blockoffset;
     ssize_t res;
     size_t bytes_read;
 
-#ifdef HAVE_ASSERT_H
-    assert (view->datasource == DS_FILE);
-#endif
+    g_assert (view->datasource == DS_FILE);
 
     if (mcview_already_loaded (view->ds_file_offset, byte_index, view->ds_file_datalen))
         return;
@@ -339,7 +328,7 @@ mcview_file_load_data (mcview_t * view, off_t byte_index)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_close_datasource (mcview_t * view)
+mcview_close_datasource (WView * view)
 {
     switch (view->datasource)
     {
@@ -367,10 +356,7 @@ mcview_close_datasource (mcview_t * view)
         MC_PTR_FREE (view->ds_string_data);
         break;
     default:
-#ifdef HAVE_ASSERT_H
-        assert (!"Unknown datasource type")
-#endif
-            ;
+        g_assert (!"Unknown datasource type");
     }
     view->datasource = DS_NONE;
 }
@@ -378,7 +364,7 @@ mcview_close_datasource (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_datasource_file (mcview_t * view, int fd, const struct stat *st)
+mcview_set_datasource_file (WView * view, int fd, const struct stat *st)
 {
     view->datasource = DS_FILE;
     view->ds_file_fd = fd;
@@ -392,15 +378,15 @@ mcview_set_datasource_file (mcview_t * view, int fd, const struct stat *st)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_load_command_output (mcview_t * view, const char *command)
+mcview_load_command_output (WView * view, const char *command)
 {
-    mc_pipe_t *pipe;
+    mc_pipe_t *p;
     GError *error = NULL;
 
     mcview_close_datasource (view);
 
-    pipe = mc_popen (command, &error);
-    if (pipe == NULL)
+    p = mc_popen (command, &error);
+    if (p == NULL)
     {
         mcview_display (view);
         mcview_show_error (view, error->message);
@@ -409,7 +395,7 @@ mcview_load_command_output (mcview_t * view, const char *command)
     }
 
     /* Check if filter produced any output */
-    mcview_set_datasource_stdio_pipe (view, pipe);
+    mcview_set_datasource_stdio_pipe (view, p);
     if (!mcview_get_byte (view, 0, NULL))
     {
         mcview_close_datasource (view);
@@ -423,11 +409,10 @@ mcview_load_command_output (mcview_t * view, const char *command)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_datasource_vfs_pipe (mcview_t * view, int fd)
+mcview_set_datasource_vfs_pipe (WView * view, int fd)
 {
-#ifdef HAVE_ASSERT_H
-    assert (fd != -1);
-#endif
+    g_assert (fd != -1);
+
     view->datasource = DS_VFS_PIPE;
     view->ds_vfs_pipe = fd;
 
@@ -437,7 +422,7 @@ mcview_set_datasource_vfs_pipe (mcview_t * view, int fd)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_datasource_string (mcview_t * view, const char *s)
+mcview_set_datasource_string (WView * view, const char *s)
 {
     view->datasource = DS_STRING;
     view->ds_string_len = strlen (s);

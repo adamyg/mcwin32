@@ -1,9 +1,9 @@
 #!/usr/bin/perl
-# $Id: updateyear.pl,v 1.1 2015/02/06 00:36:53 ayoung Exp $
+# $Id: updateyear.pl,v 1.2 2017/03/01 23:57:35 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # Update the copyright year within the specified files
 #
-# Copyright (c) 2012-2015, Adam Young.
+# Copyright (c) 2012-2017, Adam Young.
 # All Rights Reserved
 #
 
@@ -152,14 +152,14 @@ load($$)                # (file)
         die "can't open '$file' : $!";
     while (<IN>) {
         chomp(); chomp();
-
         if ($result < 0) {
-            if (/Copyright.*[ -]2012/i) {
-                s/2012,/2012 - 2015/;
+            if (/Copyright.*[ -]201\d.*Adam/i) {
+                s/2012,/2012 - 2017/ or
+		    s/ - 2016/ - 2017/ or
+		    s/ - 2015/ - 2017/;
                 $result = scalar @lines;
             }
         }
-
         push @lines, $_."\n";
     }
     close(IN);

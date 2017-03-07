@@ -2,7 +2,7 @@
 /*
  * win32 uname() system calls.
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -86,6 +86,7 @@ uname(struct utsname *u)
 
         /* osmajor, osminor, osbuild */
         if (FALSE == GetVersionEx(&ovi)) {
+                // TODO: replace with RtlGetVersion() as GetVersionEx() is now defunct; 8.1+
             /*
              *  Error ... try the old way
              */
@@ -163,7 +164,14 @@ uname(struct utsname *u)
                         oviex.dwMajorVersion = 0;
                     }
 
-                    if (ovi.dwMajorVersion >= 6) {
+                    if (ovi.dwMajorVersion >= 10) {
+                        osname = "Windows 10";  // Windows 10
+
+                        if (oviex.dwMinorVersion > 0) {
+                            osname = "Windows 10+";
+                        }
+
+                    } else if (ovi.dwMajorVersion >= 6) {
                         osname = "Vista";       // vista or greater
 
                         if (0 == oviex.dwMinorVersion) {
@@ -195,7 +203,7 @@ uname(struct utsname *u)
                             }
                         } else {
                             if (VER_NT_WORKSTATION == oviex.wProductType) {
-                                osname = "Windows 8+";
+                                osname = "Windows 8.1";
                             } else {
                                 osname = "Windows Server 2012+";
                             }
@@ -303,7 +311,7 @@ uname(struct utsname *u)
                         }
 #endif
                     } else {                    // unknown -- guess
-                        sprintf(osname_unknown, "2%03d", oviex.dwMajorVersion+2);
+                        sprintf(osname_unknown, "2%03d", (int)oviex.dwMajorVersion + 2);
                         osname = osname_unknown;
                     }
                 }
@@ -421,7 +429,4 @@ uname(struct utsname *u)
     }
     return 0;
 }
-
-
-
-
+/*end*/

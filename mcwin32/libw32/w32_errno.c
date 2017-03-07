@@ -2,7 +2,7 @@
 /*
  * win32 errno mapping support
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -314,18 +314,25 @@ w32_errno_cnv(unsigned rc)
 
 
 int
+w32_errno_setas(unsigned rc)
+{
+    errno = w32_errno_cnv(rc);
+    return -1; //REVIEW/FIXME
+}
+
+
+int
 w32_errno_set(void)
 {
-    errno = w32_errno_cnv(GetLastError());
-    return -1;
+    return w32_errno_setas(GetLastError());
 }
 
 
 const char *
 w32_strerror(int errnum)
 {
+    const char *err = NULL;
     char errbuffer[32];
-    char *err = NULL;
 
 #undef strerror
     if (errnum >= 0 && errnum < _sys_nerr) {
@@ -542,7 +549,6 @@ w32_strerror(int errnum)
 #if defined(ENOSHARE)
     case ENOSHARE:          err = "No such host or network path"; break;
 #endif
-
     default:
         _snprintf(errbuffer, sizeof(errbuffer),
             (errnum >= WSABASEERR ? "unknown winsock error" : "unknown error"), errnum);

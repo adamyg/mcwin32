@@ -1,19 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 # 
 # Translators:
+# Efstathios Iosifidis <iefstathios@gmail.com>, 2015
 # Panos Bouklis <panos@echidna-band.com>, 2012
 # Slava Zanko <slavazanko@gmail.com>, 2011
-# Γιάννης Ανθυμίδης <yannanth@gmail.com>, 2014
+# Thodoris Arvanitidis <inactive+watchdog@transifex.com>, 2015
+# Γιάννης Ανθυμίδης, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2015-02-26 09:43+0300\n"
-"PO-Revision-Date: 2015-02-26 09:48+0000\n"
+"POT-Creation-Date: 2016-11-21 13:19+0300\n"
+"PO-Revision-Date: 2016-11-22 08:19+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Greek (http://www.transifex.com/projects/p/mc/language/el/)\n"
+"Language-Team: Greek (http://www.transifex.com/mc/mc/language/el/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -134,9 +136,28 @@ msgstr "Αδύνατη η ανάγνωση του δέρματος '%s'. \n Το
 
 #, c-format
 msgid ""
+"Unable to use '%s' skin with true colors support:\n"
+"%s\n"
+"Default skin has been loaded"
+msgstr ""
+
+#, c-format
+msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
+msgstr ""
+
+msgid "True color not supported with ncurses."
+msgstr ""
+
+msgid "True color not supported in this slang version."
+msgstr ""
+
+msgid "Your terminal doesn't even seem to support 256 colors."
+msgstr ""
+
+msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
 msgstr ""
 
 msgid "Escape"
@@ -212,34 +233,34 @@ msgid "Backspace"
 msgstr ""
 
 msgid "Up arrow"
-msgstr ""
+msgstr "Πάνω βέλος"
 
 msgid "Down arrow"
-msgstr ""
+msgstr "Κάτω βέλος"
 
 msgid "Left arrow"
-msgstr ""
+msgstr "Αριστερό βέλος"
 
 msgid "Right arrow"
-msgstr ""
+msgstr "Δεξί βέλος"
 
 msgid "Insert"
-msgstr ""
+msgstr "Πλήκτρο Insert"
 
 msgid "Delete"
-msgstr ""
+msgstr "Πλήκτρο Delete"
 
 msgid "Home"
-msgstr ""
+msgstr "Πλήκτρο Home"
 
 msgid "End key"
-msgstr "Πλήκτρο end"
+msgstr "Πλήκτρο End"
 
 msgid "Page Up"
-msgstr ""
+msgstr "Πλήκτρο Page Up"
 
 msgid "Page Down"
-msgstr ""
+msgstr "Πλήκτρο Page Down"
 
 msgid "/ on keypad"
 msgstr ""
@@ -254,28 +275,28 @@ msgid "+ on keypad"
 msgstr ""
 
 msgid "Left arrow keypad"
-msgstr ""
+msgstr "Αριστερό βέλος"
 
 msgid "Right arrow keypad"
-msgstr ""
+msgstr "Δεξί βέλος"
 
 msgid "Up arrow keypad"
-msgstr ""
+msgstr "Πάνω βέλος"
 
 msgid "Down arrow keypad"
-msgstr ""
+msgstr "Κάτω βέλος"
 
 msgid "Home on keypad"
-msgstr ""
+msgstr "Πλήκτρο Home"
 
 msgid "End on keypad"
-msgstr ""
+msgstr "Πλήκτρο End"
 
 msgid "Page Down keypad"
-msgstr ""
+msgstr "Πλήκτρο Page Down"
 
 msgid "Page Up keypad"
-msgstr ""
+msgstr "Πλήκτρο Page Up"
 
 msgid "Insert on keypad"
 msgstr ""
@@ -431,10 +452,28 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr ""
 
-msgid "Cannot create pipe descriptor"
+msgid "B"
 msgstr ""
 
-msgid "Cannot parse command for pipe"
+msgid "kB"
+msgstr ""
+
+msgid "KiB"
+msgstr ""
+
+msgid "MB"
+msgstr ""
+
+msgid "MiB"
+msgstr ""
+
+msgid "GB"
+msgstr ""
+
+msgid "GiB"
+msgstr ""
+
+msgid "Cannot create pipe descriptor"
 msgstr ""
 
 msgid "Cannot create pipe streams"
@@ -468,8 +507,13 @@ msgstr ""
 msgid "Directory cache expired for %s"
 msgstr ""
 
-msgid "bytes transferred"
-msgstr "bytes μεταφέρθηκαν"
+#, c-format
+msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
+msgstr ""
+
+#, c-format
+msgid "%s: %s: %s %lld bytes transferred"
+msgstr ""
 
 msgid "Starting linear transfer..."
 msgstr "Εκκίνηση γραμμικής μεταφοράς..."
@@ -552,7 +596,7 @@ msgid "Error"
 msgstr "Σφάλμα"
 
 #, c-format
-msgid "%d: %s"
+msgid "%s (%d)"
 msgstr ""
 
 msgid "&Abort"
@@ -703,7 +747,7 @@ msgstr ""
 msgid "No arguments given to the viewer."
 msgstr "Δεν έχουν δοθεί ορίσματα στον προβολέα."
 
-msgid "Two files are required to evoke the diffviewer."
+msgid "Two files are required to envoke the diffviewer."
 msgstr ""
 
 msgid "Background protocol error"
@@ -886,7 +930,7 @@ msgid "Cannot open %s for reading"
 msgstr "Αδύνατο το άνοιγμα του %s για ανάγνωση"
 
 msgid "Load file"
-msgstr ""
+msgstr "Φόρτωση αρχείου"
 
 #, c-format
 msgid "Error reading %s"
@@ -1492,7 +1536,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2015 the Free Software Foundation"
+msgid "Copyright (C) 1996-2016 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1523,94 +1567,94 @@ msgid "ButtonBar|PullDn"
 msgstr ""
 
 msgid "Breton"
-msgstr ""
+msgstr "Βρετονικά"
 
 msgid "Czech"
-msgstr ""
+msgstr "Τσέχικα"
 
 msgid "Welsh"
-msgstr ""
+msgstr "Ουαλικά"
 
 msgid "Danish"
-msgstr ""
+msgstr "Δανικά"
 
 msgid "German"
-msgstr ""
+msgstr "Γερμανικά"
 
 msgid "Greek"
-msgstr ""
+msgstr "Ελληνικά"
 
 msgid "English"
-msgstr ""
+msgstr "Αγγλικά"
 
 msgid "British English"
-msgstr ""
+msgstr "Βρετανικά Αγγλικά"
 
 msgid "Canadian English"
-msgstr ""
+msgstr "Καναδικά Αγγλικά"
 
 msgid "American English"
-msgstr ""
+msgstr "Αμερικάνικα Αγγλικά"
 
 msgid "Esperanto"
-msgstr ""
+msgstr "Εσπεράντο"
 
 msgid "Spanish"
-msgstr ""
+msgstr "Ισπανικά"
 
 msgid "Faroese"
 msgstr ""
 
 msgid "French"
-msgstr ""
+msgstr "Γαλλικά"
 
 msgid "Italian"
-msgstr ""
+msgstr "Ιταλικά"
 
 msgid "Dutch"
-msgstr ""
+msgstr "Ολλανδικά"
 
 msgid "Norwegian"
-msgstr ""
+msgstr "Νορβηγικά"
 
 msgid "Polish"
-msgstr ""
+msgstr "Πολωνικά"
 
 msgid "Portuguese"
-msgstr ""
+msgstr "Πορτογαλικά"
 
 msgid "Romanian"
-msgstr ""
+msgstr "Ρουμάνικα"
 
 msgid "Russian"
-msgstr ""
+msgstr "Ρωσικά"
 
 msgid "Slovak"
-msgstr ""
+msgstr "Σλοβάκικα"
 
 msgid "Swedish"
-msgstr ""
+msgstr "Σουηδικά"
 
 msgid "Ukrainian"
-msgstr ""
+msgstr "Ουκρανικά"
 
 msgid "&Add word"
-msgstr ""
+msgstr "&Προσθήκη λέξης"
 
 msgid "Language"
-msgstr ""
+msgstr "Γλώσσα"
 
 msgid "Misspelled"
 msgstr ""
 
 msgid "Check word"
-msgstr ""
+msgstr "Έλεγχος λέξης"
 
 msgid "Suggest"
 msgstr ""
 
 msgid "Select language"
-msgstr ""
+msgstr "Επιλογή γλώσσας"
 
 msgid "Load syntax file"
 msgstr "Φόρτωμα αρχείου συντακτικού"
@@ -1680,7 +1724,7 @@ msgid ""
 msgstr "Αδυναμία chown \"%s\"\n%s"
 
 msgid "< Default >"
-msgstr ""
+msgstr "< Default >"
 
 msgid "Skins"
 msgstr ""
@@ -1820,6 +1864,9 @@ msgstr "Κίνηση όμοια με L&ynx"
 msgid "Pa&ge scrolling"
 msgstr ""
 
+msgid "Center &scrolling"
+msgstr ""
+
 msgid "&Mouse page scrolling"
 msgstr ""
 
@@ -1851,14 +1898,17 @@ msgstr ""
 msgid "&Full file list"
 msgstr "&Πλήρης λίστα αρχείων"
 
-msgid "&Brief file list"
-msgstr "&Σύντομη λίστα αρχείων"
+msgid "&Brief file list:"
+msgstr ""
 
 msgid "&Long file list"
 msgstr "&Μεγάλη λίστα αρχείων"
 
 msgid "&User defined:"
 msgstr "&Καθορισμένη από χρήστη:"
+
+msgid "columns"
+msgstr "στήλες"
 
 msgid "User &mini status"
 msgstr ""
@@ -1908,7 +1958,7 @@ msgid "&ISO 8859-1"
 msgstr ""
 
 msgid "7 &bits"
-msgstr ""
+msgstr "7 &bits"
 
 msgid "F&ull 8 bits input"
 msgstr ""
@@ -2129,7 +2179,7 @@ msgid "Filter command and arguments:"
 msgstr "Εντολή και ορίσματα φίλτρου:"
 
 msgid "Edit file"
-msgstr ""
+msgstr "Επεξεργασία αρχείου"
 
 msgid "Create a new Directory"
 msgstr "Δημιουργία νέου καταλόγου"
@@ -2178,6 +2228,10 @@ msgid ""
 msgstr ""
 
 #, c-format
+msgid "'%s' is not a symbolic link"
+msgstr ""
+
+#, c-format
 msgid "Symlink '%s' points to:"
 msgstr ""
 
@@ -2190,10 +2244,6 @@ msgstr ""
 
 #, c-format
 msgid "edit symlink: %s"
-msgstr ""
-
-#, c-format
-msgid "'%s' is not a symbolic link"
 msgstr ""
 
 msgid "FTP to machine"
@@ -2292,7 +2342,7 @@ msgstr "ΕργασίαΑρχείου|Διαγραφή"
 
 #, no-c-format
 msgid "%o %f%n\"%s\"%m"
-msgstr ""
+msgstr "%o %f%n\"%s\"%m"
 
 #, no-c-format
 msgid "%o %d %f%m"
@@ -2467,9 +2517,9 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file\"%s\"\n"
+"Cannot read source file \"%s\"\n"
 "%s"
-msgstr "Αδυναμία ανάγνωσης πηγαίου αρχείου \"%s\"\n%s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2555,7 +2605,7 @@ msgid ""
 msgstr "Αδυναμία μετακίνησης καταλόγου \"%s\" to \"%s\"\n%s"
 
 #, c-format
-msgid "Directories: %zd, total size: %s"
+msgid "Directories: %zu, total size: %s"
 msgstr ""
 
 msgid "Cannot operate on \"..\"!"
@@ -2707,8 +2757,8 @@ msgid "&Edit - F4"
 msgstr "&Επεξεργασία - F4"
 
 #, c-format
-msgid "Found: %ld"
-msgstr "Βρέθηκε: %ld"
+msgid "Found: %lu"
+msgstr ""
 
 msgid "Malformed regular expression"
 msgstr "Παραμορφωμένη συνήθης έκφραση"
@@ -2757,10 +2807,10 @@ msgid "Finished"
 msgstr "Τελείωσε"
 
 #, c-format
-msgid "Finished (ignored %zd directory)"
-msgid_plural "Finished (ignored %zd directories)"
-msgstr[0] "Τελείωσε (αγνοήθηκε %zd φακελος)"
-msgstr[1] "Τελείωσε (αγνοήθηκαν %zd φάκελοι)"
+msgid "Finished (ignored %zu directory)"
+msgid_plural "Finished (ignored %zu directories)"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Searching"
 msgstr "Αναζήτηση"
@@ -2880,62 +2930,62 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr "Ελεύθερος χώρος: %s/%s (%d%%)"
 
 #, c-format
-msgid "Type:      %s"
-msgstr "Τύπος:      %s"
+msgid "Type:       %s"
+msgstr "Τύπος:       %s"
 
 msgid "non-local vfs"
 msgstr "μη τοπικό vfs"
 
 #, c-format
-msgid "Device:    %s"
-msgstr "Συσκευή:    %s"
+msgid "Device:     %s"
+msgstr "Συσκευή:     %s"
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "Σύστημα αρχείων: %s"
 
 #, c-format
-msgid "Accessed:  %s"
-msgstr "Προσπελάστηκε:  %s"
+msgid "Accessed:   %s"
+msgstr ""
 
 #, c-format
-msgid "Modified:  %s"
-msgstr "Τροποποιήθηκε:  %s"
+msgid "Modified:   %s"
+msgstr ""
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:   %s"
-msgstr "Άλλαξε:   %s"
+msgid "Changed:    %s"
+msgstr ""
 
 #, c-format
 msgid "Dev. type: major %lu, minor %lu"
 msgstr ""
 
 #, c-format
-msgid "Size:      %s"
-msgstr "Μέγεθος:      %s"
+msgid "Size:       %s"
+msgstr "Μέγεθος:       %s"
 
 #, c-format
-msgid " (%ld block)"
-msgid_plural " (%ld blocks)"
+msgid " (%lu block)"
+msgid_plural " (%lu blocks)"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "Owner:     %s/%s"
-msgstr "Ιδιοκτήτης:     %s/%s"
+msgid "Owner:      %s/%s"
+msgstr ""
 
 #, c-format
-msgid "Links:     %d"
-msgstr "Δεσμοί:     %d"
+msgid "Links:      %d"
+msgstr "Σύνδεσμοι:      %d"
 
 #, c-format
-msgid "Mode:      %s (%04o)"
-msgstr "Λειτουργία:      %s (%04o)"
+msgid "Mode:       %s (%04o)"
+msgstr ""
 
 #, c-format
-msgid "Location:  %Xh:%Xh"
-msgstr "Τοποθεσίαα:  %Xh:%Xh"
+msgid "Location:   %Xh:%Xh"
+msgstr ""
 
 msgid "&Equal split"
 msgstr "&Ίσος διαχωρισμός"
@@ -3151,10 +3201,10 @@ msgid "Panels:"
 msgstr ""
 
 #, c-format
-msgid "You have %zd opened screen. Quit anyway?"
-msgid_plural "You have %zd opened screens. Quit anyway?"
-msgstr[0] "Έχετε %zd ανοικτή οθόνη. Έξοδος παρόλα αυτά;"
-msgstr[1] "Έχετε %zd ανοικτές οθόνες. Έξοδος παρόλα αυτά;"
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "The Midnight Commander"
 msgstr "Το Midnight Commander"
@@ -3295,13 +3345,7 @@ msgid "SUB-DIR"
 msgstr ""
 
 msgid "<readlink failed>"
-msgstr ""
-
-#, c-format
-msgid "%s byte"
-msgid_plural "%s bytes"
-msgstr[0] "%s byte"
-msgstr[1] "%s bytes"
+msgstr "<readlink failed>"
 
 #, c-format
 msgid "%s in %d file"
@@ -3886,7 +3930,7 @@ msgstr ""
 
 #, c-format
 msgid "sftp: %s"
-msgstr ""
+msgstr "sftp: %s"
 
 #, c-format
 msgid "sftp: making connection to %s"
@@ -3913,8 +3957,7 @@ msgstr ""
 msgid "sftp: Password is empty."
 msgstr ""
 
-#, c-format
-msgid "sftp: Failure establishing SSH session: (%d)"
+msgid "sftp: Failure establishing SSH session"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"

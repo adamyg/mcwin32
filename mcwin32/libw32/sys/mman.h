@@ -3,9 +3,27 @@
 /* -*- mode: c; tabs: 4 -*- */
 /*
  * win32 mmap implementation
- * 
+ * Copyright (c) 2012 - 2017, Adam Young.
+ * All rights reserved.
+ *
+ *
+ * This file is part of the Midnight Commander.
+ *
+ * The Midnight Commander is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * The Midnight Commander is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ==end==
  */
+
 #include <stddef.h>                             /* size_t */
 
 /*
@@ -23,47 +41,42 @@
 #define PROT_EXEC       0x4                     /* pages can be executed */
 #define PROT_NONE       0x0                     /* pages cannot be accessed */
 
-
 /* sharing types:  must choose either SHARED or PRIVATE */
 #define MAP_SHARED      1                       /* share changes */
 #define MAP_PRIVATE     2                       /* changes are private */
 #define MAP_TYPE        0xf                     /* mask for share type */
 
+/* mapping type */
+#define MAP_FILE        0                       /* regular file */
 
 /* other flags to mmap (or-ed in to MAP_SHARED or MAP_PRIVATE) */
 #define MAP_FIXED       0x10                    /* user assigns address */
+#define MAP_ANONYMOUS   0x20                    /* allocated from memory, swap space */
+#define MAP_ANON        MAP_ANONYMOUS
 #define MAP_NORESERVE   0x40                    /* don't reserve needed swap area */
-
-
-/* these flags not yet implemented */
-#define MAP_RENAME      0x20                    /* rename private pages to file */
-
-
 
 /* return value on failure */
 #if !defined (MAP_FAILED)                       /* Failure return value. */
 #define MAP_FAILED      ((void *) -1)
 #endif
 
-
 /* flags to msync */
 #define MS_SYNC         0x4                     /* wait for msync */
 #define MS_ASYNC        0x1                     /* return immediately */
 #define MS_INVALIDATE   0x2                     /* invalidate caches */
 
-
 #include <sys/cdefs.h>                          /* __BEGIN_DECLS, __PDECL */
 
 __BEGIN_DECLS
 
-extern void * __PDECL   mmap __P((void *addr, size_t len, int prot,
-                              int flags, int fildes, off_t off));
-extern int __PDECL      mprotect __P((void *addr, size_t len, int prot));
-extern int __PDECL      msync __P((void *addr, size_t len, int flags));
-extern int __PDECL      munmap __P((void *addr, size_t len));
-extern int __PDECL      mlock __P((const void *, size_t));
-extern int __PDECL      munlock __P((const void *, size_t));
+LIBW32_API void *       mmap __P((void *addr, size_t len, int prot, int flags, int fildes, off_t off));
+LIBW32_API int          mprotect __P((void *addr, size_t len, int prot));
+LIBW32_API int          msync __P((void *addr, size_t len, int flags));
+LIBW32_API int          munmap __P((void *addr, size_t len));
+LIBW32_API int          mlock __P((const void *, size_t));
+LIBW32_API int          munlock __P((const void *, size_t));
 
 __END_DECLS
 
 #endif /*WIN32_SYS_MMAN_H_WIN32*/
+

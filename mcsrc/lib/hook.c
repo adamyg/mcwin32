@@ -4,7 +4,7 @@
    Slavaz: Warning! this file is deprecated and should be replaced
    by mcevents functional.
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:

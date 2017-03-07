@@ -21,7 +21,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2015
+   Written by: Adam Young 2012 - 2017
 
    Portions sourced from lib/utilunix.c, see for additional information.
 
@@ -44,8 +44,7 @@
 
 #include <config.h>
 
-#include "win32.h"
-#include "win32_misc.h"
+#include "libw32.h"
 
 #include <shlobj.h>                             /* SHxx */
 
@@ -77,6 +76,12 @@
 #include "lib/utilunix.h"
 
 #include "win32_key.h"
+
+#pragma comment(lib, "shell32.lib")
+#pragma comment(lib, "shfolder.lib")
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Gdi32.lib")
+#pragma comment(lib, "User32.lib")
 
 static void             set_shell (void);
 static void             set_term (void);
@@ -128,11 +133,14 @@ WIN32_Setup(void)
 
     _fmode = _O_BINARY;                         /* force binary mode */
     InitializeCriticalSection(&pe_guard);
-#if defined(USE_VFS)
-    if (WSAStartup(MAKEWORD(2,0), &wsadata) != 0) {
-        MessageBox(NULL, TEXT("WSAStartup failed!"), TEXT("Error"), MB_OK);
-    }
-#endif
+#if defined(ENABLE_VFS)
+        {   WSADATA wsaData = {0};
+            WORD wVersionRequested = MAKEWORD(2,2); /* winsock2 */
+            if (WSAStartup(wVersionRequested, &wsaData) != 0) {
+                MessageBox(NULL, TEXT("WSAStartup failed!"), TEXT("Error"), MB_OK);
+            }
+        }
+#endif  //ENABLE_VFS
     set_shell();
     set_term();
     set_home();
@@ -187,7 +195,6 @@ set_busybox(void)
 {
     const char *busybox = NULL;
     char buffer[MAX_PATH] = {0};
-    int len;
 
     if (NULL != getenv("MC_BUSYBOX")) return;
 
@@ -228,7 +235,7 @@ set_tmpdir(void)
             canonicalize_pathname (buffer);
             if (0 == lstat(buffer, &st)) {
                 if (! S_ISDIR(st.st_mode)) {
-                tmpdir = NULL;
+                    tmpdir = NULL;
                 }
             } else if (0 != w32_mkdir (buffer, S_IRWXU)) {
                 tmpdir = NULL;
@@ -783,6 +790,7 @@ my_setpathenv(const char *name, const char *value, int overwrite)
 #else
         snprintf(buf, sizeof(buf), "%s=%s", name, value);
         canonicalize_pathname(buf + strlen(name) + 1);
+		buf[sizeof(buf) - 1] = 0;
         putenv(buf);
 #endif
     }
@@ -811,8 +819,8 @@ WIN32_checkheap(void)
 }
 
 
-char *
-get_owner(int uid)
+const char *
+get_owner(uid_t uid)
 {
     static char ubuf [10];
     struct passwd *pwd;
@@ -830,8 +838,8 @@ get_owner(int uid)
 }
 
 
-char *
-get_group(int gid)
+const char *
+get_group(gid_t gid)
 {
     static char gbuf [10];
     struct group *grp;
@@ -919,7 +927,6 @@ save_stop_handler(void)
 int
 my_systemv_flags (int flags, const char *command, char *const argv[])
 {
-    GPtrArray *args_array;
     char *cmd = 0;
     int status = 0;
 
@@ -1045,7 +1052,7 @@ my_system(int flags, const char *shell, const char *cmd)
      *  If <cmd.exe> < ...>
      *  convert any / to \ in first word
      */
-    shelllen = strlen(shell);
+    shelllen = (shell ? strlen(shell) : 0);
     if ((shelllen -= (sizeof(cmd_sh)-1)) >= 0 &&
             0 == _strnicmp(shell + shelllen, cmd_sh, sizeof(cmd_sh)-1)) {
         char *t_cmd, *cursor;
@@ -1396,24 +1403,19 @@ tilde_expand(const char *directory)
     if (PATH_SEP == *directory) {               /* / ==> x:/ */
 
         if (PATH_SEP != directory[1] ||         /* preserve URL's (//<server) */
-                0 == directory[2] || PATH_SEP == directory[2]) {
-
+				    0 == directory[2] || PATH_SEP == directory[2]) {
             const char *cwd = vfs_get_current_dir ();
 
             if (':' == cwd[1]) {
                 char drive[3] =  "x:";
-
-                drive[0] = toupper(cwd[0]);
-                g_free ((void *)cwd);
+                drive[0] = toupper (cwd[0]);
                 return g_strconcat (drive, directory, NULL);
             }
-
-            g_free ((void *)cwd);
         }
 
     } else if ('.' == *directory && 0 == directory[1]) {
-        char *cwd = vfs_get_current_dir ();
 
+        char *cwd = vfs_get_current_dir_n ();
         if (cwd) {                              /* . ==> <cwd> */
             return cwd;
         }

@@ -1,7 +1,7 @@
 /*
    Default values for keybinding engine
 
-   Copyright (C) 2009-2015
+   Copyright (C) 2009-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -83,6 +83,7 @@ typedef struct global_keymap_ini_t
 
 /* midnight */
 static const global_keymap_ini_t default_main_keymap[] = {
+    {"ChangePanel", "tab"},
     {"Help", "f1"},
     {"UserMenu", "f2"},
     {"View", "f3"},
@@ -100,9 +101,11 @@ static const global_keymap_ini_t default_main_keymap[] = {
     /* Copy useful information to the command line */
     {"PutCurrentPath", "alt-a"},
     {"PutOtherPath", "alt-shift-a"},
+    {"PutCurrentSelected", "alt-enter; ctrl-enter"},
+    {"PutCurrentFullSelected", "ctrl-shift-enter"},
     {"CdQuick", "alt-c"},
     /* To access the directory hotlist */
-    {"HotList", "ctrl-backspace"},
+    {"HotList", "ctrl-backslash"},
     /* Suspend */
     {"Suspend", "ctrl-z"},
     /* The filtered view command */
@@ -130,7 +133,7 @@ static const global_keymap_ini_t default_main_keymap[] = {
     {"SelectInvert", "kpasterisk"},
     /* List of screens */
     {"ScreenList", "alt-prime"},
-#if defined(WIN32) //APY, drive
+#if defined(WIN32) //WIN32, drive
     /* Change drive */
     {"DriveChange", "alt-d"},
     {"DriveChangeA", "alt-f1"},
@@ -278,12 +281,12 @@ static const global_keymap_ini_t default_listbox_keymap[] = {
 
 /* tree */
 static const global_keymap_ini_t default_tree_keymap[] = {
-    {"Help = f1"},
-    {"Rescan = f2; ctrl-r"},
-    {"Forget = f3"},
-    {"ToggleNavigation = f4"},
-    {"Copy = f5"},
-    {"Move = f6"},
+    {"Help", "f1"},
+    {"Rescan", "f2; ctrl-r"},
+    {"Forget", "f3"},
+    {"ToggleNavigation", "f4"},
+    {"Copy", "f5"},
+    {"Move", "f6"},
 #if 0
     {"MakeDir", "f7"},
 #endif

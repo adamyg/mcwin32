@@ -39,7 +39,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2015
+   Written by: Adam Young 2012 - 2017
 
    This file is part of the Midnight Commander.
 
@@ -60,7 +60,7 @@
 
 #define _WIN32_WINNT 0x500
 #include <config.h>
-#include "win32.h"
+#include "libw32.h"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -95,8 +95,8 @@ extern void                 EnterDebugger(void);
 
 extern gboolean             quit_cmd_internal (gboolean quiet);
 
-#ifdef USE_VFS
-#include "vfs/gc.h"
+#if defined(ENABLE_VFS)
+//	#include "vfs/gc.h"
 #endif
 
 #include "win32_key.h"
@@ -412,10 +412,10 @@ lookup_sort (const int order)
         key_conv_tab_sorted[i] = &key_name_conv_tab[i];
 
     if (order == KEY_SORTBYNAME) {
-        qsort (key_conv_tab_sorted, key_conv_tab_size, sizeof(key_conv_tab_sorted[0]), &key_code_comparator_by_name);
+        qsort ((void *)key_conv_tab_sorted, key_conv_tab_size, sizeof(key_conv_tab_sorted[0]), &key_code_comparator_by_name);
 
     } else if (order == KEY_SORTBYCODE) {
-        qsort (key_conv_tab_sorted, key_conv_tab_size, sizeof(key_conv_tab_sorted[0]), &key_code_comparator_by_code);
+        qsort ((void *)key_conv_tab_sorted, key_conv_tab_size, sizeof(key_conv_tab_sorted[0]), &key_code_comparator_by_code);
     }
 
     key_conv_tab_order = order;
@@ -760,7 +760,7 @@ got_interrupt (void)
  *      EV_NONE if non-blocking or interrupt set and nothing was done
  */
 static void
-check_winch(void)
+check_winch (void)
 {
     if (0 == mc_global.tty.winch_flag) {
         CONSOLE_SCREEN_BUFFER_INFO sbinfo = {0};
@@ -808,7 +808,7 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
     }
     tty_refresh ();
 
-#ifdef USE_VFS
+#if defined(ENABLE_VFS)
     vfs_timeout_handler ();
 #endif
 
@@ -932,7 +932,9 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
 
         /* next timeout */
         timeout = INFINITE;
+#if defined(ENABLE_VFS)
         vfs_timeout_handler ();
+#endif
         if ((seconds = vfs_timeouts ()) > 0) {
             timeout = seconds * 1000;           /* next vfs timeout */
         }
@@ -1006,15 +1008,13 @@ CtrlBreak(void)
 
 
 /*
- *  Translate the key press into a keycode.
+ *  Translate the key press into a CRISP identifier.
  */
 static int
 key_mapwin32(
     unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned AsciiChar)
 {
-#if (XXX)
-    static int wasescape = 0;
-#endif
+//  static int wasescape = 0;
     int mod = 0, ch = -1;
     int i;
 
@@ -1034,7 +1034,7 @@ key_mapwin32(
     }
 
     /* Filter escapes */
-#if (XXX)
+#if (TODO)
     if (VK_ESCAPE == AsciiChar && 0 == mod) {
         if (wasescape) {
             wasescape = 0;
@@ -1044,7 +1044,6 @@ key_mapwin32(
         return -1;
     }
 #endif
-
 
     /* Virtual keys */
     for (i = W32KEYS-1; i >= 0; i--) {
@@ -1091,7 +1090,7 @@ key_mapwin32(
     }
 
     /* Convert esc-digits to F-keys */
-#if (XXX)
+#if (TODO)
     if (wasescape) {
         if (-1 == ch && 0 == mod) {
             if (AsciiChar >= '0' && AsciiChar <= '9') {
@@ -1129,13 +1128,13 @@ key_mapwin32(
 
 
 int
-get_key_code (int no_delay)
+get_key_code(int no_delay)
 {
-    DWORD count, rc;
-    INPUT_RECORD k;
-    int c;
+	DWORD count, rc;
+	INPUT_RECORD k;
+	int c;
 
-    do {
+	do {
         rc = WaitForSingleObject(hConsole, no_delay ? 0 : INFINITE);
         if (rc == WAIT_OBJECT_0 &&
                 ReadConsoleInput(hConsole, &k, 1, &count)) {

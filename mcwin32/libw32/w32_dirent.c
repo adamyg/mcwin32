@@ -4,7 +4,7 @@
  *
  *      opendir, closedir, readdir, seekdir, rewindir, telldir
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -31,7 +31,9 @@
  * Sourced originally from a public domain implementation and highly.
  */
 
-#define _WIN32_WINNT 0x0500
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT            0x0501
+#endif
 
 #define _DIRENT_SOURCE
 #include "win32_internal.h"
@@ -50,6 +52,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 #include <errno.h>
 
@@ -79,6 +82,7 @@ static Wow64DisableWow64FsRedirection_t x_Wow64DisableWow64FsRedirection;
 static Wow64RevertWow64FsRedirection_t x_Wow64RevertWow64FsRedirection;
 
 static int              x_dirid = 1;            /* singleton */
+
 
 /*
 //  NAME
@@ -138,7 +142,7 @@ DIR *
 opendir(const char *name)
 {
     char fullpath[ MAX_PATH ], reparse[ MAX_PATH ],
-	    *path = fullpath;
+            *path = fullpath;
     LPVOID OldValue = NULL;
     DIR *dp;
     int i, len;
@@ -173,8 +177,8 @@ opendir(const char *name)
          *  the following are not valid
          *      c:name/
          */
-        if ((*last == '\\') && (len > 1) && (!((len == 3) && 
-    		    (fullpath[1] == ':')))) {
+        if ((*last == '\\') && (len > 1) && (!((len == 3) &&
+                    (fullpath[1] == ':')))) {
             *(last--) = 0;
         }
     }
@@ -257,55 +261,61 @@ opendir(const char *name)
 }
 
 
-#if !defined(HAVE_NTIFS_H)
+#if !defined(HAVE_NTIFS_H) && !defined(__MINGW32__)
 typedef struct _REPARSE_DATA_BUFFER {
     ULONG  ReparseTag;
     USHORT ReparseDataLength;
     USHORT Reserved;
     union {
-	struct {
-    	    USHORT SubstituteNameOffset;
+        struct {
+            USHORT SubstituteNameOffset;
             USHORT SubstituteNameLength;
             USHORT PrintNameOffset;
             USHORT PrintNameLength;
             ULONG  Flags;
-    	    WCHAR  PathBuffer[1];
+            WCHAR  PathBuffer[1];
         } SymbolicLinkReparseBuffer;
         struct {
-    	    USHORT SubstituteNameOffset;
+            USHORT SubstituteNameOffset;
             USHORT SubstituteNameLength;
             USHORT PrintNameOffset;
             USHORT PrintNameLength;
-    	    WCHAR  PathBuffer[1];
+            WCHAR  PathBuffer[1];
         } MountPointReparseBuffer;
         struct {
-    	    UCHAR DataBuffer[1];
+            UCHAR DataBuffer[1];
         } GenericReparseBuffer;
     };
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+
+#ifndef IO_REPARSE_TAG_MOUNT_POINT
+#define IO_REPARSE_TAG_MOUNT_POINT  0xA0000003L
 #endif
+#ifndef IO_REPARSE_TAG_SYMLINK
+#define IO_REPARSE_TAG_SYMLINK      0xA000000CL
+#endif
+
+#endif	//HAVE_NTIFS_H
 
 static int
 ReadReparse(const char *name, char *buf, int maxlen)
 {
-#define MAX_REPARSE_SIZE	(512+(16*1024))	/* Header + 16k */
+#define MAX_REPARSE_SIZE        (512+(16*1024)) /* Header + 16k */
     HANDLE fileHandle;
     BYTE reparseBuffer[ MAX_REPARSE_SIZE ];
     PREPARSE_GUID_DATA_BUFFER reparseInfo = (PREPARSE_GUID_DATA_BUFFER) reparseBuffer;
     PREPARSE_DATA_BUFFER rdb = (PREPARSE_DATA_BUFFER) reparseBuffer;
     DWORD returnedLength;
-    int ret = 0;
                                                 /* open the file image */
     if ((fileHandle = CreateFile(name, 0,
-    		FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 
-		FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE) {
-	ret = GetLastError();
-	return -1;
+                FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
+                FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE) {
+        return -1;
     }
 
                                                 /* retrieve reparse details */
     if (DeviceIoControl(fileHandle, FSCTL_GET_REPARSE_POINT,
-        	NULL, 0, reparseInfo, sizeof(reparseBuffer), &returnedLength, NULL)) {
+                NULL, 0, reparseInfo, sizeof(reparseBuffer), &returnedLength, NULL)) {
 //      if (IsReparseTagMicrosoft(reparseInfo->ReparseTag)) {
             int length;
 
@@ -349,7 +359,7 @@ unc_populate(const char *path)
     SHARE_INFO_502 *buffer = NULL;
     NET_API_STATUS res = 0;
     DIR *dp;
-    
+
     (void)path;
 
     if (NULL == (dp = (DIR *)calloc(sizeof(DIR), 1)) ||
@@ -375,7 +385,7 @@ unc_populate(const char *path)
                     char filename[MAX_PATH+1];
 
                     WideCharToMultiByte(CP_ACP, 0,
-			(void *)ent->shi502_netname, -1, filename, sizeof(filename)-1, NULL, NULL);
+                        (void *)ent->shi502_netname, -1, filename, sizeof(filename)-1, NULL, NULL);
                     filename[sizeof(filename) - 1] = 0;
 
                     if (0 == strcmp(filename, "prnproc$") ||
@@ -893,7 +903,7 @@ static BOOL
 d_Wow64DisableWow64FsRedirection(PVOID *OldValue)
 {
     if (NULL == x_Wow64DisableWow64FsRedirection) {
-#if (DISABLED)
+#if defined(ENABLE_WOW64)   /*11/01/14*/
         HINSTANCE hinst;                        // Vista+
 
         if (0 == (hinst = LoadLibrary("Kernel32")) ||
@@ -957,4 +967,4 @@ dir_ishpf(const char *directory)
     return ((rc) &&
         (flags & (FS_CASE_SENSITIVE | FS_CASE_IS_PRESERVED))) ? TRUE : FALSE;
 }
-
+/*end*/

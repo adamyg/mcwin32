@@ -6,7 +6,7 @@
         mc_pread
         mc_pclose
 
-   Written by: Adam Young 20115
+   Written by: Adam Young 2015 - 2017
 
    The Midnight Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -25,8 +25,7 @@
 
 #include <config.h>
 
-#include "win32.h"
-#include "win32_misc.h"
+#include "libw32.h"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -65,8 +64,8 @@ mc_popen (const char *command, GError ** error)
     int x_errno = -1;
     char **argv[32 + 1] = {0};
     char *cmd = NULL;
-    int pid, in = -1;
-    mc_pipe_t *p;
+    int in = -1;
+    mc_pipe_t *p = NULL;
 
     if (error) *error = NULL;
 
@@ -187,23 +186,21 @@ mc_pread (mc_pipe_t * p, GError ** error)
     if (ret < count) {                          // stream ready?
         HANDLE hPipe = handles[ret];
         mc_pipe_stream_t *ps = ((hPipe == args->hOutput) ? &p->out : &p->err);
-        const size_t buf_max =
-            (ps->null_term ? MC_PIPE_BUFSIZE - 1 : MC_PIPE_BUFSIZE);
-        size_t buf_len;
+        size_t len;
         DWORD readcount;
 
-        if ((buf_len = (size_t) ps->len) > buf_max) {
-            buf_len = buf_max;
+        if ((len = (size_t) ps->len) > MC_PIPE_BUFSIZE) {
+            len = MC_PIPE_BUFSIZE;
         }
 
-        if (ReadFile(hPipe, ps->buf, buf_len, &readcount, NULL) && readcount) {
+        if (ReadFile(hPipe, ps->buf, (ps->null_term ? len-1 : len), &readcount, NULL) && readcount) {
             if (ps->null_term) {                // optional terminator
                 ps->buf[readcount] = '\0';
             }
             ps->len = (int)readcount;
 
         } else {                                // error conditions
-            const WORD lastError = GetLastError();
+            const DWORD lastError = GetLastError();
 
             if (ERROR_BROKEN_PIPE == lastError) {
                 ps->len = MC_PIPE_STREAM_EOF;

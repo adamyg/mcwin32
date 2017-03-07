@@ -1,7 +1,7 @@
 /*
    Definitions of key bindings.
 
-   Copyright (C) 2005-2015
+   Copyright (C) 2005-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -48,6 +48,7 @@ static name_keymap_t command_names[] = {
     /* common */
     {"InsertChar", CK_InsertChar},
     {"Enter", CK_Enter},
+    {"ChangePanel", CK_ChangePanel},
     {"Up", CK_Up},
     {"Down", CK_Down},
     {"Left", CK_Left},
@@ -205,6 +206,8 @@ static name_keymap_t command_names[] = {
     {"SplitLess", CK_SplitLess},
     {"PutCurrentPath", CK_PutCurrentPath},
     {"PutOtherPath", CK_PutOtherPath},
+    {"PutCurrentSelected", CK_PutCurrentSelected},
+    {"PutCurrentFullSelected", CK_PutCurrentFullSelected},
     {"PutCurrentTagged", CK_PutCurrentTagged},
     {"PutOtherTagged", CK_PutOtherTagged},
     {"Select", CK_Select},
@@ -358,7 +361,7 @@ static name_keymap_t command_names[] = {
     {"MergeOther", CK_MergeOther},
 #endif /* USE_DIFF_VIEW */
 
-#if defined(WIN32) //APY, drive
+#if defined(WIN32) //WIN32, drive
     /* Change drive */
     {"DriveChangeA", CK_DriveChangeA},
     {"DriveChangeB", CK_DriveChangeB},
@@ -402,7 +405,7 @@ sort_command_names (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-keymap_add (GArray * keymap, long key, unsigned long cmd, const char *caption)
+keymap_add (GArray * keymap, long key, long cmd, const char *caption)
 {
     if (key != 0 && cmd != CK_IgnoreKey)
     {
@@ -420,7 +423,7 @@ keymap_add (GArray * keymap, long key, unsigned long cmd, const char *caption)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-keybind_cmd_bind (GArray * keymap, const char *keybind, unsigned long action)
+keybind_cmd_bind (GArray * keymap, const char *keybind, long action)
 {
     char *caption = NULL;
     long key;
@@ -432,7 +435,7 @@ keybind_cmd_bind (GArray * keymap, const char *keybind, unsigned long action)
 
 /* --------------------------------------------------------------------------------------------- */
 
-unsigned long
+long
 keybind_lookup_action (const char *name)
 {
     const name_keymap_t key = { name, 0 };
@@ -449,7 +452,7 @@ keybind_lookup_action (const char *name)
 /* --------------------------------------------------------------------------------------------- */
 
 const char *
-keybind_lookup_actionname (unsigned long action)
+keybind_lookup_actionname (long action)
 {
     size_t i;
 
@@ -463,7 +466,7 @@ keybind_lookup_actionname (unsigned long action)
 /* --------------------------------------------------------------------------------------------- */
 
 const char *
-keybind_lookup_keymap_shortcut (const global_keymap_t * keymap, unsigned long action)
+keybind_lookup_keymap_shortcut (const global_keymap_t * keymap, long action)
 {
     if (keymap != NULL)
     {
@@ -478,7 +481,7 @@ keybind_lookup_keymap_shortcut (const global_keymap_t * keymap, unsigned long ac
 
 /* --------------------------------------------------------------------------------------------- */
 
-unsigned long
+long
 keybind_lookup_keymap_command (const global_keymap_t * keymap, long key)
 {
     if (keymap != NULL)

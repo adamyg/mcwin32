@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Function for whow info on display
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -76,7 +76,7 @@ static enum ruler_type
 /** Define labels and handlers for functional keys */
 
 static void
-mcview_set_buttonbar (mcview_t * view)
+mcview_set_buttonbar (WView * view)
 {
     WDialog *h = WIDGET (view)->owner;
     WButtonBar *b = find_buttonbar (h);
@@ -126,7 +126,7 @@ mcview_set_buttonbar (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_display_percent (mcview_t * view, off_t p)
+mcview_display_percent (WView * view, off_t p)
 {
     int percent;
 
@@ -146,7 +146,7 @@ mcview_display_percent (mcview_t * view, off_t p)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_display_status (mcview_t * view)
+mcview_display_status (WView * view)
 {
     const screen_dimen top = view->status_area.top;
     const screen_dimen left = view->status_area.left;
@@ -199,7 +199,7 @@ mcview_display_status (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_update (mcview_t * view)
+mcview_update (WView * view)
 {
     static int dirt_limit = 1;
 
@@ -245,7 +245,7 @@ mcview_update (mcview_t * view)
 /** Displays as much data from view->dpy_start as fits on the screen */
 
 void
-mcview_display (mcview_t * view)
+mcview_display (WView * view)
 {
     if (view->hex_mode)
     {
@@ -261,7 +261,7 @@ mcview_display (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_compute_areas (mcview_t * view)
+mcview_compute_areas (WView * view)
 {
     struct area view_area;
     screen_dimen height, rest, y;
@@ -284,12 +284,12 @@ mcview_compute_areas (mcview_t * view)
     /* Compute the heights of the areas */
     rest = view_area.height;
 
-    height = min (rest, 1);
+    height = MIN (rest, 1);
     view->status_area.height = height;
     rest -= height;
 
     height = (ruler == RULER_NONE || view->hex_mode) ? 0 : 2;
-    height = min (rest, height);
+    height = MIN (rest, height);
     view->ruler_area.height = height;
     rest -= height;
 
@@ -317,7 +317,7 @@ mcview_compute_areas (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_update_bytes_per_line (mcview_t * view)
+mcview_update_bytes_per_line (WView * view)
 {
     const screen_dimen cols = view->data_area.width;
     int bytes;
@@ -326,9 +326,8 @@ mcview_update_bytes_per_line (mcview_t * view)
         bytes = 4;
     else
         bytes = 4 * ((cols - 9) / ((cols <= 80) ? 17 : 18));
-#ifdef HAVE_ASSERT_H
-    assert (bytes != 0);
-#endif
+
+    g_assert (bytes != 0);
 
     view->bytes_per_line = bytes;
     view->dirty = mcview_max_dirt_limit + 1;    /* To force refresh */
@@ -337,7 +336,7 @@ mcview_update_bytes_per_line (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_display_toggle_ruler (mcview_t * view)
+mcview_display_toggle_ruler (WView * view)
 {
     static const enum ruler_type next[3] =
     {
@@ -346,9 +345,8 @@ mcview_display_toggle_ruler (mcview_t * view)
         RULER_NONE
     };
 
-#ifdef HAVE_ASSERT_H
-    assert ((size_t) ruler < 3);
-#endif
+    g_assert ((size_t) ruler < 3);
+
     ruler = next[(size_t) ruler];
     mcview_compute_areas (view);
     view->dirty++;
@@ -357,7 +355,7 @@ mcview_display_toggle_ruler (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_display_clean (mcview_t * view)
+mcview_display_clean (WView * view)
 {
     Widget *w = WIDGET (view);
 
@@ -370,7 +368,7 @@ mcview_display_clean (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_display_ruler (mcview_t * view)
+mcview_display_ruler (WView * view)
 {
     static const char ruler_chars[] = "|----*----";
     const screen_dimen top = view->ruler_area.top;

@@ -2,7 +2,7 @@
 /*
  * win32 mkstemp() implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -85,11 +85,7 @@ static int                  gettemp(char *path, register int *fd, int temporary)
 
 
 int
-#if defined(__WATCOMC__)
 w32_mkstemp(char *path)
-#else
-mkstemp(char *path)
-#endif
 {
     int fildes = -1;
     return (GETTEMP_SUCCESS == gettemp(path, &fildes, FALSE) ? fildes : -1);

@@ -1,0 +1,153 @@
+NAME
+
+     gettext, dgettext, ngettext, dngettext, textdomain, bindtextdomain,
+     bind_textdomain_codeset, dcgettext, dcngettext - message handling functions
+
+LIBRARY
+
+     library ``libintl''
+
+SYNOPSIS
+
+     #include <libintl.h>
+
+     char * gettext(const char *msgid);
+     char * dgettext(const char *domainname, const char *msgid);
+     char * ngettext(const char *domainname, const char *msgid, unsigned long int n);
+     char * dngettext(const char *domainname, const char *msgid1, const char *msgid2,
+                                unsigned long int n);
+     char * textdomain(const char *domainname);
+     char * bindtextdomain(const char *domainname, const char *dirname);
+     char * bind_textdomain_codeset(const char *domainname, const char *codeset);
+
+     #include <libintl.h>
+     #include <locale.h>
+
+     char * dcgettext(const char *domainname, const char *msgid, int category);
+     char * dcngettext(const char *domainname, const char *msgid1,
+                    const char *msgid2, unsigned long int n, int category);
+
+DESCRIPTION
+
+     The gettext(), dgettext(), and dcgettext() functions attempt to retrieve
+     a target string based on the specified msgid argument within the context
+     of a specific domain and the current locale.  The length of strings
+     returned by gettext(), dgettext(), and is undetermined until the function
+     is called.  The msgid argument is a null-terminated string.
+
+     The ngettext(), dngettext() and dcngettext() functions are equivalent to
+     gettext(), dgettext() and dcgettext(), respectively, except for the handling
+     of plural forms.  The ngettext(), dngettext() and dcngettext()
+     searches for the message string using the msgid1 argument as the key,
+     using the argument n to determine the plural form.  If no message catalogs
+     are found, msgid1 is returned if n == 1, otherwise msgid2 is
+     returned.
+
+     The LANGUAGE environment variable is examined first to determine the message
+     catalogs to be used.  The value of the LANGUAGE environment variable
+     is a list of locale names separated by colon (:) character.  If the
+     LANGUAGE environment variable is defined, each locale name is tried in
+     the specified order and if a message catalog containing the requested
+     message is found, the message is returned.  If the LANGUAGE environment
+     variable is defined but failed to locate a message catalog, the msgid
+     string will be returned.
+
+     If the LANGUAGE environment variable is not defined, LC_ALL, LC_xxx and
+     LANG environment variables are examined to locate the message catalog,
+     following the convention used by the setlocale(3) function.
+
+     The pathname used to locate the message catalog is
+     dirname/locale/category/domainname.mo, where dirname is the directory
+     specified by bindtextdomain(), locale is a locale name determined by the
+     definition of environment variables, category is LC_MESSAGES if
+     gettext(), ngettext(), dgettext() or dngettext() is called, otherwise
+     LC_xxx where the name is the same as the locale category name specified
+     by the category argument of dcgettext() or dcngettext().  domainname is
+     the name of the domain specified by textdomain() or the domainname argument
+     of dgettext(), dngettext(), dcgettext() or dcngettext().
+
+     For gettext() and ngettext(), the domain used is set by the last valid
+     call to textdomain().  If a valid call to textdomain() has not been made,
+     the default domain (called messages) is used.
+
+     For dgettext(), dngettext(), dcgettext() and dcngettext(), the domain
+     used is specified by the domainname argument.  The domainname argument is
+     equivalent in syntax and meaning to the domainname argument to
+     textdomain(), except that the selection of the domain is valid only for
+     the duration of the dgettext(), dngettext(), dcgettext() or dcngettext()
+     function call.
+
+     The dcgettext() and dcngettext() functions require additional argument
+     category for retrieving message string for other than LC_MESSAGES category.
+     Available value for the category argument are LC_CTYPE,
+     LC_COLLATE, LC_MESSAGES, LC_MONETARY, LC_NUMERIC and LC_TIME.  The call
+     of dcgettext(domainname, msgid, LC_MESSAGES) is equivalent to
+     dgettext(domainname, msgid).  Note that LC_ALL must not be used.
+
+     The textdomain() function sets or queries the name of the current domain
+     of the active LC_MESSAGES locale category.  The domainname argument is a
+     null-terminated string that can contain only the characters allowed in
+     legal filenames.
+
+     The domainname argument is the unique name of a domain on the system.  If
+     there are multiple versions of the same domain on one system, namespace
+     collisions can be avoided by using bindtextdomain().  If textdomain() is
+     not called, a default domain is selected.  The setting of domain made by
+     the last valid call to textdomain() remains valid across subsequent calls
+     to setlocale(3), and gettext().
+
+     The domainname argument is applied to the currently active LC_MESSAGES
+     locale.
+
+     The current setting of the domain can be queried without affecting the
+     current state of the domain by calling textdomain() with domainname set
+     to the null pointer.  Calling textdomain() with a domainname argument of
+     a null string sets the domain to the default domain (messages).
+
+     The bindtextdomain() function binds the path predicate for a message
+     domain domainname to the value contained in dirname.  If domainname is a
+     non-empty string and has not been bound previously, bindtextdomain()
+     binds domainname with dirname.
+
+     If domainname is a non-empty string and has been bound previously,
+     bindtextdomain() replaces the old binding with dirname.  The dirname
+     argument can be an absolute pathname being resolved when gettext(),
+     ngettext(), dgettext(), dngettext(), dcgettext(), or dcngettext() are
+     called.  If domainname is a null pointer or an empty string,
+     bindtextdomain() returns null pointer.  If bindtextdomain() is not
+     called, implementation-defined default directory is used.
+
+     The bind_textdomain_codeset() function can be used to specify the output
+     codeset for message catalogs for domain domainname.  The codeset argument
+     must be a valid codeset name which can be used for the iconv_open(3)
+     function.
+
+     If the codeset argument is the null pointer, bind_textdomain_codeset()
+     returns the currently selected codeset for the domain with the name
+     domainname.  It returns null pointer if no codeset has yet been selected.
+
+     The bind_textdomain_codeset() function can be used several times.  If
+     used multiple times, with the same domainname argument, the later call
+     overrides the settings made by the earlier one.
+
+     The bind_textdomain_codeset() function returns a pointer to a string 
+     containing the name of the selected codeset.
+
+SEE ALSO
+
+     setlocale(3)
+
+HISTORY
+
+     The functions are implemented by Citrus project, based on the 
+     documentations for GNU gettext.
+
+BUGS
+
+     The text was ripped off from Annex C of ``LI18NUX 2000 Globalization
+     Specification Version 1.0''.
+
+     bind_textdomain_codeset() does not work at this moment (always fail).
+
+BSD                            October 20, 2000                            BSD
+

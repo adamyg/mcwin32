@@ -1,7 +1,7 @@
 /*
    Editor spell checker dialogs
 
-   Copyright (C) 2012-2015
+   Copyright (C) 2012-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -99,8 +99,8 @@ spell_dialog_spell_suggest_show (WEdit * edit, const char *word, char **new_word
     cancel_button = button_new (11, 28, B_CANCEL, NORMAL_BUTTON, _("&Cancel"), 0);
     cancel_len = button_get_len (cancel_button);
 
-    max_btn_len = max (replace_len, skip_len);
-    max_btn_len = max (max_btn_len, cancel_len);
+    max_btn_len = MAX (replace_len, skip_len);
+    max_btn_len = MAX (max_btn_len, cancel_len);
 
 #if defined(HAVE_ASPELL) //WIN32
     lang_label = g_strdup_printf ("%s: %s", _("Language"), aspell_get_lang ());
@@ -111,10 +111,10 @@ spell_dialog_spell_suggest_show (WEdit * edit, const char *word, char **new_word
     word_label_len = str_term_width1 (word_label) + 5;
 
     sug_dlg_w += max_btn_len;
-    sug_dlg_w = max (sug_dlg_w, word_label_len) + 1;
+    sug_dlg_w = MAX (sug_dlg_w, word_label_len) + 1;
 
-    sug_dlg = dlg_create (TRUE, ypos, xpos, sug_dlg_h, sug_dlg_w,
-                          dialog_colors, NULL, NULL, "[ASpell]", _("Check word"), DLG_COMPACT);
+    sug_dlg = dlg_create (TRUE, ypos, xpos, sug_dlg_h, sug_dlg_w, WPOS_KEEP_DEFAULT, TRUE,
+                          dialog_colors, NULL, NULL, "[ASpell]", _("Check word"));
 
     add_widget (sug_dlg, label_new (1, 2, lang_label));
     add_widget (sug_dlg, label_new (3, 2, word_label));
@@ -124,7 +124,7 @@ spell_dialog_spell_suggest_show (WEdit * edit, const char *word, char **new_word
     sug_list = listbox_new (5, 2, sug_dlg_h - 7, 24, FALSE, NULL);
     for (i = 0; i < suggest->len; i++)
         listbox_add_item (sug_list, LISTBOX_APPEND_AT_END, 0, g_array_index (suggest, char *, i),
-                          NULL);
+                          NULL, FALSE);
     add_widget (sug_dlg, sug_list);
 
     add_widget (sug_dlg, add_btn);
@@ -174,7 +174,7 @@ spell_dialog_lang_list_show (GArray * languages)
                                                 _("Select language"), "[ASpell]");
 
     for (i = 0; i < languages->len; i++)
-        LISTBOX_APPEND_TEXT (lang_list, 0, g_array_index (languages, char *, i), NULL);
+        LISTBOX_APPEND_TEXT (lang_list, 0, g_array_index (languages, char *, i), NULL, FALSE);
 
     res = run_listbox (lang_list);
     if (res >= 0)

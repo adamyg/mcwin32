@@ -1,7 +1,7 @@
 /*
    Print features specific for this build
 
-   Copyright (C) 2000-2015
+   Copyright (C) 2000-2017
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -33,6 +33,7 @@
 #include "lib/global.h"
 #include "lib/fileloc.h"
 #include "lib/mcconfig.h"
+#include "lib/util.h"           /* mc_get_profile_root() */
 
 #include "src/textconf.h"
 
@@ -180,7 +181,8 @@ show_version (void)
 void
 show_datadirs_extended (void)
 {
-    (void) printf ("%s %s\n", _("Root directory:"), mc_config_get_home_dir ());
+    (void) printf ("%s %s\n", _("Home directory:"), mc_config_get_home_dir ());
+    (void) printf ("%s %s\n", _("Profile root directory:"), mc_get_profile_root ());
     (void) puts ("");
 
     PRINTF_GROUP (_("System data"));
@@ -219,7 +221,7 @@ show_datadirs_extended (void)
 #ifdef USE_INTERNAL_EDIT
     PRINTF ("mcedit macros:", mc_config_get_data_path (), MC_MACRO_FILE);
     PRINTF ("mcedit external macros:", mc_config_get_data_path (), MC_EXTMACRO_FILE ".*");
-#if defined(WIN32) //APY, conf
+#if defined(WIN32) //WIN32, config
     {
         static const struct {
             const char *desc, *key;
@@ -239,7 +241,7 @@ show_datadirs_extended (void)
             g_free (f);
         }
     }
-#endif  //WIN32
+#endif  //WIN32, conf
 #endif
     PRINTF_SECTION2 (_("Cache directory:"), mc_config_get_cache_path ());
 

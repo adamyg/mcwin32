@@ -1,7 +1,7 @@
 /*
    Virtual File System path handlers
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -33,7 +33,7 @@
 
 
 #include <config.h>
-#if defined(WIN32) //APY, drive
+#if defined(WIN32) //WIN32, drive
 #include <ctype.h>
 #endif
 
@@ -135,14 +135,19 @@ _vfs_split_with_semi_skip_count (char *path, const char **inpath, const char **o
  * @return newly allocated string
  */
 
-#if defined(WIN32) //APY, drive
+#if defined(WIN32) //WIN32, drive
 static __inline int
 drive_or_unc(const char *path)
 {
-    if (*path) {                                /* //<server> or X:... */
+    if (*path) {
         if ((PATH_SEP == path[0] && PATH_SEP == path[1]) ||
                 (isalpha((unsigned char)path[0]) && ':' == path[1])) {
-            return TRUE;
+            return TRUE;  /* //<server> or X:... */
+        }
+
+        if (IS_PATH_SEP(*path) &&
+                strncmp(path + 1, VFS_ENCODING_PREFIX, sizeof(VFS_ENCODING_PREFIX)-1) == 0) {
+            return TRUE;  /* /#enc:xxxxx */
         }
     }
     return FALSE;
@@ -152,17 +157,21 @@ drive_or_unc(const char *path)
 static char *
 vfs_canon (const char *path)
 {
+    char *result;
+
     if (path == NULL)
         vfs_die ("Cannot canonicalize NULL");
 
     /* Relative to current directory */
-#if defined(WIN32) //APY, drive
+#if defined(WIN32) //WIN32, drive
     if (!drive_or_unc(path))
 #else
     if (!IS_PATH_SEP (*path))
 #endif
     {
-        char *result, *local;
+        /* Relative to current directory */
+
+        char *local;
 
         if (g_str_has_prefix (path, VFS_ENCODING_PREFIX))
         {
@@ -170,32 +179,27 @@ vfs_canon (const char *path)
                encoding prefix placed at start of string without the leading slash
                should be autofixed by adding the leading slash
              */
-            local = mc_build_filename (PATH_SEP_STR, path, NULL);
+            local = mc_build_filename (PATH_SEP_STR, path, (char *) NULL);
         }
         else
         {
-            char *curr_dir;
+            const char *curr_dir;
 
             curr_dir = vfs_get_current_dir ();
-            local = mc_build_filename (curr_dir, path, NULL);
-            g_free (curr_dir);
+            local = mc_build_filename (curr_dir, path, (char *) NULL);
         }
         result = vfs_canon (local);
         g_free (local);
-        return result;
     }
-
-    /*
-     * So we have path of following form:
-     * /p1/p2#op/.././././p3#op/p4. Good luck.
-     */
+    else
     {
-        char *result;
+        /* Absolute path */
 
         result = g_strdup (path);
         canonicalize_pathname (result);
-        return result;
     }
+
+    return result;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -329,6 +333,8 @@ vfs_path_url_split (vfs_path_element_t * path_element, const char *path)
                     break;
                 case 'r':
                     path_element->port = 2;
+                    break;
+                default:
                     break;
                 }
             }
@@ -469,7 +475,7 @@ vfs_path_from_str_uri_parser (char *path, vfs_path_flag_t flags)
         char *real_vfs_prefix_start = url_delimiter;
         struct vfs_s_subclass *sub = NULL;
 
-#if defined(WIN32) //APY, drive
+#if defined(WIN32) //WIN32, drive
         if (url_delimiter == (path + 1) && isalpha((unsigned char)*path)) {
             break;
         }
@@ -622,6 +628,7 @@ vfs_path_strip_home (const char *dir)
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
+#if !defined(WIN32) //WIN32, drive
 #define vfs_append_from_path(appendfrom, is_relative) \
 { \
     if ((flags & VPF_STRIP_HOME) && element_index == 0 && (element->class->flags & VFSF_LOCAL) != 0) \
@@ -640,30 +647,28 @@ vfs_path_strip_home (const char *dir)
     } \
 }
 
-//WIN32 APY, drive
-static void
-append_from_path(const char *appendfrom, const int is_relative,
-        const vfs_path_flag_t flags, GString *buffer, const int element_index, const vfs_path_element_t *element)
-{
-    if ((flags & VPF_STRIP_HOME) && element_index == 0 && (element->class->flags & VFSF_LOCAL) != 0)
-    {
-        char *stripped_home_str;
-        stripped_home_str = vfs_path_strip_home (appendfrom);
-        g_string_append (buffer, stripped_home_str);
-        g_free (stripped_home_str);
-    }
-    else
-    {
-        if ((!is_relative) && (*appendfrom != PATH_SEP) && (*appendfrom != '\0')
-            && (buffer->len == 0 || buffer->str[buffer->len - 1] != PATH_SEP))
-
-#if defined(WIN32) //APY, drive
-            if (element_index > 0 || ':' != appendfrom[1] || 0 == isalpha((unsigned char)appendfrom[0]))
-#endif
-                g_string_append_c (buffer, PATH_SEP);
-        g_string_append (buffer, appendfrom);
-    }
+#else   //WIN32 APY, drive
+#define vfs_append_from_path(appendfrom, is_relative) \
+{ \
+    if ((flags & VPF_STRIP_HOME) && element_index == 0 && (element->class->flags & VFSF_LOCAL) != 0) \
+    { \
+        char *stripped_home_str; \
+        stripped_home_str = vfs_path_strip_home (appendfrom); \
+        g_string_append (buffer, stripped_home_str); \
+        g_free (stripped_home_str); \
+    } \
+    else \
+    { \
+        if (!is_relative && !IS_PATH_SEP (*appendfrom) && *appendfrom != '\0' \
+            && (buffer->len == 0 || !IS_PATH_SEP (buffer->str[buffer->len - 1]))) { \
+                        if (element_index > 0 || ':' != appendfrom[1] || 0 == isalpha((unsigned char)appendfrom[0])) { \
+                g_string_append_c(buffer, PATH_SEP); \
+            } \
+                } \
+        g_string_append (buffer, appendfrom); \
+    } \
 }
+#endif  //WIN32 APY, drive
 
 /**
  * Convert first elements_count elements from vfs_path_t to string representation with flags.
@@ -730,17 +735,18 @@ vfs_path_to_str_flags (const vfs_path_t * vpath, int elements_count, vfs_path_fl
                     g_string_append (buffer, PATH_SEP_STR);
                 g_string_append (buffer, VFS_ENCODING_PREFIX);
                 g_string_append (buffer, element->encoding);
+#if defined(WIN32)  //WIN32, drive
+                if (element->path[0] && element->path[1] == ':' && isalpha(element->path[0]))
+                    g_string_append(buffer, PATH_SEP_STR);
+#endif
             }
             str_vfs_convert_from (element->dir.converter, element->path, recode_buffer);
-            append_from_path (recode_buffer->str, is_relative, flags, buffer, element_index, element);
-//WIN32     vfs_append_from_path (recode_buffer->str, is_relative);
-            g_string_set_size (recode_buffer, 0);
+            vfs_append_from_path (recode_buffer->str, is_relative);
         }
         else
 #endif
         {
-            append_from_path (element->path, is_relative, flags, buffer, element_index, element);
-//WIN32     vfs_append_from_path (element->path, is_relative);
+            vfs_append_from_path (element->path, is_relative);
         }
     }
     g_string_free (recode_buffer, TRUE);
@@ -859,11 +865,11 @@ vfs_path_elements_count (const vfs_path_t * vpath)
  */
 
 void
-vfs_path_add_element (const vfs_path_t * vpath, const vfs_path_element_t * path_element)
+vfs_path_add_element (vfs_path_t * vpath, const vfs_path_element_t * path_element)
 {
     g_array_append_val (vpath->path, path_element);
     g_free (vpath->str);
-    ((vfs_path_t *) vpath)->str = vfs_path_to_str_flags (vpath, 0, VPF_NONE);
+    vpath->str = vfs_path_to_str_flags (vpath, 0, VPF_NONE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1148,19 +1154,18 @@ vfs_path_serialize (const vfs_path_t * vpath, GError ** mcerror)
 
     if ((vpath == NULL) || (vfs_path_elements_count (vpath) == 0))
     {
-        mc_propagate_error (mcerror, -1, "%s", "vpath object is empty");
+        mc_propagate_error (mcerror, 0, "%s", "vpath object is empty");
         return NULL;
-
     }
 
     cpath = mc_config_init (NULL, FALSE);
 
     for (element_index = 0; element_index < vfs_path_elements_count (vpath); element_index++)
     {
-        char *groupname;
+        char groupname[BUF_TINY];
         const vfs_path_element_t *element;
 
-        groupname = g_strdup_printf ("path-element-%zd", element_index);
+        g_snprintf (groupname, sizeof (groupname), "path-element-%zd", element_index);
         element = vfs_path_get_by_index (vpath, element_index);
         /* convert one element to config group */
 
@@ -1176,8 +1181,6 @@ vfs_path_serialize (const vfs_path_t * vpath, GError ** mcerror)
         mc_config_set_string_raw (cpath, groupname, "host", element->host);
         if (element->port != 0)
             mc_config_set_int (cpath, groupname, "port", element->port);
-
-        g_free (groupname);
     }
 
     ret_value = mc_serialize_config (cpath, mcerror);
@@ -1199,7 +1202,7 @@ vfs_path_t *
 vfs_path_deserialize (const char *data, GError ** mcerror)
 {
     mc_config_t *cpath;
-    size_t element_index = 0;
+    size_t element_index;
     vfs_path_t *vpath;
 
     mc_return_val_if_error (mcerror, FALSE);
@@ -1210,34 +1213,31 @@ vfs_path_deserialize (const char *data, GError ** mcerror)
 
     vpath = vfs_path_new ();
 
-    while (TRUE)
+    for (element_index = 0;; element_index++)
     {
+        struct vfs_class *eclass;
         vfs_path_element_t *element;
         char *cfg_value;
-        char *groupname;
+        char groupname[BUF_TINY];
 
-        groupname = g_strdup_printf ("path-element-%zd", element_index);
+        g_snprintf (groupname, sizeof (groupname), "path-element-%zu", element_index);
         if (!mc_config_has_group (cpath, groupname))
-        {
-            g_free (groupname);
             break;
-        }
-
-        element = g_new0 (vfs_path_element_t, 1);
 
         cfg_value = mc_config_get_string_raw (cpath, groupname, "class-name", NULL);
-        element->class = vfs_get_class_by_name (cfg_value);
-        if (element->class == NULL)
+        eclass = vfs_get_class_by_name (cfg_value);
+        if (eclass == NULL)
         {
-            g_free (element);
             vfs_path_free (vpath);
-            g_set_error (mcerror, MC_ERROR, -1, "Unable to find VFS class by name '%s'", cfg_value);
+            g_set_error (mcerror, MC_ERROR, 0, "Unable to find VFS class by name '%s'", cfg_value);
             g_free (cfg_value);
             mc_config_deinit (cpath);
             return NULL;
         }
         g_free (cfg_value);
 
+        element = g_new0 (vfs_path_element_t, 1);
+        element->class = eclass;
         element->path = mc_config_get_string_raw (cpath, groupname, "path", NULL);
 
 #ifdef HAVE_CHARSET
@@ -1254,16 +1254,13 @@ vfs_path_deserialize (const char *data, GError ** mcerror)
         element->port = mc_config_get_int (cpath, groupname, "port", 0);
 
         vpath->path = g_array_append_val (vpath->path, element);
-
-        g_free (groupname);
-        element_index++;
     }
 
     mc_config_deinit (cpath);
     if (vfs_path_elements_count (vpath) == 0)
     {
         vfs_path_free (vpath);
-        g_set_error (mcerror, MC_ERROR, -1, "No any path elements found");
+        g_set_error (mcerror, MC_ERROR, 0, "No any path elements found");
         return NULL;
     }
     vpath->str = vfs_path_to_str_flags (vpath, 0, VPF_NONE);
@@ -1326,7 +1323,7 @@ vfs_path_append_new (const vfs_path_t * vpath, const char *first_element, ...)
     va_end (args);
 
     result_str = vfs_path_as_str (vpath);
-    ret_vpath = vfs_path_build_filename (result_str, str_path, NULL);
+    ret_vpath = vfs_path_build_filename (result_str, str_path, (char *) NULL);
     g_free (str_path);
 
     return ret_vpath;
@@ -1705,3 +1702,4 @@ vfs_path_to_absolute (const vfs_path_t * vpath)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+

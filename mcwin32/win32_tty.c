@@ -5,7 +5,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2015
+   Written by: Adam Young 2012 - 2017
 
    This file is part of the Midnight Commander.
 
@@ -25,7 +25,7 @@
  */
 
 #include <config.h>
-#include "win32.h"
+#include "libw32.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,22 +46,30 @@
 
 #include "win32_key.h"
 
-static char             origTitle[100];
-static USHORT           origRows, origCols;
-static CHAR_INFO *      origImage = NULL;
-static COORD            origCoord;
+static wchar_t      origTitle[200];
+static USHORT       origRows, origCols;
+static CHAR_INFO *  origImage = NULL;
+static COORD        origCoord;
 static CONSOLE_CURSOR_INFO origInfo;
+
+extern int tty_use_256colors(void);             /* screen color depth */
+
+int reset_hp_softkeys = 0;                      /* command line argument */
 
 
 void
 tty_init (gboolean mouse_enable, gboolean is_xterm)
 {
     if (getenv("TERM") == NULL) {
-        putenv("TERM=dos");
+        (void) putenv("TERM=dos");
     }
 
     if (getenv("COLORTERM") == NULL) {
-        putenv("COLORTERM=1");
+		if (tty_use_256colors()) {              // TODO: command line, max colors.
+			(void) putenv("COLORTERM=24bit");   /* allow true-color skins */
+		} else {
+			(void) putenv("COLORTERM=16");
+		}
     }
 
     SLsmg_init_smg ();
@@ -73,7 +81,7 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
         exit (EXIT_FAILURE);
     }
 
-  //SLtt_Blink_Mode = tty_use_256colors () ? 1 : 0;
+//  SLtt_Blink_Mode = (0 != tty_use_256colors());
     SLsmg_touch_screen();
 }
 
@@ -104,7 +112,7 @@ tty_reset_prog_mode (void)
     SLsmg_reinit_smg();
     SLsmg_touch_screen();
     if (0 == origTitle[0]) {
-        GetConsoleTitleA(origTitle, sizeof(origTitle));
+        GetConsoleTitleW(origTitle, (sizeof(origTitle)/sizeof(origTitle[0])));
     }
     SetConsoleTitle("GNU Midnight Commander (" VERSION ")");
     key_prog_mode();
@@ -114,7 +122,8 @@ tty_reset_prog_mode (void)
 void
 tty_reset_shell_mode (void)
 {
-    if (origTitle[0]) SetConsoleTitleA(origTitle);
+    if (origTitle[0]) SetConsoleTitleW(origTitle);
+	SLsmg_touch_screen();
     key_shell_mode();
 }
 
@@ -173,8 +182,8 @@ tty_reset_screen (void)
 void
 tty_touch_screen (void)
 {
-    SLsmg_touch_lines(0, LINES);
-    SLsmg_touch_screen();
+	SLsmg_touch_lines(0, LINES);
+	SLsmg_touch_screen();
 }
 
 
@@ -443,7 +452,6 @@ vio_save (void)
     COORD iSz, iPs;
     SMALL_RECT wRec;
     int rows, cols;
-    WORD rc;
 
     /*
      *  Size arena
@@ -601,4 +609,3 @@ handle_console_win32 (console_action_t action)
     }
 }
 /*end*/
-

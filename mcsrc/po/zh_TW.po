@@ -1,6 +1,6 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 # 
 # Translators:
 # Slava Zanko <slavazanko@gmail.com>, 2011
@@ -8,10 +8,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2015-02-26 09:43+0300\n"
-"PO-Revision-Date: 2015-02-26 09:48+0000\n"
+"POT-Creation-Date: 2016-11-21 13:19+0300\n"
+"PO-Revision-Date: 2016-11-22 08:19+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/mc/language/zh_TW/)\n"
+"Language-Team: Chinese (Taiwan) (http://www.transifex.com/mc/mc/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -132,9 +132,28 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Unable to use '%s' skin with true colors support:\n"
+"%s\n"
+"Default skin has been loaded"
+msgstr ""
+
+#, c-format
+msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
+msgstr ""
+
+msgid "True color not supported with ncurses."
+msgstr ""
+
+msgid "True color not supported in this slang version."
+msgstr ""
+
+msgid "Your terminal doesn't even seem to support 256 colors."
+msgstr ""
+
+msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
 msgstr ""
 
 msgid "Escape"
@@ -429,10 +448,28 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr "不支援 %dx%d 的螢幕大小。\n請檢查 TERM 環境變數。\n"
 
-msgid "Cannot create pipe descriptor"
+msgid "B"
 msgstr ""
 
-msgid "Cannot parse command for pipe"
+msgid "kB"
+msgstr ""
+
+msgid "KiB"
+msgstr ""
+
+msgid "MB"
+msgstr ""
+
+msgid "MiB"
+msgstr ""
+
+msgid "GB"
+msgstr ""
+
+msgid "GiB"
+msgstr ""
+
+msgid "Cannot create pipe descriptor"
 msgstr ""
 
 msgid "Cannot create pipe streams"
@@ -466,7 +503,12 @@ msgstr ""
 msgid "Directory cache expired for %s"
 msgstr "%s 的路徑快取過期"
 
-msgid "bytes transferred"
+#, c-format
+msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
+msgstr ""
+
+#, c-format
+msgid "%s: %s: %s %lld bytes transferred"
 msgstr ""
 
 msgid "Starting linear transfer..."
@@ -550,7 +592,7 @@ msgid "Error"
 msgstr "錯誤"
 
 #, c-format
-msgid "%d: %s"
+msgid "%s (%d)"
 msgstr ""
 
 msgid "&Abort"
@@ -701,7 +743,7 @@ msgstr ""
 msgid "No arguments given to the viewer."
 msgstr ""
 
-msgid "Two files are required to evoke the diffviewer."
+msgid "Two files are required to envoke the diffviewer."
 msgstr ""
 
 msgid "Background protocol error"
@@ -1490,7 +1532,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2015 the Free Software Foundation"
+msgid "Copyright (C) 1996-2016 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1818,6 +1860,9 @@ msgstr "類似 lynx 的移動方式"
 msgid "Pa&ge scrolling"
 msgstr ""
 
+msgid "Center &scrolling"
+msgstr ""
+
 msgid "&Mouse page scrolling"
 msgstr ""
 
@@ -1849,14 +1894,17 @@ msgstr ""
 msgid "&Full file list"
 msgstr "完整檔案列表"
 
-msgid "&Brief file list"
-msgstr "簡要的檔案列表"
+msgid "&Brief file list:"
+msgstr ""
 
 msgid "&Long file list"
 msgstr "長檔案列表"
 
 msgid "&User defined:"
 msgstr "使用者自定："
+
+msgid "columns"
+msgstr ""
 
 msgid "User &mini status"
 msgstr ""
@@ -2176,6 +2224,10 @@ msgid ""
 msgstr ""
 
 #, c-format
+msgid "'%s' is not a symbolic link"
+msgstr ""
+
+#, c-format
 msgid "Symlink '%s' points to:"
 msgstr ""
 
@@ -2188,10 +2240,6 @@ msgstr ""
 
 #, c-format
 msgid "edit symlink: %s"
-msgstr ""
-
-#, c-format
-msgid "'%s' is not a symbolic link"
 msgstr ""
 
 msgid "FTP to machine"
@@ -2465,7 +2513,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file\"%s\"\n"
+"Cannot read source file \"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2553,7 +2601,7 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "Directories: %zd, total size: %s"
+msgid "Directories: %zu, total size: %s"
 msgstr ""
 
 msgid "Cannot operate on \"..\"!"
@@ -2705,7 +2753,7 @@ msgid "&Edit - F4"
 msgstr "編輯  - F4"
 
 #, c-format
-msgid "Found: %ld"
+msgid "Found: %lu"
 msgstr ""
 
 msgid "Malformed regular expression"
@@ -2755,8 +2803,8 @@ msgid "Finished"
 msgstr "完成"
 
 #, c-format
-msgid "Finished (ignored %zd directory)"
-msgid_plural "Finished (ignored %zd directories)"
+msgid "Finished (ignored %zu directory)"
+msgid_plural "Finished (ignored %zu directories)"
 msgstr[0] ""
 
 msgid "Searching"
@@ -2877,31 +2925,31 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr ""
 
 #, c-format
-msgid "Type:      %s"
+msgid "Type:       %s"
 msgstr ""
 
 msgid "non-local vfs"
 msgstr "非本地的虛擬檔案系統"
 
 #, c-format
-msgid "Device:    %s"
-msgstr "裝置：      %s"
+msgid "Device:     %s"
+msgstr ""
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "檔案系統：    %s"
 
 #, c-format
-msgid "Accessed:  %s"
-msgstr "存取：      %s"
+msgid "Accessed:   %s"
+msgstr ""
 
 #, c-format
-msgid "Modified:  %s"
-msgstr "更動：      %s"
+msgid "Modified:   %s"
+msgstr ""
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:   %s"
+msgid "Changed:    %s"
 msgstr ""
 
 #, c-format
@@ -2909,29 +2957,29 @@ msgid "Dev. type: major %lu, minor %lu"
 msgstr ""
 
 #, c-format
-msgid "Size:      %s"
+msgid "Size:       %s"
 msgstr ""
 
 #, c-format
-msgid " (%ld block)"
-msgid_plural " (%ld blocks)"
+msgid " (%lu block)"
+msgid_plural " (%lu blocks)"
 msgstr[0] ""
 
 #, c-format
-msgid "Owner:     %s/%s"
-msgstr "擁有者：    %s/%s"
+msgid "Owner:      %s/%s"
+msgstr ""
 
 #, c-format
-msgid "Links:     %d"
-msgstr "連結：      %d"
+msgid "Links:      %d"
+msgstr ""
 
 #, c-format
-msgid "Mode:      %s (%04o)"
-msgstr "模式：      %s (%04o)"
+msgid "Mode:       %s (%04o)"
+msgstr ""
 
 #, c-format
-msgid "Location:  %Xh:%Xh"
-msgstr "位置：      %Xh:%Xh"
+msgid "Location:   %Xh:%Xh"
+msgstr ""
 
 msgid "&Equal split"
 msgstr "等量分割"
@@ -3147,8 +3195,8 @@ msgid "Panels:"
 msgstr ""
 
 #, c-format
-msgid "You have %zd opened screen. Quit anyway?"
-msgid_plural "You have %zd opened screens. Quit anyway?"
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
 msgstr[0] ""
 
 msgid "The Midnight Commander"
@@ -3291,11 +3339,6 @@ msgstr "子目錄"
 
 msgid "<readlink failed>"
 msgstr "<連結讀取錯誤>"
-
-#, c-format
-msgid "%s byte"
-msgid_plural "%s bytes"
-msgstr[0] ""
 
 #, c-format
 msgid "%s in %d file"
@@ -3906,8 +3949,7 @@ msgstr ""
 msgid "sftp: Password is empty."
 msgstr ""
 
-#, c-format
-msgid "sftp: Failure establishing SSH session: (%d)"
+msgid "sftp: Failure establishing SSH session"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"

@@ -2,7 +2,7 @@
 /*
  * win32 shell and sub-process support
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -276,10 +276,10 @@ w32_spawn2(
     win32_spawn_t *args, int *Stdin, int *Stdout, int *Stderr)
 {
     int in = -1, out = -1, err = -1;
-    HANDLE hInputWriteTmp, hInputRead, hInputWrite,
-        hErrorReadTmp, hErrorRead, hErrorWrite,
-        hOutputReadTmp, hOutputRead, hOutputWrite;
-    HANDLE hProc;
+    HANDLE hInputWriteTmp = 0, hInputRead = 0, hInputWrite = 0,
+        hErrorReadTmp = 0, hErrorRead = 0, hErrorWrite = 0,
+        hOutputReadTmp = 0, hOutputRead = 0, hOutputWrite = 0;
+    HANDLE hProc = 0;
 
     if (NULL == Stdin || NULL == Stdout) {      // must be supplied
         return 0;
@@ -415,9 +415,9 @@ w32_spawn2(
 int
 w32_exec(win32_exec_t *args)
 {
-    HANDLE hInputWriteTmp, hInputRead, hInputWrite,
-        hErrorReadTmp, hErrorRead, hErrorWrite,
-        hOutputReadTmp, hOutputRead, hOutputWrite;
+    HANDLE hInputWriteTmp = 0, hInputRead = 0, hInputWrite = 0,
+        hErrorReadTmp = 0, hErrorRead = 0, hErrorWrite = 0,
+        hOutputReadTmp = 0, hOutputRead = 0, hOutputWrite = 0;
 
     //  Create the child input/out/err pipe.
     //

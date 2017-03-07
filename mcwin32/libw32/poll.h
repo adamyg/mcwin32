@@ -5,7 +5,7 @@
 /*
  * win <poll.h>
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -29,7 +29,6 @@
 #endif
 
 #include <win32_include.h>
-
 #include <sys/cdefs.h>
 
 struct w32_pollfd {
@@ -77,7 +76,8 @@ struct pollfd {
 
 __BEGIN_DECLS
 
-int                     w32_poll(struct pollfd *fds, int cnt, int timeout);
+LIBW32_API int          w32_poll(struct pollfd *fds, int cnt, int timeout);
+LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout);
 
 __END_DECLS
 

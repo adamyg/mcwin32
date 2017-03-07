@@ -1,20 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 # 
 # Translators:
 # Gilberto J <2101458@my.ipleiria.pt>, 2012
 # Gilberto Jorge <gmj125@gmail.com>, 2012-2013
-# Gilberto Jorge <gmj125@gmail.com>, 2013-2015
+# Gilberto Jorge <gmj125@gmail.com>, 2013-2016
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2015-02-26 09:43+0300\n"
-"PO-Revision-Date: 2015-02-26 10:27+0000\n"
+"POT-Creation-Date: 2016-11-21 13:19+0300\n"
+"PO-Revision-Date: 2016-11-23 23:53+0000\n"
 "Last-Translator: Gilberto Jorge <gmj125@gmail.com>\n"
-"Language-Team: Portuguese (http://www.transifex.com/projects/p/mc/language/pt/)\n"
+"Language-Team: Portuguese (http://www.transifex.com/mc/mc/language/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -135,10 +135,29 @@ msgstr "Não é possível processar a skin '%s'.\nSkin por omissão carregada"
 
 #, c-format
 msgid ""
+"Unable to use '%s' skin with true colors support:\n"
+"%s\n"
+"Default skin has been loaded"
+msgstr "Não foi possível usar a skin '%s' com suporte true colors:\n%s\nFoi carregada a skin por omissão"
+
+#, c-format
+msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
 msgstr "Não é possível usar a skin '%s' com suporte para 256 cores\nnum terminal que não suporta 256 cores.\nSkin por defeito foi carregada"
+
+msgid "True color not supported with ncurses."
+msgstr "True color não suportado com o ncurses."
+
+msgid "True color not supported in this slang version."
+msgstr "True color não suportado nesta versão slang."
+
+msgid "Your terminal doesn't even seem to support 256 colors."
+msgstr "O seu terminal não parece suportar nem 256 cores."
+
+msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
+msgstr "Colocar COLORTERM=truecolor se o seu terminal suportar mesmo true colors."
 
 msgid "Escape"
 msgstr "Escape"
@@ -432,11 +451,29 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr "Tamanho de ecrã %dx%d não é suportado.\nVerifique a variável de ambiente TERM.\n"
 
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "KiB"
+msgstr "KiB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "MiB"
+msgstr "MiB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "GiB"
+msgstr "GiB"
+
 msgid "Cannot create pipe descriptor"
 msgstr "Não é possível criar o descriptor do pipe"
-
-msgid "Cannot parse command for pipe"
-msgstr "Não é possível interpretar o comando para o pipe"
 
 msgid "Cannot create pipe streams"
 msgstr "Não é possível criar streams de pipes"
@@ -469,8 +506,13 @@ msgstr "Erro dup'ing erro antigo de pipe"
 msgid "Directory cache expired for %s"
 msgstr "Cache de diretório expirou para %s"
 
-msgid "bytes transferred"
-msgstr "bytes transferidos"
+#, c-format
+msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
+msgstr "%s: %s: %s %3d%% (%lld) bytes transferidos"
+
+#, c-format
+msgid "%s: %s: %s %lld bytes transferred"
+msgstr "%s: %s: %s %lld bytes transferidos"
 
 msgid "Starting linear transfer..."
 msgstr "A iniciar transferência linear..."
@@ -553,8 +595,8 @@ msgid "Error"
 msgstr "Erro"
 
 #, c-format
-msgid "%d: %s"
-msgstr "%d: %s"
+msgid "%s (%d)"
+msgstr "%s (%d)"
 
 msgid "&Abort"
 msgstr "&Abortar"
@@ -704,8 +746,8 @@ msgstr "Erro de parseamento de argumentos!"
 msgid "No arguments given to the viewer."
 msgstr "Nenhum argumento dado ao visualizador."
 
-msgid "Two files are required to evoke the diffviewer."
-msgstr "São necessários dois ficheiros para invocar o diffviewer."
+msgid "Two files are required to envoke the diffviewer."
+msgstr "São necessários 2 ficheiros para invocar o diffviewer."
 
 msgid "Background protocol error"
 msgstr "Erro de protocolo em background"
@@ -1493,8 +1535,8 @@ msgid ""
 "written for the Midnight Commander."
 msgstr "Um editor de texto amigo do utilizador\nescrito para o Midnight Commander."
 
-msgid "Copyright (C) 1996-2015 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2015 the Free Software Foundation"
+msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgstr "Copyright (C) 1996-2016 the Free Software Foundation"
 
 msgid "About"
 msgstr "Acerca"
@@ -1821,6 +1863,9 @@ msgstr "Movimento tipo l&ynx"
 msgid "Pa&ge scrolling"
 msgstr "Deslocamento de pá&gina"
 
+msgid "Center &scrolling"
+msgstr "Centrar &scrolling"
+
 msgid "&Mouse page scrolling"
 msgstr "Desloca&mento de página com rato"
 
@@ -1852,14 +1897,17 @@ msgstr "Utilizando opção de refrescamento rápido pode não\nrefletir o conte�
 msgid "&Full file list"
 msgstr "Listagem de todos &ficheiros"
 
-msgid "&Brief file list"
-msgstr "Listagem a&breviada de ficheiros"
+msgid "&Brief file list:"
+msgstr "&Breve lista de ficheiros:"
 
 msgid "&Long file list"
 msgstr "Listagem &longa de ficheiros"
 
 msgid "&User defined:"
 msgstr "Definido pelo &utilizador:"
+
+msgid "columns"
+msgstr "colunas"
 
 msgid "User &mini status"
 msgstr "&Mini status do utilizador"
@@ -2179,6 +2227,10 @@ msgid ""
 msgstr "Não é uma consola xterm ou Linux;\nos painéis não podem ser comutados."
 
 #, c-format
+msgid "'%s' is not a symbolic link"
+msgstr "'%s' não é uma ligação simbólica"
+
+#, c-format
 msgid "Symlink '%s' points to:"
 msgstr "Symlink '%s' aponta para:"
 
@@ -2192,10 +2244,6 @@ msgstr "editar symlink, não é possível remover %s: %s"
 #, c-format
 msgid "edit symlink: %s"
 msgstr "editar symlink: %s"
-
-#, c-format
-msgid "'%s' is not a symbolic link"
-msgstr "'%s' não é uma ligação simbólica"
 
 msgid "FTP to machine"
 msgstr "FTP para a máquina"
@@ -2468,9 +2516,9 @@ msgstr "Não é possível pre-alocar espaço para o ficheiro alvo \"%s\"\n%s"
 
 #, c-format
 msgid ""
-"Cannot read source file\"%s\"\n"
+"Cannot read source file \"%s\"\n"
 "%s"
-msgstr "Não é possível ler o ficheiro fonte\"%s\"\n%s"
+msgstr "Não é possível ler o ficheiro fonte \"%s\"\n%s"
 
 #, c-format
 msgid ""
@@ -2556,8 +2604,8 @@ msgid ""
 msgstr "Não é possível mover diretório \"%s\" para \"%s\"\n%s"
 
 #, c-format
-msgid "Directories: %zd, total size: %s"
-msgstr "Diretórios: %zd, tamanho total: %s"
+msgid "Directories: %zu, total size: %s"
+msgstr "Directórios: %zu, tamanho total: %s"
 
 msgid "Cannot operate on \"..\"!"
 msgstr "Não é possível operar em \"..\"!"
@@ -2708,8 +2756,8 @@ msgid "&Edit - F4"
 msgstr "&Editar - F4"
 
 #, c-format
-msgid "Found: %ld"
-msgstr "Encontrados: %ld"
+msgid "Found: %lu"
+msgstr "Encontrado: %lu"
 
 msgid "Malformed regular expression"
 msgstr "Expressão regular malformada"
@@ -2758,10 +2806,10 @@ msgid "Finished"
 msgstr "Terminado"
 
 #, c-format
-msgid "Finished (ignored %zd directory)"
-msgid_plural "Finished (ignored %zd directories)"
-msgstr[0] "Terminado (ignorado %zd diretório)"
-msgstr[1] "Terminado (ignorado %zd diretórios)"
+msgid "Finished (ignored %zu directory)"
+msgid_plural "Finished (ignored %zu directories)"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Searching"
 msgstr "A procurar"
@@ -2881,62 +2929,62 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr "Espaço livre: %s/%s (%d%%)"
 
 #, c-format
-msgid "Type:      %s"
-msgstr "Tipo:         %s"
+msgid "Type:       %s"
+msgstr "Tipo:       %s"
 
 msgid "non-local vfs"
 msgstr "vfs não local"
 
 #, c-format
-msgid "Device:    %s"
-msgstr "Dispositivo:  %s"
+msgid "Device:     %s"
+msgstr "Dispositivo:     %s"
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "Sist. Fich.:  %s"
 
 #, c-format
-msgid "Accessed:  %s"
-msgstr "Acedido:      %s"
+msgid "Accessed:   %s"
+msgstr "Acedido:   %s"
 
 #, c-format
-msgid "Modified:  %s"
+msgid "Modified:   %s"
 msgstr "Modificado:   %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:   %s"
-msgstr "Alterado:     %s"
+msgid "Changed:    %s"
+msgstr "Alterado:    %s"
 
 #, c-format
 msgid "Dev. type: major %lu, minor %lu"
 msgstr "Dev. tipo: maior %lu, menor %lu"
 
 #, c-format
-msgid "Size:      %s"
-msgstr "Tamanho:      %s"
+msgid "Size:       %s"
+msgstr "Tamanho:       %s"
 
 #, c-format
-msgid " (%ld block)"
-msgid_plural " (%ld blocks)"
-msgstr[0] " (%ld bloco)"
-msgstr[1] " (%ld blocos)"
+msgid " (%lu block)"
+msgid_plural " (%lu blocks)"
+msgstr[0] ""
+msgstr[1] ""
 
 #, c-format
-msgid "Owner:     %s/%s"
-msgstr "Proprietário: %s/%s"
+msgid "Owner:      %s/%s"
+msgstr "Proprietário:      %s/%s"
 
 #, c-format
-msgid "Links:     %d"
-msgstr "Ligações:     %d"
+msgid "Links:      %d"
+msgstr "Ligações:      %d"
 
 #, c-format
-msgid "Mode:      %s (%04o)"
-msgstr "Modo:         %s (%04o)"
+msgid "Mode:       %s (%04o)"
+msgstr "Modo:       %s (%04o)"
 
 #, c-format
-msgid "Location:  %Xh:%Xh"
-msgstr "Localização:  %Xh:%Xh"
+msgid "Location:   %Xh:%Xh"
+msgstr "Localização:   %Xh:%Xh"
 
 msgid "&Equal split"
 msgstr "Divisão i&gual"
@@ -3152,10 +3200,10 @@ msgid "Panels:"
 msgstr "Painéis:"
 
 #, c-format
-msgid "You have %zd opened screen. Quit anyway?"
-msgid_plural "You have %zd opened screens. Quit anyway?"
-msgstr[0] "Tem %zd ecrã aberto. Sair na mesma?"
-msgstr[1] "Tem %zd ecrãs abertos. Sair na mesma?"
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "The Midnight Commander"
 msgstr "O Midnight Commander"
@@ -3297,12 +3345,6 @@ msgstr "SUB-DIR"
 
 msgid "<readlink failed>"
 msgstr "<falha readlink>"
-
-#, c-format
-msgid "%s byte"
-msgid_plural "%s bytes"
-msgstr[0] "%s byte"
-msgstr[1] "%s bytes"
 
 #, c-format
 msgid "%s in %d file"
@@ -3914,9 +3956,8 @@ msgstr "sftp: Insira senha para %s "
 msgid "sftp: Password is empty."
 msgstr "sftp: Senha está vazia."
 
-#, c-format
-msgid "sftp: Failure establishing SSH session: (%d)"
-msgstr "sftp: Falha ao estabelecer sessão SSH: (%d)"
+msgid "sftp: Failure establishing SSH session"
+msgstr "sftp: Falha ao estabelecer sessão SSH"
 
 msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: Sem dados de uso de ficheiro presentes para ler ficheiro"

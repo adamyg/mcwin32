@@ -1,5 +1,5 @@
 dnl check for ncurses in user supplied path
-AC_DEFUN([MC_CHECK_NCURSES_BY_PATH], [
+AC_DEFUN([mc_CHECK_NCURSES_BY_PATH], [
 
     ac_ncurses_inc_path=[$1]
     ac_ncurses_lib_path=[$2]
@@ -50,7 +50,7 @@ AC_DEFUN([MC_CHECK_NCURSES_BY_PATH], [
 
     if test x"$found_ncurses" = x"yes"; then
         screen_type=ncurses
-        screen_msg="Ncurses library"
+        screen_msg="NCurses"
 
         AC_DEFINE(HAVE_NCURSES, 1,
                   [Define to use ncurses library for screen management])
@@ -70,7 +70,7 @@ dnl
 dnl If ncurses exports the ESCDELAY variable it should be set to 0
 dnl or you'll have to press Esc three times to dismiss a dialog box.
 dnl
-AC_DEFUN([MC_WITH_NCURSES], [
+AC_DEFUN([mc_WITH_NCURSES], [
     dnl has_colors() is specific to ncurses, it's not in the old curses
     save_LIBS="$LIBS"
     ncursesw_found=
@@ -96,14 +96,14 @@ AC_DEFUN([MC_WITH_NCURSES], [
     dnl we need at least the inc path, the lib may be in a std location
     if test x"$ac_ncurses_inc_path" != x; then
         dnl check the user supplied location
-        MC_CHECK_NCURSES_BY_PATH([$ac_ncurses_inc_path],[$ac_ncurses_lib_path])
+        mc_CHECK_NCURSES_BY_PATH([$ac_ncurses_inc_path],[$ac_ncurses_lib_path])
 
         LIBS=
         AC_SEARCH_LIBS([has_colors], [ncurses], [MCLIBS="$MCLIBS $LIBS"], 
                        [AC_MSG_ERROR([Cannot find ncurses library])])
 
         screen_type=ncurses
-        screen_msg="Ncurses library"
+        screen_msg="NCurses"
         AC_DEFINE(USE_NCURSES, 1, 
                   [Define to use ncurses for screen management])
     else
@@ -127,7 +127,7 @@ AC_DEFUN([MC_WITH_NCURSES], [
         fi
 
         screen_type=ncurses
-        screen_msg="Ncurses library"
+        screen_msg="NCurses"
         AC_DEFINE(USE_NCURSES, 1, 
                   [Define to use ncurses for screen management])
     fi
@@ -160,7 +160,7 @@ dnl If ncursesw exports the ESCDELAY variable it should be set to 0
 dnl or you'll have to press Esc three times to dismiss a dialog box.
 dnl
 
-AC_DEFUN([MC_WITH_NCURSESW], [
+AC_DEFUN([mc_WITH_NCURSESW], [
     dnl has_colors() is specific to ncurses, it's not in the old curses
     save_LIBS="$LIBS"
     LIBS=
@@ -177,7 +177,7 @@ AC_DEFUN([MC_WITH_NCURSESW], [
     fi
 
     screen_type=ncursesw
-    screen_msg="Ncursesw library"
+    screen_msg="NCursesw"
     AC_DEFINE(USE_NCURSESW, 1,
 	      [Define to use ncursesw for screen management])
 

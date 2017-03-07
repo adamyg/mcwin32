@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Authors:
@@ -10,7 +10,7 @@
    Jakub Jelinek, 1995
    Andrej Borsenkow, 1996
    Norbert Warmuth, 1997
-   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013
+   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013, 2016
 
    This file is part of the Midnight Commander.
 
@@ -39,7 +39,6 @@
 #include "lib/global.h"
 
 #include "lib/tty/tty.h"
-#include "lib/tty/mouse.h"
 #include "lib/widget.h"
 
 /*** global variables ****************************************************************************/
@@ -61,21 +60,20 @@ radio_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
     switch (msg)
     {
     case MSG_HOTKEY:
+        for (i = 0; i < r->count; i++)
         {
-            for (i = 0; i < r->count; i++)
+            if (r->texts[i].hotkey != NULL)
             {
-                if (r->texts[i].hotkey != NULL)
-                {
-                    int c = g_ascii_tolower ((gchar) r->texts[i].hotkey[0]);
+                int c;
 
-                    if (c != parm)
-                        continue;
-                    r->pos = i;
+                c = g_ascii_tolower ((gchar) r->texts[i].hotkey[0]);
+                if (c != parm)
+                    continue;
+                r->pos = i;
 
-                    /* Take action */
-                    send_message (w, sender, MSG_KEY, ' ', data);
-                    return MSG_HANDLED;
-                }
+                /* Take action */
+                send_message (w, sender, MSG_KEY, ' ', data);
+                return MSG_HANDLED;
             }
         }
         return MSG_NOT_HANDLED;
@@ -85,8 +83,8 @@ radio_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
         {
         case ' ':
             r->sel = r->pos;
-            send_message (w->owner, w, MSG_ACTION, 0, NULL);
-            send_message (w, sender, MSG_FOCUS, ' ', data);
+            widget_set_state (w, WST_FOCUSED, TRUE);    /* Also draws the widget. */
+            send_message (w->owner, w, MSG_NOTIFY, 0, NULL);
             return MSG_HANDLED;
 
         case KEY_UP:
@@ -94,6 +92,7 @@ radio_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
             if (r->pos > 0)
             {
                 r->pos--;
+                widget_redraw (w);
                 return MSG_HANDLED;
             }
             return MSG_NOT_HANDLED;
@@ -103,31 +102,36 @@ radio_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
             if (r->count - 1 > r->pos)
             {
                 r->pos++;
+                widget_redraw (w);
                 return MSG_HANDLED;
             }
+            return MSG_NOT_HANDLED;
+
+        default:
+            return MSG_NOT_HANDLED;
         }
-        return MSG_NOT_HANDLED;
 
     case MSG_CURSOR:
-        send_message (w->owner, w, MSG_ACTION, 0, NULL);
-        send_message (w, sender, MSG_FOCUS, ' ', data);
         widget_move (r, r->pos, 1);
         return MSG_HANDLED;
 
-    case MSG_UNFOCUS:
-    case MSG_FOCUS:
     case MSG_DRAW:
-        for (i = 0; i < r->count; i++)
         {
-            const gboolean focused = (i == r->pos && msg == MSG_FOCUS);
+            gboolean focused;
 
-            widget_selectcolor (w, focused, FALSE);
-            widget_move (r, i, 0);
-            tty_draw_hline (w->y + i, w->x, ' ', w->cols);
-            tty_print_string ((r->sel == i) ? "(*) " : "( ) ");
-            hotkey_draw (w, r->texts[i], focused);
+            focused = widget_get_state (w, WST_FOCUSED);
+
+            for (i = 0; i < r->count; i++)
+            {
+                widget_selectcolor (w, i == r->pos && focused, FALSE);
+                widget_move (w, i, 0);
+                tty_draw_hline (w->y + i, w->x, ' ', w->cols);
+                tty_print_string ((r->sel == i) ? "(*) " : "( ) ");
+                hotkey_draw (w, r->texts[i], i == r->pos && focused);
+            }
+
+            return MSG_HANDLED;
         }
-        return MSG_HANDLED;
 
     case MSG_DESTROY:
         for (i = 0; i < r->count; i++)
@@ -142,31 +146,25 @@ radio_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
 
 /* --------------------------------------------------------------------------------------------- */
 
-static int
-radio_event (Gpm_Event * event, void *data)
+static void
+radio_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
 {
-    Widget *w = WIDGET (data);
-
-    if (!mouse_global_in_widget (event, w))
-        return MOU_UNHANDLED;
-
-    if ((event->type & (GPM_DOWN | GPM_UP)) != 0)
+    switch (msg)
     {
-        WRadio *r = RADIO (data);
-        Gpm_Event local;
+    case MSG_MOUSE_DOWN:
+        RADIO (w)->pos = event->y;
+        widget_select (w);
+        break;
 
-        local = mouse_get_local (event, w);
+    case MSG_MOUSE_CLICK:
+        RADIO (w)->pos = event->y;
+        send_message (w, NULL, MSG_KEY, ' ', NULL);
+        send_message (w->owner, w, MSG_POST_KEY, ' ', NULL);
+        break;
 
-        r->pos = local.y - 1;
-        dlg_select_widget (w);
-        if ((event->type & GPM_UP) != 0)
-        {
-            radio_callback (w, NULL, MSG_KEY, ' ', NULL);
-            send_message (w->owner, w, MSG_POST_KEY, ' ', NULL);
-        }
+    default:
+        break;
     }
-
-    return MOU_NORMAL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -192,16 +190,15 @@ radio_new (int y, int x, int count, const char **texts)
 
         r->texts[i] = parse_hotkey (texts[i]);
         width = hotkey_width (r->texts[i]);
-        wmax = max (width, wmax);
+        wmax = MAX (width, wmax);
     }
 
-    widget_init (w, y, x, count, 4 + wmax, radio_callback, radio_event);
     /* 4 is width of "(*) " */
-    r->state = 1;
+    widget_init (w, y, x, count, 4 + wmax, radio_callback, radio_mouse_callback);
+    w->options |= WOP_SELECTABLE | WOP_WANT_CURSOR | WOP_WANT_HOTKEY;
     r->pos = 0;
     r->sel = 0;
     r->count = count;
-    widget_want_hotkey (w, TRUE);
 
     return r;
 }

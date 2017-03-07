@@ -1,0 +1,191 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id: Makefile.in,v 1.2 2017/03/06 11:23:15 cvsuser Exp $
+# libwin32 makefile.
+#
+#
+# Copyright (c) 2007, 2012 - 2017 Adam Young.
+#
+# This file is part of the Midnight Commander.
+#
+# The Midnight Commander is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# The Midnight Commander is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# ==end==
+#
+
+@SET_MAKE@
+ROOT=		@abs_top_builddir@
+top_builddir=	@top_builddir@
+
+# File extensions
+
+O=		.o
+H=		.h
+A=		.a
+LP=		lib
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+AR=		@AR@
+RANLIB=		@RANLIB@
+RM=		@RM@
+PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
+RC=		@RC@
+
+# Common flags
+
+ARFLAGS=	rcv
+XFLAGS=		
+COPT=		@CFLAGS@
+CXXOPT=		@CXXFLAGS@
+ifeq "" "$(CXXOPT)"
+CXXOPT=		$(COPT)
+endif
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+LDEBUG=		@LDEBUG@
+CINCLUDE=	-I$(D_INC) @CINCLUDE@ -I.
+CEXTRA=		@DEFS@ -D_WIN32_WINNT=0x601
+CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CXXFLAGS=	$(CPPFLAGS) $(CDEBUG) $(CXXOPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
+YFLAGS=		-d
+LDFLAGS=	$(LDEBUG) @LDFLAGS@
+LXFLAGS=	$(LDLIBS) @LIBS@ @LIBMALLOC@
+
+RMFLAGS=	-f
+
+# Directories
+
+D_BIN=		$(ROOT)/bin
+D_INC=		$(ROOT)/include
+D_OBJ=		$(ROOT)/objects/libw32
+D_LIB=		$(ROOT)/lib
+
+############################################################
+
+W32LIB=		$(D_LIB)/$(LP)w32_static$(A)
+W32DLL=		$(D_LIB)/$(LP)w32.la
+
+VERSION=	1.1.0
+VERSIONSPEC=	$(subst .,:,$(VERSION))
+
+CSOURCES=\
+	bsd_bsearch.c \
+	bsd_qsort.c \
+	w32_check.c \
+	w32_child.c \
+	w32_chown.c \
+	w32_close.c \
+	w32_dir.c \
+	w32_dirent.c \
+	w32_errno.c \
+	w32_fcntl.c \
+	w32_fsync.c \
+	w32_getcwd.c \
+	w32_gethostname.c \
+	w32_getopt.c \
+	w32_gistrerror.c \
+	w32_grp.c \
+	w32_iconv.c \
+	w32_iconv_native.c \
+	w32_ino.c \
+	w32_io.c \
+	w32_langinfo.c \
+	w32_link.c \
+	w32_mknod.c \
+	w32_mkstemp.c \
+	w32_mmap.c \
+	w32_neterr.c \
+	w32_popen.c \
+	w32_pwd.c \
+	w32_read.c \
+	w32_select.c \
+	w32_shell.c \
+	w32_signal.c \
+	w32_slang.c \
+	w32_socket.c \
+	w32_sockfd.c \
+	w32_statfs.c \
+	w32_strftime.c \
+	w32_string.c \
+	w32_strlcat.c \
+	w32_strlcpy.c \
+	w32_strtoll.c \
+	w32_strtoull.c \
+	w32_sysdir.c \
+	w32_time.c \
+	w32_trace.c \
+	w32_truncate.c \
+	w32_uname.c \
+	w32_unlink.c \
+	w32_user.c \
+	w32_util.c \
+	w32_write.c
+
+LIBOBJS=\
+	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
+
+DLLOBJS=\
+	$(subst $(O),.lo,$(LIBOBJS))
+ifeq ("mingw32","@build_os@")
+DLLOBJS+=	$(D_OBJ)/libw32_res.o
+else ifeq ("win32","@build_os@")
+DLLOBJS+=	$(D_OBJ)/libw32.res
+endif
+
+OBJS=		$(LIBOBJS) $(DLLOBJS)
+LIBS=		$(W32LIB) $(W32DLL)
+TSKS=
+
+# Rules
+
+all:			$(LIBS) $(TSKS)
+
+$(W32LIB):		CEXTRA += -DLIBW32_STATIC -DLIBW32_LIBRARY
+$(W32LIB):		$(D_OBJ)/.created $(LIBOBJS)
+		$(RM) $(RMFLAGS) $@
+		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
+		$(RANLIB) $@
+
+$(W32DLL):		CEXTRA += -DLIBW32_DYNAMIC -DLIBW32_LIBRARY
+$(W32DLL):		DLLDEF = -export-symbols libw32.def
+$(W32DLL):		$(DLLOBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(DLLDEF) -o $@ $^ $(LDLIBS)
+
+$(D_OBJ)/.created:
+		-@mkdir $(D_OBJ)
+		@echo "do not create" > $@
+
+clean:
+		-@$(LIBTOOL) --mode=clean $(RM) $(W32DLL) $(DLLOBJS) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(W32LIB) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
+
+$(D_OBJ)/%$(O):		%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.res:		%.rc
+		$(RC) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) -o $@ $<
+
+#end

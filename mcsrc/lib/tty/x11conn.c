@@ -1,7 +1,7 @@
 /*
    X11 support for the Midnight Commander.
 
-   Copyright (C) 2005-2015
+   Copyright (C) 2005-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -31,8 +31,6 @@
 
 #include <config.h>
 
-#if defined(WIN32) //WIN32
-#else
 #include <setjmp.h>
 #include <X11/Xlib.h>
 #ifdef HAVE_GMODULE
@@ -262,6 +260,3 @@ mc_XQueryPointer (Display * display, Window win, Window * root_return,
 }
 
 /* --------------------------------------------------------------------------------------------- */
-
-#endif  //WIN32
-

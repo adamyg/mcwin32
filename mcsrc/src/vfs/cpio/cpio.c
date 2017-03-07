@@ -1,7 +1,7 @@
 /*
    Virtual File System: GNU Tar file system.
 
-   Copyright (C) 2000-2015
+   Copyright (C) 2000-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -33,7 +33,6 @@
 #include <config.h>
 
 #include <errno.h>
-#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -235,7 +234,9 @@ cpio_open_cpio_file (struct vfs_class *me, struct vfs_s_super *super, const vfs_
     arch->deferred = NULL;
 
     type = get_compression_type (fd, super->name);
-    if (type != COMPRESSION_NONE)
+    if (type == COMPRESSION_NONE)
+        mc_lseek (fd, 0, SEEK_SET);
+    else
     {
         char *s;
         vfs_path_t *tmp_vpath;
@@ -387,6 +388,7 @@ cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, struct stat 
         /* cppcheck-suppress syntaxError */
     case S_IFNAM:
 #endif
+#ifdef HAVE_STRUCT_STAT_ST_RDEV
         if ((st->st_size != 0) && (st->st_rdev == 0x0001))
         {
             /* FIXME: representation of major/minor differs between */
@@ -394,6 +396,7 @@ cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, struct stat 
             st->st_rdev = (unsigned) st->st_size;
             st->st_size = 0;
         }
+#endif
         break;
     default:
         break;
@@ -468,28 +471,35 @@ cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, struct stat 
     }
     else
     {                           /* !entry */
-        if (inode == NULL)
+        /* root == NULL can be in the following case:
+         * a/b/c -> d
+         * where 'a/b' is the stale link and therefore root of 'c' cannot be found in the archive
+         */
+        if (root != NULL)
         {
-            inode = vfs_s_new_inode (me, super, st);
-            if ((st->st_nlink > 0) && ((arch->type == CPIO_NEWC) || (arch->type == CPIO_CRC)))
+            if (inode == NULL)
             {
-                /* For case of hardlinked files */
-                defer_inode *i;
+                inode = vfs_s_new_inode (me, super, st);
+                if ((st->st_nlink > 0) && ((arch->type == CPIO_NEWC) || (arch->type == CPIO_CRC)))
+                {
+                    /* For case of hardlinked files */
+                    defer_inode *i;
 
-                i = g_new (defer_inode, 1);
-                i->inumber = st->st_ino;
-                i->device = st->st_dev;
-                i->inode = inode;
+                    i = g_new (defer_inode, 1);
+                    i->inumber = st->st_ino;
+                    i->device = st->st_dev;
+                    i->inode = inode;
 
-                arch->deferred = g_slist_prepend (arch->deferred, i);
+                    arch->deferred = g_slist_prepend (arch->deferred, i);
+                }
             }
+
+            if (st->st_size != 0)
+                inode->data_offset = CPIO_POS (super);
+
+            entry = vfs_s_new_entry (me, tn, inode);
+            vfs_s_insert_entry (me, root, entry);
         }
-
-        if (st->st_size != 0)
-            inode->data_offset = CPIO_POS (super);
-
-        entry = vfs_s_new_entry (me, tn, inode);
-        vfs_s_insert_entry (me, root, entry);
 
         g_free (name);
 
@@ -497,15 +507,21 @@ cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, struct stat 
             CPIO_SEEK_CUR (super, st->st_size);
         else
         {
-            inode->linkname = g_malloc (st->st_size + 1);
-
-            if (mc_read (arch->fd, inode->linkname, st->st_size) < st->st_size)
+            if (inode != NULL)
             {
-                inode->linkname[0] = '\0';
-                return STATUS_EOF;
+                /* FIXME: do we must read from arch->fd in case of inode != NULL only or in any case? */
+
+                inode->linkname = g_malloc (st->st_size + 1);
+
+                if (mc_read (arch->fd, inode->linkname, st->st_size) < st->st_size)
+                {
+                    inode->linkname[0] = '\0';
+                    return STATUS_EOF;
+                }
+
+                inode->linkname[st->st_size] = '\0';    /* Linkname stored without terminating \0 !!! */
             }
 
-            inode->linkname[st->st_size] = '\0';        /* Linkname stored without terminating \0 !!! */
             CPIO_POS (super) += st->st_size;
             cpio_skip_padding (super);
         }
@@ -569,7 +585,9 @@ cpio_read_bin_head (struct vfs_class *me, struct vfs_s_super *super)
     st.st_nlink = u.buf.c_nlink;
     st.st_uid = u.buf.c_uid;
     st.st_gid = u.buf.c_gid;
+#ifdef HAVE_STRUCT_STAT_ST_RDEV
     st.st_rdev = u.buf.c_rdev;
+#endif
     st.st_size = (u.buf.c_filesizes[0] << 16) | u.buf.c_filesizes[1];
     st.st_atime = st.st_mtime = st.st_ctime = (u.buf.c_mtimes[0] << 16) | u.buf.c_mtimes[1];
 
@@ -636,7 +654,9 @@ cpio_read_oldc_head (struct vfs_class *me, struct vfs_s_super *super)
     u.st.st_nlink = hd.c_nlink;
     u.st.st_uid = hd.c_uid;
     u.st.st_gid = hd.c_gid;
+#ifdef HAVE_STRUCT_STAT_ST_RDEV
     u.st.st_rdev = hd.c_rdev;
+#endif
     u.st.st_size = hd.c_filesize;
     u.st.st_atime = u.st.st_mtime = u.st.st_ctime = hd.c_mtime;
 
@@ -712,7 +732,9 @@ cpio_read_crc_head (struct vfs_class *me, struct vfs_s_super *super)
     u.st.st_nlink = hd.c_nlink;
     u.st.st_uid = hd.c_uid;
     u.st.st_gid = hd.c_gid;
+#ifdef HAVE_STRUCT_STAT_ST_RDEV
     u.st.st_rdev = makedev (hd.c_rdev, hd.c_rdevmin);
+#endif
     u.st.st_size = hd.c_filesize;
     u.st.st_atime = u.st.st_mtime = u.st.st_ctime = hd.c_mtime;
 
@@ -750,6 +772,8 @@ cpio_open_archive (struct vfs_s_super *super, const vfs_path_t * vpath,
         case STATUS_OK:
             continue;
         case STATUS_TRAIL:
+            break;
+        default:
             break;
         }
         break;

@@ -4,7 +4,7 @@
 /*
  * child process support
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -58,26 +58,28 @@ typedef struct {
 #define WNOHANG         1
 #endif
 
-const char *            w32_getshell (void);
-const char *            w32_gethome (void);
+LIBW32_API const char * w32_getshell (void);
+LIBW32_API const char * w32_gethome (void);
 
-int                     w32_iscommand (const char *);
-int                     w32_shell (const char *shell, const char *cmd,
-                                        const char *fstdin, const char *fstdout, const char *fstderr);
+LIBW32_API int          w32_iscommand (const char *);
+LIBW32_API int          w32_shell (const char *shell, const char *cmd,
+                        const char *fstdin, const char *fstdout, const char *fstderr);
 
-int                     w32_spawn (win32_spawn_t *args, int Stdout, int Stderr, int *Stdin);
-int                     w32_spawn2 (win32_spawn_t *args, int *Stdin, int *Stdout, int *Stderr);
+LIBW32_API int          w32_spawn (win32_spawn_t *args, int Stdout, int Stderr, int *Stdin);
+LIBW32_API int          w32_spawn2 (win32_spawn_t *args, int *Stdin, int *Stdout, int *Stderr);
 
-int                     w32_exec (win32_exec_t *args);
+LIBW32_API int          w32_exec (win32_exec_t *args);
 
-HANDLE                  w32_child_exec (struct win32_spawn *args, HANDLE hStdin, HANDLE hStdOut, HANDLE hStdErr);
-int                     w32_child_wait (HANDLE hProc, int *status, int nowait);
+LIBW32_API HANDLE       w32_child_exec (struct win32_spawn *args, HANDLE hStdin, HANDLE hStdOut, HANDLE hStdErr);
+LIBW32_API int          w32_child_wait (HANDLE hProc, int *status, int nowait);
 
-FILE *                  w32_popen (const char *cmd, const char *mode);
-int                     w32_pclose (FILE *file);
-int                     w32_pread_err (FILE *file, char *buf, int length);
+LIBW32_API FILE *       w32_popen (const char *cmd, const char *mode);
+LIBW32_API int          w32_pclose (FILE *file);
+LIBW32_API int          w32_pread_err (FILE *file, char *buf, int length);
+
+//LIBW32_API ssize_t    pread (int fildes, void *buf, size_t nbyte, off_t offset);
+//LIBW32_API ssize_t    pwrite (int fildes, const void *buf, size_t nbyte, off_t offset);
 
 __END_DECLS
 
 #endif /*LIBW32_WIN32_CHILD_H_INCLUDED*/
-

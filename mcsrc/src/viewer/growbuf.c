@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Function for work with growing bufers
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -62,7 +62,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_growbuf_init (mcview_t * view)
+mcview_growbuf_init (WView * view)
 {
     view->growbuf_in_use = TRUE;
     view->growbuf_blockptr = g_ptr_array_new ();
@@ -73,7 +73,7 @@ mcview_growbuf_init (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_growbuf_done (mcview_t * view)
+mcview_growbuf_done (WView * view)
 {
     view->growbuf_finished = TRUE;
 
@@ -92,11 +92,9 @@ mcview_growbuf_done (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_growbuf_free (mcview_t * view)
+mcview_growbuf_free (WView * view)
 {
-#ifdef HAVE_ASSERT_H
-    assert (view->growbuf_in_use);
-#endif
+    g_assert (view->growbuf_in_use);
 
     g_ptr_array_foreach (view->growbuf_blockptr, (GFunc) g_free, NULL);
 
@@ -109,11 +107,9 @@ mcview_growbuf_free (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 off_t
-mcview_growbuf_filesize (mcview_t * view)
+mcview_growbuf_filesize (WView * view)
 {
-#ifdef HAVE_ASSERT_H
-    assert (view->growbuf_in_use);
-#endif
+    g_assert (view->growbuf_in_use);
 
     if (view->growbuf_blockptr->len == 0)
         return 0;
@@ -128,13 +124,11 @@ mcview_growbuf_filesize (mcview_t * view)
  */
 
 void
-mcview_growbuf_read_until (mcview_t * view, off_t ofs)
+mcview_growbuf_read_until (WView * view, off_t ofs)
 {
     gboolean short_read = FALSE;
 
-#ifdef HAVE_ASSERT_H
-    assert (view->growbuf_in_use);
-#endif
+    g_assert (view->growbuf_in_use);
 
     if (view->growbuf_finished)
         return;
@@ -156,7 +150,7 @@ mcview_growbuf_read_until (mcview_t * view, off_t ofs)
             view->growbuf_lastindex = 0;
         }
         p = ((byte *)g_ptr_array_index (view->growbuf_blockptr,
-                               view->growbuf_blockptr->len - 1)) + view->growbuf_lastindex;
+					view->growbuf_blockptr->len - 1)) + view->growbuf_lastindex;
 
         bytesfree = VIEW_PAGE_SIZE - view->growbuf_lastindex;
 
@@ -225,9 +219,7 @@ mcview_growbuf_read_until (mcview_t * view, off_t ofs)
         }
         else
         {
-#ifdef HAVE_ASSERT_H
-            assert (view->datasource == DS_VFS_PIPE);
-#endif
+            g_assert (view->datasource == DS_VFS_PIPE);
             do
             {
                 nread = mc_read (view->ds_vfs_pipe, p, bytesfree);
@@ -248,13 +240,11 @@ mcview_growbuf_read_until (mcview_t * view, off_t ofs)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_get_byte_growing_buffer (mcview_t * view, off_t byte_index, int *retval)
+mcview_get_byte_growing_buffer (WView * view, off_t byte_index, int *retval)
 {
     char *p;
 
-#ifdef HAVE_ASSERT_H
-    assert (view->growbuf_in_use);
-#endif
+    g_assert (view->growbuf_in_use);
 
     if (retval != NULL)
         *retval = -1;
@@ -267,7 +257,7 @@ mcview_get_byte_growing_buffer (mcview_t * view, off_t byte_index, int *retval)
         return FALSE;
 
     if (retval != NULL)
-        *retval = *p;
+        *retval = (unsigned char) (*p);
 
     return TRUE;
 }
@@ -275,13 +265,11 @@ mcview_get_byte_growing_buffer (mcview_t * view, off_t byte_index, int *retval)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-mcview_get_ptr_growing_buffer (mcview_t * view, off_t byte_index)
+mcview_get_ptr_growing_buffer (WView * view, off_t byte_index)
 {
     off_t pageno, pageindex;
 
-#ifdef HAVE_ASSERT_H
-    assert (view->growbuf_in_use);
-#endif
+    g_assert (view->growbuf_in_use);
 
     if (byte_index < 0)
         return NULL;
@@ -293,10 +281,10 @@ mcview_get_ptr_growing_buffer (mcview_t * view, off_t byte_index)
     if (view->growbuf_blockptr->len == 0)
         return NULL;
     if (pageno < (off_t) view->growbuf_blockptr->len - 1)
-        return (char *) (((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno)) + pageindex);
+        return ((char *) g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex);
     if (pageno == (off_t) view->growbuf_blockptr->len - 1
         && pageindex < (off_t) view->growbuf_lastindex)
-        return (char *) (((byte *)g_ptr_array_index (view->growbuf_blockptr, pageno)) + pageindex);
+        return ((char *) g_ptr_array_index (view->growbuf_blockptr, pageno) + pageindex);
     return NULL;
 }
 

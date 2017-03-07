@@ -1,7 +1,7 @@
 /*
    Editor options dialog box
 
-   Copyright (C) 1996-2015
+   Copyright (C) 1996-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -33,7 +33,6 @@
 #include <config.h>
 
 #include <stdlib.h>             /* atoi(), NULL */
-#include <assert.h>             //WIN32, quick
 
 #include "lib/global.h"
 #include "lib/widget.h"
@@ -85,7 +84,7 @@ edit_reset_over_col (void *data, void *user_data)
 {
     (void) user_data;
 
-    if (edit_widget_is_editor ((const Widget *) data))
+    if (edit_widget_is_editor (CONST_WIDGET (data)))
         ((WEdit *) data)->over_col = 0;
 }
 
@@ -103,9 +102,10 @@ edit_reload_syntax (void *data, void *user_data)
 {
     (void) user_data;
 
-    if (edit_widget_is_editor (WIDGET (data)))
+    if (edit_widget_is_editor (CONST_WIDGET (data)))
     {
         WEdit *edit = (WEdit *) data;
+
         edit_load_syntax (edit, NULL, edit->syntax_type);
     }
 }
@@ -120,7 +120,7 @@ edit_options_dialog (WDialog * h)
     char wrap_length[16], tab_spacing[16];
     char *p, *q;
     int wrap_mode = 0;
-    int old_syntax_hl;
+    gboolean old_syntax_hl;
 
 #ifdef ENABLE_NLS
     static gboolean i18n_flag = FALSE;
@@ -144,7 +144,7 @@ edit_options_dialog (WDialog * h)
 
     {
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[30],
+        quick_widget_t quick_widgets[29+2],
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -196,37 +196,41 @@ edit_options_dialog (WDialog * h)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_START_COLUMNS (qc);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("Wrap mode"));
-        qc =         XQUICK_RADIO (qc, 3, wrap_str, &wrap_mode, NULL);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc =     XQUICK_SEPARATOR (qc, FALSE);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("Tabulation"));
-        qc =         XQUICK_CHECKBOX (qc, N_("&Fake half tabs"), &option_fake_half_tabs, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("&Backspace through tabs"), &option_backspace_through_tabs, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Fill tabs with &spaces"), &option_fill_tabs_with_spaces, NULL),
-        qc =         XQUICK_LABELED_INPUT (qc,
-                                            N_("Tab spacing:"), input_label_left, tab_spacing,
-                                            "edit-tab-spacing", &q, NULL, FALSE, FALSE, INPUT_COMPLETE_NONE);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc = XQUICK_NEXT_COLUMN (qc);
+        qc = XQUICK_START_COLUMNS (qc),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("Wrap mode")),
+        qc =         XQUICK_RADIO (qc, 3, wrap_str, &wrap_mode, NULL),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc =     XQUICK_SEPARATOR (qc, FALSE),
+        qc =     XQUICK_SEPARATOR (qc, FALSE),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("Tabulation")),
+        qc =         XQUICK_CHECKBOX (qc, N_("&Fake half tabs"), &option_fake_half_tabs, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("&Backspace through tabs"), &option_backspace_through_tabs,
+                                 NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Fill tabs with &spaces"), &option_fill_tabs_with_spaces,
+                                 NULL),
+        qc =         XQUICK_LABELED_INPUT (qc, N_("Tab spacing:"), input_label_left, tab_spacing,
+                                       "edit-tab-spacing", &q, NULL, FALSE, FALSE, INPUT_COMPLETE_NONE),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc = XQUICK_NEXT_COLUMN (qc),
         qc =     XQUICK_START_GROUPBOX (qc, N_("Other options")),
-        qc =         XQUICK_CHECKBOX (qc, N_("&Return does autoindent"), &option_return_does_auto_indent, NULL); 
-        qc =         XQUICK_CHECKBOX (qc, N_("Confir&m before saving"), &edit_confirm_save, NULL); 
-        qc =         XQUICK_CHECKBOX (qc, N_("Save file &position"), &option_save_position, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("&Visible trailing spaces"), &visible_tws, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Visible &tabs"), &visible_tabs, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Synta&x highlighting"), &option_syntax_highlighting, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("C&ursor after inserted block"), &option_cursor_after_inserted_block, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Pers&istent selection"), &option_persistent_selections, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Cursor be&yond end of line"), &option_cursor_beyond_eol, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("&Group undo"), &option_group_undo, NULL);
-        qc =         XQUICK_LABELED_INPUT (qc,
-                                            N_("Word wrap line length:"), input_label_left, wrap_length,
-                                            "edit-word-wrap", &p, NULL, FALSE, FALSE, INPUT_COMPLETE_NONE);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc = XQUICK_STOP_COLUMNS (qc);
-        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+        qc =         XQUICK_CHECKBOX (qc, N_("&Return does autoindent"), &option_return_does_auto_indent,
+                                 NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Confir&m before saving"), &edit_confirm_save, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Save file &position"), &option_save_position, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("&Visible trailing spaces"), &visible_tws, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Visible &tabs"), &visible_tabs, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Synta&x highlighting"), &option_syntax_highlighting, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("C&ursor after inserted block"), &option_cursor_after_inserted_block, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Pers&istent selection"), &option_persistent_selections,
+                                  NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Cursor be&yond end of line"), &option_cursor_beyond_eol,
+                                  NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("&Group undo"), &option_group_undo, NULL),
+        qc =         XQUICK_LABELED_INPUT (qc, N_("Word wrap line length:"), input_label_left, wrap_length,
+                                      "edit-word-wrap", &p, NULL, FALSE, FALSE, INPUT_COMPLETE_NONE),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc = XQUICK_STOP_COLUMNS (qc),
+        qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32
@@ -258,18 +262,18 @@ edit_options_dialog (WDialog * h)
 
     if (wrap_mode == 1)
     {
-        option_auto_para_formatting = 1;
-        option_typewriter_wrap = 0;
+        option_auto_para_formatting = TRUE;
+        option_typewriter_wrap = FALSE;
     }
     else if (wrap_mode == 2)
     {
-        option_auto_para_formatting = 0;
-        option_typewriter_wrap = 1;
+        option_auto_para_formatting = FALSE;
+        option_typewriter_wrap = TRUE;
     }
     else
     {
-        option_auto_para_formatting = 0;
-        option_typewriter_wrap = 0;
+        option_auto_para_formatting = FALSE;
+        option_typewriter_wrap = FALSE;
     }
 
     /* Load or unload syntax rules if the option has changed */

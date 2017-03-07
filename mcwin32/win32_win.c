@@ -11,7 +11,7 @@
    The Free Software Foundation, Inc.
 
    Written by:
-   Adam Young 2012-2015
+   Adam Young 2012 - 2017
 
    This file is part of the Midnight Commander.
 
@@ -31,7 +31,7 @@
  */
 
 #include <config.h>
-#include "win32.h"
+#include "libw32.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,26 +45,22 @@
 char *smcup = NULL;                             /* usage tty.c */
 char *rmcup = NULL;
 
+void
+tty_enter_ca_mode (void)
+{
+}
 
 void
-do_enter_ca_mode (void)
+tty_exit_ca_mode (void)
 {
 }
-
-
-void 
-do_exit_ca_mode (void)
-{
-}
-
 
 void
 show_rxvt_contents (int starty, unsigned char y1, unsigned char y2)
 {
 }
 
-
-gboolean 
+gboolean
 look_for_rxvt_extensions (void)
 {
     return FALSE;

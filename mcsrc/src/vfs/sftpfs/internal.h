@@ -16,6 +16,11 @@
 
 #define SFTP_DEFAULT_PORT 22
 
+/* LIBSSH2_INVALID_SOCKET is defined in libssh2 >= 1.4.1 */
+#ifndef LIBSSH2_INVALID_SOCKET
+#define LIBSSH2_INVALID_SOCKET -1
+#endif
+
 /*** enums ***************************************************************************************/
 
 typedef enum
@@ -65,7 +70,8 @@ void sftpfs_ssherror_to_gliberror (sftpfs_super_data_t * super_data, int libssh_
                                    GError ** mcerror);
 int sftpfs_waitsocket (sftpfs_super_data_t * super_data, GError ** mcerror);
 
-const char *sftpfs_fix_filename (const char *file_name);
+const char *sftpfs_fix_filename (const char *file_name, unsigned int *length);
+void sftpfs_blksize (struct stat *s);
 int sftpfs_lstat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror);
 int sftpfs_stat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror);
 int sftpfs_readlink (const vfs_path_t * vpath, char *buf, size_t size, GError ** mcerror);

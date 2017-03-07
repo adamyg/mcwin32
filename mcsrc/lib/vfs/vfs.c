@@ -1,7 +1,7 @@
 /*
    Virtual File System switch code
 
-   Copyright (C) 1995-2015
+   Copyright (C) 1995-2017
    Free Software Foundation, Inc.
 
    Written by: 1995 Miguel de Icaza
@@ -59,14 +59,17 @@
 #include "utilvfs.h"
 #include "gc.h"
 
+/* TODO: move it to the separate .h */
 extern struct dirent *mc_readdir_result;
+extern GPtrArray *vfs__classes_list;
+extern GString *vfs_str_buffer;
+extern vfs_class *current_vfs;
+
 /*** global variables ****************************************************************************/
 
 GPtrArray *vfs__classes_list = NULL;
-
 GString *vfs_str_buffer = NULL;
-struct vfs_class *current_vfs = NULL;
-
+vfs_class *current_vfs = NULL;
 
 /*** file scope macro definitions ****************************************************************/
 
@@ -76,14 +79,12 @@ struct vfs_class *current_vfs = NULL;
 
 #define VFS_FIRST_HANDLE 100
 
-#define ISSLASH(a) (a == '\0' || IS_PATH_SEP (a))
-
 /*** file scope type declarations ****************************************************************/
 
 struct vfs_openfile
 {
     int handle;
-    struct vfs_class *vclass;
+    vfs_class *vclass;
     void *fsinfo;
 };
 
@@ -92,13 +93,13 @@ struct vfs_openfile
 /** They keep track of the current directory */
 static vfs_path_t *current_path = NULL;
 
-static GPtrArray *vfs_openfiles;
+static GPtrArray *vfs_openfiles = NULL;
 static long vfs_free_handle_list = -1;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
-/* now used only by vfs_translate_path, but could be used in other vfs 
+/* now used only by vfs_translate_path, but could be used in other vfs
  * plugin to automatic detect encoding
  * path - path to translate
  * size - how many bytes from path translate
@@ -144,7 +145,7 @@ _vfs_translate_path (const char *path, int size, GIConv defcnv, GString * buffer
             slash = NULL;
 
         ms = (slash != NULL) ? slash - semi : (int) strlen (semi);
-        ms = min ((unsigned int) ms, sizeof (encoding) - 1);
+        ms = MIN ((unsigned int) ms, sizeof (encoding) - 1);
         /* limit encoding size (ms) to path size (size) */
         if (semi + ms > path + size)
             ms = path + size - semi;
@@ -156,8 +157,17 @@ _vfs_translate_path (const char *path, int size, GIConv defcnv, GString * buffer
 
         if (coder != INVALID_CONV)
         {
-            if (slash != NULL)
+            if (slash != NULL) {
                 state = str_vfs_convert_to (coder, slash + 1, path + size - slash - 1, buffer);
+#if defined(WIN32) //WIN32, drive
+                if (buffer->len >= 3) { //remap "/X:" --> "X":
+                    if (IS_PATH_SEP(buffer->str[0]) && buffer->str[2] == ':' && isalpha(buffer->str[1])) {
+                            g_string_erase(buffer, 0, 1);
+                                //remove root directory reference; can occur during vfs operations.
+                    }
+                }
+#endif //WIN32
+            }
             str_close_conv (coder);
             return state;
         }
@@ -200,6 +210,19 @@ vfs_get_openfile (int handle)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+vfs_test_current_dir (const vfs_path_t * vpath)
+{
+    struct stat my_stat, my_stat2;
+
+    return (mc_global.vfs.cd_symlinks && mc_stat (vpath, &my_stat) == 0
+            && mc_stat (vfs_get_raw_current_dir (), &my_stat2) == 0
+            && my_stat.st_ino == my_stat2.st_ino && my_stat.st_dev == my_stat2.st_dev);
+}
+
+
+/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 /** Free open file data for given file handle */
@@ -222,29 +245,22 @@ vfs_free_handle (int handle)
 
 
 /* --------------------------------------------------------------------------------------------- */
-/** Find private file data by file handle */
-
-void *
-vfs_class_data_find_by_handle (int handle)
-{
-    struct vfs_openfile *h;
-
-    h = vfs_get_openfile (handle);
-
-    return h == NULL ? NULL : h->fsinfo;
-}
-
-/* --------------------------------------------------------------------------------------------- */
 /** Find VFS class by file handle */
 
 struct vfs_class *
-vfs_class_find_by_handle (int handle)
+vfs_class_find_by_handle (int handle, void **fsinfo)
 {
     struct vfs_openfile *h;
 
     h = vfs_get_openfile (handle);
 
-    return h == NULL ? NULL : h->vclass;
+    if (h == NULL)
+        return NULL;
+
+    if (fsinfo != NULL)
+        *fsinfo = h->fsinfo;
+
+    return h->vclass;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -312,24 +328,24 @@ vfs_register_class (struct vfs_class * vfs)
 char *
 vfs_strip_suffix_from_filename (const char *filename)
 {
-    char *semi, *p, *vfs_prefix;
+    char *semi, *p;
 
     if (filename == NULL)
         vfs_die ("vfs_strip_suffix_from_path got NULL: impossible");
 
     p = g_strdup (filename);
     semi = g_strrstr (p, VFS_PATH_URL_DELIMITER);
-    if (semi == NULL)
-        return p;
-
-    *semi = '\0';
-    vfs_prefix = strrchr (p, PATH_SEP);
-    if (vfs_prefix == NULL)
+    if (semi != NULL)
     {
-        *semi = *VFS_PATH_URL_DELIMITER;
-        return p;
+        char *vfs_prefix;
+
+        *semi = '\0';
+        vfs_prefix = strrchr (p, PATH_SEP);
+        if (vfs_prefix == NULL)
+            *semi = *VFS_PATH_URL_DELIMITER;
+        else
+            *vfs_prefix = '\0';
     }
-    *vfs_prefix = '\0';
 
     return p;
 }
@@ -361,11 +377,24 @@ vfs_translate_path_n (const char *path)
 /**
  * Get current directory without any OS calls.
  *
- * @return string contain current path
+ * @return string contains current path
+ */
+
+const char *
+vfs_get_current_dir (void)
+{
+    return current_path->str;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Get current directory without any OS calls.
+ *
+ * @return newly allocated string contains current path
  */
 
 char *
-vfs_get_current_dir (void)
+vfs_get_current_dir_n (void)
 {
     return g_strdup (current_path->str);
 }
@@ -473,10 +502,16 @@ vfs_shut (void)
             vfs->done (vfs);
     }
 
+    /* NULL-ize pointers to make unit tests happy */
     g_ptr_array_free (vfs_openfiles, TRUE);
+    vfs_openfiles = NULL;
     g_ptr_array_free (vfs__classes_list, TRUE);
+    vfs__classes_list = NULL;
     g_string_free (vfs_str_buffer, TRUE);
-    g_free (mc_readdir_result);
+    vfs_str_buffer = NULL;
+    current_vfs = NULL;
+    vfs_free_handle_list = -1;
+    MC_PTR_FREE (mc_readdir_result);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -512,12 +547,13 @@ void
 vfs_print_message (const char *msg, ...)
 {
     ev_vfs_print_message_t event_data;
+    va_list ap;
 
-    va_start (event_data.ap, msg);
-    event_data.msg = msg;
+    va_start (ap, msg);
+    event_data.msg = g_strdup_vprintf (msg, ap);
+    va_end (ap);
 
     mc_event_raise (MCEVENT_GROUP_CORE, "vfs_print_message", (gpointer) & event_data);
-    va_end (event_data.ap);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -544,12 +580,7 @@ vfs_setup_cwd (void)
 
         if (tmp_vpath != NULL)
         {
-            struct stat my_stat, my_stat2;
-
-            if (mc_global.vfs.cd_symlinks
-                && mc_stat (tmp_vpath, &my_stat) == 0
-                && mc_stat (vfs_get_raw_current_dir (), &my_stat2) == 0
-                && my_stat.st_ino == my_stat2.st_ino && my_stat.st_dev == my_stat2.st_dev)
+            if (vfs_test_current_dir (tmp_vpath))
                 vfs_set_raw_current_dir (tmp_vpath);
             else
                 vfs_path_free (tmp_vpath);
@@ -565,14 +596,11 @@ vfs_setup_cwd (void)
         g_free (current_dir);
 
         if (tmp_vpath != NULL)
-        {                       /* One of the directories in the path is not readable */
-            struct stat my_stat, my_stat2;
+        {
+            /* One of directories in the path is not readable */
 
             /* Check if it is O.K. to use the current_dir */
-            if (!(mc_global.vfs.cd_symlinks
-                  && mc_stat (tmp_vpath, &my_stat) == 0
-                  && mc_stat (vfs_get_raw_current_dir (), &my_stat2) == 0
-                  && my_stat.st_ino == my_stat2.st_ino && my_stat.st_dev == my_stat2.st_dev))
+            if (!vfs_test_current_dir (tmp_vpath))
                 vfs_set_raw_current_dir (tmp_vpath);
             else
                 vfs_path_free (tmp_vpath);
@@ -619,26 +647,23 @@ vfs_preallocate (int dest_vfs_fd, off_t src_fsize, off_t dest_fsize)
     return 0;
 
 #else /* HAVE_POSIX_FALLOCATE */
-    int *dest_fd;
+    void *dest_fd = NULL;
     struct vfs_class *dest_class;
 
     if (!mc_global.vfs.preallocate_space)
         return 0;
 
-    dest_class = vfs_class_find_by_handle (dest_vfs_fd);
-    if ((dest_class->flags & VFSF_LOCAL) == 0)
-        return 0;
-
-    dest_fd = (int *) vfs_class_data_find_by_handle (dest_vfs_fd);
-    if (dest_fd == NULL)
-        return 0;
-
     if (src_fsize == 0)
         return 0;
 
-    return posix_fallocate (*dest_fd, dest_fsize, src_fsize - dest_fsize);
+    dest_class = vfs_class_find_by_handle (dest_vfs_fd, &dest_fd);
+    if ((dest_class->flags & VFSF_LOCAL) == 0 || dest_fd == NULL)
+        return 0;
+
+    return posix_fallocate (*(int *) dest_fd, dest_fsize, src_fsize - dest_fsize);
 
 #endif /* HAVE_POSIX_FALLOCATE */
 }
 
 /* --------------------------------------------------------------------------------------------- */
+

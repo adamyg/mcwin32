@@ -1,7 +1,7 @@
 /*
    Text conversion from one charset to another.
 
-   Copyright (C) 2001-2015
+   Copyright (C) 2001-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -36,6 +36,8 @@
 #include "lib/global.h"
 #include "lib/strutil.h"        /* utf-8 functions */
 #include "lib/fileloc.h"
+#include "lib/util.h"           /* whitespace() */
+
 #include "lib/charsets.h"
 
 /*** global variables ****************************************************************************/
@@ -53,12 +55,6 @@ const char *cp_source = NULL;
 #define UNKNCHAR '\001'
 
 #define OTHER_8BIT "Other_8_bit"
-
-/*
- * FIXME: This assumes that ASCII is always the first encoding
- * in mc.charsets
- */
-#define CP_ASCII 0
 
 /*** file scope type declarations ****************************************************************/
 
@@ -117,7 +113,7 @@ load_codepages_list_from_file (GPtrArray ** list, const char *fname)
 
         if (buflen > 0 && buf[buflen - 1] == '\n')
             buf[buflen - 1] = '\0';
-        while (*p != '\t' && *p != ' ' && *p != '\0')
+        while (*p != '\0' && !whitespace (*p))
             ++p;
         if (*p == '\0')
             goto fail;
@@ -220,7 +216,7 @@ load_codepages_list (void)
         fprintf (stderr, "%s\n", _("Warning: cannot load codepages list"));
 
         codepages = g_ptr_array_new ();
-        g_ptr_array_add (codepages, new_codepage_desc (DEFAULT_CHARSET, _("7-bit ASCII")));
+        g_ptr_array_add (codepages, new_codepage_desc (MC_DEFAULT_CHARSET, _("7-bit ASCII")));
     }
 }
 
@@ -231,6 +227,8 @@ free_codepages_list (void)
 {
     g_ptr_array_foreach (codepages, free_codepage_desc, NULL);
     g_ptr_array_free (codepages, TRUE);
+    /* NULL-ize pointer to make unit tests happy */
+    codepages = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -354,7 +352,7 @@ convert_to_display (char *str)
 /* --------------------------------------------------------------------------------------------- */
 
 GString *
-str_convert_to_display (char *str)
+str_convert_to_display (const char *str)
 {
     return str_nconvert_to_display (str, -1);
 
@@ -363,7 +361,7 @@ str_convert_to_display (char *str)
 /* --------------------------------------------------------------------------------------------- */
 
 GString *
-str_nconvert_to_display (char *str, int len)
+str_nconvert_to_display (const char *str, int len)
 {
     GString *buff;
     GIConv conv;
@@ -400,7 +398,7 @@ convert_from_input (char *str)
 /* --------------------------------------------------------------------------------------------- */
 
 GString *
-str_convert_to_input (char *str)
+str_convert_to_input (const char *str)
 {
     return str_nconvert_to_input (str, -1);
 }
@@ -408,7 +406,7 @@ str_convert_to_input (char *str)
 /* --------------------------------------------------------------------------------------------- */
 
 GString *
-str_nconvert_to_input (char *str, int len)
+str_nconvert_to_input (const char *str, int len)
 {
     GString *buff;
     GIConv conv;
@@ -437,7 +435,7 @@ convert_from_utf_to_current (const char *str)
     GIConv conv;
     const char *cp_to;
 
-    if (!str)
+    if (str == NULL)
         return '.';
 
     cp_to = get_codepage_id (mc_global.source_codepage);
@@ -454,30 +452,29 @@ convert_from_utf_to_current (const char *str)
         case ESTR_FAILURE:
             ch = '.';
             break;
+        default:
+            break;
         }
         str_close_conv (conv);
     }
 
     return ch;
-
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 unsigned char
-convert_from_utf_to_current_c (const int input_char, GIConv conv)
+convert_from_utf_to_current_c (int input_char, GIConv conv)
 {
     unsigned char str[UTF8_CHAR_LEN + 1];
     unsigned char buf_ch[UTF8_CHAR_LEN + 1];
     unsigned char ch = '.';
-
-    int res = 0;
+    int res;
 
     res = g_unichar_to_utf8 (input_char, (char *) str);
     if (res == 0)
-    {
         return ch;
-    }
+
     str[res] = '\0';
 
     switch (str_translate_char (conv, (char *) str, -1, (char *) buf_ch, sizeof (buf_ch)))
@@ -489,19 +486,21 @@ convert_from_utf_to_current_c (const int input_char, GIConv conv)
     case ESTR_FAILURE:
         ch = '.';
         break;
+    default:
+        break;
     }
+
     return ch;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 int
-convert_from_8bit_to_utf_c (const char input_char, GIConv conv)
+convert_from_8bit_to_utf_c (char input_char, GIConv conv)
 {
     unsigned char str[2];
     unsigned char buf_ch[UTF8_CHAR_LEN + 1];
-    int ch = '.';
-    int res = 0;
+    int ch;
 
     str[0] = (unsigned char) input_char;
     str[1] = '\0';
@@ -509,31 +508,29 @@ convert_from_8bit_to_utf_c (const char input_char, GIConv conv)
     switch (str_translate_char (conv, (char *) str, -1, (char *) buf_ch, sizeof (buf_ch)))
     {
     case ESTR_SUCCESS:
-        res = g_utf8_get_char_validated ((char *) buf_ch, -1);
-        if (res < 0)
         {
-            ch = buf_ch[0];
+            int res;
+
+            res = g_utf8_get_char_validated ((char *) buf_ch, -1);
+            ch = res >= 0 ? res : buf_ch[0];
+            break;
         }
-        else
-        {
-            ch = res;
-        }
-        break;
     case ESTR_PROBLEM:
     case ESTR_FAILURE:
+    default:
         ch = '.';
         break;
     }
+
     return ch;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 int
-convert_from_8bit_to_utf_c2 (const char input_char)
+convert_from_8bit_to_utf_c2 (char input_char)
 {
     unsigned char str[2];
-    unsigned char buf_ch[UTF8_CHAR_LEN + 1];
     int ch = '.';
     GIConv conv;
     const char *cp_from;
@@ -546,30 +543,28 @@ convert_from_8bit_to_utf_c2 (const char input_char)
 
     if (conv != INVALID_CONV)
     {
-        int res = 0;
+        unsigned char buf_ch[UTF8_CHAR_LEN + 1];
 
         switch (str_translate_char (conv, (char *) str, -1, (char *) buf_ch, sizeof (buf_ch)))
         {
         case ESTR_SUCCESS:
-            res = g_utf8_get_char_validated ((char *) buf_ch, -1);
-            if (res < 0)
             {
-                ch = buf_ch[0];
+                int res;
+
+                res = g_utf8_get_char_validated ((char *) buf_ch, -1);
+                ch = res >= 0 ? res : buf_ch[0];
+                break;
             }
-            else
-            {
-                ch = res;
-            }
-            break;
         case ESTR_PROBLEM:
         case ESTR_FAILURE:
+        default:
             ch = '.';
             break;
         }
         str_close_conv (conv);
     }
-    return ch;
 
+    return ch;
 }
 
 /* --------------------------------------------------------------------------------------------- */

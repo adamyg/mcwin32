@@ -4,7 +4,7 @@
 /*
  * win32 <langinfo.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -106,7 +106,7 @@ typedef enum {
 } nl_item;
 
 
-const char *        nl_langinfo(nl_item);
+LIBW32_API const char *nl_langinfo(nl_item);
 
 __END_DECLS
 

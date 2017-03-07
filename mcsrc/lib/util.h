@@ -5,12 +5,12 @@
 #ifndef MC_UTIL_H
 #define MC_UTIL_H
 
-#include "lib/global.h"         /* include <glib.h> */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <inttypes.h>           /* uintmax_t */
 #include <unistd.h>
+
+#include "lib/global.h"         /* include <glib.h> */
 
 #include "lib/vfs/vfs.h"
 
@@ -26,6 +26,9 @@
 
 #define mc_return_if_error(mcerror) do { if (mcerror != NULL && *mcerror != NULL) return; } while (0)
 #define mc_return_val_if_error(mcerror, mcvalue) do { if (mcerror != NULL && *mcerror != NULL) return mcvalue; } while (0)
+
+#define whitespace(c) ((c) == ' ' || (c) == '\t')
+#define whiteness(c) (whitespace (c) || (c) == '\n')
 
 #define MC_PIPE_BUFSIZE BUF_8K
 #define MC_PIPE_STREAM_EOF 0
@@ -54,6 +57,8 @@ enum compression_type
     COMPRESSION_GZIP,
     COMPRESSION_BZIP,
     COMPRESSION_BZIP2,
+    COMPRESSION_LZIP,
+    COMPRESSION_LZ4,
     COMPRESSION_LZMA,
     COMPRESSION_XZ
 };
@@ -170,7 +175,8 @@ char *diff_two_paths (const vfs_path_t * vpath1, const vfs_path_t * vpath2);
 /* Returns the basename of fname. The result is a pointer into fname. */
 const char *x_basename (const char *fname);
 
-char *load_mc_home_file (const char *from, const char *filename, char **allocated_filename);
+char *load_mc_home_file (const char *from, const char *filename, char **allocated_filename,
+                         size_t * length);
 
 /* uid/gid managing */
 void init_groups (void);
@@ -178,8 +184,8 @@ void destroy_groups (void);
 int get_user_permissions (struct stat *buf);
 
 void init_uid_gid_cache (void);
-char *get_group (int);
-char *get_owner (int);
+const char *get_group (gid_t gid);
+const char *get_owner (uid_t uid);
 
 /* Returns a copy of *s until a \n is found and is below top */
 const char *extract_line (const char *s, const char *top);
@@ -246,8 +252,12 @@ char *guess_message_value (void);
 char *mc_build_filename (const char *first_element, ...);
 char *mc_build_filenamev (const char *first_element, va_list args);
 
-void mc_propagate_error (GError ** dest, int code, const char *format, ...);
-void mc_replace_error (GError ** dest, int code, const char *format, ...);
+const char *mc_get_profile_root (void);
+
+/* *INDENT-OFF* */
+void mc_propagate_error (GError ** dest, int code, const char *format, ...) G_GNUC_PRINTF (3, 4);
+void mc_replace_error (GError ** dest, int code, const char *format, ...) G_GNUC_PRINTF (3, 4);
+/* *INDENT-ON* */
 
 gboolean mc_time_elapsed (guint64 * timestamp, guint64 delay);
 

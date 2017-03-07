@@ -2,7 +2,7 @@
 /*
  * win32 getcwd() implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -28,6 +28,7 @@
  */
 
 #include "win32_internal.h"
+#include <ctype.h>
 #include <errno.h>
 
 /*
@@ -114,7 +115,7 @@ w32_getcwd(char *path, int size)
         //  is the size, in characters, of the buffer that is required to hold 
         //  the path and the terminating null character.
         //
-        if ((ret = GetCurrentDirectory(sizeof(t_path), t_path)) <= 0) {
+        if ((ret = GetCurrentDirectory(sizeof(t_path), t_path)) == 0) {
             w32_errno_set();
             
         } else if (ret >= (DWORD)size || ret >= sizeof(t_path)) {
@@ -188,7 +189,7 @@ w32_getcwdd(char drive, char *path, int size)
         //
         pathrel[0] = ('A' + nDrive);            /* A ... Z */
 
-        if ((ret = GetFullPathName(pathrel, sizeof(t_path), t_path, &file)) <= 0) {
+        if ((ret = GetFullPathName(pathrel, sizeof(t_path), t_path, &file)) == 0) {
             w32_errno_set();
 
         } else if (ret >= (DWORD)size || ret >= sizeof(t_path)) {

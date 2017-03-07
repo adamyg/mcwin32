@@ -1,0 +1,207 @@
+
+    Citrus XPG4DL:
+
+        Version in tree:        n/a
+        Current Version:        n/a
+        Maintainer(external):   Citrus
+        Responsible(NetBSD):    tshiozak
+        Mailing List:           bsd-locale@hauN.org
+        Archive Site:           http://citrus.bsdclub.org/
+
+        Notes: language C multilingualization support suite using wchar_t and
+        other standards. The main development playground of Citrus is in
+        NetBSD CVS, so you don't need to look for other CVS tree (like citrus
+        CVS tree) main trunc has Citrus code in the following places:
+
+          - src/lib/libc/locale, LC_CTYPE:  single/multibyte support
+          - src/lib/libintl:                GNU libc compatible gettext(3) implementation.
+          - src/lib/libc/citrus:            multibyte LC_CTYPE handling and iconv(3) lower layer
+          - src/lib/libc/iconv:             iconv(3)
+
+
+    Source:
+
+        ftp.net.org
+
+
+    Porting:
+
+        The following changes occurred during porting to a WIN32 target
+
+          o #include "namespace.h" within all modules, naming/function mangling.
+
+          o citrus_types.h WCHAR_T definition, with 'wchar_t' globally replaced with 'WCHAR_T'.
+
+          o #include "paths.h", static directories replaced with dynamic runtime.
+
+          o dll library search logic.
+
+          o fgetln() local implementation.
+
+          o HTONS/HTONL usage.
+
+
+    Purpose:
+
+        To create for the existing BSD series of PC-UNIX (FreeBSD, NetBSD, OpenBSD, 
+        BSD/OS) the following things:
+
+           o Locale/iconv implementation to conform to ISO C/SUSV2
+
+           o Non-GPL gettext and POSIX NLS catalog implementation
+
+           o It is a goal to develop system standard multi-script encoding by
+           internationalization of file name Design and implement multi-script
+           framework.
+
+        For now, our goal is the same level of functionality as Solaris7 supports.
+
+
+    Policy:
+
+      Design/Implementation Policy
+
+        Everything::
+
+            For now, a separate library from libc is used.
+
+            One can add new locale and encoding without recompiling system
+            libraries by dynamic linking. localedef(1) does this as well.
+
+        Encoding::
+
+             The following items are supported
+
+                ISO 2022 series
+                8bit plain (for efficiency, separate from ISO 2022)
+                EUC (for efficiency, separate from ISO 2022)
+                SJIS, GB, KOI8
+                System standard for multi-script encoding
+                Unicode
+                Others
+
+             The requirements for encoding is described as being only that
+             "The encoding must be 32-bit". In other words, any kind of
+             encoding is acceptable so long as it can fit into 4 bytes. On the
+             other hand, design contraints of the class "Encoding must be ISO
+             2022" or "Encoding must be UCS4" are not acceptible.
+
+             Possibly the implementation of multt-script framework is done
+             with this layer. Maybe, in this case, the API to take charset
+             information is built for cune_t (cuneiform type). wchar_t would
+             become an alias for cune_t.
+
+        locale mechanism::
+
+            Full support of all assocaited functions of ISO/IEC-C
+            9899:1990/Amendment 1:1995
+
+            POSIX/SUSV2 conformance
+
+            Support of locale description handle: In normal ISO C locale, only
+            one locale can exist per process. By creating local description
+            handle, even though it is inconvenence in a lot of cases, multiple
+            locales can exist in the same process. ISO C locale(process
+            locale) uses build-in locale description handle and is implemented
+            by some form of wrapper function.
+
+        Internationalization message catalog
+
+                POSIX standard catalog function (cat*)
+                gettext function
+
+            iconv/extension conversion API
+
+        System standard multi-script encoding
+
+            There's a good chance that something based on ISO 2022 will be
+            adopted.
+
+            Development will fundamentally be for Fixed Width Compound Text
+            and File System Safe Compound Text.
+
+
+    License:
+
+        The license is still ambiguous at this point, but it will be either a
+        BSD Style License or use perl's model. In addition, "the license must
+        allow for BSD/MIT/(L)GPL uses of the code". This allows the
+        possibility that it will be picked up by X or glib. However, it is
+        only a "possibility". To be honest, so far there is not schedule to do
+        port to glibc strictly. The X Consortium may be interested in iconv
+        for its X-TT or Unicode support.
+
+        A person offering code for this project must agree to it being
+        distributed with this license condition. In addition, copyright of
+        this project is added to the source code. Of course the original
+        copyright is left in place as well.
+
+        Copyright (c)2003 Citrus Project,
+        All rights reserved.
+
+        Redistribution and use in source and binary forms, with or without
+        modification, are permitted provided that the following conditions
+        are met:
+        1. Redistributions of source code must retain the above copyright
+           notice, this list of conditions and the following disclaimer.
+        2. Redistributions in binary form must reproduce the above copyright
+           notice, this list of conditions and the following disclaimer in the
+           documentation and/or other materials provided with the distribution.
+
+        THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+        ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+        IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+        ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+        FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+        DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+        OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+        HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+        LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+        OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+        SUCH DAMAGE.
+
+
+    Resources/Links
+
+        o JIS X 3010-1996 Programming language C
+            (ISO/IEC-C 9899:1990/Amendment 1:1995)
+
+        o JIS X 3030-1994 POSIX part 1
+            (ISO/IEC 9945-1)
+
+        o JIS X 0202-1998 Structure of character code and expanding scheme
+            (ISO/IEC 2022:1994)
+
+        o JIS X 0211-1994 Control feature for coded character set
+            (ISO/IEC 6429:1992)
+
+        o JIS X 0221-1995 UCS
+            (ISO/IEC 10646-1:1993)
+
+        o Unix(R) System
+            Download the Single Unix Specification Version 2 from here.
+
+        o Unicode Consortium
+
+        o X11R6.4
+            xc/lib/X11 lc*.c, Xlc*.h
+            xc/doc/specs/i18n
+            (which is an incomplte locale). The model of implementaion for
+            locale/encoding is well liked. The latter can be obtained in
+            Japanese from the xjman project.
+
+        o X11R6.4's xc/doc/CTEXT Japanese edition can also be obtained from
+          the xjman project.
+
+        o RFC 1468 (ISO-2022-JP)
+
+        o RFC 1554 (ISO-2022-JP-2)
+
+        o RFC 2279 (UTF8)
+
+        o I18N Handbook
+
+        o Asian-Language Support in the Solaris Operating Environment Unicode
+          Support in the Solaris 7 Operating Environment
+
+

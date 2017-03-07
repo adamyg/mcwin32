@@ -1,4 +1,5 @@
 [main]
+ChangePanel = tab
 Help = f1
 UserMenu = f2
 View = f3
@@ -32,6 +33,8 @@ SplitLess = alt-shift-left
 Shell = ctrl-o
 PutCurrentPath = alt-a
 PutOtherPath = alt-shift-a
+PutCurrentSelected = alt-enter; ctrl-enter
+PutCurrentFullSelected = ctrl-shift-enter
 ViewFiltered = alt-exclamation
 Select = kpplus
 Unselect = kpminus

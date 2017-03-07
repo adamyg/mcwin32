@@ -13,7 +13,7 @@
  *      win32APICALL(x) -
  *           Use to enclose a Win32 system call that should return TRUE.
  *
- *      win32APICALL_HANDLE(h,x) - 
+ *      win32APICALL_HANDLE(h,x) -
  *           Use to enclose a Win32 system call that should return a handle.
  */
 
@@ -38,21 +38,21 @@
 
 __BEGIN_DECLS
 
-void                w32_Trace (const char *, ...);
-void                w32_TraceAPICall (const char *name, int line, const char *file);
-void                w32_AssertionFailed (const char *name, int line, const char *file);
+LIBW32_API void 		w32_Trace (const char *, ...);
+LIBW32_API void 		w32_TraceAPICall (const char *name, int line, const char *file);
+LIBW32_API void 		w32_AssertionFailed (const char *name, int line, const char *file);
 
-void                w32_SetTrace (int trace);
-void                w32_TraceOn (void);
-void                w32_TraceOff (void);
+LIBW32_API void 		w32_SetTrace (int trace);
+LIBW32_API void 		w32_TraceOn (void);
+LIBW32_API void 		w32_TraceOff (void);
 
 __END_DECLS
 
-#define SetTrace                    w32_SetTrace
-#define TraceOn                     w32_TraceOn
-#define TraceOff                    w32_TraceOff
+#define SetTrace		w32_SetTrace
+#define TraceOn         w32_TraceOn
+#define TraceOff        w32_TraceOff
 
-extern int                          w32x_tracing_enabled;
+LIBW32_API int			w32x_tracing_enabled;
 
 #else
 #define win32Trace(x)
@@ -68,4 +68,3 @@ extern int                          w32x_tracing_enabled;
 #endif
 
 #endif  /*WIN32_TRACE_H_INCLUDED*/
-

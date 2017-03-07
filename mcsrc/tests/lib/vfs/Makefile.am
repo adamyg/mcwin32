@@ -1,3 +1,4 @@
+PACKAGE_STRING = "/lib/vfs"
 
 AM_CPPFLAGS = \
 	-DTEST_SHARE_DIR=\"$(abs_srcdir)\" \
@@ -22,6 +23,7 @@ TESTS = \
 	path_serialize \
 	relative_cd \
 	tempdir \
+	vfs_adjust_stat \
 	vfs_parse_ls_lga \
 	vfs_path_from_str_flags \
 	vfs_path_string_convert \
@@ -63,6 +65,9 @@ relative_cd_SOURCES = \
 
 tempdir_SOURCES = \
 	tempdir.c
+
+vfs_adjust_stat_SOURCES = \
+	vfs_adjust_stat.c
 
 vfs_get_encoding_SOURCES = \
 	vfs_get_encoding.c

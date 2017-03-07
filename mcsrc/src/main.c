@@ -1,7 +1,7 @@
 /*
    Main program for the Midnight Commander
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -67,7 +67,7 @@
 #include "events_init.h"
 #include "args.h"
 #ifdef ENABLE_SUBSHELL
-#include "subshell.h"
+#include "subshell/subshell.h"
 #endif
 #include "setup.h"              /* load_setup() */
 
@@ -108,7 +108,7 @@ check_codeset (void)
             if (mc_global.display_codepage == -1)
                 mc_global.display_codepage = 0;
 
-            mc_config_set_string (mc_main_config, CONFIG_MISC_SECTION, "display_codepage",
+            mc_config_set_string (mc_global.main_config, CONFIG_MISC_SECTION, "display_codepage",
                                   cp_display);
         }
     }
@@ -118,31 +118,14 @@ check_codeset (void)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-
 /** POSIX version.  The only version we support.  */
+
 static void
 OS_Setup (void)
 {
-    const char *shell_env;
     const char *datadir_env;
 
-    shell_env = getenv ("SHELL");
-    if ((shell_env == NULL) || (shell_env[0] == '\0'))
-    {
-        struct passwd *pwd;
-
-        pwd = getpwuid (geteuid ());
-        if (pwd != NULL)
-            mc_global.tty.shell = g_strdup (pwd->pw_shell);
-    }
-    else
-        mc_global.tty.shell = g_strdup (shell_env);
-
-    if ((mc_global.tty.shell == NULL) || (mc_global.tty.shell[0] == '\0'))
-    {
-        g_free (mc_global.tty.shell);
-        mc_global.tty.shell = g_strdup ("/bin/sh");
-    }
+    mc_shell_init ();
 
     /* This is the directory, where MC was installed, on Unix this is DATADIR */
     /* and can be overriden by the MC_DATADIR environment variable */
@@ -152,8 +135,8 @@ OS_Setup (void)
     else
         mc_global.sysconfig_dir = g_strdup (SYSCONFDIR);
 
-#if defined(MC_DATADIR) //WIN32,namespace
-    mc_global.share_data_dir = g_strdup (MC_DATADIR);
+#if defined(WIN32_DATADIR) //WIN32,namespace
+    mc_global.share_data_dir = g_strdup (WIN32_DATADIR);
 #else
     mc_global.share_data_dir = g_strdup (DATADIR);
 #endif
@@ -241,12 +224,12 @@ init_sigchld (void)
 int
 main (int argc, char *argv[])
 {
-#if defined(WIN32) //APY, config
+#if defined(WIN32) //WIN32, config
     extern void WIN32_Setup(void);
 #endif //WIN32
     GError *mcerror = NULL;
     gboolean config_migrated = FALSE;
-    char *config_migrate_msg;
+    char *config_migrate_msg = NULL;
     int exit_code = EXIT_FAILURE;
 
     mc_global.timer = mc_timer_new ();
@@ -258,7 +241,7 @@ main (int argc, char *argv[])
     (void) bindtextdomain (PACKAGE, LOCALEDIR);
     (void) textdomain (PACKAGE);
 
-#if defined(WIN32) //APY, config
+#if defined(WIN32) //WIN32, config
     WIN32_Setup();
 #endif
 
@@ -270,8 +253,8 @@ main (int argc, char *argv[])
       startup_exit_falure:
         fprintf (stderr, _("Failed to run:\n%s\n"), mcerror->message);
         g_error_free (mcerror);
-        g_free (mc_global.tty.shell);
       startup_exit_ok:
+        mc_shell_deinit ();
         str_uninit_strings ();
         mc_timer_destroy (mc_global.timer);
         return exit_code;
@@ -313,20 +296,6 @@ main (int argc, char *argv[])
     /* Must be done after load_setup because depends on mc_global.vfs.cd_symlinks */
     vfs_setup_work_dir ();
 
-    /* Resolve the other_dir panel option. Must be done after vfs_setup_work_dir */
-    {
-        char *buffer;
-        vfs_path_t *vpath;
-
-        buffer = mc_config_get_string (mc_panels_config, "Dirs", "other_dir", ".");
-        vpath = vfs_path_from_str (buffer);
-        if (vfs_file_is_local (vpath))
-            saved_other_dir = buffer;
-        else
-            g_free (buffer);
-        vfs_path_free (vpath);
-    }
-
     /* Set up temporary directory after VFS initialization */
     mc_tmpdir ();
 
@@ -341,8 +310,26 @@ main (int argc, char *argv[])
         goto startup_exit_falure;
     }
 
+    /* Resolve the other_dir panel option.
+     * 1. Must be done after vfs_setup_work_dir().
+     * 2. Must be done after mc_setup_by_args() because of mc_run_mode.
+     */
+    if (mc_global.mc_run_mode == MC_RUN_FULL)
+    {
+        char *buffer;
+        vfs_path_t *vpath;
+
+        buffer = mc_config_get_string (mc_global.panels_config, "Dirs", "other_dir", ".");
+        vpath = vfs_path_from_str (buffer);
+        if (vfs_file_is_local (vpath))
+            saved_other_dir = buffer;
+        else
+            g_free (buffer);
+        vfs_path_free (vpath);
+    }
+
     /* check terminal type
-     * $TEMR must be set and not empty
+     * $TERM must be set and not empty
      * mc_global.tty.xterm_flag is used in init_key() and tty_init()
      * Do this after mc_args_handle() where mc_args__force_xterm is set up.
      */
@@ -384,7 +371,9 @@ main (int argc, char *argv[])
 
     load_keymap_defs (!mc_args__nokeymap);
 
+#ifdef USE_INTERNAL_EDIT
     macros_list = g_array_new (TRUE, FALSE, sizeof (macros_t));
+#endif /* USE_INTERNAL_EDIT */
 
     tty_init_colors (mc_global.tty.disable_colors, mc_args__force_colors);
 
@@ -394,7 +383,7 @@ main (int argc, char *argv[])
     if (mc_global.mc_run_mode == MC_RUN_FULL)
         command_set_default_colors ();
 
-    mc_error_message (&mcerror);
+    mc_error_message (&mcerror, NULL);
 
 #ifdef ENABLE_SUBSHELL
     /* Done here to ensure that the subshell doesn't  */
@@ -414,7 +403,7 @@ main (int argc, char *argv[])
        w/o Shift button in subshell in the native console */
     init_mouse ();
 
-    /* Done after do_enter_ca_mode (tty_init) because in VTE bracketed mode is
+    /* Done after tty_enter_ca_mode (tty_init) because in VTE bracketed mode is
        separate for the normal and alternate screens */
     enable_bracketed_paste ();
 
@@ -432,6 +421,10 @@ main (int argc, char *argv[])
         exit_code = EXIT_SUCCESS;
     else
         exit_code = do_nc ()? EXIT_SUCCESS : EXIT_FAILURE;
+
+    disable_bracketed_paste ();
+
+    disable_mouse ();
 
     /* Save the tree store */
     (void) tree_store_save ();
@@ -479,23 +472,26 @@ main (int argc, char *argv[])
     }
     g_free (last_wd_string);
 
-    g_free (mc_global.tty.shell);
+    mc_shell_deinit ();
 
     done_key ();
 
+#ifdef USE_INTERNAL_EDIT
     if (macros_list != NULL)
     {
         guint i;
+
         for (i = 0; i < macros_list->len; i++)
         {
             macros_t *macros;
 
             macros = &g_array_index (macros_list, struct macros_t, i);
             if (macros != NULL && macros->macro != NULL)
-                (void) g_array_free (macros->macro, FALSE);
+                (void) g_array_free (macros->macro, TRUE);
         }
         (void) g_array_free (macros_list, TRUE);
     }
+#endif /* USE_INTERNAL_EDIT */
 
     str_uninit_strings ();
 

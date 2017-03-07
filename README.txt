@@ -1,13 +1,10 @@
 
-  Midnight Commander Win32 Native
+   Midnight Commander Win32 Native
 
       Requirements:
 
-           o Open Watcom
-
-                and/or
-
-           o Microsoft Visual Studio
+           o Open Watcom 1.9
+              or Microsoft Visual Studio 2013 (or greater)
 
            o gnu-win32
 
@@ -29,23 +26,26 @@
 
         b. Compiler installation
 
-              For Open-Watcom, install the current Open Watcom 1.9
-              installation.
+              either Open-Watcom, install the current Open Watcom 1.9 installation.
+              or MSVC 2013 or greater is required.
 
         c. Install the 'all-in-one-bundle' within the root under
             the directory 'gtk'.
 
               Source: http://www.gtk.org/download/win32.php
 
-        d. Build the entire tree,
+        d. Prime the tree; generate makefiles
 
              cd mcwin32
+             vc2015config.bat or owcconfig.bat
+
+        e. Build the entire tree,
+
              [g]make
 
-        e. To create the installer,
+        f. To create the installer,
 
              start mc-inno-setup.iss
 
 =end=
-
 

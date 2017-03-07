@@ -1,7 +1,7 @@
 /*
    External panelize
 
-   Copyright (C) 1995-2015
+   Copyright (C) 1995-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -63,7 +63,6 @@
 #define UX 3
 #define UY 2
 
-#define LABELS   3
 #define B_ADD    B_USER
 #define B_REMOVE (B_USER + 1)
 
@@ -113,9 +112,7 @@ panelize_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void
     switch (msg)
     {
     case MSG_INIT:
-    case MSG_POST_KEY:
-    case MSG_FOCUS:
-        tty_setcolor (MENU_ENTRY_COLOR);
+    case MSG_NOTIFY:           /* MSG_NOTIFY is fired by the listbox to tell us the item has changed. */
         update_command ();
         return MSG_HANDLED;
 
@@ -167,11 +164,11 @@ init_panelize (void)
     }
 
     panelize_cols = COLS - 6;
-    panelize_cols = max (panelize_cols, blen + 4);
+    panelize_cols = MAX (panelize_cols, blen + 4);
 
     panelize_dlg =
-        dlg_create (TRUE, 0, 0, 20, panelize_cols, dialog_colors, panelize_callback, NULL,
-                    "[External panelize]", _("External panelize"), DLG_CENTER);
+        dlg_create (TRUE, 0, 0, 20, panelize_cols, WPOS_CENTER, FALSE, dialog_colors,
+                    panelize_callback, NULL, "[External panelize]", _("External panelize"));
 
     /* add listbox to the dialogs */
     y = UY;
@@ -179,7 +176,7 @@ init_panelize (void)
 
     l_panelize = listbox_new (y, UX + 1, 10, panelize_cols - UX * 2 - 2, FALSE, NULL);
     for (current = panelize; current != NULL; current = current->next)
-        listbox_add_item (l_panelize, LISTBOX_APPEND_AT_END, 0, current->label, current);
+        listbox_add_item (l_panelize, LISTBOX_APPEND_AT_END, 0, current->label, current, FALSE);
     listbox_select_entry (l_panelize, listbox_search_text (l_panelize, _("Other command")));
     add_widget (panelize_dlg, l_panelize);
 
@@ -208,7 +205,7 @@ init_panelize (void)
         x += button_get_len (b) + 1;
     }
 
-    dlg_select_widget (l_panelize);
+    widget_select (WIDGET (l_panelize));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -258,7 +255,7 @@ add2panelize (char *label, char *command)
 static void
 add2panelize_cmd (void)
 {
-    if (pname->buffer != NULL && *pname->buffer != '\0')
+    if (!input_is_empty (pname))
     {
         char *label;
 
@@ -329,7 +326,7 @@ do_external_panelize (char *command)
     while (TRUE)
     {
         clearerr (external);
-        if (fgets (line, MC_MAXPATHLEN, external) == NULL)
+        if (fgets (line, sizeof (line), external) == NULL)
         {
             if (ferror (external) && errno == EINTR)
                 continue;
@@ -421,7 +418,7 @@ do_panelize_cd (WPanel * panel)
 
             tmp_vpath =
                 vfs_path_append_new (panelized_panel.root_vpath, panelized_panel.list.list[i].fname,
-                                     NULL);
+                                     (char *) NULL);
             fname = vfs_path_as_str (tmp_vpath);
             list->list[i].fnamelen = strlen (fname);
             list->list[i].fname = g_strndup (fname, list->list[i].fnamelen);
@@ -503,8 +500,6 @@ cd_panelize_cmd (void)
 void
 external_panelize (void)
 {
-    char *target = NULL;
-
     if (!vfs_current_is_local ())
     {
         message (D_ERROR, MSG_ERROR, _("Cannot run external panelize in a non-local directory"));
@@ -516,9 +511,7 @@ external_panelize (void)
     /* display file info */
     tty_setcolor (SELECTED_COLOR);
 
-    dlg_run (panelize_dlg);
-
-    switch (panelize_dlg->ret_value)
+    switch (dlg_run (panelize_dlg))
     {
     case B_CANCEL:
         break;
@@ -537,17 +530,20 @@ external_panelize (void)
         }
 
     case B_ENTER:
-        target = pname->buffer;
-        if (target != NULL && *target)
+        if (!input_is_empty (pname))
         {
-            char *cmd = g_strdup (target);
+            char *cmd;
 
+            cmd = g_strdup (pname->buffer);
             dlg_destroy (panelize_dlg);
             do_external_panelize (cmd);
             g_free (cmd);
             repaint_screen ();
             return;
         }
+        break;
+
+    default:
         break;
     }
 
@@ -561,7 +557,7 @@ load_panelize (void)
 {
     char **keys;
 
-    keys = mc_config_get_keys (mc_main_config, panelize_section, NULL);
+    keys = mc_config_get_keys (mc_global.main_config, panelize_section, NULL);
 
     add2panelize (g_strdup (_("Other command")), g_strdup (""));
 
@@ -597,8 +593,8 @@ load_panelize (void)
             }
 
             add2panelize (g_string_free (buffer, FALSE),
-                          mc_config_get_string (mc_main_config, panelize_section, *profile_keys,
-                                                ""));
+                          mc_config_get_string (mc_global.main_config, panelize_section,
+                                                *profile_keys, ""));
         }
 
         str_close_conv (conv);
@@ -614,11 +610,11 @@ save_panelize (void)
 {
     struct panelize *current = panelize;
 
-    mc_config_del_group (mc_main_config, panelize_section);
+    mc_config_del_group (mc_global.main_config, panelize_section);
     for (; current; current = current->next)
     {
         if (strcmp (current->label, _("Other command")))
-            mc_config_set_string (mc_main_config,
+            mc_config_set_string (mc_global.main_config,
                                   panelize_section, current->label, current->command);
     }
 }

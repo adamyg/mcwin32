@@ -4,7 +4,7 @@
  *
  *      stat, lstat, fstat, readlink, symlink, open     
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -48,11 +48,6 @@
 #define PSAPI_VERSION       1                   /* GetMappedFileName and psapi.dll */
 #include <psapi.h>
 
-#pragma comment(lib, "shlwapi.lib")
-#pragma comment(lib, "psapi.lib")
-#pragma comment(lib, "ole32.lib")
-#pragma comment(lib, "uuid.lib")
-
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
@@ -69,10 +64,19 @@
 #include <sys/time.h>
 #endif
 #include <time.h>
+#include <ctype.h>
 #include <unistd.h>
 
+#ifndef __CUNUSED
+#define __CUNUSED(x)	    ((void)x);
+#endif
 
-static BOOL                 xGetFinalPathNameByHandle(HANDLE handle, char *name, int length);
+#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "psapi.lib")
+#pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "uuid.lib")
+
+static BOOL                 my_GetFinalPathNameByHandle(HANDLE handle, char *name, int length);
 
 static void                 ApplyAttributes(struct stat *sb, const DWORD dwAttr, const char *name);
 static void                 ApplyTimes(struct stat *sb, const FILETIME *ftCreationTime,
@@ -200,7 +204,6 @@ w32_stat(const char *path, struct stat *sb)
     }
     return 0;
 }
-
 
 
 /*
@@ -369,7 +372,7 @@ w32_fstat(int fd, struct stat *sb)
             ret = -EBADF;
 
         } else if ((handle = ((HANDLE) _get_osfhandle(fd))) == INVALID_HANDLE_VALUE) {
-                                                // socket
+                                         // socket
             if (fd > WIN32_FILDES_MAX && FILE_TYPE_PIPE == GetFileType((HANDLE) fd)) {
                 sb->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
                 sb->st_mode |= S_IFIFO;
@@ -389,8 +392,8 @@ w32_fstat(int fd, struct stat *sb)
                     if (GetFileInformationByHandle(handle, &fi)) {
                         char t_name[MAX_PATH], *name = NULL;
 
-                        if (xGetFinalPathNameByHandle(handle, t_name, sizeof(t_name))) {
-                            name = t_name;      // resolved filename.
+                        if (my_GetFinalPathNameByHandle(handle, t_name, sizeof(t_name))) {
+                            name = t_name; // resolved filename.
                         }
                         ApplyAttributes(sb, fi.dwFileAttributes, name);
                         ApplyTimes(sb, &fi.ftCreationTime, &fi.ftLastAccessTime, &fi.ftLastWriteTime);
@@ -414,7 +417,7 @@ w32_fstat(int fd, struct stat *sb)
                 break;
 
             case FILE_TYPE_REMOTE:      
-            case FILE_TYPE_UNKNOWN:             // others
+            case FILE_TYPE_UNKNOWN:     // others
             default:
                 ret = -EBADF;
                 break;
@@ -439,6 +442,8 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, DWORD length, DWORD flag
 {                                               // Determine underlying file-name, XP+
     HANDLE map;
     DWORD ret;
+
+    __CUNUSED(flags)
 
     if (0 == GetFileSize(handle, &ret) && 0 == ret) {
         return 0;                               // Cannot map a file with a length of zero
@@ -508,18 +513,18 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, DWORD length, DWORD flag
 
 
 static BOOL
-xGetFinalPathNameByHandle(HANDLE handle, char *path, int length)
+my_GetFinalPathNameByHandle(HANDLE handle, char *path, int length)
 {
-    static GetFinalPathNameByHandleA_t xGetFinalPathNameByHandleA = NULL;
+    static GetFinalPathNameByHandleA_t x_GetFinalPathNameByHandleA = NULL;
 
-    if (NULL == xGetFinalPathNameByHandleA) {
+    if (NULL == x_GetFinalPathNameByHandleA) {
         HINSTANCE hinst;                        // Vista+
 
         if (0 == (hinst = LoadLibrary("Kernel32")) ||
-                0 == (xGetFinalPathNameByHandleA = 
+                0 == (x_GetFinalPathNameByHandleA = 
                         (GetFinalPathNameByHandleA_t)GetProcAddress(hinst, "GetFinalPathNameByHandleA"))) {
                                                 // XP+
-            xGetFinalPathNameByHandleA = my_GetFinalPathNameByHandleA;
+            x_GetFinalPathNameByHandleA = my_GetFinalPathNameByHandleA;
             FreeLibrary(hinst);
         }
     }
@@ -529,7 +534,7 @@ xGetFinalPathNameByHandle(HANDLE handle, char *path, int length)
 #define VOLUME_NAME_DOS         0
 #endif
 
-    return xGetFinalPathNameByHandleA(handle, path, length, FILE_NAME_NORMALIZED|VOLUME_NAME_DOS);
+    return x_GetFinalPathNameByHandleA(handle, path, length, FILE_NAME_NORMALIZED|VOLUME_NAME_DOS);
 }
 
 
@@ -704,19 +709,19 @@ w32_symlink(const char *name1, const char *name2)
 {
     int ret = -1;
 
-    if (name1 == NULL || name2 == NULL)
+    if (name1 == NULL || name2 == NULL) {
         errno = ENAMETOOLONG;
 
-    else if (strlen(name1) > MAX_PATH || strlen(name2) > MAX_PATH)
+    } else if (strlen(name1) > MAX_PATH || strlen(name2) > MAX_PATH) {
         errno = ENAMETOOLONG;
 
-    else if (GetFileAttributes(name2) != 0xffffffff)
-        errno = EEXIST; /*EACCES*/
+    } else if (GetFileAttributes(name2) != INVALID_FILE_ATTRIBUTES /*0xffffffff*/) {
+        errno = EEXIST;
 
-    else if (CreateShortcut(name2, name1, "", name1) == FALSE)
+    } else if (CreateShortcut(name2, name1, "", name1) == FALSE) {
         errno = EIO;
 
-    else {
+    } else {
         ret = 0;
     }
 
@@ -987,18 +992,22 @@ int
 w32_open(const char *path, int oflag, ...)
 {
     char symbuf[WIN32_PATH_MAX];
-    int mode, ret = 0;
+    int mode = 0, ret = 0;
 
     if (O_CREAT & oflag) {
         va_list ap;
         va_start(ap, oflag);
         mode = va_arg(ap, int);
         va_end(ap);
-    } else {
-        mode = 0;
-    }
+    } 
 
-    if ((ret = Readlink(path, (void *)-1, symbuf, sizeof(symbuf))) < 0) {
+    if (0 == WIN32_STRICMP(path, "/dev/null")) {
+        /*
+         *  Redirect ..
+         */
+        path = "NUL";
+
+    } else if ((ret = Readlink(path, (void *)-1, symbuf, sizeof(symbuf))) < 0) {
         /*
          *  If O_CREAT create the file if it does not exist, in which case the
          *  file is created with mode mode as described in chmod(2) and modified
@@ -1035,7 +1044,9 @@ w32_open(const char *path, int oflag, ...)
         return -1;
     }
 
-    return _open(path, oflag, mode);            // true open
+	// true open
+#undef _open
+    return w32_sockfd_limit(_open(path, oflag, mode));
 }
 
 
@@ -1062,10 +1073,7 @@ ApplyAttributes(struct stat *sb,
     if (p && (!p[0] || (ISSLASH(p[0]) && !p[1]))) {
         mode |= S_IFDIR|S_IEXEC;                /* handle root directory explicity */
 
-    } else if (FILE_ATTRIBUTE_DIRECTORY & dwAttributes) {
-//      if (FILE_ATTRIBUTE_REPARSE_POINT & dwAttributes) {
-//          mode |= S_IFLNK;
-//      }
+    } else if (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         mode |= S_IFDIR|S_IEXEC;                /* directory */
 
     } else if ((FILE_ATTRIBUTE_REPARSE_POINT & dwAttributes) ||
@@ -1171,13 +1179,14 @@ ConvertTime(const FILETIME *ft)
 static void
 ApplySize(struct stat *sb, const DWORD nFileSizeLow, const DWORD nFileSizeHigh)
 {
+    __CUNUSED(nFileSizeHigh)
+
     sb->st_size = nFileSizeLow;
 /*TODO
  *  sb->st_size =
  *      (((__int64)nFileSizeHigh) << 32) + nFileSizeLow;
  */
 }
-
 
 
 /*
@@ -1244,7 +1253,6 @@ IsExec(const char *name)
             }
         }
     }
-
     return FALSE;
 }
 
@@ -1272,7 +1280,7 @@ Readlink(const char *path, const char **suffixes, char *buf, int maxlen)
 
     (void) strncpy( buf, path, maxlen );        // prime working buffer
     buf[ maxlen-1 ] = '\0';
-    length = strlen(buf);
+    length = (int)strlen(buf);
 
     if (suffixes == (void *)NULL) {
         suffixes = suffixes_null;
@@ -1324,7 +1332,7 @@ Readlink(const char *path, const char **suffixes, char *buf, int maxlen)
             if ((ret = ReadReparse(path, buf, maxlen)) < 0) {
                 ret = -EIO;
             } else {
-                ret = strlen(buf);
+                ret = (int)strlen(buf);
             }
 
         /* .. win32 shortcut */
@@ -1361,7 +1369,7 @@ Readlink(const char *path, const char **suffixes, char *buf, int maxlen)
                     if ((ret = ReadShortcut (buf, buf, maxlen)) < 0) {
                         ret = -EIO;
                     } else {
-                        ret = strlen(buf);
+                        ret = (int)strlen(buf);
                     }
 
                 // cygwin symlink (old style)
@@ -1374,7 +1382,7 @@ Readlink(const char *path, const char **suffixes, char *buf, int maxlen)
                         char *end;
 
                         if ((end = (char *)memchr(buf, 0, got)) != NULL) {
-                            ret = end - buf;    // find the NUL terminator
+                            ret = (int)(end - buf); // find the NUL terminator
                         } else {
                             ret = (int)got;
                         }
@@ -1398,6 +1406,14 @@ Readlink(const char *path, const char **suffixes, char *buf, int maxlen)
     }
     return ret;
 }
+
+
+static const GUID   x_CLSID_ShellLink	=	// local copies; OWC linker crashes otherwise
+    { 0x00021401, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
+static const IID    x_IID_IShellLink	= 
+    { 0x000214EE, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
+static const IID    x_IID_IPersistFile	= 
+    { 0x0000010B, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
 
 
 /*  Function:       ReadShortcut
@@ -1435,40 +1451,39 @@ ReadShortcut(const char *name, char *buf, int maxlen)
 
     CoInitialize(NULL);
 
-    hres = CoCreateInstance(&CLSID_ShellLink, NULL,
-                CLSCTX_INPROC_SERVER, &IID_IShellLink, (LPVOID *)&pShLink);
+    hres = CoCreateInstance(&x_CLSID_ShellLink, NULL,
+                CLSCTX_INPROC_SERVER, &x_IID_IShellLink, (LPVOID *)&pShLink);
 
     if (SUCCEEDED(hres)) {
         WORD wsz[ MAX_PATH ];
         IPersistFile *ppf;
 
-        hres = pShLink->lpVtbl->QueryInterface( pShLink, &IID_IPersistFile, (LPVOID *)&ppf );
-
+        hres = pShLink->lpVtbl->QueryInterface(pShLink, &x_IID_IPersistFile, (LPVOID *)&ppf);
         if (SUCCEEDED(hres)) {
-            MultiByteToWideChar( CP_ACP, 0, name, -1, wsz, sizeof(wsz) );
+            MultiByteToWideChar(CP_ACP, 0, name, -1, wsz, sizeof(wsz));
 
-            hres = ppf->lpVtbl->Load( ppf, wsz, STGM_READ );
+            hres = ppf->lpVtbl->Load(ppf, wsz, STGM_READ);
             if (SUCCEEDED(hres)) {
 /*              if (SUCCEEDED(hres)) {
  *                  hres = pShLink->lpVtbl->Resolve(
- *                              pShLink, 0, SLR_NOUPDATE | SLR_ANY_MATCH | SLR_NO_UI );
+ *                              pShLink, 0, SLR_NOUPDATE | SLR_ANY_MATCH | SLR_NO_UI);
  *              }
  */
 
-                hres = pShLink->lpVtbl->GetPath( pShLink, buf, maxlen, &wfd, 0 );
+                hres = pShLink->lpVtbl->GetPath(pShLink, buf, maxlen, &wfd, 0);
                 if (!SUCCEEDED(hres) || buf[0] == '\0') {
                     /*
                     *  A document shortcut may only have a description ...
                     *  Also CYGWIN generates this style of link.
                     */
-                    hres = pShLink->lpVtbl->GetDescription( pShLink, buf, maxlen );
+                    hres = pShLink->lpVtbl->GetDescription(pShLink, buf, maxlen);
                     if (buf[0] == '\0')
                         hres = !S_OK;
                 }
-                ppf->lpVtbl->Release( ppf );
+                ppf->lpVtbl->Release(ppf);
             }
         }
-        pShLink->lpVtbl->Release( pShLink );
+        pShLink->lpVtbl->Release(pShLink);
     }
 
     CoUninitialize();
@@ -1478,7 +1493,7 @@ ReadShortcut(const char *name, char *buf, int maxlen)
 
 
 static int
-CreateShortcut(const char *link, const char *name, const char *working, const char *desc )
+CreateShortcut(const char *link, const char *name, const char *working, const char *desc)
 {
     IShellLink *pShLink;
     HRESULT hres;
@@ -1486,8 +1501,8 @@ CreateShortcut(const char *link, const char *name, const char *working, const ch
     CoInitialize(NULL);
 
     // Get a pointer to the IShellLink interface.
-    hres = CoCreateInstance( &CLSID_ShellLink, NULL,
-                CLSCTX_INPROC_SERVER, &IID_IShellLink, (PVOID *) &pShLink );
+    hres = CoCreateInstance(&x_CLSID_ShellLink, NULL,
+                CLSCTX_INPROC_SERVER, &x_IID_IShellLink, (PVOID *) &pShLink);
 
     if (SUCCEEDED(hres)) {
         IPersistFile* ppf;
@@ -1495,34 +1510,37 @@ CreateShortcut(const char *link, const char *name, const char *working, const ch
 
         // Set the path to the shortcut target and add the
         // description.
+    //	if (flags & MAXIMIZED)
+    //	    pShLink->lpVtbl->SetShowCmd(pShLink, SW_SHOW);
         if (name)
             pShLink->lpVtbl->SetPath(pShLink, (LPCSTR) name);
         if (working)
             pShLink->lpVtbl->SetWorkingDirectory(pShLink, (LPCSTR) working);
         if (desc)
             pShLink->lpVtbl->SetDescription(pShLink, (LPCSTR) desc);
+    //	if (icon)
+    //	    pShLink->lpVtbl->SetIconLocation(pShLink, (LPCSTR) icon);
 
         // Query IShellLink for the IPersistFile interface for saving the
         // shortcut in persistent storage.
-        hres = pShLink->lpVtbl->QueryInterface( pShLink, &IID_IPersistFile, (PVOID *) &ppf );
+        hres = pShLink->lpVtbl->QueryInterface(pShLink, &x_IID_IPersistFile, (PVOID *) &ppf);
 
         if (SUCCEEDED(hres)) {
             // Ensure that the string is ANSI.
-            MultiByteToWideChar( CP_ACP, 0, (LPCSTR) link, -1, wsz, MAX_PATH );
+            MultiByteToWideChar(CP_ACP, 0, (LPCSTR) link, -1, wsz, MAX_PATH);
 
             // Save the link by calling IPersistFile::Save.
-            hres = ppf->lpVtbl->Save( ppf, wsz, TRUE );
-            ppf->lpVtbl->Release( ppf );
+            hres = ppf->lpVtbl->Save(ppf, wsz, TRUE);
+            ppf->lpVtbl->Release(ppf);
         }
 
-        pShLink->lpVtbl->Release( pShLink );
+        pShLink->lpVtbl->Release(pShLink);
     }
 
     CoUninitialize();
 
     return (SUCCEEDED(hres) ? TRUE : FALSE);
 }
-
 
 
 #if !defined(HAVE_NTIFS_H)
@@ -1556,7 +1574,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 static int
 ReadReparse(const char *name, char *buf, int maxlen)
 {
-#define MAX_REPARSE_SIZE	(512+(16*1024))	/* Header + 16k */
+#define MAX_REPARSE_SIZE    (512+(16*1024))     /* Header + 16k */
     HANDLE fileHandle;
     BYTE reparseBuffer[ MAX_REPARSE_SIZE ];
     PREPARSE_GUID_DATA_BUFFER reparseInfo = (PREPARSE_GUID_DATA_BUFFER) reparseBuffer;
@@ -1566,9 +1584,9 @@ ReadReparse(const char *name, char *buf, int maxlen)
                                                 /* open the file image */
     if ((fileHandle = CreateFile(name, 0,
     		FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 
-		FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE) {
-	ret = GetLastError();
-	return -1;
+            FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE) {
+        ret = GetLastError();
+        return -1;
     }
 
                                                 /* retrieve reparse details */
@@ -1576,6 +1594,10 @@ ReadReparse(const char *name, char *buf, int maxlen)
         	NULL, 0, reparseInfo, sizeof(reparseBuffer), &returnedLength, NULL)) {
 //      if (IsReparseTagMicrosoft(reparseInfo->ReparseTag)) {
             int length;
+
+#ifndef IO_REPARSE_TAG_SYMLINK
+#define IO_REPARSE_TAG_SYMLINK      0xA000000C
+#endif
 
             switch (reparseInfo->ReparseTag) {
             case IO_REPARSE_TAG_SYMLINK:
@@ -1607,6 +1629,7 @@ ReadReparse(const char *name, char *buf, int maxlen)
 //      }
     }
     CloseHandle(fileHandle);
+
     return -1;
 }
 
@@ -1633,7 +1656,7 @@ Stat(const char *name, struct stat *sb)
     } else if ((flength = GetFullPathName(name, sizeof(fullname), fullname, &pfname)) == 0) {
         ret = -ENOENT;
 
-    } else if (flength >= sizeof(fullname)) {
+    } else if (flength >= (int)sizeof(fullname)) {
         ret = -ENAMETOOLONG;
 
     } else {
@@ -1742,3 +1765,4 @@ Stat(const char *name, struct stat *sb)
     }
     return ret;
 }
+/*end*/

@@ -12,6 +12,8 @@ AWK=@AWK@
 
 mclslRfs_list () {
 case "$1" in
+  *.lz)  MYCAT="lzip -dc";;
+  *.lz4) MYCAT="lz4 -dc";;
   *.lzma) MYCAT="lzma -dc";;
   *.xz)  MYCAT="xz -dc";;
   *.bz2) MYCAT="bzip2 -dc";;
@@ -20,6 +22,8 @@ case "$1" in
   *.Z)   MYCAT="gzip -dc";;
   *)     MYCAT="cat";;
 esac
+
+MYCAT=${MC_TEST_EXTFS_LIST_CMD:-$MYCAT}  # Let the test framework hook in.
 
 $MYCAT "$1" | $AWK '
 BEGIN {

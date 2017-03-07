@@ -2,7 +2,7 @@
 /*
  * win32 sub-process support
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -60,10 +60,10 @@ static int              BuildVectors(win32_spawn_t *args, char **argblk, char **
 static char *           Getpath(const char *src, char *dst, unsigned maxlen);
 static const char *     Getenv(const char *const *envp, const char *val);
 static HANDLE           ExecChild(win32_spawn_t *args,
-                            const char *arg0, char *argv, char *envp, STARTUPINFO *si, PROCESS_INFORMATION *pi);
+			    const char *arg0, char *argv, char *envp, STARTUPINFO *si, PROCESS_INFORMATION *pi);
 static void             DisplayError(HANDLE hOutput, const char *pszAPI, const char *args);
 static void             InternalError(const char *pszAPI);
-
+  
 
 /*
 //  NAME
@@ -473,9 +473,9 @@ EnumWindowsProc(HWND hwnd, LPARAM lParam)
      *      return TRUE; to stop enumeration, it must return FALSE.
      */
     struct _enum_win_info *info = (struct _enum_win_info *)lParam;
-    DWORD thread, pid, status;
+    DWORD pid, status;
 
-    thread = GetWindowThreadProcessId(hwnd, &pid);
+    (void) GetWindowThreadProcessId(hwnd, &pid);
     return pid != info->dwProcessId
             || GetExitCodeProcess(info->hProcess, &status)
                 && status == STILL_ACTIVE       // value = 259
@@ -501,7 +501,7 @@ SendCloseMessage(HANDLE hProc)
 int
 w32_iscommand(const char *shell)
 {
-    int slen = strlen(shell);
+    const int slen = (int)strlen(shell);
 
     if (cmdis(shell, slen, "cmd") ||
             cmdis(shell, slen, "cmd.exe") ||
@@ -517,7 +517,7 @@ w32_iscommand(const char *shell)
 static int
 cmdis(const char *shell, int slen, const char *cmd)
 {
-    int clen = strlen(cmd);
+    const int clen = (int)strlen(cmd);
     const char *p = shell+slen-clen;
 
     if (slen == clen || (slen > clen && (p[-1] == '\\' || p[-1] == '/'))) {
@@ -712,7 +712,7 @@ w32_child_wait(HANDLE hProc, int *status, int nowait)
      *  In Windows NT, -1 is a handle on the current process, -2 is the
      *  current thread, and it is perfectly legal to to wait (forever) on either.
      */
-    if ((int)hProc == -1 || (int)hProc == -2) {
+    if (hProc == (HANDLE)-1 || hProc == (HANDLE)-2) {
         errno = ECHILD;
 
     /*
@@ -761,7 +761,7 @@ BuildVectors(win32_spawn_t *args, char **argblk, char **envblk)
             (args->envp ? args->envp : (const char **)_environ);
 #endif
     const char * const *vp;
-    unsigned tmp;
+    int tmp;
     char *cptr;
 
     /*

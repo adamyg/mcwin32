@@ -1,7 +1,7 @@
 /*
    Search functions for diffviewer.
 
-   Copyright (C) 2010-2015
+   Copyright (C) 2010-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -74,7 +74,7 @@ mcdiffview_dialog_search (WDiff * dview)
 {
     char *exp = NULL;
     int qd_result;
-    size_t num_of_types;
+    size_t num_of_types = 0;
     gchar **list_of_types;
 
     list_of_types = mc_search_get_types_strings_array (&num_of_types);
@@ -260,7 +260,7 @@ mcdiffview_do_search (WDiff * dview)
     if (!present_result)
     {
         dview->search.last_found_line = -1;
-        query_dialog (_("Search"), _("Search string not found"), D_NORMAL, 1, _("&Dismiss"));
+        query_dialog (_("Search"), _(STR_E_NOTFOUND), D_NORMAL, 1, _("&Dismiss"));
     }
 }
 
@@ -282,9 +282,9 @@ dview_search_cmd (WDiff * dview)
 
     mc_search_free (dview->search.handle);
 #ifdef HAVE_CHARSET
-    dview->search.handle = mc_search_new (dview->search.last_string, -1, cp_source);
+    dview->search.handle = mc_search_new (dview->search.last_string, cp_source);
 #else
-    dview->search.handle = mc_search_new (dview->search.last_string, -1, NULL);
+    dview->search.handle = mc_search_new (dview->search.last_string, NULL);
 #endif
 
     if (dview->search.handle == NULL)

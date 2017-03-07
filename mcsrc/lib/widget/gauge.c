@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Authors:
@@ -62,13 +62,6 @@ gauge_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
 
     switch (msg)
     {
-    case MSG_INIT:
-        return MSG_HANDLED;
-
-        /* We don't want to get the focus */
-    case MSG_FOCUS:
-        return MSG_NOT_HANDLED;
-
     case MSG_DRAW:
         widget_move (w, 0, 0);
         if (!g->shown)
@@ -80,8 +73,8 @@ gauge_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
         {
             int gauge_len;
             int percentage, columns;
-            long total = g->max;
-            long done = g->current;
+            int total = g->max;
+            int done = g->current;
 
             if (total <= 0 || done < 0)
             {
@@ -104,7 +97,7 @@ gauge_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
             if (g->from_left_to_right)
             {
                 tty_setcolor (GAUGE_COLOR);
-                tty_printf ("%*s", (int) columns, "");
+                tty_printf ("%*s", columns, "");
                 tty_setcolor (h->color[DLG_COLOR_NORMAL]);
                 tty_printf ("%*s] %3d%%", gauge_len - columns, "", percentage);
             }
@@ -115,7 +108,7 @@ gauge_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
                 tty_setcolor (GAUGE_COLOR);
                 tty_printf ("%*s", columns, "");
                 tty_setcolor (h->color[DLG_COLOR_NORMAL]);
-                tty_printf ("] %3d%%", 100 * columns / gauge_len, percentage);
+                tty_printf ("] %3d%%", percentage);
             }
         }
         return MSG_HANDLED;
@@ -138,8 +131,6 @@ gauge_new (int y, int x, int cols, gboolean shown, int max, int current)
     g = g_new (WGauge, 1);
     w = WIDGET (g);
     widget_init (w, y, x, 1, cols, gauge_callback, NULL);
-    widget_want_cursor (w, FALSE);
-    widget_want_hotkey (w, FALSE);
 
     g->shown = shown;
     if (max == 0)

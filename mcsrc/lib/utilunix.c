@@ -1,7 +1,7 @@
 /*
    Various utilities - Unix variants
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -44,7 +44,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
@@ -216,8 +215,8 @@ my_system_make_arg_array (int flags, const char *shell, char **execute_name)
 
     if ((flags & EXECUTE_AS_SHELL) != 0)
     {
-        g_ptr_array_add (args_array, g_strdup (shell));
-        g_ptr_array_add (args_array, g_strdup ("-c"));
+        g_ptr_array_add (args_array, (gpointer) shell);
+        g_ptr_array_add (args_array, (gpointer) "-c");
         *execute_name = g_strdup (shell);
     }
     else
@@ -230,7 +229,7 @@ my_system_make_arg_array (int flags, const char *shell, char **execute_name)
         else
             *execute_name = g_strndup (shell, (gsize) (shell_token - shell));
 
-        g_ptr_array_add (args_array, g_strdup (shell));
+        g_ptr_array_add (args_array, (gpointer) shell);
     }
     return args_array;
 }
@@ -283,56 +282,56 @@ mc_pread_stream (mc_pipe_stream_t * ps, const fd_set * fds)
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
-char *
-get_owner (int uid)
+const char *
+get_owner (uid_t uid)
 {
     struct passwd *pwd;
     char *name;
-    static int uid_last;
+    static uid_t uid_last;
 
-    name = i_cache_match (uid, uid_cache, UID_CACHE_SIZE);
+    name = i_cache_match ((int) uid, uid_cache, UID_CACHE_SIZE);
     if (name != NULL)
         return name;
 
     pwd = getpwuid (uid);
     if (pwd != NULL)
     {
-        i_cache_add (uid, uid_cache, UID_CACHE_SIZE, pwd->pw_name, &uid_last);
+        i_cache_add ((int) uid, uid_cache, UID_CACHE_SIZE, pwd->pw_name, (int *) &uid_last);
         return pwd->pw_name;
     }
     else
     {
         static char ibuf[10];
 
-        g_snprintf (ibuf, sizeof (ibuf), "%d", uid);
+        g_snprintf (ibuf, sizeof (ibuf), "%d", (int) uid);
         return ibuf;
     }
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-char *
-get_group (int gid)
+const char *
+get_group (gid_t gid)
 {
     struct group *grp;
     char *name;
-    static int gid_last;
+    static gid_t gid_last;
 
-    name = i_cache_match (gid, gid_cache, GID_CACHE_SIZE);
+    name = i_cache_match ((int) gid, gid_cache, GID_CACHE_SIZE);
     if (name != NULL)
         return name;
 
     grp = getgrgid (gid);
     if (grp != NULL)
     {
-        i_cache_add (gid, gid_cache, GID_CACHE_SIZE, grp->gr_name, &gid_last);
+        i_cache_add ((int) gid, gid_cache, GID_CACHE_SIZE, grp->gr_name, (int *) &gid_last);
         return grp->gr_name;
     }
     else
     {
         static char gbuf[10];
 
-        g_snprintf (gbuf, sizeof (gbuf), "%d", gid);
+        g_snprintf (gbuf, sizeof (gbuf), "%d", (int) gid);
         return gbuf;
     }
 }
@@ -357,8 +356,7 @@ save_stop_handler (void)
  * @param status exit code
  */
 
-void
-my_exit (int status)
+void __attribute__ ((noreturn)) my_exit (int status)
 {
     _exit (status);
 }
@@ -454,7 +452,7 @@ my_systemv (const char *command, char *const argv[])
             execvp (command, argv);
             my_exit (127);      /* Exec error */
         }
-        break;
+        /* no break here, or unreachable-code warning by no returning my_exit() */
     default:
         status = 0;
         break;
@@ -511,7 +509,7 @@ mc_pipe_t *
 mc_popen (const char *command, GError ** error)
 {
     mc_pipe_t *p;
-    char **argv;
+    const char *const argv[] = { "/bin/sh", "sh", "-c", command, NULL };
 
     p = g_try_new (mc_pipe_t, 1);
     if (p == NULL)
@@ -521,22 +519,14 @@ mc_popen (const char *command, GError ** error)
         goto ret_err;
     }
 
-    if (!g_shell_parse_argv (command, NULL, &argv, error))
-    {
-        mc_replace_error (error, MC_PIPE_ERROR_PARSE_COMMAND, "%s",
-                          _("Cannot parse command for pipe"));
-        goto ret_err;
-    }
-
-    if (!g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD, NULL, NULL,
-                                   &p->child_pid, NULL, &p->out.fd, &p->err.fd, error))
+    if (!g_spawn_async_with_pipes
+        (NULL, (gchar **) argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_FILE_AND_ARGV_ZERO,
+         NULL, NULL, &p->child_pid, NULL, &p->out.fd, &p->err.fd, error))
     {
         mc_replace_error (error, MC_PIPE_ERROR_CREATE_PIPE_STREAM, "%s",
                           _("Cannot create pipe streams"));
         goto ret_err;
     }
-
-    g_strfreev (argv);
 
     p->out.buf[0] = '\0';
     p->out.len = MC_PIPE_BUFSIZE;
@@ -604,7 +594,7 @@ mc_pread (mc_pipe_t * p, GError ** error)
     if (read_err)
     {
         FD_SET (p->err.fd, &fds);
-        maxfd = max (maxfd, p->err.fd);
+        maxfd = MAX (maxfd, p->err.fd);
     }
 
     /* no timeout */
@@ -798,7 +788,7 @@ close_error_pipe (int error, const char *text)
             return 1;
         }
         close (old_error);
-        len = read (error_pipe[0], msg, MAX_PIPE_SIZE - 1);
+        len = read (error_pipe[0], msg, sizeof (msg) - 1);
 
         if (len >= 0)
             msg[len] = 0;
@@ -893,7 +883,7 @@ custom_canonicalize_pathname (char *path, CANON_PATH_FLAGS flags)
         p = lpath + strlen (lpath) - 1;
         while (p > lpath && IS_PATH_SEP (*p))
         {
-            if (p >= lpath - (url_delim_len + 1)
+            if (p >= lpath + url_delim_len - 1
                 && strncmp (p - url_delim_len + 1, VFS_PATH_URL_DELIMITER, url_delim_len) == 0)
                 break;
             *p-- = 0;
@@ -974,7 +964,7 @@ custom_canonicalize_pathname (char *path, CANON_PATH_FLAGS flags)
                     && strncmp (s - url_delim_len, VFS_PATH_URL_DELIMITER, url_delim_len) == 0)
                 {
                     char *vfs_prefix = s - url_delim_len;
-                    struct vfs_class *vclass;
+                    vfs_class *vclass;
 
                     while (vfs_prefix > lpath && !IS_PATH_SEP (*--vfs_prefix))
                         ;
@@ -1106,12 +1096,14 @@ char *
 mc_realpath (const char *path, char *resolved_path)
 {
     char copy_path[PATH_MAX];
-    char link_path[PATH_MAX];
     char got_path[PATH_MAX];
     char *new_path = got_path;
     char *max_path;
+#ifdef S_IFLNK
+    char link_path[PATH_MAX];
     int readlinks = 0;
     int n;
+#endif /* S_IFLNK */
 
     /* Make a copy of the source path since we may need to modify it. */
     if (strlen (path) >= PATH_MAX - 2)
@@ -1132,7 +1124,7 @@ mc_realpath (const char *path, char *resolved_path)
         }
         else
         {
-            g_snprintf (got_path, PATH_MAX, "%s", new_path);
+            g_snprintf (got_path, sizeof (got_path), "%s", new_path);
             g_free (new_path);
             new_path = got_path;
         }

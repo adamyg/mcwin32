@@ -1,0 +1,191 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id: Makefile.in,v 1.3 2017/03/07 15:38:31 cvsuser Exp $
+# libz makefile
+#
+#
+# Copyright (c) 2016 - 2017 Adam Young.
+#
+# This file is part of the Midnight Commander.
+#
+# The Midnight Commander is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# The Midnight Commander is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Notice: Portions of this text are reprinted and reproduced in electronic form. from
+# IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
+# 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
+# Group. Copyright remains with the authors and the original Standard can be obtained
+# online at http://www.opengroup.org/unix/online.html.
+# ==end==
+#
+
+@SET_MAKE@
+ROOT=		@abs_top_builddir@
+top_builddir=	@top_builddir@
+
+# File extensions
+
+E=
+O=		.o
+H=		.h
+A=		.a
+LP=		lib
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+AR=		@AR@
+RANLIB=		@RANLIB@
+RM=		@RM@
+PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
+RC=		@RC@
+
+# Common flags
+
+ARFLAGS=	rcv
+XFLAGS=		
+COPT=		@CFLAGS@
+CXXOPT=		@CXXFLAGS@
+ifeq "" "$(CXXOPT)"
+CXXOPT=		$(COPT)
+endif
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+LDEBUG=		@LDEBUG@
+CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@
+CFLAGS=		$(CPPFLAGS) $(CDEBUG) $(COPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
+CXXFLAGS=	$(CPPFLAGS) $(CDEBUG) $(CXXOPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
+YFLAGS=		-d
+LDFLAGS=	$(LDEBUG) @LDFLAGS@
+LDLIBS=		-L$(D_LIB) @LIBS@ @LIBM@ @EXTRALIBS@
+
+RMFLAGS=	-f
+
+# Directories
+
+D_BIN=		$(ROOT)/bin
+D_INC=		$(ROOT)/include
+D_OBJ=		$(ROOT)/objects/libz
+D_LIB=		$(ROOT)/lib
+
+############################################################
+
+# Targets
+
+ZLIB=		$(D_LIB)/$(LP)z_static$(A)
+ZDLL=		$(D_LIB)/$(LP)z.la
+
+#VERSION=	1.2.7
+#VERSION=	1.2.8
+VERSION=	1.2.11
+VERSIONSPEC=	$(subst .,:,$(VERSION))
+VERPACKED=	zlib-$(VERSION).tgz
+
+ZSRC=		./zlib-$(VERSION)
+VPATH=		$(ZSRC) $(ZSRC)/win32
+CSOURCES=\
+	adler32.c \
+	compress.c \
+	crc32.c \
+	deflate.c \
+	gzclose.c  \
+	gzlib.c \
+	gzread.c \
+	gzwrite.c \
+	infback.c \
+	inflate.c \
+	inftrees.c \
+	inffast.c \
+	trees.c \
+	uncompr.c \
+	zutil.c
+
+LIBOBJS=\
+	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
+
+DLLOBJS=\
+	$(subst $(O),.lo,$(LIBOBJS))
+ifeq ("mingw32","@build_os@")
+DLLOBJS+=	$(D_OBJ)/zlib_res.o
+else ifeq ("win32","@build_os@")
+DLLOBJS+=	$(D_OBJ)/zlib.res
+endif
+
+OBJS=		$(LIBOBJS) $(DLLOBJS)
+LIBS=		$(ZLIB) $(ZDLL)
+TSKS=
+
+# Rules
+
+all:			source unpacked
+unpacked:		object $(LIBS) $(TSKS) installinc
+
+CEXTRA	+=	-I$(ZSRC) -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
+
+$(ZLIB):		CEXTRA += -DZLIB_STATIC -D_WIN32
+$(ZLIB):		$(LIBOBJS)
+		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(AR) $(ARFLAGS) $@ $^
+		$(RANLIB) $@
+
+$(ZDLL):		CEXTRA += -DZLIB_DLL -D_WIN32
+ifeq ("yes","@ISWIN32@")
+$(ZDLL):		ZDEF = -export-symbols $(ZSRC)/win32/zlib.def
+endif
+$(ZDLL):		$(DLLOBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(ZDEF) -o $@ $^ $(LDLIBS)
+
+source:			.unpacked.$(VERSION)
+		$(MAKE) unpacked
+
+.unpacked.$(VERSION):	$(VERPACKED)
+		@echo "do not delete, managed file" > $@
+		@echo "unpacking source $VERPACKED"
+		@gzip -c -d $(VERPACKED) | tar -xvf -
+
+.PHONY:		object
+object:			$(D_OBJ)/.created
+
+.PHONY:		installinc
+installinc:		../include/.created
+		@echo publishing headers ...
+		-cp $(ZSRC)/zlib.h ../include
+		-cp $(ZSRC)/zconf.h ../include
+
+%/.created:
+		-@mkdir $(@D)
+		@echo "do not delete, managed directory" > $@
+
+clean:
+		-@$(LIBTOOL) --mode=clean $(RM) $(ZDLL) $(DLLOBJS) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
+
+$(D_OBJ)/%$(O):		%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.res:		%1.rc
+		$(RC) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%1.rc
+		$(RC) -o $@ $<
+
+#end

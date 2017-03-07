@@ -5,6 +5,7 @@
 *~
 *.cache
 *.tar.gz
+*.orig
 ABOUT-NLS
 Make.common
 Makefile

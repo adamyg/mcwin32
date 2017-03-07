@@ -1,0 +1,4 @@
+glib-2.*/
+*.org
+.unpacked.*
+Makefile

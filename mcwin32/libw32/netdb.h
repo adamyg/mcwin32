@@ -1,10 +1,11 @@
 #ifndef LIBW32_NETDB_H_INCLUDED
 #define LIBW32_NETDB_H_INCLUDED
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <netdb.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -30,7 +31,7 @@ __BEGIN_DECLS
 
 #if (defined(_MSC_VER) && (_MSC_VER < 1400)) || \
 	defined(__WATCOMC__)
-const char *            gai_strerror(int ecode);
+LIBW32_API const char * gai_strerror(int ecode);
 #endif
 
 __END_DECLS

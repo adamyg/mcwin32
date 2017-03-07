@@ -1,8 +1,41 @@
-Mon Jul 13 23:32:02 2015 ayoung
+Tue Mar  7 09:38:28 2017 adamy
 
-	* build xxx
+	* build 201.
 
-		- improved raster font support (256 color mode).
+Mon Mar  6 14:17:45 2017 adamy
+
+	* corrected /#enc:xxxx handling.
+
+	* display
+
+		- true-color support.
+		- post sub-command execution screen corruption corrected.
+		- slang emulation library buffer overrun.
+		- save/restore wide console titles.
+
+	* glib imported; removed most localised/work-around glib functions.
+
+	* intl imported.
+
+		- locale support enabled (either User-Default (windows) or explicit an env, for example LANGUAGE).
+
+	* sftp enabled (libssh2 and libz imported)
+
+Wed Mar  1 18:16:18 2017 adamy
+
+	* 2.8.19 merge (beta)
+
+		new source: widget/mouse.c, lib/subshell.c
+		re-org: subshell components
+
+	* libw32, enhanced file-descriptor/socket interface.
+		warning: link all modules dynamically when socket remapping is enabled.
+
+	* build system updates.
+
+	* windows 10 identification.
+
+	* copyrights.
 
 Mon Apr  6 02:44:48 2015 ayoung
 

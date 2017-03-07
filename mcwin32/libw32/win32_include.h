@@ -4,7 +4,7 @@
 /*
  * winsock2.h and windows.h include guard
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -33,29 +33,22 @@
 #define _CRT_SECURE_NO_DEPRECATE                /* disable deprecate warnings */
 #endif
 
-#if defined(MC_DEFAULT_CHARSET)
-#if defined(DEFAULT_CHARSET)
-#undef DEFAULT_CHARSET                         /* conflict with mc headers */
-#endif
-#endif /*MC_DEFAULT_CHARSET*/
-
 #if !defined(HAVE_WINSOCK2_H_INCLUDED)
 #define HAVE_WINSOCK2_H_INCLUDED
 #undef gethostname                              /* unistd.h name mangling */
+#if defined(u_char)
+#undef u_char                                   /* namespace issues (_BSD_SOURCE) */
+#endif
 #include <winsock2.h>
 #include <ws2tcpip.h>                           /* getaddrinfo() */
 #endif /*HAVE_WINSOCK2_H_INCLUDED*/
 
-
 #if !defined(HAVE_WINDOWS_H_INCLUDED)
 #define HAVE_WINDOWS_H_INCLUDED
+#ifndef WINDOWS_NOT_MEAN_AND_LEAN
 #define WINDOWS_MEAN_AND_LEAN
+#endif
 #include <windows.h>
-#endif /*HAVE_WINDOWS_H_INCLUDED*/
-
-#if defined(MC_DEFAULT_CHARSET)
-#undef DEFAULT_CHARSET                         /* conflict with mc headers */
-#define DEFAULT_CHARSET MC_DEFAULT_CHARSET
-#endif /*MC_DEFAULT_CHARSET*/
+#endif
 
 #endif /*LIBW32_WIN32_INCLUDE_H_INCLUDED*/

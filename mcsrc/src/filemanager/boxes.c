@@ -1,13 +1,13 @@
 /*
    Some misc dialog boxes for the program.
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
    Miguel de Icaza, 1994, 1995
    Jakub Jelinek, 1995
-   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2011, 2012, 2013
+   Andrew Borodin <aborodin@vmail.ru>, 2009-2015
 
    This file is part of the Midnight Commander.
 
@@ -38,6 +38,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <assert.h>
 
 #include "lib/global.h"
 
@@ -93,14 +94,15 @@
 
 /*** file scope variables ************************************************************************/
 
-unsigned long configure_old_esc_mode_id, configure_time_out_id;
+static unsigned long configure_old_esc_mode_id, configure_time_out_id;
 
+/* Index in list_types[] for "brief" */
+static const int panel_listing_brief_idx = 1;
 /* Index in list_types[] for "user defined" */
 static const int panel_listing_user_idx = 3;
 
 static char **status_format;
-static int listing_user_hotkey = 'u';
-static unsigned long panel_listing_types_id, panel_user_format_id;
+static unsigned long panel_listing_types_id, panel_user_format_id, panel_brief_cols_id;
 static unsigned long mini_user_status_id, mini_user_format_id;
 
 #ifdef HAVE_CHARSET
@@ -111,8 +113,8 @@ static int new_display_codepage;
 static unsigned long ftpfs_always_use_proxy_id, ftpfs_proxy_host_id;
 #endif /* ENABLE_VFS && ENABLE_VFS_FTP */
 
-GPtrArray *skin_names;
-gchar *current_skin_name;
+static GPtrArray *skin_names;
+static gchar *current_skin_name;
 
 #ifdef ENABLE_BACKGROUND
 static WListbox *bg_list = NULL;
@@ -127,11 +129,11 @@ configure_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, voi
 {
     switch (msg)
     {
-    case MSG_ACTION:
+    case MSG_NOTIFY:
         /* message from "Single press" checkbutton */
         if (sender != NULL && sender->id == configure_old_esc_mode_id)
         {
-            const gboolean not_single = !(CHECK (sender)->state & C_BOOL);
+            const gboolean not_single = !CHECK (sender)->state;
             Widget *ww;
 
             /* input line */
@@ -166,7 +168,7 @@ skin_apply (const gchar * skin_override)
     panel_init ();
     repaint_screen ();
 
-    mc_error_message (&mcerror);
+    mc_error_message (&mcerror, NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -181,6 +183,31 @@ skin_name_to_label (const gchar * name)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static cb_ret_t
+skin_dlg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+{
+    switch (msg)
+    {
+    case MSG_RESIZE:
+        {
+            WDialog *d = DIALOG (w);
+            Widget *wd = WIDGET (d->data);
+            int y, x;
+
+            y = wd->y + (wd->lines - w->lines) / 2;
+            x = wd->x + wd->cols / 2;
+            dlg_set_position (d, y, x, w->lines, w->cols);
+
+            return MSG_HANDLED;
+        }
+
+    default:
+        return dlg_default_callback (w, sender, msg, parm, data);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static int
 sel_skin_button (WButton * button, int action)
 {
@@ -188,22 +215,24 @@ sel_skin_button (WButton * button, int action)
     WListbox *skin_list;
     WDialog *skin_dlg;
     const gchar *skin_name;
-    int lxx, lyy;
     unsigned int i;
     unsigned int pos = 1;
 
     (void) action;
 
-    lxx = COLS / 2;
-    lyy = (LINES - 13) / 2;
     skin_dlg =
-        dlg_create (TRUE, lyy, lxx, 13, 24, dialog_colors, NULL, NULL, "[Appearance]", _("Skins"),
-                    DLG_COMPACT);
+        dlg_create (TRUE, 0, 0, 13, 24, WPOS_KEEP_DEFAULT, TRUE, dialog_colors, skin_dlg_callback,
+                    NULL, "[Appearance]", _("Skins"));
+    /* use Appearance dialog for positioning */
+    skin_dlg->data = WIDGET (button)->owner;
+
+    /* set dialog location before all */
+    send_message (skin_dlg, NULL, MSG_RESIZE, 0, NULL);
 
     skin_list = listbox_new (1, 1, 11, 22, FALSE, NULL);
     skin_name = "default";
     listbox_add_item (skin_list, LISTBOX_APPEND_AT_END, 0, skin_name_to_label (skin_name),
-                      (void *) skin_name);
+                      (void *) skin_name, FALSE);
 
     if (strcmp (skin_name, current_skin_name) == 0)
         listbox_select_entry (skin_list, 0);
@@ -214,14 +243,15 @@ sel_skin_button (WButton * button, int action)
         if (strcmp (skin_name, "default") != 0)
         {
             listbox_add_item (skin_list, LISTBOX_APPEND_AT_END, 0, skin_name_to_label (skin_name),
-                              (void *) skin_name);
+                              (void *) skin_name, FALSE);
             if (strcmp (skin_name, current_skin_name) == 0)
                 listbox_select_entry (skin_list, pos);
             pos++;
         }
     }
 
-    add_widget (skin_dlg, skin_list);
+    /* make list stick to all sides of dialog, effectively make it be resized with dialog */
+    add_widget_autopos (skin_dlg, skin_list, WPOS_KEEP_ALL, NULL);
 
     result = dlg_run (skin_dlg);
     if (result == B_ENTER)
@@ -249,76 +279,24 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
 
     switch (msg)
     {
-    case MSG_KEY:
-        if (parm == '\n')
-        {
-            Widget *wi;
-
-            wi = dlg_find_by_id (h, panel_listing_types_id);
-            if (widget_is_active (wi))
-            {
-                WInput *in;
-
-                in = INPUT (dlg_find_by_id (h, mini_user_format_id));
-                input_assign_text (in, status_format[RADIO (wi)->sel]);
-                dlg_stop (h);
-                return MSG_HANDLED;
-            }
-
-            wi = dlg_find_by_id (h, panel_user_format_id);
-            if (widget_is_active (wi))
-            {
-                h->ret_value = B_USER + 6;
-                dlg_stop (h);
-                return MSG_HANDLED;
-            }
-
-            wi = dlg_find_by_id (h, mini_user_format_id);
-            if (widget_is_active (wi))
-            {
-                h->ret_value = B_USER + 7;
-                dlg_stop (h);
-                return MSG_HANDLED;
-            }
-        }
-
-        if (g_ascii_tolower (parm) == listing_user_hotkey)
-        {
-            Widget *wi;
-
-            wi = dlg_find_by_id (h, panel_user_format_id);
-            if (widget_is_active (wi))
-            {
-                wi = dlg_find_by_id (h, mini_user_format_id);
-                if (widget_is_active (wi))
-                {
-                    WRadio *r;
-
-                    r = RADIO (dlg_find_by_id (h, panel_listing_types_id));
-                    r->pos = r->sel = panel_listing_user_idx;
-                    dlg_select_widget (WIDGET (r));     /* force redraw */
-                    send_message (h, r, MSG_ACTION, 0, NULL);
-                    return MSG_HANDLED;
-                }
-            }
-        }
-        return MSG_NOT_HANDLED;
-
-    case MSG_ACTION:
+    case MSG_NOTIFY:
         if (sender != NULL && sender->id == panel_listing_types_id)
         {
             WCheck *ch;
-            WInput *in1, *in2;
+            WInput *in1, *in2, *in3;
 
             in1 = INPUT (dlg_find_by_id (h, panel_user_format_id));
+            in2 = INPUT (dlg_find_by_id (h, panel_brief_cols_id));
             ch = CHECK (dlg_find_by_id (h, mini_user_status_id));
-            in2 = INPUT (dlg_find_by_id (h, mini_user_format_id));
+            in3 = INPUT (dlg_find_by_id (h, mini_user_format_id));
 
-            if (!(ch->state & C_BOOL))
-                input_assign_text (in2, status_format[RADIO (sender)->sel]);
-            input_update (in2, FALSE);
+            if (!ch->state)
+                input_assign_text (in3, status_format[RADIO (sender)->sel]);
             input_update (in1, FALSE);
+            input_update (in2, FALSE);
+            input_update (in3, FALSE);
             widget_disable (WIDGET (in1), RADIO (sender)->sel != panel_listing_user_idx);
+            widget_disable (WIDGET (in2), RADIO (sender)->sel != panel_listing_brief_idx);
             return MSG_HANDLED;
         }
 
@@ -328,7 +306,7 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
 
             in = INPUT (dlg_find_by_id (h, mini_user_format_id));
 
-            if (CHECK (sender)->state & C_BOOL)
+            if (CHECK (sender)->state)
             {
                 widget_disable (WIDGET (in), FALSE);
                 input_assign_text (in, status_format[3]);
@@ -422,11 +400,11 @@ confvfs_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
 {
     switch (msg)
     {
-    case MSG_ACTION:
+    case MSG_NOTIFY:
         /* message from "Always use ftp proxy" checkbutton */
         if (sender != NULL && sender->id == ftpfs_always_use_proxy_id)
         {
-            const gboolean not_use = !(CHECK (sender)->state & C_BOOL);
+            const gboolean not_use = !CHECK (sender)->state;
             Widget *wi;
 
             /* input */
@@ -462,7 +440,7 @@ jobs_fill_listbox (WListbox * list)
         char *s;
 
         s = g_strconcat (state_str[tl->state], " ", tl->info, (char *) NULL);
-        listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, s, (void *) tl);
+        listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, s, (void *) tl, FALSE);
         g_free (s);
     }
 }
@@ -592,45 +570,46 @@ configure_box (void)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_START_COLUMNS (qc);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("File operations"));
-        qc =         XQUICK_CHECKBOX (qc, N_("&Verbose operation"), &verbose, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Compute tota&ls"), &file_op_compute_totals, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Classic pro&gressbar"), &classic_progressbar, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Mkdi&r autoname"), &auto_fill_mkdir_name, NULL);
+        qc = XQUICK_START_COLUMNS (qc),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("File operations")),
+        qc =         XQUICK_CHECKBOX (qc, N_("&Verbose operation"), &verbose, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Compute tota&ls"), &file_op_compute_totals, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Classic pro&gressbar"), &classic_progressbar, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Mkdi&r autoname"), &auto_fill_mkdir_name, NULL),
         qc =         XQUICK_CHECKBOX (qc, N_("&Preallocate space"), &mc_global.vfs.preallocate_space,
-                                          NULL);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("Esc key mode"));
-        qc =         XQUICK_CHECKBOX (qc, N_("S&ingle press"), &old_esc_mode, &configure_old_esc_mode_id);
-        qc =         XQUICK_LABELED_INPUT (qc,
-                                         N_("Timeout:"), input_label_left,
-                                         (const char *) time_out, MC_HISTORY_ESC_TIMEOUT,
-                                         &time_out_new, &configure_time_out_id, FALSE, FALSE,
-                                         INPUT_COMPLETE_NONE);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("Pause after run"));
-        qc =         XQUICK_RADIO (qc, pause_options_num, pause_options, &pause_after_run, NULL);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc = XQUICK_NEXT_COLUMN (qc);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("Other options"));
-        qc =         XQUICK_CHECKBOX (qc, N_("Use internal edi&t"), &use_internal_edit, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Use internal vie&w"), &use_internal_view, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Auto m&enus"), &auto_menu, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("&Drop down menus"), &drop_menus, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("S&hell &patterns"), &easy_patterns, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Co&mplete: show all"), &mc_global.widget.show_all_if_ambiguous, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Rotating d&ash"), &nice_rotating_dash, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Cd follows lin&ks"), &mc_global.vfs.cd_symlinks, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Sa&fe delete"), &safe_delete, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("A&uto save setup"), &auto_save_setup, NULL);
-        qc =         XQUICK_SEPARATOR (qc, FALSE);
-        qc =         XQUICK_SEPARATOR (qc, FALSE);
-        qc =         XQUICK_SEPARATOR (qc, FALSE);
-        qc =         XQUICK_SEPARATOR (qc, FALSE);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc = XQUICK_STOP_COLUMNS (qc);
-        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+                                 NULL),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("Esc key mode")),
+        qc =         XQUICK_CHECKBOX (qc, N_("S&ingle press"), &old_esc_mode, &configure_old_esc_mode_id),
+        qc =         XQUICK_LABELED_INPUT (qc, N_("Timeout:"), input_label_left,
+                                      (const char *) time_out, MC_HISTORY_ESC_TIMEOUT,
+                                      &time_out_new, &configure_time_out_id, FALSE, FALSE,
+                                      INPUT_COMPLETE_NONE),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("Pause after run")),
+        qc =         XQUICK_RADIO (qc, pause_options_num, pause_options, &pause_after_run, NULL),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc = XQUICK_NEXT_COLUMN (qc),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("Other options")),
+        qc =         XQUICK_CHECKBOX (qc, N_("Use internal edi&t"), &use_internal_edit, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Use internal vie&w"), &use_internal_view, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("A&sk new file name"),
+                                 &editor_ask_filename_before_edit, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Auto m&enus"), &auto_menu, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("&Drop down menus"), &drop_menus, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("S&hell patterns"), &easy_patterns, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Co&mplete: show all"),
+                                 &mc_global.widget.show_all_if_ambiguous, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Rotating d&ash"), &nice_rotating_dash, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Cd follows lin&ks"), &mc_global.vfs.cd_symlinks, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Sa&fe delete"), &safe_delete, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("A&uto save setup"), &auto_save_setup, NULL),
+        qc =         XQUICK_SEPARATOR (qc, FALSE),
+        qc =         XQUICK_SEPARATOR (qc, FALSE),
+        qc =         XQUICK_SEPARATOR (qc, FALSE),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc = XQUICK_STOP_COLUMNS (qc),
+        qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif
@@ -638,15 +617,15 @@ configure_box (void)
         g_snprintf (time_out, sizeof (time_out), "%d", old_esc_mode_timeout);
 
 #ifndef USE_INTERNAL_EDIT
-        quick_widgets[17].options = W_DISABLED;
+        quick_widgets[17].state = WST_DISABLED;
 #endif
 
         if (!old_esc_mode)
-            quick_widgets[10].options = quick_widgets[11].options = W_DISABLED;
+            quick_widgets[10].state = quick_widgets[11].state = WST_DISABLED;
 
 #ifndef HAVE_POSIX_FALLOCATE
         mc_global.vfs.preallocate_space = FALSE;
-        quick_widgets[7].options = W_DISABLED;
+        quick_widgets[7].state = WST_DISABLED;
 #endif
 
         if (quick_dialog (&qdlg) == B_ENTER)
@@ -690,19 +669,20 @@ appearance_box (void)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_START_COLUMNS (qc);
-        qc =     XQUICK_LABEL (qc, N_("Skin:"), NULL);
-        qc = XQUICK_NEXT_COLUMN (qc);
+        qc = XQUICK_START_COLUMNS (qc),
+        qc =     XQUICK_LABEL (qc, N_("Skin:"), NULL),
+        qc = XQUICK_NEXT_COLUMN (qc),
         qc =     XQUICK_BUTTON (qc, str_fit_to_term (skin_name_to_label (current_skin_name), 20, J_LEFT_FIT),
-                              B_USER, sel_skin_button, NULL);
-        qc = XQUICK_STOP_COLUMNS (qc);
-        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+                              B_USER, sel_skin_button, NULL),
+        qc = XQUICK_STOP_COLUMNS (qc),
+        qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif
 
         if (quick_dialog (&qdlg) == B_ENTER)
-            mc_config_set_string (mc_main_config, CONFIG_APP_SECTION, "skin", current_skin_name);
+            mc_config_set_string (mc_global.main_config, CONFIG_APP_SECTION, "skin",
+                                  current_skin_name);
         else
             skin_apply (NULL);
     }
@@ -717,9 +697,9 @@ appearance_box (void)
 void
 panel_options_box (void)
 {
-    int simple_swap;
+    gboolean simple_swap;
 
-    simple_swap = mc_config_get_bool (mc_main_config, CONFIG_PANELS_SECTION,
+    simple_swap = mc_config_get_bool (mc_global.main_config, CONFIG_PANELS_SECTION,
                                       "simple_swap", FALSE) ? 1 : 0;
     {
         const char *qsearch_options[] = {
@@ -729,7 +709,7 @@ panel_options_box (void)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[31+2],
+        quick_widget_t quick_widgets[33+2],
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -750,12 +730,14 @@ panel_options_box (void)
                                     NULL),
                     QUICK_SEPARATOR (FALSE),
                     QUICK_SEPARATOR (FALSE),
+                    QUICK_SEPARATOR (FALSE),
                 QUICK_STOP_GROUPBOX,
             QUICK_NEXT_COLUMN,
                 QUICK_START_GROUPBOX (N_("Navigation")),
                     QUICK_CHECKBOX (N_("L&ynx-like motion"), &panels_options.navigate_with_arrows,
                                     NULL),
                     QUICK_CHECKBOX (N_("Pa&ge scrolling"), &panels_options.scroll_pages, NULL),
+                    QUICK_CHECKBOX (N_("Center &scrolling"), &panels_options.scroll_center, NULL),
                     QUICK_CHECKBOX (N_("&Mouse page scrolling"), &panels_options.mouse_move_pages,
                                     NULL),
                 QUICK_STOP_GROUPBOX,
@@ -781,36 +763,43 @@ panel_options_box (void)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_START_COLUMNS (qc);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("Main options"));
-        qc =         XQUICK_CHECKBOX (qc, N_("Show mi&ni-status"), &panels_options.show_mini_info, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Use SI si&ze units"), &panels_options.kilobyte_si, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Mi&x all files"), &panels_options.mix_all_files, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Show &backup files"), &panels_options.show_backups, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Show &hidden files"), &panels_options.show_dot_files, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("&Fast dir reload"), &panels_options.fast_reload, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Ma&rk moves down"), &panels_options.mark_moves_down, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Re&verse files only"), &panels_options.reverse_files_only, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Simple s&wap"), &simple_swap, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("A&uto save panels setup"), &panels_options.auto_save_setup, NULL);
-        qc =         XQUICK_SEPARATOR (qc, FALSE);
-        qc =         XQUICK_SEPARATOR (qc, FALSE);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc = XQUICK_NEXT_COLUMN (qc);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("Navigation"));
-        qc =         XQUICK_CHECKBOX (qc, N_("L&ynx-like motion"), &panels_options.navigate_with_arrows, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("Pa&ge scrolling"), &panels_options.scroll_pages, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("&Mouse page scrolling"), &panels_options.mouse_move_pages, NULL);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("File highlight"));
-        qc =         XQUICK_CHECKBOX (qc, N_("File &types"), &panels_options.filetype_mode, NULL);
-        qc =         XQUICK_CHECKBOX (qc, N_("&Permissions"), &panels_options.permission_mode, NULL);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc =     XQUICK_START_GROUPBOX (qc, N_("Quick search"));
-        qc =         XQUICK_RADIO (qc, QSEARCH_NUM, qsearch_options, (int *) &panels_options.qsearch_mode, NULL);
-        qc =     XQUICK_STOP_GROUPBOX (qc);
-        qc = XQUICK_STOP_COLUMNS (qc);
-        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+        qc = XQUICK_START_COLUMNS (qc),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("Main options")),
+        qc =         XQUICK_CHECKBOX (qc, N_("Show mi&ni-status"), &panels_options.show_mini_info, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Use SI si&ze units"), &panels_options.kilobyte_si, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Mi&x all files"), &panels_options.mix_all_files, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Show &backup files"), &panels_options.show_backups, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Show &hidden files"), &panels_options.show_dot_files, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("&Fast dir reload"), &panels_options.fast_reload, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Ma&rk moves down"), &panels_options.mark_moves_down, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Re&verse files only"), &panels_options.reverse_files_only,
+                                 NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Simple s&wap"), &simple_swap, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("A&uto save panels setup"), &panels_options.auto_save_setup,
+                                 NULL),
+        qc =         XQUICK_SEPARATOR (qc, FALSE),
+        qc =         XQUICK_SEPARATOR (qc, FALSE),
+        qc =         XQUICK_SEPARATOR (qc, FALSE),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc = XQUICK_NEXT_COLUMN (qc),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("Navigation")),
+        qc =         XQUICK_CHECKBOX (qc, N_("L&ynx-like motion"), &panels_options.navigate_with_arrows,
+                                 NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Pa&ge scrolling"), &panels_options.scroll_pages, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Center &scrolling"), &panels_options.scroll_center, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("&Mouse page scrolling"), &panels_options.mouse_move_pages,
+                                 NULL),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("File highlight")),
+        qc =         XQUICK_CHECKBOX (qc, N_("File &types"), &panels_options.filetype_mode, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("&Permissions"), &panels_options.permission_mode, NULL),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc =     XQUICK_START_GROUPBOX (qc, N_("Quick search")),
+        qc =         XQUICK_RADIO (qc, QSEARCH_NUM, qsearch_options, (int *) &panels_options.qsearch_mode,
+                              NULL),
+        qc =     XQUICK_STOP_GROUPBOX (qc),
+        qc = XQUICK_STOP_COLUMNS (qc),
+        qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32
@@ -819,8 +808,7 @@ panel_options_box (void)
             return;
     }
 
-    mc_config_set_bool (mc_main_config, CONFIG_PANELS_SECTION,
-                        "simple_swap", (gboolean) (simple_swap & C_BOOL));
+    mc_config_set_bool (mc_global.main_config, CONFIG_PANELS_SECTION, "simple_swap", simple_swap);
 
     if (!panels_options.fast_reload_msg_shown && panels_options.fast_reload)
     {
@@ -838,7 +826,8 @@ panel_options_box (void)
 
 /* return list type */
 int
-panel_listing_box (WPanel * panel, char **userp, char **minip, int *use_msformat, int num)
+panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean * use_msformat,
+                   int *brief_cols)
 {
     int result = -1;
     char *section = NULL;
@@ -852,11 +841,11 @@ panel_listing_box (WPanel * panel, char **userp, char **minip, int *use_msformat
         panel = g_new (WPanel, 1);
         panel->list_type = list_full;
         panel->user_format = g_strdup (DEFAULT_USER_FORMAT);
-        panel->user_mini_status = 0;
+        panel->user_mini_status = FALSE;
         for (i = 0; i < LIST_TYPES; i++)
             panel->user_status_format[i] = g_strdup (DEFAULT_USER_FORMAT);
         section = g_strconcat ("Temporal:", p, (char *) NULL);
-        if (!mc_config_has_group (mc_main_config, section))
+        if (!mc_config_has_group (mc_global.main_config, section))
         {
             g_free (section);
             section = g_strdup (p);
@@ -866,26 +855,34 @@ panel_listing_box (WPanel * panel, char **userp, char **minip, int *use_msformat
     }
 
     {
-        int mini_user_status;
+        gboolean mini_user_status;
+        char panel_brief_cols_in[BUF_TINY];
+        char *panel_brief_cols_out = NULL;
         char *panel_user_format = NULL;
         char *mini_user_format = NULL;
-        const char *cp;
 
         /* Controls whether the array strings have been translated */
         const char *list_types[LIST_TYPES] = {
             N_("&Full file list"),
-            N_("&Brief file list"),
+            N_("&Brief file list:"),
             N_("&Long file list"),
             N_("&User defined:")
         };
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[7+2],
+        quick_widget_t quick_widgets[12+2],
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
             /* *INDENT-OFF* */
-            QUICK_RADIO (LIST_TYPES, list_types, &result, &panel_listing_types_id),
+            QUICK_START_COLUMNS,
+                QUICK_RADIO (LIST_TYPES, list_types, &result, &panel_listing_types_id),
+            QUICK_NEXT_COLUMN,
+                QUICK_SEPARATOR (FALSE),
+                QUICK_LABELED_INPUT (_ ("columns"), input_label_right, panel_brief_cols_in,
+                                     "panel-brief-cols-input", &panel_brief_cols_out,
+                                     &panel_brief_cols_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
+            QUICK_STOP_COLUMNS,
             QUICK_INPUT (panel->user_format, "user-fmt-input", &panel_user_format,
                          &panel_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
             QUICK_SEPARATOR (TRUE),
@@ -905,42 +902,58 @@ panel_listing_box (WPanel * panel, char **userp, char **minip, int *use_msformat
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_RADIO (qc, LIST_TYPES, list_types, &result, &panel_listing_types_id);
-        qc = XQUICK_INPUT (qc,
-                            panel->user_format, "user-fmt-input", &panel_user_format,
-                            &panel_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE);
-        qc = XQUICK_SEPARATOR (qc, TRUE);
-        qc = XQUICK_CHECKBOX (qc, N_("User &mini status"), &mini_user_status, &mini_user_status_id);
-        qc = XQUICK_INPUT (qc,
-                            panel->user_status_format[panel->list_type], "mini_input",
-                            &mini_user_format, &mini_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE);
-        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+        qc = XQUICK_START_COLUMNS (qc),
+        qc =     XQUICK_RADIO (qc, LIST_TYPES, list_types, &result, &panel_listing_types_id),
+        qc = XQUICK_NEXT_COLUMN (qc),
+        qc =     XQUICK_SEPARATOR (qc, FALSE),
+        qc =     XQUICK_LABELED_INPUT (qc, _ ("columns"), input_label_right, panel_brief_cols_in,
+                                 "panel-brief-cols-input", &panel_brief_cols_out,
+                                 &panel_brief_cols_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
+        qc = XQUICK_STOP_COLUMNS (qc),
+        qc = XQUICK_INPUT (qc, panel->user_format, "user-fmt-input", &panel_user_format,
+                     &panel_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
+        qc = XQUICK_SEPARATOR (qc, TRUE),
+        qc = XQUICK_CHECKBOX (qc, N_("User &mini status"), &mini_user_status, &mini_user_status_id),
+        qc = XQUICK_INPUT (qc, panel->user_status_format[panel->list_type], "mini_input",
+                     &mini_user_format, &mini_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
+        qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
-
-        /* get hotkey of user-defined format string */
-        cp = strchr (_(list_types[panel_listing_user_idx]), '&');
-        if (cp != NULL && *++cp != '\0')
-            listing_user_hotkey = g_ascii_tolower (*cp);
 
         mini_user_status = panel->user_mini_status;
         result = panel->list_type;
         status_format = panel->user_status_format;
 
-        if (panel->list_type != panel_listing_user_idx)
-            quick_widgets[1].options = W_DISABLED;
+        g_snprintf (panel_brief_cols_in, sizeof (panel_brief_cols_in), "%d", panel->brief_cols);
+
+        if ((int) panel->list_type != panel_listing_brief_idx)
+            quick_widgets[4].state = WST_DISABLED;
+
+        if ((int) panel->list_type != panel_listing_user_idx)
+            quick_widgets[6].state = WST_DISABLED;
 
         if (!mini_user_status)
-            quick_widgets[4].options = W_DISABLED;
+            quick_widgets[9].state = WST_DISABLED;
 
         if (quick_dialog (&qdlg) == B_CANCEL)
             result = -1;
         else
         {
+            int cols;
+            char *error = NULL;
+
             *userp = panel_user_format;
             *minip = mini_user_format;
             *use_msformat = mini_user_status;
+
+            cols = strtol (panel_brief_cols_out, &error, 10);
+            if (*error == '\0')
+                *brief_cols = cols;
+            else
+                *brief_cols = panel->brief_cols;
+
+            g_free (panel_brief_cols_out);
         }
     }
 
@@ -962,8 +975,9 @@ panel_listing_box (WPanel * panel, char **userp, char **minip, int *use_msformat
 const panel_field_t *
 sort_box (dir_sort_options_t * op, const panel_field_t * sort_field)
 {
-    const char **sort_orders_names;
-    gsize sort_names_num, i;
+    char **sort_orders_names;
+    gsize i;
+    gsize sort_names_num = 0;
     int sort_idx = 0;
     const panel_field_t *result = NULL;
 
@@ -984,7 +998,7 @@ sort_box (dir_sort_options_t * op, const panel_field_t * sort_field)
         quick_widget_t quick_widgets[] = {
             /* *INDENT-OFF* */
             QUICK_START_COLUMNS,
-                QUICK_RADIO (sort_names_num, sort_orders_names, &sort_idx, NULL),
+                QUICK_RADIO (sort_names_num, (const char **) sort_orders_names, &sort_idx, NULL),
             QUICK_NEXT_COLUMN,
                 QUICK_CHECKBOX (N_("Executable &first"), &op->exec_first, NULL),
                 QUICK_CHECKBOX (N_("Cas&e sensitive"), &op->case_sensitive, NULL),
@@ -1003,14 +1017,14 @@ sort_box (dir_sort_options_t * op, const panel_field_t * sort_field)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_START_COLUMNS (qc);
-        qc =    XQUICK_RADIO (qc, sort_names_num, sort_orders_names, &sort_idx, NULL);
-        qc = XQUICK_NEXT_COLUMN (qc);
-        qc =    XQUICK_CHECKBOX (qc, N_("Executable &first"), &op->exec_first, NULL);
-        qc =    XQUICK_CHECKBOX (qc, N_("Cas&e sensitive"), &op->case_sensitive, NULL);
-        qc =    XQUICK_CHECKBOX (qc, N_("&Reverse"), &op->reverse, NULL);
-        qc = XQUICK_STOP_COLUMNS (qc);
-        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+        qc = XQUICK_START_COLUMNS (qc),
+        qc =     XQUICK_RADIO (qc, sort_names_num, (const char **) sort_orders_names, &sort_idx, NULL),
+        qc = XQUICK_NEXT_COLUMN (qc),
+        qc =     XQUICK_CHECKBOX (qc, N_("Executable &first"), &op->exec_first, NULL),
+        qc =     XQUICK_CHECKBOX (qc, N_("Cas&e sensitive"), &op->case_sensitive, NULL),
+        qc =     XQUICK_CHECKBOX (qc, N_("&Reverse"), &op->reverse, NULL),
+        qc = XQUICK_STOP_COLUMNS (qc),
+        qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
@@ -1022,7 +1036,7 @@ sort_box (dir_sort_options_t * op, const panel_field_t * sort_field)
             result = sort_field;
     }
 
-    g_strfreev ((gchar **) sort_orders_names);
+    g_strfreev (sort_orders_names);
 
     return result;
 }
@@ -1060,15 +1074,15 @@ confirm_box (void)
     };
 
 #if defined(WIN32)  //WIN32, quick
-    qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|&Delete"), &confirm_delete, NULL);
-    qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|O&verwrite"), &confirm_overwrite, NULL);
-    qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|&Execute"), &confirm_execute, NULL);
-    qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|E&xit"), &confirm_exit, NULL);
+    qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|&Delete"), &confirm_delete, NULL),
+    qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|O&verwrite"), &confirm_overwrite, NULL),
+    qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|&Execute"), &confirm_execute, NULL),
+    qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|E&xit"), &confirm_exit, NULL),
     qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|Di&rectory hotlist delete"),
-                              &confirm_directory_hotlist_delete, NULL);
+                    &confirm_directory_hotlist_delete, NULL),
     qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|&History cleanup"),
-                              &mc_global.widget.confirm_history_cleanup, NULL);
-    qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+                    &mc_global.widget.confirm_history_cleanup, NULL),
+    qc = XQUICK_BUTTONS_OK_CANCEL (qc),
     qc = XQUICK_END (qc);
     assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
@@ -1082,7 +1096,7 @@ confirm_box (void)
 void
 display_bits_box (void)
 {
-    int new_meta;
+    gboolean new_meta;
     int current_mode;
 
     const char *display_bits_str[] = {
@@ -1114,10 +1128,10 @@ display_bits_box (void)
     };
 
 #if defined(WIN32)  //WIN32, quick
-    qc = XQUICK_RADIO (qc, 4, display_bits_str, &current_mode, NULL);
-    qc = XQUICK_SEPARATOR (qc, TRUE);
-    qc = XQUICK_CHECKBOX (qc, N_("F&ull 8 bits input"), &new_meta, NULL);
-    qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+    qc = XQUICK_RADIO (qc, 4, display_bits_str, &current_mode, NULL),
+    qc = XQUICK_SEPARATOR (qc, TRUE),
+    qc = XQUICK_CHECKBOX (qc, N_("F&ull 8 bits input"), &new_meta, NULL),
+    qc = XQUICK_BUTTONS_OK_CANCEL (qc),
     qc = XQUICK_END (qc);
     assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
@@ -1158,7 +1172,7 @@ display_bits_box (void)
         : ((codepage_desc *) g_ptr_array_index (codepages, new_display_codepage))->name;
 
     {
-        int new_meta;
+        gboolean new_meta;
 
 #if defined(WIN32)  //WIN32, quick
         quick_widget_t quick_widgets[9+2],
@@ -1186,14 +1200,14 @@ display_bits_box (void)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_START_COLUMNS (qc);
-        qc =    XQUICK_LABEL (qc, N_("Input / display codepage:"), NULL),
-        qc = XQUICK_NEXT_COLUMN (qc);
-        qc =    XQUICK_BUTTON (qc, cpname, B_USER, sel_charset_button, NULL),
-        qc = XQUICK_STOP_COLUMNS (qc);
+        qc = XQUICK_START_COLUMNS (qc),
+        qc =     XQUICK_LABEL (qc, N_("Input / display codepage:"), NULL),
+        qc = XQUICK_NEXT_COLUMN (qc),
+        qc =     XQUICK_BUTTON (qc, cpname, B_USER, sel_charset_button, NULL),
+        qc = XQUICK_STOP_COLUMNS (qc),
         qc = XQUICK_SEPARATOR (qc, TRUE),
-        qc =    XQUICK_CHECKBOX (qc, N_("F&ull 8 bits input"), &new_meta, NULL),
-        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+        qc =     XQUICK_CHECKBOX (qc, N_("F&ull 8 bits input"), &new_meta, NULL),
+        qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
@@ -1242,8 +1256,8 @@ tree_box (const char *current_dir)
     (void) current_dir;
 
     /* Create the components */
-    dlg = dlg_create (TRUE, 0, 0, LINES - 9, COLS - 20, dialog_colors, tree_callback, NULL,
-                      "[Directory Tree]", _("Directory tree"), DLG_CENTER);
+    dlg = dlg_create (TRUE, 0, 0, LINES - 9, COLS - 20, WPOS_CENTER, FALSE, dialog_colors,
+                      tree_callback, NULL, "[Directory Tree]", _("Directory tree"));
     wd = WIDGET (dlg);
 
     mytree = tree_new (2, 2, wd->lines - 6, wd->cols - 5, FALSE);
@@ -1258,6 +1272,7 @@ tree_box (const char *current_dir)
     if (dlg_run (dlg) == B_ENTER)
     {
         const vfs_path_t *selected_name;
+
         selected_name = tree_selected_name (mytree);
         val = g_strdup (vfs_path_as_str (selected_name));
     }
@@ -1338,38 +1353,34 @@ configure_vfs (void)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_LABELED_INPUT (qc,
-                                N_("Timeout for freeing VFSs (sec):"), input_label_left,
-                                buffer2, "input-timo-vfs", &ret_timeout, NULL, FALSE, FALSE,
-                                INPUT_COMPLETE_NONE);
+        qc = XQUICK_LABELED_INPUT (qc, N_("Timeout for freeing VFSs (sec):"), input_label_left,
+                              buffer2, "input-timo-vfs", &ret_timeout, NULL, FALSE, FALSE,
+                              INPUT_COMPLETE_NONE),
 #ifdef ENABLE_VFS_FTP
-        qc = XQUICK_SEPARATOR (qc, TRUE);
-        qc = XQUICK_LABELED_INPUT (qc,
-                                N_("FTP anonymous password:"), input_label_left,
-                                ftpfs_anonymous_passwd, "input-passwd", &ret_passwd, NULL,
-                                FALSE, FALSE, INPUT_COMPLETE_NONE);
-        qc = XQUICK_LABELED_INPUT (qc,
-                                N_("FTP directory cache timeout (sec):"), input_label_left,
-                                buffer3, "input-timeout", &ret_directory_timeout, NULL,
-                                FALSE, FALSE, INPUT_COMPLETE_NONE);
+        qc = XQUICK_SEPARATOR (qc, TRUE),
+        qc = XQUICK_LABELED_INPUT (qc, N_("FTP anonymous password:"), input_label_left,
+                              ftpfs_anonymous_passwd, "input-passwd", &ret_passwd, NULL,
+                              FALSE, FALSE, INPUT_COMPLETE_NONE),
+        qc = XQUICK_LABELED_INPUT (qc, N_("FTP directory cache timeout (sec):"), input_label_left,
+                              buffer3, "input-timeout", &ret_directory_timeout, NULL,
+                              FALSE, FALSE, INPUT_COMPLETE_NONE),
         qc = XQUICK_CHECKBOX (qc, N_("&Always use ftp proxy:"), &ftpfs_always_use_proxy,
-                                    &ftpfs_always_use_proxy_id);
-        qc = XQUICK_INPUT (qc,
-                            ftpfs_proxy_host, "input-ftp-proxy", &ret_ftp_proxy,
-                            &ftpfs_proxy_host_id, FALSE, FALSE, INPUT_COMPLETE_HOSTNAMES);
-        qc = XQUICK_CHECKBOX (qc, N_("&Use ~/.netrc"), &ftpfs_use_netrc, NULL);
-        qc = XQUICK_CHECKBOX (qc, N_("Use &passive mode"), &ftpfs_use_passive_connections, NULL);
+                         &ftpfs_always_use_proxy_id),
+        qc = XQUICK_INPUT (qc, ftpfs_proxy_host, "input-ftp-proxy", &ret_ftp_proxy,
+                      &ftpfs_proxy_host_id, FALSE, FALSE, INPUT_COMPLETE_HOSTNAMES),
+        qc = XQUICK_CHECKBOX (qc, N_("&Use ~/.netrc"), &ftpfs_use_netrc, NULL),
+        qc = XQUICK_CHECKBOX (qc, N_("Use &passive mode"), &ftpfs_use_passive_connections, NULL),
         qc = XQUICK_CHECKBOX (qc, N_("Use passive mode over pro&xy"),
-                                    &ftpfs_use_passive_connections_over_proxy, NULL);
+                         &ftpfs_use_passive_connections_over_proxy, NULL),
 #endif /* ENABLE_VFS_FTP */
-        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+        qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
 
 #ifdef ENABLE_VFS_FTP
         if (!ftpfs_always_use_proxy)
-            quick_widgets[5].options = W_DISABLED;
+            quick_widgets[5].state = WST_DISABLED;
 #endif
 
         if (quick_dialog (&qdlg) != B_CANCEL)
@@ -1402,7 +1413,7 @@ configure_vfs (void)
 char *
 cd_dialog (void)
 {
-    const Widget *w = WIDGET (current_panel);
+    const Widget *w = CONST_WIDGET (current_panel);
     char *my_str;
 
 #if defined(WIN32)  //WIN32, quick
@@ -1423,9 +1434,8 @@ cd_dialog (void)
     };
 
 #if defined(WIN32)  //WIN32, quick
-    qc = XQUICK_LABELED_INPUT (qc,
-							N_("cd"), input_label_left, "", "input", &my_str, NULL, FALSE, TRUE,
-                          	INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD);
+    qc = XQUICK_LABELED_INPUT (qc, N_("cd"), input_label_left, "", "input", &my_str, NULL, FALSE, TRUE,
+                             INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD),
     qc = XQUICK_END (qc);
     assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
@@ -1465,16 +1475,14 @@ symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
     };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_LABELED_INPUT (qc,
-                            N_("Existing filename (filename symlink will point to):"),
-                            input_label_above, vfs_path_as_str (existing_vpath), "input-2",
-                            ret_existing, NULL, FALSE, FALSE, INPUT_COMPLETE_FILENAMES);
-        qc = XQUICK_SEPARATOR (qc, FALSE);
-        qc = XQUICK_LABELED_INPUT (qc,
-                            N_("Symbolic link filename:"), input_label_above,
-                            vfs_path_as_str (new_vpath), "input-1",
-                            ret_new, NULL, FALSE, FALSE, INPUT_COMPLETE_FILENAMES);
-        qc = XQUICK_BUTTONS_OK_CANCEL (qc);
+        qc = XQUICK_LABELED_INPUT (qc, N_("Existing filename (filename symlink will point to):"),
+                             input_label_above, vfs_path_as_str (existing_vpath), "input-2",
+                             ret_existing, NULL, FALSE, FALSE, INPUT_COMPLETE_FILENAMES),
+        qc = XQUICK_SEPARATOR (qc, FALSE),
+        qc = XQUICK_LABELED_INPUT (qc, N_("Symbolic link filename:"), input_label_above,
+                             vfs_path_as_str (new_vpath), "input-1",
+                             ret_new, NULL, FALSE, FALSE, INPUT_COMPLETE_FILENAMES),
+        qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
@@ -1531,10 +1539,10 @@ jobs_cmd (void)
     }
 
     x += (int) n_but - 1;
-    cols = max (cols, x + 6);
+    cols = MAX (cols, x + 6);
 
-    jobs_dlg = dlg_create (TRUE, 0, 0, lines, cols, dialog_colors, NULL, NULL,
-                           "[Background jobs]", _("Background jobs"), DLG_CENTER);
+    jobs_dlg = dlg_create (TRUE, 0, 0, lines, cols, WPOS_CENTER, FALSE, dialog_colors, NULL, NULL,
+                           "[Background jobs]", _("Background jobs"));
 
     bg_list = listbox_new (2, 2, lines - 6, cols - 6, FALSE, NULL);
     jobs_fill_listbox (bg_list);
@@ -1574,6 +1582,10 @@ vfs_smb_get_authinfo (const char *host, const char *share, const char *domain, c
 
     {
         char *ret_domain, *ret_user, *ret_password;
+
+#if defined(WIN32)  //WIN32, quick
+#error	Quick widget not implementated ...
+#endif
 
         quick_widget_t quick_widgets[] = {
             /* *INDENT-OFF* */

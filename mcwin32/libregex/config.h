@@ -1,17 +1,48 @@
 /*
- *  win32 work-arounds
+ *  libregexp config.h
  */
+
+#if !defined(_BSD_SOURCE)
+#define _BSD_SOURCE
+#endif
+#include <../config.h>
+
+#include <stdio.h>                      /* snprintf */
 
 typedef unsigned int u_int32_t;
 typedef int ssize_t;
 
+#if defined(WIN32)
+#if !defined(_POSIX2_RE_DUP_MAX)
 #define _POSIX2_RE_DUP_MAX              255
-#define _DIAGASSERT(__x)                /*not used*/
-#define __UNCONST(__s)                  ((char *) __s)
-
-#if !defined(_CRT_SECURE_NO_DEPRECATE)
-#define _CRT_SECURE_NO_DEPRECATE	/* disable deprecate warnings */
+#endif
 #endif
 
+#if !defined(_DIAGASSERT)
+#define _DIAGASSERT(__x)                /*not used*/
+#endif
+
+#if !defined(__UNCONST)
+#define __UNCONST(__s)                  ((char *) __s)
+#endif
+
+/*function mappings*/
+#if defined(_MSC_VER) || defined(__WATCOMC__)
+#if (_MSC_VER < 1500)	/* MSVC 2008 */
+#define vsnprintf _vsnprintf
+#endif
+#if (_MSC_VER < 1700)	/* MSVC 2012 */
 #define snprintf _snprintf
-#define vsnprintf _csnprintf
+#endif /*1500*/
+#define strdup _strdup
+#define stricmp _stricmp
+#define mktemp _mktemp
+#ifndef readlink
+#define readlink w32_readlink
+#endif
+#ifndef lstat
+#define lstat w32_lstat
+#endif
+#endif	/*MSC_VER || WATCOM*/
+
+/*end*/

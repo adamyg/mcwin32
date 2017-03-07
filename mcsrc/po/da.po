@@ -1,18 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 # 
 # Translators:
+# Henry Madsen Jensen <henry@madsen-jensen.dk>, 2016
+# Henry Madsen Jensen <henry@madsen-jensen.dk>, 2016
 # Joe Hansen <joedalton2@yahoo.dk>, 2014
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2015-02-26 09:43+0300\n"
-"PO-Revision-Date: 2015-02-26 09:48+0000\n"
+"POT-Creation-Date: 2016-11-21 13:19+0300\n"
+"PO-Revision-Date: 2016-11-22 08:19+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Danish (http://www.transifex.com/projects/p/mc/language/da/)\n"
+"Language-Team: Danish (http://www.transifex.com/mc/mc/language/da/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -71,7 +73,7 @@ msgid "Cannot create %s directory"
 msgstr "Kan ikke oprette mappen %s"
 
 msgid "FATAL: not a directory:"
-msgstr ""
+msgstr "KRITISK: Ikke en folder:"
 
 #, c-format
 msgid "An error occurred while migrating user settings: %s"
@@ -133,10 +135,29 @@ msgstr "Kunne ikke fortolke temaet »%s«.\nStandardtemaet er indlæst"
 
 #, c-format
 msgid ""
+"Unable to use '%s' skin with true colors support:\n"
+"%s\n"
+"Default skin has been loaded"
+msgstr ""
+
+#, c-format
+msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
 msgstr "Kunne ikke bruge »%s«-tema med 256 farveunderstøttelse\npå ikke-256 farveterminal.\nStandardtema er blevet indlæst"
+
+msgid "True color not supported with ncurses."
+msgstr ""
+
+msgid "True color not supported in this slang version."
+msgstr ""
+
+msgid "Your terminal doesn't even seem to support 256 colors."
+msgstr ""
+
+msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
+msgstr ""
 
 msgid "Escape"
 msgstr "Escape"
@@ -334,7 +355,7 @@ msgid "Colon"
 msgstr "Kolon"
 
 msgid "Semicolon"
-msgstr ""
+msgstr "Semikolon"
 
 msgid "Exclamation mark"
 msgstr "Udråbstegn"
@@ -430,11 +451,29 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr "Skærmstørrelse %dx%d er ikke understøttet.\nTjek TERM-miljøvariabelen.\n"
 
+msgid "B"
+msgstr ""
+
+msgid "kB"
+msgstr ""
+
+msgid "KiB"
+msgstr ""
+
+msgid "MB"
+msgstr ""
+
+msgid "MiB"
+msgstr ""
+
+msgid "GB"
+msgstr ""
+
+msgid "GiB"
+msgstr ""
+
 msgid "Cannot create pipe descriptor"
 msgstr "Kan ikke oprette datakanalbeskriver"
-
-msgid "Cannot parse command for pipe"
-msgstr "Kan ikke fortolke kommando for datakanal"
 
 msgid "Cannot create pipe streams"
 msgstr "Kan ikke oprette datakanalstrømme"
@@ -467,8 +506,13 @@ msgstr "Fejl ved dupning af gammel fejldatakanal"
 msgid "Directory cache expired for %s"
 msgstr "Mellemlagermappe udløbet for %s"
 
-msgid "bytes transferred"
-msgstr "byte overført"
+#, c-format
+msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
+msgstr "%s: %s: %s %3d%% (%lld) bytes overført"
+
+#, c-format
+msgid "%s: %s: %s %lld bytes transferred"
+msgstr "%s: %s: %s %lld bytes overført"
 
 msgid "Starting linear transfer..."
 msgstr "Begynder lineær overførsel..."
@@ -551,8 +595,8 @@ msgid "Error"
 msgstr "Fejl"
 
 #, c-format
-msgid "%d: %s"
-msgstr "%d: %s"
+msgid "%s (%d)"
+msgstr "%s (%d)"
 
 msgid "&Abort"
 msgstr "&Afbryd"
@@ -702,8 +746,8 @@ msgstr ""
 msgid "No arguments given to the viewer."
 msgstr "Ingen argumenter givet til fremviseren."
 
-msgid "Two files are required to evoke the diffviewer."
-msgstr "To filer kræves for at vække forskelsfremviseren."
+msgid "Two files are required to envoke the diffviewer."
+msgstr ""
 
 msgid "Background protocol error"
 msgstr "Fejl i baggrundsprotokol"
@@ -1367,7 +1411,7 @@ msgid "&Resize"
 msgstr "&Ændr størrelse"
 
 msgid "&Toggle fullscreen"
-msgstr ""
+msgstr "&Skift fuldskærm"
 
 msgid "&Next"
 msgstr "&Næste"
@@ -1491,14 +1535,14 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2015 the Free Software Foundation"
+msgid "Copyright (C) 1996-2016 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
 msgstr "Om"
 
 msgid "Open files"
-msgstr ""
+msgstr "Åbn filer"
 
 msgid "Edit: "
 msgstr "Rediger: "
@@ -1525,76 +1569,76 @@ msgid "Breton"
 msgstr ""
 
 msgid "Czech"
-msgstr ""
+msgstr "Tjekkisk"
 
 msgid "Welsh"
 msgstr ""
 
 msgid "Danish"
-msgstr ""
+msgstr "Dansk"
 
 msgid "German"
-msgstr ""
+msgstr "Tysk"
 
 msgid "Greek"
-msgstr ""
+msgstr "Græsk"
 
 msgid "English"
-msgstr ""
+msgstr "Engelsk"
 
 msgid "British English"
-msgstr ""
+msgstr "Britisk Engelsk"
 
 msgid "Canadian English"
-msgstr ""
+msgstr "Candisk Engelsk"
 
 msgid "American English"
-msgstr ""
+msgstr "Amerikansk Engelsk"
 
 msgid "Esperanto"
 msgstr ""
 
 msgid "Spanish"
-msgstr ""
+msgstr "Spansk"
 
 msgid "Faroese"
-msgstr ""
+msgstr "Færøsk"
 
 msgid "French"
-msgstr ""
+msgstr "Fransk"
 
 msgid "Italian"
-msgstr ""
+msgstr "Italiensk"
 
 msgid "Dutch"
-msgstr ""
+msgstr "Hollandsk"
 
 msgid "Norwegian"
-msgstr ""
+msgstr "Norsk"
 
 msgid "Polish"
-msgstr ""
+msgstr "Polsk"
 
 msgid "Portuguese"
-msgstr ""
+msgstr "Portugisisk"
 
 msgid "Romanian"
-msgstr ""
+msgstr "Rumænsk"
 
 msgid "Russian"
-msgstr ""
+msgstr "Russisk"
 
 msgid "Slovak"
-msgstr ""
+msgstr "Slovakisk"
 
 msgid "Swedish"
-msgstr ""
+msgstr "Svensk"
 
 msgid "Ukrainian"
-msgstr ""
+msgstr "Ukrainsk"
 
 msgid "&Add word"
-msgstr ""
+msgstr "&Tilføj ord"
 
 msgid "Language"
 msgstr "Sprog"
@@ -1640,7 +1684,7 @@ msgstr "Skallen kører allerede en kommando"
 
 #, c-format
 msgid "Type 'exit' to return to the Midnight Commander"
-msgstr ""
+msgstr "Skriv 'exit' for at vende tilbage til Midnight Commander"
 
 msgid "Set &all"
 msgstr "&Sæt alle"
@@ -1739,7 +1783,7 @@ msgid "Use internal vie&w"
 msgstr "Brug intern &visning"
 
 msgid "A&sk new file name"
-msgstr ""
+msgstr "&Spørg efter nyt fil navn"
 
 msgid "Auto m&enus"
 msgstr "Automatiske &menuer"
@@ -1819,6 +1863,9 @@ msgstr "L&ynx-lignende navigation"
 msgid "Pa&ge scrolling"
 msgstr "&Siderulning"
 
+msgid "Center &scrolling"
+msgstr ""
+
 msgid "&Mouse page scrolling"
 msgstr "Siderulning med &mus"
 
@@ -1850,14 +1897,17 @@ msgstr "Brug af indstilligen hurtig genindlæsning vil ikke\nnødvendigvis afspe
 msgid "&Full file list"
 msgstr "&Fuld filliste"
 
-msgid "&Brief file list"
-msgstr "&Kort filliste"
+msgid "&Brief file list:"
+msgstr ""
 
 msgid "&Long file list"
 msgstr "&Lang filliste"
 
 msgid "&User defined:"
 msgstr "&Brugerdefineret:"
+
+msgid "columns"
+msgstr "kolonner"
 
 msgid "User &mini status"
 msgstr "&Ministatus for bruger"
@@ -2022,16 +2072,16 @@ msgid "execute/searc&h by others"
 msgstr ""
 
 msgid "Name:"
-msgstr ""
+msgstr "Navn:"
 
 msgid "Permissions (octal):"
 msgstr ""
 
 msgid "Owner name:"
-msgstr ""
+msgstr "Ejerens navn:"
 
 msgid "Group name:"
-msgstr ""
+msgstr "Gruppe navn:"
 
 msgid "&Marked all"
 msgstr "&Marker alle"
@@ -2128,7 +2178,7 @@ msgid "Filter command and arguments:"
 msgstr "Filterkommando og argumenter:"
 
 msgid "Edit file"
-msgstr ""
+msgstr "Rediger fil"
 
 msgid "Create a new Directory"
 msgstr "Opret en ny mappe"
@@ -2177,6 +2227,10 @@ msgid ""
 msgstr "Ikke en xterm eller Linuxkonsol;\npanelerne kan ikke skiftes."
 
 #, c-format
+msgid "'%s' is not a symbolic link"
+msgstr ""
+
+#, c-format
 msgid "Symlink '%s' points to:"
 msgstr ""
 
@@ -2190,10 +2244,6 @@ msgstr "rediger symbolsk henvisning, kan ikke fjerne %s: %s"
 #, c-format
 msgid "edit symlink: %s"
 msgstr "rediger symbolsk henvisning: %s"
-
-#, c-format
-msgid "'%s' is not a symbolic link"
-msgstr ""
 
 msgid "FTP to machine"
 msgstr "FTP til maskine"
@@ -2466,9 +2516,9 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file\"%s\"\n"
+"Cannot read source file \"%s\"\n"
 "%s"
-msgstr "Kan ikke læse kildefil »%s«\n%s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2554,7 +2604,7 @@ msgid ""
 msgstr "Kan ikke flytte mappe »%s« til »%s«\n%s"
 
 #, c-format
-msgid "Directories: %zd, total size: %s"
+msgid "Directories: %zu, total size: %s"
 msgstr ""
 
 msgid "Cannot operate on \"..\"!"
@@ -2663,7 +2713,7 @@ msgid "Target"
 msgstr "Mål"
 
 msgid "Deleting"
-msgstr ""
+msgstr "Sletter"
 
 msgid "&Using shell patterns"
 msgstr "Br&uger skalmønstre"
@@ -2706,8 +2756,8 @@ msgid "&Edit - F4"
 msgstr "&Rediger - F4"
 
 #, c-format
-msgid "Found: %ld"
-msgstr "Fandt: %ld"
+msgid "Found: %lu"
+msgstr ""
 
 msgid "Malformed regular expression"
 msgstr "Forkert udformet regulært udtryk"
@@ -2756,8 +2806,8 @@ msgid "Finished"
 msgstr "Færdig"
 
 #, c-format
-msgid "Finished (ignored %zd directory)"
-msgid_plural "Finished (ignored %zd directories)"
+msgid "Finished (ignored %zu directory)"
+msgid_plural "Finished (ignored %zu directories)"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -2876,65 +2926,65 @@ msgstr "Ingen pladsinformation"
 
 #, c-format
 msgid "Free space: %s/%s (%d%%)"
-msgstr ""
+msgstr "Ledig plads: %s/%s (%d%%)"
 
 #, c-format
-msgid "Type:      %s"
-msgstr "Type:      %s"
+msgid "Type:       %s"
+msgstr ""
 
 msgid "non-local vfs"
 msgstr "vfs der ikke er lokal"
 
 #, c-format
-msgid "Device:    %s"
-msgstr "Enhed:      %s"
+msgid "Device:     %s"
+msgstr ""
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "Filsystem:  %s"
 
 #, c-format
-msgid "Accessed:  %s"
-msgstr "Læst:      %s"
+msgid "Accessed:   %s"
+msgstr ""
 
 #, c-format
-msgid "Modified:  %s"
-msgstr "Ændret:    %s"
+msgid "Modified:   %s"
+msgstr "Redigeret: %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:   %s"
-msgstr "Ændret:    %s"
+msgid "Changed:    %s"
+msgstr "Ændret: %s"
 
 #, c-format
 msgid "Dev. type: major %lu, minor %lu"
 msgstr "Enhedstype: Stor %lu, lille %lu"
 
 #, c-format
-msgid "Size:      %s"
+msgid "Size:       %s"
 msgstr "Størrelse: %s"
 
 #, c-format
-msgid " (%ld block)"
-msgid_plural " (%ld blocks)"
-msgstr[0] " (%ld blok)"
-msgstr[1] " (%ld blokke)"
+msgid " (%lu block)"
+msgid_plural " (%lu blocks)"
+msgstr[0] ""
+msgstr[1] ""
 
 #, c-format
-msgid "Owner:     %s/%s"
-msgstr "Ejer:      %s/%s"
+msgid "Owner:      %s/%s"
+msgstr "Ejer: %s/%s"
 
 #, c-format
-msgid "Links:     %d"
-msgstr "Henvisninger: %d"
+msgid "Links:      %d"
+msgstr ""
 
 #, c-format
-msgid "Mode:      %s (%04o)"
-msgstr "Tilstand:  %s (%04o)"
+msgid "Mode:       %s (%04o)"
+msgstr ""
 
 #, c-format
-msgid "Location:  %Xh:%Xh"
-msgstr "Sted:      %Xh:%Xh"
+msgid "Location:   %Xh:%Xh"
+msgstr ""
 
 msgid "&Equal split"
 msgstr "&Ens opdeling"
@@ -3150,10 +3200,10 @@ msgid "Panels:"
 msgstr "Paneler:"
 
 #, c-format
-msgid "You have %zd opened screen. Quit anyway?"
-msgid_plural "You have %zd opened screens. Quit anyway?"
-msgstr[0] "Du har %zd åben skærm. Afslut alligevel?"
-msgstr[1] "Du har %zd åbne skærme. Afslut alligevel?"
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "The Midnight Commander"
 msgstr "Midnight Commander"
@@ -3295,12 +3345,6 @@ msgstr "UNDERMAPPE"
 
 msgid "<readlink failed>"
 msgstr "<readlink fejlede>"
-
-#, c-format
-msgid "%s byte"
-msgid_plural "%s bytes"
-msgstr[0] "%s byte"
-msgstr[1] "%s byte"
 
 #, c-format
 msgid "%s in %d file"
@@ -3881,7 +3925,7 @@ msgid "sftp: Unable to get current user name."
 msgstr ""
 
 msgid "sftp: Invalid host name."
-msgstr ""
+msgstr "sftp: ugyldigt værtsnavn."
 
 #, c-format
 msgid "sftp: %s"
@@ -3912,8 +3956,7 @@ msgstr ""
 msgid "sftp: Password is empty."
 msgstr ""
 
-#, c-format
-msgid "sftp: Failure establishing SSH session: (%d)"
+msgid "sftp: Failure establishing SSH session"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"

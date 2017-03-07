@@ -1,7 +1,7 @@
 /*
    Provides a log file to ease tracing the program.
 
-   Copyright (C) 2006-2015
+   Copyright (C) 2006-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -84,7 +84,7 @@ is_logging_enabled (void)
         return logging_enabled;
 
     logging_enabled =
-        mc_config_get_bool (mc_main_config, CONFIG_GROUP_NAME, CONFIG_KEY_NAME, FALSE);
+        mc_config_get_bool (mc_global.main_config, CONFIG_GROUP_NAME, CONFIG_KEY_NAME, FALSE);
     logging_initialized = TRUE;
 
     return logging_enabled;
@@ -101,8 +101,9 @@ get_log_filename (void)
     if (env_filename != NULL)
         return g_strdup (env_filename);
 
-    if (mc_config_has_param (mc_main_config, CONFIG_GROUP_NAME, CONFIG_KEY_NAME_FILE))
-        return mc_config_get_string (mc_main_config, CONFIG_GROUP_NAME, CONFIG_KEY_NAME_FILE, NULL);
+    if (mc_config_has_param (mc_global.main_config, CONFIG_GROUP_NAME, CONFIG_KEY_NAME_FILE))
+        return mc_config_get_string (mc_global.main_config, CONFIG_GROUP_NAME, CONFIG_KEY_NAME_FILE,
+                                     NULL);
 
     return mc_config_get_full_path ("mc.log");
 }
@@ -110,6 +111,7 @@ get_log_filename (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
+G_GNUC_PRINTF (1, 0)
 mc_va_log (const char *fmt, va_list args)
 {
     char *logfilename;

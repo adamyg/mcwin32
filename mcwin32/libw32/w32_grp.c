@@ -2,7 +2,7 @@
 /*
  * win32 pwd() implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -262,8 +262,14 @@ fillin(void)
 int
 getgroups(int gidsetsize, gid_t grouplist[])
 {
-    grouplist[0] = 42;
-    return 1;
+    if (gidsetsize >= 1) {
+        if (grouplist) {
+            grouplist[0] = 42;
+            return 1;
+        }
+    }
+    errno = EINVAL;
+    return -1;
 }
 
 

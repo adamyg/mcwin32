@@ -31,10 +31,9 @@ typedef struct WMenuBar
     Widget widget;
 
     gboolean is_visible;        /* If the menubar is visible */
-    gboolean is_active;         /* If the menubar is in use */
     gboolean is_dropped;        /* If the menubar has dropped */
     GList *menu;                /* The actual menus */
-    size_t selected;            /* Selected menu on the top bar */
+    guint selected;             /* Selected menu on the top bar */
     unsigned long previous_widget;      /* Selected widget ID before activating menu */
 } WMenuBar;
 
@@ -42,7 +41,7 @@ typedef struct WMenuBar
 
 /*** declarations of public functions ************************************************************/
 
-menu_entry_t *menu_entry_create (const char *name, unsigned long command);
+menu_entry_t *menu_entry_create (const char *name, long command);
 void menu_entry_free (menu_entry_t * me);
 
 menu_t *create_menu (const char *name, GList * entries, const char *help_node);
@@ -55,6 +54,8 @@ void menubar_add_menu (WMenuBar * menubar, menu_t * menu);
 void menubar_arrange (WMenuBar * menubar);
 
 WMenuBar *find_menubar (const WDialog * h);
+
+void menubar_activate (WMenuBar * menubar, gboolean dropped, int which);
 
 /*** inline functions ****************************************************************************/
 

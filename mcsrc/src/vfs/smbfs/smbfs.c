@@ -1,7 +1,7 @@
 /*
    Virtual File System: Midnight Commander file system.
 
-   Copyright (C) 1999-2015
+   Copyright (C) 1999-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -572,6 +572,8 @@ smbfs_browsing_helper (const char *name, uint32 type, const char *comment, void 
     case STYPE_IPC:
         typestr = "IPC";
         break;
+    default:
+        break;
     }
     DEBUG (3, ("\t%-15.15s%-10.10s%s\n", name, typestr, comment));
 }
@@ -939,8 +941,6 @@ smbfs_readdir (void *info)
     g_strlcpy (dirent_dest, smbfs_info->current->text, MC_MAXPATHLEN);
     smbfs_info->current = smbfs_info->current->next;
 
-    compute_namelen (&smbfs_readdir_data.dent);
-
     return &smbfs_readdir_data;
 }
 
@@ -995,14 +995,18 @@ smbfs_chown (const vfs_path_t * vpath, uid_t owner, gid_t group)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-smbfs_utime (const vfs_path_t * vpath, struct utimbuf *times)
+smbfs_utime (const vfs_path_t * vpath, mc_timesbuf_t * times)
 {
     const vfs_path_element_t *path_element;
 
     (void) times;
 
     path_element = vfs_path_get_by_index (vpath, -1);
+#ifdef HAVE_UTIMENSAT
+    DEBUG (3, ("smbfs_utimensat(path:%s)\n", path_element->path));
+#else
     DEBUG (3, ("smbfs_utime(path:%s)\n", path_element->path));
+#endif
     my_errno = EOPNOTSUPP;
     return -1;
 }
@@ -1371,7 +1375,7 @@ smbfs_get_path (smbfs_connection ** sc, const vfs_path_t * vpath)
         {
             char *s;
 
-            s = mc_build_filename ((*sc)->home, remote_path + 3 - f, NULL);
+            s = mc_build_filename ((*sc)->home, remote_path + 3 - f, (char *) NULL);
             g_free (remote_path);
             remote_path = s;
         }
@@ -1860,6 +1864,8 @@ smbfs_lseek (void *data, off_t offset, int whence)
         }
         info->nread = size + offset;
         break;
+    default:
+        break;
     }
 
     return info->nread;
@@ -2029,6 +2035,8 @@ smbfs_setctl (const vfs_path_t * vpath, int ctlop, void *arg)
         break;
     case VFS_SETCTL_LOGFILE:
         smbfs_set_debugf ((const char *) arg);
+        break;
+    default:
         break;
     }
     return 0;

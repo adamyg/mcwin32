@@ -32,8 +32,8 @@ mc \- interfaccia visuale per sistemi tipo Unix.
 .\"NODE "DESCRIPTION"
 .SH "DESCRIZIONE"
 Il Midnight Commander è un file manager per sistemi operativi di tipo Unix.  
-.\"NODE "OPTIONS"
 .\"DONT_SPLIT"
+.\"NODE "OPTIONS"
 .SH "OPZIONI"
 .TP
 .I "\-a"
@@ -3231,10 +3231,10 @@ Menu locale definito dall'utente. Se questo file è presente viene usato
 al posto del menu delle applicazioni utente o di sistema.
 .PP
 To change default home directory of MC, you can use 
-.BR MC_HOME
-environment variable. The value of MC_HOME must be an absolute path. If MC_HOME
-is unset or empty, HOME variable is used. If HOME is unset or empty, MC
-directories are get from GLib library.
+.BR MC_PROFILE_ROOT
+environment variable. The value of MC_PROFILE_ROOT must be an absolute path.
+If MC_PROFILE_ROOT is unset or empty, HOME variable is used. If HOME is unset
+or empty, MC directories are get from GLib library.
 .\"SKIP_SECTION"
 .SH "LICENZA"
 Questo programma è distribuito sotto i termini della Licenza Generale
@@ -3280,7 +3280,7 @@ Jean\-Daniel Luiset (luiset@cih.hcuge.ch), Jon Stevens
 (j\-grigera@usa.net), Juan Jose Ciarlante (jjciarla@raiz.uncu.edu.ar),
 Ilya Rybkin (rybkin@rouge.phys.lsu.edu), Marcelo Roccasalva
 (mfroccas@raiz.uncu.edu.ar), Massimo Fontanelli (MC8737@mclink.it),
-Sergey Ya. Korshunoff (root@seyko.msk.su), Thomas Pundt
+Sergey Ya. Korshunoff (seyko2@gmail.com), Thomas Pundt
 (pundtt@math.uni\-muenster.de), Timur Bakeyev
 (timur@goff.comtat.kazan.su), Tomasz Cholewo
 (tjchol01@mecca.spd.louisville.edu), Torben Fjerdingstad

@@ -1,7 +1,7 @@
 /*
    lib/vfs - manipulations with temp files and  dirs
 
-   Copyright (C) 2012-2015
+   Copyright (C) 2012-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -104,7 +104,7 @@ START_TEST (test_mc_mkstemps)
 
     /* when */
     fd = mc_mkstemps (&pname_vpath, "mctest-", NULL);
-    begin_pname = g_build_filename (mc_tmpdir (), "mctest-", NULL);
+    begin_pname = g_build_filename (mc_tmpdir (), "mctest-", (char *) NULL);
 
     /* then */
     close (fd);
@@ -143,10 +143,10 @@ main (void)
     suite_add_tcase (s, tc_core);
     sr = srunner_create (s);
     srunner_set_log (sr, "tempdir.log");
-    srunner_run_all (sr, CK_NORMAL);
+    srunner_run_all (sr, CK_ENV);
     number_failed = srunner_ntests_failed (sr);
     srunner_free (sr);
-    return (number_failed == 0) ? 0 : 1;
+    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -2,7 +2,7 @@
 /*
  * win32 read() system calls.
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -35,6 +35,7 @@
 #include "win32_misc.h"
 #include <unistd.h>
 
+#pragma comment(lib, "Ws2_32.lib")
 
 /*
 //  NAME
@@ -279,22 +280,31 @@
 //          fildes is associated with a pipe or FIFO. [Option End]
 */
 int
-w32_read(int fd, void *buffer, unsigned int cnt)
+w32_read(int fildes, void *buf, unsigned int nbyte)
 {
-    HANDLE handle;
+	SOCKET s;
     int ret;
 
-    if (fd < 0) {
+    if (fildes < 0) {
         errno = EBADF;
         ret = -1;
-    } else if (fd >= WIN32_FILDES_MAX || 
-            (handle = (HANDLE) _get_osfhandle(fd)) == INVALID_HANDLE_VALUE) {
-        if ((ret = recvfrom((SOCKET)fd, buffer, cnt, 0, NULL, 0)) == SOCKET_ERROR) {
-            w32_neterrno_set();
+
+    } else if (w32_issockfd(fildes, &s)) {
+        if ((ret = recvfrom(s, buf, nbyte, 0, NULL, 0)) == SOCKET_ERROR) {
+			w32_neterrno_set();
             ret = -1;
         }
+
     } else {
-        ret = _read(fd, buffer, cnt);
+		ret = _read(fildes, buf, nbyte);
+
+//		DWORD count = 0;
+//		if (ReadFile(handle, (LPCVOID)buf, (DWORD)nbyte, &count, NULL)) {
+//			ret = count;
+//		} else {
+//			w32_errno_set();
+//			ret = -1;
+//		}
     }
     return ret;
 }

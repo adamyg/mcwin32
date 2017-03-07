@@ -4,7 +4,7 @@
 /*
  * win32 public interface
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -27,8 +27,8 @@
 
 __BEGIN_DECLS
 
-enum w32ostype {    
-    // generalised machine types, ignoring server
+enum w32ostype {            /* generalised machine types, ignoring server */
+    OSTYPE_WIN_10,
     OSTYPE_WIN_8,
     OSTYPE_WIN_7,
     OSTYPE_WIN_VISTA,
@@ -42,9 +42,9 @@ enum w32ostype {
 #define WIN32_PATH_MAX      1024
 #define WIN32_LINK_DEPTH    8
 
-extern enum w32ostype       w32_ostype (void);
-extern int                  w32_getexedir (char *buf, int maxlen);
-extern int                  w32_getsysdir (int id, char *buf, int maxlen);
+LIBW32_API enum w32ostype   w32_ostype (void);
+LIBW32_API int              w32_getexedir (char *buf, int maxlen);
+LIBW32_API int              w32_getsysdir (int id, char *buf, int maxlen);
 
 __END_DECLS
 

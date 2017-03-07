@@ -1,7 +1,7 @@
 /*
    lib/vfs - mc_build_filename() function testing
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -56,33 +56,34 @@ run_mc_build_filename (int iteration)
     switch (iteration)
     {
     case 0:
-        return mc_build_filename ("test", "path", NULL);
+        return mc_build_filename ("test", "path", (char *) NULL);
     case 1:
-        return mc_build_filename ("/test", "path/", NULL);
+        return mc_build_filename ("/test", "path/", (char *) NULL);
     case 2:
-        return mc_build_filename ("/test", "pa/th", NULL);
+        return mc_build_filename ("/test", "pa/th", (char *) NULL);
     case 3:
-        return mc_build_filename ("/test", "#vfsprefix:", "path  ", NULL);
+        return mc_build_filename ("/test", "#vfsprefix:", "path  ", (char *) NULL);
     case 4:
-        return mc_build_filename ("/test", "vfsprefix://", "path  ", NULL);
+        return mc_build_filename ("/test", "vfsprefix://", "path  ", (char *) NULL);
     case 5:
-        return mc_build_filename ("/test", "vfs/../prefix:///", "p\\///ath", NULL);
+        return mc_build_filename ("/test", "vfs/../prefix:///", "p\\///ath", (char *) NULL);
     case 6:
-        return mc_build_filename ("/test", "path", "..", "/test", "path/", NULL);
+        return mc_build_filename ("/test", "path", "..", "/test", "path/", (char *) NULL);
     case 7:
-        return mc_build_filename ("", "path", NULL);
+        return mc_build_filename ("", "path", (char *) NULL);
     case 8:
-        return mc_build_filename ("", "/path", NULL);
+        return mc_build_filename ("", "/path", (char *) NULL);
     case 9:
-        return mc_build_filename ("path", "", NULL);
+        return mc_build_filename ("path", "", (char *) NULL);
     case 10:
-        return mc_build_filename ("/path", "", NULL);
+        return mc_build_filename ("/path", "", (char *) NULL);
     case 11:
-        return mc_build_filename ("pa", "", "th", NULL);
+        return mc_build_filename ("pa", "", "th", (char *) NULL);
     case 12:
-        return mc_build_filename ("/pa", "", "/th", NULL);
+        return mc_build_filename ("/pa", "", "/th", (char *) NULL);
+    default:
+        return NULL;
     }
-    return NULL;
 }
 
 /* @DataSource("test_mc_build_filename_ds") */
@@ -148,10 +149,10 @@ main (void)
     suite_add_tcase (s, tc_core);
     sr = srunner_create (s);
     srunner_set_log (sr, "mc_build_filename.log");
-    srunner_run_all (sr, CK_NORMAL);
+    srunner_run_all (sr, CK_ENV);
     number_failed = srunner_ntests_failed (sr);
     srunner_free (sr);
-    return (number_failed == 0) ? 0 : 1;
+    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

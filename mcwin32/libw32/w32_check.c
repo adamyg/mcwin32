@@ -3,7 +3,7 @@
  * win32 system io functionality
  * Note: NOT CALLED -- purely a compile time check of the mode namespace
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -32,8 +32,7 @@
 #define _WIN32_WINNT        0x0501              /* enable xp+ features */
 #endif
 
-#include <w32config.h>
-
+#include "w32config.h"
 #include <win32_internal.h>
 
 #if defined(HAVE_SYS_SOCKET_H) || defined(__MINGW32__)

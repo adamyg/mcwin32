@@ -17,7 +17,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012-2015
+   Written by: Adam Young 2012-2017
 
    This file is part of the Midnight Commander.
 
@@ -37,7 +37,7 @@
  */
 
 #include <config.h>
-#include "win32.h"
+#include "libw32.h"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -46,55 +46,20 @@
 #include <limits.h>                             /* INT_MAX */
 #include <malloc.h>
 
+#undef LIBW32_DYNAMIC
 #include <glib.h>
 
 #include "lib/global.h"
 #include "lib/vfs/vfs.h"                        /* VFS_ENCODING_PREFIX */
 #include "lib/vfs/xdirentry.h"
 
-
-static void
-unixpathset(char *path)
-{
-    const char *in = path;
-
-    while (*in) {
-        if ('/' == *in || '\\' == *in) {
-            ++in;
-            while ('/' == *in || '\\' == *in) {
-                ++in;
-            }
-            *path++ = PATH_SEP;
-        } else {
-            *path++ = *in++;
-        }
-    }
-    *path = 0;
-}
-
-
 /*
- *  gettext hook replacement
+ *  g_strerror replacment, extended error code support.
  */
-int
-libintl_fprintf (FILE *file, const char *format, ...)
+const char *
+g_strerror(int errnum)
 {
-    va_list ap;
-    int ret;
-
-#undef vfprintf
-    va_start(ap, format);
-    ret = vfprintf(file, format, ap);
-    va_end(ap);
-    return ret;
-}
-
-
-int
-libintl_vfprintf (FILE *file, const char *format, va_list ap)
-{
-#undef vfprintf
-    return vfprintf(file, format, ap);
+    return w32_strerror(errnum);
 }
 
 
@@ -113,121 +78,11 @@ g_get_current_dir (void)
 /*
  *  g_mktemps replacement
  */
-int
-g_mkstemp (char *path)
-{
-    return w32_mkstemp(path);
-}
-
-
-/*
- *  g_strdup_printf() replacement.
- */
-char *
-g_strdup_printf (const char *format, ...)
-{
-    char buffer[4 * 1024];
-    va_list ap;
-
-    va_start(ap, format);
-    _vsnprintf(buffer, sizeof(buffer), format, ap);
-    buffer[sizeof(buffer) - 1] = 0;
-    va_end(ap);
-    return g_strdup(buffer);
-}
-
-
-/*
- *  g_strdup_vprintf() replacement.
- */
-char *
-g_strdup_vprintf (const char *format, va_list ap)
-{
-    char buffer[4 * 1024];
-
-    _vsnprintf(buffer, sizeof(buffer), format, ap);
-    buffer[sizeof(buffer) - 1] = 0;
-    return g_strdup(buffer);
-}
-
-
-/*
- *  g_snprintf() replacement.
- *
- */
-gint
-g_snprintf (gchar *buffer, gulong length, const char *format, ...)
-{
-    va_list ap;
-    int ret = 0;
-
-    if (length > 0) {
-        va_start(ap, format);
-        ret = _vsnprintf(buffer, length, format, ap);
-        buffer[length - 1] = 0;
-        va_end(ap);
-    }
-    return ret;
-}
-
-
-/*
- *  g_vsnprintf() replacement.
- */
-gint
-g_vsnprintf (gchar *string, gulong n, const char *format, va_list ap)
-{
-    return _vsnprintf(string, n, format, ap);
-}
-
-
-
-/*
- *  g_string_append_printf() replacement
- */
-void
-g_string_append_printf (GString *string, const gchar *format, ...)
-{
-    char buffer[4 * 1024];
-    va_list ap;
-
-    va_start(ap, format);
-    _vsnprintf(buffer, sizeof(buffer), format, ap);
-    buffer[sizeof(buffer) - 1] = 0;
-    va_end(ap);
-    g_string_append (string, buffer);
-}
-
-
-/*
- *  g_string_append_vprintf() replacement
- */
-void
-g_string_append_vprintf (GString *string, const gchar *format, va_list ap)
-{
-    char buffer[4 * 1024];
-
-    _vsnprintf(buffer, sizeof(buffer), format, ap);
-    buffer[sizeof(buffer) - 1] = 0;
-    g_string_append (string, buffer);
-}
-
-
-/*
- *  g_error_new_valist() replacement
- */
-GError *
-g_error_new_valist (GQuark domain, gint code, const gchar * format, va_list ap)
-{
-    char *message;
-    GError *ret_value;
-
-    message = g_strdup_vprintf (format, ap);
-    ret_value = g_error_new_literal (domain, code, message);
-    g_free (message);
-
-    return ret_value;
-}
+//  int
+//  g_mkstemp (char *path)
+//  {
+//	return w32_mkstemp(path);
+//  }
 
 
 /*
@@ -292,5 +147,3 @@ g_build_filename (const gchar *first_element, ...)
     return ret;
 }
 /*end*/
-
-

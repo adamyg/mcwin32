@@ -1,7 +1,30 @@
+#ifndef WIN32_CDEFS_H_INCLUDED
+#define WIN32_CDEFS_H_INCLUDED
 /* -*- mode: c; indent-width: 4; -*- */
 /* 
  * win32 declaration helpers
+ *
+ * Copyright (c) 1998 - 2017, Adam Young.
+ * All rights reserved.
+ *
+ * This file is part of the Midnight Commander.
+ *
+ * The Midnight Commander is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * The Midnight Commander is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ==end==
  */
+/*LINTLIBRARY*/
+
 /* 
  *  Disable (global) toolchain specific warnings:
  */
@@ -11,6 +34,36 @@
 #pragma warning(disable:4514)                   /* unreferenced inline function has been removed */
 #pragma warning(disable:4115)                   /* forward reference of struct * */
 #endif
+
+/* 
+ *  Library binding.
+ */
+#if !defined(LIBW32_API)
+
+#if defined(LIBW32_DYNAMIC)
+    #if defined(LIBW32_LIBRARY)     /* library source */
+        #define LIBW32_API __declspec(dllexport)
+    #else
+        #define LIBW32_API __declspec(dllimport)
+    #endif
+
+#else   /*static*/
+    #if defined(LIBW32_LIBRARY)     /* library source */
+        #ifndef LIBW32_STATIC                   /* verify STATIC/DYNAMIC configuration */
+        #error  LIBW32 static library yet LIB32_STATIC not defined.
+        #endif
+        #ifdef _WINDLL                          /*verify target configuration */
+        #error  LIBW32 static library yet _WINDLL defined.
+        #endif
+    #endif
+#endif
+
+#ifndef LIBW32_API
+#define LIBW32_API
+#endif
+
+#endif //!LIBW32_API
+
 
 /* 
  *  Binding:
@@ -66,6 +119,22 @@
 #  endif
 #endif
 
+/*
+ * remove const cast-away warnings
+ */
+#ifndef __DECONST
+#define __DECONST(__t,__a)      ((__t *)(const void *)(__a))
+#endif
+#ifndef __UNCONST
+#define __UNCONST(__a)          ((void *)(const void *)(__a))
+#endif
+
+/*
+ * remove the volatile cast-away warnings
+ */
+#ifndef __UNVOLATILE
+#define __UNVOLATILE(__a)       ((void *)(unsigned long)(volatile void *)(__a))
+#endif
 
 /*
  * CPP warnings
@@ -174,10 +243,21 @@
 #  endif
 #endif
 
-
 /*
  * ---- BSD stuff -----
  */
+
+/*
+ * Assert
+ */
+#ifndef _DIAGASSERT
+#define _DIAGASSERT(_a)         /**/
+#endif
+
+#ifndef __RCSID
+#define __RCSID(__rcsid)        /**/
+#endif
+
 
 /*
  * Compiler-dependent macros to help declare dead (non-returning) and
@@ -186,21 +266,28 @@
  * properly (old versions of gcc-2 supported the dead and pure features
  * in a different (wrong) way).
  */
-
-#if __GNUC__ < 2 || __GNUC__ == 2 && __GNUC_MINOR__ < 5
+#if !defined(__GNUC__) || \
+        (__GNUC__) < 2 || __GNUC__ == 2 && __GNUC_MINOR__ < 5
 #define __dead2
 #define __pure2
 #define __unused
-#endif
-#if __GNUC__ == 2 && __GNUC_MINOR__ >= 5 && __GNUC_MINOR__ < 7
-#define __dead2		__attribute__((__noreturn__))
-#define __pure2		__attribute__((__const__))
+#elif __GNUC__ == 2 && __GNUC_MINOR__ >= 5 && __GNUC_MINOR__ < 7
+#define __dead2                 __attribute__((__noreturn__))
+#define __pure2                 __attribute__((__const__))
 #define __unused
+#elif __GNUC__ == 2 && __GNUC_MINOR__ >= 7
+#define __dead2                 __attribute__((__noreturn__))
+#define __pure2                 __attribute__((__const__))
+#define __unused                __attribute__((__unused__))
 #endif
-#if __GNUC__ == 2 && __GNUC_MINOR__ >= 7
-#define __dead2		__attribute__((__noreturn__))
-#define __pure2		__attribute__((__const__))
-#define __unused	__attribute__((__unused__))
+
+/*
+ * Compiler-dependent structure packing attribute.
+ */
+#if defined(__GNUC__)
+#define __packed                __attribute__((packed, aligned(1)))
+#else
+#define __packed                /**/
 #endif
 
 /*
@@ -227,5 +314,4 @@
 #define	__printf0like(fmtarg, firstvararg)
 #endif
 
-/*end of file*/
-
+#endif /*WIN32_CDEFS_H_INCLUDED*/

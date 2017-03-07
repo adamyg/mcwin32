@@ -1,7 +1,7 @@
 /*
    Compare strings while treating digits characters numerically.
 
-   Copyright (C) 1997-2015
+   Copyright (C) 1997-2017
    Free Software Foundation, Inc.
 
    This file is part of the GNU C Library.
@@ -32,6 +32,12 @@
 
 #include "lib/strutil.h"
 
+/*** global variables ****************************************************************************/
+
+/*** file scope macro definitions ****************************************************************/
+
+#ifndef HAVE_STRVERSCMP
+
 /* states: S_N: normal, S_I: comparing integral part, S_F: comparing
    fractionnal parts, S_Z: idem but with leading Zeroes only */
 #define  S_N    0x0
@@ -43,12 +49,23 @@
 #define  CMP    2
 #define  LEN    3
 
+#endif /* HAVE_STRVERSCMP */
 
+/*** file scope type declarations ****************************************************************/
+
+/*** file scope variables ************************************************************************/
+
+/* --------------------------------------------------------------------------------------------- */
+/*** file scope functions ************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------------------------- */
+/*** public functions ****************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
 /* Compare S1 and S2 as strings holding indices/version numbers,
    returning less than, equal to or greater than zero if S1 is less than,
    equal to or greater than S2 (for more info, see the texinfo doc).
  */
-
 int
 str_verscmp (const char *s1, const char *s2)
 {
@@ -120,5 +137,6 @@ str_verscmp (const char *s1, const char *s2)
         return state;
     }
 #endif /* HAVE_STRVERSCMP */
-
 }
+
+/* --------------------------------------------------------------------------------------------- */

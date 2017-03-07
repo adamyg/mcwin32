@@ -48,6 +48,7 @@ typedef struct
     gboolean navigate_with_arrows;      /* If TRUE: l&r arrows are used to chdir if the input line is empty */
     gboolean scroll_pages;      /* If TRUE, panel is scrolled by half the display when the cursor reaches
                                    the end or the beginning of the panel */
+    gboolean scroll_center;     /* If TRUE, scroll when the cursor hits the middle of the panel */
     gboolean mouse_move_pages;  /* Scroll page/item using mouse wheel */
     gboolean filetype_mode;     /* If TRUE then add per file type hilighting */
     gboolean permission_mode;   /* If TRUE, we use permission hilighting */
@@ -58,7 +59,7 @@ typedef struct
 
 typedef struct macro_action_t
 {
-    unsigned long action;
+    long action;
     int ch;
 } macro_action_t;
 
@@ -74,37 +75,37 @@ struct mc_fhl_struct;
 
 /* global paremeters */
 extern char *global_profile_name;
-extern int confirm_delete;
-extern int confirm_directory_hotlist_delete;
-extern int confirm_execute;
-extern int confirm_exit;
-extern int confirm_overwrite;
-extern int confirm_view_dir;
-extern int safe_delete;
-extern int clear_before_exec;
-extern int auto_menu;
-extern int drop_menus;
-extern int verbose;
-extern int setup_copymove_persistent_attr;
-extern int classic_progressbar;
-extern int easy_patterns;
+extern gboolean confirm_delete;
+extern gboolean confirm_directory_hotlist_delete;
+extern gboolean confirm_execute;
+extern gboolean confirm_exit;
+extern gboolean confirm_overwrite;
+extern gboolean confirm_view_dir;
+extern gboolean safe_delete;
+extern gboolean clear_before_exec;
+extern gboolean auto_menu;
+extern gboolean drop_menus;
+extern gboolean verbose;
+extern gboolean copymove_persistent_attr;
+extern gboolean classic_progressbar;
+extern gboolean easy_patterns;
 extern int option_tab_spacing;
-extern int auto_save_setup;
-extern int only_leading_plus_minus;
+extern gboolean auto_save_setup;
+extern gboolean only_leading_plus_minus;
 extern int cd_symlinks;
-extern int auto_fill_mkdir_name;
-extern int output_starts_shell;
-extern int use_file_to_check_type;
-extern int file_op_compute_totals;
-extern int editor_ask_filename_before_edit;
+extern gboolean auto_fill_mkdir_name;
+extern gboolean output_starts_shell;
+extern gboolean use_file_to_check_type;
+extern gboolean file_op_compute_totals;
+extern gboolean editor_ask_filename_before_edit;
 
 extern panels_options_t panels_options;
 
 extern panel_view_mode_t startup_left_mode;
 extern panel_view_mode_t startup_right_mode;
 extern gboolean boot_current_is_left;
-extern int use_internal_view;
-extern int use_internal_edit;
+extern gboolean use_internal_view;
+extern gboolean use_internal_edit;
 
 #ifdef HAVE_CHARSET
 extern int default_source_codepage;
@@ -126,6 +127,7 @@ extern int quit;
 /* Set to TRUE to suppress printing the last directory */
 extern gboolean print_last_revert;
 
+#ifdef USE_INTERNAL_EDIT
 /* index to record_macro_buf[], -1 if not recording a macro */
 extern int macro_index;
 
@@ -133,6 +135,9 @@ extern int macro_index;
 extern struct macro_action_t record_macro_buf[MAX_MACRO_LENGTH];
 
 extern GArray *macros_list;
+#endif /* USE_INTERNAL_EDIT */
+
+extern int saving_setup;
 
 /*** declarations of public functions ************************************************************/
 
@@ -140,10 +145,7 @@ const char *setup_init (void);
 void load_setup (void);
 gboolean save_setup (gboolean save_options, gboolean save_panel_options);
 void done_setup (void);
-void save_config (void);
 void setup_save_config_show_error (const char *filename, GError ** mcerror);
-
-void save_layout (void);
 
 void load_key_defs (void);
 #ifdef ENABLE_VFS_FTP
@@ -155,9 +157,6 @@ void free_keymap_defs (void);
 
 void panel_load_setup (WPanel * panel, const char *section);
 void panel_save_setup (WPanel * panel, const char *section);
-
-void panels_load_options (void);
-void panels_save_options (void);
 
 /*** inline functions ****************************************************************************/
 

@@ -136,6 +136,11 @@ noconv:
 }
 
 #else
+/*
+ *  avoid empty object warnings
+ */
+extern void __stdlibrary_has_strtoll(void);
+
 void
 __stdlibrary_has_strtoll(void)
 {
