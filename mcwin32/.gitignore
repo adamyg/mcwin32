@@ -5,7 +5,6 @@
 *.la
 *~
 *.err
-*.bat
 *.mbr
 *.log
 *.old
@@ -16,6 +15,7 @@
 .makelib/
 CVS/
 .#*
+wd*.bat
 WinSparkle-0.3/
 msvc2015/
 include/
