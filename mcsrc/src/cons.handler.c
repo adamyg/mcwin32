@@ -1,7 +1,7 @@
 /*
    Client interface for General purpose Linux console save/restore server
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -30,7 +30,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <stdio.h>
-#include <fcntl.h>
 #include <sys/types.h>
 #ifdef __FreeBSD__
 #include <sys/consio.h>
@@ -210,7 +209,7 @@ handle_console_linux (console_action_t action)
                     char *mc_conssaver;
 
                     /* Exec the console save/restore handler */
-                    mc_conssaver = mc_build_filename (SAVERDIR, "cons.saver", NULL);
+                    mc_conssaver = mc_build_filename (SAVERDIR, "cons.saver", (char *) NULL);
                     execl (mc_conssaver, "cons.saver", tty_name, (char *) NULL);
                 }
                 /* Console is not a tty or execl() failed */
@@ -409,7 +408,7 @@ show_console_contents_freebsd (int starty, unsigned char begin_line, unsigned ch
     for (line = begin_line; line <= end_line; line++)
     {
         tty_gotoyx (starty + line - begin_line, 0);
-        for (col = 0; col < min (COLS, screen_info.mv_csz); col++)
+        for (col = 0; col < MIN (COLS, screen_info.mv_csz); col++)
         {
             c = screen_shot.buf[line * screen_info.mv_csz + col] & 0xFF;
             tty_print_char (c);

@@ -2,7 +2,7 @@
 /*
  *  Windows 'select' compat interface
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -88,10 +88,10 @@ w32_select(
                 (exceptfds ? exceptfds->fd_count : 0);
 
     if ((selfds = calloc(sizeof(Select_t), selcnt + 1)) == NULL) {
-        return (-1);
+        return -1;
     }
 
-    invalid = sel_build( T_READ, readfds, &selcnt, selfds );
+    invalid =  sel_build( T_READ, readfds, &selcnt, selfds );
     invalid += sel_build( T_WRITE, writefds, &selcnt, selfds );
     invalid += sel_build( T_EXCEPT, exceptfds, &selcnt, selfds );
 
@@ -100,9 +100,7 @@ w32_select(
         tm += (tm->tv_sec * 1000);
         tm += (tm->tv_usec / (1000000));
     }
-    sel_wait( selcnt, selfds, timeout );
-
-    return (-1);
+    return sel_wait( selcnt, selfds, timeout );
 }
 
 
@@ -216,7 +214,7 @@ sel_wait( u_int cnt, Select_t *selfds, DWORD timeout )
         }
 
         // Timeout 
-	if (ret == WAIT_TIMEOUT) {
+        if (ret == WAIT_TIMEOUT) {
             break;
         }
 

@@ -1,7 +1,7 @@
 /*
    Chmod command -- for the Midnight Commander
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -94,7 +94,7 @@ static struct
     /* *INDENT-ON* */
 };
 
-static const unsigned int check_perm_num = G_N_ELEMENTS (check_perm);
+static const int check_perm_num = G_N_ELEMENTS (check_perm);
 static int check_perm_len = 0;
 
 static const char *file_info_labels[] = {
@@ -104,13 +104,13 @@ static const char *file_info_labels[] = {
     N_("Group name:")
 };
 
-static const unsigned int file_info_labels_num = G_N_ELEMENTS (file_info_labels);
+static const int file_info_labels_num = G_N_ELEMENTS (file_info_labels);
 static int file_info_labels_len = 0;
 
 static struct
 {
     int ret_cmd;
-    int flags;
+    button_flags_t flags;
     int y;                      /* vertical position relatively to dialog bottom boundary */
     int len;
     const char *text;
@@ -126,7 +126,7 @@ static struct
     /* *INDENT-ON* */
 };
 
-static const unsigned int chmod_but_num = G_N_ELEMENTS (chmod_but);
+static const int chmod_but_num = G_N_ELEMENTS (chmod_but);
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -136,8 +136,7 @@ static void
 chmod_i18n (void)
 {
     static gboolean i18n = FALSE;
-    unsigned int i;
-    int len;
+    int i, len;
 
     if (i18n)
         return;
@@ -158,7 +157,7 @@ chmod_i18n (void)
     for (i = 0; i < check_perm_num; i++)
     {
         len = str_term_width1 (check_perm[i].text);
-        check_perm_len = max (check_perm_len, len);
+        check_perm_len = MAX (check_perm_len, len);
     }
 
     check_perm_len += 1 + 3 + 1;        /* mark, [x] and space */
@@ -166,7 +165,7 @@ chmod_i18n (void)
     for (i = 0; i < file_info_labels_num; i++)
     {
         len = str_term_width1 (file_info_labels[i]) + 2;        /* spaces around */
-        file_info_labels_len = max (file_info_labels_len, len);
+        file_info_labels_len = MAX (file_info_labels_len, len);
     }
 
     for (i = 0; i < chmod_but_num; i++)
@@ -221,16 +220,12 @@ chmod_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
 
     switch (msg)
     {
-    case MSG_ACTION:
+    case MSG_NOTIFY:
         {
             /* handle checkboxes */
-            unsigned int i;
+            int i;
 
-            /* close dialog due to SIGINT (ctrl-g) */
-            if (sender == NULL && parm == CK_Cancel)
-                return MSG_NOT_HANDLED;
-
-            /* whether action was sent by checkbox? */
+            /* whether notification was sent by checkbox? */
             for (i = 0; i < check_perm_num; i++)
                 if (sender == WIDGET (check_perm[i].check))
                     break;
@@ -253,7 +248,7 @@ chmod_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
     case MSG_KEY:
         if (parm == 'T' || parm == 't' || parm == KEY_IC)
         {
-            unsigned int i;
+            int i;
             unsigned long id;
 
             id = dlg_get_current_widget_id (h);
@@ -265,7 +260,7 @@ chmod_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
             {
                 chmod_toggle_select (h, i);
                 if (parm == KEY_IC)
-                    dlg_one_down (h);
+                    dlg_select_next_widget (h);
                 return MSG_HANDLED;
             }
         }
@@ -287,10 +282,9 @@ init_chmod (const char *fname, const struct stat *sf_stat)
 {
     WDialog *ch_dlg;
     int lines, cols;
-    int y;
+    int i, y;
     int perm_gb_len;
     int file_gb_len;
-    unsigned int i;
     const char *c_fname, *c_fown, *c_fgrp;
     char buffer[BUF_TINY];
 
@@ -298,7 +292,7 @@ init_chmod (const char *fname, const struct stat *sf_stat)
     perm_gb_len = check_perm_len + 2;
     file_gb_len = file_info_labels_len + 2;
     cols = str_term_width1 (fname) + 2 + 1;
-    file_gb_len = max (file_gb_len, cols);
+    file_gb_len = MAX (file_gb_len, cols);
 
     lines = single_set ? 20 : 23;
     cols = perm_gb_len + file_gb_len + 1 + 6;
@@ -311,15 +305,14 @@ init_chmod (const char *fname, const struct stat *sf_stat)
     }
 
     ch_dlg =
-        dlg_create (TRUE, 0, 0, lines, cols, dialog_colors,
-                    chmod_callback, NULL, "[Chmod]", _("Chmod command"), DLG_CENTER);
+        dlg_create (TRUE, 0, 0, lines, cols, WPOS_CENTER, FALSE, dialog_colors,
+                    chmod_callback, NULL, "[Chmod]", _("Chmod command"));
 
     add_widget (ch_dlg, groupbox_new (PY, PX, check_perm_num + 2, perm_gb_len, _("Permission")));
 
     for (i = 0; i < check_perm_num; i++)
     {
-        check_perm[i].check = check_new (PY + i + 1, PX + 2,
-                                         (c_stat & check_perm[i].mode) != 0 ? 1 : 0,
+        check_perm[i].check = check_new (PY + i + 1, PX + 2, (c_stat & check_perm[i].mode) != 0,
                                          check_perm[i].text);
         add_widget (ch_dlg, check_perm[i].check);
     }
@@ -371,7 +364,7 @@ init_chmod (const char *fname, const struct stat *sf_stat)
                             chmod_but[i].flags, chmod_but[i].text, NULL));
 
     /* select first checkbox */
-    dlg_select_widget (check_perm[0].check);
+    widget_select (WIDGET (check_perm[0].check));
 
     return ch_dlg;
 }
@@ -460,8 +453,7 @@ chmod_cmd (void)
         WDialog *ch_dlg;
         struct stat sf_stat;
         char *fname;
-        int result;
-        unsigned int i;
+        int i, result;
 
         do_refresh ();
 
@@ -511,7 +503,7 @@ chmod_cmd (void)
             for (i = 0; i < check_perm_num; i++)
                 if (check_perm[i].selected || result == B_ALL)
                 {
-                    if (check_perm[i].check->state & C_BOOL)
+                    if (check_perm[i].check->state)
                         or_mask |= check_perm[i].mode;
                     else
                         and_mask &= ~check_perm[i].mode;
@@ -540,6 +532,9 @@ chmod_cmd (void)
                     and_mask &= ~check_perm[i].mode;
 
             apply_mask (&sf_stat);
+            break;
+
+        default:
             break;
         }
 

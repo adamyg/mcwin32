@@ -4,7 +4,7 @@
 /*
  * win32 <grp.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -34,11 +34,11 @@ struct group {
     const char **       gr_mem;
 };
 
-struct group *          getgrent(void);
-struct group *          getgrgid(int);
-struct group *          getgrnam(const char *);
-void                    setgrent(void);
-void                    endgrent(void);
+LIBW32_API struct group *getgrent(void);
+LIBW32_API struct group *getgrgid(int);
+LIBW32_API struct group *getgrnam(const char *);
+LIBW32_API void         setgrent(void);
+LIBW32_API void         endgrent(void);
 
 __END_DECLS
 

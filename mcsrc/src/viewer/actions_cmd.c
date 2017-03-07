@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Callback function for some actions (hotkeys, menu)
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -35,7 +35,7 @@
 
 /*
    The functions in this section can be bound to hotkeys. They are all
-   of the same type (taking a pointer to mcview_t as parameter and
+   of the same type (taking a pointer to WView as parameter and
    returning void). TODO: In the not-too-distant future, these commands
    will become fully configurable, like they already are in the
    internal editor. By convention, all the function names end in
@@ -83,7 +83,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_remove_ext_script (mcview_t * view)
+mcview_remove_ext_script (WView * view)
 {
     if (view->ext_script != NULL)
     {
@@ -97,7 +97,7 @@ mcview_remove_ext_script (mcview_t * view)
 
 /* Both views */
 static void
-mcview_search (mcview_t * view, gboolean start_search)
+mcview_search (WView * view, gboolean start_search)
 {
     off_t want_search_start = view->search_start;
 
@@ -130,7 +130,7 @@ mcview_search (mcview_t * view, gboolean start_search)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_continue_search_cmd (mcview_t * view)
+mcview_continue_search_cmd (WView * view)
 {
     if (view->last_search_string != NULL)
         mcview_search (view, FALSE);
@@ -147,9 +147,9 @@ mcview_continue_search_cmd (mcview_t * view)
             g_list_free_full (history, g_free);
 
 #ifdef HAVE_CHARSET
-            view->search = mc_search_new (view->last_search_string, -1, cp_source);
+            view->search = mc_search_new (view->last_search_string, cp_source);
 #else
-            view->search = mc_search_new (view->last_search_string, -1, NULL);
+            view->search = mc_search_new (view->last_search_string, NULL);
 #endif
             view->search_nroff_seq = mcview_nroff_seq_new (view);
 
@@ -187,7 +187,7 @@ mcview_continue_search_cmd (mcview_t * view)
 static void
 mcview_hook (void *v)
 {
-    mcview_t *view = (mcview_t *) v;
+    WView *view = (WView *) v;
     WPanel *panel;
 
     /* If the user is busy typing, wait until he finishes to update the
@@ -210,17 +210,17 @@ mcview_hook (void *v)
 
     mcview_done (view);
     mcview_init (view);
-    mcview_load (view, 0, panel->dir.list[panel->selected].fname, 0);
+    mcview_load (view, 0, panel->dir.list[panel->selected].fname, 0, 0, 0);
     mcview_display (view);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-mcview_handle_editkey (mcview_t * view, int key)
+mcview_handle_editkey (WView * view, int key)
 {
     struct hexedit_change_node *node;
-    int byte_val;
+    int byte_val = -1;
 
     /* Has there been a change at this position? */
     node = view->change_list;
@@ -284,7 +284,7 @@ mcview_handle_editkey (mcview_t * view, int key)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_load_next_prev_init (mcview_t * view)
+mcview_load_next_prev_init (WView * view)
 {
     if (mc_global.mc_run_mode != MC_RUN_VIEWER)
     {
@@ -329,7 +329,7 @@ mcview_load_next_prev_init (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_scan_for_file (mcview_t * view, int direction)
+mcview_scan_for_file (WView * view, int direction)
 {
     int i;
 
@@ -349,7 +349,7 @@ mcview_scan_for_file (mcview_t * view, int direction)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_load_next_prev (mcview_t * view, int direction)
+mcview_load_next_prev (WView * view, int direction)
 {
     dir_list *dir;
     int *dir_idx;
@@ -369,7 +369,7 @@ mcview_load_next_prev (mcview_t * view, int direction)
     mcview_remove_ext_script (view);
     mcview_init (view);
     if (regex_command_for (view, vfile, "View", &ext_script) == 0)
-        mcview_load (view, NULL, vfs_path_as_str (vfile), 0);
+        mcview_load (view, NULL, vfs_path_as_str (vfile), 0, 0, 0);
     vfs_path_free (vfile);
     view->dir = dir;
     view->dir_idx = dir_idx;
@@ -382,7 +382,7 @@ mcview_load_next_prev (mcview_t * view, int direction)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-mcview_execute_cmd (mcview_t * view, unsigned long command)
+mcview_execute_cmd (WView * view, long command)
 {
     int res = MSG_HANDLED;
 
@@ -544,9 +544,9 @@ mcview_execute_cmd (mcview_t * view, unsigned long command)
 /* --------------------------------------------------------------------------------------------- */
 /** Both views */
 static cb_ret_t
-mcview_handle_key (mcview_t * view, int key)
+mcview_handle_key (WView * view, int key)
 {
-    unsigned long command;
+    long command;
 
 #ifdef HAVE_CHARSET
     key = convert_from_input_c (key);
@@ -586,11 +586,11 @@ mcview_handle_key (mcview_t * view, int key)
 static inline void
 mcview_adjust_size (WDialog * h)
 {
-    mcview_t *view;
+    WView *view;
     WButtonBar *b;
 
     /* Look up the viewer and the buttonbar, we assume only two widgets here */
-    view = (mcview_t *) find_widget_type (h, mcview_callback);
+    view = (WView *) find_widget_type (h, mcview_callback);
     b = find_buttonbar (h);
 
     widget_set_size (WIDGET (view), 0, 0, LINES - 1, COLS);
@@ -604,7 +604,7 @@ mcview_adjust_size (WDialog * h)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-mcview_ok_to_quit (mcview_t * view)
+mcview_ok_to_quit (WView * view)
 {
     int r;
 
@@ -647,7 +647,7 @@ mcview_ok_to_quit (mcview_t * view)
 cb_ret_t
 mcview_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
 {
-    mcview_t *view = (mcview_t *) w;
+    WView *view = (WView *) w;
     cb_ret_t i;
 
     mcview_compute_areas (view);
@@ -683,13 +683,9 @@ mcview_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *
         return i;
 
     case MSG_FOCUS:
-        view->active = TRUE;
         view->dpy_bbar_dirty = TRUE;
+        /* TODO: get rid of draw here before MSG_DRAW */
         mcview_update (view);
-        return MSG_HANDLED;
-
-    case MSG_UNFOCUS:
-        view->active = FALSE;
         return MSG_HANDLED;
 
     case MSG_DESTROY:
@@ -715,7 +711,7 @@ cb_ret_t
 mcview_dialog_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
 {
     WDialog *h = DIALOG (w);
-    mcview_t *view;
+    WView *view;
 
     switch (msg)
     {
@@ -724,25 +720,18 @@ mcview_dialog_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
         return MSG_HANDLED;
 
     case MSG_ACTION:
-        /* shortcut */
-        if (sender == NULL)
-            return mcview_execute_cmd (NULL, parm);
-        /* message from buttonbar */
-        if (sender == WIDGET (find_buttonbar (h)))
-        {
-            if (data != NULL)
-                return send_message (data, NULL, MSG_ACTION, parm, NULL);
+        /* Handle shortcuts. */
 
-            view = (mcview_t *) find_widget_type (h, mcview_callback);
-            return mcview_execute_cmd (view, parm);
-        }
-        return MSG_NOT_HANDLED;
+        /* Note: the buttonbar sends messages directly to the the WView, not to
+         * here, which is why we can pass NULL in the following call. */
+        return mcview_execute_cmd (NULL, parm);
 
     case MSG_VALIDATE:
-        view = (mcview_t *) find_widget_type (h, mcview_callback);
-        h->state = DLG_ACTIVE;  /* don't stop the dialog before final decision */
+        view = (WView *) find_widget_type (h, mcview_callback);
+        /* don't stop the dialog before final decision */
+        widget_set_state (WIDGET (h), WST_ACTIVE, TRUE);
         if (mcview_ok_to_quit (view))
-            h->state = DLG_CLOSED;
+            dlg_stop (h);
         else
             mcview_update (view);
         return MSG_HANDLED;

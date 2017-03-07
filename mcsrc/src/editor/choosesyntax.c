@@ -1,7 +1,7 @@
 /*
    User interface for syntax selection.
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Copyright (C) 2005, 2006
@@ -61,7 +61,7 @@
 static int
 pstrcmp (const void *p1, const void *p2)
 {
-    return strcmp (*(char **) p1, *(char **) p2);
+    return strcmp (*(char *const *) p1, *(char *const *) p2);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -74,15 +74,15 @@ exec_edit_syntax_dialog (const GPtrArray * names, const char *current_syntax)
 
     syntaxlist = create_listbox_window (LIST_LINES, MAX_ENTRY_LEN,
                                         _("Choose syntax highlighting"), NULL);
-    LISTBOX_APPEND_TEXT (syntaxlist, 'A', _("< Auto >"), NULL);
-    LISTBOX_APPEND_TEXT (syntaxlist, 'R', _("< Reload Current Syntax >"), NULL);
+    LISTBOX_APPEND_TEXT (syntaxlist, 'A', _("< Auto >"), NULL, FALSE);
+    LISTBOX_APPEND_TEXT (syntaxlist, 'R', _("< Reload Current Syntax >"), NULL, FALSE);
 
     for (i = 0; i < names->len; i++)
     {
         const char *name;
 
         name = g_ptr_array_index (names, i);
-        LISTBOX_APPEND_TEXT (syntaxlist, 0, name, NULL);
+        LISTBOX_APPEND_TEXT (syntaxlist, 0, name, NULL, FALSE);
         if (current_syntax != NULL && strcmp (name, current_syntax) == 0)
             listbox_select_entry (syntaxlist->list, i + N_DFLT_ENTRIES);
     }
@@ -113,7 +113,7 @@ edit_syntax_dialog (WEdit * edit)
     {
         gboolean force_reload = FALSE;
         char *current_syntax;
-        int old_auto_syntax;
+        gboolean old_auto_syntax;
 
         current_syntax = g_strdup (edit->syntax_type);
         old_auto_syntax = option_auto_syntax;
@@ -121,13 +121,13 @@ edit_syntax_dialog (WEdit * edit)
         switch (syntax)
         {
         case 0:                /* auto syntax */
-            option_auto_syntax = 1;
+            option_auto_syntax = TRUE;
             break;
         case 1:                /* reload current syntax */
             force_reload = TRUE;
             break;
         default:
-            option_auto_syntax = 0;
+            option_auto_syntax = FALSE;
             g_free (edit->syntax_type);
             edit->syntax_type = g_strdup (g_ptr_array_index (names, syntax - N_DFLT_ENTRIES));
         }

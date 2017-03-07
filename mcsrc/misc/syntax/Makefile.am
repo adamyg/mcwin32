@@ -15,14 +15,16 @@ SYNTAXFILES =			\
 	cmake.syntax		\
 	cs.syntax		\
 	css.syntax		\
+	cuda.syntax		\
 	cxx.syntax		\
+	cython.syntax		\
 	d.syntax		\
-	dlink.syntax		\
 	debian-changelog.syntax	\
 	debian-control.syntax	\
 	debian-description.syntax	\
 	debian-sources-list.syntax	\
 	diff.syntax		\
+	dlink.syntax		\
 	dos.syntax		\
 	ebuild.syntax		\
 	eiffel.syntax		\
@@ -30,6 +32,8 @@ SYNTAXFILES =			\
 	f90.syntax		\
 	filehighlight.syntax	\
 	fortran.syntax		\
+	glsl.syntax		\
+	go.syntax		\
 	haskell.syntax		\
 	html.syntax		\
 	idl.syntax		\
@@ -51,6 +55,8 @@ SYNTAXFILES =			\
 	nemerle.syntax		\
 	nroff.syntax		\
 	octave.syntax		\
+	opencl.syntax		\
+	osl.syntax		\
 	pascal.syntax		\
 	perl.syntax		\
 	php.syntax		\
@@ -60,7 +66,7 @@ SYNTAXFILES =			\
 	properties.syntax	\
 	puppet.syntax		\
 	python.syntax		\
-	cython.syntax		\
+	r.syntax		\
 	ruby.syntax		\
 	sh.syntax		\
 	slang.syntax		\
@@ -77,6 +83,7 @@ SYNTAXFILES =			\
 	verilog.syntax		\
 	vhdl.syntax		\
 	xml.syntax		\
+	yaml.syntax		\
 	yum-repo.syntax		\
 	yxx.syntax
 

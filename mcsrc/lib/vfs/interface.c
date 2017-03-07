@@ -1,7 +1,7 @@
 /*
    Virtual File System: interface functions
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -41,7 +41,6 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <ctype.h>              /* is_digit() */
-#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -60,8 +59,10 @@
 #include "gc.h"
 #include "xdirentry.h"
 
+/* TODO: move it to separate private .h */
 extern GString *vfs_str_buffer;
-extern struct vfs_class *current_vfs;
+extern vfs_class *current_vfs;
+extern struct dirent *mc_readdir_result;
 
 /*** global variables ****************************************************************************/
 
@@ -76,7 +77,7 @@ struct dirent *mc_readdir_result = NULL;
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
-#if defined(WIN32)
+#if defined(WIN32) //WIN32, drive
 #undef  mkdir
 #undef  rmdir
 #undef  read
@@ -210,7 +211,8 @@ mc_def_ungetlocalcopy (const vfs_path_t * filename_vpath,
 int
 mc_open (const vfs_path_t * vpath, int flags, ...)
 {
-    int mode = 0, result = -1;
+    int result = -1;
+    mode_t mode = 0;
     const vfs_path_element_t *path_element;
 
     if (vpath == NULL)
@@ -221,7 +223,10 @@ mc_open (const vfs_path_t * vpath, int flags, ...)
     {
         va_list ap;
         va_start (ap, flags);
-        mode = va_arg (ap, int);
+        /* We have to use PROMOTED_MODE_T instead of mode_t. Doing 'va_arg (ap, mode_t)'
+         * fails on systems where 'mode_t' is smaller than 'int' because of C's "default
+         * argument promotions". */
+        mode = va_arg (ap, PROMOTED_MODE_T);
         va_end (ap);
     }
 
@@ -269,7 +274,7 @@ int mc_##name inarg \
 
 MC_NAMEOP (chmod, (const vfs_path_t *vpath, mode_t mode), (vpath, mode))
 MC_NAMEOP (chown, (const vfs_path_t *vpath, uid_t owner, gid_t group), (vpath, owner, group))
-MC_NAMEOP (utime, (const vfs_path_t *vpath, struct utimbuf * times), (vpath, times))
+MC_NAMEOP (utime, (const vfs_path_t *vpath, mc_timesbuf_t * times), (vpath, times))
 MC_NAMEOP (readlink, (const vfs_path_t *vpath, char *buf, size_t bufsiz), (vpath, buf, bufsiz))
 MC_NAMEOP (unlink, (const vfs_path_t *vpath), (vpath))
 MC_NAMEOP (mkdir, (const vfs_path_t *vpath, mode_t mode), (vpath, mode))
@@ -312,24 +317,29 @@ mc_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2)
 
 /* *INDENT-OFF* */
 
-#define MC_HANDLEOP(name, inarg, callarg) \
-ssize_t mc_##name inarg \
+#define MC_HANDLEOP(name) \
+ssize_t mc_##name (int handle, C void *buf, size_t count) \
 { \
     struct vfs_class *vfs; \
+    void *fsinfo = NULL; \
     int result; \
     if (handle == -1) \
         return -1; \
-    vfs = vfs_class_find_by_handle (handle); \
+    vfs = vfs_class_find_by_handle (handle, &fsinfo); \
     if (vfs == NULL) \
         return -1; \
-    result = vfs->name != NULL ? vfs->name callarg : -1; \
+    result = vfs->name != NULL ? vfs->name (fsinfo, buf, count) : -1; \
     if (result == -1) \
         errno = vfs->name != NULL ? vfs_ferrno (vfs) : E_NOTSUPP; \
     return result; \
 }
 
-MC_HANDLEOP (read, (int handle, void *buffer, size_t count), (vfs_class_data_find_by_handle (handle), buffer, count))
-MC_HANDLEOP (write, (int handle, const void *buf, size_t nbyte), (vfs_class_data_find_by_handle (handle), buf, nbyte))
+#define C
+MC_HANDLEOP (read)
+#undef C
+#define C const
+MC_HANDLEOP (write)
+#undef C
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -371,12 +381,12 @@ MC_RENAMEOP (rename)
 int
 mc_ctl (int handle, int ctlop, void *arg)
 {
-    struct vfs_class *vfs = vfs_class_find_by_handle (handle);
+    struct vfs_class *vfs;
+    void *fsinfo = NULL;
 
-    if (vfs == NULL)
-        return 0;
+    vfs = vfs_class_find_by_handle (handle, &fsinfo);
 
-    return vfs->ctl ? (*vfs->ctl) (vfs_class_data_find_by_handle (handle), ctlop, arg) : 0;
+    return (vfs == NULL || vfs->ctl == NULL) ? 0 : vfs->ctl (fsinfo, ctlop, arg);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -405,13 +415,14 @@ int
 mc_close (int handle)
 {
     struct vfs_class *vfs;
+    void *fsinfo = NULL;
     int result;
 
-    if (handle == -1 || !vfs_class_data_find_by_handle (handle))
+    if (handle == -1)
         return -1;
 
-    vfs = vfs_class_find_by_handle (handle);
-    if (vfs == NULL)
+    vfs = vfs_class_find_by_handle (handle, &fsinfo);
+    if (vfs == NULL || fsinfo == NULL)
         return -1;
 
     if (handle < 3)
@@ -419,7 +430,7 @@ mc_close (int handle)
 
     if (!vfs->close)
         vfs_die ("VFS must support close.\n");
-    result = (*vfs->close) (vfs_class_data_find_by_handle (handle));
+    result = (*vfs->close) (fsinfo);
     vfs_free_handle (handle);
     if (result == -1)
         errno = vfs_ferrno (vfs);
@@ -478,6 +489,7 @@ mc_readdir (DIR * dirp)
 {
     int handle;
     struct vfs_class *vfs;
+    void *fsinfo = NULL;
     struct dirent *entry = NULL;
     vfs_path_element_t *vfs_path_element;
 
@@ -503,11 +515,11 @@ mc_readdir (DIR * dirp)
     }
     handle = *(int *) dirp;
 
-    vfs = vfs_class_find_by_handle (handle);
-    if (vfs == NULL)
+    vfs = vfs_class_find_by_handle (handle, &fsinfo);
+    if (vfs == NULL || fsinfo == NULL)
         return NULL;
 
-    vfs_path_element = vfs_class_data_find_by_handle (handle);
+    vfs_path_element = (vfs_path_element_t *) fsinfo;
     if (vfs->readdir)
     {
         entry = (*vfs->readdir) (vfs_path_element->dir.info);
@@ -533,15 +545,20 @@ mc_readdir (DIR * dirp)
 int
 mc_closedir (DIR * dirp)
 {
-    int handle = *(int *) dirp;
+    int handle;
     struct vfs_class *vfs;
+    void *fsinfo = NULL;
     int result = -1;
 
-    vfs = vfs_class_find_by_handle (handle);
-    if (vfs != NULL)
+    if (dirp == NULL)
+        return result;
+
+    handle = *(int *) dirp;
+
+    vfs = vfs_class_find_by_handle (handle, &fsinfo);
+    if (vfs != NULL && fsinfo != NULL)
     {
-        vfs_path_element_t *vfs_path_element;
-        vfs_path_element = vfs_class_data_find_by_handle (handle);
+        vfs_path_element_t *vfs_path_element = (vfs_path_element_t *) fsinfo;
 
 #ifdef HAVE_CHARSET
         if (vfs_path_element->dir.converter != str_cnv_from_term)
@@ -611,18 +628,19 @@ int
 mc_fstat (int handle, struct stat *buf)
 {
     struct vfs_class *vfs;
+    void *fsinfo = NULL;
     int result;
 
     if (handle == -1)
         return -1;
 
-    vfs = vfs_class_find_by_handle (handle);
+    vfs = vfs_class_find_by_handle (handle, &fsinfo);
     if (vfs == NULL)
         return -1;
 
-    result = vfs->fstat ? (*vfs->fstat) (vfs_class_data_find_by_handle (handle), buf) : -1;
+    result = vfs->fstat ? (*vfs->fstat) (fsinfo, buf) : -1;
     if (result == -1)
-        errno = vfs->name ? vfs_ferrno (vfs) : E_NOTSUPP;
+        errno = vfs->fstat ? vfs_ferrno (vfs) : E_NOTSUPP;
     return result;
 }
 
@@ -764,16 +782,17 @@ off_t
 mc_lseek (int fd, off_t offset, int whence)
 {
     struct vfs_class *vfs;
+    void *fsinfo = NULL;
     off_t result;
 
     if (fd == -1)
         return -1;
 
-    vfs = vfs_class_find_by_handle (fd);
+    vfs = vfs_class_find_by_handle (fd, &fsinfo);
     if (vfs == NULL)
         return -1;
 
-    result = vfs->lseek ? (*vfs->lseek) (vfs_class_data_find_by_handle (fd), offset, whence) : -1;
+    result = vfs->lseek ? (*vfs->lseek) (fsinfo, offset, whence) : -1;
     if (result == -1)
         errno = vfs->lseek ? vfs_ferrno (vfs) : E_NOTSUPP;
     return result;
@@ -836,7 +855,7 @@ mc_mkstemps (vfs_path_t ** pname_vpath, const char *prefix, const char *suffix)
 const char *
 mc_tmpdir (void)
 {
-    static char buffer[64];
+    static char buffer[PATH_MAX];
     static const char *tmpdir = NULL;
     const char *sys_tmp;
     struct passwd *pwd;
@@ -848,7 +867,7 @@ mc_tmpdir (void)
         st.st_uid == getuid () && (st.st_mode & 0777) == 0700)
         return tmpdir;
 
-#if defined(WIN32)
+#if defined(WIN32) //WIN32, config
     if (NULL == (sys_tmp = mc_TMPDIR())) {
         sys_tmp = TMPDIR_DEFAULT;
     }

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: updateidents.pl,v 1.2 2012/08/03 02:26:42 ayoung Exp $
+# $Id: updateidents.pl,v 1.1 2017/02/24 15:36:48 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # Update the identifiers and copyright notice within the specified files
 # Note, script assumes the consumption of C/C++ based source usage

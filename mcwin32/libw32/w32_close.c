@@ -2,7 +2,7 @@
 /*
  * win32 close() system calls.
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -139,16 +139,15 @@
 //          An I/O error occurred while reading from or writing to the file system.
 */
 int
-w32_close(int fd)
+w32_close(int fildes)
 {
-    HANDLE handle;
+    SOCKET s;
     int ret;
 
-    if (fd < 0) {
+    if (fildes < 0) {
         errno = EBADF;
         ret = -1;
-    } else if (fd >= WIN32_FILDES_MAX || 
-            (handle = (HANDLE) _get_osfhandle(fd)) == INVALID_HANDLE_VALUE) {
+   } else if (w32_issockfd(fildes, &s)) {
         //
         //  To ensure that all data is sent and received on a connected socket
         //  before it is closed, an application should use shutdown to close the
@@ -162,13 +161,14 @@ w32_close(int fd)
 #define SD_SEND         0x01
 #define SD_BOTH         0x02
 #endif
-        (void) shutdown((SOCKET)fd, SD_BOTH);
-        if ((ret = closesocket((SOCKET)fd)) == SOCKET_ERROR) {
-            w32_neterrno_set();
+		w32_sockfd_close(fildes, s);
+        (void) shutdown(s, SD_BOTH);
+        if ((ret = closesocket(s)) == SOCKET_ERROR) {
+			w32_neterrno_set();
             ret = -1;
         }
     } else {
-        ret = _close(fd);
+        ret = _close(fildes);
     }
     return ret;
 }

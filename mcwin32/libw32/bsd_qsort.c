@@ -31,6 +31,7 @@
 
 /*static char sccsid[] = "@(#)qsort.c	8.1 (Berkeley) 6/4/93";*/
 
+#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -48,7 +49,7 @@
 #define CMP(t, x, y)	(cmp((x), (y)))
 #endif
 
-#if defined(__WATCOMC__)
+#if defined(__WATCOMC__) || defined(_MSC_VER)
 typedef int (* cmp_t)(void const *, void const *);
 #endif
 
@@ -105,16 +106,12 @@ med3(char *a, char *b, char *c, cmp_t cmp, void *thunk)
               :(CMP(thunk, b, c) > 0 ? b : (CMP(thunk, a, c) < 0 ? a : c ));
 }
 
-void
+LIBW32_API void
 #ifdef I_AM_QSORT_R
 qsort_r(void *a, size_t n, size_t es, void *thunk, cmp_t cmp)
 #else
 #define thunk   NULL
-#if defined(__WATCOMC__)
-qsort(void *a, size_t n, size_t es, int (*cmp)(void const *, void const *))
-#else
-qsort(void *a, size_t n, size_t es, cmp_t cmp)
-#endif
+bsd_qsort(void *a, size_t n, size_t es, cmp_t cmp)
 #endif
 {
 	char *pa, *pb, *pc, *pd, *pl, *pm, *pn;

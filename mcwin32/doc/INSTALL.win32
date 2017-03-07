@@ -13,8 +13,8 @@ Build requirements for GNU Midnight Commander
 
    The following external requirements/packages need to be available
 
-        - glib2
         - busybox-win32
+        - glib2 (pre build 201
         - make / binutils
         - perl
         - supported compiler tool-chain
@@ -51,29 +51,6 @@ Installation instructions for GNU Midnight Commander
 Obtaining related software
 ----------------------------------------------------
 
-   o glib
-
-        The only "hard" dependency of GNU Midnight Commander is glib
-
-        Minimal version of glib: 2.8.x
-        Recommended version: 2.14.x and higher.
-
-        Newer versions may work, but haven't been tested.
-
-        You can get glib from
-
-                ftp://ftp.gtk.org/pub/glib/
-
-        or use the current pre-build win23 packages available from
-
-                https://live.gnome.org/GTK+/Win32/MSVCCompilationOfGTKStack
-
-        at present only the following components are required           
-
-                intl.dll
-                libglib-2.0-0.dll
-
-
    o busybox-win32
 
         Busybox is utilised both during make operations, plus is packaged
@@ -95,6 +72,27 @@ Obtaining related software
 
                 https://github.com/pclouds/busybox-w32
 
+   o glib - pre build 201
+
+        The only "hard" dependency of GNU Midnight Commander is glib
+
+        Minimal version of glib: 2.8.x
+        Recommended version: 2.14.x and higher.
+
+        Newer versions may work, but haven't been tested.
+
+        You can get glib from
+
+                ftp://ftp.gtk.org/pub/glib/
+
+        or use the current pre-build win23 packages available from
+
+                https://live.gnome.org/GTK+/Win32/MSVCCompilationOfGTKStack
+
+        at present only the following components are required           
+
+                intl.dll
+                libglib-2.0-0.dll
 
    o make / binutils
 
@@ -127,7 +125,7 @@ Obtaining related software
 
                 o Open Watcom C/C++ 1.9
 
-                o Microsoft Express C/C++ v8.0 / 2010
+                o Microsoft Visual Studio C/C++ 2013 (or greater)
 
 
    o inno

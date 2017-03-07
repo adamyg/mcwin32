@@ -1,0 +1,130 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id: Makefile.in,v 1.1 2017/03/06 11:09:23 cvsuser Exp $
+# libintl makefile
+#
+#
+#
+
+@SET_MAKE@
+ROOT=		@abs_top_builddir@
+top_builddir=	@top_builddir@
+
+# File extensions
+
+E=
+O=		.o
+H=		.h
+A=		.a
+LP=		lib
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+AR=		@AR@
+RANLIB=		@RANLIB@
+RM=		@RM@
+PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
+
+# Common flags
+
+ARFLAGS=	rcv
+XFLAGS=		
+COPT=		@CFLAGS@
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+LDEBUG=		@LDEBUG@
+CINCLUDE=	-I. -I../libcitrus/src -I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@
+CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CNFLAGS=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+YFLAGS=		-d
+LDFLAGS=	$(LDEBUG) @LDFLAGS@
+LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
+
+RMFLAGS=	-f
+
+# Directories
+
+D_BIN=		$(ROOT)/bin
+D_INC=		$(ROOT)/include
+D_OBJ=		$(ROOT)/objects/libintl
+D_LIB=		$(ROOT)/lib
+
+############################################################
+
+# Targets
+
+INTLLIB=	$(D_LIB)/$(LP)intl_static$(A)
+INTLDLL=	$(D_LIB)/$(LP)intl.la
+
+VERSION=	1.0.1
+VERSIONSPEC=	$(subst .,:,$(VERSION))
+INTLSRC=	./src
+CITRUSSRC=	../libcitrus/src
+VPATH=		$(INTLSRC) $(CITRUSSRC)
+
+LIBOBJS=\
+	$(D_OBJ)/gettext$(O)			\
+	$(D_OBJ)/gettext_iconv$(O)		\
+	$(D_OBJ)/gettext_dummy$(O)		\
+	$(D_OBJ)/plural_parser$(O)		\
+	$(D_OBJ)/strhash$(O)			\
+	$(D_OBJ)/sysdep$(O)			\
+	$(D_OBJ)/textdomain$(O)			\
+	$(D_OBJ)/compat_strsep$(O)
+
+DLLOBJS=\
+	$(D_OBJ)/libintl.lo			\
+	$(subst $(O),.lo,$(LIBOBJS))		\
+	$(D_OBJ)/citrus_bcs$(O)			\
+	$(D_OBJ)/citrus_memstream$(O)		\
+	$(D_OBJ)/tfind$(O)			\
+	$(D_OBJ)/tsearch$(O)
+
+OBJS=		$(LIBOBJS) $(DLLOBJS)
+LIBS=		$(INTLLIB) $(INTLDLL)
+TSKS=
+
+# Rules
+
+all:			object $(LIBS) $(TSKS) installinc
+
+$(INTLLIB):		CEXTRA += -I$(INTLSRC) -DLIBINTL_STATIC -D__LIBINTL_BUILD -D_WIN32 -D_WIN32_WINNT=0X601
+$(INTLLIB):		$(LIBOBJS)
+		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(AR) $(ARFLAGS) $@ $(subst /,\,$^)
+		$(RANLIB) $@
+
+$(INTLDLL):		CEXTRA += -I$(INTLSRC) -DLIBINTL_DYANMIC -D__LIBINTL_BUILD -D_WIN32 -D_WIN32_WINNT=0X601
+$(INTLDLL):		$(DLLOBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) -o $@ $^ -L$(D_LIB) $(LDLIBS)
+
+.PHONY:		object
+object:			$(D_OBJ)/.created
+
+.PHONY:		installinc
+installinc:		../include/.created
+		@echo publishing headers ...
+		-cp $(INTLSRC)/libintl.h ../include
+
+%/.created:
+		-@mkdir $(@D)
+		@echo "do not delete, managed directory" > $@
+
+clean:
+		-@$(LIBTOOL) --mode=clean $(RM) $(DLLOBJS) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
+
+$(D_OBJ)/%$(O):		%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+#end

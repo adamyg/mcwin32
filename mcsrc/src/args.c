@@ -1,7 +1,7 @@
 /*
    Handle command line arguments.
 
-   Copyright (C) 2009-2015
+   Copyright (C) 2009-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -46,9 +46,6 @@
 
 /*** global variables ****************************************************************************/
 
-/* If true, show version info and exit */
-gboolean mc_args__show_version = FALSE;
-
 /* If true, assume we are running on an xterm terminal */
 gboolean mc_args__force_xterm = FALSE;
 
@@ -57,7 +54,7 @@ gboolean mc_args__nomouse = FALSE;
 /* Force colors, only used by Slang */
 gboolean mc_args__force_colors = FALSE;
 
-/* Don't load keymap form file and use default one */
+/* Don't load keymap from file and use default one */
 gboolean mc_args__nokeymap = FALSE;
 
 char *mc_args__last_wd_file = NULL;
@@ -69,7 +66,9 @@ char *mc_args__netfs_logfile = NULL;
 char *mc_args__keymap_file = NULL;
 
 /* Debug level */
+#ifdef ENABLE_VFS_SMB
 int mc_args__debug_level = 0;
+#endif
 
 void *mc_run_param0 = NULL;
 char *mc_run_param1 = NULL;
@@ -79,6 +78,9 @@ char *mc_run_param1 = NULL;
 /*** file scope type declarations ****************************************************************/
 
 /*** file scope variables ************************************************************************/
+
+/* If true, show version info and exit */
+static gboolean mc_args__show_version = FALSE;
 
 /* forward declarations */
 static gboolean parse_mc_e_argument (const gchar * option_name, const gchar * value,
@@ -172,17 +174,18 @@ static const GOptionEntry argument_main_table[] = {
     },
 #endif /* ENABLE_VFS_SMB */
 
-    /* single file operations */
     {
-     "view", 'v', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_CALLBACK,
-     parse_mc_v_argument,
+     /* handle arguments manually */
+     "view", 'v', G_OPTION_FLAG_IN_MAIN | G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,
+     (gpointer) parse_mc_v_argument,
      N_("Launches the file viewer on a file"),
      "<file>"
     },
 
     {
+     /* handle arguments manually */
      "edit", 'e', G_OPTION_FLAG_IN_MAIN | G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,
-     parse_mc_e_argument,
+     (gpointer) parse_mc_e_argument,
      N_("Edit files"),
      "<file> ..." },
 
@@ -192,7 +195,7 @@ static const GOptionEntry argument_main_table[] = {
     /* *INDENT-ON* */
 };
 
-GOptionGroup *terminal_group;
+static GOptionGroup *terminal_group;
 #define ARGS_TERM_OPTIONS 0
 static const GOptionEntry argument_terminal_table[] = {
     /* *INDENT-OFF* */
@@ -225,6 +228,7 @@ static const GOptionEntry argument_terminal_table[] = {
      NULL
     },
 
+#ifndef WIN32
 #ifdef HAVE_SLANG
     {
      "termcap", 't', ARGS_TERM_OPTIONS, G_OPTION_ARG_NONE,
@@ -233,6 +237,7 @@ static const GOptionEntry argument_terminal_table[] = {
      NULL
     },
 #endif
+#endif	//WIN32
 
     {
      "slow", 's', ARGS_TERM_OPTIONS, G_OPTION_ARG_NONE,
@@ -248,12 +253,16 @@ static const GOptionEntry argument_terminal_table[] = {
      NULL
     },
 
+#ifndef WIN32
+#ifdef HAVE_SLANG
     {
      "resetsoft", 'k', ARGS_TERM_OPTIONS, G_OPTION_ARG_NONE,
      &reset_hp_softkeys,
      N_("Resets soft keys on HP terminals"),
      NULL
     },
+#endif
+#endif	//WIN32
 
     {
      "keymap", 'K', ARGS_TERM_OPTIONS, G_OPTION_ARG_STRING,
@@ -277,7 +286,7 @@ static const GOptionEntry argument_terminal_table[] = {
 
 #undef ARGS_TERM_OPTIONS
 
-GOptionGroup *color_group;
+static GOptionGroup *color_group;
 #define ARGS_COLOR_OPTIONS 0
 /* #define ARGS_COLOR_OPTIONS G_OPTION_FLAG_IN_MAIN */
 static const GOptionEntry argument_color_table[] = {
@@ -397,14 +406,21 @@ mc_args_add_usage_info (void)
 static void
 mc_args_add_extended_info_to_help (void)
 {
+#if defined(BUILD_NUMBER) //WIN32/APY, build
+    mc_args__loc__footer_string = g_strdup_printf ("%s",
+                                                   _
+                                                   ("\n"
+                                                    "Please send any bug reports (including the output of 'mc -V')\n"
+                                                    "as tickets at https://sourceforge.net/projects/mcwin32\n"
+                                                    "you may also review tickets at www.midnight-commander.org\n"));
+    mc_args__loc__header_string = g_strdup_printf (_("GNU Midnight Commander %s (build: %s)\n"), VERSION, BUILD_NUMBER);
+
+#else
     mc_args__loc__footer_string = g_strdup_printf ("%s",
                                                    _
                                                    ("\n"
                                                     "Please send any bug reports (including the output of 'mc -V')\n"
                                                     "as tickets at www.midnight-commander.org\n"));
-#if defined(BUILD_NUMBER) //WIN32/APY, build
-    mc_args__loc__header_string = g_strdup_printf (_("GNU Midnight Commander %s (build: %s)\n"), VERSION, BUILD_NUMBER);
-#else
     mc_args__loc__header_string = g_strdup_printf (_("GNU Midnight Commander %s\n"), VERSION);
 #endif
 
@@ -458,14 +474,50 @@ parse_mc_v_argument (const gchar * option_name, const gchar * value, gpointer da
                      GError ** mcerror)
 {
     (void) option_name;
+    (void) value;
     (void) data;
 
     mc_return_val_if_error (mcerror, FALSE);
 
     mc_global.mc_run_mode = MC_RUN_VIEWER;
-    mc_run_param0 = g_strdup (value);
 
     return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Create mcedit_arg_t object from vfs_path_t object and the line number.
+ *
+ * @param file_vpath  file path object
+ * @param line_number line number. If value is 0, try to restore saved position.
+ * @return mcedit_arg_t object
+ */
+
+static mcedit_arg_t *
+mcedit_arg_vpath_new (vfs_path_t * file_vpath, long line_number)
+{
+    mcedit_arg_t *arg;
+
+    arg = g_new (mcedit_arg_t, 1);
+    arg->file_vpath = file_vpath;
+    arg->line_number = line_number;
+
+    return arg;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Create mcedit_arg_t object from file name and the line number.
+ *
+ * @param file_name   file name
+ * @param line_number line number. If value is 0, try to restore saved position.
+ * @return mcedit_arg_t object
+ */
+
+static mcedit_arg_t *
+mcedit_arg_new (const char *file_name, long line_number)
+{
+    return mcedit_arg_vpath_new (vfs_path_from_str (file_name), line_number);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -618,7 +670,6 @@ mc_args_parse (int *argc, char ***argv, const char *translation_domain, GError *
 
     if (!g_option_context_parse (context, argc, argv, mcerror))
     {
-
         if (*mcerror == NULL)
             mc_propagate_error (mcerror, 0, "%s\n", _("Arguments parse error!"));
         else
@@ -734,115 +785,63 @@ mc_setup_by_args (int argc, char **argv, GError ** mcerror)
     if (strncmp (base, "mce", 3) == 0 || strcmp (base, "vi") == 0)
     {
         /* mce* or vi is link to mc */
-
-        mc_run_param0 = parse_mcedit_arguments (argc - 1, &argv[1]);
         mc_global.mc_run_mode = MC_RUN_EDITOR;
     }
     else if (strncmp (base, "mcv", 3) == 0 || strcmp (base, "view") == 0)
     {
         /* mcv* or view is link to mc */
-
-        if (tmp != NULL)
-            mc_run_param0 = g_strdup (tmp);
-        else
-        {
-            mc_propagate_error (mcerror, 0, "%s\n", _("No arguments given to the viewer."));
-            return FALSE;
-        }
         mc_global.mc_run_mode = MC_RUN_VIEWER;
     }
 #ifdef USE_DIFF_VIEW
     else if (strncmp (base, "mcd", 3) == 0 || strcmp (base, "diff") == 0)
     {
         /* mcd* or diff is link to mc */
+        mc_global.mc_run_mode = MC_RUN_DIFFVIEWER;
+    }
+#endif /* USE_DIFF_VIEW */
 
-        if (argc < 3)
+    switch (mc_global.mc_run_mode)
+    {
+    case MC_RUN_EDITOR:
+        mc_run_param0 = parse_mcedit_arguments (argc - 1, &argv[1]);
+        break;
+
+    case MC_RUN_VIEWER:
+        if (tmp == NULL)
         {
-            mc_propagate_error (mcerror, 0, "%s\n",
-                                _("Two files are required to evoke the diffviewer."));
+            mc_propagate_error (mcerror, 0, "%s\n", _("No arguments given to the viewer."));
             return FALSE;
         }
 
+        mc_run_param0 = g_strdup (tmp);
+        break;
+
+#ifdef USE_DIFF_VIEW
+    case MC_RUN_DIFFVIEWER:
+        if (argc < 3)
+        {
+            mc_propagate_error (mcerror, 0, "%s\n",
+                                _("Two files are required to envoke the diffviewer."));
+            return FALSE;
+        }
+        /* fallthrough */
+#endif /* USE_DIFF_VIEW */
+
+    case MC_RUN_FULL:
+    default:
+        /* set the current dir and the other dir for filemanager,
+           or two files for diff viewer */
         if (tmp != NULL)
         {
             mc_run_param0 = g_strdup (tmp);
             tmp = (argc > 1) ? argv[2] : NULL;
             if (tmp != NULL)
                 mc_run_param1 = g_strdup (tmp);
-            mc_global.mc_run_mode = MC_RUN_DIFFVIEWER;
         }
-    }
-#endif /* USE_DIFF_VIEW */
-    else
-    {
-        /* MC is run as mc */
-
-        switch (mc_global.mc_run_mode)
-        {
-        case MC_RUN_EDITOR:
-            mc_run_param0 = parse_mcedit_arguments (argc - 1, &argv[1]);
-            break;
-
-        case MC_RUN_VIEWER:
-            /* mc_run_param0 is set up in parse_mc_v_argument() */
-            break;
-
-        case MC_RUN_DIFFVIEWER:
-            /* not implemented yet */
-            break;
-
-        case MC_RUN_FULL:
-        default:
-            /* sets the current dir and the other dir */
-            if (tmp != NULL)
-            {
-                mc_run_param0 = g_strdup (tmp);
-                tmp = (argc > 1) ? argv[2] : NULL;
-                if (tmp != NULL)
-                    mc_run_param1 = g_strdup (tmp);
-            }
-            mc_global.mc_run_mode = MC_RUN_FULL;
-            break;
-        }
+        break;
     }
 
     return TRUE;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Create mcedit_arg_t object from file name and the line number.
- *
- * @param file_name   file name
- * @param line_number line number. If value is 0, try to restore saved position.
- * @return mcedit_arg_t object
- */
-
-mcedit_arg_t *
-mcedit_arg_new (const char *file_name, long line_number)
-{
-    return mcedit_arg_vpath_new (vfs_path_from_str (file_name), line_number);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Create mcedit_arg_t object from vfs_path_t object and the line number.
- *
- * @param file_vpath  file path object
- * @param line_number line number. If value is 0, try to restore saved position.
- * @return mcedit_arg_t object
- */
-
-mcedit_arg_t *
-mcedit_arg_vpath_new (vfs_path_t * file_vpath, long line_number)
-{
-    mcedit_arg_t *arg;
-
-    arg = g_new (mcedit_arg_t, 1);
-    arg->file_vpath = file_vpath;
-    arg->line_number = line_number;
-
-    return arg;
 }
 
 /* --------------------------------------------------------------------------------------------- */

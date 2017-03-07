@@ -153,6 +153,8 @@ strlcpy(char *dst, const char *src, size_t siz)
 }
 
 #else
+extern void __stdlibrary_has_strlcpy(void);
+
 void
 __stdlibrary_has_strlcpy(void)
 {

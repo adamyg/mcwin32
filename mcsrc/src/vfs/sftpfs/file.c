@@ -1,7 +1,7 @@
 /* Virtual File System: SFTP file system.
    The internal functions: files
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -126,12 +126,15 @@ sftpfs_open_file (vfs_file_handler_t * file_handler, int flags, mode_t mode, GEr
 
     while (TRUE)
     {
+        const char *fixfname;
+        unsigned int fixfname_len = 0;
         int libssh_errno;
 
-        file_handler_data->handle =
-            libssh2_sftp_open (super_data->sftp_session, sftpfs_fix_filename (name),
-                               sftp_open_flags, sftp_open_mode);
+        fixfname = sftpfs_fix_filename (name, &fixfname_len);
 
+        file_handler_data->handle =
+            libssh2_sftp_open_ex (super_data->sftp_session, fixfname, fixfname_len, sftp_open_flags,
+                                  sftp_open_mode, LIBSSH2_SFTP_OPENFILE);
         if (file_handler_data->handle != NULL)
             break;
 
@@ -153,7 +156,24 @@ sftpfs_open_file (vfs_file_handler_t * file_handler, int flags, mode_t mode, GEr
 
     if (do_append)
     {
-        struct stat file_info;
+#if defined(__WATCOMC__)
+        struct stat file_info = {0};
+#else
+        struct stat file_info = {
+            .st_dev = 0
+        };
+#endif
+        /* In case of
+
+           struct stat file_info = { 0 };
+
+           gcc < 4.7 [1] generates the following:
+
+           error: missing initializer [-Werror=missing-field-initializers]
+           error: (near initialization for 'file_info.st_dev') [-Werror=missing-field-initializers]
+
+           [1] http://stackoverflow.com/questions/13373695/how-to-remove-the-warning-in-gcc-4-6-missing-initializer-wmissing-field-initi/27461062#27461062
+         */
 
         if (sftpfs_fstat (file_handler, &file_info, mcerror) == 0)
             libssh2_sftp_seek64 (file_handler_data->handle, file_info.st_size);
@@ -217,7 +237,10 @@ sftpfs_fstat (void *data, struct stat *buf, GError ** mcerror)
     }
 
     if ((attrs.flags & LIBSSH2_SFTP_ATTR_SIZE) != 0)
+    {
         buf->st_size = attrs.filesize;
+        sftpfs_blksize (buf);
+    }
 
     if ((attrs.flags & LIBSSH2_SFTP_ATTR_PERMISSIONS) != 0)
         buf->st_mode = attrs.permissions;
@@ -248,7 +271,7 @@ sftpfs_read_file (vfs_file_handler_t * file_handler, char *buffer, size_t count,
 
     if (file_handler == NULL || file_handler->data == NULL)
     {
-        mc_propagate_error (mcerror, -1, "%s",
+        mc_propagate_error (mcerror, 0, "%s",
                             _("sftp: No file handler data present for reading file"));
         return -1;
     }
@@ -398,6 +421,8 @@ sftpfs_lseek (vfs_file_handler_t * file_handler, off_t offset, int whence, GErro
             mc_return_val_if_error (mcerror, 0);
         }
         file_handler->pos = file_handler->ino->st.st_size - offset;
+        break;
+    default:
         break;
     }
 

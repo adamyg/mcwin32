@@ -51,7 +51,7 @@
  * look at item 3.
  */
 void *
-bsearch(register const void *key, const void *base0, 
+bsd_bsearch(register const void *key, const void *base0, 
             size_t nmemb, register size_t size, register int (*compar)(const void *, const void *))
 {
 	register const char *base = base0;

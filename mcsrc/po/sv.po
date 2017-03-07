@@ -1,18 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 # 
 # Translators:
 # Cybjit <cybjit@gmail.com>, 2012
+# Henrik Mattsson-Mårn <h@reglage.net>, 2016
+# MagnusHerrlin <m8618@abc.se>, 2016
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2015-02-26 09:43+0300\n"
-"PO-Revision-Date: 2015-02-26 09:48+0000\n"
+"POT-Creation-Date: 2016-11-21 13:19+0300\n"
+"PO-Revision-Date: 2016-11-22 08:19+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Swedish (http://www.transifex.com/projects/p/mc/language/sv/)\n"
+"Language-Team: Swedish (http://www.transifex.com/mc/mc/language/sv/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,7 +26,7 @@ msgid "Warning: cannot load codepages list"
 msgstr ""
 
 msgid "7-bit ASCII"
-msgstr ""
+msgstr "7-bit ASCII"
 
 #, c-format
 msgid "Cannot translate from %s to %s"
@@ -58,13 +60,13 @@ msgid ""
 msgstr ""
 
 msgid "File locked"
-msgstr ""
+msgstr "Fil låst"
 
 msgid "&Grab lock"
 msgstr ""
 
 msgid "&Ignore lock"
-msgstr ""
+msgstr "&Ignorera lås"
 
 #, c-format
 msgid "Cannot create %s directory"
@@ -92,10 +94,10 @@ msgid ""
 msgstr ""
 
 msgid "Search string not found"
-msgstr ""
+msgstr "Söksträng ej funnen"
 
 msgid "Not implemented yet"
-msgstr ""
+msgstr "Ej implementerat än"
 
 msgid "Num of replace tokens not equal to num of found tokens"
 msgstr ""
@@ -108,13 +110,13 @@ msgid "Regular expression error"
 msgstr ""
 
 msgid "No&rmal"
-msgstr ""
+msgstr "No&rmal"
 
 msgid "Re&gular expression"
 msgstr ""
 
 msgid "He&xadecimal"
-msgstr ""
+msgstr "He&xadecimal"
 
 msgid "Wil&dcard search"
 msgstr ""
@@ -133,13 +135,32 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Unable to use '%s' skin with true colors support:\n"
+"%s\n"
+"Default skin has been loaded"
+msgstr ""
+
+#, c-format
+msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
 msgstr ""
 
-msgid "Escape"
+msgid "True color not supported with ncurses."
 msgstr ""
+
+msgid "True color not supported in this slang version."
+msgstr ""
+
+msgid "Your terminal doesn't even seem to support 256 colors."
+msgstr ""
+
+msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
+msgstr ""
+
+msgid "Escape"
+msgstr "Escape"
 
 msgid "Function key 1"
 msgstr "Funktionstangent 1"
@@ -211,34 +232,34 @@ msgid "Backspace"
 msgstr ""
 
 msgid "Up arrow"
-msgstr ""
+msgstr "Uppåtpil"
 
 msgid "Down arrow"
-msgstr ""
+msgstr "Neråtpil"
 
 msgid "Left arrow"
-msgstr ""
+msgstr "Vänsterpil"
 
 msgid "Right arrow"
-msgstr ""
+msgstr "Högerpil"
 
 msgid "Insert"
-msgstr ""
+msgstr "Infoga"
 
 msgid "Delete"
-msgstr ""
+msgstr "Ta bort"
 
 msgid "Home"
-msgstr ""
+msgstr "Hem"
 
 msgid "End key"
 msgstr "End"
 
 msgid "Page Up"
-msgstr ""
+msgstr "Sida upp"
 
 msgid "Page Down"
-msgstr ""
+msgstr "Sida ned"
 
 msgid "/ on keypad"
 msgstr ""
@@ -304,61 +325,61 @@ msgid "C1 key"
 msgstr ""
 
 msgid "Asterisk"
-msgstr ""
+msgstr "Asterisk"
 
 msgid "Minus"
-msgstr ""
+msgstr "Minus"
 
 msgid "Plus"
-msgstr ""
+msgstr "Plus"
 
 msgid "Dot"
 msgstr ""
 
 msgid "Less than"
-msgstr ""
+msgstr "Mindre än"
 
 msgid "Great than"
-msgstr ""
+msgstr "Större än"
 
 msgid "Equal"
-msgstr ""
+msgstr "Lika med"
 
 msgid "Comma"
-msgstr ""
+msgstr "Komma"
 
 msgid "Apostrophe"
-msgstr ""
+msgstr "Apostrof"
 
 msgid "Colon"
-msgstr ""
+msgstr "Kolon"
 
 msgid "Semicolon"
-msgstr ""
+msgstr "Semikolon"
 
 msgid "Exclamation mark"
-msgstr ""
+msgstr "Utropstecken"
 
 msgid "Question mark"
-msgstr ""
+msgstr "Frågetecken"
 
 msgid "Ampersand"
 msgstr ""
 
 msgid "Dollar sign"
-msgstr ""
+msgstr "Dollartecken"
 
 msgid "Quotation mark"
-msgstr ""
+msgstr "Citationstecken"
 
 msgid "Percent sign"
-msgstr ""
+msgstr "Procenttecken"
 
 msgid "Caret"
 msgstr ""
 
 msgid "Tilda"
-msgstr ""
+msgstr "Tilde"
 
 msgid "Prime"
 msgstr ""
@@ -373,10 +394,10 @@ msgid "Pipe"
 msgstr ""
 
 msgid "Left parenthesis"
-msgstr ""
+msgstr "Vänster parentes"
 
 msgid "Right parenthesis"
-msgstr ""
+msgstr "Höger parentes"
 
 msgid "Left bracket"
 msgstr ""
@@ -397,7 +418,7 @@ msgid "Tab key"
 msgstr ""
 
 msgid "Space key"
-msgstr ""
+msgstr "Mellanslag"
 
 msgid "Slash key"
 msgstr ""
@@ -413,13 +434,13 @@ msgid "At sign"
 msgstr ""
 
 msgid "Ctrl"
-msgstr ""
+msgstr "Ctrl"
 
 msgid "Alt"
-msgstr ""
+msgstr "Alt"
 
 msgid "Shift"
-msgstr ""
+msgstr "Skift"
 
 msgid "The TERM environment variable is unset!\n"
 msgstr "Omgivningsvariablen TERM är inte satt!\n"
@@ -430,10 +451,28 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr "Skärmstorleken %d×%d stöds inte.\nKontrollera miljövariabeln TERM.\n"
 
-msgid "Cannot create pipe descriptor"
+msgid "B"
 msgstr ""
 
-msgid "Cannot parse command for pipe"
+msgid "kB"
+msgstr ""
+
+msgid "KiB"
+msgstr ""
+
+msgid "MB"
+msgstr ""
+
+msgid "MiB"
+msgstr ""
+
+msgid "GB"
+msgstr ""
+
+msgid "GiB"
+msgstr ""
+
+msgid "Cannot create pipe descriptor"
 msgstr ""
 
 msgid "Cannot create pipe streams"
@@ -467,7 +506,12 @@ msgstr ""
 msgid "Directory cache expired for %s"
 msgstr "Katalogcache för gammal för %s"
 
-msgid "bytes transferred"
+#, c-format
+msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
+msgstr ""
+
+#, c-format
+msgid "%s: %s: %s %lld bytes transferred"
 msgstr ""
 
 msgid "Starting linear transfer..."
@@ -520,17 +564,17 @@ msgid "Password:"
 msgstr "Lösenord:"
 
 msgid "Screens"
-msgstr ""
+msgstr "Skärmar"
 
 msgid "History"
-msgstr ""
+msgstr "Historik"
 
 #. TRANSLATORS: no need to translate 'DialogTitle', it's just a context prefix
 msgid "DialogTitle|History cleanup"
 msgstr ""
 
 msgid "Do you want clean this history?"
-msgstr ""
+msgstr "Vill du städa denna historik?"
 
 msgid "&Yes"
 msgstr "&Ja"
@@ -551,7 +595,7 @@ msgid "Error"
 msgstr "Fel"
 
 #, c-format
-msgid "%d: %s"
+msgid "%s (%d)"
 msgstr ""
 
 msgid "&Abort"
@@ -588,7 +632,7 @@ msgid "Launches the file viewer on a file"
 msgstr "Startar filläsaren"
 
 msgid "Edit files"
-msgstr ""
+msgstr "Redigera filer"
 
 msgid "Forces xterm features"
 msgstr "Tvinga fram xtermfinesser"
@@ -669,7 +713,7 @@ msgid ""
 msgstr ""
 
 msgid "Color options"
-msgstr ""
+msgstr "Färgalternativ"
 
 msgid "+number"
 msgstr "+nummer"
@@ -691,10 +735,10 @@ msgid "GNU Midnight Commander %s\n"
 msgstr "GNU Midnight Commander %s\n"
 
 msgid "Main options"
-msgstr ""
+msgstr "Huvudalternativ"
 
 msgid "Terminal options"
-msgstr ""
+msgstr "Terminalalternativ"
 
 msgid "Arguments parse error!"
 msgstr ""
@@ -702,17 +746,17 @@ msgstr ""
 msgid "No arguments given to the viewer."
 msgstr ""
 
-msgid "Two files are required to evoke the diffviewer."
+msgid "Two files are required to envoke the diffviewer."
 msgstr ""
 
 msgid "Background protocol error"
-msgstr ""
+msgstr "Bakgrundsprotokolls-fel"
 
 msgid "Reading failed"
-msgstr ""
+msgstr "Läs-fel"
 
 msgid "Background process error"
-msgstr ""
+msgstr "Bakgrundsprocess-fel"
 
 msgid "Unknown error in child"
 msgstr ""
@@ -729,7 +773,7 @@ msgid "&Dismiss"
 msgstr "&Försvinn"
 
 msgid "Enter search string:"
-msgstr ""
+msgstr "Ange söksträng:"
 
 msgid "Cas&e sensitive"
 msgstr ""
@@ -747,7 +791,7 @@ msgid "Search"
 msgstr "Sök"
 
 msgid "Search is disabled"
-msgstr ""
+msgstr "Sök är inaktiverat"
 
 #, c-format
 msgid ""
@@ -775,7 +819,7 @@ msgid "&Minimal (Find a smaller set of change)"
 msgstr ""
 
 msgid "Diff algorithm"
-msgstr ""
+msgstr "Diff-algoritm"
 
 msgid "Diff extra options"
 msgstr ""
@@ -796,22 +840,22 @@ msgid "Strip &trailing carriage return"
 msgstr ""
 
 msgid "Diff Options"
-msgstr ""
+msgstr "Diff-alternativ"
 
 msgid "Edit"
-msgstr ""
+msgstr "Redigera"
 
 msgid "Edit is disabled"
-msgstr ""
+msgstr "Redigering inaktiverad"
 
 msgid "Goto line (left)"
-msgstr ""
+msgstr "Gå till rad (vänster)"
 
 msgid "Goto line (right)"
-msgstr ""
+msgstr "Gå till rad (höger)"
 
 msgid "Enter line:"
-msgstr ""
+msgstr "Ange rad:"
 
 msgid "ButtonBar|Help"
 msgstr ""
@@ -846,7 +890,7 @@ msgid ""
 msgstr ""
 
 msgid "Diff:"
-msgstr ""
+msgstr "Diff:"
 
 #, c-format
 msgid "\"%s\" is a directory"
@@ -868,42 +912,42 @@ msgid "Choose syntax highlighting"
 msgstr ""
 
 msgid "< Auto >"
-msgstr ""
+msgstr "<Auto>"
 
 msgid "< Reload Current Syntax >"
 msgstr ""
 
 #, c-format
 msgid "Loading: %3d%%"
-msgstr ""
+msgstr "Laddar %3d%%"
 
 msgid "Loading..."
-msgstr ""
+msgstr "Laddar..."
 
 #, c-format
 msgid "Cannot open %s for reading"
-msgstr ""
+msgstr "Kan inte öppna %s för läsning"
 
 msgid "Load file"
-msgstr ""
+msgstr "Ladda fil"
 
 #, c-format
 msgid "Error reading %s"
-msgstr ""
+msgstr "Fel vid läsning av %s"
 
 #, c-format
 msgid "Cannot get size/permissions for %s"
-msgstr ""
+msgstr "Kan inte läsa storlek/behörigheter för %s"
 
 #, c-format
 msgid "\"%s\" is not a regular file"
-msgstr ""
+msgstr "\"%s\" är inte en känd filtyp"
 
 #, c-format
 msgid ""
 "File \"%s\" is too large.\n"
 "Open it anyway?"
-msgstr ""
+msgstr "Filen \"%s\" är för stor.\nÖppna ändå?"
 
 #, c-format
 msgid "Error reading from pipe: %s"
@@ -915,7 +959,7 @@ msgstr ""
 
 #, c-format
 msgid "Searching %s: %3d%%"
-msgstr ""
+msgstr "Söker %s: %3d%%"
 
 #, c-format
 msgid "Searching %s"
@@ -943,37 +987,37 @@ msgid "The file you are saving does not end with a newline."
 msgstr ""
 
 msgid "C&ontinue"
-msgstr ""
+msgstr "F&ortsätt"
 
 msgid "&Do not change"
-msgstr ""
+msgstr "Än&dra inte"
 
 msgid "&Unix format (LF)"
-msgstr ""
+msgstr "&Unix-format (LF)"
 
 msgid "&Windows/DOS format (CR LF)"
-msgstr ""
+msgstr "&Windows/DOS-format (CR LF)"
 
 msgid "&Macintosh format (CR)"
-msgstr ""
+msgstr "&Macintosh-format (CR)"
 
 msgid "Enter file name:"
-msgstr ""
+msgstr "Ange filnamn:"
 
 msgid "Change line breaks to:"
-msgstr ""
+msgstr "Ändra radbrytningar till:"
 
 msgid "Save As"
-msgstr ""
+msgstr "Spara som"
 
 msgid "Block is large, you may not be able to undo this action"
-msgstr ""
+msgstr "Stort block, du kanske inte kan ångra denna åtgärd"
 
 msgid "Collect completions"
 msgstr ""
 
 msgid "&Quick save"
-msgstr ""
+msgstr "&Q Snabbspara"
 
 msgid "&Safe save"
 msgstr ""
@@ -988,53 +1032,53 @@ msgid "Edit Save Mode"
 msgstr ""
 
 msgid "Save as"
-msgstr ""
+msgstr "Spara som"
 
 msgid "Cannot save: destination is not a regular file"
 msgstr ""
 
 msgid "A file already exists with this name"
-msgstr ""
+msgstr "En fil finns redan med detta namn"
 
 msgid "&Overwrite"
-msgstr ""
+msgstr "&O Överskrivning"
 
 msgid "Cannot save file"
-msgstr ""
+msgstr "Kan inte spara fil"
 
 msgid "Delete macro"
-msgstr ""
+msgstr "Ta bort macro"
 
 msgid "Press macro hotkey:"
-msgstr ""
+msgstr "Tryck macro snabbtangent:"
 
 msgid "Macro not deleted"
 msgstr ""
 
 msgid "Save macro"
-msgstr ""
+msgstr "Spara macro"
 
 msgid "Press the macro's new hotkey:"
 msgstr ""
 
 msgid "Repeat last commands"
-msgstr ""
+msgstr "Repetera senaste kommandon"
 
 msgid "Repeat times:"
-msgstr ""
+msgstr "Repetera antal gånger:"
 
 #, c-format
 msgid "Confirm save file: \"%s\""
 msgstr ""
 
 msgid "Save file"
-msgstr ""
+msgstr "Spara fil"
 
 msgid "&Save"
 msgstr "&Spara"
 
 msgid "Load"
-msgstr ""
+msgstr "Ladda"
 
 msgid "Syntax file edit"
 msgstr "Redigera filsyntax"
@@ -1058,14 +1102,14 @@ msgid "&Local"
 msgstr "&Lokal"
 
 msgid "Replace"
-msgstr ""
+msgstr "Ersätt"
 
 #, c-format
 msgid "%ld replacements made"
 msgstr ""
 
 msgid "[NoName]"
-msgstr ""
+msgstr "[Namnlös]"
 
 #, c-format
 msgid ""
@@ -1074,7 +1118,7 @@ msgid ""
 msgstr ""
 
 msgid "Close file"
-msgstr ""
+msgstr "Stäng fil"
 
 #, c-format
 msgid ""
@@ -1083,43 +1127,43 @@ msgid ""
 msgstr ""
 
 msgid "This function is not implemented"
-msgstr ""
+msgstr "Denna funktion är inte implementerad"
 
 msgid "Copy to clipboard"
 msgstr ""
 
 msgid "Unable to save to file"
-msgstr ""
+msgstr "Kan inte spara till fil"
 
 msgid "Cut to clipboard"
 msgstr ""
 
 msgid "Goto line"
-msgstr ""
+msgstr "Gå till rad"
 
 msgid "Save block"
-msgstr ""
+msgstr "Spara block"
 
 msgid "Insert file"
-msgstr ""
+msgstr "Infoga fil"
 
 msgid "Cannot insert file"
-msgstr ""
+msgstr "Kan inte infoga fil"
 
 msgid "Sort block"
-msgstr ""
+msgstr "Sortera block"
 
 msgid "You must first highlight a block of text"
 msgstr ""
 
 msgid "Run sort"
-msgstr ""
+msgstr "Kör sortering"
 
 msgid "Enter sort options (see manpage) separated by whitespace:"
 msgstr ""
 
 msgid "Sort"
-msgstr ""
+msgstr "Sortera"
 
 msgid "Cannot execute sort command"
 msgstr ""
@@ -1132,34 +1176,34 @@ msgid "Paste output of external command"
 msgstr ""
 
 msgid "Enter shell command(s):"
-msgstr ""
+msgstr "Ange shell-kommando(n):"
 
 msgid "External command"
-msgstr ""
+msgstr "Externt kommando"
 
 msgid "Cannot execute command"
-msgstr ""
+msgstr "Kan inte exekvera kommando"
 
 msgid "mail -s <subject> -c <cc> <to>"
 msgstr ""
 
 msgid "To"
-msgstr ""
+msgstr "Till"
 
 msgid "Subject"
-msgstr ""
+msgstr "Ämne"
 
 msgid "Copies to"
-msgstr ""
+msgstr "Kopierar till"
 
 msgid "Mail"
-msgstr ""
+msgstr "Mail"
 
 msgid "Insert literal"
 msgstr ""
 
 msgid "Press any key:"
-msgstr ""
+msgstr "Tryck på valfri tangent:"
 
 msgid ""
 "Current text was modified without a file save.\n"
@@ -1173,10 +1217,10 @@ msgid "&Find all"
 msgstr ""
 
 msgid "Enter replacement string:"
-msgstr ""
+msgstr "Ange ersättningssträng:"
 
 msgid "Replace with:"
-msgstr ""
+msgstr "Ersätt med:"
 
 msgid "&Replace"
 msgstr "&Ersätt"
@@ -1188,7 +1232,7 @@ msgid "&Skip"
 msgstr "&Hoppa över"
 
 msgid "Confirm replace"
-msgstr ""
+msgstr "Bekräfta ersätt"
 
 msgid "Cancel"
 msgstr "Avbryt"
@@ -1199,22 +1243,22 @@ msgid ""
 msgstr ""
 
 msgid "NoName"
-msgstr ""
+msgstr "Namnlös"
 
 msgid "&Open file..."
 msgstr "&Öppna med..."
 
 msgid "&New"
-msgstr ""
+msgstr "&Ny"
 
 msgid "&Close"
 msgstr ""
 
 msgid "Save &as..."
-msgstr ""
+msgstr "Sp&ara som..."
 
 msgid "&Insert file..."
-msgstr ""
+msgstr "&Infoga fil..."
 
 msgid "Cop&y to file..."
 msgstr ""
@@ -1241,13 +1285,13 @@ msgid "To&ggle mark"
 msgstr ""
 
 msgid "&Mark columns"
-msgstr ""
+msgstr "&Markera kolumner"
 
 msgid "Mark &all"
-msgstr ""
+msgstr "Markera &alla"
 
 msgid "Unmar&k"
-msgstr ""
+msgstr "Avmar&kera"
 
 msgid "Cop&y"
 msgstr ""
@@ -1268,25 +1312,25 @@ msgid "Pa&ste from clipfile"
 msgstr ""
 
 msgid "&Beginning"
-msgstr ""
+msgstr "&Början"
 
 msgid "&End"
-msgstr ""
+msgstr "Slut&et"
 
 msgid "&Search..."
-msgstr ""
+msgstr "&Sök..."
 
 msgid "Search &again"
 msgstr ""
 
 msgid "&Replace..."
-msgstr ""
+msgstr "E&rsätt..."
 
 msgid "&Toggle bookmark"
 msgstr ""
 
 msgid "&Next bookmark"
-msgstr ""
+msgstr "&Nästa bokmärke"
 
 msgid "&Prev bookmark"
 msgstr ""
@@ -1295,7 +1339,7 @@ msgid "&Flush bookmarks"
 msgstr ""
 
 msgid "&Go to line..."
-msgstr ""
+msgstr "&Gå till rad..."
 
 msgid "&Toggle line state"
 msgstr ""
@@ -1325,7 +1369,7 @@ msgid "&Start/Stop record macro"
 msgstr ""
 
 msgid "Delete macr&o..."
-msgstr ""
+msgstr "Ta bort macr&o..."
 
 msgid "Record/Repeat &actions"
 msgstr ""
@@ -1340,19 +1384,19 @@ msgid "Change spelling &language..."
 msgstr ""
 
 msgid "&Mail..."
-msgstr ""
+msgstr "&Mail..."
 
 msgid "Insert &literal..."
 msgstr ""
 
 msgid "Insert &date/time"
-msgstr ""
+msgstr "Infoga &datum/tid"
 
 msgid "&Format paragraph"
-msgstr ""
+msgstr "&Formatera paragraf"
 
 msgid "&Sort..."
-msgstr ""
+msgstr "&Sortera..."
 
 msgid "&Paste output of..."
 msgstr ""
@@ -1370,13 +1414,13 @@ msgid "&Toggle fullscreen"
 msgstr ""
 
 msgid "&Next"
-msgstr ""
+msgstr "&Nästa"
 
 msgid "&Previous"
 msgstr ""
 
 msgid "&List..."
-msgstr ""
+msgstr "&Lista..."
 
 msgid "&General..."
 msgstr ""
@@ -1391,28 +1435,28 @@ msgid "Syntax &highlighting..."
 msgstr ""
 
 msgid "S&yntax file"
-msgstr ""
+msgstr "S&yntaxfil"
 
 msgid "&Menu file"
-msgstr ""
+msgstr "&Menyfil"
 
 msgid "&Save setup"
 msgstr "&Spara inställningar"
 
 msgid "&File"
-msgstr ""
+msgstr "&Fil"
 
 msgid "&Edit"
-msgstr ""
+msgstr "R&edigera"
 
 msgid "&Search"
-msgstr ""
+msgstr "&Sök"
 
 msgid "&Command"
 msgstr ""
 
 msgid "For&mat"
-msgstr ""
+msgstr "For&mat"
 
 msgid "&Window"
 msgstr ""
@@ -1421,7 +1465,7 @@ msgid "&Options"
 msgstr ""
 
 msgid "&None"
-msgstr ""
+msgstr "I&ngen"
 
 msgid "&Dynamic paragraphing"
 msgstr ""
@@ -1433,7 +1477,7 @@ msgid "Wrap mode"
 msgstr "Automatisk radbrytning"
 
 msgid "Tabulation"
-msgstr ""
+msgstr "Tabulering"
 
 msgid "&Fake half tabs"
 msgstr "&Falska halva tabbar"
@@ -1445,10 +1489,10 @@ msgid "Fill tabs with &spaces"
 msgstr "Fyll tabbar med &blanksteg"
 
 msgid "Tab spacing:"
-msgstr ""
+msgstr "Tabb-mellanrum:"
 
 msgid "Other options"
-msgstr ""
+msgstr "Andra alternativ"
 
 msgid "&Return does autoindent"
 msgstr "&Retur gör automatiska indrag"
@@ -1491,17 +1535,17 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2015 the Free Software Foundation"
+msgid "Copyright (C) 1996-2016 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
-msgstr ""
+msgstr "Om"
 
 msgid "Open files"
-msgstr ""
+msgstr "Öppna filer"
 
 msgid "Edit: "
-msgstr ""
+msgstr "Redigera:"
 
 msgid "ButtonBar|Mark"
 msgstr ""
@@ -1525,22 +1569,22 @@ msgid "Breton"
 msgstr ""
 
 msgid "Czech"
-msgstr ""
+msgstr "Tjeckiska"
 
 msgid "Welsh"
 msgstr ""
 
 msgid "Danish"
-msgstr ""
+msgstr "Danska"
 
 msgid "German"
-msgstr ""
+msgstr "Tyska"
 
 msgid "Greek"
-msgstr ""
+msgstr "Grekiska"
 
 msgid "English"
-msgstr ""
+msgstr "Engelska"
 
 msgid "British English"
 msgstr ""
@@ -1552,43 +1596,43 @@ msgid "American English"
 msgstr ""
 
 msgid "Esperanto"
-msgstr ""
+msgstr "Esperanto"
 
 msgid "Spanish"
-msgstr ""
+msgstr "Spanska"
 
 msgid "Faroese"
 msgstr ""
 
 msgid "French"
-msgstr ""
+msgstr "Franska"
 
 msgid "Italian"
-msgstr ""
+msgstr "Italienska"
 
 msgid "Dutch"
 msgstr ""
 
 msgid "Norwegian"
-msgstr ""
+msgstr "Norska"
 
 msgid "Polish"
-msgstr ""
+msgstr "Polska"
 
 msgid "Portuguese"
-msgstr ""
+msgstr "Portugisiska"
 
 msgid "Romanian"
-msgstr ""
+msgstr "Rumänska"
 
 msgid "Russian"
-msgstr ""
+msgstr "Ryska"
 
 msgid "Slovak"
 msgstr ""
 
 msgid "Swedish"
-msgstr ""
+msgstr "Svenska"
 
 msgid "Ukrainian"
 msgstr ""
@@ -1597,22 +1641,22 @@ msgid "&Add word"
 msgstr ""
 
 msgid "Language"
-msgstr ""
+msgstr "Språk"
 
 msgid "Misspelled"
-msgstr ""
+msgstr "Felstavad"
 
 msgid "Check word"
-msgstr ""
+msgstr "Kontrollera ord"
 
 msgid "Suggest"
-msgstr ""
+msgstr "Föreslå"
 
 msgid "Select language"
-msgstr ""
+msgstr "Välj språk"
 
 msgid "Load syntax file"
-msgstr ""
+msgstr "Ladda syntax-fil"
 
 #, c-format
 msgid ""
@@ -1682,13 +1726,13 @@ msgid "< Default >"
 msgstr ""
 
 msgid "Skins"
-msgstr ""
+msgstr "Skinn"
 
 msgid "Other 8 bit"
 msgstr "Annan 8-bitars"
 
 msgid "Running"
-msgstr ""
+msgstr "Kör"
 
 msgid "Stopped"
 msgstr "Stannad"
@@ -1703,7 +1747,7 @@ msgid "Alwa&ys"
 msgstr "&Alltid"
 
 msgid "File operations"
-msgstr ""
+msgstr "Fil-operationer"
 
 msgid "&Verbose operation"
 msgstr "&Utförliga operationer"
@@ -1727,7 +1771,7 @@ msgid "S&ingle press"
 msgstr ""
 
 msgid "Timeout:"
-msgstr ""
+msgstr "Time-out"
 
 msgid "Pause after run"
 msgstr ""
@@ -1748,7 +1792,7 @@ msgid "&Drop down menus"
 msgstr "r&Ullgardinsmenyer"
 
 msgid "S&hell patterns"
-msgstr ""
+msgstr "S&hell-mönster"
 
 msgid "Co&mplete: show all"
 msgstr ""
@@ -1769,10 +1813,10 @@ msgid "Configure options"
 msgstr "Inställningar"
 
 msgid "Skin:"
-msgstr ""
+msgstr "Skinn:"
 
 msgid "Appearance"
-msgstr ""
+msgstr "Utseende"
 
 msgid "Case &insensitive"
 msgstr ""
@@ -1787,10 +1831,10 @@ msgid "Use SI si&ze units"
 msgstr ""
 
 msgid "Mi&x all files"
-msgstr ""
+msgstr "Mi&xa alla filer"
 
 msgid "Show &backup files"
-msgstr ""
+msgstr "Visa &backup-filer"
 
 msgid "Show &hidden files"
 msgstr ""
@@ -1811,12 +1855,15 @@ msgid "A&uto save panels setup"
 msgstr ""
 
 msgid "Navigation"
-msgstr ""
+msgstr "Navigering"
 
 msgid "L&ynx-like motion"
 msgstr "lyn&X-liknande rörelser"
 
 msgid "Pa&ge scrolling"
+msgstr ""
+
+msgid "Center &scrolling"
 msgstr ""
 
 msgid "&Mouse page scrolling"
@@ -1826,19 +1873,19 @@ msgid "File highlight"
 msgstr ""
 
 msgid "File &types"
-msgstr ""
+msgstr "Fil-&typer"
 
 msgid "&Permissions"
 msgstr ""
 
 msgid "Quick search"
-msgstr ""
+msgstr "Snabb sök"
 
 msgid "Panel options"
-msgstr ""
+msgstr "Panelalternativ"
 
 msgid "Information"
-msgstr ""
+msgstr "Information"
 
 msgid ""
 "Using the fast reload option may not reflect the exact\n"
@@ -1850,14 +1897,17 @@ msgstr ""
 msgid "&Full file list"
 msgstr "&Fullständig fillista"
 
-msgid "&Brief file list"
-msgstr "&Kortfattad fillista"
+msgid "&Brief file list:"
+msgstr ""
 
 msgid "&Long file list"
 msgstr "&Lång fillista"
 
 msgid "&User defined:"
 msgstr "&Användardefinierad:"
+
+msgid "columns"
+msgstr "kolumner"
 
 msgid "User &mini status"
 msgstr ""
@@ -1913,13 +1963,13 @@ msgid "F&ull 8 bits input"
 msgstr "8 bitars inmatning"
 
 msgid "Display bits"
-msgstr ""
+msgstr "Visa bitar"
 
 msgid "Input / display codepage:"
 msgstr "Teckentabell för inmatning/visning:"
 
 msgid "Directory tree"
-msgstr ""
+msgstr "Katalogträd"
 
 msgid "Timeout for freeing VFSs (sec):"
 msgstr ""
@@ -1970,7 +2020,7 @@ msgid "&Kill"
 msgstr "&Döda"
 
 msgid "Background jobs"
-msgstr ""
+msgstr "Bakgrundsjobb"
 
 #, c-format
 msgid "Password for \\\\%s\\%s"
@@ -2022,16 +2072,16 @@ msgid "execute/searc&h by others"
 msgstr ""
 
 msgid "Name:"
-msgstr ""
+msgstr "Namn:"
 
 msgid "Permissions (octal):"
 msgstr ""
 
 msgid "Owner name:"
-msgstr ""
+msgstr "Ägarnamn:"
 
 msgid "Group name:"
-msgstr ""
+msgstr "Gruppnamn:"
 
 msgid "&Marked all"
 msgstr "&Markera"
@@ -2070,10 +2120,10 @@ msgid "Size"
 msgstr "Storlek"
 
 msgid "Chown command"
-msgstr ""
+msgstr "Chown-kommando"
 
 msgid "User name"
-msgstr ""
+msgstr "Användarnamn"
 
 msgid "<Unknown user>"
 msgstr "<Okänd användare>"
@@ -2082,7 +2132,7 @@ msgid "<Unknown group>"
 msgstr "<Okänd grupp>"
 
 msgid "Enter machine name (F1 for details):"
-msgstr ""
+msgstr "Ange maskinnamn (F1 för detaljer):"
 
 msgid "Files tagged, want to cd?"
 msgstr "Filerna är markerade, vill du byta katalog?"
@@ -2091,7 +2141,7 @@ msgid "Cannot change directory"
 msgstr "Kan inte byta katalog"
 
 msgid "Filter"
-msgstr ""
+msgstr "Filter"
 
 msgid "Set expression for filtering filenames"
 msgstr ""
@@ -2101,40 +2151,40 @@ msgid "Link %s to:"
 msgstr "Länka %s till:"
 
 msgid "Link"
-msgstr ""
+msgstr "Länk"
 
 #, c-format
 msgid "link: %s"
-msgstr ""
+msgstr "länk: %s"
 
 #, c-format
 msgid "symlink: %s"
-msgstr ""
+msgstr "symlänk: %s"
 
 #, c-format
 msgid "Cannot chdir to \"%s\""
 msgstr ""
 
 msgid "View file"
-msgstr ""
+msgstr "Visa fil"
 
 msgid "Filename:"
-msgstr ""
+msgstr "Filnamn:"
 
 msgid "Filtered view"
-msgstr ""
+msgstr "Filtrerad vy"
 
 msgid "Filter command and arguments:"
 msgstr ""
 
 msgid "Edit file"
-msgstr ""
+msgstr "Redigera fil"
 
 msgid "Create a new Directory"
 msgstr "Skapa en ny katalog"
 
 msgid "Enter directory name:"
-msgstr ""
+msgstr "Ange katalognamn:"
 
 msgid "Extension file edit"
 msgstr "Redigera utökningsfilen"
@@ -2152,10 +2202,10 @@ msgid "Which highlighting file you want to edit?"
 msgstr ""
 
 msgid "Compare directories"
-msgstr ""
+msgstr "Jämför kataloger"
 
 msgid "Select compare method:"
-msgstr ""
+msgstr "Välj jämförelsemetod:"
 
 msgid "&Quick"
 msgstr "&Snabb"
@@ -2177,11 +2227,15 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "Symlink '%s' points to:"
+msgid "'%s' is not a symbolic link"
 msgstr ""
 
+#, c-format
+msgid "Symlink '%s' points to:"
+msgstr "Symlänk '%s' pekar på:"
+
 msgid "Edit symlink"
-msgstr ""
+msgstr "Redigera symlänk"
 
 #, c-format
 msgid "edit symlink, unable to remove %s: %s"
@@ -2189,23 +2243,19 @@ msgstr ""
 
 #, c-format
 msgid "edit symlink: %s"
-msgstr ""
-
-#, c-format
-msgid "'%s' is not a symbolic link"
-msgstr ""
+msgstr "redigera symänk: %s"
 
 msgid "FTP to machine"
-msgstr ""
+msgstr "FTP till maskin"
 
 msgid "SFTP to machine"
-msgstr ""
+msgstr "SFTP till maskin"
 
 msgid "Shell link to machine"
-msgstr ""
+msgstr "Shell-länk till maskin"
 
 msgid "SMB link to machine"
-msgstr ""
+msgstr "SMB-länk till maskin"
 
 msgid "Undelete files on an ext2 file system"
 msgstr ""
@@ -2242,7 +2292,7 @@ msgid "Cannot read directory contents"
 msgstr "Kan inte läsa kataloginnehåll"
 
 msgid "Parameter"
-msgstr ""
+msgstr "Parameter"
 
 #, c-format
 msgid ""
@@ -2338,7 +2388,7 @@ msgid ""
 msgstr ""
 
 msgid "Ski&p all"
-msgstr ""
+msgstr "Ho&ppa över alla"
 
 msgid "&Retry"
 msgstr "försök &Igen"
@@ -2466,7 +2516,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file\"%s\"\n"
+"Cannot read source file \"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2554,7 +2604,7 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "Directories: %zd, total size: %s"
+msgid "Directories: %zu, total size: %s"
 msgstr ""
 
 msgid "Cannot operate on \"..\"!"
@@ -2575,7 +2625,7 @@ msgstr ""
 
 #, c-format
 msgid "ETA %s"
-msgstr ""
+msgstr "ETA %s"
 
 #, c-format
 msgid "%.2f MB/s"
@@ -2634,19 +2684,19 @@ msgstr ""
 
 #, c-format
 msgid "Time: %s %s"
-msgstr ""
+msgstr "Tid: %s %s"
 
 #, c-format
 msgid "Time: %s %s (%s)"
-msgstr ""
+msgstr "Tid: %s %s (%s)"
 
 #, c-format
 msgid "Time: %s"
-msgstr ""
+msgstr "Tid: %s"
 
 #, c-format
 msgid "Time: %s (%s)"
-msgstr ""
+msgstr "Tid: %s (%s)"
 
 #, c-format
 msgid " Total: %s "
@@ -2663,7 +2713,7 @@ msgid "Target"
 msgstr "Mål"
 
 msgid "Deleting"
-msgstr ""
+msgstr "Tar bort"
 
 msgid "&Using shell patterns"
 msgstr "använd skal&Mönster"
@@ -2672,7 +2722,7 @@ msgid "to:"
 msgstr "till:"
 
 msgid "Follow &links"
-msgstr ""
+msgstr "Följ &länkar"
 
 msgid "Preserve &attributes"
 msgstr ""
@@ -2706,14 +2756,14 @@ msgid "&Edit - F4"
 msgstr "&Redigera - F4"
 
 #, c-format
-msgid "Found: %ld"
+msgid "Found: %lu"
 msgstr ""
 
 msgid "Malformed regular expression"
 msgstr ""
 
 msgid "File name:"
-msgstr ""
+msgstr "Filnamn:"
 
 msgid "&Find recursively"
 msgstr ""
@@ -2722,7 +2772,7 @@ msgid "S&kip hidden"
 msgstr ""
 
 msgid "Content:"
-msgstr ""
+msgstr "Innehåll:"
 
 msgid "Sea&rch for content"
 msgstr ""
@@ -2756,8 +2806,8 @@ msgid "Finished"
 msgstr "Klar"
 
 #, c-format
-msgid "Finished (ignored %zd directory)"
-msgid_plural "Finished (ignored %zd directories)"
+msgid "Finished (ignored %zu directory)"
+msgid_plural "Finished (ignored %zu directories)"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -2765,7 +2815,7 @@ msgid "Searching"
 msgstr "Söker"
 
 msgid "Change &to"
-msgstr ""
+msgstr "Ändra &till"
 
 msgid "&Free VFSs now"
 msgstr ""
@@ -2780,7 +2830,7 @@ msgid "&Up"
 msgstr "&Upp"
 
 msgid "New &group"
-msgstr ""
+msgstr "Ny &grupp"
 
 msgid "New &entry"
 msgstr ""
@@ -2820,16 +2870,16 @@ msgid "New hotlist entry"
 msgstr "Lägg till ny favorit"
 
 msgid "Directory label:"
-msgstr ""
+msgstr "Katalogetikett:"
 
 msgid "Directory path:"
-msgstr ""
+msgstr "Katalogsökväg:"
 
 msgid "New hotlist group"
 msgstr ""
 
 msgid "Name of new group:"
-msgstr ""
+msgstr "Namn på ny grupp:"
 
 #, c-format
 msgid "Are you sure you want to remove entry \"%s\"?"
@@ -2869,72 +2919,72 @@ msgid "No node information"
 msgstr "Ingen nodinformation"
 
 msgid "Free nodes:"
-msgstr ""
+msgstr "Fria noder:"
 
 msgid "No space information"
 msgstr "Ingen information om ledigt utrymme"
 
 #, c-format
 msgid "Free space: %s/%s (%d%%)"
-msgstr ""
+msgstr "Fritt utrymme: %s/%s (%d%%)"
 
 #, c-format
-msgid "Type:      %s"
-msgstr ""
+msgid "Type:       %s"
+msgstr "Typ: %s"
 
 msgid "non-local vfs"
 msgstr "icke-lokalt vfs"
 
 #, c-format
-msgid "Device:    %s"
-msgstr "Enhet:    %s"
+msgid "Device:     %s"
+msgstr "Enhet: %s"
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "Filsystem:  %s"
 
 #, c-format
-msgid "Accessed:  %s"
-msgstr "Accessad:  %s"
+msgid "Accessed:   %s"
+msgstr ""
 
 #, c-format
-msgid "Modified:  %s"
+msgid "Modified:   %s"
 msgstr "Modifierad: %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:   %s"
-msgstr ""
+msgid "Changed:    %s"
+msgstr "Ändrad: %s"
 
 #, c-format
 msgid "Dev. type: major %lu, minor %lu"
 msgstr ""
 
 #, c-format
-msgid "Size:      %s"
-msgstr "Storlek:   %s"
+msgid "Size:       %s"
+msgstr "Storlek: %s"
 
 #, c-format
-msgid " (%ld block)"
-msgid_plural " (%ld blocks)"
+msgid " (%lu block)"
+msgid_plural " (%lu blocks)"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "Owner:     %s/%s"
-msgstr "Ägare:     %s/%s"
+msgid "Owner:      %s/%s"
+msgstr "Ägare: %s/%s"
 
 #, c-format
-msgid "Links:     %d"
-msgstr "Länkar:    %d"
+msgid "Links:      %d"
+msgstr "Länkar: %d"
 
 #, c-format
-msgid "Mode:      %s (%04o)"
-msgstr "Läge:      %s (%04o)"
+msgid "Mode:       %s (%04o)"
+msgstr "Läge: %s (%04o)"
 
 #, c-format
-msgid "Location:  %Xh:%Xh"
-msgstr "Placering: %Xh:%Xh"
+msgid "Location:   %Xh:%Xh"
+msgstr ""
 
 msgid "&Equal split"
 msgstr "Dela på mitten"
@@ -2943,7 +2993,7 @@ msgid "&Menubar visible"
 msgstr ""
 
 msgid "Command &prompt"
-msgstr ""
+msgstr "Kommando-&prompt"
 
 msgid "&Keybar visible"
 msgstr "visa &Tangentrad"
@@ -2955,7 +3005,7 @@ msgid "&XTerm window title"
 msgstr ""
 
 msgid "&Show free space"
-msgstr ""
+msgstr "Vi%sa ledigt utrymme"
 
 msgid "Panel split"
 msgstr ""
@@ -2976,13 +3026,13 @@ msgid "Layout"
 msgstr "Layout"
 
 msgid "File listin&g"
-msgstr ""
+msgstr "Fil-listnin&g"
 
 msgid "&Quick view"
 msgstr ""
 
 msgid "&Info"
-msgstr ""
+msgstr "&Info"
 
 msgid "&Listing mode..."
 msgstr "visnings&Läge..."
@@ -3003,7 +3053,7 @@ msgid "S&hell link..."
 msgstr "S&kallänk..."
 
 msgid "S&FTP link..."
-msgstr ""
+msgstr "S&FTP-länk..."
 
 msgid "SM&B link..."
 msgstr "SM&B länk..."
@@ -3015,55 +3065,55 @@ msgid "&Rescan"
 msgstr ""
 
 msgid "&View"
-msgstr ""
+msgstr "&Visa"
 
 msgid "Vie&w file..."
 msgstr ""
 
 msgid "&Filtered view"
-msgstr ""
+msgstr "&Filtrerad vy"
 
 msgid "&Copy"
 msgstr ""
 
 msgid "C&hmod"
-msgstr ""
+msgstr "C&hmod"
 
 msgid "&Link"
-msgstr ""
+msgstr "&Länk"
 
 msgid "&Symlink"
-msgstr ""
+msgstr "&Symlänk"
 
 msgid "Relative symlin&k"
-msgstr ""
+msgstr "Relativ symlän&k"
 
 msgid "Edit s&ymlink"
-msgstr ""
+msgstr "Redigera s&ymlänk"
 
 msgid "Ch&own"
-msgstr ""
+msgstr "Ch&own"
 
 msgid "&Advanced chown"
-msgstr ""
+msgstr "&Avancerad chown"
 
 msgid "&Rename/Move"
 msgstr ""
 
 msgid "&Mkdir"
-msgstr ""
+msgstr "&Mkdir"
 
 msgid "&Quick cd"
 msgstr ""
 
 msgid "Select &group"
-msgstr ""
+msgstr "Välj &grupp"
 
 msgid "U&nselect group"
 msgstr ""
 
 msgid "&Invert selection"
-msgstr ""
+msgstr "&Invertera markering"
 
 msgid "E&xit"
 msgstr ""
@@ -3096,7 +3146,7 @@ msgid "Show directory s&izes"
 msgstr ""
 
 msgid "Command &history"
-msgstr ""
+msgstr "Kommando-&historik"
 
 msgid "Di&rectory hotlist"
 msgstr ""
@@ -3105,10 +3155,10 @@ msgid "&Active VFS list"
 msgstr ""
 
 msgid "&Background jobs"
-msgstr ""
+msgstr "&Bakgrundsjobb"
 
 msgid "Screen lis&t"
-msgstr ""
+msgstr "Skärmlis&ta"
 
 msgid "&Undelete files (ext2fs only)"
 msgstr "&Återskapa raderade filer (endast ext2fs)"
@@ -3132,7 +3182,7 @@ msgid "&Layout..."
 msgstr "&Layout..."
 
 msgid "&Panel options..."
-msgstr ""
+msgstr "&Panelalternativ..."
 
 msgid "C&onfirmation..."
 msgstr ""
@@ -3147,22 +3197,22 @@ msgid "&Virtual FS..."
 msgstr "&Virtuellt FS.."
 
 msgid "Panels:"
-msgstr ""
+msgstr "Paneler:"
 
 #, c-format
-msgid "You have %zd opened screen. Quit anyway?"
-msgid_plural "You have %zd opened screens. Quit anyway?"
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
 msgstr[0] ""
 msgstr[1] ""
 
 msgid "The Midnight Commander"
-msgstr ""
+msgstr "The Midnight Commander"
 
 msgid "Do you really want to quit the Midnight Commander?"
 msgstr ""
 
 msgid "&Above"
-msgstr ""
+msgstr "Ov&an"
 
 msgid "&Left"
 msgstr ""
@@ -3171,7 +3221,7 @@ msgid "&Below"
 msgstr ""
 
 msgid "&Right"
-msgstr ""
+msgstr "Höge&r"
 
 msgid "ButtonBar|Menu"
 msgstr ""
@@ -3210,7 +3260,7 @@ msgid "sort|v"
 msgstr ""
 
 msgid "&Version"
-msgstr ""
+msgstr "&Version"
 
 #. TRANSLATORS: one single character to represent 'extension' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
@@ -3229,7 +3279,7 @@ msgid "&Size"
 msgstr "&Storlek"
 
 msgid "Block Size"
-msgstr ""
+msgstr "Blockstorlek"
 
 #. TRANSLATORS: one single character to represent 'Modify time' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
@@ -3297,12 +3347,6 @@ msgid "<readlink failed>"
 msgstr "<kunde inte läsa länken>"
 
 #, c-format
-msgid "%s byte"
-msgid_plural "%s bytes"
-msgstr[0] ""
-msgstr[1] ""
-
-#, c-format
 msgid "%s in %d file"
 msgid_plural "%s in %d files"
 msgstr[0] ""
@@ -3315,19 +3359,19 @@ msgid "Unknown tag on display format:"
 msgstr ""
 
 msgid "&Files only"
-msgstr ""
+msgstr "&Filer endast"
 
 msgid "&Case sensitive"
 msgstr ""
 
 msgid "Select"
-msgstr ""
+msgstr "Markera"
 
 msgid "Unselect"
-msgstr ""
+msgstr "Avmarkera"
 
 msgid "Do you really want to execute?"
-msgstr ""
+msgstr "Vill du verkligen exekvera?"
 
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "Det angivna formatet ser ogiltigt ut, faller tillbaka till standard."
@@ -3348,7 +3392,7 @@ msgid "Add to external panelize"
 msgstr ""
 
 msgid "Enter command label:"
-msgstr ""
+msgstr "Ange kommando-etikett:"
 
 msgid "Cannot invoke command."
 msgstr "Kan inte invokera kommandot."
@@ -3393,7 +3437,7 @@ msgstr ""
 
 #, c-format
 msgid "Delete %s?"
-msgstr ""
+msgstr "Ta bort %s?"
 
 msgid "ButtonBar|Static"
 msgstr ""
@@ -3420,19 +3464,19 @@ msgid "Debug"
 msgstr ""
 
 msgid "ERROR:"
-msgstr ""
+msgstr "FEL:"
 
 msgid "True:"
-msgstr ""
+msgstr "Sant:"
 
 msgid "False:"
-msgstr ""
+msgstr "Falskt:"
 
 msgid "Error calling program"
 msgstr ""
 
 msgid "Warning -- ignoring file"
-msgstr ""
+msgstr "Varning - ignorerar fil"
 
 #, c-format
 msgid ""
@@ -3456,7 +3500,7 @@ msgid "No suitable entries found in %s"
 msgstr ""
 
 msgid "User menu"
-msgstr ""
+msgstr "Användarmeny"
 
 msgid "Help file format error\n"
 msgstr ""
@@ -3618,23 +3662,23 @@ msgstr ""
 
 #, c-format
 msgid "Virtual File Systems:"
-msgstr ""
+msgstr "Virtuella filsystem:"
 
 #, c-format
 msgid "Data types:"
-msgstr ""
+msgstr "Datatyper:"
 
 msgid "Root directory:"
 msgstr ""
 
 msgid "System data"
-msgstr ""
+msgstr "Systemdata"
 
 msgid "Config directory:"
-msgstr ""
+msgstr "Konfigurationskatalog"
 
 msgid "Data directory:"
-msgstr ""
+msgstr "Datakatalog"
 
 msgid "File extension handlers:"
 msgstr ""
@@ -3643,7 +3687,7 @@ msgid "VFS plugins and scripts:"
 msgstr ""
 
 msgid "User data"
-msgstr ""
+msgstr "Användardata"
 
 msgid "Cache directory:"
 msgstr ""
@@ -3773,7 +3817,7 @@ msgid "FTP: Account required for user %s"
 msgstr ""
 
 msgid "Account:"
-msgstr ""
+msgstr "Konto:"
 
 msgid "ftpfs: sending user account"
 msgstr ""
@@ -3912,8 +3956,7 @@ msgstr ""
 msgid "sftp: Password is empty."
 msgstr ""
 
-#, c-format
-msgid "sftp: Failure establishing SSH session: (%d)"
+msgid "sftp: Failure establishing SSH session"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"
@@ -4039,10 +4082,10 @@ msgid "Cannot open file \"%s\""
 msgstr ""
 
 msgid "Ext2lib error"
-msgstr ""
+msgstr "Ext2lib-fel"
 
 msgid "Invalid value"
-msgstr ""
+msgstr "Ogiltigt värde"
 
 msgid "File was modified. Save with exit?"
 msgstr ""
@@ -4059,7 +4102,7 @@ msgid "&Line number"
 msgstr ""
 
 msgid "Pe&rcents"
-msgstr ""
+msgstr "P&rocent"
 
 msgid "&Decimal offset"
 msgstr ""
@@ -4120,7 +4163,7 @@ msgid ""
 msgstr ""
 
 msgid "View: "
-msgstr ""
+msgstr "Visa:"
 
 #, c-format
 msgid ""

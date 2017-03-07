@@ -1,0 +1,177 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id: Makefile.in,v 1.4 2017/03/07 13:36:43 cvsuser Exp $
+# libssh2 makefile.
+#
+#
+# Copyright (c) 2016 - 2017 Adam Young.
+# 
+# This file is part of the Midnight Commander.
+# 
+# The Midnight Commander is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+# 
+# The Midnight Commander is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# ==end==
+#
+
+@SET_MAKE@
+ROOT=		@abs_top_builddir@
+top_builddir=	@top_builddir@
+
+# File extensions
+
+E=
+O=		.o
+H=		.h
+A=		.a
+LP=		lib
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+AR=		@AR@
+RANLIB=		@RANLIB@
+RM=		@RM@
+PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
+RC=		@RC@
+
+# Common flags
+
+ARFLAGS=	rcv
+XFLAGS=		
+COPT=		@CFLAGS@
+CXXOPT=		@CXXFLAGS@
+ifeq "" "$(CXXOPT)"
+CXXOPT=		$(COPT)
+endif
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+LDEBUG=		@LDEBUG@
+CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@
+CFLAGS=		$(CPPFLAGS) $(CDEBUG) $(COPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
+CXXFLAGS=	$(CPPFLAGS) $(CDEBUG) $(CXXOPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
+YFLAGS=		-d
+LDFLAGS=	$(LDEBUG) @LDFLAGS@
+LDLIBS=		-L$(D_LIB) @LIBS@ @LIBM@ @EXTRALIBS@
+
+RMFLAGS=	-f
+
+# Directories
+
+D_BIN=		$(ROOT)/bin
+D_INC=		$(ROOT)/include
+D_OBJ=		$(ROOT)/objects/libssh2
+D_LIB=		$(ROOT)/lib
+
+############################################################
+
+# Targets
+
+SSH2LIB=	$(D_LIB)/$(LP)ssh2_static$(A)
+SSH2DLL=	$(D_LIB)/$(LP)ssh2.la
+
+VERSION=	1.8.0
+VERSIONSPEC=	$(subst .,:,$(VERSION))
+VERPACKED=	libssh2-$(VERSION).tgz
+
+SSH2BASE=	./libssh2-$(VERSION)
+SSH2SRC=	$(SSH2BASE)/src
+SSH2INCLUDE=	$(SSH2BASE)/include
+
+CINCLUDE+=	-I$(SSH2BASE)/win32 -I$(SSH2INCLUDE) -I./sdk
+CEXTRA+=	-D_WIN32_WINNT=0x601 -DLIBSSH2_WIN32 -DLIBSSH2_WINCNG -DLIBSSH2_HAVE_ZLIB
+LDLIBS+=	-llibz_static ./sdk/bcrypt.lib ./sdk/crypt32.lib
+
+VPATH+=		$(SSH2SRC) $(SSH2BASE)/win32
+CRYPTO_CSOURCES=\
+	openssl.c wincng.c mbedtls.c
+CSOURCES=\
+	channel.c comp.c crypt.c hostkey.c kex.c mac.c misc.c \
+	packet.c publickey.c scp.c session.c sftp.c userauth.c transport.c \
+	version.c knownhost.c agent.c $(CRYPTO_CSOURCES) pem.c keepalive.c global.c
+
+LIBOBJS=\
+	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
+
+DLLOBJS=\
+	$(subst $(O),.lo,$(LIBOBJS))
+ifeq ("mingw32","@build_os@")
+DLLOBJS+=	$(D_OBJ)/libssh2_res.o
+else ifeq ("win32","@build_os@")
+DLLOBJS+=	$(D_OBJ)/libssh2.res
+endif
+
+OBJS=		$(LIBOBJS) $(DLLOBJS)
+LIBS=		$(SSH2LIB) $(SSH2DLL)
+TSKS=
+
+# Rules
+
+all:			source unpacked
+unpacked:		object $(LIBS) $(TSKS) installinc
+
+CEXTRA		+= -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
+
+$(SSH2LIB):		CEXTRA += -DLIBSSH2_STATIC
+$(SSH2LIB):		$(LIBOBJS)
+		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(AR) $(ARFLAGS) $@ $^
+		$(RANLIB) $@
+
+$(SSH2DLL):		CEXTRA += -DLIBSSH2_DYANMIC -D_WINDLL
+$(SSH2DLL):		$(DLLOBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(SSH2DEF) -o $@ $^ $(LDLIBS)
+
+source:			.unpacked.$(VERSION)
+		$(MAKE) unpacked
+
+.unpacked.$(VERSION):	$(VERPACKED)
+		@echo "do not delete, managed file" > $@
+		@echo "unpacking source $VERPACKED"
+		@gzip -c -d $(VERPACKED) | tar -xvf -
+
+.PHONY:		object
+object:			$(D_OBJ)/.created
+
+.PHONY:		installinc
+installinc:		../include/.created
+		@echo publishing headers ...
+		-cp $(SSH2INCLUDE)/libssh2.h ../include
+		-cp $(SSH2INCLUDE)/libssh2_Sftp.h ../include
+
+%/.created:
+		-@mkdir $(@D)
+		@echo "do not delete, managed directory" > $@
+
+clean:
+		-@$(LIBTOOL) --mode=clean $(RM) $(SSH2DLL) $(DLLOBJS) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
+
+$(D_OBJ)/%$(O):		%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.res:		%.rc
+		$(RC) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) -o $@ $<
+
+#end

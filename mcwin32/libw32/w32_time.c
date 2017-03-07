@@ -2,7 +2,7 @@
 /*
  * win32 time system calls.
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -135,8 +135,9 @@ gettimeofday(
     struct timeval *tv, struct timezone *tz)
 {
     if (tv) {
-        tv->tv_sec = (long)time(NULL);
+        //FIXME
         tv->tv_usec = GetTickCount() * 1000;
+        tv->tv_sec = (long)time(NULL);
     }
     return 0;
 }

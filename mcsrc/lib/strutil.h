@@ -6,9 +6,6 @@
 #include <sys/types.h>
 #include <inttypes.h>
 #include <string.h>
-#ifdef HAVE_ASSERT_H
-#include <assert.h>             /* assert() */
-#endif
 
 /* Header file for strutil.c, strutilascii.c, strutil8bit.c, strutilutf8.c.
  * There are two sort of functions:
@@ -217,7 +214,9 @@ estr_t str_vfs_convert_to (GIConv, const char *, int, GString *);
 
 /* printf function for str_buffer, append result of printf at the end of buffer
  */
-void str_printf (GString *, const char *, ...);
+/* *INDENT-OFF* */
+void str_printf (GString * buffer, const char *format, ...) G_GNUC_PRINTF (2, 3);
+/* *INDENT-ON* */
 
 /* add standard replacement character in terminal encoding
  */
@@ -597,9 +596,7 @@ str_move (char *dest, const char *src)
 {
     size_t n;
 
-#ifdef HAVE_ASSERT_H
-    assert (dest <= src);
-#endif
+    g_assert (dest <= src);
 
     n = strlen (src) + 1;       /* + '\0' */
 

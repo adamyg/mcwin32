@@ -1,0 +1,496 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id: Makefile.in,v 1.1 2017/03/06 12:04:30 cvsuser Exp $
+# libssh2 makefile.
+#
+#
+# Copyright (c) 2016 - 2017 Adam Young.
+# 
+# This file is part of the Midnight Commander.
+# 
+# The Midnight Commander is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+# 
+# The Midnight Commander is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# Notice: Portions of this text are reprinted and reproduced in electronic form. from
+# IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
+# 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
+# Group. Copyright remains with the authors and the original Standard can be obtained
+# online at http://www.opengroup.org/unix/online.html.
+# ==end==
+#
+
+@SET_MAKE@
+ROOT=		@abs_top_builddir@
+top_builddir=	@top_builddir@
+
+# File extensions
+
+E=
+O=		.o
+H=		.h
+A=		.a
+LP=		lib
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+AR=		@AR@
+RANLIB=		@RANLIB@
+RM=		@RM@
+CP=		@CP@
+PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
+RC=		@RC@
+
+# Common flags
+
+ARFLAGS=	rcv
+XFLAGS=		
+COPT=		@CFLAGS@
+CXXOPT=		@CXXFLAGS@
+ifeq "" "$(CXXOPT)"
+CXXOPT=		$(COPT)
+endif
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+LDEBUG=		@LDEBUG@
+CINCLUDE=	-I. -I$(D_INC)
+CEXTRA=		@DEFS@
+CFLAGS=		$(CPPFLAGS) $(CDEBUG) $(COPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
+CXXFLAGS=	$(CPPFLAGS) $(CDEBUG) $(CXXOPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
+YFLAGS=		-d
+LDFLAGS=	$(LDEBUG) @LDFLAGS@
+LDLIBS=		../lib/$(LP)intl$(A) winmm.lib @EXTRALIBS@
+
+RMFLAGS=	-f
+
+# Directories
+
+D_BIN=		$(ROOT)/bin
+D_INC=		$(ROOT)/include
+D_OBJ=		$(ROOT)/objects/libglib
+D_LIB=		$(ROOT)/lib
+
+############################################################
+
+# Targets
+
+GLIBLIB=	$(D_LIB)/$(LP)glib-2.0_static$(A)
+GLIBDLL=	$(D_LIB)/$(LP)glib-2.0.la
+
+GMODULELIB=	$(D_LIB)/$(LP)gmodule-2.0_static$(A)
+GMODULEDLL=	$(D_LIB)/$(LP)gmodule-2.0.la
+
+VERSION=	2.51.4
+VERSIONSPEC=	$(subst .,:,$(VERSION))
+VERPACKED=	glib-$(VERSION).tgz
+
+GLIBBASE=	./glib-$(VERSION)
+GLIBSRC=	$(GLIBBASE)/glib
+GLIBINCLUDE=	$(GLIBBASE)/glib
+GMODULESRC=	$(GLIBBASE)/gmodule
+
+CINCLUDE+=	-I$(GLIBSRC) -I$(GLIBBASE) -I./sdk
+CEXTRA+=	-D_WIN32_WINNT=0x501 -DGLIB_COMPILATION -D_WIN32
+
+###	glib
+
+#Note: sourced from glib.vcproj, see $(GLIBSRC)/win32
+CEXTRA_LIBCHARSET = \
+	-DLIBDIR="blah"
+
+CEXTRA_PCRE = \
+	-DHAVE_CONFIG_H \
+	-DGPCRE_COMPILATION \
+	-DPCRE_STATIC \
+	-DLINK_SIZE=2 \
+	-DMAX_NAME_SIZE=32 \
+	-DMAX_NAME_COUNT=10000 \
+	-DPOSIX_MALLOC_THRESHOLD=10 \
+	-DMATCH_LIMIT=10000000 \
+	-DMATCH_LIMIT_RECURSION=10000000 \
+	-DSUPPORT_UCP \
+	-DSUPPORT_UTF \
+	-DSUPPORT_UTF8 \
+	-DG_LOG_DOMAIN="GLib-GRegex" \
+	-UBSR_ANYCRLF \
+	-UEBCDIC
+##	-DNEWLINE=-1	#see config.h
+
+CEXTRA_GTHREAD = \
+	-DG_LOG_DOMAIN="GThread"
+	
+CEXTRA_GMODULE = \
+	-DG_LOG_DOMAIN="GModule"
+
+CEXTRA_GIO = \
+	-DGIO_COMPILATION \
+	-DG_LOG_DOMAIN="GLib-GIO"
+
+CEXTRA_GOBJECT = \
+	-DGOBJECT_COMPILATION \
+	-DG_LOG_DOMAIN="GLib-GObject" \
+	-DFFI_BUILDING
+
+VPATH+=		$(GLIBSRC)
+base=\
+	garray.c \
+	gasyncqueue.c \
+	gatomic.c \
+	gbacktrace.c \
+	gbase64.c \
+	gbitlock.c \
+	gbookmarkfile.c \
+	gbytes.c \
+	gcharset.c \
+	gchecksum.c \
+	gconvert.c \
+	gdataset.c \
+	gdate.c \
+	gdatetime.c \
+	gdir.c \
+	genviron.c \
+	gerror.c \
+	gfileutils.c \
+	ggettext.c \
+	ghash.c \
+	ghmac.c \
+	ghook.c \
+	ghostutils.c \
+	giochannel.c \
+	giowin32.c \
+	gkeyfile.c \
+	glib-init.c \
+	glib-private.c \
+	glist.c \
+	gmain.c \
+	gmappedfile.c \
+	gmarkup.c \
+	gmem.c \
+	gmessages.c \
+	gnode.c \
+	goption.c \
+	gpattern.c \
+	gpoll.c \
+	gprimes.c \
+	gprintf.c \
+	gqsort.c \
+	gquark.c \
+	gqueue.c \
+	grand.c \
+	gregex.c \
+	gscanner.c \
+	gsequence.c \
+	gshell.c \
+	gslice.c \
+	gslist.c \
+	gspawn-win32.c \
+	gstdio.c \
+	gstrfuncs.c \
+	gstring.c \
+	gstringchunk.c \
+	gtestutils.c \
+	gthread-win32.c \
+	gthread.c \
+	gthreadpool.c \
+	gtimer.c \
+	gtimezone.c \
+	gtranslit.c \
+	gtrashstack.c \
+	gtree.c \
+	gunibreak.c \
+	gunicollate.c \
+	gunidecomp.c \
+	guniprop.c \
+	gurifuncs.c \
+	gutf8.c \
+	gutils.c \
+	guuid.c \
+	gvariant-core.c \
+	gvariant-parser.c \
+	gvariant-serialiser.c \
+	gvariant.c \
+	gvarianttype.c \
+	gvarianttypeinfo.c \
+	gversion.c \
+	gwakeup.c \
+	gwin32.c
+
+deprecated=\
+	gallocator.c \
+	gcache.c \
+	gcompletion.c \
+	grel.c \
+	gthread-deprecated.c
+
+libcharset=\
+	localcharset.c
+
+gnulib=\
+	asnprintf.c \
+	printf-args.c \
+	printf-parse.c \
+	printf.c \
+	vasnprintf.c
+
+pcre=\
+	pcre_byte_order.c \
+	pcre_chartables.c \
+	pcre_compile.c \
+	pcre_config.c \
+	pcre_dfa_exec.c \
+	pcre_exec.c \
+	pcre_fullinfo.c \
+	pcre_get.c \
+	pcre_globals.c \
+	pcre_jit_compile.c \
+	pcre_newline.c \
+	pcre_ord2utf8.c \
+	pcre_string_utils.c \
+	pcre_study.c \
+	pcre_tables.c \
+	pcre_valid_utf8.c \
+	pcre_version.c \
+	pcre_xclass.c
+
+GLIBSOURCES=\
+	$(base) \
+	$(deprecated) \
+	$(libcharset) \
+	$(gnulib) \
+	$(pcre)
+
+GLIBLIBOBJS=\
+	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(GLIBSOURCES)))
+
+GLIBDLLOBJS=\
+	$(subst $(O),.lo,$(GLIBLIBOBJS))
+ifeq ("mingw32","@build_os@")
+GLIBDLLOBJS+=	$(D_OBJ)/glib_res.o
+else ifeq ("win32","@build_os@")
+GLIBDLLOBJS+=	$(D_OBJ)/glib.res
+endif
+
+###	gmodule
+
+#Note: sourced from gmodule.vcproj, see $(GLIBSRC)/win32
+
+VPATH+=		$(GMODULESRC)
+GMODULESOURCES=\
+	gmodule.c
+
+GMODULELIBOBJS=\
+	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(GMODULESOURCES)))
+
+GMODULEDLLOBJS=\
+	$(subst $(O),.lo,$(GMODULELIBOBJS))
+ifeq ("mingw32","@build_os@")
+DLLOBJS+=	$(D_OBJ)/gmodule_res.o
+else ifeq ("win32","@build_os@")
+DLLOBJS+=	$(D_OBJ)/gmodule.res
+endif
+
+###
+
+OBJS=		$(GBLIBLIBOBJS) $(GLIBDLLOBJS) \
+		$(GMODULELIBOBJS) $(GMODULEDLLOBJS)
+
+LIBS=		$(GLIBLIB) $(GLIBDLL) \
+		$(GMODULELIB) $(GMODULEDLL)
+TSKS=
+
+############################################################
+# Rules
+
+all:			source unpacked
+unpacked:		object $(LIBS) $(TSKS) installheaders
+
+$(GLIBLIB):		CEXTRA += -DGLIB_STATIC_COMPILATION
+$(GLIBLIB):		$(GLIBLIBOBJS)
+		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(AR) $(ARFLAGS) $@ $^
+		$(RANLIB) $@
+
+$(GLIBDLL):		CEXTRA += -DGLIB_DYNAMIC_COMPILATION -DDLL_EXPORT
+$(GLIBDLL):		$(GLIBDLLOBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) -o $@ $^ $(LDLIBS)
+
+$(GMODULELIB):		CEXTRA += -DGMODULE_STATIC_COMPILATION
+$(GMODULELIB):		$(GMODULELIBOBJS)
+		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(AR) $(ARFLAGS) $@ $^
+		$(RANLIB) $@
+
+$(GMODULEDLL):		CEXTRA += -DGMODULE_DYNAMIC_COMPILATION -DDLL_EXPORT
+$(GMODULEDLL):		$(GMODULEDLLOBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) -o $@ $^ $(D_LIB)/$(LP)glib-2.0.lib $(LDLIBS)
+
+source:			.unpacked.$(VERSION)
+		$(MAKE) unpacked
+
+.unpacked.$(VERSION):	$(VERPACKED)
+		@echo "do not delete, managed file" > $@
+		@echo "unpacking source $VERPACKED"
+		@gzip -c -d $(VERPACKED) | tar -xvf -
+
+.PHONY:		object
+object:			$(D_OBJ)/.created
+
+.PHONY:		installheaders
+installheaders:		Makefile ../include/.created \
+				../include/glib-2.0/.created \
+				../include/glib-2.0/glib/.created \
+				../include/glib-2.0/glib/deprecated/.created
+		@echo publishing glib headers ...
+		@$(CP) $(GLIBINCLUDE)/glib.h			../include/glib-2.0
+		@$(CP) $(GLIBINCLUDE)/glibconfig.h.win32	../include/glib-2.0/glibconfig.h
+		@$(CP) $(GLIBINCLUDE)/galloca.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/garray.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gasyncqueue.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gatomic.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gbacktrace.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gbase64.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gbitlock.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gbookmarkfile.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gbytes.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gcharset.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gchecksum.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gconvert.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gdataset.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gdate.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gdatetime.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gdir.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/genviron.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gerror.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gfileutils.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/ggettext.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/ghash.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/ghmac.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/ghook.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/ghostutils.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/giochannel.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gkeyfile.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/glist.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gmacros.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gmain.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gmappedfile.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gmarkup.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gmem.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gmessages.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gnode.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/goption.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gpattern.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gpoll.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gprimes.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gqsort.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gquark.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gqueue.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/grand.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gregex.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gscanner.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gsequence.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gshell.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gslice.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gslist.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gspawn.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gstrfuncs.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gstring.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gstringchunk.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gtestutils.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gthread.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gthreadpool.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gtimer.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gtimezone.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gtrashstack.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gtree.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gtypes.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gunicode.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gurifuncs.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gutils.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/guuid.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gvarianttype.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gvariant.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gversion.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gversionmacros.h		../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/gwin32.h			../include/glib-2.0/glib
+		@$(CP) $(GLIBINCLUDE)/glib-autocleanups.h	../include/glib-2.0/glib
+		@echo publishing glib deprecate headers ...
+		@$(CP) $(GLIBINCLUDE)/deprecated/gallocator.h	../include/glib-2.0/glib/deprecated
+		@$(CP) $(GLIBINCLUDE)/deprecated/gcache.h	../include/glib-2.0/glib/deprecated
+		@$(CP) $(GLIBINCLUDE)/deprecated/gcompletion.h	../include/glib-2.0/glib/deprecated
+		@$(CP) $(GLIBINCLUDE)/deprecated/gmain.h	../include/glib-2.0/glib/deprecated
+		@$(CP) $(GLIBINCLUDE)/deprecated/grel.h		../include/glib-2.0/glib/deprecated
+		@$(CP) $(GLIBINCLUDE)/deprecated/gthread.h	../include/glib-2.0/glib/deprecated
+		@echo publishing gmodule headers ...
+		@$(CP) $(GMODULESRC)/gmoduleconf.h.win32	../include/glib-2.0/gmoduleconf.h
+		@$(CP) $(GMODULESRC)/gmodule.h			../include/glib-2.0
+
+%/.created:
+		-@mkdir $(@D)
+		@echo "do not delete, managed directory" > $@
+
+clean:
+		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GLIBDLL) $(GLIBDLLOBJS) >nul 2>&1)
+		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GMODULEDLL) $(GMODULEDLLOBJS) >nul 2>&1)
+		-@$(RM) $(subst /,\,$(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1)
+		-@$(RM) $(subst /,\,$(GLIBLIBOBJS) >nul 2>&1)
+		-@$(RM) $(subst /,\,$(GMODULELIBOBJS) >nul 2>&1)
+
+############################################################
+# Build recipes
+
+# lib
+
+$(D_OBJ)/%$(O):		%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%$(O):		deprecated/%.c
+		$(CC) $(CFLAGS) $(CEXTRA_DEPRECATED) -o $@ -c $<
+
+$(D_OBJ)/%$(O):		libcharset/%.c
+		$(CC) $(CFLAGS) $(CEXTRA_LIBCHARSET) -o $@ -c $<
+
+$(D_OBJ)/%$(O):		gnulib/%.c
+		$(CC) $(CFLAGS) $(CEXTRA_GNULIB) -o $@ -c $<
+
+$(D_OBJ)/%$(O):		pcre/%.c
+		$(CC) $(CFLAGS) $(CEXTRA_PCRE) -o $@ -c $<
+
+# dll
+
+$(D_OBJ)/%.lo:		%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		deprecated/%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CEXTRA_DEPRECATED) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		libcharset/%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CEXTRA_LIBCHARSET) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		gnulib/%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CEXTRA_GNULIB) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		pcre/%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CEXTRA_PCRE) -o $@ -c $<
+
+$(D_OBJ)/%.res:		%.rc
+		$(RC) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) -o $@ $<
+
+#end

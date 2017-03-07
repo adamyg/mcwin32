@@ -5,8 +5,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by:
-   Adam Young 2012
+   Written by: Adam Young 2012 - 2017
 
    This file is part of the Midnight Commander.
 
@@ -29,5 +28,3 @@ extern void key_prog_mode(void);
 extern void key_shell_mode(void);
 
 /*end*/
-
-

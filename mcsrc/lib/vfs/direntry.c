@@ -1,7 +1,7 @@
 /*
    Directory cache support
 
-   Copyright (C) 1998-2015
+   Copyright (C) 1998-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -58,8 +58,6 @@
 #include <config.h>
 
 #include <errno.h>
-#include <fcntl.h>              /* include fcntl.h -> sys/fcntl.h only       */
-                                /* includes fcntl.h see IEEE Std 1003.1-2008 */
 #include <time.h>
 #include <sys/time.h>           /* gettimeofday() */
 #include <inttypes.h>           /* uintmax_t */
@@ -94,8 +92,6 @@ struct dirhandle
 
 /*** file scope variables ************************************************************************/
 
-static volatile int total_inodes = 0, total_entries = 0;
-
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -122,7 +118,7 @@ vfs_s_automake (struct vfs_class *me, struct vfs_s_inode *dir, char *path, int f
     if (sep != NULL)
         *sep = '\0';
 
-    res = vfs_s_generate_entry (me, path, dir, flags & FL_MKDIR ? (0777 | S_IFDIR) : 0777);
+    res = vfs_s_generate_entry (me, path, dir, (flags & FL_MKDIR) != 0 ? (0777 | S_IFDIR) : 0777);
     vfs_s_insert_entry (me, dir, res);
 
     if (sep != NULL)
@@ -387,13 +383,14 @@ vfs_s_inode_from_path (const vfs_path_t * vpath, int flags)
 
     ino =
         vfs_s_find_inode (path_element->class, super, q,
-                          flags & FL_FOLLOW ? LINK_FOLLOW : LINK_NO_FOLLOW, flags & ~FL_FOLLOW);
+                          (flags & FL_FOLLOW) != 0 ? LINK_FOLLOW : LINK_NO_FOLLOW,
+                          flags & ~FL_FOLLOW);
     if ((!ino) && (!*q))
         /* We are asking about / directory of ftp server: assume it exists */
         ino =
             vfs_s_find_inode (path_element->class, super, q,
-                              flags & FL_FOLLOW ? LINK_FOLLOW :
-                              LINK_NO_FOLLOW, FL_DIR | (flags & ~FL_FOLLOW));
+                              (flags & FL_FOLLOW) != 0 ? LINK_FOLLOW : LINK_NO_FOLLOW,
+                              FL_DIR | (flags & ~FL_FOLLOW));
     return ino;
 }
 
@@ -450,7 +447,6 @@ vfs_s_readdir (void *data)
     else
         vfs_die ("Null in structure-cannot happen");
 
-    compute_namelen (&dir.dent);
     info->cur = g_list_next (info->cur);
 
     return (void *) &dir;
@@ -495,31 +491,6 @@ vfs_s_internal_stat (const vfs_path_t * vpath, struct stat *buf, int flag)
     if (ino == NULL)
         return -1;
     *buf = ino->st;
-    return 0;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static int
-vfs_s_stat (const vfs_path_t * vpath, struct stat *buf)
-{
-    return vfs_s_internal_stat (vpath, buf, FL_FOLLOW);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static int
-vfs_s_lstat (const vfs_path_t * vpath, struct stat *buf)
-{
-    return vfs_s_internal_stat (vpath, buf, FL_NONE);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static int
-vfs_s_fstat (void *fh, struct stat *buf)
-{
-    *buf = FH->ino->st;
     return 0;
 }
 
@@ -640,6 +611,8 @@ vfs_s_lseek (void *fh, off_t offset, int whence)
     case SEEK_END:
         offset += size;
         break;
+    default:
+        break;
     }
     if (offset < 0)
         FH->pos = 0;
@@ -697,22 +670,12 @@ static void
 vfs_s_print_stats (const char *fs_name, const char *action,
                    const char *file_name, off_t have, off_t need)
 {
-    static const char *i18n_percent_transf_format = NULL;
-    static const char *i18n_transf_format = NULL;
-
-    if (i18n_percent_transf_format == NULL)
-    {
-        i18n_percent_transf_format = "%s: %s: %s %3d%% (%" PRIuMAX " %s";
-        i18n_transf_format = "%s: %s: %s %" PRIuMAX " %s";
-    }
-
-    if (need)
-        vfs_print_message (i18n_percent_transf_format, fs_name, action,
-                           file_name, (int) ((double) have * 100 / need), (uintmax_t) have,
-                           _("bytes transferred"));
+    if (need != 0)
+        vfs_print_message (_("%s: %s: %s %3d%% (%lld) bytes transferred"), fs_name, action,
+                           file_name, (int) ((double) have * 100 / need), (long long) have);
     else
-        vfs_print_message (i18n_transf_format, fs_name, action, file_name, (uintmax_t) have,
-                           _("bytes transferred"));
+        vfs_print_message (_("%s: %s: %s %lld bytes transferred"), fs_name, action, file_name,
+                           (long long) have);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -822,8 +785,9 @@ vfs_s_setctl (const vfs_path_t * vpath, int ctlop, void *arg)
     case VFS_SETCTL_FLUSH:
         ((struct vfs_s_subclass *) path_element->class->data)->flush = 1;
         return 1;
+    default:
+        return 0;
     }
-    return 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -901,7 +865,6 @@ vfs_s_new_inode (struct vfs_class *me, struct vfs_s_super *super, struct stat *i
     ino->st.st_dev = MEDATA->rdev;
 
     super->ino_usage++;
-    total_inodes++;
 
     CALL (init_inode) (me, ino);
 
@@ -933,7 +896,6 @@ vfs_s_free_inode (struct vfs_class *me, struct vfs_s_inode *ino)
         unlink (ino->localname);
         g_free (ino->localname);
     }
-    total_inodes--;
     ino->super->ino_usage--;
     g_free (ino);
 }
@@ -946,7 +908,6 @@ vfs_s_new_entry (struct vfs_class *me, const char *name, struct vfs_s_inode *ino
     struct vfs_s_entry *entry;
 
     entry = g_new0 (struct vfs_s_entry, 1);
-    total_entries++;
 
     entry->name = g_strdup (name);
     entry->ino = inode;
@@ -973,7 +934,6 @@ vfs_s_free_entry (struct vfs_class *me, struct vfs_s_entry *ent)
         vfs_s_free_inode (me, ent->ino);
     }
 
-    total_entries--;
     g_free (ent);
 }
 
@@ -996,7 +956,7 @@ struct stat *
 vfs_s_default_stat (struct vfs_class *me, mode_t mode)
 {
     static struct stat st;
-    int myumask;
+    mode_t myumask;
 
     (void) me;
 
@@ -1007,13 +967,54 @@ vfs_s_default_stat (struct vfs_class *me, mode_t mode)
     st.st_mode = mode;
     st.st_ino = 0;
     st.st_dev = 0;
+#ifdef HAVE_STRUCT_STAT_ST_RDEV
     st.st_rdev = 0;
+#endif
     st.st_uid = getuid ();
     st.st_gid = getgid ();
+#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
+    st.st_blksize = 512;
+#endif
     st.st_size = 0;
     st.st_mtime = st.st_atime = st.st_ctime = time (NULL);
 
+    vfs_adjust_stat (&st);
+
     return &st;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Calculate number of st_blocks using st_size and st_blksize.
+ * In according to stat(2), st_blocks is the size in 512-byte units.
+ *
+ * @param s stat info
+ */
+
+void
+vfs_adjust_stat (struct stat *s)
+{
+#ifdef HAVE_STRUCT_STAT_ST_BLOCKS
+    if (s->st_size == 0)
+        s->st_blocks = 0;
+    else
+    {
+#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
+        blkcnt_t ioblocks;
+        blksize_t ioblock_size;
+
+        /* 1. Calculate how many IO blocks are occupied */
+        ioblocks = 1 + (s->st_size - 1) / s->st_blksize;
+        /* 2. Calculate size of st_blksize in 512-byte units */
+        ioblock_size = 1 + (s->st_blksize - 1) / 512;
+        /* 3. Calculate number of blocks */
+        s->st_blocks = ioblocks * ioblock_size;
+#else
+        /* Let IO block size is 512 bytes */
+        s->st_blocks = 1 + (s->st_size - 1) / 512;
+#endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
+    }
+#endif /* HAVE_STRUCT_STAT_ST_BLOCKS */
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1298,7 +1299,7 @@ vfs_s_open (const vfs_path_t * vpath, int flags, mode_t mode)
     {
         if (VFSDATA (path_element)->linear_start)
         {
-            vfs_print_message (_("Starting linear transfer..."));
+            vfs_print_message ("%s", _("Starting linear transfer..."));
             fh->linear = LS_LINEAR_PREOPEN;
         }
     }
@@ -1332,6 +1333,31 @@ vfs_s_open (const vfs_path_t * vpath, int flags, mode_t mode)
     super->fd_usage++;
     fh->ino->st.st_nlink++;
     return fh;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+vfs_s_stat (const vfs_path_t * vpath, struct stat *buf)
+{
+    return vfs_s_internal_stat (vpath, buf, FL_FOLLOW);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+vfs_s_lstat (const vfs_path_t * vpath, struct stat *buf)
+{
+    return vfs_s_internal_stat (vpath, buf, FL_NONE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+vfs_s_fstat (void *fh, struct stat *buf)
+{
+    *buf = FH->ino->st;
+    return 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */

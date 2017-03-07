@@ -4,7 +4,7 @@
  *
  *      mkdir, rmdir, chdir
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -31,6 +31,7 @@
 
 #include "win32_internal.h"
 #include <sys/stat.h>
+#include <ctype.h>
 #include <unistd.h>
 
 const char *            x_w32_cwdd[26];         /* current working directory, per drive */
@@ -240,7 +241,7 @@ w32_chdir(const char *path)
                 */
                 env_var[1] = toupper(t_path[0]);
                 w32_unix2dos(t_path);
-                (void) SetEnvironmentVariable(env_var, t_path);
+                (void) SetEnvironmentVariableA(env_var, t_path);
             }
         }
     }

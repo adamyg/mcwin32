@@ -2,7 +2,7 @@
 /*
  * win32 statfs()/statvfs() system calls.
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -149,23 +149,32 @@ getmntinfo(struct statfs **psb, int entries)
         ++cnt;
     }
 
-    if (cnt > 0) {
+    if (cnt > entries) {
+        errno = EINVAL;
+        cnt = -1;
+
+    } else if (cnt > 0) {
         if ((sb = calloc( sizeof(struct statfs), cnt )) == NULL)  {
             cnt = -1;
         } else {
             for (cnt = 0, p = szDrivesAvail; *p; p += 4) {
-                if (*p == 'A' || *p == 'B')     // skip floppies
-                    continue;
+                if (*p == 'A' || *p == 'a' ||
+                    *p == 'B' || *p == 'b') {
+                    continue;                   // skip floppies
+                }
                 if (statfs(p, sb + cnt) == 0) {
                     ++cnt;
                 }
             }
-            if (cnt == 0)
+
+            if (cnt == 0) {
                 free(sb);
-            else *psb = sb;
+            } else {
+                *psb = sb;
+            }
         }
     }
-    return (cnt);
+    return cnt;
 }
 
 

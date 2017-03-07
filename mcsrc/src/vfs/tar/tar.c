@@ -1,7 +1,7 @@
 /*
    Virtual File System: GNU Tar file system.
 
-   Copyright (C) 1995-2015
+   Copyright (C) 1995-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -39,7 +39,6 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <ctype.h>
-#include <fcntl.h>
 
 #ifdef hpux
 /* major() and minor() macros (among other things) defined here for hpux */
@@ -48,6 +47,7 @@
 
 #include "lib/global.h"
 #include "lib/util.h"
+#include "lib/unixcompat.h"     /* makedev() */
 #include "lib/widget.h"         /* message() */
 
 #include "lib/vfs/vfs.h"
@@ -304,8 +304,9 @@ tar_open_archive_int (struct vfs_class *me, const vfs_path_t * vpath, struct vfs
 
     /* Find out the method to handle this tar file */
     type = get_compression_type (result, archive->name);
-    mc_lseek (result, 0, SEEK_SET);
-    if (type != COMPRESSION_NONE)
+    if (type == COMPRESSION_NONE)
+        mc_lseek (result, 0, SEEK_SET);
+    else
     {
         char *s;
         vfs_path_t *tmp_vpath;
@@ -355,10 +356,10 @@ tar_get_next_record (struct vfs_s_super *archive, int tard)
 
     (void) archive;
 
-    n = mc_read (tard, rec_buf.charptr, RECORDSIZE);
-    if (n != RECORDSIZE)
+    n = mc_read (tard, rec_buf.charptr, sizeof (rec_buf.charptr));
+    if (n != sizeof (rec_buf.charptr))
         return NULL;            /* An error has occurred */
-    current_tar_position += RECORDSIZE;
+    current_tar_position += sizeof (rec_buf.charptr);
     return &rec_buf;
 }
 
@@ -369,8 +370,8 @@ tar_skip_n_records (struct vfs_s_super *archive, int tard, size_t n)
 {
     (void) archive;
 
-    mc_lseek (tard, n * RECORDSIZE, SEEK_CUR);
-    current_tar_position += n * RECORDSIZE;
+    mc_lseek (tard, n * sizeof (rec_buf.charptr), SEEK_CUR);
+    current_tar_position += n * sizeof (rec_buf.charptr);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -401,7 +402,10 @@ tar_fill_stat (struct vfs_s_super *archive, struct stat *st, union record *heade
         st->st_mode |= S_IFREG;
 
     st->st_dev = 0;
+#ifdef HAVE_STRUCT_STAT_ST_RDEV
     st->st_rdev = 0;
+#endif
+
     switch (arch->type)
     {
     case TAR_USTAR:
@@ -420,14 +424,23 @@ tar_fill_stat (struct vfs_s_super *archive, struct stat *st, union record *heade
         {
         case LF_BLK:
         case LF_CHR:
+#ifdef HAVE_STRUCT_STAT_ST_RDEV
             st->st_rdev =
-                (tar_from_oct (8, header->header.devmajor) << 8) |
-                tar_from_oct (8, header->header.devminor);
+                makedev (tar_from_oct (8, header->header.devmajor),
+                         tar_from_oct (8, header->header.devminor));
+#endif
+            break;
+        default:
+            break;
         }
+        break;
+
     default:
         st->st_uid = tar_from_oct (8, header->header.uid);
         st->st_gid = tar_from_oct (8, header->header.gid);
+        break;
     }
+
     st->st_size = h_size;
     st->st_mtime = tar_from_oct (1 + 12, header->header.mtime);
     st->st_atime = 0;
@@ -437,6 +450,11 @@ tar_fill_stat (struct vfs_s_super *archive, struct stat *st, union record *heade
         st->st_atime = tar_from_oct (1 + 12, header->header.unused.oldgnu.atime);
         st->st_ctime = tar_from_oct (1 + 12, header->header.unused.oldgnu.ctime);
     }
+
+#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
+    st->st_blksize = 8 * 1024;  /* FIXME */
+#endif
+    vfs_adjust_stat (st);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -800,6 +818,9 @@ tar_open_archive (struct vfs_s_super *archive, const vfs_path_t * vpath,
 
             case STATUS_EOF:
                 return 0;
+
+            default:
+                break;
             }
 
             /* Record of zeroes */
@@ -807,6 +828,8 @@ tar_open_archive (struct vfs_s_super *archive, const vfs_path_t * vpath,
             /* FALL THRU */
             /* exit from loop */
         case STATUS_EOF:       /* End of archive */
+            break;
+        default:
             break;
         }
         break;

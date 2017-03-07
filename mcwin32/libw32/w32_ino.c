@@ -2,7 +2,7 @@
 /*
  * win32 ino implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -33,6 +33,7 @@
 
 #include "win32_internal.h"
 #include "win32_misc.h"
+#include <ctype.h>
 #include <unistd.h>
 
 
@@ -121,7 +122,7 @@ w32_ino_gen(const DWORD fileIndexLow, const DWORD fileIndexHigh)
             (uint64_t) UINT64MAKE (fileIndexLow, fileIndexHigh);
     
     const uint64_t fileid   =                   /* strip sequence number */
-            ino64 & ((~(0ULL)) >> SEQNUMSIZE);    
+            ino64 & ((~(0ULL)) >> SEQNUMSIZE);
 
     return (ino_t)(((LODWORD(fileid)) ^ ((LODWORD(fileid)) >> INOSIZE))
                     ^ ( (HIDWORD(fileid)) ^ ((HIDWORD(fileid)) >> INOSIZE)));

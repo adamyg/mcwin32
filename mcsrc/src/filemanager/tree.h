@@ -18,20 +18,18 @@ typedef struct WTree WTree;
 /*** global variables defined in .c file *********************************************************/
 
 extern WTree *the_tree;
-extern int xtree_mode;
-
-struct WDialog;
+extern gboolean xtree_mode;
 
 /*** declarations of public functions ************************************************************/
 
 WTree *tree_new (int y, int x, int lines, int cols, gboolean is_panel);
 
-void tree_chdir (WTree * tree, const char *dir);
-vfs_path_t *tree_selected_name (const WTree * tree);
+void tree_chdir (WTree * tree, const vfs_path_t * dir);
+const vfs_path_t *tree_selected_name (const WTree * tree);
 
-void sync_tree (const char *pathname);
+void sync_tree (const vfs_path_t * vpath);
 
-WTree *find_tree (struct WDialog *h);
+WTree *find_tree (WDialog * h);
 
 /*** inline functions ****************************************************************************/
 #endif /* MC__TREE_H */

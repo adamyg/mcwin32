@@ -1,7 +1,7 @@
 /* Virtual File System: SFTP file system.
    The internal functions
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -66,7 +66,9 @@ sftpfs_ssherror_to_gliberror (sftpfs_super_data_t * super_data, int libssh_errno
 
     libssh2_session_last_error (super_data->session, &err, &err_len, 1);
     mc_propagate_error (mcerror, libssh_errno, "%s", err);
-    g_free (err);
+//WIN32/APY; replaced
+	//g_free (err);
+	libssh2_free (super_data->session, err);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -74,13 +76,16 @@ sftpfs_ssherror_to_gliberror (sftpfs_super_data_t * super_data, int libssh_errno
  * Fix filename for SFTP operations: add leading slash to file name.
  *
  * @param file_name file name
- * @return newly allocated string contains the file name with leading slash
+ * @param length length of returned string
+ *
+ * @return pointer to string that contains the file name with leading slash
  */
 
 const char *
-sftpfs_fix_filename (const char *file_name)
+sftpfs_fix_filename (const char *file_name, unsigned int *length)
 {
     g_string_printf (sftpfs_filename_buffer, "%c%s", PATH_SEP, file_name);
+    *length = sftpfs_filename_buffer->len;
     return sftpfs_filename_buffer->str;
 }
 
@@ -120,6 +125,19 @@ sftpfs_waitsocket (sftpfs_super_data_t * super_data, GError ** mcerror)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+/* Adjust block size and number of blocks */
+
+void
+sftpfs_blksize (struct stat *s)
+{
+#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
+    s->st_blksize = LIBSSH2_CHANNEL_WINDOW_DEFAULT;     /* FIXME */
+#endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
+    vfs_adjust_stat (s);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /**
  * Getting information about a symbolic link.
  *
@@ -155,11 +173,13 @@ sftpfs_lstat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror)
     do
     {
         const char *fixfname;
+        unsigned int fixfname_len = 0;
 
-        fixfname = sftpfs_fix_filename (path_element->path);
+        fixfname = sftpfs_fix_filename (path_element->path, &fixfname_len);
 
-        res = libssh2_sftp_stat_ex (super_data->sftp_session, fixfname,
-                                    sftpfs_filename_buffer->len, LIBSSH2_SFTP_LSTAT, &attrs);
+        res =
+            libssh2_sftp_stat_ex (super_data->sftp_session, fixfname, fixfname_len,
+                                  LIBSSH2_SFTP_LSTAT, &attrs);
         if (res >= 0)
             break;
 
@@ -188,7 +208,10 @@ sftpfs_lstat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror)
     }
 
     if ((attrs.flags & LIBSSH2_SFTP_ATTR_SIZE) != 0)
+    {
         buf->st_size = attrs.filesize;
+        sftpfs_blksize (buf);
+    }
 
     if ((attrs.flags & LIBSSH2_SFTP_ATTR_PERMISSIONS) != 0)
         buf->st_mode = attrs.permissions;
@@ -232,12 +255,13 @@ sftpfs_stat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror)
     do
     {
         const char *fixfname;
+        unsigned int fixfname_len = 0;
 
-        fixfname = sftpfs_fix_filename (path_element->path);
+        fixfname = sftpfs_fix_filename (path_element->path, &fixfname_len);
 
         res =
-            libssh2_sftp_stat_ex (super_data->sftp_session,
-                                  fixfname, sftpfs_filename_buffer->len, LIBSSH2_SFTP_STAT, &attrs);
+            libssh2_sftp_stat_ex (super_data->sftp_session, fixfname, fixfname_len,
+                                  LIBSSH2_SFTP_STAT, &attrs);
         if (res >= 0)
             break;
 
@@ -267,7 +291,10 @@ sftpfs_stat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror)
     }
 
     if ((attrs.flags & LIBSSH2_SFTP_ATTR_SIZE) != 0)
+    {
         buf->st_size = attrs.filesize;
+        sftpfs_blksize (buf);
+    }
 
     if ((attrs.flags & LIBSSH2_SFTP_ATTR_PERMISSIONS) != 0)
         buf->st_mode = attrs.permissions;
@@ -311,10 +338,13 @@ sftpfs_readlink (const vfs_path_t * vpath, char *buf, size_t size, GError ** mce
     do
     {
         const char *fixfname;
+        unsigned int fixfname_len = 0;
 
-        fixfname = sftpfs_fix_filename (path_element->path);
+        fixfname = sftpfs_fix_filename (path_element->path, &fixfname_len);
 
-        res = libssh2_sftp_readlink (super_data->sftp_session, fixfname, buf, size);
+        res =
+            libssh2_sftp_symlink_ex (super_data->sftp_session, fixfname, fixfname_len, buf, size,
+                                     LIBSSH2_SFTP_READLINK);
         if (res >= 0)
             break;
 
@@ -350,6 +380,7 @@ sftpfs_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** 
     const vfs_path_element_t *path_element1;
     const vfs_path_element_t *path_element2;
     char *tmp_path;
+    unsigned int tmp_path_len;
     int res;
 
     mc_return_val_if_error (mcerror, -1);
@@ -366,20 +397,21 @@ sftpfs_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** 
     if (super_data->sftp_session == NULL)
         return -1;
 
-    tmp_path = g_strdup_printf ("%c%s", PATH_SEP, path_element2->path);
+    tmp_path = (char *) sftpfs_fix_filename (path_element2->path, &tmp_path_len);
+    tmp_path = g_strndup (tmp_path, tmp_path_len);
+
     path_element1 = vfs_path_get_by_index (vpath1, -1);
 
     do
     {
         const char *fixfname;
+        unsigned int fixfname_len = 0;
 
-        fixfname = sftpfs_fix_filename (path_element1->path);
+        fixfname = sftpfs_fix_filename (path_element1->path, &fixfname_len);
 
         res =
-            libssh2_sftp_symlink_ex (super_data->sftp_session,
-                                     fixfname,
-                                     sftpfs_filename_buffer->len, tmp_path, strlen (tmp_path),
-                                     LIBSSH2_SFTP_SYMLINK);
+            libssh2_sftp_symlink_ex (super_data->sftp_session, fixfname, fixfname_len, tmp_path,
+                                     tmp_path_len, LIBSSH2_SFTP_SYMLINK);
         if (res >= 0)
             break;
 
@@ -439,11 +471,13 @@ sftpfs_chmod (const vfs_path_t * vpath, mode_t mode, GError ** mcerror)
     do
     {
         const char *fixfname;
+        unsigned int fixfname_len = 0;
 
-        fixfname = sftpfs_fix_filename (path_element->path);
+        fixfname = sftpfs_fix_filename (path_element->path, &fixfname_len);
 
-        res = libssh2_sftp_stat_ex (super_data->sftp_session, fixfname,
-                                    sftpfs_filename_buffer->len, LIBSSH2_SFTP_LSTAT, &attrs);
+        res =
+            libssh2_sftp_stat_ex (super_data->sftp_session, fixfname, fixfname_len,
+                                  LIBSSH2_SFTP_LSTAT, &attrs);
         if (res >= 0)
             break;
 
@@ -463,14 +497,17 @@ sftpfs_chmod (const vfs_path_t * vpath, mode_t mode, GError ** mcerror)
     do
     {
         const char *fixfname;
+        unsigned int fixfname_len = 0;
 
-        fixfname = sftpfs_fix_filename (path_element->path);
+        fixfname = sftpfs_fix_filename (path_element->path, &fixfname_len);
 
-        res = libssh2_sftp_stat_ex (super_data->sftp_session, fixfname,
-                                    sftpfs_filename_buffer->len, LIBSSH2_SFTP_SETSTAT, &attrs);
+        res =
+            libssh2_sftp_stat_ex (super_data->sftp_session, fixfname, fixfname_len,
+                                  LIBSSH2_SFTP_SETSTAT, &attrs);
         if (res >= 0)
             break;
-        else if (res != LIBSSH2_ERROR_EAGAIN)
+
+        if (res != LIBSSH2_ERROR_EAGAIN)
         {
             sftpfs_ssherror_to_gliberror (super_data, res, mcerror);
             return -1;
@@ -517,12 +554,11 @@ sftpfs_unlink (const vfs_path_t * vpath, GError ** mcerror)
     do
     {
         const char *fixfname;
+        unsigned int fixfname_len = 0;
 
-        fixfname = sftpfs_fix_filename (path_element->path);
+        fixfname = sftpfs_fix_filename (path_element->path, &fixfname_len);
 
-        res =
-            libssh2_sftp_unlink_ex (super_data->sftp_session, fixfname,
-                                    sftpfs_filename_buffer->len);
+        res = libssh2_sftp_unlink_ex (super_data->sftp_session, fixfname, fixfname_len);
         if (res >= 0)
             break;
 
@@ -558,6 +594,7 @@ sftpfs_rename (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** m
     const vfs_path_element_t *path_element1;
     const vfs_path_element_t *path_element2;
     char *tmp_path;
+    unsigned int tmp_path_len;
     int res;
 
     mc_return_val_if_error (mcerror, -1);
@@ -573,19 +610,21 @@ sftpfs_rename (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** m
     if (super_data->sftp_session == NULL)
         return -1;
 
-    tmp_path = g_strdup_printf ("%c%s", PATH_SEP, path_element2->path);
+    tmp_path = (char *) sftpfs_fix_filename (path_element2->path, &tmp_path_len);
+    tmp_path = g_strndup (tmp_path, tmp_path_len);
+
     path_element1 = vfs_path_get_by_index (vpath1, -1);
 
     do
     {
         const char *fixfname;
+        unsigned int fixfname_len = 0;
 
-        fixfname = sftpfs_fix_filename (path_element1->path);
+        fixfname = sftpfs_fix_filename (path_element1->path, &fixfname_len);
 
-        res = libssh2_sftp_rename_ex
-            (super_data->sftp_session,
-             fixfname,
-             sftpfs_filename_buffer->len, tmp_path, strlen (tmp_path), LIBSSH2_SFTP_SYMLINK);
+        res =
+            libssh2_sftp_rename_ex (super_data->sftp_session, fixfname, fixfname_len, tmp_path,
+                                    tmp_path_len, LIBSSH2_SFTP_SYMLINK);
         if (res >= 0)
             break;
 

@@ -4,7 +4,7 @@
 /*
  * win32 <getopt.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -27,14 +27,15 @@
 
 __BEGIN_DECLS
 
-extern  int	        opterr,		        /* if error message should be printed */
-  	                optind,		        /* index into parent argv vector */
-  	                optopt,	   	        /* character checked for validity */
-  	                optreset;  	        /* reset getopt */
-extern char	        *optarg;                /* argument associated with option */
+extern  int             opterr,                 /* if error message should be printed */
+                        optind,                 /* index into parent argv vector */
+                        optopt,                 /* character checked for validity */
+                        optreset;               /* reset getopt */
+extern char             *optarg;                /* argument associated with option */
 
-extern int              getopt __P((int nargc, char * const *nargv, const char *ostr));
+LIBW32_API int          getopt __P((int nargc, char * const *nargv, const char *ostr));
 
 __END_DECLS
 
 #endif /*LIBW32_GETOPT_H_INCLUDED*/
+

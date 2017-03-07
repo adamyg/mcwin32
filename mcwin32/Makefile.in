@@ -1,0 +1,974 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# Midnight command WIN32 builds 4.8.19, as at 01/03/17
+#
+# Copyright (c) 2007, 2012 - 2017 Adam Young.
+#
+# This file is part of the Midnight Commander.
+#
+# The Midnight Commander is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# The Midnight Commander is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Notice: Portions of this text are reprinted and reproduced in electronic form. from
+# IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
+# 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
+# Group. Copyright remains with the authors and the original Standard can be obtained
+# online at http://www.opengroup.org/unix/online.html.
+# ==end==
+#
+
+ROOT=		.
+MAKEFLAGS=
+
+PACKAGE		= mc
+PKG_BUGREPORT	= @PACKAGE_BUGREPORT@
+PKG_NAME	= @PACKAGE_NAME@
+PKG_STRING	= @PACKAGE_STRING@
+PKG_TARNAME	= @PACKAGE_TARNAME@
+PKG_URL		= @PACKAGE_URL@
+PKG_VERSION	= @PACKAGE_VERSION@
+ifeq ("","$(PKG_VERSION)")
+PKG_VERSION	= 4.8.19
+endif
+PKG_VERSION_1	=$(word 1,$(subst ., ,$(PKG_VERSION)))
+PKG_VERSION_2	=$(word 2,$(subst ., ,$(PKG_VERSION)))
+PKG_VERSION_3	=$(word 3,$(subst ., ,$(PKG_VERSION)))
+
+build		= @build@
+build_alias	= @build_alias@
+build_cpu	= @build_cpu@
+build_os	= @build_os@
+build_vendor	= @build_vendor@
+
+host		= @host@
+host_alias	= @host_alias@
+host_cpu	= @host_cpu@
+host_os 	= @host_os@
+host_vendor	= @host_vendor@
+
+target		= @target@
+target_alias	= @target_alias@
+target_cpu	= @target_cpu@
+target_os	= @target_os@
+target_vendor	= @target_vendor@
+
+	# directory components
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir	= @datarootdir@
+
+	# directory results
+bindir		= @bindir@
+sbindir		= @sbindir@
+libexecdir	= @libexecdir@
+libdir		= @libdir@
+datadir		= @datadir@
+
+        # package directories
+pkgname		= mc
+ifeq (rief,$(findstring rief,$(libexecdir)))
+pkglibexecdir	= $(libexecdir)
+pkglibdir	= $(libdir)
+else
+pkglibexecdir	= $(libexecdir)/$(pkgname)
+pkglibdir	= $(libdir)/$(pkgname)
+endif
+ifeq (rief,$(findstring rief,$(libexecdir)))
+pkgdatadir	= $(datadir)
+else
+pkgdatadir	= $(datadir)/$(pkgname)
+endif
+
+BINDIR		= $(bindir)
+SBINDIR		= $(sbindir)
+LIBEXECDIR	= $(pkglibexecdir)
+LIBDIR		= $(pkglibdir)
+DATADIR		= $(pkgdatadir)
+
+top_build_prefix= @top_build_prefix@
+top_builddir	= @top_builddir@
+top_srcdir	= @top_srcdir@
+
+# File extensions
+
+E=
+A=		.a
+O=		.o
+LP=		lib
+E=		.exe
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+AR=		@AR@
+RM=		@RM@
+RMDIR=		@RMDIR@
+CP=		@CP@
+RC=		@RC@
+PERL=		@PERL@
+TAR=		@TAR@
+INSTALL=	@INSTALL@
+
+BUSYBOX=	$(shell which busybox)
+CLBR19=		$(shell which clbr19.dll)
+MT7R19=		$(shell which mt7r19.dll)
+MCSOURCE=	../mcsrc
+##MCSOURCE=	../mcmerge
+##GTKINSTALL=	../gtk
+GTKINSTALL=	.
+
+MAN2HLP=	$(PERL) bin/man2hlp.pl
+RMFLAGS=	-f
+ARFLAGS=	-nologo
+
+# Common flags
+
+XFLAGS=
+COPT=		@CFLAGS@
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+LDEBUG=		@LDEBUG@
+CINCLUDE=	-I. -I$(MCSOURCE) -I$(D_INC) @CINCLUDE@
+ifdef MSVC
+CINCLUDE+=	-I$(ROOT)/libw32/msvc
+endif
+CINCLUDE+=	-I$(GTKINSTALL)/include -I$(GTKINSTALL)/include/glib-2.0
+CEXTRA=		@DEFS@ -D_WIN32 -DLIBW32_DYNAMIC
+CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CNFLAGS=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDEBUG) @LDFLAGS@
+##LDLIBS+=	$(GTKINSTALL)/lib/glib-2.0.lib $(GTKINSTALL)/lib/intl.lib
+LXFLAGS=	$(LDLIBS) @LIBS@
+
+RMFLAGS=	-f
+RMDFLAGS=	-rf
+
+# Directories
+
+D_BIN=		$(ROOT)/bin
+D_INC=		$(ROOT)/include
+D_OBJ=		$(ROOT)/objects
+D_LIB=		$(ROOT)/lib
+LW=		$(D_LIB)/$(LP)
+
+D_ETC=		$(D_BIN)/etc
+D_PLUGIN=	$(D_BIN)/plugin
+D_SHARE=	$(D_BIN)/share
+D_DOC=		$(D_BIN)/doc
+D_LOCALE=	$(D_BIN)/locale
+
+
+#########################################################################################
+#
+# Note: Objects output paths *must* be specialised as source components are not unique,
+#          for example 'init' and 'common'.
+#
+
+MC_SRC=	\
+	$(D_OBJ)/args$(O)			\
+	$(D_OBJ)/clipboard$(O)			\
+	$(D_OBJ)/cons.handler$(O)		\
+	$(D_OBJ)/events_init$(O)		\
+	$(D_OBJ)/execute$(O)			\
+	$(D_OBJ)/help$(O)			\
+	$(D_OBJ)/keybind-defaults$(O)		\
+	$(D_OBJ)/learn$(O)			\
+	$(D_OBJ)/main$(O)			\
+	$(D_OBJ)/selcodepage$(O)		\
+	$(D_OBJ)/setup$(O)			\
+	$(D_OBJ)/textconf$(O)			\
+	$(D_OBJ)/util$(O)			\
+	$(D_OBJ)/win32_glib$(O)
+
+#	$(D_OBJ)/background$(O)
+#	$(D_OBJ)/subshell/common$(O)
+#	$(D_OBJ)/subshell/proxyfunc$(O)
+
+D_OBJFM=	$(D_OBJ)/filemanager
+
+MC_FILEMANAGER=\
+	$(D_OBJFM)/achown$(O)			\
+	$(D_OBJFM)/boxes$(O)			\
+	$(D_OBJFM)/chmod$(O)			\
+	$(D_OBJFM)/chown$(O)			\
+	$(D_OBJFM)/cmd$(O)			\
+	$(D_OBJFM)/command$(O)			\
+	$(D_OBJFM)/dir$(O)			\
+	$(D_OBJFM)/ext$(O)			\
+	$(D_OBJFM)/file$(O)			\
+	$(D_OBJFM)/filegui$(O)			\
+	$(D_OBJFM)/filenot$(O)			\
+	$(D_OBJFM)/fileopctx$(O)		\
+	$(D_OBJFM)/find$(O)			\
+	$(D_OBJFM)/hotlist$(O)			\
+	$(D_OBJFM)/info$(O)			\
+	$(D_OBJFM)/layout$(O)			\
+	$(D_OBJFM)/listmode$(O)			\
+	$(D_OBJFM)/midnight$(O)			\
+	$(D_OBJFM)/mountlist$(O)		\
+	$(D_OBJFM)/panel$(O)			\
+	$(D_OBJFM)/panelize$(O)			\
+	$(D_OBJFM)/tree$(O)			\
+	$(D_OBJFM)/treestore$(O)		\
+	$(D_OBJFM)/usermenu$(O)			\
+	\
+	$(D_OBJFM)/drive$(O)
+
+D_OBJED=	$(D_OBJ)/editor
+
+MC_EDITOR=\
+	$(D_OBJED)/bookmark$(O)			\
+	$(D_OBJED)/choosesyntax$(O)		\
+	$(D_OBJED)/edit$(O)			\
+	$(D_OBJED)/editbuffer$(O)		\
+	$(D_OBJED)/editcmd$(O)			\
+	$(D_OBJED)/editcmd_dialogs$(O)		\
+	$(D_OBJED)/editdraw$(O)			\
+	$(D_OBJED)/editmenu$(O)			\
+	$(D_OBJED)/editoptions$(O)		\
+	$(D_OBJED)/editwidget$(O)		\
+	$(D_OBJED)/etags$(O)			\
+	$(D_OBJED)/format$(O)			\
+	$(D_OBJED)/spell$(O)			\
+	$(D_OBJED)/spell_dialogs$(O)		\
+	$(D_OBJED)/syntax$(O)
+
+D_OBJVW=	$(D_OBJ)/viewer
+
+MC_VIEWER=\
+	$(D_OBJVW)/viewer_ascii$(O)		\
+	$(D_OBJVW)/viewer_actions_cmd$(O)	\
+	$(D_OBJVW)/viewer_coord_cache$(O)	\
+	$(D_OBJVW)/viewer_datasource$(O)	\
+	$(D_OBJVW)/viewer_dialogs$(O)		\
+	$(D_OBJVW)/viewer_display$(O)		\
+	$(D_OBJVW)/viewer_growbuf$(O)		\
+	$(D_OBJVW)/viewer_hex$(O)		\
+	$(D_OBJVW)/viewer_lib$(O)		\
+	$(D_OBJVW)/viewer_mcviewer$(O)		\
+	$(D_OBJVW)/viewer_move$(O)		\
+	$(D_OBJVW)/viewer_nroff$(O)		\
+	$(D_OBJVW)/viewer_search$(O)
+
+MC_DIFFVIEWER=\
+	$(D_OBJVW)/diffviewer_ydiff$(O)		\
+	$(D_OBJVW)/diffviewer_search$(O)
+
+MC_OBJS=\
+	$(MC_SRC)				\
+	$(MC_FILEMANAGER)			\
+	$(MC_VIEWER)				\
+	$(MC_EDITOR)				\
+	$(MC_DIFFVIEWER)
+
+#mcutil
+#	lib
+#		- $(D_OBJLIB)/utilunix$(O)
+#
+#		+ $(D_OBJLIB)/win32_utl$(O)
+#	lib/event
+#	lib/filehighlight
+#	lib/mcconfig
+#	lib/search
+#	lib/skin
+#	lib/strutil
+#	lib/tty
+#		- $(D_OBJMC)/tty_color-ncurses$(O)
+#		- $(D_OBJMC)/tty_tty-ncurses$(O)
+#		- $(D_OBJMC)/tty_keyxdef$(O)
+#		- $(D_OBJMC)/tty_x11conn$(O)
+#		- $(D_OBJMC)/tty_tty-slang$(O)
+#		- $(D_OBJMC)/tty_key$(O)
+#		- $(D_OBJMC)/tty_win$(O)
+#
+#		+ $(D_OBJ)/win32_key$(O)
+#		+ $(D_OBJ)/win32_tty$(O)
+#		+ $(D_OBJ)/win32_win$(O)
+#		+ $(D_OBJ)/win32_pipe$(O)
+#	lib/vfs
+#	lib/widget
+#
+D_OBJMC=	$(D_OBJ)/libmc
+
+MC_LIBMC=\
+	$(D_OBJMC)/lib_charsets$(O)		\
+	$(D_OBJMC)/lib_glibcompat$(O)		\
+	$(D_OBJMC)/lib_global$(O)		\
+	$(D_OBJMC)/lib_hook$(O) 		\
+	$(D_OBJMC)/lib_keybind$(O)		\
+	$(D_OBJMC)/lib_lock$(O) 		\
+	$(D_OBJMC)/lib_logging$(O)		\
+	$(D_OBJMC)/lib_serialize$(O)		\
+	$(D_OBJMC)/lib_shell$(O)		\
+	$(D_OBJMC)/lib_timefmt$(O)		\
+	$(D_OBJMC)/lib_timer$(O)		\
+	$(D_OBJMC)/lib_util$(O)			\
+	\
+	$(D_OBJMC)/event_event$(O)		\
+	$(D_OBJMC)/event_manage$(O)		\
+	$(D_OBJMC)/event_raise$(O)		\
+	\
+	$(D_OBJMC)/hilite_common$(O)		\
+	$(D_OBJMC)/hilite_get-color$(O)		\
+	$(D_OBJMC)/hilite_ini-file-read$(O)	\
+	\
+	$(D_OBJMC)/mcconfig_common$(O)		\
+	$(D_OBJMC)/mcconfig_get$(O)		\
+	$(D_OBJMC)/mcconfig_paths$(O)		\
+	$(D_OBJMC)/mcconfig_set$(O)		\
+	\
+	$(D_OBJMC)/search_glob$(O)		\
+	$(D_OBJMC)/search_hex$(O)		\
+	$(D_OBJMC)/search_lib$(O)		\
+	$(D_OBJMC)/search_normal$(O)		\
+	$(D_OBJMC)/search_regex$(O)		\
+	$(D_OBJMC)/search_search$(O)		\
+	\
+	$(D_OBJMC)/skin_colors$(O)		\
+	$(D_OBJMC)/skin_colors-old$(O)		\
+	$(D_OBJMC)/skin_common$(O)		\
+	$(D_OBJMC)/skin_hc-skins$(O)		\
+	$(D_OBJMC)/skin_ini-file$(O)		\
+	$(D_OBJMC)/skin_lines$(O)		\
+	\
+	$(D_OBJMC)/strutil_strescape$(O)	\
+	$(D_OBJMC)/strutil_strutil$(O)		\
+	$(D_OBJMC)/strutil_strutil8bit$(O)	\
+	$(D_OBJMC)/strutil_strutilascii$(O)	\
+	$(D_OBJMC)/strutil_strutilutf8$(O)	\
+	$(D_OBJMC)/strutil_strverscmp$(O)	\
+	$(D_OBJMC)/strutil_replace$(O)		\
+	$(D_OBJMC)/strutil_xstrtol$(O)		\
+	\
+	$(D_OBJMC)/tty_color$(O)		\
+	$(D_OBJMC)/tty_color-internal$(O)	\
+	$(D_OBJMC)/tty_color-slang$(O)		\
+	$(D_OBJMC)/tty_mouse$(O)		\
+	$(D_OBJMC)/tty_tty$(O)			\
+	\
+	$(D_OBJMC)/win32_key$(O)		\
+	$(D_OBJMC)/win32_tty$(O)		\
+	$(D_OBJMC)/win32_win$(O)		\
+	$(D_OBJMC)/win32_utl$(O)		\
+	$(D_OBJMC)/win32_pipe$(O)		\
+	\
+	$(D_OBJMC)/vfs_direntry$(O)		\
+	$(D_OBJMC)/vfs_gc$(O)			\
+	$(D_OBJMC)/vfs_interface$(O)		\
+	$(D_OBJMC)/vfs_netutil$(O)		\
+	$(D_OBJMC)/vfs_parse_ls_vga$(O)		\
+	$(D_OBJMC)/vfs_path$(O)			\
+	$(D_OBJMC)/vfs_utilvfs$(O)		\
+	$(D_OBJMC)/vfs_vfs$(O)			\
+	\
+	$(D_OBJMC)/widget_button$(O)		\
+	$(D_OBJMC)/widget_buttonbar$(O)		\
+	$(D_OBJMC)/widget_check$(O)		\
+	$(D_OBJMC)/widget_dialog$(O)		\
+	$(D_OBJMC)/widget_dialog-switch$(O)	\
+	$(D_OBJMC)/widget_gauge$(O)		\
+	$(D_OBJMC)/widget_groupbox$(O)		\
+	$(D_OBJMC)/widget_history$(O)		\
+	$(D_OBJMC)/widget_hline$(O)		\
+	$(D_OBJMC)/widget_input$(O)		\
+	$(D_OBJMC)/widget_input_complete$(O)	\
+	$(D_OBJMC)/widget_label$(O)		\
+	$(D_OBJMC)/widget_listbox$(O)		\
+	$(D_OBJMC)/widget_listbox-window$(O)	\
+	$(D_OBJMC)/widget_menu$(O)		\
+	$(D_OBJMC)/widget_mouse$(O)		\
+	$(D_OBJMC)/widget_quick$(O)		\
+	$(D_OBJMC)/widget_radio$(O)		\
+	$(D_OBJMC)/widget_widget-common$(O)	\
+	$(D_OBJMC)/widget_wtools$(O)
+
+#libvfs
+#	vfs/
+#	vfs/local
+#	vfs/cpio
+#	vfs/extfs
+#	vfs/fish	TODO -- shell/pipe
+#		- $(D_OBJVFS)/fish_fish$(O)
+#	vfs/ftpfs
+#	vfs/sfs
+#	vfs/sftpfs
+#	vfs/smbfs
+#		- $(D_OBJVFS)/smbfs_smbfs$(O)
+#	vfs/tar
+#	vfs/undelfs	linux specific
+#		- $(D_OBJVFS)/undelfs_undelfs$(O)
+#
+D_OBJVFS=	$(D_OBJ)/libvfs
+
+MC_LIBVFS_SFTPFS=\
+	$(D_OBJVFS)/sftpfs_config_parser$(O)	\
+	$(D_OBJVFS)/sftpfs_connection$(O)	\
+	$(D_OBJVFS)/sftpfs_dir$(O)		\
+	$(D_OBJVFS)/sftpfs_file$(O)		\
+	$(D_OBJVFS)/sftpfs_init$(O)		\
+	$(D_OBJVFS)/sftpfs_internal$(O)		\
+	$(D_OBJVFS)/sftpfs_vfs_class$(O)	\
+	$(D_OBJVFS)/sftpfs_vfs_subclass$(O)
+
+MC_LIBVFS=\
+	$(D_OBJVFS)/plugins_init$(O)		\
+	$(D_OBJVFS)/local_local$(O)		\
+	$(D_OBJVFS)/cpio_cpio$(O)		\
+	$(D_OBJVFS)/extfs_extfs$(O)		\
+	$(D_OBJVFS)/ftpfs_ftpfs$(O)		\
+	$(MC_LIBVFS_SFTPFS)			\
+	$(D_OBJVFS)/sfs_sfs$(O)			\
+	$(D_OBJVFS)/tar_tar$(O)
+
+MC_RES=		$(D_OBJ)/mc.res
+
+OBJS=		$(MC_OBJS)
+
+
+#########################################################################################
+# configuration
+
+HINTS_SRC=		$(MCSOURCE)/doc/hints
+HINTS_L10N_SRC=		$(MCSOURCE)/doc/hints/l10n
+MAN_SRC=		$(MCSOURCE)/doc/man
+HLP_SRC=		$(MCSOURCE)/doc/hlp
+EXTD_SRC=		$(MCSOURCE)/misc/ext.d
+EXTFS_SRC=		$(MCSOURCE)/src/vfs/extfs/helpers
+FISH_SRC=		$(MCSOURCE)/src/vfs/fish/helpers
+MISC_SRC=		$(MCSOURCE)/misc
+SKINS_SRC=		$(MCSOURCE)/misc/skins
+SYNTAX_SRC=		$(MCSOURCE)/misc/syntax
+MACROSDATA_SRC=		$(MCSOURCE)/misc/macros.d
+DOC_SRC=		$(MCSOURCE)/doc
+PO_SRC=			$(MCSOURCE)/po
+
+WIN32_ETC_SRC=		./win32_etc
+WIN32_DOC_SRC=		./doc
+
+CFG_ETC=\
+	$(D_ETC)/filehighlight.ini		\
+	$(D_ETC)/mc.ext				\
+	$(D_ETC)/mc.default.keymap		\
+	$(D_ETC)/mc.emacs.keymap		\
+	$(D_ETC)/mc.menu			\
+	$(D_ETC)/mcedit.menu			\
+	$(D_ETC)/edit.indent.rc
+
+CFG_WIN32_ETC:=		$(filter-out CVS, $(notdir $(wildcard $(WIN32_ETC_SRC)/*)))
+
+CFG_ETC_MAGIC=\
+	$(D_ETC)/magic.mgc
+
+CFG_SHARE=\
+	$(D_SHARE)/mc.macros			\
+	$(D_SHARE)/mc.charsets			\
+	$(D_SHARE)/mc.lib
+
+CFG_SHARE_HELP=\
+	$(D_SHARE)/help/mc.hlp			\
+	$(D_SHARE)/help/mc.hlp.es		\
+	$(D_SHARE)/help/mc.hlp.hu		\
+	$(D_SHARE)/help/mc.hlp.it		\
+	$(D_SHARE)/help/mc.hlp.pl		\
+	$(D_SHARE)/help/mc.hlp.ru		\
+	$(D_SHARE)/help/mc.hlp.sr
+
+CFG_SHARE_HINTS:=	$(addprefix $(D_SHARE)/hints/, \
+				$(filter-out CVS, $(notdir $(wildcard $(HINTS_SRC)/mc.hint*))))
+
+CFG_SHARE_HINTS_L10N:=	$(addprefix $(D_SHARE)/hints/, \
+				$(filter-out CVS, $(notdir $(wildcard $(HINTS_L10N_SRC)/mc.hint*))))
+
+CFG_SHARE_SKINS:=	$(addprefix $(D_SHARE)/skins/, \
+				$(filter-out CVS, $(notdir $(wildcard $(SKINS_SRC)/*.ini))))
+
+CFG_SHARE_SYNTAX:=	$(addprefix $(D_SHARE)/syntax/, \
+				$(filter-out CVS, $(notdir $(wildcard $(SYNTAX_SRC)/*ax))))
+
+CFG_SHARE_MACROS_D:=	$(addprefix $(D_SHARE)/macros.d/, \
+				$(filter-out CVS, $(notdir $(wildcard $(MACROSDATA_SRC)/*sh))))
+
+CFG_PLUGIN:=		$(addprefix $(D_PLUGIN)/, \
+				$(subst .sh.in,.sh,$(filter-out CVS, $(notdir $(wildcard $(EXTD_SRC)/*sh*)))))
+
+CFG_PLUGIN_EXTFS_D:=	$(addprefix $(D_PLUGIN)/extfs.d/, \
+				$(subst .in,,$(filter-out Makefile.am sfs.ini CVS, $(notdir $(wildcard $(EXTFS_SRC)/*)))))
+
+CFG_PLUGIN_FISH:=	$(addprefix $(D_PLUGIN)/fish/, \
+				$(filter-out Makefile.am CVS, $(notdir $(wildcard $(FISH_SRC)/*))))
+
+CFG_DOC=\
+	$(D_DOC)/FAQ				\
+	$(D_DOC)/COPYING			\
+	$(D_DOC)/HACKING			\
+	$(D_DOC)/MAINTAINERS			\
+	$(D_DOC)/AUTHORS			\
+	$(D_DOC)/NEWS				\
+	$(D_DOC)/NEWS.OLD			\
+	$(D_DOC)/README				\
+	$(D_DOC)/TODO
+
+CFG_DOC+=		$(addprefix $(D_DOC)/, \
+				$(filter-out CVS, $(notdir $(wildcard $(WIN32_DOC_SRC)/*))))
+CFG_DOC+=		$(D_BIN)/changelog.txt
+
+MSGLANGS=		$(notdir $(wildcard $(PO_SRC)/*.po))
+MSGDIRS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=/LC_MESSAGES/.created))
+MSGOBJS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=/LC_MESSAGES/$(PACKAGE).mo))
+
+CONFIGURATION=\
+	$(CFG_ETC)				\
+	$(CFG_ETC_MAGIC)			\
+	$(CFG_SHARE)				\
+	$(CFG_SHARE_HELP)			\
+	$(CFG_SHARE_NEWS)			\
+	$(CFG_SHARE_HINTS)			\
+	$(CFG_SHARE_HINTS_L10N)			\
+	$(CFG_SHARE_SKINS)			\
+	$(CFG_SHARE_SYNTAX)			\
+	$(CFG_SHARE_MACROS_D)			\
+	$(CFG_PLUGIN)				\
+	$(CFG_PLUGIN_EXTFS_D)			\
+	$(CFG_PLUGIN_FISH)			\
+	$(CFG_DOC)
+
+#########################################################################################
+# targets
+
+TARGETS=\
+	$(D_BIN)/mc$(E)				\
+	$(D_BIN)/man2hlp.pl
+
+IMPORT=\
+	$(D_BIN)/busybox.exe			\
+	$(D_BIN)/clbr19.dll			\
+	$(D_BIN)/mt7r19.dll
+##	$(D_BIN)/libglib-2.0-0.dll		\
+##	$(D_BIN)/intl.dll
+##	$(D_BIN)/zlib1.dll
+
+LIBRARIES=\
+	$(LW)w32$(A)				\
+	$(LW)regex$(A)				\
+	$(LW)z$(A)				\
+	$(LW)magic$(A)				\
+	$(LW)ssh2$(A)				\
+	$(LW)intl$(A)				\
+	$(LW)glib-2.0$(A)			\
+	$(LW)mcutil$(A)				\
+	$(LW)mcvfs$(A)
+
+reverse = $(if $1,$(call reverse,$(wordlist 2,999999,$1)) $(firstword $1))
+LDLIBRARIES = $(call reverse, $(LIBRARIES))
+
+DIRECTORIES:=\
+	$(D_LIB)/.created			\
+	$(D_OBJ)/.created			\
+		$(D_OBJMC)/.created		\
+		$(D_OBJVFS)/.created		\
+		$(D_OBJFM)/.created		\
+		$(D_OBJED)/.created		\
+		$(D_OBJVW)/.created		\
+	$(D_BIN)/.created			\
+		$(D_DOC)/.created		\
+		$(D_ETC)/.created		\
+		$(D_LOCALE)/.created		\
+		$(D_PLUGIN)/.created		\
+		$(D_PLUGIN)/extfs.d/.created	\
+		$(D_PLUGIN)/fish/.created	\
+		$(D_SHARE)/.created		\
+		$(D_SHARE)/help/.created	\
+		$(D_SHARE)/hints/.created	\
+		$(D_SHARE)/man/.created		\
+		$(D_SHARE)/skins/.created	\
+		$(D_SHARE)/syntax/.created	\
+		$(D_SHARE)/macros.d/.created
+
+
+#########################################################################################
+# rules
+
+.DEFAULT:
+.PHONY:				all directories artifacts targets configuration gettext
+
+build:				directories artifacts targets configuration gettext import
+
+release:			new_buildnumber build package
+
+directories:			$(DIRECTORIES)
+
+artifacts:			buildinfo.h BUILDNUMBER
+
+%/.created:
+		-@$(PERL) ./mkdir_p.pl $(@D)
+		@echo "++ do not delete, midnight commander managed content ++" > $@
+
+targets:			$(LIBRARIES) $(TARGETS)
+
+configuration:			$(CONFIGURATION) configuration-win32
+
+gettext:			$(MSGDIRS) $(MSGOBJS)
+
+.PHONY:				configuration-win32
+configuration-win32:				# unconditional export
+	@echo win32 specialised files ...
+	@$(BUSYBOX) sh -c "\
+		for x in $(CFG_WIN32_ETC); do \
+			echo exporting $$x ...; \
+			rm -f $(D_ETC)/$$x; \
+			cp -f $(WIN32_ETC_SRC)/$$x $(D_ETC)/$$x; \
+		done;\
+		"
+
+.PHONY:
+import:				$(IMPORT)
+
+$(D_BIN)/busybox.exe:		$(BUSYBOX)
+	@echo importing $(BUSYBOX)
+	@$(CP) -f $^ $@
+
+$(D_BIN)/clbr19.dll:		$(CLBR19)
+	@echo importing $(CLBR19)
+	@$(CP) -f $(subst /,\,$^) $@
+
+$(D_BIN)/mt7r19.dll:		$(MT7R19)
+	@echo importing $(MT7R19)
+	@$(CP) -f $^ $@
+
+$(D_BIN)/%.dll:			$(GTKINSTALL)/bin/%.dll
+	@echo importing $^
+	@$(CP) -f $^ $@
+
+.PHONY:
+package:
+	$(ComSpec) /c start mc-inno-setup.iss
+
+.PHONY:		clean
+clean:
+	-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN) >nul 2>&1
+	-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES)) >nul 2>&1
+	-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A) >nul 2>&1
+	-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A) >nul 2>&1
+	$(MAKE) -C libglib clean
+	$(MAKE) -C libintl clean
+	$(MAKE) -C libmagic clean
+	$(MAKE) -C libregex clean
+	$(MAKE) -C libz clean
+	$(MAKE) -C libw32 clean
+	-$(RM) $(MSGOBJS) $(MSGDIRS) >nul 2>&1
+	-$(RM) $(DIRECTORIES) >nul 2>&1
+	-$(RMDIR) $(dir $(DIRECTORIES) $(MSGDIRS)) >nul 2>&1
+	-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) >nul 2>&1
+
+
+#########################################################################################
+# applications
+
+$(D_BIN)/mc$(E):	MAPFILE=$(basename $@).map
+$(D_BIN)/mc$(E):		$(MC_OBJS) $(MC_RES) $(LDLIBRARIES)
+		$(CC) $(LDFLAGS) -o $@ $^ $(LXFLAGS) @LDMAPFILE@
+
+$(MC_RES):			config.h buildinfo.h
+
+BUILD_DATE=			$(shell $(BUSYBOX) date +'%Y%m%d')
+BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
+
+buildinfo.h:			Makefile
+	@$(BUSYBOX) sh -c "\
+		echo // Auto-generated by Makefile >$@; \
+		echo \#define PACKAGE \\\"$(PACKAGE)\\\" >>$@; \
+		echo \#define PACKAGE_NAME \\\"$(PKG_NAME)\\\" >>$@; \
+		echo \#define VERSION \\\"$(PKG_VERSION)\\\" >>$@; \
+		echo \#define VERSION_1 $(PKG_VERSION_1) >>$@; \
+		echo \#define VERSION_2 $(PKG_VERSION_2) >>$@; \
+		echo \#define VERSION_3 $(PKG_VERSION_3) >>$@; \
+		echo \#define BUILD_DATE \\\"$(BUILD_DATE)\\\" >>$@; \
+		echo \#define BUILD_NUMBER \\\"$(BUILD_NUMBER)\\\" >>$@; \
+		"
+
+.PHONY:				new_buildnumber
+new_buildnumber:
+	-@chmod +w BUILDNUMBER >nul 2>&1
+
+BUILDNUMBER:			Makefile
+	@echo incrementing build number ...
+	-@$(BUSYBOX) sh -c "\
+		if [ ! -f BUILDNUMBER ]; then echo 1 >BUILDNUMBER; fi;\
+		echo $$(($$(cat BUILDNUMBER) + 1)) >BUILDNUMBER;\
+		"
+	-@chmod -w BUILDNUMBER >nul 2>&1
+
+$(D_OBJ)/%.res: %.rc
+		$(RC) -nologo -Fo$@ $<
+
+$(D_BIN)/man2hlp.pl:		$(MCSOURCE)/src/man2hlp/man2hlp.in
+		@echo importing $@ ..
+		@$(CP) $< $@
+
+
+#########################################################################################
+# resources
+
+# .. bin
+$(D_BIN)/changelog.txt :	./changelog.txt
+	@echo importing $@ ..
+	@$(CP) $^ $@
+
+# .. etc
+$(D_ETC)/% :			$(MISC_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+$(D_ETC)/% :			$(MISC_SRC)/%.in			# mc.ext.in
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. etc/magic
+$(D_ETC)/magic.mgc:		libmagic/magic.mgc
+	@echo importing $@ ..
+	@$(CP) $< $@
+
+# .. plugin
+$(D_PLUGIN)/% :			$(EXTD_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+$(D_PLUGIN)/% :			$(EXTD_SRC)/%.in
+	@echo converting $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. plugin/extfs.d
+$(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+$(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%.in
+	@echo converting $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. plugin/fish
+$(D_PLUGIN)/fish/% :		$(FISH_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. share
+$(D_SHARE)/% :			$(MISC_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. share/help
+$(D_SHARE)/help/mc.hlp:		$(MAN_SRC)/mc.1.in $(HLP_SRC)/xnc.hlp
+	@echo building $@ ..
+	-@$(MAN2HLP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+$(D_SHARE)/help/mc.hlp.%:	$(MAN_SRC)/%/mc.1.in $(HLP_SRC)/%/xnc.hlp
+	@echo building $@ ..
+	-@$(MAN2HLP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. share/hints
+$(D_SHARE)/hints/% :		$(HINTS_L10N_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+$(D_SHARE)/hints/% :		$(HINTS_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. share/skins
+$(D_SHARE)/skins/% :		$(SKINS_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. share/syntax
+$(D_SHARE)/syntax/% :		$(SYNTAX_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. share/macro.d
+$(D_SHARE)/macros.d/% :		$(MACROSDATA_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) dos2unix $@
+
+# .. docs
+$(D_DOC)/AUTHORS :		$(MCSOURCE)/AUTHORS
+	@echo importing $@ ..
+	@$(CP) $^ $@
+
+$(D_DOC)/% :			$(WIN32_DOC_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) unix2dos $@
+
+$(D_DOC)/% :			$(DOC_SRC)/%
+	@echo importing $@ ..
+	@$(CP) $^ $@
+	@$(BUSYBOX) unix2dos $@
+
+# .. mo
+$(D_LOCALE)/%/LC_MESSAGES/$(PACKAGE).mo: $(PO_SRC)/%.po
+	@echo build $@ ..
+	msgfmt -c -o $@ $(PO_SRC)/$*.po
+
+#########################################################################################
+# libraries
+
+$(LW)mcutil$(A):		$(D_OBJMC)/.created $(MC_LIBMC)
+		-@$(RM) -f $@ >nul 2>&1
+		$(AR) $(ARFLAGS) /OUT:$@ $(subst /,\,$(MC_LIBMC))
+
+$(LW)mcvfs$(A):			$(D_OBJVFS)/.created $(MC_LIBVFS)
+		-@$(RM) -f $@ >nul 2>&1
+		$(AR) $(ARFLAGS) /OUT:$@ $(subst /,\,$(MC_LIBVFS))
+
+.PHONY:		$(LW)w32$(A)
+$(LW)w32$(A):
+		$(MAKE) -C libw32 $(MAKEFLAGS)
+
+.PHONY:		$(LW)z$(A)
+$(LW)z$(A):
+		$(MAKE) -C libz $(MAKEFLAGS)
+
+.PHONY:		$(LW)regex$(A)
+$(LW)regex$(A):
+		$(MAKE) -C libregex $(MAKEFLAGS)
+
+.PHONY:		$(LW)magic$(A)
+$(LW)magic$(A):
+		$(MAKE) -C libmagic $(MAKEFLAGS)
+
+.PHONY:		$(LW)ssh2$(A)
+$(LW)ssh2$(A):
+		$(MAKE) -C libssh2 $(MAKEFLAGS)
+
+.PHONY:		$(LW)intl$(A)
+$(LW)intl$(A):
+		$(MAKE) -C libintl $(MAKEFLAGS)
+
+.PHONY:		$(LW)glib-2.0$(A)
+$(LW)glib-2.0$(A):
+		$(MAKE) -C libglib $(MAKEFLAGS)
+
+#########################################################################################
+# source rules
+#
+# note: output directories must be component specific as object name as not unique,
+#	   for example common and init.
+
+$(D_OBJ)/%$(O) :		./%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%$(O) :		$(MCSOURCE)/src/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJFM)/%$(O) :		$(MCSOURCE)/src/filemanager/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJFM)/%$(O) :		%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVW)/viewer_%$(O) :	$(MCSOURCE)/src/viewer/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVW)/diffviewer_%$(O) :	$(MCSOURCE)/src/diffviewer/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJED)/%$(O) :		$(MCSOURCE)/src/editor/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+# .. libmcutil
+$(D_OBJMC)/%$(O)	:	./%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/lib_%$(O)	:	$(MCSOURCE)/lib/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/event_%$(O)	:	$(MCSOURCE)/lib/event/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/hilite_%$(O) :	$(MCSOURCE)/lib/filehighlight/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/mcconfig_%$(O) :	$(MCSOURCE)/lib/mcconfig/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/search_%$(O) :	$(MCSOURCE)/lib/search/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/skin_%$(O) :		$(MCSOURCE)/lib/skin/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/strutil_%$(O) :	$(MCSOURCE)/lib/strutil/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/tty_%$(O) :		$(MCSOURCE)/lib/tty/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/vfs_%$(O) :		$(MCSOURCE)/lib/vfs/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/widget_%$(O) :	$(MCSOURCE)/lib/widget/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+# .. libmcvfs
+$(D_OBJVFS)/%$(O) :		$(MCSOURCE)/src/vfs/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/cpio_%$(O) :	$(MCSOURCE)/src/vfs/cpio/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/extfs_%$(O) :	$(MCSOURCE)/src/vfs/extfs/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/fish_%$(O) :	$(MCSOURCE)/src/vfs/fish/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/ftpfs_%$(O) :	$(MCSOURCE)/src/vfs/ftpfs/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/local_%$(O) :	$(MCSOURCE)/src/vfs/local/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/sfs_%$(O) :		$(MCSOURCE)/src/vfs/sfs/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/sftpfs_%$(O) :	$(MCSOURCE)/src/vfs/sftpfs/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/smbfs_%$(O) :	$(MCSOURCE)/src/vfs/smbfs/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/tar_%$(O) :		$(MCSOURCE)/src/vfs/tar/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJVFS)/undelfs_%$(O) :	$(MCSOURCE)/src/vfs/undelfs/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+#end
+

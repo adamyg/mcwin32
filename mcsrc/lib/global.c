@@ -1,7 +1,7 @@
 /*
    Global structure for some library-related variables
 
-   Copyright (C) 2009-2015
+   Copyright (C) 2009-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -60,8 +60,8 @@ mc_global_t mc_global = {
     .source_codepage = -1,
     .display_codepage = -1,
 #else
-    .eight_bit_clean = 1,
-    .full_eight_bits = 0,
+    .eight_bit_clean = TRUE,
+    .full_eight_bits = FALSE,
 #endif /* !HAVE_CHARSET */
     .utf8_display = FALSE,
 
@@ -79,6 +79,8 @@ mc_global_t mc_global = {
         .is_right = FALSE
     },
 
+    .shell = NULL,
+
     .tty =
     {
         .skin = NULL,
@@ -95,8 +97,6 @@ mc_global_t mc_global = {
 #ifdef ENABLE_SUBSHELL
         .subshell_pty = 0,
 #endif /* !ENABLE_SUBSHELL */
-
-        .shell = NULL,
 
         .xterm_flag = FALSE,
         .disable_x11 = FALSE,

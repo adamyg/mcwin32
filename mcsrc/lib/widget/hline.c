@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Authors:
@@ -67,7 +67,7 @@ hline_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
         {
             Widget *wo = WIDGET (h);
 
-            if (((h->flags & DLG_COMPACT) != 0))
+            if (h->compact)
             {
                 w->x = wo->x;
                 w->cols = wo->cols;
@@ -79,10 +79,6 @@ hline_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
             }
         }
         return MSG_HANDLED;
-
-    case MSG_FOCUS:
-        /* We don't want to get the focus */
-        return MSG_NOT_HANDLED;
 
     case MSG_DRAW:
         if (l->transparent)
@@ -110,6 +106,10 @@ hline_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
         }
         return MSG_HANDLED;
 
+    case MSG_DESTROY:
+        g_free (l->text);
+        return MSG_HANDLED;
+
     default:
         return widget_default_callback (w, sender, msg, parm, data);
     }
@@ -132,8 +132,6 @@ hline_new (int y, int x, int width)
     l->text = NULL;
     l->auto_adjust_cols = (width < 0);
     l->transparent = FALSE;
-    widget_want_cursor (w, FALSE);
-    widget_want_hotkey (w, FALSE);
 
     return l;
 }

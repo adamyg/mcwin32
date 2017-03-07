@@ -1,22 +1,23 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 # 
 # Translators:
 # flipthegreat <flipthegreat@hotmail.com>, 2011
 # Heimen Stoffels <vistausss@outlook.com>, 2013
-# Richard E. van der Luit <nippur@fedoraproject.org>, 2012-2014
+# Richard E. van der Luit <nippur@fedoraproject.org>, 2012-2015
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # toniotonba <TonioTonBa@gmail.com>, 2011
 # bucovaina78 <wannessmet@gmail.com>, 2012
+# Yury V. Zaytsev <yury@shurup.com>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2015-02-26 09:43+0300\n"
-"PO-Revision-Date: 2015-02-26 09:48+0000\n"
+"POT-Creation-Date: 2016-11-21 13:19+0300\n"
+"PO-Revision-Date: 2016-11-22 08:19+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Dutch (http://www.transifex.com/projects/p/mc/language/nl/)\n"
+"Language-Team: Dutch (http://www.transifex.com/mc/mc/language/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -137,10 +138,29 @@ msgstr "Verwerken van thema %s mislukt.\nStandaard-thema is geladen"
 
 #, c-format
 msgid ""
+"Unable to use '%s' skin with true colors support:\n"
+"%s\n"
+"Default skin has been loaded"
+msgstr ""
+
+#, c-format
+msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
 msgstr "Niet instaat '%s' skin te gebruiken met 256 colors support\nof non-256 colors terminal.\nStandaard skin is geladen"
+
+msgid "True color not supported with ncurses."
+msgstr ""
+
+msgid "True color not supported in this slang version."
+msgstr ""
+
+msgid "Your terminal doesn't even seem to support 256 colors."
+msgstr ""
+
+msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
+msgstr ""
 
 msgid "Escape"
 msgstr "Escape"
@@ -338,7 +358,7 @@ msgid "Colon"
 msgstr "Dubbele punt"
 
 msgid "Semicolon"
-msgstr ""
+msgstr "Semicolon"
 
 msgid "Exclamation mark"
 msgstr "Uitroepteken"
@@ -434,11 +454,29 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr "Schermgrootte %dx%d wordt niet ondersteund.\nControleer omgevingsvariabele TERM ( opdr: set).\n"
 
+msgid "B"
+msgstr ""
+
+msgid "kB"
+msgstr ""
+
+msgid "KiB"
+msgstr ""
+
+msgid "MB"
+msgstr ""
+
+msgid "MiB"
+msgstr ""
+
+msgid "GB"
+msgstr ""
+
+msgid "GiB"
+msgstr ""
+
 msgid "Cannot create pipe descriptor"
 msgstr "Aanmaken van pipe discriptor mislukt"
-
-msgid "Cannot parse command for pipe"
-msgstr "Kan commando voor pipe niet parsen"
 
 msgid "Cannot create pipe streams"
 msgstr "Kan pipe streams niet aanmaken"
@@ -471,8 +509,13 @@ msgstr "Fout bij het dup'ing van de oude pipe error"
 msgid "Directory cache expired for %s"
 msgstr "Map-cache verlopen voor %s"
 
-msgid "bytes transferred"
-msgstr "bytes overgebracht"
+#, c-format
+msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
+msgstr ""
+
+#, c-format
+msgid "%s: %s: %s %lld bytes transferred"
+msgstr ""
 
 msgid "Starting linear transfer..."
 msgstr "Starten van lineaire overdracht"
@@ -555,8 +598,8 @@ msgid "Error"
 msgstr "Fout"
 
 #, c-format
-msgid "%d: %s"
-msgstr "%d: %s"
+msgid "%s (%d)"
+msgstr ""
 
 msgid "&Abort"
 msgstr "&Afbreken"
@@ -670,7 +713,7 @@ msgid ""
 "\n"
 "Attributes:\n"
 "   bold, italic, underline, reverse, blink; append more with '+'\n"
-msgstr ""
+msgstr "Standaardkleuren: \n   zwart, grijs, rood, felrood, groen, felgroen, bruin, \n   geel, blauw, felblauw, magenta, lichtmagenta, cyaan,\n   lichtcyaan, lichtgrijs en wit\n\nMeer kleuren, indien 256 kleuren beschikbaar zijn:\n   color16 tot color255, of rgb000 tot rgb555 en gray0 tot gray23\n\nAttributen:\n   vet, onderlijnd, reverse, knipperen; voeg meer toe met '+'\n \n"
 
 msgid "Color options"
 msgstr "Kleur instellingen"
@@ -706,7 +749,7 @@ msgstr "Parsefout argumenten!"
 msgid "No arguments given to the viewer."
 msgstr "Geen argumenten opgegevan aan de viewer"
 
-msgid "Two files are required to evoke the diffviewer."
+msgid "Two files are required to envoke the diffviewer."
 msgstr "Voor de diffviewer zijn 2 files nodig"
 
 msgid "Background protocol error"
@@ -1495,7 +1538,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr "Eeen gebruikersvriendelijke tekstbewerker\ngeschreven voor de Midnight Commander"
 
-msgid "Copyright (C) 1996-2015 the Free Software Foundation"
+msgid "Copyright (C) 1996-2016 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1823,6 +1866,9 @@ msgstr "'L&ynx'-achtige bewegingen"
 msgid "Pa&ge scrolling"
 msgstr "Pa&ginascrollen"
 
+msgid "Center &scrolling"
+msgstr ""
+
 msgid "&Mouse page scrolling"
 msgstr "&Muis paginascrollen"
 
@@ -1854,14 +1900,17 @@ msgstr "Bij snel-herladen kan het zijn dat de\nmapinhoud niet exact klopt. In da
 msgid "&Full file list"
 msgstr "&Complete bestandenlijst"
 
-msgid "&Brief file list"
-msgstr "&Korte bestandenlijst"
+msgid "&Brief file list:"
+msgstr "&Korte bestandenlijst:"
 
 msgid "&Long file list"
 msgstr "&Lange bestandenlijst"
 
 msgid "&User defined:"
 msgstr "Aange&past:"
+
+msgid "columns"
+msgstr "kolommen"
 
 msgid "User &mini status"
 msgstr "&Ministatus gebruiker"
@@ -2181,6 +2230,10 @@ msgid ""
 msgstr "Geen xterm en geen Linux console; \nde vensters kunnen niet geschakeld worden."
 
 #, c-format
+msgid "'%s' is not a symbolic link"
+msgstr "'%s' is  geen symbolische link"
+
+#, c-format
 msgid "Symlink '%s' points to:"
 msgstr "Symlink '%s' verwijst naar:"
 
@@ -2194,10 +2247,6 @@ msgstr "bewerken symbolische link, kan %s niet verwijderen: %s"
 #, c-format
 msgid "edit symlink: %s"
 msgstr "symbolische link bewerken: %s"
-
-#, c-format
-msgid "'%s' is not a symbolic link"
-msgstr "'%s' is  geen symbolische link"
 
 msgid "FTP to machine"
 msgstr "FTP naar machine"
@@ -2470,9 +2519,9 @@ msgstr "Kan geen ruimte voor doelbestand \"%s\" prealloceren\n%s"
 
 #, c-format
 msgid ""
-"Cannot read source file\"%s\"\n"
+"Cannot read source file \"%s\"\n"
 "%s"
-msgstr "Bronbestand \"%s\" kan niet gelezen worden \n%s "
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2558,8 +2607,8 @@ msgid ""
 msgstr "Kan map  \"%s\" niet naar \"%s\" verplaatsen \n%s "
 
 #, c-format
-msgid "Directories: %zd, total size: %s"
-msgstr "Directories: %zd, totale grootte: %s"
+msgid "Directories: %zu, total size: %s"
+msgstr ""
 
 msgid "Cannot operate on \"..\"!"
 msgstr "Opereren op \"..\" is niet mogelijk! "
@@ -2710,8 +2759,8 @@ msgid "&Edit - F4"
 msgstr "Bew&erken -F4"
 
 #, c-format
-msgid "Found: %ld"
-msgstr "Gevonden: %ld"
+msgid "Found: %lu"
+msgstr ""
 
 msgid "Malformed regular expression"
 msgstr "Slecht geformuleerde reguliere expressie"
@@ -2760,10 +2809,10 @@ msgid "Finished"
 msgstr "Klaar"
 
 #, c-format
-msgid "Finished (ignored %zd directory)"
-msgid_plural "Finished (ignored %zd directories)"
-msgstr[0] "Klaar (%zd directory genegeerd)"
-msgstr[1] "Klaar (%zd directories genegeerd)"
+msgid "Finished (ignored %zu directory)"
+msgid_plural "Finished (ignored %zu directories)"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Searching"
 msgstr "Aan het zoeken"
@@ -2883,62 +2932,62 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr "Vrij ruimte: %s/%s (%d%%)"
 
 #, c-format
-msgid "Type:      %s"
-msgstr "Type:      %s"
+msgid "Type:       %s"
+msgstr "Type:       %s"
 
 msgid "non-local vfs"
 msgstr "non-lokaal vfs"
 
 #, c-format
-msgid "Device:    %s"
-msgstr "Apparaat:     %s"
+msgid "Device:     %s"
+msgstr "Apparaat: %s"
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "Bestandssysteem: %s"
 
 #, c-format
-msgid "Accessed:  %s"
+msgid "Accessed:   %s"
 msgstr "Benaderd: %s"
 
 #, c-format
-msgid "Modified:  %s"
-msgstr "Veranderd:  %s"
+msgid "Modified:   %s"
+msgstr "Aangepast: %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:   %s"
-msgstr "Veranderd:   %s"
+msgid "Changed:    %s"
+msgstr "Veranderd: %s"
 
 #, c-format
 msgid "Dev. type: major %lu, minor %lu"
 msgstr "Dev. type: major %lu, minor %lu"
 
 #, c-format
-msgid "Size:      %s"
-msgstr "Grootte:     %s"
+msgid "Size:       %s"
+msgstr "Grootte: %s"
 
 #, c-format
-msgid " (%ld block)"
-msgid_plural " (%ld blocks)"
-msgstr[0] " (%ld blok)"
-msgstr[1] " (%ld blokken)"
+msgid " (%lu block)"
+msgid_plural " (%lu blocks)"
+msgstr[0] ""
+msgstr[1] ""
 
 #, c-format
-msgid "Owner:     %s/%s"
-msgstr "Eigenaar:  %s/%s"
+msgid "Owner:      %s/%s"
+msgstr "Eigenaar: %s/%s"
 
 #, c-format
-msgid "Links:     %d"
-msgstr "Links:     %d"
+msgid "Links:      %d"
+msgstr "Links: %d"
 
 #, c-format
-msgid "Mode:      %s (%04o)"
-msgstr "Modus:      %s (%04o)"
+msgid "Mode:       %s (%04o)"
+msgstr "Modus: %s (%04o)"
 
 #, c-format
-msgid "Location:  %Xh:%Xh"
-msgstr "Locatie:       %Xh:%Xh"
+msgid "Location:   %Xh:%Xh"
+msgstr "Locatie: %Xh:%Xh"
 
 msgid "&Equal split"
 msgstr "Gelijkmatig verd&elen"
@@ -3154,10 +3203,10 @@ msgid "Panels:"
 msgstr "Vensters:"
 
 #, c-format
-msgid "You have %zd opened screen. Quit anyway?"
-msgid_plural "You have %zd opened screens. Quit anyway?"
-msgstr[0] "Je hebt %zd geopend scherm. Toch stoppen?"
-msgstr[1] "Je hebt %zd geopende schermen. Toch stoppen?"
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "The Midnight Commander"
 msgstr "The Midnight Commander"
@@ -3301,16 +3350,10 @@ msgid "<readlink failed>"
 msgstr "<readlink mislukt>"
 
 #, c-format
-msgid "%s byte"
-msgid_plural "%s bytes"
-msgstr[0] "%s byte"
-msgstr[1] "%s bytes"
-
-#, c-format
 msgid "%s in %d file"
 msgid_plural "%s in %d files"
-msgstr[0] "%s bytes in %d bestand"
-msgstr[1] "%s bytes in %d bestand(en)"
+msgstr[0] "%s in %d bestand"
+msgstr[1] "%s in %d bestanden"
 
 msgid "Panelize"
 msgstr "Als venster"
@@ -3916,9 +3959,8 @@ msgstr "sftp: Geeft wachtwoord voor %s"
 msgid "sftp: Password is empty."
 msgstr "sftp: Wachtwoord is leeg."
 
-#, c-format
-msgid "sftp: Failure establishing SSH session: (%d)"
-msgstr "sftp: SHH-sessie openen is niet gelukt: (%d)"
+msgid "sftp: Failure establishing SSH session"
+msgstr ""
 
 msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: Geen gegevens over bestand aanwezig om bestand te kunnen lezen"

@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Function for work with coordinate cache (ccache)
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -81,20 +81,20 @@ mcview_ccache_add_entry (coord_cache_t * cache, size_t pos, const coord_cache_en
     if ((cache == NULL) || (entry == NULL))
         return;
 
-    pos = min (pos, cache->size);
+    pos = MIN (pos, cache->size);
 
     /* increase cache capacity if needed */
     if (cache->size == cache->capacity)
     {
         cache->capacity += CACHE_CAPACITY_DELTA;
-        cache->cache = g_realloc (cache->cache, cache->capacity * sizeof (coord_cache_entry_t *));
+        cache->cache = g_realloc (cache->cache, cache->capacity * sizeof (*cache->cache));
     }
 
     /* insert new entry */
     if (pos != cache->size)
         memmove (cache->cache[pos + 1], cache->cache[pos],
-                 (cache->size - pos) * sizeof (coord_cache_entry_t *));
-    cache->cache[pos] = g_memdup (entry, sizeof (coord_cache_entry_t));
+                 (cache->size - pos) * sizeof (*cache->cache));
+    cache->cache[pos] = g_memdup (entry, sizeof (*entry));
     cache->size++;
 }
 
@@ -141,14 +141,12 @@ mcview_coord_cache_entry_less_nroff (const coord_cache_entry_t * a, const coord_
  * smaller than ''coord'', according to the criterion ''sort_by''. */
 
 static inline size_t
-mcview_ccache_find (mcview_t * view, const coord_cache_entry_t * coord, cmp_func_t cmp_func)
+mcview_ccache_find (WView * view, const coord_cache_entry_t * coord, cmp_func_t cmp_func)
 {
     size_t base = 0;
     size_t limit = view->coord_cache->size;
 
-#ifdef HAVE_ASSERT_H
-    assert (limit != 0);
-#endif
+    g_assert (limit != 0);
 
     while (limit > 1)
     {
@@ -181,7 +179,7 @@ coord_cache_new (void)
     cache = g_new (coord_cache_t, 1);
     cache->size = 0;
     cache->capacity = CACHE_CAPACITY_DELTA;
-    cache->cache = g_malloc0 (cache->capacity * sizeof (coord_cache_entry_t *));
+    cache->cache = g_malloc0 (cache->capacity * sizeof (*cache->cache));
 
     return cache;
 }
@@ -208,16 +206,14 @@ coord_cache_free (coord_cache_t * cache)
 #ifdef MC_ENABLE_DEBUGGING_CODE
 
 void
-mcview_ccache_dump (mcview_t * view)
+mcview_ccache_dump (WView * view)
 {
     FILE *f;
     off_t offset, line, column, nextline_offset, filesize;
     guint i;
     const coord_cache_t *cache = view->coord_cache;
 
-#ifdef HAVE_ASSERT_H
-    assert (cache != NULL);
-#endif
+    g_assert (cache != NULL);
 
     filesize = mcview_get_filesize (view);
 
@@ -282,7 +278,7 @@ mcview_ccache_dump (mcview_t * view)
  */
 
 void
-mcview_ccache_lookup (mcview_t * view, coord_cache_entry_t * coord, enum ccache_type lookup_what)
+mcview_ccache_lookup (WView * view, coord_cache_entry_t * coord, enum ccache_type lookup_what)
 {
     size_t i;
     coord_cache_t *cache;
@@ -339,7 +335,7 @@ mcview_ccache_lookup (mcview_t * view, coord_cache_entry_t * coord, enum ccache_
     nroff_state = NROFF_START;
     for (; current.cc_offset < limit; current = next)
     {
-        int c, nextc;
+        int c;
 
         if (!mcview_get_byte (view, current.cc_offset, &c))
             break;
@@ -365,6 +361,8 @@ mcview_ccache_lookup (mcview_t * view, coord_cache_entry_t * coord, enum ccache_
         /* and override some of them as necessary. */
         if (c == '\r')
         {
+            int nextc = -1;
+
             mcview_get_byte_indexed (view, current.cc_offset, 1, &nextc);
 
             /* Ignore '\r' if it is followed by '\r' or '\n'. If it is
@@ -416,6 +414,8 @@ mcview_ccache_lookup (mcview_t * view, coord_cache_entry_t * coord, enum ccache_
             break;
         case NROFF_BACKSPACE:
             nroff_state = NROFF_CONTINUATION;
+            break;
+        default:
             break;
         }
 

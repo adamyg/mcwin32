@@ -1,0 +1,689 @@
+#ifndef GR_CONFIG_H_INCLUDED
+#define GR_CONFIG_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_config_h, "$Id: w32config.hin,v 1.2 2017/03/07 15:38:31 cvsuser Exp $")
+__CPRAGMA_ONCE
+/* -*- mode: c; set-indent: 4; -*- */
+/* $Id: w32config.hin,v 1.2 2017/03/07 15:38:31 cvsuser Exp $
+ * Machine configuration.
+ *
+ * System dependent <config.h> configuration template,
+ * Windows targets (see makelib.pl for details).
+ *
+ * Copyright (c) 1998 - 2014, Adam Young.
+ * All rights reserved.
+ *
+ * This file is part of the Midnight Commander.
+ *
+ * The Midnight Commander is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * The Midnight Commander is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ==end==
+ */
+
+
+/*
+ *  Target compiler
+ */
+
+#if !defined(_MSC_VER)
+#if !defined(__WATCOMC__)
+#error config.h: MSVC or WATCOMC targets only ...
+#endif
+#endif /*MSC || WATCOM*/
+
+#undef GRIEF_CC_COMPILER
+#undef GRIEF_CC_VERSION
+
+#if defined(_MSC_VER)
+#pragma warning (disable : 4127)                // conditional expression is constant
+#pragma warning (disable : 4201)                // nonstandard extension used : nameless struct/union
+#pragma warning (disable : 4204)                // nonstandard extension used : non-constant aggregate initializer
+#pragma warning (disable : 4702)                // unreachable code
+#pragma warning (disable : 4706)                // assignment within conditional expression
+#pragma warning (disable : 4996)
+
+#elif defined(__WATCOMC__)
+#if !defined(__cplusplus)
+#pragma disable_message(136)                    // Comparison equivalent to 'unsigned == 0'
+#endif
+#pragma disable_message(201)                    // Unreachable code
+#pragma disable_message(202)                    // Symbol 'xxx' has been defined, but not referenced
+#endif
+
+/*
+ *  Define for mouse (in xterm) capability or if your environment
+ *  supports mouse controls (may not work)
+ */
+#undef HAVE_MOUSE
+#undef HAVE_LIBGPM
+#undef HAVE_GPM_H
+
+/*
+ *  Works around a DEC/xterm bug with CR (not needed with later xterms)
+ */
+#undef LINEFEED_DOES_CR
+
+/*
+ *  If defined, disables floating point macros and makes
+ *  GRIEF smaller in statically linked executables
+ */
+#undef NO_FLOAT_MATH
+
+/*
+ *  Define for 8-bit capable displays
+ */
+#undef HAVE_EIGHTBIT
+
+
+/*
+ *  --auto-conf--
+ */
+
+/*
+ *
+ *  Compiler
+ */
+
+#undef GCC_SCANF
+#undef GCC_SCANFLIKE
+#undef GCC_PRINTF
+#undef GCC_PRINTFLIKE
+#undef GCC_UNUSED
+#undef GCC_NORETURN
+
+/*
+ *  System headers
+ */
+
+/* AC_HEADER_STDC */
+#undef STDC_HEADERS
+#undef HAVE_STDARG_H
+#undef HAVE_STDLIB_H
+#undef HAVE_STDIO_H
+#undef HAVE_LIMITS_H
+
+/* AC_HEADER_DIRENT */
+#undef HAVE_DIRENT_H
+#undef HAVE_DIRECT_H
+#undef HAVE_SYS_NDIR_H
+#undef HAVE_SYS_DIR_H
+#undef HAVE_NDIR_H
+
+/* AC_HEADER_TIME */
+#undef HAVE_TIME_H
+#undef TIME_WITH_SYS_TIME
+#undef HAVE_SYS_TIME_H
+#undef HAVE_UTIME_H
+#undef HAVE_SYS_UTIME_H
+
+/* Window32 */
+#undef HAVE_WINDOWS_H
+#undef HAVE_WINSOCK2_H
+#undef HAVE_WINCRYPT_H
+#undef HAVE_WINIOCTL_H
+
+/* Explicit header checks */
+#undef HAVE_SYS_TYPES_H
+#undef HAVE_SYS_AT_ANSI_H
+#undef HAVE_SYS_BSDTYPES_H
+#undef HAVE_SYS_IOCTL_COMPAT_H
+#undef HAVE_SYS_IOCTL_H
+#undef HAVE_SYS_KD_H
+#undef HAVE_SYS_PARAM_H
+#undef HAVE_SYS_CDEFS_H
+#undef HAVE_SYS_PTEM_H
+#undef HAVE_SYS_UTSNAME_H
+#undef HAVE_SYS_SELECT_H
+#undef HAVE_SYS_SOCKET_H
+#undef HAVE_SYS_UTIME_H
+#undef HAVE_SYS_WAIT_H
+#undef HAVE_SYS_STAT_H
+#undef HAVE_SYS_STATFS_H
+#undef HAVE_SYS_STATVFS_H
+#undef HAVE_SYS_VFS_H
+#undef HAVE_SYS_MMAN_H
+#undef HAVE_WAIT_H
+#undef HAVE_POLL_H
+#undef HAVE_SYS_PRCTL_H
+#undef HAVE_SYS_MOUNT_H
+
+#undef HAVE_FENV_H
+#undef HAVE_FECLEAREXCEPT
+
+#undef HAVE_FEATURES_H
+#undef HAVE_STDALIGN_H
+#undef HAVE_STDATOMIC_H
+#undef HAVE_THREADS_H
+
+#undef HAVE_THREAD_H
+#undef HAVE_PTHREAD_H
+
+#undef HAVE_FCNTL_H
+#undef HAVE_SHARE_H
+#undef HAVE_IO_H
+
+#undef HAVE_CLANG_C_INDEX_H
+#undef HAVE_LIBCLANG
+
+#undef HAVE_LIBBFD
+#undef HAVE_BFD_H
+#undef HAVE_FLOAT_H
+#undef HAVE_ERRNO_H
+#undef HAVE_GETOPT_H
+#undef HAVE_STRUCT_OPTION
+#undef HAVE_MACHINE_CONSOLE_H
+#undef HAVE_MEMORY_H
+#undef HAVE_PROCESS_H
+#undef HAVE_PWD_H
+#undef HAVE_SIGNAL_H
+#undef HAVE_STRINGS_H
+#undef HAVE_STRING_H
+#undef HAVE_UNISTD_H
+#undef HAVE_LIMITS_H
+#undef HAVE_ARGZ_H
+#undef HAVE_UTIME_H
+#undef HAVE_LIBGEN_H
+#undef HAVE_REGEX_H
+#undef HAVE_ALLOCA_H
+
+/*
+ *  Available allocator functionality
+ */
+#undef HAVE_LIBDLMALLOC
+#undef HAVE_LIBDBMALLOC
+#undef HAVE_LIBTCMALLOC
+#undef HAVE_LIBMALLOC
+#undef HAVE_MALLOC_STATS
+#undef HAVE_MALLOPT
+
+/*
+ *  Available terminal functionality
+ *
+ *      interface style:
+ *          HAVE_TERMINFO(terminfo) or HAVE_TERMCAP(termcap)
+ *
+ *      library:
+ *          HAVE_LIB ncurses, curses, slang, termcap and termlib
+ */
+
+#undef HAVE_TERMINFO
+#undef HAVE_TERMCAP
+
+#undef HAVE_OSPEED
+#undef OSPEED_EXTERN
+#undef HAVE_UP_BC_PC
+#undef UP_BC_PC_EXTERN
+#undef HAVE_OUTFUNTYPE
+#undef TPUTS_TAKES_CHAR
+
+#undef HAVE_LIBNCURSES
+#undef HAVE_LIBNCURSESW
+#undef HAVE_LIBTINFO
+#undef HAVE_LIBPDCURSES
+#undef HAVE_LIBCURSES
+#undef HAVE_LIBTERMCAP
+#undef HAVE_LIBTERMLIB
+
+/* #undef HAVE_SLANG */
+/* #undef HAVE_SLANG_H */
+/* #undef HAVE_SLANG_SLANG_H */
+
+#undef HAVE_NCURSES_NCURSES_H
+#undef HAVE_NCURSES_CURSES_H
+#undef HAVE_NCURSES_H
+
+#undef HAVE_NCURSESW_NCURSESW_H
+#undef HAVE_NCURSESW_CURSES_H
+#undef HAVE_NCURSESW_H
+
+#undef HAVE_CURSES_H
+
+#undef HAVE_TERMIOS_H
+#undef HAVE_TERMIO_H
+#undef HAVE_SGTTY_H
+
+#undef HAVE_TERMLIB_H
+
+#undef HAVE_TERMCAP_H
+#undef HAVE_TERM_H
+
+#undef HAVE_EDTERMCAP_H
+
+/*
+ *  Platform dependancies
+ */
+#if !defined(RETSIGTYPE)
+#if defined(__WATCOMC__) || defined(_MSC_VER)
+#define RETSIGTYPE int
+#endif
+#endif
+
+#undef SIZEOF_CHAR 1
+#undef SIZEOF_SHORT 2
+#undef SIZEOF_INT 2
+#undef SIZEOF_FLOAT
+#undef SIZEOF_DOUBLE 8
+#undef SIZEOF_LONG 4
+#undef SIZEOF_LONG_LONG 4
+#undef SIZEOF_VOID_P 4
+#undef SIZEOF_WCHAR_T
+
+#undef HAVE_INLINE
+#undef HAVE___INLINE
+
+#undef HAVE_INTMAX_T
+#undef HAVE_UINTMAX_T
+#undef HAVE_INTPTR_T
+#undef HAVE_UINTPTR_T
+#undef HAVE_LONG_LONG_INT
+#undef HAVE_UNSIGNED_LONG_LONG_INT
+#undef HAVE_INT64_T
+#undef HAVE___INT64
+#undef HAVE___INT16
+#undef HAVE___INT32
+#undef HAVE___INT8
+#undef HAVE_SSIZE_T
+#undef HAVE_BOOL
+#undef HAVE__BOOL
+
+#undef HAVE_ENDIAN_H
+#undef HAVE_MACHINE_ENDIAN_H
+#undef HAVE_ARPA_NAMESER_COMPAT_H
+
+#undef IS_BIG_ENDIAN
+#undef IS_LITTLE_ENDIAN
+#undef IS_UNKOWN_ENDIAN
+#undef IS_UNIVERSAL_BUILD
+#undef AC_APPLE_UNIVERSAL_BUILD
+#if !defined(IS_BIG_ENDIAN) && !defined(IS_LITTLE_ENDIAN)
+#	if defined(_M_IX86)
+#		define IS_LITTLE_ENDIAN 1
+#	elif defined(_M_MRX000)
+#		define IS_LITTLE_ENDIAN 1
+#	elif defined(_M_ALPHA)
+#		define IS_LITTLE_ENDIAN 1
+#	elif defined(_M_PPC)
+#		define IS_LITTLE_ENDIAN 1
+#	else
+#		error unknown endian
+#	endif
+#endif
+
+
+/*
+ *  System types
+ */
+
+#undef HAVE_INTTYPES_H
+#undef HAVE_STDINT_H
+#undef HAVE_STDBOOL_H
+#undef HAVE_STDATOMIC_H
+#undef HAVE_THREADS_H
+
+#undef HAVE_STDARG_H
+#undef HAVE_STDIO_H
+#undef HAVE_STDLIB_H
+#undef HAVE_WCTYPE_H
+#undef HAVE_WCHAR_H
+
+#undef mode_t
+#undef off_t
+#undef pid_t
+#undef size_t
+#undef uid_t
+#undef gid_t
+#undef id_t
+
+
+/*
+ *  Functions and facilities
+ */
+
+        /* environ support */
+#undef HAVE_ENVIRON
+#undef HAVE__ENVIRON
+#undef HAVE___ENVIRON
+#undef NEED_EXTERN_ENVIRON
+#undef HAVE_ENV_H
+#undef HAVE_SETENV
+#undef HAVE_PUTENV
+
+        /* system library */
+#undef HAVE_BCMP
+#undef HAVE_BZERO
+
+#undef HAVE_MEMCMP
+#undef HAVE_MEMSET
+#undef HAVE_MEMMOVE
+
+#undef HAVE_MATHERR
+
+#undef HAVE_CHOWN
+#undef HAVE_CHROOT
+#undef HAVE_MKSTEMP
+#undef HAVE_SELECT
+#undef HAVE_POLL
+#undef HAVE_LINK
+#undef HAVE_LSTAT
+#undef HAVE_SYMLINK
+#undef HAVE_RENAME
+
+#undef HAVE_FGETPOS
+#undef HAVE_FSETPOS
+#undef HAVE_TRUNCATE
+#undef HAVE_FTRUNCATE
+#undef HAVE_OPENDIR
+#undef HAVE_FINDFIRST
+#undef HAVE__FINDFIRST
+
+#undef HAVE_GETOPT
+#undef HAVE_GETOPT_LONG
+
+#undef HAVE_INDEX
+#undef HAVE_RINDEX
+#undef HAVE_STRCASECMP
+#undef HAVE___STRCASECMP
+#undef HAVE_STRCHR
+#undef HAVE_STRERROR
+#undef HAVE_STRICMP
+#undef HAVE_STRRCHR
+#undef HAVE_STRDUP
+#undef HAVE_STRERROR
+#undef HAVE_STRFTIME
+#undef HAVE_STRICMP
+#undef HAVE_STRTOF
+#undef HAVE_STRTOLD
+#undef HAVE_STRTOLL
+#undef HAVE_STRTOUL
+#undef HAVE_STRVERSCMP
+#undef HAVE___STRVERSCMP
+#undef HAVE_STRNLEN
+#undef HAVE_STRLCAT
+#undef HAVE_STRLCPY
+#undef HAVE_STRFTIME
+
+#undef HAVE_ISASCII
+#undef HAVE___ISASCII
+#undef HAVE_ISBLANK
+#undef HAVE___ISBLANK
+#undef HAVE_ISCSYM
+#undef HAVE___ISCSYM
+
+#undef HAVE_FGETPOS
+#undef HAVE_FSETPOS
+
+#undef HAVE_DECL_TZNAME
+#undef HAVE_GETLOGIN
+#undef HAVE_GETEXECNAME
+
+#undef HAVE_MERGESORT
+#undef HAVE_VERSIONSORT
+
+#undef HAVE_MKTIME
+#undef HAVE_CTIME_R
+#undef HAVE_LOCALTIME_R
+#undef HAVE_GMTIME_R
+#undef HAVE_ASCTIME_R
+
+#undef HAVE_SIGSETMASK
+#undef HAVE_SIGACTION
+#undef HAVE_SIGINTERRUPT
+#undef HAVE_STRSIGNAL
+#undef HAVE_PRCTL
+
+#undef HAVE_SETPGID
+#undef HAVE_ISSETUGID
+#undef HAVE_SETPGRP
+#undef HAVE_SETSID
+
+#undef HAVE_WCHAR_H
+#undef HAVE_WCTYPE_H
+#undef HAVE_MBRTOWC
+#undef HAVE_WCRTOMB
+#undef HAVE_WCSCMP
+#undef HAVE_WCSCPY
+#undef HAVE_WCSLEN
+#undef HAVE_WCTOMB
+#undef HAVE_WMEMCMP
+#undef HAVE_WMEMMOVE
+#undef HAVE_WMEMCPY
+
+#undef HAVE_MMAP
+#undef HAVE_MPROTECT
+#undef HAVE_MADVISE
+#undef HAVE_POSIX_MADVISE
+#undef HAVE_MREMAP
+
+#undef CLOSEDIR_VOID
+#undef GETPGRP_VOID
+
+#undef HAVE_VPRINTF
+#if defined(HAVE_VPRINTF) && (HAVE_VPRINTF)
+#undef HAVE_PRINTF
+#endif
+#undef HAVE_DOPRNT
+#undef HAVE_SNPRINTF
+#undef HAVE__SNPRINTF
+#undef HAVE_VSNPRINTF
+#undef HAVE__VSNPRINTF
+
+#undef HAVE_MBRTOWC
+#undef HAVE_WCRTOMB
+#undef HAVE_WCSCMP
+#undef HAVE_WCSCPY
+#undef HAVE_WCSLEN
+#undef HAVE_WCTOMB
+#undef HAVE_WMEMCMP
+#undef HAVE_WMEMCPY
+#undef HAVE_WMEMMOVE
+
+#undef HAVE_LOCALE_H
+#undef HAVE_SETLOCALE
+#undef HAVE_LANGINFO_CODESET
+#undef HAVE_LOCALE_CHARSET
+
+#undef HAVE_VFORK_H
+#undef HAVE_FORK
+#undef HAVE_VFORK
+#undef HAVE_WAITPID
+#undef HAVE_WAIT3
+#undef HAVE_WAIT4
+#undef HAVE_WORKING_FORK
+#undef HAVE_WORKING_VFORK
+#undef HAVE_SPAWN_H
+#undef HAVE_POSIX_SPAWN
+#undef HAVE_POSIX_SPAWNP
+
+#undef HAVE_ROUND
+#undef HAVE_NEARBYINTF
+
+        /* psuedo tty */
+#undef HAVE_PTY_H
+#undef HAVE_GRP_H
+#undef HAVE_STROPTS_H
+#undef HAVE_POSIX_OPENPT
+#undef HAVE_PTSNAME_R
+#undef HAVE_PTSNAME
+#undef HAVE_OPENPTY
+#undef HAVE_GETPT
+#undef HAVE_GRANTPT
+#undef HAVE_UNLOCKPT
+
+        /* X11 */
+#undef HAVE_X11_EXTENSIONS_SHAPE_H
+#undef HAVE_X11_XFT_XFT_H
+#undef HAVE_X11_XKBLIB_H
+#undef HAVE_X11_XLIB_H
+#undef HAVE_XFT_XFT_H
+#undef HAVE_XKBBELL
+#undef HAVE_LIBX11
+#undef HAVE_LIBXFT
+#undef HAVE_LIBXEXT
+
+        /* language support */
+#undef HAVE_LIBIBERTY
+#undef HAVE_LIBIBERTY_H
+#undef HAVE_DEMANGLE_H
+#undef HAVE_CPLUS_DEMANGLE
+
+        /* display specials */
+#undef HAVE_SYSERRLIST
+#undef HAVE_EGAVGA
+#undef NO_PTY
+
+        /* filesystem characteristics
+         *      filename != FILENAME
+         *      AC_SYS_LONG_FILE_NAMES
+         */
+#undef MIXEDCASE_FILENAMES
+#undef HAVE_LONG_FILE_NAMES
+#undef HAVE_SPAWN
+
+        /* shell support/
+         *      libenchant
+         *      libhunspell
+         *      libaspell
+         */
+#undef HAVE_LIBENCHANT
+#undef HAVE_ENCHANT_ENCHANT___H
+#undef HAVE_ENCHANT_ENCHANT_H
+#undef HAVE_ENCHANT___H
+#undef HAVE_ENCHANT_H
+
+#undef HAVE_LIBHUNSPELL
+#undef HAVE_LIBHUNSPELL_DLL
+#undef HAVE_HUNSPELL_HUNSPELL_HXX
+#undef HAVE_HUNSPELL_HUNSPELL_H
+#undef HAVE_HUNSPELL_HXX
+#undef HAVE_HUNSPELL_H
+
+#undef HAVE_LIBASPELL
+#undef HAVE_ASPELL_ASPELL_H
+#undef HAVE_ASPELL_H
+
+        /* conversion support/
+         *      ICU
+         *      libapriconv
+         *      libiconv/libcharset
+         */
+#undef HAVE_LIBICU
+#undef HAVE_LIBAPRICU
+#undef HAVE_APRICONV_H
+
+#undef HAVE_LIBICONV
+#undef GNUWIN32_LIBICONV
+#undef HAVE_ICONV_H
+
+#undef HAVE_LIBINTL
+#undef GNUWIN32_LIBINTL
+#undef HAVE_LIBINTL_H
+
+#undef HAVE_LIBCHARSET
+#undef GNUWIN32_LIBCHARSET
+#undef HAVE_LIBCHARSET_H
+#undef HAVE_LOCALCHARSET_H
+
+#undef HAVE_ICONVL_H
+#undef HAVE_LIBICONVL_DLL
+#undef HAVE_LIBCITRUS
+
+        /* compression */
+#undef HAVE_ZLIB_H
+#undef HAVE_LIBZ
+
+#undef HAVE_BZLIB_H
+#undef HAVE_LIBBZ2
+
+        /* libguess */
+#undef HAVE_LIBGUESS
+#undef HAVE_LIBGUESS_EXTENSIONS
+#undef HAVE_LIBGUESS_H
+
+        /* libmagic and magic.h */
+#undef HAVE_LIBMAGIC
+#undef GNUWIN32_LIBMAGIC
+#undef HAVE_MAGIC_H
+
+        /* libenca and enca.h */
+#undef HAVE_LIBENCA
+#undef HAVE_ENCA_H
+
+        /* libltdl and ltdl.h (libtool) */
+#undef HAVE_DLFCN_H
+#undef HAVE_LIBLTDL
+#undef HAVE_LTDL_H
+
+        /* libcurl */
+#undef HAVE_LIBCURL
+#undef GNUWIN32_LIBCURL
+#undef HAVE_CURL_CURL_H
+#undef HAVE_CURL_H
+
+        /* libarchive */
+#undef HAVE_LIBARCHIVE
+#undef GNUWIN32_LIBARCHIVE
+#undef HAVE_ARCHIVE_H
+#undef HAVE_ARCHIVE_ENTRY_H
+
+
+/*
+ *  Special features
+ */
+
+        /* Target specific */
+
+#if defined(__MINGW32__)
+#define MSDOS
+
+#elif (defined(WIN32) || defined(_WIN32))
+#if !defined(MSDOS)
+#define MSDOS                                   /* assumed */
+#endif
+
+#elif defined(__EMX__) && !defined(__OS2__)
+#define __OS2__ 1
+#define __FLAT__ 1
+#undef  MSDOS
+#endif
+
+        /* MSDOS targets */
+
+#if defined(MSDOS) && !defined(__MSDOS__)
+#define __MSDOS__ 1
+#endif
+
+#if defined(__MSDOS__)
+#define MONOCASE_FILENAMES 1                    /* files are all one case */
+#define ONLY_ONE_EXTENSION 1                    /* file can only have one .ext */
+#define HAVE_SPAWN 1
+#define DOSISH 1                                /* dos type system */
+
+#elif defined(__OS2__)
+#define DOSISH 1                                /* dos type system */
+#endif
+
+#if defined(__OS2__) || defined(__MSDOS__)
+#define USE_VIO_BUFFER 1                        /* Vio buffer method */
+#define NOCASE_FILENAMES 1                      /* ignore case in filenames */
+#define NO_UNLINK_OPEN  1                       /* can't unlink open files */
+#define NEEDS_GETOPT                            /* Local getopt() implementation required */
+#endif
+
+
+/*
+ *  Installation directories defaults (see edbuildinfo.h)
+ */
+
+#define GRIEF_DATADIR "C:/Program Files/Grief/lib"
+
+#endif  /*GR_CONFIG_H_INCLUDED*/

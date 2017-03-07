@@ -1,20 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 # 
 # Translators:
 # Mátyás Demeter <mathias.demeter@gmail.com>, 2014
-# Rezső Páder <rezso@rezso.net>, 2012-2015
+# Rezső Páder <rezso@rezso.net>, 2012-2016
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # Szabo Attila <atekka@gmail.com>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2015-02-26 09:43+0300\n"
-"PO-Revision-Date: 2015-02-26 09:48+0000\n"
+"POT-Creation-Date: 2016-11-21 13:19+0300\n"
+"PO-Revision-Date: 2016-11-22 08:19+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Hungarian (http://www.transifex.com/projects/p/mc/language/hu/)\n"
+"Language-Team: Hungarian (http://www.transifex.com/mc/mc/language/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -135,10 +135,29 @@ msgstr "Az '%s' borítás nem értelmezhető.\nAlapértelmezett borítás betöl
 
 #, c-format
 msgid ""
+"Unable to use '%s' skin with true colors support:\n"
+"%s\n"
+"Default skin has been loaded"
+msgstr ""
+
+#, c-format
+msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
 msgstr "'%s' borítás nem használható 256 színnel\\n\nnem 256 színű terminálokon.\\n\nAlapértelmezett borítás használata"
+
+msgid "True color not supported with ncurses."
+msgstr ""
+
+msgid "True color not supported in this slang version."
+msgstr ""
+
+msgid "Your terminal doesn't even seem to support 256 colors."
+msgstr ""
+
+msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
+msgstr ""
 
 msgid "Escape"
 msgstr "Escape"
@@ -432,10 +451,28 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr "A(z) %dx%d képernyőméret nem támogatott.\nEllenőrizze a TERM környezeti változót.\n"
 
-msgid "Cannot create pipe descriptor"
+msgid "B"
 msgstr ""
 
-msgid "Cannot parse command for pipe"
+msgid "kB"
+msgstr ""
+
+msgid "KiB"
+msgstr ""
+
+msgid "MB"
+msgstr ""
+
+msgid "MiB"
+msgstr ""
+
+msgid "GB"
+msgstr ""
+
+msgid "GiB"
+msgstr ""
+
+msgid "Cannot create pipe descriptor"
 msgstr ""
 
 msgid "Cannot create pipe streams"
@@ -469,8 +506,13 @@ msgstr "Hiba a régi hiba-cső duplikálásakor"
 msgid "Directory cache expired for %s"
 msgstr "A könyvtár gyorstárának adatai elévültek: %s"
 
-msgid "bytes transferred"
-msgstr "bájt átvive"
+#, c-format
+msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
+msgstr ""
+
+#, c-format
+msgid "%s: %s: %s %lld bytes transferred"
+msgstr ""
 
 msgid "Starting linear transfer..."
 msgstr "Lineáris átvitel indítása..."
@@ -553,8 +595,8 @@ msgid "Error"
 msgstr "Hiba"
 
 #, c-format
-msgid "%d: %s"
-msgstr "%d: %s"
+msgid "%s (%d)"
+msgstr "%s (%d)"
 
 msgid "&Abort"
 msgstr "&Megszakítás"
@@ -704,7 +746,7 @@ msgstr "Argumentum feldolgozási hiba!"
 msgid "No arguments given to the viewer."
 msgstr "Hiányzó paraméterek a nézethez."
 
-msgid "Two files are required to evoke the diffviewer."
+msgid "Two files are required to envoke the diffviewer."
 msgstr "Két fájl kell a diff-nézet indításához."
 
 msgid "Background protocol error"
@@ -1493,8 +1535,8 @@ msgid ""
 "written for the Midnight Commander."
 msgstr "Felhasználóbarát szövegszerkesztő\na Midnight Commander-hez készítve"
 
-msgid "Copyright (C) 1996-2015 the Free Software Foundation"
-msgstr ""
+msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgstr "Copyright (C) 1996-2016 the Free Software Foundation"
 
 msgid "About"
 msgstr "Névjegy"
@@ -1821,6 +1863,9 @@ msgstr "Lyn&x-szerű navigálás"
 msgid "Pa&ge scrolling"
 msgstr "Oldal&görgetés"
 
+msgid "Center &scrolling"
+msgstr ""
+
 msgid "&Mouse page scrolling"
 msgstr "Oldalgörgetés &egérrel"
 
@@ -1852,14 +1897,17 @@ msgstr "Előfordulhat, hogy a \"Gyors könyvtár-újraolvasás\" eredménye \nne
 msgid "&Full file list"
 msgstr "&Teljes"
 
-msgid "&Brief file list"
-msgstr "Tömö&r"
+msgid "&Brief file list:"
+msgstr "Tömö&r fájllista:"
 
 msgid "&Long file list"
 msgstr "&Duplaszéles"
 
 msgid "&User defined:"
 msgstr "Sa&ját:"
+
+msgid "columns"
+msgstr "oszlopok"
 
 msgid "User &mini status"
 msgstr "Saját extra adat&sor"
@@ -2179,6 +2227,10 @@ msgid ""
 msgstr "Nem Xterm vagy Linux-konzol;\na paneleket nem lehet kikapcsolni."
 
 #, c-format
+msgid "'%s' is not a symbolic link"
+msgstr "\"%s\" nem szimbolikus link"
+
+#, c-format
 msgid "Symlink '%s' points to:"
 msgstr "A \"%s\" szimbolikus link ide mutasson:"
 
@@ -2192,10 +2244,6 @@ msgstr "\"%s\" törlése nem sikerült: %s"
 #, c-format
 msgid "edit symlink: %s"
 msgstr "szimbolikus link módosítása: %s"
-
-#, c-format
-msgid "'%s' is not a symbolic link"
-msgstr "\"%s\" nem szimbolikus link"
 
 msgid "FTP to machine"
 msgstr "FTP-kapcsolat"
@@ -2468,9 +2516,9 @@ msgstr "%s célfájl számára nem foglalható le hely:\n%s"
 
 #, c-format
 msgid ""
-"Cannot read source file\"%s\"\n"
+"Cannot read source file \"%s\"\n"
 "%s"
-msgstr "Nem sikerült olvasni a(z) \"%s\" forrásfájlt. \n%s"
+msgstr "\"%s\" forrásfájl olvasása sikertelen \n%s"
 
 #, c-format
 msgid ""
@@ -2556,8 +2604,8 @@ msgid ""
 msgstr "A(z) \"%s\" könyvtár nem átnevezhető/mozgatható erre: \"%s\" \n%s"
 
 #, c-format
-msgid "Directories: %zd, total size: %s"
-msgstr "Könyvtár: %zd, összméret: %s"
+msgid "Directories: %zu, total size: %s"
+msgstr ""
 
 msgid "Cannot operate on \"..\"!"
 msgstr "A \"..\" könyvtárral ez nem lehetséges!"
@@ -2708,8 +2756,8 @@ msgid "&Edit - F4"
 msgstr "&Szerkesztés - F4"
 
 #, c-format
-msgid "Found: %ld"
-msgstr "%ld találat"
+msgid "Found: %lu"
+msgstr ""
 
 msgid "Malformed regular expression"
 msgstr "Hibás reguláris kifejezés"
@@ -2758,10 +2806,10 @@ msgid "Finished"
 msgstr "Kész"
 
 #, c-format
-msgid "Finished (ignored %zd directory)"
-msgid_plural "Finished (ignored %zd directories)"
-msgstr[0] "Befejezve (%zd könyvtár kihagyva)"
-msgstr[1] "Befejezve (%zd könyvtár kihagyva)"
+msgid "Finished (ignored %zu directory)"
+msgid_plural "Finished (ignored %zu directories)"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Searching"
 msgstr "Keresés"
@@ -2881,31 +2929,31 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr "Szabad hely: %s/%s (%d%%)"
 
 #, c-format
-msgid "Type:      %s"
-msgstr "Fájlr.-típus: %s"
+msgid "Type:       %s"
+msgstr "Típus: %s"
 
 msgid "non-local vfs"
 msgstr "távoli VFS"
 
 #, c-format
-msgid "Device:    %s"
-msgstr "Eszköz:       %s"
+msgid "Device:     %s"
+msgstr "Eszköz: %s"
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "Fájlrendszer: %s"
 
 #, c-format
-msgid "Accessed:  %s"
+msgid "Accessed:   %s"
 msgstr "Elérés ideje: %s"
 
 #, c-format
-msgid "Modified:  %s"
-msgstr "Módosítás:    %s"
+msgid "Modified:   %s"
+msgstr "Módosítás: %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:   %s"
+msgid "Changed:    %s"
 msgstr "Változtatás:  %s"
 
 #, c-format
@@ -2913,30 +2961,30 @@ msgid "Dev. type: major %lu, minor %lu"
 msgstr "Eszköztípus:  fő: %lu, al: %lu"
 
 #, c-format
-msgid "Size:      %s"
-msgstr "Méret:        %s"
+msgid "Size:       %s"
+msgstr "Méret: %s"
 
 #, c-format
-msgid " (%ld block)"
-msgid_plural " (%ld blocks)"
-msgstr[0] "(%ld blokk)"
-msgstr[1] "(%ld blokk)"
+msgid " (%lu block)"
+msgid_plural " (%lu blocks)"
+msgstr[0] ""
+msgstr[1] ""
 
 #, c-format
-msgid "Owner:     %s/%s"
-msgstr "Tulajdonos:   %s/%s"
+msgid "Owner:      %s/%s"
+msgstr "Tulajdonos: %s/%s"
 
 #, c-format
-msgid "Links:     %d"
+msgid "Links:      %d"
 msgstr "Linkek száma: %d"
 
 #, c-format
-msgid "Mode:      %s (%04o)"
+msgid "Mode:       %s (%04o)"
 msgstr "Típus+jogok:  %s (%04o)"
 
 #, c-format
-msgid "Location:  %Xh:%Xh"
-msgstr "Hely:         %Xh:%Xh"
+msgid "Location:   %Xh:%Xh"
+msgstr "Hely: %Xh:%Xh"
 
 msgid "&Equal split"
 msgstr "S&zimmetrikus elosztás"
@@ -3152,10 +3200,10 @@ msgid "Panels:"
 msgstr "Panelek:"
 
 #, c-format
-msgid "You have %zd opened screen. Quit anyway?"
-msgid_plural "You have %zd opened screens. Quit anyway?"
-msgstr[0] "Még %zd képernyő nyitva van. Biztos kilép?"
-msgstr[1] "Még %zd képernyő nyitva van. Biztos kilép?"
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "The Midnight Commander"
 msgstr "Midnight Commander"
@@ -3297,12 +3345,6 @@ msgstr "AL-KVTR"
 
 msgid "<readlink failed>"
 msgstr "<hibás szim. link>"
-
-#, c-format
-msgid "%s byte"
-msgid_plural "%s bytes"
-msgstr[0] "%s bájt"
-msgstr[1] "%s bájt"
 
 #, c-format
 msgid "%s in %d file"
@@ -3914,9 +3956,8 @@ msgstr "sftp: Adja meg %s jelszavát"
 msgid "sftp: Password is empty."
 msgstr "sftp: a jelszó üres."
 
-#, c-format
-msgid "sftp: Failure establishing SSH session: (%d)"
-msgstr "stp: Hiba lépett fel az ssh kapcsolat létrehozása közben : (%d)"
+msgid "sftp: Failure establishing SSH session"
+msgstr "stp: Hiba lépett fel az ssh kapcsolat létrehozása közben"
 
 msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: Nincs jelenleg elérhető fájlkezelő adat a fájl olvasásához"

@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Authors:
@@ -40,7 +40,6 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 
 #include "lib/global.h"
 
@@ -88,13 +87,13 @@ history_dlg_reposition (WDialog * dlg_head)
 
     if (he <= y || y > (LINES - 6))
     {
-        he = min (he, y - 1);
+        he = MIN (he, y - 1);
         y -= he;
     }
     else
     {
         y++;
-        he = min (he, LINES - y);
+        he = MIN (he, LINES - y);
     }
 
     if (data->widget->x > 2)
@@ -104,11 +103,11 @@ history_dlg_reposition (WDialog * dlg_head)
 
     if ((wi + x) > COLS)
     {
-        wi = min (wi, COLS);
+        wi = MIN (wi, COLS);
         x = COLS - wi;
     }
 
-    dlg_set_position (dlg_head, y, x, y + he, x + wi);
+    dlg_set_position (dlg_head, y, x, he, wi);
 
     return MSG_HANDLED;
 }
@@ -163,10 +162,10 @@ history_get (const char *input_name)
 /* --------------------------------------------------------------------------------------------- */
 
 /**
- * Load history form the mc_config
+ * Load history from the mc_config
  */
 GList *
-history_load (struct mc_config_t * cfg, const char *name)
+history_load (mc_config_t * cfg, const char *name)
 {
     size_t i;
     GList *hist = NULL;
@@ -229,7 +228,7 @@ history_load (struct mc_config_t * cfg, const char *name)
   * Save history to the mc_config, but don't save config to file
   */
 void
-history_save (struct mc_config_t *cfg, const char *name, GList * h)
+history_save (mc_config_t * cfg, const char *name, GList * h)
 {
     GIConv conv = INVALID_CONV;
     GString *buffer;
@@ -306,7 +305,7 @@ history_show (GList ** history, Widget * widget, int current)
         size_t i;
 
         i = str_term_width1 ((char *) z->data);
-        maxlen = max (maxlen, i);
+        maxlen = MAX (maxlen, i);
         count++;
 
         entry = g_new0 (WLEntry, 1);
@@ -320,8 +319,8 @@ history_show (GList ** history, Widget * widget, int current)
     hist_data.maxlen = maxlen;
 
     query_dlg =
-        dlg_create (TRUE, 0, 0, 4, 4, dialog_colors, history_dlg_callback, NULL,
-                    "[History-query]", _("History"), DLG_COMPACT);
+        dlg_create (TRUE, 0, 0, 4, 4, WPOS_KEEP_DEFAULT, TRUE, dialog_colors, history_dlg_callback,
+                    NULL, "[History-query]", _("History"));
     query_dlg->data = &hist_data;
 
     query_list = listbox_new (1, 1, 2, 2, TRUE, NULL);

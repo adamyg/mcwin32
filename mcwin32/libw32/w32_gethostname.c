@@ -2,7 +2,7 @@
 /*
  * win32 gethostname
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -61,10 +61,10 @@
 int
 w32_gethostname(char *name, size_t namelen)
 {
-    char *host;
+    const char *host;
 
 #undef gethostname
-    if (0 == gethostname(name, namelen)) {
+    if (0 == gethostname(name, (int)namelen)) {
         return 0;
     }
 

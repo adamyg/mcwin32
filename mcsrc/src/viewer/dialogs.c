@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Function for paint dialogs
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -74,11 +74,11 @@ mcview_search_options_t mcview_search_options = {
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_dialog_search (mcview_t * view)
+mcview_dialog_search (WView * view)
 {
     char *exp = NULL;
     int qd_result;
-    size_t num_of_types;
+    size_t num_of_types = 0;
     gchar **list_of_types;
 
     list_of_types = mc_search_get_types_strings_array (&num_of_types);
@@ -173,9 +173,9 @@ mcview_dialog_search (mcview_t * view)
     mc_search_free (view->search);
 
 #ifdef HAVE_CHARSET
-    view->search = mc_search_new (view->last_search_string, -1, cp_source);
+    view->search = mc_search_new (view->last_search_string, cp_source);
 #else
-    view->search = mc_search_new (view->last_search_string, -1, NULL);
+    view->search = mc_search_new (view->last_search_string, NULL);
 #endif
     view->search_nroff_seq = mcview_nroff_seq_new (view);
     if (view->search != NULL)
@@ -196,7 +196,7 @@ mcview_dialog_search (mcview_t * view)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_dialog_goto (mcview_t * view, off_t * offset)
+mcview_dialog_goto (WView * view, off_t * offset)
 {
     typedef enum
     {

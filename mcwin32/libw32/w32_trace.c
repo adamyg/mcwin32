@@ -8,12 +8,13 @@
 #define TRACE_FILE      "mctrace.log"
 
 static int              w32x_tracing_started = 0;
+static int              w32x_tracing_init = 0;
 static FILE *           w32x_trace_f = NULL;
 
 int                     w32x_tracing_enabled = 1;
 
 static void             w32InitTrace (void);
-static void             w32EndTrace (void);
+static void __cdecl     w32EndTrace (void);
 static const char*      GetLastErrorText (void);
 static char *           visbuf (const char *buf);
 
@@ -25,13 +26,16 @@ w32InitTrace(void)
         if (NULL == (w32x_trace_f = fopen(TRACE_FILE, "wt"))) {
             printf("Midnight Commander[DEBUG]: Can't open trace file '" TRACE_FILE "': %s \n", strerror(errno));
         }
-        atexit (&w32EndTrace);
+	if (! w32x_tracing_init) {
+	    ++w32x_tracing_init;
+//	    atexit(w32EndTrace);
+	}
         w32x_tracing_started = 1;
     }
 }
 
 
-static void
+static void __cdecl
 w32EndTrace(void)
 {
     if (w32x_tracing_started) {
@@ -45,7 +49,7 @@ w32EndTrace(void)
 
 
 void
-w32_Trace (const char *fmt, ...)
+w32_trace(const char *fmt, ...)
 {
     char *vp, buffer[1024];
     va_list ap;
@@ -111,8 +115,8 @@ void
 w32_TraceAPICall(
     const char* name, int line, const char* file)
 {
-    w32_Trace("%s(%d): Call to Win32 API Failed. \"%s\".", file, line, name);
-    w32_Trace("        System Error (%d): %s. ", GetLastError(), GetLastErrorText());
+    w32_trace("%s(%d): Call to Win32 API Failed. \"%s\".", file, line, name);
+    w32_trace("        System Error (%d): %s. ", GetLastError(), GetLastErrorText());
 }
 
 
@@ -128,7 +132,7 @@ void
 w32_AssertionFailed(
     const char* name, int line, const char* file)
 {
-    w32_Trace("%s(%d): Assertion failed! \"%s\".", file, line, name);
+    w32_trace("%s(%d): Assertion failed! \"%s\".", file, line, name);
 }
 
 

@@ -2,7 +2,7 @@
 /*
  * win32 network errno mapping support
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -31,27 +31,39 @@
 #include <unistd.h>
 #include <time.h>
 
-
+ /*
+  *	winsock error mapping to unix error.
+  */
 int
-w32_neterrno_set(void)
+w32_neterrno_map(int nerrno)
 {
-    int t_errno = WSAGetLastError();            /* last network error */
-
-    switch (t_errno) {
-    /*
-     *  must map a few errno's as the errno namespaces isn't clean.
-     */
-    case WSAEINTR: t_errno = EINTR; break;
-    case WSAEBADF: t_errno = EBADF; break;
-    case WSAEACCES: t_errno = EACCES; break;
-    case WSAEFAULT: t_errno = EFAULT; break;
-    case WSAEINVAL: t_errno = EINVAL; break;
-    case WSAEMFILE: t_errno = EMFILE; break;
-    case WSAENAMETOOLONG: t_errno = ENAMETOOLONG; break;
-    case WSAENOTEMPTY: t_errno = ENOTEMPTY; break;
+    if (nerrno < WSABASEERR) return nerrno;
+	/*
+	 *	map a few basic winsock file i / o errno's to their unix equivalent.
+	 */
+    switch (errno) {
+    case WSAEINTR:          nerrno = EINTR; break;
+    case WSAEBADF:          nerrno = EBADF; break;
+    case WSAEACCES:         nerrno = EACCES; break;
+    case WSAEFAULT:         nerrno = EFAULT; break;
+    case WSAEINVAL:         nerrno = EINVAL; break;
+    case WSAEMFILE:         nerrno = EMFILE; break;
+    case WSAENAMETOOLONG:   nerrno = ENAMETOOLONG; break;
+    case WSAENOTEMPTY:		nerrno = ENOTEMPTY; break;
     default:
         break;
     }
+    return nerrno;
+}
+
+
+/*
+ *	last network error to errno
+ */
+int
+w32_neterrno_set(void)
+{
+	int t_errno = w32_neterrno_map(WSAGetLastError());
     errno = t_errno;
     return t_errno;
 }

@@ -1,0 +1,127 @@
+#ifndef GR_EDPACKAGE_H_INCLUDED
+#define GR_EDPACKAGE_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(edpackage_h, "$Id: package.h.in,v 1.1 2017/03/01 23:57:35 cvsuser Exp $")
+__CPRAGMA_ONCE
+
+/* -*- mode: h; set-indent: 4; -*- */
+/* $Id: package.h.in,v 1.1 2017/03/01 23:57:35 cvsuser Exp $
+ * Package configuration.
+ *
+ *			    
+ * This file is part of the Midnight Commander.
+ *
+ * The Midnight Commander is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * The Midnight Commander is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Notice: Portions of this text are reprinted and reproduced in electronic form. from
+ * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
+ * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
+ * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * online at http://www.opengroup.org/unix/online.html.
+ * ==end==
+ *
+ * @datarootdir@
+ */
+
+/*
+ * Build configuration:
+ *
+ * AC_SUBST(PATHSEP)            @PATHSEP@
+ * AC_SUBST(LT_OBJDIR)          @LT_OBJDIR@
+ * AC_SUBST(SET_MAKE)           @SET_MAKE@
+ *
+ * AC_SUBST(RM)                 @RM@
+ * AC_SUBST(TAR)                @TAR@
+ * AC_SUBST(PERL)               @PERL@
+ * AC_SUBST(INSTALL)            @INSTALL@
+ * AC_SUBST(PROGS)              @PROGS@
+ * AC_SUBST(LIBPROGS)           @LIBPROGS@
+ *
+ * AC_SUBST(CC)                 @CC@
+ * AC_SUBST(CXX)                @CXX@
+ * AC_SUBST(CPPDEP)             @CPPDEP@
+ * AC_SUBST(DEFS)               @DEFS@
+ * AC_SUBST(CFLAGS)             @CFLAGS@
+ * AC_SUBST(CXXFLAGS)           @CXXFLAGS@
+ * AC_SUBST(CWARN)              @CWARN@
+ * AC_SUBST(CXXWARN)            @CXXWARN@
+ * AC_SUBST(CINCLUDE)           @CINCLUDE@
+ * AC_SUBST(LDEBUG)             @LDEBUG@
+ * AC_SUBST(CDEBUG)             @CDEBUG@
+ * AC_SUBST(CXXDEBUG)           @CXXDEBUG@
+ * AC_SUBST(LIBCURL_CPPFLAGS)   @LIBCURL_CPPFLAGS@
+ * AC_SUBST(LIBICU_CFLAGS)      @LIBICU_CFLAGS@
+ * AC_SUBST(LIBICU_CXXFLAGS)    @LIBICU_CXXFLAGS@
+ * AC_SUBST(EXTRA_CFLAGS)       @EXTRA_CFLAGS@
+ * AC_SUBST(EXTRA_CXXFLAGS)     @EXTRA_CXXFLAGS@
+ *
+ * AC_SUBST(LIBTOOL)            @LIBTOOL@
+ * AC_SUBST(LIBTOOL_DEPS)       @LIBTOOL_DEPS@
+ * AC_SUBST(LD)                 @LD@
+ * AC_SUBST(LDMAPFILE)          @LDMAPFILE@
+ *
+ * AC_SUBST(LIBS)               @LIBS@
+ * AC_SUBST(LIBARCHIVE)         @LIBARCHIVE@
+ * AC_SUBST(LIBEXPLAIN)         @LIBEXPLAIN@
+ * AC_SUBST(LIBYACC)            @LIBYACC@
+ * AC_SUBST(LIBCLANG)           @LIBCLANG@
+ * AC_SUBST(LIBCURL)            @LIBCURL@
+ * AC_SUBST(LIBENCA)            @LIBENCA@
+ * AC_SUBST(LIBICONV)           @LIBICONV@
+ * AC_SUBST(ICU_CONFIG)         @ICU_CONFIG@
+ * AC_SUBST(LIBICU_VERSION)     @LIBICU_VERSION@
+ * AC_SUBST(LIBICU)             @LIBICU@
+ * AC_SUBST(LIBMAGIC)           @LIBMAGIC@
+ * AC_SUBST(LIBSPELL)           @LIBSPELL@
+ * AC_SUBST(TERMLIB)            @TERMLIB@
+ * AC_SUBST(LIBM)               @LIBM@
+ * AC_SUBST(LIBX11)             @LIBX11@
+ * AC_SUBST(EXTRALIBS)          @EXTRALIBS@
+ * AC_SUBST(LIBMALLOC)          @LIBMALLOC@
+ * AC_SUBST(LIBTHREAD)          @LIBTHREAD@
+ */
+
+#define GR_PACKAGE_BUGREPORT    "@PACKAGE_BUGREPORT@"
+#define GR_PACKAGE_NAME         "@PACKAGE_NAME@"
+#define GR_PACKAGE_STRING       "@PACKAGE_STRING@"
+#define GR_PACKAGE_TARNAME      "@PACKAGE_TARNAME@"
+#define GR_PACKAGE_URL          "@PACKAGE_URL@"
+#define GR_PACKAGE_VERSION      "@PACKAGE_VERSION@"
+
+#define GR_BUILD                "@build@"
+#define GR_BUILD_ALIAS          "@build_alias@"
+#define GR_BUILD_CPU            "@build_cpu@"
+#define GR_BUILD_OS             "@build_os@"
+#define GR_BUILD_VENDOR         "@build_vendor@"
+
+#define GR_BUILD_CC             "@CC@"
+#define GR_BUILD_CFLAGS         "@CFLAGS@"
+#define GR_BUILD_CXX            "@CXX@"
+#define GR_BUILD_CXXFLAGS       "@CXXFLAGS@"
+
+#define GR_HOST                 "@host@"
+#define GR_HOST_ALIAS           "@host_alias@"
+#define GR_HOST_CPU             "@host_cpu@"
+#define GR_HOST_OS              "@host_os@"
+#define GR_HOST_VENDOR          "@host_vendor@"
+#define GR_HOST_SEPARATOR       "@PATH_SEPARATOR@"
+
+#define GR_TARGET               "@target@"
+#define GR_TARGET_ALIAS         "@target_alias@"
+#define GR_TARGET_CPU           "@target_cpu@"
+#define GR_TARGET_OS            "@target_os@"
+#define GR_TARGET_VENDOR        "@target_vendor@"
+
+#endif  /*GR_EDPACKAGE_H_INCLUDED*/
+

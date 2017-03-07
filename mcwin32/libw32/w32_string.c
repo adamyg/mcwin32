@@ -2,7 +2,7 @@
 /*
  * win32 string functionality
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -55,4 +55,17 @@ strncasecmp(const char *s1, const char *s2, size_t len)
 #endif
 }
 
+
+#if defined(NEED_STRNLEN)
+size_t
+strnlen(const char *s, size_t maxlen)
+{
+    register const char *e;
+    size_t n;
+
+    for (e = s, n = 0; *e && n < maxlen; e++, n++)
+        /**/;
+    return n;
+}
+#endif
 /*end*/

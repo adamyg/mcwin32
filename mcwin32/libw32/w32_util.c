@@ -2,7 +2,7 @@
 /*
  * win32 util unix functionality.
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -28,6 +28,7 @@
  */
 
 #include "win32_internal.h"
+#include "win32_child.h"
 #include "win32_misc.h"
 #include <unistd.h>
 
@@ -84,12 +85,17 @@ w32_gethome(void)
         }
 
         // Personal settings
-        //  X:/Documents and Settings/<user/home/
-        //  X:/Documents and Settings/<user/
+        //  o XP
+        //      X:/Documents and Settings/<user>/home/
+        //      X:/Documents and Settings/<user>/
+        //
+        //  o Windows7+
+        //      X:/Users/<user>/home/
+        //      X:/Users/<user>/
         //
         if (! done) {
             if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROFILE, NULL, 0, t_path)) &&
-                                (len = strlen(t_path)) > 0) {
+                        (len = (int)strlen(t_path)) > 0) {
                 t_path[sizeof(t_path) - 1] = 0;
                 if (0 == _access(t_path, 0)) {
                     _snprintf(t_path + len, sizeof(t_path) - len, "/home/");
@@ -104,7 +110,7 @@ w32_gethome(void)
 
         // <USERPROFILE>
         if (! done) {
-            if ((env = getenv("USERPROFILE")) != NULL && (len = strlen(env)) > 0) {
+            if ((env = getenv("USERPROFILE")) != NULL && (len = (int)strlen(env)) > 0) {
                 t_path[sizeof(t_path) - 1] = 0;
                 if (0 == _access(t_path, 0)) {
                     _snprintf(t_path + len, sizeof(t_path) - len, "/home/");
@@ -119,7 +125,7 @@ w32_gethome(void)
 
         // completion
         if (done) {
-            if (len <= sizeof(t_path)) {
+            if (len <= (int)sizeof(t_path)) {
                 if ('/' != t_path[len - 1] && '\\' != t_path[len - 1]) {
                     t_path[len++] = '/';
                     t_path[len] = 0;
@@ -132,6 +138,29 @@ w32_gethome(void)
     }
     return x_home;
 }
+
+
+//  int
+//  w32_is64bit(void)
+//  {
+//      int arch = 32;
+//
+//      if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+//              _T("SYSTEM\CurrentControlSet\\Control\\Session Manager\\Environment"), 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+//          LPSTR szArch[100] = {0}:
+//
+//          if (RegQueryValueEx(hKey, _T("PROCESSOR_ARCHITECTURE"), NULL, NULL, (LPBYTE)szArch, &dwSize) == ERROR_SUCCESS) {
+//              if (0 == strcmp(szArch, "AMD64"))
+//                  arch = 64;
+//              else
+//                  arch = 32;
+//          } else {
+//              arch = (sizeof(PVOID) == 4 ? 32 : 64);
+//          }
+//          RegCloseKey(hKey);
+//      }
+//      return arch;
+//  }
 
 
 char *
@@ -182,6 +211,7 @@ w32_ostype(void)
         OSVERSIONINFO ovi = {0};
         ovi.dwOSVersionInfoSize = sizeof(ovi);
         GetVersionEx(&ovi);
+			// TODO: replace with RtlGetVersion() as GetVersionEx() is now defunct; 8.1+.
         switch (ovi.dwPlatformId) {
         case VER_PLATFORM_WIN32s:
         case VER_PLATFORM_WIN32_WINDOWS:
@@ -196,6 +226,10 @@ w32_ostype(void)
             //  Operating system    Version dw??Version	    Other
             //                              Major   Minor
             //
+            //  Windows 10	        10.0*	    10	    0	    OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
+            //  Windows Server 2016	10.0*	    10	    0	    OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
+            //  Windows 8.1	        6.3*	    6	    3	    OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
+            //  Windows Server 2012 R2	6.3*	    6	    3	    OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
             //  8	            6.2	    6	    2	    OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
             //  Server 2012         6.2	    6       2	    OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
             //  7	            6.1	    6	    1	    OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
@@ -206,18 +240,21 @@ w32_ostype(void)
             //  Home Server	    5.2	    5	    2	    OSVERSIONINFOEX.wSuiteMask & VER_SUITE_WH_SERVER
             //  Server 2003	    5.2	    5	    2	    GetSystemMetrics(SM_SERVERR2) == 0
             //  XP Professional x64 5.2	    5	    2	    (OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION) && 
-	    //                                                  (SYSTEM_INFO.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-            //  XP	            5.1	    5	    1	    Not applicable
-            //  2000	            5.0	    5	    0	    Not applicable
+            //                                                      (SYSTEM_INFO.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
+            //  XP	                5.1	    5	    1	    Not applicable
+            //  2000	                5.0	    5	    0	    Not applicable
+            //
+            //      * For applications that have been manifested for Windows 8.1 or Windows 10.  Applications not manifested 
+            //      for Windows 8.1 or Windows 10 will return the Windows 8 OS version value (6.2). To manifest your applications
+            //      for Windows 8.1 or Windows 10, refer to Targeting your application for Windows.
             //
             platform = OSTYPE_WIN_NT;               // or 2000
 
-            if (ovi.dwMajorVersion > 6) {
-                platform = OSTYPE_WIN_8;            // at least Windows 8
+            if (ovi.dwMajorVersion >= 10) {
+                platform = OSTYPE_WIN_10;           // Windows 10+
 
             } else if (6 == ovi.dwMajorVersion) {
                 platform = OSTYPE_WIN_VISTA;
-
                 if (ovi.dwMajorVersion >= 2) {
                     platform = OSTYPE_WIN_8;        // or Server 2012
 
@@ -240,14 +277,14 @@ int
 w32_getexedir(char *buf, int maxlen)
 {
     if (GetModuleFileName(NULL, buf, maxlen)) {
-        const int len = strlen(buf);
+        const int len = (int)strlen(buf);
         char *cp;
 
         for (cp = buf + len; (cp > buf) && (*cp != '\\'); cp--)
             /*cont*/;
         if ('\\' == *cp) {
             cp[1] = '\0';                       // remove program
-            return (cp - buf) + 1;
+            return (int)((cp - buf) + 1);
         }
         return len;
     }

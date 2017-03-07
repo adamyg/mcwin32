@@ -1,7 +1,7 @@
 /*
    Various utilities
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -40,7 +40,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -79,11 +78,13 @@
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
+#ifndef HAVE_CHARSET
 static inline int
 is_7bit_printable (unsigned char c)
 {
     return (c > 31 && c < 127);
 }
+#endif
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -296,6 +297,8 @@ name_quote (const char *s, gboolean quote_percent)
             if (ret->len == 0)
                 g_string_append_c (ret, '\\');
             break;
+        default:
+            break;
         }
         g_string_append_c (ret, *s);
     }
@@ -343,26 +346,26 @@ size_trunc (uintmax_t size, gboolean use_si)
 {
     static char x[BUF_TINY];
     uintmax_t divisor = 1;
-    const char *xtra = "";
+    const char *xtra = _("B");
 
     if (size > 999999999UL)
     {
         divisor = use_si ? 1000 : 1024;
-        xtra = use_si ? "k" : "K";
+        xtra = use_si ? _("kB") : _("KiB");
 
         if (size / divisor > 999999999UL)
         {
             divisor = use_si ? (1000 * 1000) : (1024 * 1024);
-            xtra = use_si ? "m" : "M";
+            xtra = use_si ? _("MB") : _("MiB");
 
             if (size / divisor > 999999999UL)
             {
                 divisor = use_si ? (1000 * 1000 * 1000) : (1024 * 1024 * 1024);
-                xtra = use_si ? "g" : "G";
+                xtra = use_si ? _("GB") : _("GiB");
             }
         }
     }
-    g_snprintf (x, sizeof (x), "%.0f%s", 1.0 * size / divisor, xtra);
+    g_snprintf (x, sizeof (x), "%.0f %s", 1.0 * size / divisor, xtra);
     return x;
 }
 
@@ -380,7 +383,7 @@ size_trunc_sep (uintmax_t size, gboolean use_si)
     p += strlen (p) - 1;
     d = x + sizeof (x) - 1;
     *d-- = '\0';
-    while (p >= y && isalpha ((unsigned char) *p))
+    while (p >= y && (isalpha ((unsigned char) *p) || (unsigned char) *p == ' '))
         *d-- = *p--;
     for (count = 0; p >= y; count++)
     {
@@ -580,7 +583,8 @@ extension (const char *filename)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-load_mc_home_file (const char *from, const char *filename, char **allocated_filename)
+load_mc_home_file (const char *from, const char *filename, char **allocated_filename,
+                   size_t * length)
 {
     char *hintfile_base, *hintfile;
     char *lang;
@@ -590,18 +594,18 @@ load_mc_home_file (const char *from, const char *filename, char **allocated_file
     lang = guess_message_value ();
 
     hintfile = g_strconcat (hintfile_base, ".", lang, (char *) NULL);
-    if (!g_file_get_contents (hintfile, &data, NULL, NULL))
+    if (!g_file_get_contents (hintfile, &data, length, NULL))
     {
         /* Fall back to the two-letter language code */
         if (lang[0] != '\0' && lang[1] != '\0')
             lang[2] = '\0';
         g_free (hintfile);
         hintfile = g_strconcat (hintfile_base, ".", lang, (char *) NULL);
-        if (!g_file_get_contents (hintfile, &data, NULL, NULL))
+        if (!g_file_get_contents (hintfile, &data, length, NULL))
         {
             g_free (hintfile);
             hintfile = hintfile_base;
-            g_file_get_contents (hintfile_base, &data, NULL, NULL);
+            g_file_get_contents (hintfile_base, &data, length, NULL);
         }
     }
 
@@ -691,8 +695,8 @@ skip_separators (const char *s)
 {
     const char *su = s;
 
-    for (; *su; str_cnext_char (&su))
-        if (*su != ' ' && *su != '\t' && *su != ',')
+    for (; *su != '\0'; str_cnext_char (&su))
+        if (!whitespace (*su) && *su != ',')
             break;
 
     return su;
@@ -705,7 +709,7 @@ skip_numbers (const char *s)
 {
     const char *su = s;
 
-    for (; *su; str_cnext_char (&su))
+    for (; *su != '\0'; str_cnext_char (&su))
         if (!str_isdigit (su))
             break;
 
@@ -773,6 +777,8 @@ strip_ctrl_codes (char *s)
                             r = new_r + 1;
                             goto osc_out;
                         }
+                    default:
+                        break;
                     }
                 }
               osc_out:
@@ -854,16 +860,26 @@ get_compression_type (int fd, const char *name)
             return COMPRESSION_BZIP;
         case 'h':
             return COMPRESSION_BZIP2;
+        default:
+            break;
         }
     }
 
-    /* Support for LZMA (only utils format with magic in header).
-     * This is the default format of LZMA utils 4.32.1 and later. */
+    /* LZ4 format - v1.5.0 - 0x184D2204 (little endian) */
+    if (magic[0] == 0x04 && magic[1] == 0x22 && magic[2] == 0x4d && magic[3] == 0x18)
+        return COMPRESSION_LZ4;
 
     if (mc_read (fd, (char *) magic + 4, 2) != 2)
         return COMPRESSION_NONE;
 
-    /* LZMA utils format */
+    /* LZIP files */
+    if (magic[0] == 'L'
+        && magic[1] == 'Z'
+        && magic[2] == 'I' && magic[3] == 'P' && (magic[4] == 0x00 || magic[4] == 0x01))
+        return COMPRESSION_LZIP;
+
+    /* Support for LZMA (only utils format with magic in header).
+     * This is the default format of LZMA utils 4.32.1 and later. */
     if (magic[0] == 0xFF
         && magic[1] == 'L'
         && magic[2] == 'Z' && magic[3] == 'M' && magic[4] == 'A' && magic[5] == 0x00)
@@ -897,10 +913,16 @@ decompress_extension (int type)
         return "/ubz" VFS_PATH_URL_DELIMITER;
     case COMPRESSION_BZIP2:
         return "/ubz2" VFS_PATH_URL_DELIMITER;
+    case COMPRESSION_LZIP:
+        return "/ulz" VFS_PATH_URL_DELIMITER;
+    case COMPRESSION_LZ4:
+        return "/ulz4" VFS_PATH_URL_DELIMITER;
     case COMPRESSION_LZMA:
         return "/ulzma" VFS_PATH_URL_DELIMITER;
     case COMPRESSION_XZ:
         return "/uxz" VFS_PATH_URL_DELIMITER;
+    default:
+        break;
     }
     /* Should never reach this place */
     fprintf (stderr, "Fatal: decompress_extension called with an unknown argument\n");
@@ -1194,7 +1216,7 @@ save_file_position (const vfs_path_t * filename_vpath, long line, long column, o
     gboolean src_error = FALSE;
 
     if (filepos_max_saved_entries == 0)
-        filepos_max_saved_entries = mc_config_get_int (mc_main_config, CONFIG_APP_SECTION,
+        filepos_max_saved_entries = mc_config_get_int (mc_global.main_config, CONFIG_APP_SECTION,
                                                        "filepos_max_saved_entries", 1024);
 
     fn = mc_config_get_full_path (MC_FILEPOS_FILE);
@@ -1375,6 +1397,10 @@ guess_message_value (void)
         "LC_MESSAGES",
         /* Last possibility is the LANG environment variable.  */
         "LANG",
+#if defined(WIN32) //WIN32, config
+		/* GNU gettext extension.  */
+		"LANGUAGE",
+#endif
         /* NULL exit loops */
         NULL
     };
@@ -1390,10 +1416,44 @@ guess_message_value (void)
         i++;
     }
 
+#if defined(WIN32) //WIN32, config
+    if (locale == NULL) {
+        char LanguageName[32] = {0};
+        if (GetLocaleInfoA(GetUserDefaultLCID(), LOCALE_SISO639LANGNAME,
+                  LanguageName, sizeof(LanguageName)) && LanguageName[0]) {
+            return g_strdup(LanguageName);
+        }
+    }
+#endif //WIN32
+
     if (locale == NULL)
         locale = "";
 
     return g_strdup (locale);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * The "profile root" is the tree under which all of MC's user data &
+ * settings are stored.
+ *
+ * It defaults to the user's home dir. The user may override this default
+ * with the environment variable $MC_PROFILE_ROOT.
+ */
+const char *
+mc_get_profile_root (void)
+{
+    static const char *profile_root = NULL;
+
+    if (profile_root == NULL)
+    {
+        profile_root = g_getenv ("MC_PROFILE_ROOT");
+        if (profile_root == NULL || *profile_root == '\0')
+            profile_root = mc_config_get_home_dir ();
+    }
+
+    return profile_root;
 }
 
 /* --------------------------------------------------------------------------------------------- */

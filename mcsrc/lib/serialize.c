@@ -1,7 +1,7 @@
 /*
    Provides a serialize/unserialize functionality for INI-like formats.
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -52,6 +52,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 static void
+G_GNUC_PRINTF (2, 3)
 prepend_error_message (GError ** error, const char *format, ...)
 {
     char *prepend_str;
@@ -109,10 +110,10 @@ mc_serialize_str (const char prefix, const char *data, GError ** error)
 {
     if (data == NULL)
     {
-        g_set_error (error, MC_ERROR, -1, "mc_serialize_str(): Input data is NULL.");
+        g_set_error (error, MC_ERROR, 0, "mc_serialize_str(): Input data is NULL.");
         return NULL;
     }
-    return g_strdup_printf ("%c%zd" SRLZ_DELIM_S "%s", prefix, strlen (data), data);
+    return g_strdup_printf ("%c%zu" SRLZ_DELIM_S "%s", prefix, strlen (data), data);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -134,14 +135,13 @@ mc_deserialize_str (const char prefix, const char *data, GError ** error)
 
     if ((data == NULL) || (strlen (data) == 0))
     {
-        g_set_error (error, MC_ERROR, -1, FUNC_NAME ": Input data is NULL or empty.");
+        g_set_error (error, MC_ERROR, 0, FUNC_NAME ": Input data is NULL or empty.");
         return NULL;
     }
 
     if (*data != prefix)
     {
-        g_set_error (error, MC_ERROR, -2, FUNC_NAME ": String prefix doesn't equal to '%c'",
-                     prefix);
+        g_set_error (error, MC_ERROR, 0, FUNC_NAME ": String prefix doesn't equal to '%c'", prefix);
         return NULL;
     }
 
@@ -153,14 +153,14 @@ mc_deserialize_str (const char prefix, const char *data, GError ** error)
         semi_ptr = strchr (data + 1, SRLZ_DELIM_C);
         if (semi_ptr == NULL)
         {
-            g_set_error (error, MC_ERROR, -3,
+            g_set_error (error, MC_ERROR, 0,
                          FUNC_NAME ": Length delimiter '%c' doesn't exists", SRLZ_DELIM_C);
             return NULL;
         }
         semi_offset = semi_ptr - (data + 1);
         if (semi_offset >= BUF_TINY)
         {
-            g_set_error (error, MC_ERROR, -3, FUNC_NAME ": Too big string length");
+            g_set_error (error, MC_ERROR, 0, FUNC_NAME ": Too big string length");
             return NULL;
         }
         strncpy (buffer, data + 1, semi_offset);
@@ -171,9 +171,9 @@ mc_deserialize_str (const char prefix, const char *data, GError ** error)
 
     if (data_len > strlen (data))
     {
-        g_set_error (error, MC_ERROR, -3,
+        g_set_error (error, MC_ERROR, 0,
                      FUNC_NAME
-                     ": Specified data length (%zd) is greater than actual data length (%zd)",
+                     ": Specified data length (%zu) is greater than actual data length (%zu)",
                      data_len, strlen (data));
         return NULL;
     }
@@ -266,7 +266,7 @@ mc_serialize_config (const mc_config_t * data, GError ** error)
 
 #define FUNC_NAME "mc_deserialize_config()"
 #define prepend_error_and_exit() { \
-    prepend_error_message (error, FUNC_NAME " at %lu", current_position + 1); \
+    prepend_error_message (error, FUNC_NAME " at %zu", current_position + 1); \
                 mc_config_deinit (ret_data); \
                 return NULL; \
 }
@@ -329,6 +329,8 @@ mc_deserialize_config (const char *data, GError ** error)
             data = go_to_end_of_serialized_string (data, current_value, &current_position);
             g_free (current_value);
             current_status = WAIT_GROUP;
+            break;
+        default:
             break;
         }
     }

@@ -1,4 +1,4 @@
-/* $Id: telnet.h,v 1.1.1.1 1997/10/28 19:01:46 jl8z Exp $ */
+/* $Id: telnet.h,v 1.1 2017/02/24 15:36:49 cvsuser Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.

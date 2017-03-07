@@ -11,7 +11,7 @@
    The Free Software Foundation, Inc.
 
    Written by:
-   Adam Young 2012
+   Adam Young 2012 - 2017
 
    This file is part of the Midnight Commander.
 
@@ -31,7 +31,7 @@
  */
 
 #include <config.h>
-#include <win32.h>
+#include "libw32.h"
 
 #include <sys/types.h>
 #include <limits.h>
@@ -41,7 +41,7 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <glib/gqueue.h>
+#include <glib.h>
 
 #include "lib/tty/tty.h"
 #include "lib/skin.h"
@@ -139,8 +139,10 @@ drive_sel(WPanel *panel)
 
     do_refresh ();
     drive_dlg =
-        dlg_create(TRUE, y_pos, x_pos, y_height, x_width, dialog_colors,
-                drive_dlg_callback, NULL, "[Chdrive]", _("Chdrive command"), 0);
+//      dlg_create(TRUE, y_pos, x_pos, y_height, x_width, dialog_colors,
+//              drive_dlg_callback, NULL, "[Chdrive]", _("Chdrive command"), 0);
+        dlg_create(TRUE, y_pos, x_pos, y_height, x_width, WPOS_CENTER | WPOS_TRYUP, FALSE,
+		dialog_colors, drive_dlg_callback, NULL /*TODO-MOUSE*/, "[Chdrive]", _("Chdrive command"));
 
     /*
      *  Drive buttons
@@ -241,12 +243,12 @@ drive_dlg_callback (Widget * h, Widget * sender, widget_msg_t msg, int parm, voi
         switch (parm) {
         case KEY_LEFT:
         case KEY_UP:
-            dlg_one_down (d);                   /* prev drive button */
+            dlg_select_next_widget (d);
             return MSG_HANDLED;
 
         case KEY_RIGHT:
         case KEY_DOWN:
-            dlg_one_up (d);                     /* next drive button */
+            dlg_select_prev_widget (d);
             return MSG_HANDLED;
         }
         return MSG_NOT_HANDLED;

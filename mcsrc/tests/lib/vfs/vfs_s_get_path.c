@@ -1,7 +1,7 @@
 /*
    lib/vfs - test vfs_s_get_path() function
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -177,10 +177,10 @@ main (void)
     suite_add_tcase (s, tc_core);
     sr = srunner_create (s);
     srunner_set_log (sr, "vfs_s_get_path.log");
-    srunner_run_all (sr, CK_NORMAL);
+    srunner_run_all (sr, CK_ENV);
     number_failed = srunner_ntests_failed (sr);
     srunner_free (sr);
-    return (number_failed == 0) ? 0 : 1;
+    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

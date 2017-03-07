@@ -1,7 +1,7 @@
 /*
    Dynamic paragraph formatting.
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Copyright (C) 1996 Paul Sheer
@@ -81,9 +81,9 @@ line_start (const edit_buffer_t * buf, long line)
     p = buf->curs1;
 
     if (line < l)
-        p = edit_buffer_move_backward (buf, p, l - line);
+        p = edit_buffer_get_backward_offset (buf, p, l - line);
     else if (line > l)
-        p = edit_buffer_move_forward (buf, p, line - l, 0);
+        p = edit_buffer_get_forward_offset (buf, p, line - l, 0);
 
     p = edit_buffer_get_bol (buf, p);
     while (strchr ("\t ", edit_buffer_get_byte (buf, p)) != NULL)
@@ -136,8 +136,8 @@ begin_paragraph (WEdit * edit, gboolean force, long *lines)
 
     *lines = edit->buffer.curs_line - i;
 
-    return edit_buffer_move_backward (&edit->buffer, edit_buffer_get_current_bol (&edit->buffer),
-                                      *lines);
+    return edit_buffer_get_backward_offset (&edit->buffer,
+                                            edit_buffer_get_current_bol (&edit->buffer), *lines);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -160,10 +160,10 @@ end_paragraph (WEdit * edit, gboolean force)
         }
 
     return edit_buffer_get_eol (&edit->buffer,
-                                edit_buffer_move_forward (&edit->buffer,
-                                                          edit_buffer_get_current_bol
-                                                          (&edit->buffer),
-                                                          i - edit->buffer.curs_line, 0));
+                                edit_buffer_get_forward_offset (&edit->buffer,
+                                                                edit_buffer_get_current_bol
+                                                                (&edit->buffer),
+                                                                i - edit->buffer.curs_line, 0));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -303,7 +303,7 @@ word_start (unsigned char *t, off_t q, off_t size)
 {
     off_t i;
 
-    if (t[q] == ' ' || t[q] == '\t')
+    if (whitespace (t[q]))
         return next_word_start (t, q, size);
 
     for (i = q;; i--)
@@ -315,7 +315,7 @@ word_start (unsigned char *t, off_t q, off_t size)
         c = t[i - 1];
         if (c == '\n')
             return (-1);
-        if (c == ' ' || c == '\t')
+        if (whitespace (c))
             return i;
     }
 }

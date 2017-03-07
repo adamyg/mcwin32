@@ -32,7 +32,6 @@ typedef struct WButton
 {
     Widget widget;
     int action;                 /* what to do when pressed */
-    gboolean selected;          /* button state */
 
     button_flags_t flags;       /* button flags */
     hotkey_t text;              /* text of button, contain hotkey too */
@@ -46,7 +45,7 @@ typedef struct WButton
 
 WButton *button_new (int y, int x, int action, button_flags_t flags, const char *text,
                      bcback_fn callback);
-const char *button_get_text (const WButton * b);
+char *button_get_text (const WButton * b);
 void button_set_text (WButton * b, const char *text);
 int button_get_len (const WButton * b);
 

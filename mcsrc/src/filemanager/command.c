@@ -4,7 +4,7 @@
    with all the magic of the command input line, we depend on some
    help from the program's callback.
 
-   Copyright (C) 1995-2015
+   Copyright (C) 1995-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -46,14 +46,14 @@
 
 #include "src/setup.h"          /* quit */
 #ifdef ENABLE_SUBSHELL
-#include "src/subshell.h"
+#include "src/subshell/subshell.h"
 #endif
 #include "src/execute.h"        /* shell_execute */
 
 #include "midnight.h"           /* current_panel */
 #include "layout.h"             /* for command_prompt variable */
 #include "usermenu.h"           /* expand_format */
-#include "tree.h"               /* for tree_chdir */
+#include "tree.h"               /* sync_tree() */
 
 #include "command.h"
 
@@ -115,7 +115,6 @@ examine_cd (const char *_path)
     /* Variable expansion */
     for (p = path_tilde, r = q; *p != '\0' && r < q + MC_MAXPATHLEN;)
     {
-
         switch (state)
         {
         case copy_sym:
@@ -181,6 +180,9 @@ examine_cd (const char *_path)
                 state = copy_sym;
                 break;
             }
+
+        default:
+            break;
         }
     }
 
@@ -222,7 +224,7 @@ handle_cdpath (const char *path)
             {
                 vfs_path_t *r_vpath;
 
-                r_vpath = vfs_path_build_filename (p, path, NULL);
+                r_vpath = vfs_path_build_filename (p, path, (char *) NULL);
                 result = do_cd (r_vpath, cd_parse_command);
                 vfs_path_free (r_vpath);
             }
@@ -252,10 +254,10 @@ enter (WInput * lc_cmdline)
         return MSG_HANDLED;
 
     /* Any initial whitespace should be removed at this point */
-    while (*cmd == ' ' || *cmd == '\t' || *cmd == '\n')
+    while (whiteness (*cmd))
         cmd++;
 
-    if (!*cmd)
+    if (*cmd == '\0')
         return MSG_HANDLED;
 
     if (strncmp (cmd, "cd ", 3) == 0 || strcmp (cmd, "cd") == 0)
@@ -345,10 +347,6 @@ command_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
 {
     switch (msg)
     {
-    case MSG_FOCUS:
-        /* Never accept focus, otherwise panels will be unselected */
-        return MSG_NOT_HANDLED;
-
     case MSG_KEY:
         /* Special case: we handle the enter key */
         if (parm == '\n')
@@ -383,25 +381,28 @@ do_cd_command (char *orig_cmd)
     /* FIXME: what about interpreting quoted strings like the shell.
        so one could type "cd <tab> M-a <enter>" and it would work. */
     len = strlen (orig_cmd) - 1;
-    while (len >= 0 && (orig_cmd[len] == ' ' || orig_cmd[len] == '\t' || orig_cmd[len] == '\n'))
+    while (len >= 0 && whiteness (orig_cmd[len]))
     {
-        orig_cmd[len] = 0;
+        orig_cmd[len] = '\0';
         len--;
     }
 
     cmd = orig_cmd;
-    if (cmd[CD_OPERAND_OFFSET - 1] == 0)
+    if (cmd[CD_OPERAND_OFFSET - 1] == '\0')
         cmd = "cd ";            /* 0..2 => given text, 3 => \0 */
 
     /* allow any amount of white space in front of the path operand */
-    while (cmd[operand_pos] == ' ' || cmd[operand_pos] == '\t')
+    while (whitespace (cmd[operand_pos]))
         operand_pos++;
 
     if (get_current_type () == view_tree)
     {
-        if (cmd[0] == 0)
+        vfs_path_t *new_vpath = NULL;
+
+        if (cmd[0] == '\0')
         {
-            sync_tree (mc_config_get_home_dir ());
+            new_vpath = vfs_path_from_str (mc_config_get_home_dir ());
+            sync_tree (new_vpath);
         }
         else if (DIR_IS_DOTDOT (cmd + operand_pos))
         {
@@ -414,18 +415,21 @@ do_cd_command (char *orig_cmd)
                     vfs_path_vtokens_get (tmp_vpath, 0, vfs_path_tokens_count (tmp_vpath) - 1);
                 vfs_path_free (tmp_vpath);
             }
-            sync_tree (vfs_path_as_str (current_panel->cwd_vpath));
+            sync_tree (current_panel->cwd_vpath);
         }
-        else if (IS_PATH_SEP (cmd[operand_pos]))
-            sync_tree (cmd + operand_pos);
         else
         {
-            vfs_path_t *new_vpath;
+            if (IS_PATH_SEP (cmd[operand_pos]))
+                new_vpath = vfs_path_from_str (cmd + operand_pos);
+            else
+                new_vpath =
+                    vfs_path_append_new (current_panel->cwd_vpath, cmd + operand_pos,
+                                         (char *) NULL);
 
-            new_vpath = vfs_path_append_new (current_panel->cwd_vpath, cmd + operand_pos, NULL);
-            sync_tree (vfs_path_as_str (new_vpath));
-            vfs_path_free (new_vpath);
+            sync_tree (new_vpath);
         }
+
+        vfs_path_free (new_vpath);
     }
     else
     {
@@ -465,14 +469,17 @@ WInput *
 command_new (int y, int x, int cols)
 {
     WInput *cmd;
+    Widget *w;
 
     cmd = input_new (y, x, command_colors, cols, "", "cmdline",
                      INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_VARIABLES | INPUT_COMPLETE_USERNAMES
                      | INPUT_COMPLETE_HOSTNAMES | INPUT_COMPLETE_CD | INPUT_COMPLETE_COMMANDS |
                      INPUT_COMPLETE_SHELL_ESC);
-
+    w = WIDGET (cmd);
+    /* Don't set WOP_SELECTABLE up, otherwise panels will be unselected */
+    widget_set_options (w, WOP_SELECTABLE, FALSE);
     /* Add our hooks */
-    WIDGET (cmd)->callback = command_callback;
+    w->callback = command_callback;
 
     return cmd;
 }

@@ -2,7 +2,7 @@
 /*
  * win32 user identification functionality
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -29,6 +29,9 @@
 
 #include "win32_internal.h"
 #include <unistd.h>
+
+#pragma comment(lib, "Advapi32.lib")
+
 
 /*
 //  NAME
@@ -137,6 +140,36 @@ w32_getegid (void)
 
 /*
 //  NAME
+//      issetugid -  determine if current executable is running setuid or setgid
+//
+//  SYNOPSIS
+//      #include <unistd.h>
+//
+//      int issetugid(void);
+//
+//  DESCRIPTION
+//      The issetugid() function should be used to  determine if a path name returned
+//      from a getenv(3C) call can be used safely to open the specified file. It is
+//      often  not safe to open such a file because the status of the effective uid
+//      is not known.
+//
+//  RETURN VALUE
+//      The issetugid() function returns 1 if the process  was  made setuid or setgid
+//      as  the result of the last or a previous call to execve(). Otherwise it returns 0.
+//
+//  ERRORS
+//      No errors are defined.
+*/
+int
+issetugid (void)
+{
+    return 0;
+}
+
+
+
+/*
+//  NAME
 //      getlogin, getlogin_r - get login name
 //
 //  SYNOPSIS
@@ -202,7 +235,7 @@ getlogin (void)
 {
     static char buffer[100];                    /* one-shot */
     DWORD size = sizeof(buffer);
-    char *p = buffer;
+    const char *p = buffer;
 
     if (!*p) {
         p = getenv("USER");
@@ -236,6 +269,6 @@ getlogin_r (char *name, size_t namesize)
         return -1;
     }
     memcpy(name, login, length + 1);
-    return length;
+    return (int)length;
 }
 /*end*/

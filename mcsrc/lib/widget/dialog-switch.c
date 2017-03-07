@@ -3,7 +3,7 @@
 
    Original idea and code: Oleg "Olegarch" Konovalov <olegarch@linuxinside.com>
 
-   Copyright (C) 2009-2015
+   Copyright (C) 2009-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -35,9 +35,6 @@
 #include "lib/global.h"
 #include "lib/tty/tty.h"        /* LINES, COLS */
 #include "lib/tty/color.h"      /* tty_set_normal_attrs() */
-#ifdef HAVE_SLANG
-#include "lib/tty/win.h"        /* do_enter_ca_mode() */
-#endif
 #include "lib/widget.h"
 #include "lib/event.h"
 
@@ -75,7 +72,7 @@ dialog_switch_suspend (void *data, void *user_data)
     (void) user_data;
 
     if (data != mc_current->data)
-        DIALOG (data)->state = DLG_SUSPENDED;
+        widget_set_state (WIDGET (data), WST_SUSPENDED, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -98,7 +95,7 @@ dialog_switch_goto (GList * dlg)
         else
         {
             /* switch from editor, viewer, etc to another dialog */
-            old->state = DLG_SUSPENDED;
+            widget_set_state (WIDGET (old), WST_SUSPENDED, TRUE);
 
             if (DIALOG (dlg->data) != midnight_dlg)
                 /* switch to another editor, viewer, etc */
@@ -107,7 +104,7 @@ dialog_switch_goto (GList * dlg)
             else
             {
                 /* switch to panels */
-                midnight_dlg->state = DLG_ACTIVE;
+                widget_set_state (WIDGET (midnight_dlg), WST_ACTIVE, TRUE);
                 do_refresh ();
             }
         }
@@ -117,12 +114,9 @@ dialog_switch_goto (GList * dlg)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-dlg_resize_cb (void *data, void *user_data)
+dialog_switch_resize (WDialog * d)
 {
-    WDialog *d = data;
-
-    (void) user_data;
-    if (d->state == DLG_ACTIVE)
+    if (widget_get_state (WIDGET (d), WST_ACTIVE))
         send_message (d, NULL, MSG_RESIZE, 0, NULL);
     else
         d->winch_pending = TRUE;
@@ -173,7 +167,7 @@ dialog_switch_remove (WDialog * h)
 
     /* resume forced the current screen */
     if (mc_current != NULL)
-        DIALOG (mc_current->data)->state = DLG_ACTIVE;
+        widget_set_state (WIDGET (mc_current->data), WST_ACTIVE, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -226,14 +220,13 @@ dialog_switch_list (void)
     const size_t dlg_num = g_list_length (mc_dialogs);
     int lines, cols;
     Listbox *listbox;
-    GList *h;
+    GList *h, *selected;
     int i = 0;
-    int rv;
 
     if (mc_global.midnight_shutdown || mc_current == NULL)
         return;
 
-    lines = min ((size_t) (LINES * 2 / 3), dlg_num);
+    lines = MIN ((size_t) (LINES * 2 / 3), dlg_num);
     cols = COLS * 2 / 3;
 
     listbox = create_listbox_window (lines, cols, _("Screens"), "[Screen selector]");
@@ -250,19 +243,14 @@ dialog_switch_list (void)
         else
             title = g_strdup ("");
 
-        listbox_add_item (listbox->list, LISTBOX_APPEND_BEFORE, get_hotkey (i++), title, NULL);
+        listbox_add_item (listbox->list, LISTBOX_APPEND_BEFORE, get_hotkey (i++), title, h, FALSE);
 
         g_free (title);
     }
 
-    listbox_select_entry (listbox->list, dlg_num - 1 - g_list_position (mc_dialogs, mc_current));
-    rv = run_listbox (listbox);
-
-    if (rv >= 0)
-    {
-        h = g_list_nth (mc_dialogs, dlg_num - 1 - rv);
-        dialog_switch_goto (h);
-    }
+    selected = run_listbox_with_data (listbox, mc_current);
+    if (selected != NULL)
+        dialog_switch_goto (selected);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -275,11 +263,12 @@ dialog_switch_process_pending (void)
     while (dialog_switch_pending)
     {
         WDialog *h = DIALOG (mc_current->data);
+        Widget *wh = WIDGET (h);
 
         dialog_switch_pending = FALSE;
-        h->state = DLG_SUSPENDED;
+        widget_set_state (wh, WST_SUSPENDED, TRUE);
         ret = dlg_run (h);
-        if (h->state == DLG_CLOSED)
+        if (widget_get_state (wh, WST_CLOSED))
         {
             dlg_destroy (h);
 
@@ -366,20 +355,23 @@ mc_refresh (void)
 void
 dialog_change_screen_size (void)
 {
+    GList *d;
+
     mc_global.tty.winch_flag = 0;
 
     tty_change_screen_size ();
 
 #ifdef HAVE_SLANG
-    do_enter_ca_mode ();
     tty_keypad (TRUE);
     tty_nodelay (FALSE);
 #endif
 
     /* Inform all suspending dialogs */
     dialog_switch_got_winch ();
-    /* Inform all running dialogs */
-    g_list_foreach (top_dlg, (GFunc) dlg_resize_cb, NULL);
+
+    /* Inform all running dialogs from first to last */
+    for (d = g_list_last (top_dlg); d != NULL; d = g_list_previous (d))
+        dialog_switch_resize (DIALOG (d->data));
 
     /* Now, force the redraw */
     repaint_screen ();

@@ -1,8 +1,66 @@
-Wed Aug  1 19:03:08 2012 ayoung
+-*- encoding: utf-8; -*-
 
-	* import libmagic 5.11 (freebsd.org)
+Sat Jan 28 16:08:19 2017 adamy
 
-                - exe path unconditional within path.
+	* binary read io, work-around issues char's > 127.
 
-                - global functions renamed file_xxx, magic_file_xxx
+Fri Jan 27 16:48:25 2017 adamy
+
+	* imported libmagic 5.29 (fossies.org)
+
+		- magic_rename.pl; new source modules.
+			global functions renamed file_xxx, magic_file_xxx
+			
+		- dll builds (__MAGIC_DECL definition), removed 'public' definition.
+			/*
+			 * On Windows, define LIBMAGIC_STATIC if you're building or using a .lib.  
+			 * The default here assumes you're building a DLL.  
+			 * Note: Only libmagic source should ever define __LIBMAGIC_BUILD.
+			 */
+			#if ((defined __WIN32__) || (defined _WIN32) || defined(__CYGWIN__)) && (!defined LIBMAGIC_STATIC)
+			# ifdef __LIBMAGIC_BUILD
+			#  ifdef __GNUC__
+			#   define __MAGIC_DECL	__attribute__((dllexport)) extern
+			#  else
+			#   define __MAGIC_DECL	__declspec(dllexport)
+			#  endif
+			# else
+			#  ifdef __GNUC__
+			#   define __MAGIC_DECL
+			#  else
+			#   define __MAGIC_DECL	__declspec(dllimport)
+			#  endif
+			# endif
+			#else
+			/* Static libraries or non-Windows needs no special declaration. */
+			#if HAVE_VISIBILITY && !defined(WIN32)
+			# define __MAGIC_DECL __attribute__ ((__visibility__("default")))
+			#else
+			# define __MAGIC_DECL
+			#endif
+			#endif	/*__MAGIC_DECL*/
+
+		- setlocale HAVE_SETLOCALE checks.
+
+		- ioctrl usage removed.
+
+		- additional functions localised,
+			ctime_r, asctime_r, gmtime_r, localtime_r and strcasestr
+
+Thu Mar 28 21:13:44 2013 adamy
+
+	* strlcpy/strlcat localised with file511_ prefix.
+
+Wed Aug  1 19:03:08 2012 adamy
+
+	* imported libmagic 5.11 (freebsd.org)
+
+		- exe path unconditional within path.
+		- global functions renamed file_xxx, magic_file_xxx
+
+/*
+ * Local Variables: ***
+ * mode: changelog ***
+ * End: ***
+ */
 

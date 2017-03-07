@@ -1,0 +1,8 @@
+# $Id: makelib.def,v 1.2 2012/09/21 17:32:53 ayoung Exp $
+# win32 makelib configuration
+#
+inc=../include
+lbl=LIBGLIB
+lib=glib-2.0.lib
+def=HAVE_GLIB
+def=HAVE_GLIB_GLIB_H

@@ -1,36 +1,61 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 /*
- *  WIN32 config.h
+ *  win32 Midnight Commander -- config.h
+ *
+ *  Written by: Adam Young 2012 - 2017
+ *
+ *  This file is part of the Midnight Commander.
+ *
+ *  The Midnight Commander is free software: you can redistribute it
+ *  and/or modify it under the terms of the GNU General Public License as
+ *  published by the Free Software Foundation, either version 3 of the License,
+ *  or (at your option) any later version.
+ *
+ *  The Midnight Commander is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  ==end==
  */
 
-#ifndef RC_INVOKED
-#include <w32config.h>
+#include "libw32/w32config.h"                   // common configuration
+
+#define WIN32_UNISTD_MAP                        // enable unistd API mapping
+// 	#define WIN32_SOCKET_MAP                    // enable socket API mapping
 #include <stdio.h>
+#include <assert.h>
+#include <unistd.h>
+
+#if defined(_MSC_VER)
+#pragma warning (disable : 4127)                // conditional expression is constant
+#pragma warning (disable : 4201)                // nonstandard extension used : nameless struct/union
+#pragma warning (disable : 4204)                // nonstandard extension used : non-constant aggregate initializer
+#pragma warning (disable : 4702)                // unreachable code
+#pragma warning (disable : 4706)                // assignment within conditional expression
+#pragma warning (disable : 4996)                // 'xxx' was declared deprecated
+
+#elif defined(__WATCOMC__)
+#pragma disable_message(136)                    /* Comparison equivalent to 'unsigned == 0' */
+#pragma disable_message(201)                    /* Unreachable code */
+#pragma disable_message(202)                    /* Unreferenced */
+#pragma disable_message(124)                    // Comparison result always 0
 #endif
 
 /*
  *  build information
  */
-#include <buildinfo.h>
-
-#define PACKAGE             "mc-win32-native"
-#define VERSION             "4.8.14"            /* 30 March 15 */
-
-#ifdef  RC_INVOKED                              /* see: mc.rc */
-#define RC_PRODUCTVERSION   4,8,14,0
-#define RC_FILEVERSION      4,8,14,1
-#endif
+#include "buildinfo.h"
 
 #define MC_CONFIGURE_ARGS   "win32-native"
 #define MC_APPLICATION_DIR  "Midnight Commander"
 
-
 /*
  *  application runtime configuration
  */
-#ifndef RC_INVOKED
-
 #define MC_USERCONF_DIR     MC_APPLICATION_DIR  /* see: fileloc.h, default "mc" */
 #undef  MC_HOMEDIR_XDG                          /* enforce Freedesktop recommended dirs, not required */
 
@@ -44,7 +69,7 @@ char *                      mc_USERCONFIGDIR(const char *subdir);
 const char *                mc_EXTHELPERSDIR(void);
 
 #define SYSCONFDIR          mc_SYSCONFDIR()     /* /etc/mc */
-#define MC_DATADIR          mc_DATADIR()        /* /usr/share/mc */
+#define WIN32_DATADIR       mc_DATADIR()        /* /usr/share/mc */
 #define LOCALEDIR           mc_LOCALEDIR()      /* /usr/share/locale */
 #define LIBEXECDIR          mc_LIBEXECDIR()     /* /lib/mc */
 #define EXTHELPERSDIR       mc_EXTHELPERSDIR()  /* ???, 4.8.7 */
@@ -52,11 +77,10 @@ const char *                mc_EXTHELPERSDIR(void);
 extern FILE *               win32_popen(const char *cmd, const char *mode);
 extern int                  win32_pclose(FILE *file);
 
+#ifndef popen
 #define popen(__cmd,__mode) win32_popen(__cmd, __mode)
 #define pclose(__file)      win32_pclose(__file)
-
-#endif /*RC_INVOKED*/
-
+#endif
 
 /*
  *  available components
@@ -90,13 +114,13 @@ extern int                  win32_pclose(FILE *file);
 #undef  HAVE_LIBGPM
 
 #undef  HAVE_REALPATH
-#define HAVE_STRCASECMP
-#define HAVE_STRNCASECMP
-#define HAVE_GETOPT
+#define HAVE_STRCASECMP 1
+#define HAVE_STRNCASECMP 1
+#define HAVE_GETOPT 1
 #if defined(__WATCOMC__)
-#define HAVE_STRLCPY
-#define HAVE_STRLCAT
-#define HAVE_LOCALE_H
+#define HAVE_STRLCPY 1
+#define HAVE_STRLCAT 1
+#define HAVE_LOCALE_H  1
 #endif
 
 /*
@@ -125,13 +149,11 @@ extern int                  win32_pclose(FILE *file);
 #define ENABLE_VFS_EXTFS 1
 #define ENABLE_VFS_FTP 1
 #undef  ENABLE_VFS_FISH
-#undef  ENABLE_VFS_SFTP
+#define ENABLE_VFS_SFTP 1                       /* libssh2 */
 #undef  ENABLE_VFS_SMB
 #undef  ENABLE_VFS_UNDELFS
 
-#define SIG_ATOMIC_VOLATILE_T int
+#define SIG_ATOMIC_VOLATILE_T int               /* FIXME */
+#define PROMOTED_MODE_T int                     /* FIXME */
 
 #endif  /*CONFIG_H_INCLUDED*/
-
-
-

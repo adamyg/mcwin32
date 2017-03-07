@@ -6,7 +6,7 @@
  *
  *      pwd.h - password structure
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -54,14 +54,14 @@ struct passwd {
     int                 pw_audflg;
 };
 
-struct passwd *         getpwent(void);
-struct passwd *         getpwuid(int);
-struct passwd *         getpwnam(const char *);
-void                    setpwent(void);
-void                    endpwent(void);
+LIBW32_API struct passwd *getpwent(void);
+LIBW32_API struct passwd *getpwuid(int);
+LIBW32_API struct passwd *getpwnam(const char *);
+LIBW32_API void         setpwent(void);
+LIBW32_API void         endpwent(void);
 
-//  int                 getpwnam_r(const char *, struct passwd *, char *, size_t, struct passwd **);
-//  int                 getpwuid_r(uid_t, struct passwd *, char *, size_t, struct passwd **);
+//LIBW32_API int	getpwnam_r(const char *, struct passwd *, char *, size_t, struct passwd **);
+//LIBW32_API int        getpwuid_r(uid_t, struct passwd *, char *, size_t, struct passwd **);
 
 __END_DECLS
 

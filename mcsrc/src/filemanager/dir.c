@@ -1,7 +1,7 @@
 /*
    Directory routines
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -55,9 +55,9 @@
 /*** file scope macro definitions ****************************************************************/
 
 #define MY_ISDIR(x) (\
-    (is_exe (x->st.st_mode) && !(S_ISDIR (x->st.st_mode) || x->f.link_to_dir) && exec_first) \
+    (is_exe (x->st.st_mode) && !(S_ISDIR (x->st.st_mode) || link_isdir (x)) && exec_first) \
         ? 1 \
-        : ( (S_ISDIR (x->st.st_mode) || x->f.link_to_dir) ? 2 : 0) )
+        : ( (S_ISDIR (x->st.st_mode) || link_isdir (x)) ? 2 : 0) )
 
 /*** file scope type declarations ****************************************************************/
 
@@ -208,7 +208,7 @@ dir_get_dotdot_stat (const vfs_path_t * vpath, struct stat *st)
         {
             vfs_path_t *tmp_vpath;
 
-            tmp_vpath = vfs_path_append_new (vpath, "..", NULL);
+            tmp_vpath = vfs_path_append_new (vpath, "..", (char *) NULL);
             ret = mc_stat (tmp_vpath, st) == 0;
             vfs_path_free (tmp_vpath);
         }
@@ -260,7 +260,7 @@ gboolean
 dir_list_grow (dir_list * list, int delta)
 {
     int size;
-    gboolean clear = FALSE;
+    gboolean clear_flag = FALSE;
 
     if (list == NULL)
         return FALSE;
@@ -272,7 +272,7 @@ dir_list_grow (dir_list * list, int delta)
     if (size <= 0)
     {
         size = DIR_LIST_MIN_SIZE;
-        clear = TRUE;
+        clear_flag = TRUE;
     }
 
     if (size != list->size)
@@ -287,7 +287,7 @@ dir_list_grow (dir_list * list, int delta)
         list->size = size;
     }
 
-    list->len = clear ? 0 : min (list->len, size);
+    list->len = clear_flag ? 0 : MIN (list->len, size);
 
     return TRUE;
 }
@@ -508,7 +508,7 @@ dir_list_sort (dir_list * list, GCompareFunc sort, const dir_sort_options_t * so
     file_entry_t *fentry;
     int dot_dot_found = 0;
 
-    if (list->len < 2)
+    if (list->len < 2 || sort == (GCompareFunc) unsorted)
         return;
 
     /* If there is an ".." entry the caller must take care to
@@ -561,7 +561,7 @@ dir_list_init (dir_list * list)
     }
 
     fentry = &list->list[0];
-    memset (fentry, 0, sizeof (file_entry_t));
+    memset (fentry, 0, sizeof (*fentry));
     fentry->fnamelen = 2;
     fentry->fname = g_strndup ("..", fentry->fnamelen);
     fentry->f.link_to_dir = 0;
@@ -629,6 +629,7 @@ dir_list_load (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
     int link_to_dir, stale_link;
     struct stat st;
     file_entry_t *fentry;
+    const char *vpath_str;
 
     /* ".." (if any) must be the first entry in the list */
     if (!dir_list_init (list))
@@ -647,14 +648,10 @@ dir_list_load (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
 
     tree_store_start_check (vpath);
 
-    {
-        const char *vpath_str;
-
-        vpath_str = vfs_path_as_str (vpath);
-        /* Do not add a ".." entry to the root directory */
-        if (IS_PATH_SEP (vpath_str[0]) && vpath_str[1] == '\0')
-            list->len--;
-    }
+    vpath_str = vfs_path_as_str (vpath);
+    /* Do not add a ".." entry to the root directory */
+    if (IS_PATH_SEP (vpath_str[0]) && vpath_str[1] == '\0')
+        dir_list_clean (list);
 
     while ((dp = mc_readdir (dirp)) != NULL)
     {
@@ -724,7 +721,7 @@ dir_list_reload (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
         dfentry = &dir_copy.list[i];
 
         dfentry->fnamelen = fentry->fnamelen;
-        dfentry->fname = fentry->fname;
+        dfentry->fname = g_strndup (fentry->fname, fentry->fnamelen);
         dfentry->f.marked = fentry->f.marked;
         dfentry->f.dir_size_computed = fentry->f.dir_size_computed;
         dfentry->f.link_to_dir = fentry->f.link_to_dir;
@@ -738,6 +735,9 @@ dir_list_reload (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
         }
     }
 
+    /* save len for later dir_list_clean() */
+    dir_copy.len = list->len;
+
     /* Add ".." except to the root directory. The ".." entry
        (if any) must be the first in the list. */
     tmp_path = vfs_path_get_by_index (vpath, 0)->path;
@@ -748,6 +748,7 @@ dir_list_reload (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
     }
     else
     {
+        dir_list_clean (list);
         if (!dir_list_init (list))
         {
             dir_list_clean (&dir_copy);

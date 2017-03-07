@@ -2,7 +2,7 @@
 /*
  * win32 mmap() system calls.
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -238,14 +238,14 @@
 //   EXAMPLES
 //      None. 
 */
-void * __PDECL
+void *
 mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
 {
     HANDLE  hMapping = INVALID_HANDLE_VALUE;
+    HANDLE  hFile = INVALID_HANDLE_VALUE;
     void   *region = MAP_FAILED;
     int     ntflags;
     DWORD   ntprot;
-    long    hFile;
 
     /* 
      *  Map prot and flags, to system flags 
@@ -292,19 +292,18 @@ mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
         errno = EINVAL;
         return MAP_FAILED;
     }
-    
 
     /*
      *  Convert 'fd' to system handle 
      */
-    if ((hFile = _get_osfhandle(fildes)) == -1) {
+    if (0 == (flags & MAP_ANONYMOUS) &&         /* extension */
+            INVALID_HANDLE_VALUE == (hFile = (HANDLE)_get_osfhandle(fildes))) {
         errno = EBADF;
 
-    /* 
+    /*
      *  Create/open a file-mapping object for the specified file.
      */
-    } else if ((hMapping = CreateFileMapping(
-                    (HANDLE) hFile, 0, ntprot, 0, 0, 0)) == NULL) {
+    } else if ((hMapping = CreateFileMapping(hFile, 0, ntprot, 0, 0, 0)) == NULL) {
         if (GetLastError() == ERROR_DISK_FULL) {
             errno = ENOMEM;
         } else {
@@ -416,7 +415,7 @@ mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
 //  EXAMPLES
 //      None. 
 */
-int __PDECL
+int
 mprotect(void *addr, size_t len, int prot)
 {
     DWORD oldprot;
@@ -454,13 +453,15 @@ mprotect(void *addr, size_t len, int prot)
 //      int msync(void *addr, size_t len, int flags);
 //              
 //  DESCRIPTION
-//      The msync() function shall write all modified data to permanent storage locations, 
+//      The msync() function shall write all modified data to permanent storage locations,
 //      if any, in those whole pages containing any part of the address space of the
 //      process starting at address addr and continuing for len bytes. If no such storage
 //      exists, msync() need not have any effect. If requested, the msync() function shall
 //      then invalidate cached copies of data.
-//      The implementation shall require that addr be a multiple of the page size as returned by sysconf().
-//                      
+//
+//      The implementation shall require that addr be a multiple of the page size as returned
+//      by sysconf().
+//
 //      For mappings to files, the msync() function shall ensure that all write operations
 //      are completed as defined for synchronized I/O data integrity completion. It is
 //      unspecified whether the implementation also writes out other file attributes. When
@@ -519,7 +520,7 @@ mprotect(void *addr, size_t len, int prot)
 //          outside the range allowed for the address space of a process or specify one or
 //          more pages that are not mapped.
 */
-int __PDECL
+int
 msync(void *addr, size_t len, int flags)
 {
     BOOL ret;
@@ -591,7 +592,7 @@ msync(void *addr, size_t len, int flags)
 //      [EINVAL]
 //          The addr argument is not a multiple of the page size as returned by sysconf().
 */
-int __PDECL
+int
 munmap(void *addr, size_t len)
 {
     BOOL ret;

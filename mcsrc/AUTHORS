@@ -49,6 +49,10 @@ Alexander Dong <ado@software-ag.de>
 Alex I. Tkachenko <alex@bcs.zp.ua>
 	SCO UNIX support.
 
+Andreas Mohr <and@gmx.li>
+	Find a lot of memory leaks.
+	A lot of code cleanups.
+
 Andrzej Zaborowski <balroog@gmail.com>
 	Polish translation.
 
@@ -59,8 +63,12 @@ Anton Chumak <nightfast@yahoo.co.uk>
 Antonio Palama, DOS port <palama@posso.dm.unipi.it>
 	DOS port.
 
+Dmitry Koterov <dmitry.koterov@gmail.com>
+	s3 extfs bugfixes and emprovements
+
 Egmont Koblinger <egmont@gmail.com>
         Support of 256 colors
+        Support of True Color (16 millions colors)
         Support of italic text
         Support of extended mouse clicks beyond 223 column
         Support of bracketed paste mode of xterm
@@ -72,6 +80,9 @@ Erwin van Eijk <wabbit@corner.iaf.nl>
 Gerd Knorr <kraxel@cs.tu-berlin.de>
 
 Ilya Rybkin <rybkin@rouge.phys.lsu.edu>
+
+Jakob Kemi <jakob.kemi@gmail.com>
+	s3 extfs
 
 Jean-Daniel Luiset <luiset@cih.hcuge.ch>
 
@@ -93,13 +104,17 @@ Marcelo Roccasalva <mfroccas@raiz.uncu.edu.ar>
 
 Massimo Fontanelli <MC8737@mclink.it>
 
+Mooffie <mooffie@gmail.com>
+	New high-level mouse API
+	extfs helpers tester
+
 Oliver Lange <modarin@bloody.in-berlin.de>
 	modarin256: set of 256-color skins
 
 Pavel Shirshov <me@pavelsh.pp.ru>
 	Committing downstream (security) patches for 4.6.0.
 
-Sergey Ya. Korshunoff <root@seyko.msk.su>
+Sergey Ya. Korshunoff <seyko2@gmail.com>
 
 Thomas Pundt <pundtt@math.uni-muenster.de>
 

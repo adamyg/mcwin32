@@ -1,32 +1,37 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 #
 # Translators:
+# AlexL <loginov.alex.valer@gmail.com>, 2015-2016
 # Alex Tkachenko <alex@bcs.zp.ua>, 1998
-# Andrew V. Samoilov <sav@bcs.zp.ua>, 1999, 2014
-# Evgeny Bulgakov <bgav@netvision.net.il>, 1999
-# Sergey Panov <sipan@mit.edu>, 1999
-# Valek Filippov <frob@df.ru>, 2000
+# Andrew Borodin <aborodin@vmail.ru>, 2009-2017
+# Andrew V. Samoilov <sav@bcs.zp.ua>, 1999,2014
 # Anton Sergeevich Chumak <nightfast@yahoo.co.uk>, 2005
+# Dimitriy Ryazantcev <DJm00n@mail.ru>, 2015
+# Evgeny Bulgakov <bgav@netvision.net.il>, 1999
 # Ilia Maslakov <il.smind@gmail.com>, 2009
-# Slava Zanko <slavazanko@gmail.com>, 2009, 2011
 # NaiLi (aka jamesjames) Rootaerc <theism@mail.ru>, 2012
-# Andrew Borodin <aborodin@vmail.ru>, 2009-2015.
+# Sergey Panov <sipan@mit.edu>, 1999
+# Simple88, 2016
+# Slava Zanko <slavazanko@gmail.com>, 2009,2011
+# Valek Filippov <frob@df.ru>, 2000
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2015-02-26 09:43+0300\n"
-"PO-Revision-Date: 2015-02-26 09:45+0300\n"
+"POT-Creation-Date: 2017-02-24 22:45+0100\n"
+"PO-Revision-Date: 2017-02-26 07:57+0300\n"
 "Last-Translator: Andrew Borodin <aborodin@vmail.ru>\n"
-"Language-Team: Russian (http://www.transifex.com/projects/p/mc/language/ru/)\n"
-"Language: ru\n"
+"Language-Team: Russian (http://www.transifex.com/mc/mc/language/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
+"X-Generator: Poedit 1.8.9\n"
 
+# "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "Warning: cannot load codepages list"
 msgstr "Внимание: невозможно загрузить список кодировок"
 
@@ -107,6 +112,21 @@ msgstr ""
 "Ваши старые настройки перенесены из %s\n"
 "в %s\n"
 
+msgid "Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in hex)"
+msgstr ""
+
+msgid "Invalid character"
+msgstr ""
+
+msgid "Unmatched quotes character"
+msgstr ""
+
+#, c-format
+msgid ""
+"Hex pattern error at position %d:\n"
+"%s."
+msgstr ""
+
 msgid "Search string not found"
 msgstr "Искомая строка не найдена"
 
@@ -153,6 +173,16 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Unable to use '%s' skin with true colors support:\n"
+"%s\n"
+"Default skin has been loaded"
+msgstr ""
+"Невозможно использовать скин %s, требующий True Color:\n"
+"%s\n"
+"Будет использован скин по умолчанию"
+
+#, c-format
+msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
@@ -160,6 +190,18 @@ msgstr ""
 "Невозможно использовать скин %s, требующий 256 цветов,\n"
 "на терминале, не поддерживающем 256 цветов.\n"
 "Будет использован скин по умолчанию"
+
+msgid "True color not supported with ncurses."
+msgstr ""
+
+msgid "True color not supported in this slang version."
+msgstr ""
+
+msgid "Your terminal doesn't even seem to support 256 colors."
+msgstr ""
+
+msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
+msgstr ""
 
 msgid "Escape"
 msgstr "Клавиша Esc      "
@@ -455,26 +497,48 @@ msgstr ""
 "Размер экрана %dx%d не поддерживается.\n"
 "Проверьте переменную окружения TERM.\n"
 
-msgid "Cannot create pipe descriptor"
+msgid "B"
 msgstr ""
 
-msgid "Cannot parse command for pipe"
+msgid "kB"
 msgstr ""
+
+msgid "KiB"
+msgstr ""
+
+msgid "MB"
+msgstr ""
+
+msgid "MiB"
+msgstr ""
+
+msgid "GB"
+msgstr ""
+
+msgid "GiB"
+msgstr ""
+
+msgid "Cannot create pipe descriptor"
+msgstr "Не удалось создать дескриптор канала"
 
 msgid "Cannot create pipe streams"
-msgstr ""
+msgstr "Не удалось создать потоки канала"
 
 #, c-format
 msgid ""
 "Unexpected error in select() reading data from a child process:\n"
 "%s"
 msgstr ""
+"Неожиданная ошибка в select() при чтении данных из дочернего процесса:\n"
+"%s"
 
 #, c-format
 msgid ""
 "Unexpected error in waitpid():\n"
 "%s"
 msgstr ""
+"Неожиданная ошибка в waitpid():\n"
+"%s"
 
 msgid "Warning"
 msgstr "Предупреждение"
@@ -492,8 +556,13 @@ msgstr "Ошибка дублирования старого канала оши
 msgid "Directory cache expired for %s"
 msgstr "Кэш каталога устарел для %s"
 
-msgid "bytes transferred"
-msgstr "переданных байт"
+#, c-format
+msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
+msgstr "%s: %s: %s %3d%% (%lld) байт передано"
+
+#, c-format
+msgid "%s: %s: %s %lld bytes transferred"
+msgstr "%s: %s: %s %lld байт передано"
 
 msgid "Starting linear transfer..."
 msgstr "Запуск линейной передачи..."
@@ -510,7 +579,7 @@ msgstr "%s не является каталогом\n"
 
 #, c-format
 msgid "Directory %s is not owned by you\n"
-msgstr "Вы не владеете каталогом %s\n"
+msgstr "Вы не являетесь владельцем каталога %s\n"
 
 #, c-format
 msgid "Cannot set correct permissions for directory %s\n"
@@ -576,8 +645,8 @@ msgid "Error"
 msgstr "Ошибка"
 
 #, c-format
-msgid "%d: %s"
-msgstr "%d: %s"
+msgid "%s (%d)"
+msgstr "%s (%d)"
 
 msgid "&Abort"
 msgstr "&Прервать"
@@ -758,7 +827,7 @@ msgstr "Аргументы вызывают ошибку!"
 msgid "No arguments given to the viewer."
 msgstr "Не заданы аргументы для программы просмотра."
 
-msgid "Two files are required to evoke the diffviewer."
+msgid "Two files are required to envoke the diffviewer."
 msgstr "Требуются два файла для программы сравнения."
 
 msgid "Background protocol error"
@@ -1572,8 +1641,8 @@ msgstr ""
 "Текстовый редактор с дружественным интерфейсом пользователя.\n"
 "Создан для Midnight Commander."
 
-msgid "Copyright (C) 1996-2015 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2015 the Free Software Foundation"
+msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgstr "Copyright (C) 1996-2016 the Free Software Foundation"
 
 msgid "About"
 msgstr "О программе"
@@ -1603,76 +1672,76 @@ msgid "ButtonBar|PullDn"
 msgstr "МенюMC"
 
 msgid "Breton"
-msgstr ""
+msgstr "Бретонский"
 
 msgid "Czech"
-msgstr ""
+msgstr "Чешский"
 
 msgid "Welsh"
-msgstr ""
+msgstr "Валлийский"
 
 msgid "Danish"
-msgstr ""
+msgstr "Датский"
 
 msgid "German"
-msgstr ""
+msgstr "Немецкий"
 
 msgid "Greek"
-msgstr ""
+msgstr "Греческий"
 
 msgid "English"
-msgstr ""
+msgstr "Английский"
 
 msgid "British English"
-msgstr ""
+msgstr "Британский английский"
 
 msgid "Canadian English"
-msgstr ""
+msgstr "Канадский английский"
 
 msgid "American English"
-msgstr ""
+msgstr "Американский английский"
 
 msgid "Esperanto"
-msgstr ""
+msgstr "Эсперанто"
 
 msgid "Spanish"
-msgstr ""
+msgstr "Испанский"
 
 msgid "Faroese"
-msgstr ""
+msgstr "Фарерский"
 
 msgid "French"
-msgstr ""
+msgstr "Французский"
 
 msgid "Italian"
-msgstr ""
+msgstr "Итальянский"
 
 msgid "Dutch"
-msgstr ""
+msgstr "Голландский"
 
 msgid "Norwegian"
-msgstr ""
+msgstr "Норвежский"
 
 msgid "Polish"
-msgstr ""
+msgstr "Польский"
 
 msgid "Portuguese"
-msgstr ""
+msgstr "Португальский"
 
 msgid "Romanian"
-msgstr ""
+msgstr "Румынский"
 
 msgid "Russian"
-msgstr ""
+msgstr "Русский"
 
 msgid "Slovak"
-msgstr ""
+msgstr "Словацкий"
 
 msgid "Swedish"
-msgstr ""
+msgstr "Швецкий"
 
 msgid "Ukrainian"
-msgstr ""
+msgstr "Украинский"
 
 msgid "&Add word"
 msgstr "&Добавить"
@@ -1875,7 +1944,7 @@ msgid "Show mi&ni-status"
 msgstr "Показывать &мини-статус"
 
 msgid "Use SI si&ze units"
-msgstr "Вывод в едини&цах СИ"
+msgstr "Вывод в единицах &СИ"
 
 msgid "Mi&x all files"
 msgstr "Сме&шивать файлы/каталоги"
@@ -1908,7 +1977,10 @@ msgid "L&ynx-like motion"
 msgstr "Навигация в стиле l&ynx"
 
 msgid "Pa&ge scrolling"
-msgstr "Страни&чное листание"
+msgstr "Страничное &листание"
+
+msgid "Center &scrolling"
+msgstr "&Центрированное листание"
 
 msgid "&Mouse page scrolling"
 msgstr "Страничное листание мышь&ю"
@@ -1945,14 +2017,17 @@ msgstr ""
 msgid "&Full file list"
 msgstr "&Стандартный"
 
-msgid "&Brief file list"
-msgstr "&Укороченный"
+msgid "&Brief file list:"
+msgstr "&Укороченный:"
 
 msgid "&Long file list"
 msgstr "&Расширенный"
 
 msgid "&User defined:"
 msgstr "&Определенный пользователем"
+
+msgid "columns"
+msgstr "столбцы"
 
 msgid "User &mini status"
 msgstr "Строка &мини-статуса в формате пользователя"
@@ -1969,7 +2044,8 @@ msgstr "&Обратный"
 msgid "Sort order"
 msgstr "Порядок сортировки"
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
+#. prefix
 msgid "Confirmation|&Delete"
 msgstr "&Удаление"
 
@@ -2275,6 +2351,10 @@ msgstr ""
 "панели не могут быть отключены."
 
 #, c-format
+msgid "'%s' is not a symbolic link"
+msgstr "%s не является символической ссылкой"
+
+#, c-format
 msgid "Symlink '%s' points to:"
 msgstr "Символическая ссылка %s указывает на:"
 
@@ -2288,10 +2368,6 @@ msgstr "правка символической ссылки, невозможн
 #, c-format
 msgid "edit symlink: %s"
 msgstr "правка символической ссылки: %s"
-
-#, c-format
-msgid "'%s' is not a symbolic link"
-msgstr "%s не является символической ссылкой"
 
 msgid "FTP to machine"
 msgstr "FTP-соединение с удаленной машиной"
@@ -2465,7 +2541,7 @@ msgid ""
 msgstr ""
 "Фоновый процесс:\n"
 "Каталог \"%s\" не пуст.\n"
-"Удалить рекурсивно?"
+"Удалить его со всем содержимым?"
 
 msgid "Non&e"
 msgstr "Ни &одного"
@@ -2611,7 +2687,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file\"%s\"\n"
+"Cannot read source file \"%s\"\n"
 "%s"
 msgstr ""
 "Невозможно прочесть исходный файл \"%s\"\n"
@@ -2727,8 +2803,8 @@ msgstr ""
 "%s"
 
 #, c-format
-msgid "Directories: %zd, total size: %s"
-msgstr "Каталоги: %zd, общий объём: %s"
+msgid "Directories: %zu, total size: %s"
+msgstr "Каталоги: %zu, общий объём: %s"
 
 msgid "Cannot operate on \"..\"!"
 msgstr "Эту операцию невозможно выполнить на \"..\"!"
@@ -2879,8 +2955,8 @@ msgid "&Edit - F4"
 msgstr "&Правка - F4"
 
 #, c-format
-msgid "Found: %ld"
-msgstr "Найден: %ld"
+msgid "Found: %lu"
+msgstr "Найдено: %lu"
 
 msgid "Malformed regular expression"
 msgstr "Регулярное выражение сформировано неверно"
@@ -2910,7 +2986,7 @@ msgid "Fir&st hit"
 msgstr "До первого в&хождения"
 
 msgid "&Tree"
-msgstr "&Дерево"
+msgstr "Дерев&о"
 
 msgid "Find File"
 msgstr "Поиск файла"
@@ -2929,11 +3005,12 @@ msgid "Finished"
 msgstr "Готово"
 
 #, c-format
-msgid "Finished (ignored %zd directory)"
-msgid_plural "Finished (ignored %zd directories)"
-msgstr[0] "Завершено (пропущен %zd каталог)"
-msgstr[1] "Завершено (пропущено %zd каталога)"
-msgstr[2] "Завершено (пропущено %zd каталогов)"
+msgid "Finished (ignored %zu directory)"
+msgid_plural "Finished (ignored %zu directories)"
+msgstr[0] "Завершено (пропущен %zu каталог)"
+msgstr[1] "Завершено (пропущено %zu каталога)"
+msgstr[2] "Завершено (пропущено %zu каталогов)"
+msgstr[3] "Завершено (пропущено %zu каталогов)"
 
 msgid "Searching"
 msgstr "Ищем"
@@ -3057,14 +3134,14 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr "Своб. место: %s/%s (%d%%)"
 
 #, c-format
-msgid "Type:      %s"
-msgstr "Тип:       %s"
+msgid "Type:       %s"
+msgstr "Тип: %s"
 
 msgid "non-local vfs"
 msgstr "нелокальная ВФС"
 
 #, c-format
-msgid "Device:    %s"
+msgid "Device:     %s"
 msgstr "Устройство: %s"
 
 #, c-format
@@ -3072,16 +3149,16 @@ msgid "Filesystem: %s"
 msgstr "ФС: %s"
 
 #, c-format
-msgid "Accessed:  %s"
+msgid "Accessed:   %s"
 msgstr "Обращение: %s"
 
 #, c-format
-msgid "Modified:  %s"
+msgid "Modified:   %s"
 msgstr "Модифицирован: %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:   %s"
+msgid "Changed:    %s"
 msgstr "Изменён: %s"
 
 #, c-format
@@ -3089,30 +3166,31 @@ msgid "Dev. type: major %lu, minor %lu"
 msgstr "Тип устройства: major %lu, minor %lu"
 
 #, c-format
-msgid "Size:      %s"
+msgid "Size:       %s"
 msgstr "Размер: %s"
 
 #, c-format
-msgid " (%ld block)"
-msgid_plural " (%ld blocks)"
-msgstr[0] "(%ld блок)"
-msgstr[1] "(%ld блока)"
-msgstr[2] "(%ld блоков)"
+msgid " (%lu block)"
+msgid_plural " (%lu blocks)"
+msgstr[0] "(%lu блок)"
+msgstr[1] "(%lu блока)"
+msgstr[2] "(%lu блоков)"
+msgstr[3] "(%lu блоков)"
 
 #, c-format
-msgid "Owner:     %s/%s"
+msgid "Owner:      %s/%s"
 msgstr "Владелец: %s/%s"
 
 #, c-format
-msgid "Links:     %d"
+msgid "Links:      %d"
 msgstr "Ссылок: %d"
 
 #, c-format
-msgid "Mode:      %s (%04o)"
+msgid "Mode:       %s (%04o)"
 msgstr "Права: %s (%04o)"
 
 #, c-format
-msgid "Location:  %Xh:%Xh"
+msgid "Location:   %Xh:%Xh"
 msgstr "Положение: %Xh:%Xh"
 
 msgid "&Equal split"
@@ -3329,11 +3407,12 @@ msgid "Panels:"
 msgstr "Панели:"
 
 #, c-format
-msgid "You have %zd opened screen. Quit anyway?"
-msgid_plural "You have %zd opened screens. Quit anyway?"
-msgstr[0] "У вас %zd открытый экран. Всё равно выйти?"
-msgstr[1] "У вас %zd открытых экрана. Всё равно выйти?"
-msgstr[2] "У вас %zd открытых экранов. Всё равно выйти?"
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
+msgstr[0] "У вас %zu открытый экран. Всё равно выйти?"
+msgstr[1] "У вас %zu открытых экрана. Всё равно выйти?"
+msgstr[2] "У вас %zu открытых экранов. Всё равно выйти?"
+msgstr[3] "У вас %zu открытых экранов. Всё равно выйти?"
 
 msgid "The Midnight Commander"
 msgstr "Midnight Commander"
@@ -3477,18 +3556,12 @@ msgid "<readlink failed>"
 msgstr "<сбой чтения ссылки>"
 
 #, c-format
-msgid "%s byte"
-msgid_plural "%s bytes"
-msgstr[0] "%s байт"
-msgstr[1] "%s байта"
-msgstr[2] "%s байт"
-
-#, c-format
 msgid "%s in %d file"
 msgid_plural "%s in %d files"
 msgstr[0] "%s в %d файле"
 msgstr[1] "%s в %d файлах"
 msgstr[2] "%s в %d файлах"
+msgstr[3] "%s в %d файлах"
 
 msgid "Panelize"
 msgstr "Панелизация"
@@ -3839,8 +3912,11 @@ msgstr "Виртуальная файловая система:"
 msgid "Data types:"
 msgstr "Тип данных:"
 
-msgid "Root directory:"
-msgstr "Корневой каталог:"
+msgid "Home directory:"
+msgstr "Домашний каталог:"
+
+msgid "Profile root directory:"
+msgstr "Корневой каталог профиля:"
 
 msgid "System data"
 msgstr "Системные данные"
@@ -3954,7 +4030,7 @@ msgstr "fish: собирается информация об удалённой 
 
 #, c-format
 msgid "fish: Reading directory %s..."
-msgstr "fish: чтение каталога %s..."
+msgstr "fish: Чтение каталога %s..."
 
 #, c-format
 msgid "%s: done."
@@ -4067,7 +4143,7 @@ msgstr "Распознается символическая ссылка..."
 
 #, c-format
 msgid "ftpfs: Reading FTP directory %s... %s%s"
-msgstr "ftpfs: чтение каталога FTP %s... %s%s"
+msgstr "ftpfs: Чтение каталога FTP %s... %s%s"
 
 msgid "(strict rfc959)"
 msgstr "(ограничение rfc959)"
@@ -4147,9 +4223,8 @@ msgstr "sftp: введите пароль для %s "
 msgid "sftp: Password is empty."
 msgstr "sftp: пароль пуст."
 
-#, c-format
-msgid "sftp: Failure establishing SSH session: (%d)"
-msgstr "sftp: сбой установки SSH-сессии: (%d)"
+msgid "sftp: Failure establishing SSH session"
+msgstr "sftp: сбой установки SSH-сессии"
 
 msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: нет обработчика считываемого файла"
@@ -4350,6 +4425,8 @@ msgid ""
 "Failed to read data from child stdout:\n"
 "%s"
 msgstr ""
+"Не удалось прочитать данные из дочернего stdout:\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -4399,4 +4476,3 @@ msgstr "Продолжить с начала?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Невозможно получить локальную копию /ftp://some.host/editme.txt"
-

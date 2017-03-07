@@ -1,30 +1,41 @@
 
-Package List
+Package List:   build 201
 
         busybox.exe
         file.exe
-        intl.dll
-        libglib-2.0-0.dll
         man2hlp.pl
         mc.exe
         mc.map
-        package.lst
-        zlib1.dll
+        libglib-2.0.2.51.dll
+        libgmodule-2.0.2.51.dll
+        libintl.1.0.dll
+        libmagic.5.29.dll
+        libssh2.1.8.dll
+        libw32.1.1.dll
+        libz.1.2.dll
+        mt7r19.dll
+        clbr19.dll
 
 doc/
 
         COPYING
         FAQ
         HACKING
-        INSTALL.win32
-        LICENSE.busybox
         MAINTAINERS
         NEWS
-        NEWS.win32
         README
-        README.busybox
-        README.win32
         TODO
+
+        INSTALL.win32
+        LICENSE.busybox
+        LICENSE.citrus
+        LICENSE.glib
+        LICENSE.magic
+        LICENSE.zlib
+        PACKAGE.win32
+        README.busybox
+        README.magic
+        README.win32
 
 etc/
 
@@ -66,3 +77,5 @@ share/
         mc.macros
         skins
         syntax
+
+

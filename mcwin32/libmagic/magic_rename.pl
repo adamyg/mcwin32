@@ -1,6 +1,7 @@
 #!/usr/bin/perl
-# $Id:$
-# Rename global libmagic symbols
+# $Id: magic_rename.pl,v 1.2 2017/03/01 23:57:02 cvsuser Exp $
+# libmagic import tool
+# Rename global libmagic symbols, prefixing with library version number.
 #
 #
 #
@@ -30,52 +31,54 @@ use POSIX 'asctime';
 use Data::Dumper;;
 
 my %x_files = (
-        'apprentice',
-	'apptype',
-	'ascmagic',
-	'cdf',
-	'cdf_time',
-	'compress',
-	'encoding',
-	'fsmagic',
-	'funcs',
-	'getline',
-	'is_tar',
-	'magic',
-	'print', 
-	'readcdf',
-	'readelf',
-        'softmagic'
+        'apprentice'        => 1,
+        'apptype'           => 1,
+        'ascmagic'          => 1,
+        'cdf'               => 1,
+        'cdf_time'          => 1,
+        'compress'          => 1,
+        'encoding'          => 1,
+        'fsmagic'           => 1,
+        'funcs'             => 1,
+        'getline'           => 1,
+        'is_tar'            => 1,
+        'magic'             => 1,
+        'print'             => 1,
+        'readcdf'           => 1,
+        'readelf'           => 1,
+        'softmagic'         => 1,
+        'fmtcheck'          => 1,
+        'file'              => 1
         );
 
 my $o_keep                  = 0;
-my $o_version               = '511';
+my $o_version               = '529';
+my $o_src                   = "./file-5.29/src";
 my $o_original              = 0;
 
 sub ProcessDir($);
-sub ProcessFile($$);
+sub ProcessFile($$;$);
 
 exit &main();
 
 sub
 main()
 {
-    my $o_clean             = 0;
-    my $o_help              = 0;
+    my $o_clean = 0;
+    my $o_help  = 0;
 
     my $ret
         = GetOptions(
                 'keep'      => \$o_keep,
                 'version'   => \$o_version,
-                'original'   => \$o_original,
+                'original'  => \$o_original,
+                'src'       => \$o_src,
                 'help'      => \$o_help
                 );
 
     Usage() if (!$ret || $o_help);
     Usage("unexpected arguments $ARGV[1] ...") if (scalar @ARGV);
-
-    ProcessDir('./file');
-
+    ProcessDir($o_src);
     return 0;
 }
 
@@ -86,15 +89,13 @@ Usage                   # (message)
     print "\nmakelib @_\n\n" if (@_);
     print <<EOU;
 
-Usage: perl magic_rename.pl [options] <command>
+Usage: perl magic_rename.pl [options]
 
 Options:
     --help                  Help.
-
-    --version=<version>     Magic lib version prefix.
-
+    --src <path>            libmagic source directory.
+    --version=<version>     Magic lib version prefix (eg. 529).
     --original              Reprocess original file images, if they exist.
-
     --keep                  Keep temporary file images.
 EOU
     exit(42);
@@ -121,8 +122,13 @@ ProcessDir($)           # (dir)
             if ($file =~ /^(.*)\.([^.]+)$/) {
                 my ($name, $ext) = ($1, $2);
 
-                if (('c' eq $ext || 'h' eq $ext) || exists $x_files{$name}) {
+                print "file: ${name}.${ext}\n";
+
+                if (('c' eq $ext || 'h' eq $ext) && exists $x_files{${name}}) {
                     ProcessFile($dir, $file);
+
+                } elsif (('magic.h' eq $name) && ('in' eq $ext)) {
+                    ProcessFile($dir, $file, "magic.h");
                 }
             }
         }
@@ -131,17 +137,20 @@ ProcessDir($)           # (dir)
 
 
 sub
-ProcessFile($$)         # (dir, file)
+ProcessFile($$;$)       # (dir, file, outfile)
 {
-    my ($dir, $file) = @_;
+    my ($dir, $file, $outfile) = @_;
+    $outfile = $file if (!$outfile);
+
     my $filenameorg = "${dir}/original/${file}";
     my $filename = "${dir}/${file}";
+    my $outfilename = "${dir}/${outfile}";
     my $text = '';
 
     if (!$o_original || !open(FILE, "<${filenameorg}")) {
         open(FILE, "<${filename}") or
             die "cannot open <${filename}> : $!\n";
-        print "exporting: ${filename}\n";
+        print "importing: ${filename}\n";
     } else {
         print "importing: ${filenameorg}\n";
     }
@@ -154,22 +163,34 @@ ProcessFile($$)         # (dir, file)
     $text =~ s/cdf_/file${o_version}_cdf_/g;
     $text =~ s/file${o_version}_opts\.h/file_opts.h/g;
 
-    $text =~ s/sread/file${o_version}_sread/g;
-    $text =~ s/getdelim/file${o_version}_getdelim/g;
-    $text =~ s/getline/file${o_version}_getline/g;
+    $text =~ s/file_fmt_check/softmagic${o_version}_fmt_check/g;
+        $text =~ s/fmtcheck/file${o_version}_fmtcheck/g;
+
+    if ($o_version eq '511') { #5.29 via define's
+        $text =~ s/sread/file${o_version}_sread/g;
+        $text =~ s/getdelim/file${o_version}_getdelim/g;
+        $text =~ s/getline/file${o_version}_getline/g;
+    }
+
+    $text =~ s/X\.YY/${o_version}/
+        if ($outfile eq 'magic.h');
 
     rename($filename, $filenameorg)             # save original
-        if (! -f $filenameorg);
+        if (($filename eq $outfilename) && ! -f $filenameorg);
 
-    print "exporting: ${filename}\n";
+    print "exporting: ${outfilename}\n";
 
-    open(FILE, ">${filename}") or
-        die "cannot open <${filename}> : $!\n";
+    open(FILE, ">${outfilename}") or
+        die "cannot open <${outfilename}> : $!\n";
     print FILE $text;
     close FILE;
 }
 
 #end
+
+
+
+
 
 
 

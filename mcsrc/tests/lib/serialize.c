@@ -1,7 +1,7 @@
 /*
    lib/vfs - common serialize/deserialize functions
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -117,31 +117,31 @@ static const struct test_deserialize_incorrect_ds
     {
         's',
         NULL,
-        -1,
+        0,      /* FIXME, TODO */
         "mc_serialize_str(): Input data is NULL or empty."
     },
     {
         's',
         "incorrect string",
-        -2,
+        0,      /* FIXME, TODO */
         "mc_serialize_str(): String prefix doesn't equal to 's'"
     },
     {
         's',
         "s12345string without delimiter",
-        -3,
+        0,      /* FIXME, TODO */
         "mc_serialize_str(): Length delimiter ':' doesn't exists"
     },
     {
         's',
         "s1234567890123456789012345678901234567890123456789012345678901234567890:too big number",
-        -3,
+        0,      /* FIXME, TODO */
         "mc_serialize_str(): Too big string length"
     },
     {
         's',
         "s500:actual string length less that specified length",
-        -3,
+        0,      /* FIXME, TODO */
         "mc_serialize_str(): Specified data length (500) is greater than actual data length (47)"
     },
 };
@@ -264,22 +264,22 @@ static const struct test_deserialize_config_incorrect_ds
 {
     {
         "g123error in group name",
-        -3,
+        0,      /* FIXME, TODO */
         "mc_deserialize_config() at 1: mc_serialize_str(): Length delimiter ':' doesn't exists"
     },
     {
         "p6:param1v10:some valuep6:param2v11:some value ",
-        -2,
+        0,      /* FIXME, TODO */
         "mc_deserialize_config() at 1: mc_serialize_str(): String prefix doesn't equal to 'g'"
     },
     {
         "g6:group1v10:some valuep6:param2v11:some value ",
-        -2,
+        0,      /* FIXME, TODO */
         "mc_deserialize_config() at 10: mc_serialize_str(): String prefix doesn't equal to 'p'"
     },
     {
         "g6:group1p6000:param2v11:some value ",
-        -3,
+        0,      /* FIXME, TODO */
         "mc_deserialize_config() at 10: mc_serialize_str(): Specified data length (6000) is greater than actual data length (21)"
     },
 };
@@ -384,10 +384,10 @@ main (void)
     suite_add_tcase (s, tc_core);
     sr = srunner_create (s);
     srunner_set_log (sr, "serialize.log");
-    srunner_run_all (sr, CK_NORMAL);
+    srunner_run_all (sr, CK_ENV);
     number_failed = srunner_ntests_failed (sr);
     srunner_free (sr);
-    return (number_failed == 0) ? 0 : 1;
+    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

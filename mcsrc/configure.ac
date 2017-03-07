@@ -9,7 +9,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_SRCDIR(src/main.c)
 AC_CONFIG_HEADERS(config.h)
-MC_VERSION
+mc_VERSION
 AM_INIT_AUTOMAKE(mc, ${VERSION} )
 dnl Enable silent rules by default (if yes)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -28,7 +28,7 @@ dnl ############################################################################
 AC_PROG_CC_STDC
 AM_PROG_CC_C_O
 
-MC_CHECK_CFLAGS
+mc_CHECK_CFLAGS
 
 CFLAGS_OPTS=""
 if test "x$CFLAGS" = "x"; then
@@ -42,7 +42,7 @@ fi
 AC_ARG_ENABLE([werror],
     AS_HELP_STRING([--enable-werror], [Handle all compiler warnings as errors]))
 if test "x$enable_werror" = xyes; then
-    MC_CHECK_ONE_CFLAG([-Werror])
+    mc_CHECK_ONE_CFLAG([-Werror])
 fi
 
 AC_PROG_LIBTOOL
@@ -137,19 +137,19 @@ dnl Check for other tools
 dnl ############################################################################
 
 AC_CHECK_TOOL(AR, ar, ar)
-MC_UNIT_TESTS
+mc_UNIT_TESTS
 
 
 dnl ############################################################################
 dnl Check for main libraies
 dnl ############################################################################
 
-AC_CHECK_GLIB
-AC_G_MODULE_SUPPORTED
-MC_WITH_SCREEN
-MC_CHECK_SEARCH_TYPE
+mc_CHECK_GLIB
+mc_G_MODULE_SUPPORTED
+mc_WITH_SCREEN
+mc_CHECK_SEARCH_TYPE
 dnl X11 support. Used to read keyboard modifiers when running under X11.
-MC_WITH_X
+mc_WITH_X
 
 
 dnl ############################################################################
@@ -161,7 +161,6 @@ AC_CHECK_HEADERS([string.h memory.h limits.h malloc.h \
 	sys/select.h sys/ioctl.h stropts.h arpa/inet.h \
 	sys/socket.h])
 AC_HEADER_MAJOR
-AC_HEADER_ASSERT
 
 
 dnl ############################################################################
@@ -177,11 +176,13 @@ AC_CHECK_SIZEOF(uintmax_t)
 AC_TYPE_OFF_T
 AC_CHECK_SIZEOF(off_t)
 AC_TYPE_MODE_T
+gl_PROMOTED_TYPE_MODE_T
 AC_TYPE_PID_T
 AC_TYPE_UID_T
 
 AC_STRUCT_ST_BLOCKS
 AC_CHECK_MEMBERS([struct stat.st_blksize, struct stat.st_rdev])
+gl_STAT_SIZE
 
 AH_TEMPLATE([sig_atomic_t],
             [/* Define to `int' if <signal.h> doesn't define.])
@@ -228,6 +229,9 @@ AC_CHECK_FUNCS([\
 	realpath
 ])
 
+dnl utimensat is supported since glibc 2.6 and specified in POSIX.1-2008
+AC_CHECK_FUNCS([utimensat])
+
 dnl getpt is a GNU Extension (glibc 2.1.x)
 AC_CHECK_FUNCS(posix_openpt, , [AC_CHECK_FUNCS(getpt)])
 AC_CHECK_FUNCS(grantpt, , [AC_CHECK_LIB(pt, grantpt)])
@@ -263,10 +267,10 @@ dnl ############################################################################
 dnl Internationalization
 dnl ############################################################################
 
-AM_GNU_GETTEXT(no-libtool, need-ngettext)
-AM_GNU_GETTEXT_VERSION(0.14.3)
+AM_GNU_GETTEXT([no-libtool], [need-ngettext])
+AM_GNU_GETTEXT_VERSION([0.18.1])
 
-MC_I18N
+mc_I18N
 
 dnl ############################################################################
 dnl OS specific flags
@@ -373,9 +377,9 @@ AC_ARG_WITH([homedir],
 
 
 if test x$with_homedir = xXDG; then
-    AC_DEFINE(MC_HOMEDIR_XDG, 1,
-	[Define to enable XDG standard support])
+    AC_DEFINE(MC_HOMEDIR_XDG, 1, [Define to enable XDG standard support])
 else
+    AC_DEFINE(MC_HOMEDIR_XDG, 0, [Define to disable XDG standard support])
     AC_DEFINE_UNQUOTED([MC_USERCONF_DIR], ["$with_homedir"], [Where configs will be placed relative to $HOME])
 fi
 
@@ -384,7 +388,9 @@ dnl ############################################################################
 dnl MC options
 dnl ############################################################################
 
-MC_WITH_INTERNAL_EDIT
+mc_ASSERT
+
+mc_WITH_INTERNAL_EDIT
 
 dnl Diff viewer support.
 AC_ARG_WITH([diff_viewer],
@@ -399,9 +405,9 @@ else
 	diff_msg="no"
 fi
 
-MC_SUBSHELL
-MC_BACKGROUND
-AC_MC_VFS_CHECKS
+mc_SUBSHELL
+mc_BACKGROUND
+mc_VFS_CHECKS
 
 dnl ############################################################################
 dnl Directories
@@ -512,7 +518,6 @@ contrib/dist/prototype
 misc/Makefile
 misc/mc.menu
 misc/mcedit.menu
-misc/mc.menu.sr
 misc/skins/Makefile
 misc/ext.d/Makefile
 misc/ext.d/doc.sh
@@ -526,6 +531,7 @@ src/Makefile
 src/consaver/Makefile
 src/editor/Makefile
 src/man2hlp/Makefile
+src/subshell/Makefile
 src/viewer/Makefile
 src/diffviewer/Makefile
 src/filemanager/Makefile
@@ -622,8 +628,7 @@ intl/Makefile
 po/Makefile.in
 ])
 
-if test x$enable_tests != xno; then
-    AC_CONFIG_FILES([
+AC_CONFIG_FILES([
 tests/Makefile
 tests/lib/Makefile
 tests/lib/mcconfig/Makefile
@@ -635,8 +640,12 @@ tests/src/Makefile
 tests/src/filemanager/Makefile
 tests/src/editor/Makefile
 tests/src/editor/test-data.txt
+tests/src/vfs/Makefile
+tests/src/vfs/extfs/Makefile
+tests/src/vfs/extfs/helpers-list/Makefile
+tests/src/vfs/extfs/helpers-list/data/config.sh
+tests/src/vfs/extfs/helpers-list/misc/Makefile
 ])
-fi
 
 AC_OUTPUT
 
@@ -647,6 +656,8 @@ Configuration:
   Source code location:       ${srcdir}
   Compiler:                   ${CC}
   Compiler flags:             ${CFLAGS}
+  Assertions:                 ${enable_assert}
+  Unit tests:                 ${tests_msg}
   File system:                ${vfs_type}
                               ${vfs_flags}
   Screen library:             ${screen_msg}

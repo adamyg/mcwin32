@@ -158,8 +158,12 @@ strlcat(char *dst, const char *src, size_t siz)
 
 
 #else
+extern void __stdlibrary_has_strlcat(void);
+
 void
 __stdlibrary_has_strlcat(void)
 {
 }
 #endif  /*_MSC_VER*/
+
+

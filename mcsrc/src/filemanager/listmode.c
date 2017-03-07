@@ -1,7 +1,7 @@
 /*
    Directory panel listing format editor -- for the Midnight Commander
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -123,7 +123,8 @@ select_new_item (void)
     mylistbox = create_listbox_window (20, 12, "Add listing format item", listmode_section);
     for (i = 0; possible_items[i]; i++)
     {
-        listbox_add_item (mylistbox->list, LISTBOX_APPEND_AT_END, 0, possible_items[i], NULL);
+        listbox_add_item (mylistbox->list, LISTBOX_APPEND_AT_END, 0, possible_items[i], NULL,
+                          FALSE);
     }
 
     i = run_listbox (mylistbox);
@@ -158,7 +159,7 @@ badd_cback (struct WButton *b, int action)
     char *s = select_new_item ();
     if (s)
     {
-        listbox_add_item (l_listmode, LISTBOX_APPEND_AT_END, 0, s, NULL);
+        listbox_add_item (l_listmode, LISTBOX_APPEND_AT_END, 0, s, NULL, FALSE);
         g_free (s);
     }
     return 0;
@@ -203,8 +204,8 @@ init_listmode (char *oldlistformat)
 #define DLG_REVERSE 0   //WIN32,missing
 #endif
     listmode_dlg =
-        dlg_create (TRUE, 0, 0, 22, 74, dialog_colors, NULL, NULL, listmode_section,
-                    "Listing format edit", DLG_CENTER | DLG_REVERSE);
+        dlg_create (TRUE, 0, 0, 22, 74, WPOS_CENTER, FALSE, dialog_colors, NULL, NULL,
+                    listmode_section, "Listing format edit");
 
     add_widget (listmode_dlg, groupbox_new (UY, UX, 4, 63, "General options"));
     add_widget (listmode_dlg, groupbox_new (UY + 4, UX, 11, 18, "Items"));
@@ -256,7 +257,7 @@ init_listmode (char *oldlistformat)
 
     while (s)
     {
-        listbox_add_item (l_listmode, LISTBOX_APPEND_AT_END, 0, s, NULL);
+        listbox_add_item (l_listmode, LISTBOX_APPEND_AT_END, 0, s, NULL, FALSE);
         s = strtok (NULL, ",");
     }
 

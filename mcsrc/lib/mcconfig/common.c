@@ -1,7 +1,7 @@
 /*
    Configure module for the Midnight Commander
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -25,7 +25,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <errno.h>              /* extern int errno */
 
 #include "lib/global.h"
@@ -34,9 +33,6 @@
 #include "lib/mcconfig.h"
 
 /*** global variables **************************************************/
-
-mc_config_t *mc_main_config;
-mc_config_t *mc_panels_config;
 
 /*** file scope macro definitions **************************************/
 
@@ -186,12 +182,8 @@ mc_config_del_key (mc_config_t * mc_config, const char *group, const gchar * par
 {
     if (!mc_config || !group || !param)
         return FALSE;
-#if GLIB_CHECK_VERSION (2, 15, 0)
+
     return g_key_file_remove_key (mc_config->handle, group, param, NULL);
-#else
-    g_key_file_remove_key (mc_config->handle, group, param, NULL);
-    return TRUE;
-#endif
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -202,12 +194,7 @@ mc_config_del_group (mc_config_t * mc_config, const char *group)
     if (!mc_config || !group)
         return FALSE;
 
-#if GLIB_CHECK_VERSION (2, 15, 0)
     return g_key_file_remove_group (mc_config->handle, group, NULL);
-#else
-    g_key_file_remove_group (mc_config->handle, group, NULL);
-    return TRUE;
-#endif
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

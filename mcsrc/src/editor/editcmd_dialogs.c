@@ -1,7 +1,7 @@
 /*
    Editor dialogs for high level editing commands
 
-   Copyright (C) 2009-2015
+   Copyright (C) 2009-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -92,7 +92,7 @@ gboolean
 editcmd_dialog_search_show (WEdit * edit)
 {
     char *search_text;
-    size_t num_of_types;
+    size_t num_of_types = 0;
     gchar **list_of_types;
     int dialog_result;
 
@@ -103,7 +103,7 @@ editcmd_dialog_search_show (WEdit * edit)
 #ifdef HAVE_CHARSET
         quick_widget_t quick_widgets[16],
 #else
-        quick_widget_t quick_widgets[15],
+        quick_widget_t quick_widgets[15],	
 #endif
             *qc = quick_widgets;
 #else
@@ -141,8 +141,7 @@ editcmd_dialog_search_show (WEdit * edit)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_LABELED_INPUT (qc,
-                                   N_("Enter search string:"), input_label_above, INPUT_LAST_TEXT, 
+        qc = XQUICK_LABELED_INPUT (qc, N_("Enter search string:"), input_label_above, INPUT_LAST_TEXT, 
                                   MC_HISTORY_SHARED_SEARCH, &search_text, NULL, FALSE, FALSE,
                                   INPUT_COMPLETE_NONE);
         qc = XQUICK_SEPARATOR (qc, TRUE);
@@ -198,9 +197,9 @@ editcmd_dialog_search_show (WEdit * edit)
     mc_search_free (edit->search);
 
 #ifdef HAVE_CHARSET
-    edit->search = mc_search_new (edit->last_search_string, -1, cp_source);
+    edit->search = mc_search_new (edit->last_search_string, cp_source);
 #else
-    edit->search = mc_search_new (edit->last_search_string, -1, NULL);
+    edit->search = mc_search_new (edit->last_search_string, NULL);
 #endif
     if (edit->search != NULL)
     {
@@ -223,7 +222,7 @@ void
 editcmd_dialog_replace_show (WEdit * edit, const char *search_default, const char *replace_default,
                              /*@out@ */ char **search_text, /*@out@ */ char **replace_text)
 {
-    size_t num_of_types;
+    size_t num_of_types = 0;
     gchar **list_of_types;
 
     if ((search_default == NULL) || (*search_default == '\0'))
@@ -273,12 +272,10 @@ editcmd_dialog_replace_show (WEdit * edit, const char *search_default, const cha
         };
 
 #if defined(WIN32)  //WIN32, quick
-        qc = XQUICK_LABELED_INPUT (qc,
-                                    N_("Enter search string:"), input_label_above, search_default,
+        qc = XQUICK_LABELED_INPUT (qc, N_("Enter search string:"), input_label_above, search_default,
                                     MC_HISTORY_SHARED_SEARCH, search_text, NULL, FALSE, FALSE,
                                     INPUT_COMPLETE_NONE);
-        qc = XQUICK_LABELED_INPUT (qc,
-                                    N_("Enter replacement string:"), input_label_above, replace_default,
+        qc = XQUICK_LABELED_INPUT (qc, N_("Enter replacement string:"), input_label_above, replace_default,
                                     "replace", replace_text, NULL, FALSE, FALSE, INPUT_COMPLETE_NONE);
         qc = XQUICK_SEPARATOR (qc, TRUE);
         qc = XQUICK_START_COLUMNS (qc);
@@ -371,8 +368,8 @@ editcmd_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_LABEL (qc, repl_from, NULL);
         qc = XQUICK_LABEL (qc, N_("Replace with:"), NULL);
-        qc = XQUICK_LABEL (qc, repl_to, NULL);
-        qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
+					qc = XQUICK_LABEL (qc, repl_to, NULL);
+					qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
         qc =      XQUICK_BUTTON (qc, N_("&Replace"), B_ENTER, NULL, NULL);
         qc =      XQUICK_BUTTON (qc, N_("A&ll"), B_REPLACE_ALL, NULL, NULL);
         qc =      XQUICK_BUTTON (qc, N_("&Skip"), B_SKIP_REPLACE, NULL, NULL);
@@ -406,11 +403,12 @@ editcmd_dialog_raw_key_query (const char *heading, const char *query, gboolean c
 
     w = str_term_width1 (heading) + 6;
     wq = str_term_width1 (query);
-    w = max (w, wq + 3 * 2 + 1 + 2);
+    w = MAX (w, wq + 3 * 2 + 1 + 2);
 
     raw_dlg =
-        dlg_create (TRUE, 0, 0, cancel ? 7 : 5, w, dialog_colors, editcmd_dialog_raw_key_query_cb,
-                    NULL, NULL, heading, DLG_CENTER | DLG_TRYUP | DLG_WANT_TAB);
+        dlg_create (TRUE, 0, 0, cancel ? 7 : 5, w, WPOS_CENTER | WPOS_TRYUP, FALSE, dialog_colors,
+                    editcmd_dialog_raw_key_query_cb, NULL, NULL, heading);
+    widget_want_tab (WIDGET (raw_dlg), TRUE);
 
     add_widget (raw_dlg, label_new (y, 3, query));
     add_widget (raw_dlg, input_new (y++, 3 + wq + 1, input_colors,
@@ -435,7 +433,7 @@ editcmd_dialog_raw_key_query (const char *heading, const char *query, gboolean c
 char *
 editcmd_dialog_completion_show (const WEdit * edit, int max_len, GString ** compl, int num_compl)
 {
-    const Widget *we = WIDGET (edit);
+    const Widget *we = CONST_WIDGET (edit);
     int start_x, start_y, offset, i;
     char *curr = NULL;
     WDialog *compl_dlg;
@@ -468,8 +466,8 @@ editcmd_dialog_completion_show (const WEdit * edit, int max_len, GString ** comp
 
     /* create the dialog */
     compl_dlg =
-        dlg_create (TRUE, start_y, start_x, compl_dlg_h, compl_dlg_w,
-                    dialog_colors, NULL, NULL, "[Completion]", NULL, DLG_COMPACT);
+        dlg_create (TRUE, start_y, start_x, compl_dlg_h, compl_dlg_w, WPOS_KEEP_DEFAULT, TRUE,
+                    dialog_colors, NULL, NULL, "[Completion]", NULL);
 
     /* create the listbox */
     compl_list = listbox_new (1, 1, compl_dlg_h - 2, compl_dlg_w - 2, FALSE, NULL);
@@ -479,7 +477,8 @@ editcmd_dialog_completion_show (const WEdit * edit, int max_len, GString ** comp
 
     /* fill the listbox with the completions */
     for (i = num_compl - 1; i >= 0; i--)        /* reverse order */
-        listbox_add_item (compl_list, LISTBOX_APPEND_AT_END, 0, (char *) compl[i]->str, NULL);
+        listbox_add_item (compl_list, LISTBOX_APPEND_AT_END, 0, (char *) compl[i]->str, NULL,
+                          FALSE);
 
     /* pop up the dialog and apply the chosen completion */
     if (dlg_run (compl_dlg) == B_ENTER)
@@ -533,8 +532,8 @@ editcmd_dialog_select_definition_show (WEdit * edit, char *match_expr, int max_l
         start_y -= (offset + 1);
 
     /* create the dialog */
-    def_dlg = dlg_create (TRUE, start_y, start_x, def_dlg_h, def_dlg_w,
-                          dialog_colors, NULL, NULL, "[Definitions]", match_expr, DLG_COMPACT);
+    def_dlg = dlg_create (TRUE, start_y, start_x, def_dlg_h, def_dlg_w, WPOS_KEEP_DEFAULT, TRUE,
+                          dialog_colors, NULL, NULL, "[Definitions]", match_expr);
 
     /* create the listbox */
     def_list = listbox_new (1, 1, def_dlg_h - 2, def_dlg_w - 2, FALSE, NULL);
@@ -550,7 +549,7 @@ editcmd_dialog_select_definition_show (WEdit * edit, char *match_expr, int max_l
         label_def =
             g_strdup_printf ("%s -> %s:%ld", def_hash[i].short_define, def_hash[i].filename,
                              def_hash[i].line);
-        listbox_add_item (def_list, LISTBOX_APPEND_AT_END, 0, label_def, &def_hash[i]);
+        listbox_add_item (def_list, LISTBOX_APPEND_AT_END, 0, label_def, &def_hash[i], FALSE);
         g_free (label_def);
     }
 

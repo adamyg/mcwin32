@@ -1,7 +1,7 @@
 /* Virtual File System: SFTP file system.
    The VFS subclass functions
 
-   Copyright (C) 2011-2015
+   Copyright (C) 2011-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -98,20 +98,21 @@ sftpfs_cb_open_connection (struct vfs_s_super *super,
 
     if (vpath_element->host == NULL || *vpath_element->host == '\0')
     {
-        vfs_print_message (_("sftp: Invalid host name."));
+        vfs_print_message ("%s", _("sftp: Invalid host name."));
         vpath_element->class->verrno = EPERM;
         return -1;
     }
 
     sftpfs_super_data = g_new0 (sftpfs_super_data_t, 1);
+    sftpfs_super_data->socket_handle = LIBSSH2_INVALID_SOCKET;
     sftpfs_super_data->original_connection_info = vfs_path_element_clone (vpath_element);
     super->data = sftpfs_super_data;
     super->path_element = vfs_path_element_clone (vpath_element);
 
     sftpfs_fill_connection_data_from_config (super, &mcerror);
-    if (mc_error_message (&mcerror))
+    if (mc_error_message (&mcerror, &ret_value))
     {
-        vpath_element->class->verrno = mcerror->code;
+        vpath_element->class->verrno = ret_value;
         return -1;
     }
 
@@ -121,7 +122,7 @@ sftpfs_cb_open_connection (struct vfs_s_super *super,
                          vfs_s_default_stat (vpath_element->class, S_IFDIR | 0755));
 
     ret_value = sftpfs_open_connection (super, &mcerror);
-    mc_error_message (&mcerror);
+    mc_error_message (&mcerror, NULL);
     return ret_value;
 }
 
@@ -137,11 +138,18 @@ static void
 sftpfs_cb_close_connection (struct vfs_class *me, struct vfs_s_super *super)
 {
     GError *mcerror = NULL;
+    sftpfs_super_data_t *sftpfs_super_data;
 
     (void) me;
     sftpfs_close_connection (super, "Normal Shutdown", &mcerror);
-    mc_error_message (&mcerror);
-    g_free (super->data);
+
+    sftpfs_super_data = (sftpfs_super_data_t *) super->data;
+    if (sftpfs_super_data != NULL)
+        vfs_path_element_free (sftpfs_super_data->original_connection_info);
+
+    mc_error_message (&mcerror, NULL);
+
+    g_free (sftpfs_super_data);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -176,7 +184,7 @@ sftpfs_cb_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_
 void
 sftpfs_init_subclass (void)
 {
-    memset (&sftpfs_subclass, 0, sizeof (struct vfs_s_subclass));
+    memset (&sftpfs_subclass, 0, sizeof (sftpfs_subclass));
     sftpfs_subclass.flags = VFS_S_REMOTE;
 }
 

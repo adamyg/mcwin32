@@ -1,7 +1,7 @@
 /*
    Terminal management xterm and rxvt support
 
-   Copyright (C) 1995-2015
+   Copyright (C) 1995-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -90,30 +90,6 @@ anything_ready (void)
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
-/* --------------------------------------------------------------------------------------------- */
-
-void
-do_enter_ca_mode (void)
-{
-    if (mc_global.tty.xterm_flag && smcup != NULL)
-    {
-        fprintf (stdout, /* ESC_STR ")0" */ ESC_STR "7" ESC_STR "[?47h");
-        fflush (stdout);
-    }
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-do_exit_ca_mode (void)
-{
-    if (mc_global.tty.xterm_flag && rmcup != NULL)
-    {
-        fprintf (stdout, ESC_STR "[?47l" ESC_STR "8" ESC_STR "[m");
-        fflush (stdout);
-    }
-}
-
 /* --------------------------------------------------------------------------------------------- */
 
 void

@@ -1,7 +1,7 @@
 /*
    Keyboard support routines.
 
-   Copyright (C) 1994-2015
+   Copyright (C) 1994-2017
    Free Software Foundation, Inc.
 
    Written by:
@@ -87,10 +87,10 @@
 
 int mou_auto_repeat = 100;
 int double_click_speed = 250;
-int old_esc_mode = 0;
+gboolean old_esc_mode = TRUE;
 /* timeout for old_esc_mode in usec */
 int old_esc_mode_timeout = 1000000;     /* settable via env */
-int use_8th_bit_as_meta = 0;
+gboolean use_8th_bit_as_meta = FALSE;
 
 gboolean bracketed_pasting_in_progress = FALSE;
 
@@ -614,7 +614,7 @@ try_channels (int set_timeout)
 
         FD_ZERO (&select_set);
         FD_SET (input_fd, &select_set); /* Add stdin */
-        maxfdp = max (add_selects (&select_set), input_fd);
+        maxfdp = MAX (add_selects (&select_set), input_fd);
 
         if (set_timeout)
         {
@@ -923,8 +923,10 @@ get_modifier (void)
     {
         int shift_ext_status;
 
-        if (devctl (fileno (stdin), DCMD_CHR_LINESTATUS, &mod_status, sizeof (int), NULL) == -1)
+        if (devctl (fileno (stdin), DCMD_CHR_LINESTATUS, &mod_status, sizeof (mod_status), NULL) ==
+            -1)
             return 0;
+
         shift_ext_status = mod_status & 0xffffff00UL;
         mod_status &= 0x7f;
         if (mod_status & _LINESTATUS_CON_ALT)
@@ -1123,6 +1125,8 @@ correct_key_code (int code)
         case KEY_KP_MULTIPLY:
             c = '*';
             break;
+        default:
+            break;
         }
 
     return (mod | c);
@@ -1204,8 +1208,8 @@ s_dispose (SelectList * sel)
 static int
 key_code_comparator_by_name (const void *p1, const void *p2)
 {
-    const key_code_name_t *n1 = *(const key_code_name_t **) p1;
-    const key_code_name_t *n2 = *(const key_code_name_t **) p2;
+    const key_code_name_t *n1 = *(const key_code_name_t * const *) p1;
+    const key_code_name_t *n2 = *(const key_code_name_t * const *) p2;
 
     return g_ascii_strcasecmp (n1->name, n2->name);
 }
@@ -1215,8 +1219,8 @@ key_code_comparator_by_name (const void *p1, const void *p2)
 static int
 key_code_comparator_by_code (const void *p1, const void *p2)
 {
-    const key_code_name_t *n1 = *(const key_code_name_t **) p1;
-    const key_code_name_t *n2 = *(const key_code_name_t **) p2;
+    const key_code_name_t *n1 = *(const key_code_name_t * const *) p1;
+    const key_code_name_t *n2 = *(const key_code_name_t * const *) p2;
 
     return n1->code - n2->code;
 }
@@ -1255,7 +1259,7 @@ lookup_keyname (const char *name, int *idx)
     {
         const key_code_name_t key = { 0, name, NULL, NULL };
         const key_code_name_t *keyp = &key;
-        key_code_name_t **res;
+        const key_code_name_t **res;
 
         if (name[1] == '\0')
         {
@@ -1270,7 +1274,7 @@ lookup_keyname (const char *name, int *idx)
 
         if (res != NULL)
         {
-            *idx = (int) (res - (key_code_name_t **) key_conv_tab_sorted);
+            *idx = (int) (res - key_conv_tab_sorted);
             return (*res)->code;
         }
     }
@@ -1288,7 +1292,7 @@ lookup_keycode (const long code, int *idx)
     {
         const key_code_name_t key = { code, NULL, NULL, NULL };
         const key_code_name_t *keyp = &key;
-        key_code_name_t **res;
+        const key_code_name_t **res;
 
         sort_key_conv_tab (KEY_SORTBYCODE);
 
@@ -1297,7 +1301,7 @@ lookup_keycode (const long code, int *idx)
 
         if (res != NULL)
         {
-            *idx = (int) (res - (key_code_name_t **) key_conv_tab_sorted);
+            *idx = (int) (res - key_conv_tab_sorted);
             return TRUE;
         }
     }
@@ -1348,7 +1352,7 @@ init_key (void)
          * is not used now (doesn't even depend on use_8th_bit_as_meta
          * as in mc-3.1.2)...GREAT!...no additional code is required!]
          */
-        use_8th_bit_as_meta = 0;
+        use_8th_bit_as_meta = FALSE;
     }
 #endif /* __QNX__ */
 
@@ -1460,6 +1464,7 @@ long
 lookup_key (const char *name, char **label)
 {
     char **lc_keys, **p;
+    char *cname;
     int k = -1;
     int key = 0;
     int lc_index = -1;
@@ -1471,9 +1476,9 @@ lookup_key (const char *name, char **label)
     if (name == NULL)
         return 0;
 
-    name = g_strstrip (g_strdup (name));
-    lc_keys = g_strsplit_set (name, "-+ ", -1);
-    g_free ((char *) name);
+    cname = g_strstrip (g_strdup (name));
+    lc_keys = g_strsplit_set (cname, "-+ ", -1);
+    g_free (cname);
 
     for (p = lc_keys; p != NULL && *p != NULL; p++)
     {
@@ -1705,7 +1710,7 @@ is_idle (void)
 
     FD_ZERO (&select_set);
     FD_SET (input_fd, &select_set);
-    nfd = max (0, input_fd) + 1;
+    nfd = MAX (0, input_fd) + 1;
     time_out.tv_sec = 0;
     time_out.tv_usec = 0;
 #ifdef HAVE_LIBGPM
@@ -1714,7 +1719,7 @@ is_idle (void)
         if (gpm_fd >= 0)
         {
             FD_SET (gpm_fd, &select_set);
-            nfd = max (nfd, gpm_fd + 1);
+            nfd = MAX (nfd, gpm_fd + 1);
         }
         else
         {
@@ -1983,7 +1988,7 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
 
         FD_ZERO (&select_set);
         FD_SET (input_fd, &select_set);
-        nfd = max (add_selects (&select_set), max (0, input_fd)) + 1;
+        nfd = MAX (add_selects (&select_set), MAX (0, input_fd)) + 1;
 
 #ifdef HAVE_LIBGPM
         if (mouse_enabled && (use_mouse_p == MOUSE_GPM))
@@ -1991,7 +1996,7 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
             if (gpm_fd >= 0)
             {
                 FD_SET (gpm_fd, &select_set);
-                nfd = max (nfd, gpm_fd + 1);
+                nfd = MAX (nfd, gpm_fd + 1);
             }
             else
             {

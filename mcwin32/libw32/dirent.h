@@ -4,7 +4,7 @@
 /*
  * win32 <dirent.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -26,16 +26,16 @@
 #include <limits.h>                             /* PATH_MAX, NAME_MAX */
 #include <time.h>
 
-#define DIRBLKSIZ   1024
+#define DIRBLKSIZ       1024
 #if !defined(MAXPATHLEN)
-#define MAXPATHLEN  1024                        /* PATH_MAX */
+#define MAXPATHLEN      1024                    /* PATH_MAX */
 #endif
 #if !defined(MAXNAMLEN)
-#define MAXNAMLEN   1024                        /* PATH_MAX */
+#define MAXNAMLEN       1024                    /* PATH_MAX */
 #endif
 
 struct dirent {
-#define d_ino       d_fileno                    /* Backward compatibility */
+#define d_ino           d_fileno                /* Backward compatibility */
     unsigned long       d_fileno;               /* File number directory */
     unsigned short      d_reclen;               /* Length of this record */
     unsigned short      d_namlen;               /* Length of string in d_name */
@@ -95,17 +95,16 @@ typedef struct _dirdesc {
 
 __BEGIN_DECLS
 
-extern DIR *            opendir __P((const char *));
-extern int              closedir __P((DIR *));
-extern struct dirent *  readdir __P((DIR *));
-extern void             rewinddir __P((DIR *));
+LIBW32_API DIR *        opendir __P((const char *));
+LIBW32_API int          closedir __P((DIR *));
+LIBW32_API struct dirent * readdir __P((DIR *));
+LIBW32_API void         rewinddir __P((DIR *));
 #ifndef _POSIX_SOURCE
-extern void             seekdir __P((DIR *, long));
-extern long             telldir __P((DIR *));
-extern void             rewinddir __P((DIR *));
-extern int              alphasort __P((const void *, const void *));
-extern int              scandir __P(());
-extern int              getdirentries __P((int, char *, int, long *));
+LIBW32_API void         seekdir __P((DIR *, long));
+LIBW32_API long         telldir __P((DIR *));
+LIBW32_API int          alphasort __P((const void *, const void *));
+LIBW32_API int          scandir __P(());
+LIBW32_API int          getdirentries __P((int, char *, int, long *));
 #endif  /*_POSIX_SOURCE*/
 
 __END_DECLS

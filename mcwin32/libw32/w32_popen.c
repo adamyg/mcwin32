@@ -2,7 +2,7 @@
 /*
  * win32 popen implementation
  *
- * Copyright (c) 2007, 2012 - 2015 Adam Young.
+ * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -147,7 +147,7 @@ w32_popen(const char *cmd, const char *mode)
     HANDLE in_read = INVALID_HANDLE_VALUE, in_write = INVALID_HANDLE_VALUE,
         out_read = INVALID_HANDLE_VALUE, out_write = INVALID_HANDLE_VALUE,
         err_read = INVALID_HANDLE_VALUE, err_write = INVALID_HANDLE_VALUE;
-    const char *argv[3] = {0};
+    const char *argv[4] = {0};
     struct pipe *p = NULL;
     char *cmd2 = NULL;
 

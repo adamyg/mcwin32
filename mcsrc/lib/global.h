@@ -21,6 +21,9 @@
 #include <sys/param.h>
 #endif
 
+/* for O_* macros */
+#include <fcntl.h>
+
 /* for sig_atomic_t */
 #include <signal.h>
 
@@ -71,12 +74,13 @@
 #include <glib.h>
 #include "glibcompat.h"
 
+/* For SMB VFS only */
 #ifndef __GNUC__
 #define __attribute__(x)
 #endif
 
 /* Solaris9 doesn't have PRIXMAX */
-#ifndef __WATCOMC__ //WIN32, fix
+#ifndef WIN32 //WIN32, fix
 #ifndef PRIXMAX
 #define PRIXMAX PRIxMAX
 #endif
@@ -102,21 +106,12 @@
 #endif /* !ENABLE_NLS */
 
 #include "fs.h"
+#include "shell.h"
+#include "mcconfig.h"
 
 #ifdef USE_MAINTAINER_MODE
 #include "lib/logging.h"
 #endif
-
-#ifdef min
-#undef min
-#endif
-
-#ifdef max
-#undef max
-#endif
-
-#define min(x, y) ((x) > (y) ? (y) : (x))
-#define max(x, y) ((x) > (y) ? (x) : (y))
 
 /* Just for keeping Your's brains from invention a proper size of the buffer :-) */
 #define BUF_10K 10240L
@@ -140,7 +135,7 @@
 /* OS specific defines */
 #define PATH_SEP '/'
 #define PATH_SEP_STR "/"
-#if defined(WIN32) //APY,path
+#if defined(WIN32) //WIN32, path
 #define PATH_SEP2 '/'
 #define PATH_SEP_STR2 "\\"
 #define IS_PATH_SEP(c) ((c) == PATH_SEP || (c) == PATH_SEP2)
@@ -158,29 +153,13 @@
 /* one caused by typing 'exit' or 'logout' in the subshell */
 #define SUBSHELL_EXIT 128
 
-/* C++ style type casts */
-#define const_cast(m_type, m_expr) ((m_type) (m_expr))
-
-#if 0
-#ifdef MC_ENABLE_DEBUGGING_CODE
-#undef NDEBUG
-#else
-#define NDEBUG
-#endif
-#ifdef HAVE_ASSERT_H
-#include <assert.h>
-#endif
-#endif
-
 #define MC_ERROR g_quark_from_static_string (PACKAGE)
 
-#ifdef WIN32 //WIN32/APY, conflict with w32 headers
+//  #define DEFAULT_CHARSET "ASCII"
+//	WIN32/APY, conflict windows headers; renamed
 #define MC_DEFAULT_CHARSET "ASCII"
-#undef  DEFAULT_CHARSET
-#define DEFAULT_CHARSET MC_DEFAULT_CHARSET
-#else
-#define DEFAULT_CHARSET "ASCII"
-#endif
+
+#include "lib/timer.h"          /* mc_timer_t */
 
 /*** enums ***************************************************************************************/
 
@@ -199,7 +178,7 @@ typedef struct
 {
     mc_run_mode_t mc_run_mode;
     /* global timer */
-    struct mc_timer_t *timer;
+    mc_timer_t *timer;
     /* Used so that widgets know if they are being destroyed or shut down */
     gboolean midnight_shutdown;
 
@@ -209,18 +188,21 @@ typedef struct
     /* share_data_dir: Area for default settings from developers */
     char *share_data_dir;
 
+    mc_config_t *main_config;
+    mc_config_t *panels_config;
+
 #ifdef HAVE_CHARSET
     /* Numbers of (file I/O) and (input/display) codepages. -1 if not selected */
     int source_codepage;
     int display_codepage;
 #else
     /* If true, allow characters in the range 160-255 */
-    int eight_bit_clean;
+    gboolean eight_bit_clean;
     /*
      * If true, also allow characters in the range 128-159.
      * This is reported to break on many terminals (xterm, qansi-m).
      */
-    int full_eight_bits;
+    gboolean full_eight_bits;
 #endif                          /* !HAVE_CHARSET */
     /*
      * If utf-8 terminal utf8_display = TRUE
@@ -233,7 +215,7 @@ typedef struct
     /* Set if the nice and useful keybar is visible */
     int keybar_visible;
 
-#if defined(ENABLE_BACKGROUND) || defined(WIN32)
+#if defined(ENABLE_BACKGROUND) || defined(WIN32) //WIN32, config
     /* If true, this is a background process */
     gboolean we_are_background;
 #endif                          /* ENABLE_BACKGROUND */
@@ -251,6 +233,9 @@ typedef struct
         gboolean is_right;      /* If the selected menu was the right */
     } widget;
 
+    /* The user's shell */
+    mc_shell_t *shell;
+
     struct
     {
         /* Use the specified skin */
@@ -262,19 +247,17 @@ typedef struct
         /* colors specified on the command line: they override any other setting */
         char *command_line_colors;
 
-#if !defined(LINUX_CONS_SAVER_C) || defined(WIN32)
+#if !defined(LINUX_CONS_SAVER_C) || defined(WIN32) //WIN32, config
         /* Used only in mc, not in cons.saver */
         char console_flag;
 #endif                          /* !LINUX_CONS_SAVER_C */
         /* If using a subshell for evaluating commands this is true */
         gboolean use_subshell;
+
 #ifdef ENABLE_SUBSHELL
         /* File descriptors of the pseudoterminal used by the subshell */
         int subshell_pty;
 #endif                          /* !ENABLE_SUBSHELL */
-
-        /* The user's shell */
-        char *shell;
 
         /* This flag is set by xterm detection routine in function main() */
         /* It is used by function view_other_cmd() */

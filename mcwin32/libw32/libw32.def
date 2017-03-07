@@ -1,0 +1,11 @@
+; libw32 library
+EXPORTS
+; global variables, see: w32_slang.c
+;   variables need to be explicitly exported unlike functions.
+	SLang_Version DATA
+	SLsmg_Display_Eight_Bit DATA
+	SLtt_Screen_Rows DATA
+	SLtt_Screen_Cols DATA
+	SLtt_Use_Ansi_Colors DATA
+	SLtt_Try_Termcap DATA
+; end

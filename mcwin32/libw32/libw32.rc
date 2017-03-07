@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) 2016 - 2017 Adam Young.
+ *
+ * This file is part of the Midnight Commander.
+ *
+ * The Midnight Commander is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * The Midnight Commander is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ==end==
+ */
+
+#include <winver.h>
+#include "libw32_version.h"
+
+#ifdef GCC_WINDRES
+VS_VERSION_INFO		VERSIONINFO
+#else
+VS_VERSION_INFO		VERSIONINFO	MOVEABLE IMPURE LOADONCALL DISCARDABLE
+#endif
+	FILEVERSION	LIBW32_VER_MAJOR,LIBW32_VER_MINOR,LIBW32_VER_REVISION,0
+	PRODUCTVERSION	LIBW32_VER_MAJOR,LIBW32_VER_MINOR,LIBW32_VER_REVISION,0
+	FILEFLAGSMASK	VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS	1
+#else
+	FILEFLAGS	0
+#endif
+	FILEOS		VOS__WINDOWS32
+	FILETYPE	VFT_DLL
+	FILESUBTYPE	0			// not used
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904E4"
+		//language ID = U.S. English, char set = Windows, Multilingual
+		BEGIN
+			VALUE "FileDescription",
+				"Windows unix/posix emulation/compat library\0"
+
+			VALUE "FileVersion",	LIBW32_VERSION "\0"
+
+			VALUE "InternalName",	"libwin32.dll\0"
+
+			VALUE "LegalCopyright",
+				"Copyright (c) 2007 - 2017 Adam Young\0"
+
+			VALUE "OriginalFilename",
+				"libwin32." LIBW32_VERSION ".dll\0"
+
+			VALUE "ProductName",
+				"libwin32\0"
+
+			VALUE "ProductVersion",
+				LIBW32_VERSION "\0"
+
+			VALUE "Comments",
+				"For more information visit https://sourceforge.net/p/mcwin32/\0"
+		END
+	END
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x0409, 1252
+	END
+END

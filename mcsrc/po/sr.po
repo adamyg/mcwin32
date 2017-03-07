@@ -1,6 +1,6 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the mc package.
 # 
 # Translators:
 # Slava Zanko <slavazanko@gmail.com>, 2011
@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2015-02-26 09:43+0300\n"
-"PO-Revision-Date: 2015-02-26 09:48+0000\n"
+"POT-Creation-Date: 2016-11-21 13:19+0300\n"
+"PO-Revision-Date: 2016-11-22 08:19+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Serbian (http://www.transifex.com/projects/p/mc/language/sr/)\n"
+"Language-Team: Serbian (http://www.transifex.com/mc/mc/language/sr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -133,10 +133,29 @@ msgstr "Не могу да обрадим маску „%s“.\nУчитана �
 
 #, c-format
 msgid ""
+"Unable to use '%s' skin with true colors support:\n"
+"%s\n"
+"Default skin has been loaded"
+msgstr ""
+
+#, c-format
+msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
 msgstr "Не могу да користим маску „%s“ са подршком за 256 боја\nна терминалу који нема 256 боја.\nУчитана је основна маска."
+
+msgid "True color not supported with ncurses."
+msgstr ""
+
+msgid "True color not supported in this slang version."
+msgstr ""
+
+msgid "Your terminal doesn't even seem to support 256 colors."
+msgstr ""
+
+msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
+msgstr ""
 
 msgid "Escape"
 msgstr "Заокрет"
@@ -430,11 +449,29 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr "Величина екрана %dx%d није подржана.\nПроверите променљиву окружења „TERM“.\n"
 
+msgid "B"
+msgstr ""
+
+msgid "kB"
+msgstr ""
+
+msgid "KiB"
+msgstr ""
+
+msgid "MB"
+msgstr ""
+
+msgid "MiB"
+msgstr ""
+
+msgid "GB"
+msgstr ""
+
+msgid "GiB"
+msgstr ""
+
 msgid "Cannot create pipe descriptor"
 msgstr "Не могу да направим описника спојке"
-
-msgid "Cannot parse command for pipe"
-msgstr "Не могу да обрадим наредбу за спојку"
 
 msgid "Cannot create pipe streams"
 msgstr "Не могу да направим токове спојке"
@@ -467,8 +504,13 @@ msgstr "Грешка удвостручавања старе спојке гре
 msgid "Directory cache expired for %s"
 msgstr "Остава директоријума је истекла за %s"
 
-msgid "bytes transferred"
-msgstr "пренешених бајтова"
+#, c-format
+msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
+msgstr ""
+
+#, c-format
+msgid "%s: %s: %s %lld bytes transferred"
+msgstr ""
 
 msgid "Starting linear transfer..."
 msgstr "Покрећем линеарни пренос..."
@@ -551,8 +593,8 @@ msgid "Error"
 msgstr "Грешка"
 
 #, c-format
-msgid "%d: %s"
-msgstr "%d: %s"
+msgid "%s (%d)"
+msgstr ""
 
 msgid "&Abort"
 msgstr "&Прекини"
@@ -666,7 +708,7 @@ msgid ""
 "\n"
 "Attributes:\n"
 "   bold, italic, underline, reverse, blink; append more with '+'\n"
-msgstr ""
+msgstr "Уобичајене боје:\n   black, gray, red, brightred, green, brightgreen, brown,\n   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n   brightcyan, lightgray и white\n\nПроширене боје, када су доступне 256 боје:\n   color16 до color255, или rgb000 до rgb555 и gray0 до gray23\n\nАтрибути:\n   bold, italic, underline, reverse, blink; придодајте још помоћу +\n"
 
 msgid "Color options"
 msgstr "Опције боје"
@@ -702,7 +744,7 @@ msgstr "Грешка обраде аргумената!"
 msgid "No arguments given to the viewer."
 msgstr "Аргументи нису дати прегледачу."
 
-msgid "Two files are required to evoke the diffviewer."
+msgid "Two files are required to envoke the diffviewer."
 msgstr "Потребне су две датотеке за призивање прегледача разлика."
 
 msgid "Background protocol error"
@@ -1491,7 +1533,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr "Уређивач текста наклоњен кориснику\nнаписан за Поноћног наредника."
 
-msgid "Copyright (C) 1996-2015 the Free Software Foundation"
+msgid "Copyright (C) 1996-2016 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1819,6 +1861,9 @@ msgstr "Кретање &налик Линксу"
 msgid "Pa&ge scrolling"
 msgstr "Премицање &странице"
 
+msgid "Center &scrolling"
+msgstr ""
+
 msgid "&Mouse page scrolling"
 msgstr "Премицање странице &мишем"
 
@@ -1850,14 +1895,17 @@ msgstr "Употреба опције брзог поновног учитава
 msgid "&Full file list"
 msgstr "&Пун списак датотека"
 
-msgid "&Brief file list"
-msgstr "&Кратак списак датотека"
+msgid "&Brief file list:"
+msgstr "&Кратак списак датотека:"
 
 msgid "&Long file list"
 msgstr "&Дуг списак датотека"
 
 msgid "&User defined:"
 msgstr "Корисник је &задао:"
+
+msgid "columns"
+msgstr "колоне"
 
 msgid "User &mini status"
 msgstr "Корисниково &мини стање"
@@ -2177,6 +2225,10 @@ msgid ""
 msgstr "Није конзоа хтерминала или Линукса;\nпанели не могу бити промењени."
 
 #, c-format
+msgid "'%s' is not a symbolic link"
+msgstr "„%s“ није симболичка веза"
+
+#, c-format
 msgid "Symlink '%s' points to:"
 msgstr "Симболичка веза „%s“ упућује на:"
 
@@ -2190,10 +2242,6 @@ msgstr "уређивање симболичке везе, не може да у�
 #, c-format
 msgid "edit symlink: %s"
 msgstr "уреди симболичку везу: %s"
-
-#, c-format
-msgid "'%s' is not a symbolic link"
-msgstr "„%s“ није симболичка веза"
 
 msgid "FTP to machine"
 msgstr "ФТП на рачунар"
@@ -2466,9 +2514,9 @@ msgstr "Не могу да прерасподелим простор за циљ
 
 #, c-format
 msgid ""
-"Cannot read source file\"%s\"\n"
+"Cannot read source file \"%s\"\n"
 "%s"
-msgstr "Не могу да прочитам изворну датотеку „%s“\n%s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2554,8 +2602,8 @@ msgid ""
 msgstr "Не могу да преместим директоријум „%s“ у „%s“\n%s"
 
 #, c-format
-msgid "Directories: %zd, total size: %s"
-msgstr "Број директоријума: %zd, укупне величине: %s"
+msgid "Directories: %zu, total size: %s"
+msgstr ""
 
 msgid "Cannot operate on \"..\"!"
 msgstr "Не могу да радим над \"..\"!"
@@ -2706,8 +2754,8 @@ msgid "&Edit - F4"
 msgstr "&Уреди — Ф4"
 
 #, c-format
-msgid "Found: %ld"
-msgstr "Нађох: %ld"
+msgid "Found: %lu"
+msgstr ""
 
 msgid "Malformed regular expression"
 msgstr "Лош регуларни израз"
@@ -2756,11 +2804,11 @@ msgid "Finished"
 msgstr "Готово"
 
 #, c-format
-msgid "Finished (ignored %zd directory)"
-msgid_plural "Finished (ignored %zd directories)"
-msgstr[0] "Готово (занемарио сам %zd директоријум)"
-msgstr[1] "Готово (занемарио сам %zd директоријума)"
-msgstr[2] "Готово (занемарио сам %zd директоријума)"
+msgid "Finished (ignored %zu directory)"
+msgid_plural "Finished (ignored %zu directories)"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 msgid "Searching"
 msgstr "Тражим"
@@ -2880,63 +2928,63 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr "Слободан простор:  %s/%s (%d%%)"
 
 #, c-format
-msgid "Type:      %s"
-msgstr "Врста:             %s"
+msgid "Type:       %s"
+msgstr "Врста:       %s"
 
 msgid "non-local vfs"
 msgstr "не-месни всд"
 
 #, c-format
-msgid "Device:    %s"
-msgstr "Уређај:            %s"
+msgid "Device:     %s"
+msgstr "Уређај:     %s"
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "Систем датотека:   %s"
 
 #, c-format
-msgid "Accessed:  %s"
-msgstr "Датум приступа:    %s"
+msgid "Accessed:   %s"
+msgstr "Приступљен:   %s"
 
 #, c-format
-msgid "Modified:  %s"
-msgstr "Датум промене:     %s"
+msgid "Modified:   %s"
+msgstr "Обрађен:   %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:   %s"
-msgstr "Датум измене:      %s"
+msgid "Changed:    %s"
+msgstr "Измењен:    %s"
 
 #, c-format
 msgid "Dev. type: major %lu, minor %lu"
-msgstr "Врста уређаја:     навећи %lu, најмањи %lu"
+msgstr "Врста уређаја:     највећи %lu, најмањи %lu"
 
 #, c-format
-msgid "Size:      %s"
-msgstr "Величина:          %s"
+msgid "Size:       %s"
+msgstr "Величина:       %s"
 
 #, c-format
-msgid " (%ld block)"
-msgid_plural " (%ld blocks)"
-msgstr[0] " (%ld блок)"
-msgstr[1] " (%ld блока)"
-msgstr[2] " (%ld блокова)"
+msgid " (%lu block)"
+msgid_plural " (%lu blocks)"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 #, c-format
-msgid "Owner:     %s/%s"
-msgstr "Власник:           %s/%s"
+msgid "Owner:      %s/%s"
+msgstr "Власник:      %s/%s"
 
 #, c-format
-msgid "Links:     %d"
-msgstr "Број веза:         %d"
+msgid "Links:      %d"
+msgstr "Везе:      %d"
 
 #, c-format
-msgid "Mode:      %s (%04o)"
-msgstr "Дозволе:           %s (%04o)"
+msgid "Mode:       %s (%04o)"
+msgstr "Режим:       %s (%04o)"
 
 #, c-format
-msgid "Location:  %Xh:%Xh"
-msgstr "Место:             %Xh:%Xh"
+msgid "Location:   %Xh:%Xh"
+msgstr "Место:   %Xh:%Xh"
 
 msgid "&Equal split"
 msgstr "&Подједнака подела"
@@ -3152,11 +3200,11 @@ msgid "Panels:"
 msgstr "Панели:"
 
 #, c-format
-msgid "You have %zd opened screen. Quit anyway?"
-msgid_plural "You have %zd opened screens. Quit anyway?"
-msgstr[0] "Отворили сте %zd екран. Да ипак изађем?"
-msgstr[1] "Отворили сте %zd екрана. Да ипак изађем?"
-msgstr[2] "Отворили сте %zd екрана. Да ипак изађем?"
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 msgid "The Midnight Commander"
 msgstr "Поноћни наредник"
@@ -3298,13 +3346,6 @@ msgstr "ПОД-ДИР"
 
 msgid "<readlink failed>"
 msgstr "<читање везе није успело>"
-
-#, c-format
-msgid "%s byte"
-msgid_plural "%s bytes"
-msgstr[0] "%s бајт"
-msgstr[1] "%s бајта"
-msgstr[2] "%s бајтова"
 
 #, c-format
 msgid "%s in %d file"
@@ -3917,9 +3958,8 @@ msgstr "sftp: Унесите лозинку за „%s“ "
 msgid "sftp: Password is empty."
 msgstr "sftp: Лозинка је празна."
 
-#, c-format
-msgid "sftp: Failure establishing SSH session: (%d)"
-msgstr "sftp: Неуспех успостављања сесије безбедне шкољке: (%d)"
+msgid "sftp: Failure establishing SSH session"
+msgstr ""
 
 msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: Нема података руковаоца датотеком за читање датотеке"
