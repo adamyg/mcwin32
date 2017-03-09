@@ -103,11 +103,20 @@ static int              system_SET (int argc, const char **argv);
 static DWORD WINAPI     pipe_thread (void *data);
 
 static const char *     busybox_cmds[] = {      /* redirected commands (see vfs/sfs module) */
-        "ar", "awk", "base64", "bunzip2", "bzcat", "bzip2", "cat", "cksum", "cpio",
-        "dd", "diff", "dos2unix", "echo", "gunzip", "gzip", "ls", "lzcat", "lzma",
-        "lzop", "lzopcat", "ps", "tar", "strings", "uncompress", "unexpand", "unix2dos",
-        "unlzma", "unlzop", "unxz", "unzip", "uudecode", "uuencode", "wc", "xz",
-        "xzcat", "zcat"
+//
+//      ar, ash, awk, base64, basename, bash, bbconfig, bunzip2, bzcat, bzip2, cal, cat, catv, chmod, cksum, clear, cmp, comm, cp, cpio, cut, date, dc, dd, df, diff,
+//      dirname, dos2unix, du, echo, ed, egrep, env, expand, expr, false, fgrep, find, fold, ftpget, ftpput, getopt, grep, gunzip, gzip, hd, head, hexdump, kill, killall, ls,
+//      lzcat, lzma, lzop, lzopcat, man, md5sum, mkdir, mktemp, mv, od, patch, pgrep, pidof, printenv, printf, ps, pwd, rev, rm, rmdir, sed, seq, sh, sha1sum, sha256sum, sha3sum,
+//      sha512sum, shuf, sleep, sort, split, stat, strings, sum, tac, tail, tar, tee, test, touch, tr, true, uname, uncompress, unexpand, uniq, unix2dos, unlink, unlzma, unlzop,
+//      unxz, unzip, usleep, uudecode, uuencode, vi, wc, wget, which, whoami, xargs, xz, xzcat, yes, zcat
+//
+        "ar", "ash", "awk", "base64", "bunzip2", "bzcat", "bzip2", "cat", "cksum", "cpio", "dd", "diff",
+        "dos2unix", "echo", "gunzip", "gzip", "ls",
+        "lzcat", "lzma", "lzop", "lzopcat", "ps",
+        "tar", "uncompress", "unexpand", "unix2dos", "unlzma", "unlzop",
+        "unxz", "unzip", "uudecode", "uuencode", "xz", "xzcat", "zcat"
+
+// MISSING: lz4, ulz4
         };
 static const char       bin_sh[] = "/bin/sh";
 static const char       cmd_sh[] = "cmd.exe";
@@ -790,7 +799,7 @@ my_setpathenv(const char *name, const char *value, int overwrite)
 #else
         snprintf(buf, sizeof(buf), "%s=%s", name, value);
         canonicalize_pathname(buf + strlen(name) + 1);
-		buf[sizeof(buf) - 1] = 0;
+        buf[sizeof(buf) - 1] = 0;
         putenv(buf);
 #endif
     }
@@ -1110,6 +1119,53 @@ system_SET(int argc, const char **argv)
 }
 
 
+/**
+ *  Determine if a #! script and return underlying exec handler.
+ *  TODO: Return resolved path to perl, python etc (utilise file/extension association)
+ */
+static const char *
+IsScript(const char *cmd)
+{
+    char t_cmd[1024] = { 0 }, *argv[3] = { 0 }, magic[128] = { 0 };
+        const char *script = NULL;
+    int fd;
+
+    strncpy(t_cmd, cmd, sizeof(t_cmd)-1);
+    if (system_bustargs(t_cmd, argv, 2) >= 1) {
+        if ((fd = _open(argv[0], O_RDONLY | O_BINARY)) >= 0) {
+            if (_read(fd, magic, sizeof(magic) - 1) > 2 && magic[0] == '#' && magic[1] == '!') {
+                // sha-bang
+                const char *exec = magic + 2;
+                int len = -1;
+
+                while (*exec && ' ' == *exec) ++exec;
+                if (*exec == '/') {
+                        if (0 == strncmp(exec, "/bin/sh", len = (sizeof("/bin/sh")-1)))
+                                script = "sh";
+                        else if (0 == strncmp(exec, "/bin/ash", len = (sizeof("/bin/ash")-1)))
+                                script = "ash";
+                        else if (0 == strncmp(exec, "/bin/bash", len = (sizeof("/bin/bash")-1)))
+                                script = "bash";
+                        else if (0 == strncmp(exec, "/bin/sed", len = (sizeof("/bin/sed")-1)))
+                                script = "sed";
+                        else if (0 == strncmp(exec, "/bin/awk", len = (sizeof("/bin/awk")-1)))
+                                script = "awk";
+                        else if (0 == strncmp(exec, "/usr/bin/perl", len = (sizeof("/usr/bin/perl")-1)))
+                                script = "perl";
+                        else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1)))
+                                script = "python";
+                        //else, ignore others
+                        if (script && exec[len] != ' ' && exec[len] != '\n' && exec[len] != '\r') {
+                            script = NULL;      //bad termination, ignore
+                        }
+                }
+            }
+            _close(fd);
+        }
+    }
+    return script;
+}
+
 
 /**
  *  popen() implementation
@@ -1118,12 +1174,12 @@ FILE *
 win32_popen(const char *cmd, const char *mode)
 {
     const char *busybox = getenv("MC_BUSYBOX");
-    const char *space;
+    const char *space, *exec;
     FILE *file = NULL;
 
     if (busybox && *busybox &&
             NULL != (space = strchr(cmd, ' ')) &&
-                space == (cmd + (sizeof(bin_sh) - 1)) && 0 == strncmp(cmd, bin_sh, sizeof(bin_sh)-1)) {
+                space == (cmd + (sizeof(bin_sh) - 1)) && 0 == strncmp(cmd, bin_sh, sizeof(bin_sh) - 1)) {
         /*
          *  If <cmd> </bin/sh ...>
          *  execute as <shell> <busybox sh ...>
@@ -1131,6 +1187,22 @@ win32_popen(const char *cmd, const char *mode)
         char *t_cmd;
 
         if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" sh", space, NULL))) {
+            file = w32_popen(t_cmd, mode);
+            g_free(t_cmd);
+        }
+    } else if (busybox && *busybox && NULL != (exec = IsScript(cmd))) {
+        /*
+         *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python>
+         *      note: currently limited to extfs usage.
+         */
+        char *t_cmd = NULL;
+
+        if (exec[0] == 'p') {                   // perl/python
+                t_cmd = g_strconcat(exec, " ", cmd, NULL);
+        } else {                                // sh/ash/bash
+                t_cmd = g_strconcat("\"", busybox, "\" ", exec, " ", cmd, NULL);
+        }
+        if (t_cmd) {
             file = w32_popen(t_cmd, mode);
             g_free(t_cmd);
         }
@@ -1335,8 +1407,8 @@ system_bustargs(char *cmd, const char **argv, int cnt)
     char *start, *end;
     int argc;
 
-    argc = 0;
-    for (;;) {
+    --cnt;                                      /* nul terminator storage */
+    for (argc = 0;;) {
         /* Skip over blanks */
         while (*cmd == ' '|| *cmd == '\t' || *cmd == '\n') {
             ++cmd;                              /* eat white space */
@@ -1403,7 +1475,7 @@ tilde_expand(const char *directory)
     if (PATH_SEP == *directory) {               /* / ==> x:/ */
 
         if (PATH_SEP != directory[1] ||         /* preserve URL's (//<server) */
-				    0 == directory[2] || PATH_SEP == directory[2]) {
+                    0 == directory[2] || PATH_SEP == directory[2]) {
             const char *cwd = vfs_get_current_dir ();
 
             if (':' == cwd[1]) {
@@ -1843,3 +1915,5 @@ mc_build_filename(const char *first_element, ...)
     va_end (args);
     return ret;
 }
+
+/*end*/

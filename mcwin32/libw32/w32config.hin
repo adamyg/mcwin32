@@ -1,10 +1,10 @@
 #ifndef GR_CONFIG_H_INCLUDED
 #define GR_CONFIG_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_config_h, "$Id: w32config.hin,v 1.2 2017/03/07 15:38:31 cvsuser Exp $")
+__CIDENT_RCSID(gr_config_h, "$Id: w32config.hin,v 1.3 2017/03/09 03:36:05 cvsuser Exp $")
 __CPRAGMA_ONCE
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.2 2017/03/07 15:38:31 cvsuser Exp $
+/* $Id: w32config.hin,v 1.3 2017/03/09 03:36:05 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
@@ -41,10 +41,10 @@ __CPRAGMA_ONCE
 #endif
 #endif /*MSC || WATCOM*/
 
-#undef GRIEF_CC_COMPILER
-#undef GRIEF_CC_VERSION
+#undef MAKELIB_CC_COMPILER
+#undef MAKELIB_CC_VERSION
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__WATCOMC__)
 #pragma warning (disable : 4127)                // conditional expression is constant
 #pragma warning (disable : 4201)                // nonstandard extension used : nameless struct/union
 #pragma warning (disable : 4204)                // nonstandard extension used : non-constant aggregate initializer
@@ -54,10 +54,10 @@ __CPRAGMA_ONCE
 
 #elif defined(__WATCOMC__)
 #if !defined(__cplusplus)
-#pragma disable_message(136)                    // Comparison equivalent to 'unsigned == 0'
+#pragma disable_message(136)                    // comparison equivalent to 'unsigned == 0'
 #endif
-#pragma disable_message(201)                    // Unreachable code
-#pragma disable_message(202)                    // Symbol 'xxx' has been defined, but not referenced
+#pragma disable_message(201)                    // unreachable code
+#pragma disable_message(202)                    // symbol 'xxx' has been defined, but not referenced
 #endif
 
 /*
@@ -131,6 +131,7 @@ __CPRAGMA_ONCE
 #undef HAVE_WINSOCK2_H
 #undef HAVE_WINCRYPT_H
 #undef HAVE_WINIOCTL_H
+#undef HAVE_BCRYPT_H
 
 /* Explicit header checks */
 #undef HAVE_SYS_TYPES_H
@@ -603,6 +604,10 @@ __CPRAGMA_ONCE
 
 #undef HAVE_BZLIB_H
 #undef HAVE_LIBBZ2
+
+        /* glib */
+#undef HAVE_GLIB
+#undef HAVE_GLIB_GLIB_H
 
         /* libguess */
 #undef HAVE_LIBGUESS

@@ -26,8 +26,6 @@ objects/
 Makefile
 buildinfo.h
 BUILDNUMBER
-mcwin32-build*.exe
-mcwin32-build*.zip
 midnight-commander.org
 owcsetup.dbg
 

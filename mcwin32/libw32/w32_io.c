@@ -2,7 +2,7 @@
 /*
  * win32 system io functionality
  *
- *      stat, lstat, fstat, readlink, symlink, open     
+ *      stat, lstat, fstat, readlink, symlink, open
  *
  * Copyright (c) 2007, 2012 - 2017 Adam Young.
  *
@@ -24,7 +24,7 @@
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  */
@@ -68,7 +68,7 @@
 #include <unistd.h>
 
 #ifndef __CUNUSED
-#define __CUNUSED(x)	    ((void)x);
+#define __CUNUSED(x)        ((void)x);
 #endif
 
 #pragma comment(lib, "shlwapi.lib")
@@ -78,13 +78,14 @@
 
 static BOOL                 my_GetFinalPathNameByHandle(HANDLE handle, char *name, int length);
 
-static void                 ApplyAttributes(struct stat *sb, const DWORD dwAttr, const char *name);
+static void                 ApplyAttributes(struct stat *sb, const DWORD dwAttr, const char *name, const char *magic);
 static void                 ApplyTimes(struct stat *sb, const FILETIME *ftCreationTime,
                                             const FILETIME *ftLastAccessTime, const FILETIME *ftLastWriteTime);
 static void                 ApplySize(struct stat *sb, const DWORD nFileSizeLow, const DWORD nFileSizeHigh);
 static time_t               ConvertTime(const FILETIME *ft);
 
-static BOOL                 IsExec(const char *name);
+static BOOL                 IsExec(const char *name, const char *magic);
+static const char *         HasExtension(const char *name);
 static BOOL                 IsExtension(const char *name, const char *ext);
 
 static int                  Readlink(const char *path, const char **suffixes, char *buf, int maxlen);
@@ -395,7 +396,7 @@ w32_fstat(int fd, struct stat *sb)
                         if (my_GetFinalPathNameByHandle(handle, t_name, sizeof(t_name))) {
                             name = t_name; // resolved filename.
                         }
-                        ApplyAttributes(sb, fi.dwFileAttributes, name);
+                        ApplyAttributes(sb, fi.dwFileAttributes, name, NULL);
                         ApplyTimes(sb, &fi.ftCreationTime, &fi.ftLastAccessTime, &fi.ftLastWriteTime);
                         ApplySize(sb, fi.nFileSizeLow, fi.nFileSizeHigh);
                         if (fi.nNumberOfLinks > 0) {
@@ -416,7 +417,7 @@ w32_fstat(int fd, struct stat *sb)
                 sb->st_dev = sb->st_rdev = 1;
                 break;
 
-            case FILE_TYPE_REMOTE:      
+            case FILE_TYPE_REMOTE:
             case FILE_TYPE_UNKNOWN:     // others
             default:
                 ret = -EBADF;
@@ -453,7 +454,7 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, DWORD length, DWORD flag
 
     if (0 != (map = CreateFileMapping(handle, NULL, PAGE_READONLY, 0, 1, NULL))) {
         LPVOID pmem = MapViewOfFile(map, FILE_MAP_READ, 0, 0, 1);
-        
+
         if (pmem) {                             // XP+
             if (GetMappedFileNameA(GetCurrentProcess(), pmem, path, length)) {
                 //
@@ -464,9 +465,9 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, DWORD length, DWORD flag
                 //      => F:\<path>
                 //
                 char t_drives[512] = {0};       // 27*4 ...
-                
+
                 if (GetLogicalDriveStringsA(sizeof(t_drives) - 1, t_drives)) {
-                    
+
                     BOOL found = FALSE;
                     const char *p = t_drives;
                     char t_name[MAX_PATH];
@@ -479,11 +480,11 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, DWORD length, DWORD flag
                             const size_t namelen = strlen(t_name);
 
                             if (namelen < MAX_PATH) {
-                                found = (0 == _strnicmp(path, t_name, namelen) && 
+                                found = (0 == _strnicmp(path, t_name, namelen) &&
                                                 path[namelen] == '\\');
 
                                 if (found) {
-                                    // 
+                                    //
                                     //  Reconstruct path, replacing device path with DOS path
                                     //
                                     char t_path[MAX_PATH];
@@ -496,10 +497,10 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, DWORD length, DWORD flag
                                     ret = 1;
                                 }
                             }
-                        } 
+                        }
 
                         while (*p++);           // Go to the next NULL character.
-                    
+
                     } while (!found && *p);     // end of string
                 }
                 ret = 1;
@@ -521,7 +522,7 @@ my_GetFinalPathNameByHandle(HANDLE handle, char *path, int length)
         HINSTANCE hinst;                        // Vista+
 
         if (0 == (hinst = LoadLibrary("Kernel32")) ||
-                0 == (x_GetFinalPathNameByHandleA = 
+                0 == (x_GetFinalPathNameByHandleA =
                         (GetFinalPathNameByHandleA_t)GetProcAddress(hinst, "GetFinalPathNameByHandleA"))) {
                                                 // XP+
             x_GetFinalPathNameByHandleA = my_GetFinalPathNameByHandleA;
@@ -631,75 +632,75 @@ w32_readlink(const char *path, char *buf, int maxlen)
 /*
 //  NAME
 //      symlink - make a symbolic link to a file
-//  
+//
 //  SYNOPSIS
-//  
+//
 //      #include <unistd.h>
-//  
+//
 //      int symlink(const char *path1, const char *path2);
-//  
+//
 //  DESCRIPTION
 //      The symlink() function shall create a symbolic link called path2 that contains the
 //      string pointed to by path1 ( path2 is the name of the symbolic link created, path1
 //      is the string contained in the symbolic link).
-//  
+//
 //      The string pointed to by path1 shall be treated only as a character string and
 //      shall not be validated as a pathname.
-//  
+//
 //      If the symlink() function fails for any reason other than [EIO], any file named by
 //      path2 shall be unaffected.
-//  
+//
 //  RETURN VALUE
 //      Upon successful completion, symlink() shall return 0; otherwise, it shall return -1
 //      and set errno to indicate the error.
-//  
+//
 //  ERRORS
 //      The symlink() function shall fail if:
-//  
+//
 //      [EACCES]
 //          Write permission is denied in the directory where the symbolic link is being
 //          created, or search permission is denied for a component of the path prefix of
 //          path2.
-//  
+//
 //      [EEXIST]
 //          The path2 argument names an existing file or symbolic link.
-//  
+//
 //      [EIO]
 //          An I/O error occurs while reading from or writing to the file system.
-//  
+//
 //      [ELOOP]
 //          A loop exists in symbolic links encountered during resolution of the path2
 //          argument.
-//  
+//
 //      [ENAMETOOLONG]
 //          The length of the path2 argument exceeds {PATH_MAX} or a pathname component is
 //          longer than {NAME_MAX} or the length of the path1 argument is longer than
 //          {SYMLINK_MAX}.
-//  
+//
 //      [ENOENT]
 //          A component of path2 does not name an existing file or path2 is an empty string.
-//  
+//
 //      [ENOSPC]
 //          The directory in which the entry for the new symbolic link is being placed
 //          cannot be extended because no space is left on the file system containing the
 //          directory, or the new symbolic link cannot be created because no space is left
 //          on the file system which shall contain the link, or the file system is out of
 //          file-allocation resources.
-//  
+//
 //      [ENOTDIR]
 //          A component of the path prefix of path2 is not a directory.
-//  
+//
 //      [EROFS]
 //          The new symbolic link would reside on a read-only file system.
-//  
+//
 //      The symlink() function may fail if:
-//  
+//
 //      [ELOOP]
 //          More than {SYMLOOP_MAX} symbolic links were encountered during resolution of
 //          the path2 argument.
-//  
+//
 //      [ENAMETOOLONG]
-//          As a result of encountering a symbolic link in resolution of the path2 argument, 
+//          As a result of encountering a symbolic link in resolution of the path2 argument,
 //          the length of the substituted pathname string exceeded {PATH_MAX} bytes
 //          (including the terminating null byte), or the length of the string pointed to
 //          by path1 exceeded {SYMLINK_MAX}.
@@ -732,53 +733,53 @@ w32_symlink(const char *name1, const char *name2)
 /*
 //  NAME
 //      open - open a file
-//  
+//
 //  SYNOPSIS
-//  
+//
 //      #include <sys/stat.h>
 //      #include <fcntl.h>
-//  
+//
 //      int open(const char *path, int oflag, ... );
-//  
+//
 //  DESCRIPTION
 //      The open() function shall establish the connection between a file and a file
 //      descriptor. It shall create an open file description that refers to a file and a
 //      file descriptor that refers to that open file description. The file descriptor is
 //      used by other I/O functions to refer to that file. The path argument points to a
 //      pathname naming the file.
-//  
+//
 //      The open() function shall return a file descriptor for the named file that is the
 //      lowest file descriptor not currently open for that process. The open file
 //      description is new, and therefore the file descriptor shall not share it with any
 //      other process in the system. The FD_CLOEXEC file descriptor flag associated with
 //      the new file descriptor shall be cleared.
-//  
+//
 //      The file offset used to mark the current position within the file shall be set to
 //      the beginning of the file.
-//  
+//
 //      The file status flags and file access modes of the open file description shall be
 //      set according to the value of oflag.
-//  
+//
 //      Values for oflag are constructed by a bitwise-inclusive OR of flags from the
 //      following list, defined in <fcntl.h>. Applications shall specify exactly one of the
 //      first three values (file access modes) below in the value of oflag:
-//  
-//          O_RDONLY        
+//
+//          O_RDONLY
 //              Open for reading only.
-//  
-//          O_WRONLY        
+//
+//          O_WRONLY
 //              Open for writing only.
-//  
-//          O_RDWR          
+//
+//          O_RDWR
 //              Open for reading and writing. The result is undefined if this flag is
 //              applied to a FIFO.
-//  
+//
 //      Any combination of the following may be used:
-//  
+//
 //          O_APPEND
 //              If set, the file offset shall be set to the end of the file prior to each
 //              write.
-//  
+//
 //          O_CREAT
 //              If the file exists, this flag has no effect except as noted under O_EXCL
 //              below. Otherwise, the file shall be created; the user ID of the file shall
@@ -797,11 +798,11 @@ w32_symlink(const char *name1, const char *name2)
 //              Implementations may, but need not, provide an implementation-defined way to
 //              initialize the file's group ID to the effective group ID of the calling
 //              process.
-//  
+//
 //          O_DSYNC
 //              Write I/O operations on the file descriptor shall complete as defined by
 //              synchronized I/O data integrity completion. [Option End]
-//  
+//
 //          O_EXCL
 //              If O_CREAT and O_EXCL are set, open() shall fail if the file exists. The
 //              check for the existence of the file and the creation of the file if it does
@@ -810,35 +811,35 @@ w32_symlink(const char *name1, const char *name2)
 //              If O_EXCL and O_CREAT are set, and path names a symbolic link, open() shall
 //              fail and set errno to [EEXIST], regardless of the contents of the symbolic
 //              link. If O_EXCL is set and O_CREAT is not set, the result is undefined.
-//  
+//
 //          O_NOCTTY
 //              If set and path identifies a terminal device, open() shall not cause the
 //              terminal device to become the controlling terminal for the process.
-//  
+//
 //          O_NONBLOCK
 //              When opening a FIFO with O_RDONLY or O_WRONLY set:
-//  
+//
 //                  If O_NONBLOCK is set, an open() for reading-only shall return without
 //                  delay. An open() for writing-only shall return an error if no process
 //                  currently has the file open for reading.
-//  
+//
 //                  If O_NONBLOCK is clear, an open() for reading-only shall block the
 //                  calling thread until a thread opens the file for writing. An open() for
 //                  writing-only shall block the calling thread until a thread opens the
 //                  file for reading.
-//  
+//
 //              When opening a block special or character special file that supports
 //              non-blocking opens:
-//  
+//
 //                  If O_NONBLOCK is set, the open() function shall return without blocking
 //                  for the device to be ready or available. Subsequent behavior of the
 //                  device is device-specific.
-//  
+//
 //                  If O_NONBLOCK is clear, the open() function shall block the calling
 //                  thread until the device is ready or available before returning.
-//  
+//
 //              Otherwise, the behavior of O_NONBLOCK is unspecified.
-//  
+//
 //          O_RSYNC
 //              Read I/O operations on the file descriptor shall complete at the same level
 //              of integrity as specified by the O_DSYNC and O_SYNC flags. If both O_DSYNC
@@ -847,11 +848,11 @@ w32_symlink(const char *name1, const char *name2)
 //              both O_SYNC and O_RSYNC are set in flags, all I/O operations on the file
 //              descriptor shall complete as defined by synchronized I/O file integrity
 //              completion. [Option End]
-//  
+//
 //          O_SYNC
 //              Write I/O operations on the file descriptor shall complete as defined by
 //              synchronized I/O file integrity completion. [Option End]
-//  
+//
 //          O_TRUNC
 //              If the file exists and is a regular file, and the file is successfully
 //              opened O_RDWR or O_WRONLY, its length shall be truncated to 0, and the
@@ -860,32 +861,32 @@ w32_symlink(const char *name1, const char *name2)
 //              is implementation-defined. The result of using O_TRUNC with O_RDONLY is
 //              undefined.
 //
-//      If O_CREAT is set and the file did not previously exist, upon successful completion, 
+//      If O_CREAT is set and the file did not previously exist, upon successful completion,
 //      open() shall mark for update the st_atime, st_ctime, and st_mtime fields of the
 //      file and the st_ctime and st_mtime fields of the parent directory.
-//  
-//      If O_TRUNC is set and the file did previously exist, upon successful completion, 
+//
+//      If O_TRUNC is set and the file did previously exist, upon successful completion,
 //      open() shall mark for update the st_ctime and st_mtime fields of the file.
-//  
+//
 //      If both the O_SYNC and O_DSYNC flags are set, the effect is as if only the O_SYNC
 //      flag was set. [Option End]
-//  
+//
 //      If path refers to a STREAMS file, oflag may be constructed from O_NONBLOCK OR'ed
 //      with either O_RDONLY, O_WRONLY, or O_RDWR. Other flag values are not applicable to
 //      STREAMS devices and shall have no effect on them. The value O_NONBLOCK affects the
 //      operation of STREAMS drivers and certain functions applied to file descriptors
 //      associated with STREAMS files. For STREAMS drivers, the implementation of
 //      O_NONBLOCK is device-specific. [Option End]
-//  
+//
 //      If path names the master side of a pseudo-terminal device, then it is unspecified
 //      whether open() locks the slave side so that it cannot be opened. Conforming
 //      applications shall call unlockpt() before opening the slave side. [Option End]
-//  
+//
 //      The largest value that can be represented correctly in an object of type off_t
 //      shall be established as the offset maximum in the open file description.
-//  
+//
 //  RETURN VALUE
-//  
+//
 //      Upon successful completion, the function shall open the file and return a
 //      non-negative integer representing the lowest numbered unused file descriptor.
 //      Otherwise, -1 shall be returned and errno set to indicate the error. No files shall
@@ -940,7 +941,7 @@ w32_symlink(const char *name1, const char *name2)
 //        system is unable to allocate a STREAM. [Option End]
 //
 //    [ENOSPC]
-//        The directory or file system that would contain the new file cannot be expanded, 
+//        The directory or file system that would contain the new file cannot be expanded,
 //        the file does not exist, and O_CREAT is specified.
 //
 //    [ENOTDIR]
@@ -959,7 +960,7 @@ w32_symlink(const char *name1, const char *name2)
 //        correctly in an object of type off_t.
 //
 //    [EROFS]
-//        The named file resides on a read-only file system and either O_WRONLY, O_RDWR, 
+//        The named file resides on a read-only file system and either O_WRONLY, O_RDWR,
 //        O_CREAT (if the file does not exist), or O_TRUNC is set in the oflag argument.
 //
 //    The open() function may fail if:
@@ -976,7 +977,7 @@ w32_symlink(const char *name1, const char *name2)
 //        the path argument.
 //
 //    [ENAMETOOLONG]
-//        As a result of encountering a symbolic link in resolution of the path argument, 
+//        As a result of encountering a symbolic link in resolution of the path argument,
 //        the length of the substituted pathname string exceeded {PATH_MAX}.
 //
 //    [ENOMEM]
@@ -999,7 +1000,7 @@ w32_open(const char *path, int oflag, ...)
         va_start(ap, oflag);
         mode = va_arg(ap, int);
         va_end(ap);
-    } 
+    }
 
     if (0 == WIN32_STRICMP(path, "/dev/null")) {
         /*
@@ -1044,7 +1045,7 @@ w32_open(const char *path, int oflag, ...)
         return -1;
     }
 
-	// true open
+        // true open
 #undef _open
     return w32_sockfd_limit(_open(path, oflag, mode));
 }
@@ -1055,7 +1056,7 @@ w32_open(const char *path, int oflag, ...)
  */
 static void
 ApplyAttributes(struct stat *sb,
-        const DWORD dwAttributes, const char *name)
+        const DWORD dwAttributes, const char *name, const char *magic)
 {
     const char *p;
     char symbuf[WIN32_PATH_MAX];
@@ -1089,7 +1090,7 @@ ApplyAttributes(struct stat *sb,
                 S_IREAD : (S_IREAD|S_IWRITE);
 
     /* x */
-    if (name && IsExec(name)) {
+    if (name && IsExec(name, magic)) {
         mode |= S_IEXEC;                        /* known exec type */
     }
 
@@ -1216,13 +1217,13 @@ static const char *     exec_exclude[]  = {
 
 
 static int
-IsExec(const char *name)
+IsExec(const char *name, const char *magic)
 {
     DWORD driveType;
     const char *dot;
     int idx = -1;
 
-    if ((dot = strrchr(name, '.')) != NULL) {
+    if ((dot = HasExtension(name)) != NULL) {   /* check well-known extensions */
         for (idx = EXEC_ASSUME-1; idx >= 0; idx--)
             if (WIN32_STRICMP(dot, exec_assume[idx]) == 0) {
                 return TRUE;
@@ -1232,7 +1233,40 @@ IsExec(const char *name)
             if (WIN32_STRICMP(dot, exec_exclude[idx]) == 0) {
                 break;
             }
-    }
+        }
+
+        if (magic) {                            /* #! */
+            if (magic[0] == '#' && magic[1] == '!' && magic[2]) {
+                 /*
+                  * #! <path> [options]\n
+                  */
+                const char *exec = magic + 2;
+                int isscript = 0, len = -1;
+
+                while (*exec && ' ' == *exec) ++exec;
+                if (*exec == '/') {
+                    if (0 == strncmp(exec, "/bin/sh", len = (sizeof("/bin/sh")-1)))
+                            isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/ash", len = (sizeof("/bin/ash")-1)))
+                            isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/bash", len = (sizeof("/bin/bash")-1)))
+                            isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/sed", len = (sizeof("/bin/sed")-1)))
+                            isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/awk", len = (sizeof("/bin/awk")-1)))
+                            isscript = 1;
+                    else if (0 == strncmp(exec, "/usr/bin/perl", len = (sizeof("/usr/bin/perl")-1)))
+                            isscript = 1;
+                    else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1)))
+                            isscript = 1;
+                    if (isscript &&
+                            exec[len] != ' ' && exec[len] != '\n' && exec[len] != '\r') {
+                        isscript = 0;           /* bad termination, ignore */
+                    }
+                }
+                return isscript;
+            }
+        }
 
     if (-1 == idx) {                            /* only local drives */
         if ((driveType = GetDriveType(name)) == DRIVE_FIXED) {
@@ -1241,13 +1275,13 @@ IsExec(const char *name)
             if (GetBinaryType(name, &binaryType)) {
                 /*
                 switch(binaryType) {
-                case SCS_32BIT_BINARY:  // 32-bit Windows-based application
-                case SCS_64BIT_BINARY:  // 64-bit Windows-based application
-                case SCS_DOS_BINARY:    // MS-DOS – based application
-                case SCS_OS216_BINARY:  // 16-bit OS/2-based application
-                case SCS_PIF_BINARY:    // PIF file that executes an MS-DOS based application
-                case SCS_POSIX_BINARY:  // A POSIX based application
-                case SCS_WOW_BINARY:    // A 16-bit Windows-based application
+                case SCS_32BIT_BINARY:          // 32-bit Windows-based application
+                case SCS_64BIT_BINARY:          // 64-bit Windows-based application
+                case SCS_DOS_BINARY:            // MS-DOS – based application
+                case SCS_OS216_BINARY:          // 16-bit OS/2-based application
+                case SCS_PIF_BINARY:            // PIF file that executes an MS-DOS based application
+                case SCS_POSIX_BINARY:          // A POSIX based application
+                case SCS_WOW_BINARY:            // A 16-bit Windows-based application
                 }*/
                 return TRUE;
             }
@@ -1257,12 +1291,27 @@ IsExec(const char *name)
 }
 
 
+static const char *
+HasExtension(const char *name)
+{
+        const unsigned len = strlen(name);
+        const char *cursor;
+        for (cursor = name + len; --cursor >= name;) {
+                if (*cursor == '.')
+                        return cursor;                      /* extension */
+                if (*cursor == '/' || *cursor == '\\')
+                        break;
+        }
+        return NULL;
+}
+
+
 static BOOL
 IsExtension(const char *name, const char *ext)
 {
     const char *dot;
 
-    if (ext && (dot = strrchr(name, '.')) != NULL &&
+    if (ext && (dot = HasExtension(name)) != NULL &&
             WIN32_STRICMP(dot, ext) == 0) {
         return TRUE;
     }
@@ -1408,11 +1457,11 @@ Readlink(const char *path, const char **suffixes, char *buf, int maxlen)
 }
 
 
-static const GUID   x_CLSID_ShellLink	=	// local copies; OWC linker crashes otherwise
+static const GUID   x_CLSID_ShellLink   =       // local copies; OWC linker crashes otherwise
     { 0x00021401, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
-static const IID    x_IID_IShellLink	= 
+static const IID    x_IID_IShellLink    =
     { 0x000214EE, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
-static const IID    x_IID_IPersistFile	= 
+static const IID    x_IID_IPersistFile  =
     { 0x0000010B, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
 
 
@@ -1510,16 +1559,16 @@ CreateShortcut(const char *link, const char *name, const char *working, const ch
 
         // Set the path to the shortcut target and add the
         // description.
-    //	if (flags & MAXIMIZED)
-    //	    pShLink->lpVtbl->SetShowCmd(pShLink, SW_SHOW);
+    //  if (flags & MAXIMIZED)
+    //      pShLink->lpVtbl->SetShowCmd(pShLink, SW_SHOW);
         if (name)
             pShLink->lpVtbl->SetPath(pShLink, (LPCSTR) name);
         if (working)
             pShLink->lpVtbl->SetWorkingDirectory(pShLink, (LPCSTR) working);
         if (desc)
             pShLink->lpVtbl->SetDescription(pShLink, (LPCSTR) desc);
-    //	if (icon)
-    //	    pShLink->lpVtbl->SetIconLocation(pShLink, (LPCSTR) icon);
+    //  if (icon)
+    //      pShLink->lpVtbl->SetIconLocation(pShLink, (LPCSTR) icon);
 
         // Query IShellLink for the IPersistFile interface for saving the
         // shortcut in persistent storage.
@@ -1549,23 +1598,23 @@ typedef struct _REPARSE_DATA_BUFFER {
     USHORT ReparseDataLength;
     USHORT Reserved;
     union {
-	struct {
-    	    USHORT SubstituteNameOffset;
+        struct {
+            USHORT SubstituteNameOffset;
             USHORT SubstituteNameLength;
             USHORT PrintNameOffset;
             USHORT PrintNameLength;
             ULONG  Flags;
-    	    WCHAR  PathBuffer[1];
+            WCHAR  PathBuffer[1];
         } SymbolicLinkReparseBuffer;
         struct {
-    	    USHORT SubstituteNameOffset;
+            USHORT SubstituteNameOffset;
             USHORT SubstituteNameLength;
             USHORT PrintNameOffset;
             USHORT PrintNameLength;
-    	    WCHAR  PathBuffer[1];
+            WCHAR  PathBuffer[1];
         } MountPointReparseBuffer;
         struct {
-    	    UCHAR DataBuffer[1];
+            UCHAR DataBuffer[1];
         } GenericReparseBuffer;
     };
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
@@ -1583,7 +1632,7 @@ ReadReparse(const char *name, char *buf, int maxlen)
     int ret = 0;
                                                 /* open the file image */
     if ((fileHandle = CreateFile(name, 0,
-    		FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 
+                FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
             FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE) {
         ret = GetLastError();
         return -1;
@@ -1591,7 +1640,7 @@ ReadReparse(const char *name, char *buf, int maxlen)
 
                                                 /* retrieve reparse details */
     if (DeviceIoControl(fileHandle, FSCTL_GET_REPARSE_POINT,
-        	NULL, 0, reparseInfo, sizeof(reparseBuffer), &returnedLength, NULL)) {
+                NULL, 0, reparseInfo, sizeof(reparseBuffer), &returnedLength, NULL)) {
 //      if (IsReparseTagMicrosoft(reparseInfo->ReparseTag)) {
             int length;
 
@@ -1642,6 +1691,7 @@ Stat(const char *name, struct stat *sb)
 {
     char fullname[WIN32_PATH_MAX], *pfname;
     int flength, ret = -1;
+    BOOL domagic = 0;
 
     if (name == NULL || sb == NULL) {
         ret = -EFAULT;                          /* basic checks */
@@ -1651,7 +1701,7 @@ Stat(const char *name, struct stat *sb)
         ret = -ENOENT;                          /* missing directory ??? */
 
     } else if (strchr(name, '?') || strchr(name, '*')) {
-        ret = -ENOENT;                          /* wildcards -- breaks FindFirstFile() */
+        ret = -ENOENT;                          /* wildcards -- break FindFirstFile() */
 
     } else if ((flength = GetFullPathName(name, sizeof(fullname), fullname, &pfname)) == 0) {
         ret = -ENOENT;
@@ -1694,7 +1744,7 @@ Stat(const char *name, struct stat *sb)
                 const char *nextslash = w32_strslash(slash ? slash+1 : NULL);
 
                 ret = -ENOENT;
-                if (NULL != slash && 
+                if (NULL != slash &&
                         (NULL == nextslash || 0 == nextslash[1])) {
                     root = 2;
                     ret = 0;
@@ -1712,17 +1762,23 @@ Stat(const char *name, struct stat *sb)
         /*
          *  assign results
          */
-        if (0 == ret) {
+#if defined(DO_FILEMAGIC)                       /* verify file magic */
+        domagic = (HasExtension(fullname) == NULL);
+#endif
+
+        while (0 == ret) {
+            char magic[1024];
+            DWORD count = 0;
             HANDLE handle;
 
-            if (INVALID_HANDLE_VALUE != (handle = 
-                        CreateFile(fullname, 0, 0, NULL, OPEN_EXISTING,
+            if (INVALID_HANDLE_VALUE != (handle =
+                    CreateFile(fullname, (domagic ? GENERIC_READ : 0), 0, NULL, OPEN_EXISTING,
                             FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL))) {
                 BY_HANDLE_FILE_INFORMATION fi = {0};
 
                 if (GetFileInformationByHandle(handle, &fi)) {
                     if (fi.nNumberOfLinks > 0) {
-#if defined(_MSC_VER)                           /* XXX/NOTE */
+#if defined(_MSC_VER)
                         sb->st_nlink = (short)fi.nNumberOfLinks;
 #else
                         sb->st_nlink = fi.nNumberOfLinks;
@@ -1730,11 +1786,23 @@ Stat(const char *name, struct stat *sb)
                     }
                     fb.nFileSizeHigh    = fi.nFileSizeHigh;
                     fb.nFileSizeLow     = fi.nFileSizeLow;
-                    fb.ftCreationTime   = fi.ftCreationTime;  
+                    fb.ftCreationTime   = fi.ftCreationTime;
                     fb.ftLastAccessTime = fi.ftLastAccessTime;
                     fb.ftLastWriteTime  = fi.ftLastWriteTime;
                     sb->st_ino = w32_ino_gen(fi.nFileIndexLow, fi.nFileIndexHigh);
                 }
+
+#if defined(DO_FILEMAGIC)
+                if (domagic) {                  /* read file magic; regular files only */
+                     /* performed on files without an extension to determine whether an exec script */
+                     if (0 == (fb.dwFileAttributes &
+                            (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_TEMPORARY |
+                             FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_ENCRYPTED))) {
+                        (void) ReadFile(handle, magic, sizeof(magic)-1, &count, NULL);
+                     }
+                }
+#endif //DO_MAGIC
+                magic[count] = 0;               /* null terminate magic buffer */
 
                 if (0 == sb->st_ino) {
                     sb->st_ino = w32_ino_hash(fullname);
@@ -1743,6 +1811,13 @@ Stat(const char *name, struct stat *sb)
                 CloseHandle(handle);
 
             } else {
+#if defined(DO_FILEMAGIC)
+                if (domagic) {
+                        domagic = 0;
+                        continue;               /* retry without read; eg directories */
+                }
+#endif //DO_MAGIC
+
                 if (root) {
                     ret = -ENOENT;
                 } else if (0 == (sb->st_ino = w32_ino_file(fullname))) {
@@ -1754,13 +1829,14 @@ Stat(const char *name, struct stat *sb)
                 fb.dwFileAttributes |= FILE_ATTRIBUTE_DIRECTORY;
                 ApplyTimes(sb, &fb.ftCreationTime, &fb.ftLastAccessTime, &fb.ftLastWriteTime);
             }
-            ApplyAttributes(sb, fb.dwFileAttributes, fullname);
-            ApplyTimes(sb, &fb.ftCreationTime, &fb.ftLastAccessTime, &fb.ftLastWriteTime);
 
+            ApplyAttributes(sb, fb.dwFileAttributes, fullname, magic);
+            ApplyTimes(sb, &fb.ftCreationTime, &fb.ftLastAccessTime, &fb.ftLastWriteTime);
             ApplySize(sb, fb.nFileSizeLow, fb.nFileSizeHigh);
 
             sb->st_rdev = (dev_t)(drive - 1);   /* A=0 ... */
             sb->st_dev = sb->st_rdev;
+            break; //done
         }
     }
     return ret;

@@ -1,3 +1,9 @@
+Tue Mar  7 20:49:10 2017 adamy
+
+	* 4.8.19 sfs.ini imported.
+
+	* removed localised 'mc.keymap.default'
+
 Fri Aug 10 01:55:15 2012 ayoung
 
 	* mc.keymap.default
@@ -6,7 +12,6 @@ Fri Aug 10 01:55:15 2012 ayoung
 
 	* sfs.ini
 
-                fromdos => dos2unix               
+                fromdos => dos2unix
                 todos => unixdos
-
 

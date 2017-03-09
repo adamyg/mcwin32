@@ -2,4 +2,9 @@ CVS/
 gtk/
 gtk3/
 mcmerge/
+busybox/
+directory.txt
+gtk-source.txt
+mcwin32-build*.exe
+mcwin32-build*.zip
 

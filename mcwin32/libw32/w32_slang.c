@@ -63,8 +63,7 @@
 
 // #define DO_TRACE_LOG
 #if defined(DO_TRACE_LOG)
-extern void w32_trace(const char *, ...);
-#define TRACE_LOG(_x) w32_trace _x;
+#define TRACE_LOG(_x) w32_Trace _x;
 #else
 #define TRACE_LOG(_x)
 #endif

@@ -1553,6 +1553,23 @@ extfs_ungetlocalcopy (const vfs_path_t * vpath, const vfs_path_t * local, gboole
 
 /* --------------------------------------------------------------------------------------------- */
 
+#if defined(WIN32) //WIN32, exec
+static int
+IsScript(const char *fullname)
+{
+    int isscript = 0, fd = _open(fullname, O_RDONLY|O_BINARY);
+    char magic[32];
+
+    if (fd >= 0) {
+        if (_read(fd, magic, sizeof(magic)) > 2) {
+            isscript = (magic[0] == '#' && magic[1] == '!' && magic[2]);
+        }
+        close(fd);
+    }
+    return isscript;
+}
+#endif	//WIN32
+
 static gboolean
 extfs_get_plugins (const char *where, gboolean silent)
 {
@@ -1584,10 +1601,15 @@ extfs_get_plugins (const char *where, gboolean silent)
 
         g_snprintf (fullname, sizeof (fullname), "%s" PATH_SEP_STR "%s", dirname, filename);
 
+#if defined(WIN32) //WIN32, exec
+        if ((stat(fullname, &s) == 0)
+            && S_ISREG(s.st_mode) && !S_ISDIR(s.st_mode) && IsScript(fullname))
+#else
         if ((stat (fullname, &s) == 0)
             && S_ISREG (s.st_mode) && !S_ISDIR (s.st_mode)
             && (((s.st_mode & S_IXOTH) != 0) ||
                 ((s.st_mode & S_IXUSR) != 0) || ((s.st_mode & S_IXGRP) != 0)))
+#endif
         {
             int f;
 

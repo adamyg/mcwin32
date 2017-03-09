@@ -1,11 +1,15 @@
 /* -*- mode: c; indent-width: 4; -*- */
 
 #include "win32_internal.h"
+
 #include <unistd.h>
 #include <errno.h>
+
 #include "w32_trace.h"
 
+#ifndef TRACE_FILE
 #define TRACE_FILE      "mctrace.log"
+#endif
 
 static int              w32x_tracing_started = 0;
 static int              w32x_tracing_init = 0;
@@ -16,7 +20,6 @@ int                     w32x_tracing_enabled = 1;
 static void             w32InitTrace (void);
 static void __cdecl     w32EndTrace (void);
 static const char*      GetLastErrorText (void);
-static char *           visbuf (const char *buf);
 
 
 static void
@@ -26,10 +29,10 @@ w32InitTrace(void)
         if (NULL == (w32x_trace_f = fopen(TRACE_FILE, "wt"))) {
             printf("Midnight Commander[DEBUG]: Can't open trace file '" TRACE_FILE "': %s \n", strerror(errno));
         }
-	if (! w32x_tracing_init) {
-	    ++w32x_tracing_init;
-//	    atexit(w32EndTrace);
-	}
+        if (! w32x_tracing_init) {
+            ++w32x_tracing_init;
+//          atexit(w32EndTrace);
+        }
         w32x_tracing_started = 1;
     }
 }
@@ -49,36 +52,54 @@ w32EndTrace(void)
 
 
 void
-w32_trace(const char *fmt, ...)
+w32_Trace (const char *fmt, ...)
 {
-    char *vp, buffer[1024];
     va_list ap;
-    size_t len;
+    va_start(ap, fmt);
+    w32_tracev(fmt, ap);
+    va_end(ap);
+}
+
+
+void
+w32_trace (const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    w32_tracev(fmt, ap);
+    va_end(ap);
+}
+
+
+void
+w32_tracev (const char *fmt, va_list ap)
+{
+    const int buflen = 1024 - 2;                /* buffer - (nl+nul) */
+    char buffer[1024];
+    int len;
 
     if (!w32x_tracing_started) {
         w32InitTrace();
     }
 
-    va_start(ap, fmt);
-    len = _vsnprintf(buffer, sizeof(buffer), fmt, ap);
-    buffer[sizeof(buffer)-1]=0;
-    vp = buffer;
-#ifdef WIN32                                    /* also write Output to Debug monitor */
-    OutputDebugString (vp);
-#if !defined(_MSC_VER) || (_MSC_VER > 800)
-        if (len >= sizeof(buffer) || buffer[len-1] != '\n') {
-            OutputDebugString ("\n");
-        }
-#endif
-#endif
+    len = _vsnprintf(buffer, buflen, fmt, ap);
+    if (len < 0 || len > buflen) len = buflen;  /* error/overflow */
+    buffer[buflen] = 0;
 
-    if (w32x_trace_f) {
-        if (len >= sizeof(buffer) || buffer[len-1] != '\n') {
-            fprintf (w32x_trace_f, "%s\n", vp);
+    if (w32x_trace_f && len) {
+        if (buffer[len-1] != '\n') {
+            fprintf (w32x_trace_f, "%s\n", buffer);
         } else {
-            fputs (vp, w32x_trace_f);
+            fputs (buffer, w32x_trace_f);
         }
     }
+
+#ifdef WIN32                                    /* also write Output to Debug monitor */
+    if (0 == len || buffer[len-1] != '\n') {
+        buffer[len++] = '\n', buffer[len] = 0;  /* newline terminate */
+    }
+    OutputDebugString(buffer);
+#endif  //_MSC_VER
 }
 
 
@@ -162,3 +183,5 @@ GetLastErrorText(void)
     }
     return szMsgBuf;
 }
+
+/*end*/

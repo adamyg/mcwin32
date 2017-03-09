@@ -455,11 +455,14 @@ DOC_SRC=		$(MCSOURCE)/doc
 PO_SRC=			$(MCSOURCE)/po
 
 WIN32_ETC_SRC=		./win32_etc
+WIN32_PLUGIN_SRC=	./win32_plugin
+WIN32_SKINS_SRC=	./win32_skins
 WIN32_DOC_SRC=		./doc
 
 CFG_ETC=\
 	$(D_ETC)/filehighlight.ini		\
 	$(D_ETC)/mc.ext				\
+	$(D_ETC)/mc.keymap			\
 	$(D_ETC)/mc.default.keymap		\
 	$(D_ETC)/mc.emacs.keymap		\
 	$(D_ETC)/mc.menu			\
@@ -495,19 +498,24 @@ CFG_SHARE_SKINS:=	$(addprefix $(D_SHARE)/skins/, \
 				$(filter-out CVS, $(notdir $(wildcard $(SKINS_SRC)/*.ini))))
 
 CFG_SHARE_SYNTAX:=	$(addprefix $(D_SHARE)/syntax/, \
-				$(filter-out CVS, $(notdir $(wildcard $(SYNTAX_SRC)/*ax))))
+				$(subst .in,,$(filter-out Makefile.am CVS, $(notdir $(wildcard $(SYNTAX_SRC)/*)))))
 
 CFG_SHARE_MACROS_D:=	$(addprefix $(D_SHARE)/macros.d/, \
 				$(filter-out CVS, $(notdir $(wildcard $(MACROSDATA_SRC)/*sh))))
+
+CFG_WIN32_SKINS:=	$(filter-out CVS, $(notdir $(wildcard $(WIN32_SKINS_SRC)/*.ini)))
 
 CFG_PLUGIN:=		$(addprefix $(D_PLUGIN)/, \
 				$(subst .sh.in,.sh,$(filter-out CVS, $(notdir $(wildcard $(EXTD_SRC)/*sh*)))))
 
 CFG_PLUGIN_EXTFS_D:=	$(addprefix $(D_PLUGIN)/extfs.d/, \
-				$(subst .in,,$(filter-out Makefile.am sfs.ini CVS, $(notdir $(wildcard $(EXTFS_SRC)/*)))))
+				$(subst .in,,$(filter-out Makefile.am sfs.ini CVS, $(notdir $(wildcard $(EXTFS_SRC)/*.in)))))
 
 CFG_PLUGIN_FISH:=	$(addprefix $(D_PLUGIN)/fish/, \
 				$(filter-out Makefile.am CVS, $(notdir $(wildcard $(FISH_SRC)/*))))
+
+CFG_WIN32_PLUGIN:=	$(filter-out CVS extfs.d, $(notdir $(wildcard $(WIN32_PLUGIN_SRC)/*)))
+CFG_WIN32_PLUGIN_EXTFS_D:=$(filter-out CVS, $(notdir $(wildcard $(WIN32_PLUGIN_SRC)/extfs.d/*.in)))
 
 CFG_DOC=\
 	$(D_DOC)/FAQ				\
@@ -552,12 +560,12 @@ TARGETS=\
 	$(D_BIN)/man2hlp.pl
 
 IMPORT=\
-	$(D_BIN)/busybox.exe			\
+	$(D_BIN)/busybox.exe
+ifeq ("wcl386","$(CC)")
+IMPORT+=\
 	$(D_BIN)/clbr19.dll			\
 	$(D_BIN)/mt7r19.dll
-##	$(D_BIN)/libglib-2.0-0.dll		\
-##	$(D_BIN)/intl.dll
-##	$(D_BIN)/zlib1.dll
+endif
 
 LIBRARIES=\
 	$(LW)w32$(A)				\
@@ -623,33 +631,49 @@ gettext:			$(MSGDIRS) $(MSGOBJS)
 
 .PHONY:				configuration-win32
 configuration-win32:				# unconditional export
-	@echo win32 specialised files ...
-	@$(BUSYBOX) sh -c "\
-		for x in $(CFG_WIN32_ETC); do \
-			echo exporting $$x ...; \
-			rm -f $(D_ETC)/$$x; \
-			cp -f $(WIN32_ETC_SRC)/$$x $(D_ETC)/$$x; \
-		done;\
-		"
+		@echo exporting mcwin32 specialised files ...
+		@$(BUSYBOX) sh -c "\
+	for x in $(CFG_WIN32_ETC); do \
+		echo updating etc/$$x ...; \
+		rm -f $(D_ETC)/$$x; \
+		cp -f $(WIN32_ETC_SRC)/$$x $(D_ETC)/$$x; \
+		dos2unix $(D_ETC)/$$x; \
+	done;\
+	for x in $(CFG_WIN32_PLUGIN); do \
+		echo updating plugin/extfs.d/$$x ...; \
+		rm -f $(D_PLUGIN)/$$x; \
+		cp -f $(WIN32_PLUGIN_SRC)/$$x $(D_PLUGIN)/$$x; \
+		dos2unix $(D_PLUGIN)/$$x; \
+	done;\
+	for x in $(CFG_WIN32_PLUGIN_EXTFS_D); do \
+		@$(PERL) sedin.pl -u $(WIN32_PLUGIN_SRC)/extfs.d/$$x $(D_PLUGIN)/extfs.d/$$x; \
+	done;\
+	for x in $(CFG_WIN32_SKINS); do \
+		echo updating share/skins/$$x ...; \
+		rm -f $(D_SHARE)/skins/$$x; \
+		cp -f $(WIN32_SKINS_SRC)/$$x $(D_SHARE)/skins/$$x; \
+		dos2unix $(D_SHARE)/skins/$$x; \
+	done;\
+	"
 
 .PHONY:
 import:				$(IMPORT)
 
 $(D_BIN)/busybox.exe:		$(BUSYBOX)
-	@echo importing $(BUSYBOX)
-	@$(CP) -f $^ $@
+		@echo importing $(BUSYBOX)
+		@$(CP) -f $^ $@
 
 $(D_BIN)/clbr19.dll:		$(CLBR19)
-	@echo importing $(CLBR19)
-	@$(CP) -f $(subst /,\,$^) $@
+		@echo importing $(CLBR19)
+		@$(CP) -f $(subst /,\,$^) $@
 
 $(D_BIN)/mt7r19.dll:		$(MT7R19)
-	@echo importing $(MT7R19)
-	@$(CP) -f $^ $@
+		@echo importing $(MT7R19)
+		@$(CP) -f $^ $@
 
 $(D_BIN)/%.dll:			$(GTKINSTALL)/bin/%.dll
-	@echo importing $^
-	@$(CP) -f $^ $@
+		@echo importing $^
+		@$(CP) -f $^ $@
 
 .PHONY:
 package:
@@ -657,20 +681,20 @@ package:
 
 .PHONY:		clean
 clean:
-	-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN) >nul 2>&1
-	-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES)) >nul 2>&1
-	-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A) >nul 2>&1
-	-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A) >nul 2>&1
-	$(MAKE) -C libglib clean
-	$(MAKE) -C libintl clean
-	$(MAKE) -C libmagic clean
-	$(MAKE) -C libregex clean
-	$(MAKE) -C libz clean
-	$(MAKE) -C libw32 clean
-	-$(RM) $(MSGOBJS) $(MSGDIRS) >nul 2>&1
-	-$(RM) $(DIRECTORIES) >nul 2>&1
-	-$(RMDIR) $(dir $(DIRECTORIES) $(MSGDIRS)) >nul 2>&1
-	-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) >nul 2>&1
+		-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN) >nul 2>&1
+		-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES)) >nul 2>&1
+		-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A) >nul 2>&1
+		-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A) >nul 2>&1
+		$(MAKE) -C libglib clean
+		$(MAKE) -C libintl clean
+		$(MAKE) -C libmagic clean
+		$(MAKE) -C libregex clean
+		$(MAKE) -C libz clean
+		$(MAKE) -C libw32 clean
+		-$(RM) $(MSGOBJS) $(MSGDIRS) >nul 2>&1
+		-$(RM) $(DIRECTORIES) >nul 2>&1
+		-$(RMDIR) $(dir $(DIRECTORIES) $(MSGDIRS)) >nul 2>&1
+		-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) >nul 2>&1
 
 
 #########################################################################################
@@ -686,36 +710,35 @@ BUILD_DATE=			$(shell $(BUSYBOX) date +'%Y%m%d')
 BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
 
 buildinfo.h:			Makefile
-	@$(BUSYBOX) sh -c "\
-		echo // Auto-generated by Makefile >$@; \
-		echo \#define PACKAGE \\\"$(PACKAGE)\\\" >>$@; \
-		echo \#define PACKAGE_NAME \\\"$(PKG_NAME)\\\" >>$@; \
-		echo \#define VERSION \\\"$(PKG_VERSION)\\\" >>$@; \
-		echo \#define VERSION_1 $(PKG_VERSION_1) >>$@; \
-		echo \#define VERSION_2 $(PKG_VERSION_2) >>$@; \
-		echo \#define VERSION_3 $(PKG_VERSION_3) >>$@; \
-		echo \#define BUILD_DATE \\\"$(BUILD_DATE)\\\" >>$@; \
-		echo \#define BUILD_NUMBER \\\"$(BUILD_NUMBER)\\\" >>$@; \
-		"
+		@$(BUSYBOX) sh -c "\
+	echo // Auto-generated by Makefile >$@; \
+	echo \#define PACKAGE \\\"$(PACKAGE)\\\" >>$@; \
+	echo \#define PACKAGE_NAME \\\"$(PKG_NAME)\\\" >>$@; \
+	echo \#define VERSION \\\"$(PKG_VERSION)\\\" >>$@; \
+	echo \#define VERSION_1 $(PKG_VERSION_1) >>$@; \
+	echo \#define VERSION_2 $(PKG_VERSION_2) >>$@; \
+	echo \#define VERSION_3 $(PKG_VERSION_3) >>$@; \
+	echo \#define BUILD_DATE \\\"$(BUILD_DATE)\\\" >>$@; \
+	echo \#define BUILD_NUMBER \\\"$(BUILD_NUMBER)\\\" >>$@; \
+	"
 
 .PHONY:				new_buildnumber
 new_buildnumber:
-	-@chmod +w BUILDNUMBER >nul 2>&1
+		-@chmod +w BUILDNUMBER >nul 2>&1
 
 BUILDNUMBER:			Makefile
-	@echo incrementing build number ...
-	-@$(BUSYBOX) sh -c "\
-		if [ ! -f BUILDNUMBER ]; then echo 1 >BUILDNUMBER; fi;\
-		echo $$(($$(cat BUILDNUMBER) + 1)) >BUILDNUMBER;\
-		"
-	-@chmod -w BUILDNUMBER >nul 2>&1
+		@echo incrementing build number ...
+		-@$(BUSYBOX) sh -c "\
+			if [ ! -f BUILDNUMBER ]; then echo 1 >BUILDNUMBER; fi;\
+			echo $$(($$(cat BUILDNUMBER) + 1)) >BUILDNUMBER;\
+			"
+		-@chmod -w BUILDNUMBER >nul 2>&1
 
 $(D_OBJ)/%.res: %.rc
 		$(RC) -nologo -Fo$@ $<
 
 $(D_BIN)/man2hlp.pl:		$(MCSOURCE)/src/man2hlp/man2hlp.in
-		@echo importing $@ ..
-		@$(CP) $< $@
+		@$(PERL) sedin.pl -u $^ $@
 
 
 #########################################################################################
@@ -723,118 +746,115 @@ $(D_BIN)/man2hlp.pl:		$(MCSOURCE)/src/man2hlp/man2hlp.in
 
 # .. bin
 $(D_BIN)/changelog.txt :	./changelog.txt
-	@echo importing $@ ..
-	@$(CP) $^ $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
 
 # .. etc
 $(D_ETC)/% :			$(MISC_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
-$(D_ETC)/% :			$(MISC_SRC)/%.in			# mc.ext.in
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+$(D_ETC)/% :			$(MISC_SRC)/%.in
+		@$(PERL) sedin.pl -u $^ $@
 
 # .. etc/magic
 $(D_ETC)/magic.mgc:		libmagic/magic.mgc
-	@echo importing $@ ..
-	@$(CP) $< $@
+		@echo importing $@ ..
+		@$(CP) $< $@
 
 # .. plugin
 $(D_PLUGIN)/% :			$(EXTD_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 $(D_PLUGIN)/% :			$(EXTD_SRC)/%.in
-	@echo converting $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@$(PERL) sedin.pl -u $^ $@
 
 # .. plugin/extfs.d
 $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%.in
-	@echo converting $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@$(PERL) sedin.pl -u $^ $@
 
 # .. plugin/fish
 $(D_PLUGIN)/fish/% :		$(FISH_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 # .. share
 $(D_SHARE)/% :			$(MISC_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 # .. share/help
 $(D_SHARE)/help/mc.hlp:		$(MAN_SRC)/mc.1.in $(HLP_SRC)/xnc.hlp
-	@echo building $@ ..
-	-@$(MAN2HLP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo building $@ ..
+		-@$(MAN2HLP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 $(D_SHARE)/help/mc.hlp.%:	$(MAN_SRC)/%/mc.1.in $(HLP_SRC)/%/xnc.hlp
-	@echo building $@ ..
-	-@$(MAN2HLP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo building $@ ..
+		-@$(MAN2HLP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 # .. share/hints
 $(D_SHARE)/hints/% :		$(HINTS_L10N_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 $(D_SHARE)/hints/% :		$(HINTS_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 # .. share/skins
 $(D_SHARE)/skins/% :		$(SKINS_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 # .. share/syntax
-$(D_SHARE)/syntax/% :		$(SYNTAX_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+$(D_SHARE)/syntax/%.syntax :	$(SYNTAX_SRC)/%.syntax
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
+
+$(D_SHARE)/syntax/% :		$(SYNTAX_SRC)/%.in
+		@$(PERL) sedin.pl -u $^ $@
 
 # .. share/macro.d
 $(D_SHARE)/macros.d/% :		$(MACROSDATA_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) dos2unix $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
 
 # .. docs
 $(D_DOC)/AUTHORS :		$(MCSOURCE)/AUTHORS
-	@echo importing $@ ..
-	@$(CP) $^ $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
 
 $(D_DOC)/% :			$(WIN32_DOC_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) unix2dos $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) unix2dos $@
 
 $(D_DOC)/% :			$(DOC_SRC)/%
-	@echo importing $@ ..
-	@$(CP) $^ $@
-	@$(BUSYBOX) unix2dos $@
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) unix2dos $@
 
 # .. mo
 $(D_LOCALE)/%/LC_MESSAGES/$(PACKAGE).mo: $(PO_SRC)/%.po
-	@echo build $@ ..
-	msgfmt -c -o $@ $(PO_SRC)/$*.po
+		@echo build $@ ..
+		msgfmt -c -o $@ $(PO_SRC)/$*.po
 
 #########################################################################################
 # libraries
@@ -971,4 +991,3 @@ $(D_OBJVFS)/undelfs_%$(O) :	$(MCSOURCE)/src/vfs/undelfs/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 #end
-

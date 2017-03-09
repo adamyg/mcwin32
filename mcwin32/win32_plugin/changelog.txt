@@ -1,0 +1,7 @@
+Wed Mar  8 23:49:44 2017 adamy
+
+	* uzip
+
+		- removed archive name meta character quoting.
+
+	* created -- windows specific versions of plugin scripts.

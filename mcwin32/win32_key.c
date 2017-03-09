@@ -95,10 +95,6 @@ extern void                 EnterDebugger(void);
 
 extern gboolean             quit_cmd_internal (gboolean quiet);
 
-#if defined(ENABLE_VFS)
-//	#include "vfs/gc.h"
-#endif
-
 #include "win32_key.h"
 
 
@@ -822,19 +818,25 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
         DWORD count = 0, rc;
 
         rc = WaitForSingleObject(hConsole, timeout);
-
         if (rc == WAIT_OBJECT_0 &&
                 PeekConsoleInput(hConsole, &k, 1, &count) && 1 == count) {
 
-            check_winch();
+            check_winch();                      /* possible screen size change */
 
+            c = EV_NONE;
             switch (k.EventType) {
             case KEY_EVENT:
-                c = get_key_code(1);
-                if (c == (KEY_M_SHIFT|'\n')) {  /* <Shift-Return> */
-                    mc_global.tty.winch_flag = TRUE;
-                    SLsmg_togglesize ();
-                    c = 0;
+                if (! k.Event.KeyEvent.bKeyDown) {
+                    (void) ReadConsoleInput(hConsole, &k, 1, &count);
+                    c = -99; //consume
+
+                } else {
+                    c = get_key_code(1);
+                    if (c == (KEY_M_SHIFT | '\n')) { /* <Shift-Return> */
+                        mc_global.tty.winch_flag = TRUE;
+                        SLsmg_togglesize();
+                        c = -99; //consume
+                    }
                 }
                 break;
 
@@ -915,6 +917,8 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
             exit (1);
         }
 
+        if (c == -99)
+            continue;
         if (!block || c != EV_NONE) {
             break;
         }
@@ -1130,11 +1134,11 @@ key_mapwin32(
 int
 get_key_code(int no_delay)
 {
-	DWORD count, rc;
-	INPUT_RECORD k;
-	int c;
+        DWORD count, rc;
+        INPUT_RECORD k;
+        int c;
 
-	do {
+        do {
         rc = WaitForSingleObject(hConsole, no_delay ? 0 : INFINITE);
         if (rc == WAIT_OBJECT_0 &&
                 ReadConsoleInput(hConsole, &k, 1, &count)) {
@@ -1182,15 +1186,20 @@ tty_getch (void)
 int
 is_idle (void)
 {
-    DWORD count;
+    DWORD count = 0;
     INPUT_RECORD k;
 
-    while (hConsole && WaitForSingleObject(hConsole, 0) == WAIT_OBJECT_0 &&
+    while (hConsole && WaitForSingleObject(hConsole, 0 /*NONBLOCKING*/) == WAIT_OBJECT_0 &&
                 PeekConsoleInput(hConsole, &k, 1, &count) && count == 1) {
-        if (k.EventType != KEY_EVENT || k.Event.KeyEvent.bKeyDown) {
-            return FALSE;
+        if (k.EventType == FOCUS_EVENT ||
+                (k.EventType == KEY_EVENT && !k.Event.KeyEvent.bKeyDown)) {
+            //
+            //  Focus or key-up, consume
+            //
+            ReadConsoleInput(hConsole, &k, 1, &count);
+            continue;
         }
-        ReadConsoleInput(hConsole, &k, 1, &count);
+        return FALSE;
     }
     return TRUE;
 }

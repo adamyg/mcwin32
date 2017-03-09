@@ -1,7 +1,39 @@
+Thu Mar  9 00:26:54 2017 adamy
+
+	* build 202.
+
+Wed Mar  8 01:17:24 2017 adamy
+
+	* extfs.c / win32_utl.c
+
+		- support execution of #! scripts; ignore file execution mode.
+		- additional effort required, as ext implementation script assume a unix command shell,
+			for example 'uzip' quotes shell meta characters.
+
+	* sfs.ini
+
+		- merged with 4.8.19
+		- explicit dos2unix conversion, as git/editing may change,
+			result sfs functionality failing.
+		- additional busybox compressors: lzma.
+
+	* modified tty key handling/checks so to ignore up keys,
+
+		idle and type-ahead logic was incorrectly delaying required screen
+		screen updates during edit search completion; as the up keys triggered
+		update optimisation logic.
+
+	* imported 4.8.19 configuration changes
+
+		- mc.default.keymap
+		- mc.emacs.keymap
+		- Missing Syntax.
+		- Processed additional @XXX@ symbols during imports; sedin.pl.
+
 Tue Mar  7 09:38:28 2017 adamy
 
 	* build 201.
-
+
 Mon Mar  6 14:17:45 2017 adamy
 
 	* corrected /#enc:xxxx handling.
@@ -48,8 +80,7 @@ Mon Apr  6 02:44:48 2015 ayoung
                 - imported AUTHORS and NEWS.OLD.
 
                 - busybox-w32-TIG-1658-g067f2e7.exe (2014/12/18),
-                        rolled back version, crashes noted on newer
-                        version under xp.
+                        rolled back version, crashes noted on newer version when running under xp.
 
 Sun Mar 29 02:48:16 2015 ayoung
 

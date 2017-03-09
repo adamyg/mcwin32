@@ -1,0 +1,25 @@
+Thu Mar  9 21:35:43 2017 adamy
+
+	* Busybox,
+
+		- Allowing busybox command list configuration (aka busybox.ini).
+
+		- Investigate recent busybox developments, including
+
+			https://frippery.org/busybox/
+					https://github.com/rmyorston/busybox-w32
+			https://www.busybox.net/
+
+	* Review extfs drivers.
+
+		- review each module for capability issues.
+
+		- zipinfo implementation.
+
+Wed Mar  8 02:55:35 2017 adamy
+
+	* MISSING: lzip and lz4 decompression support, research options.
+
+	* sfs, zip support.
+
+

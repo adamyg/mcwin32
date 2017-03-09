@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.4 2017/03/07 13:36:43 cvsuser Exp $
+# $Id: makelib.pl,v 1.5 2017/03/09 03:36:04 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -1314,6 +1314,8 @@ CheckCompiler($$)       # (type, env)
 
     $CONFIG_H{GRIEF_CC_COMPILER} = "\"".basename(${x_compiler})."\"";
     $CONFIG_H{GRIEF_CC_VERSION} = "\"${x_version}\"";
+    $CONFIG_H{MAKELIB_CC_COMPILER} = "\"".basename(${x_compiler})."\"";
+    $CONFIG_H{MAKELIB_CC_VERSION} = "\"${x_version}\"";
 
     print "compiler: ${x_compiler}\n";
     print "version:  ${x_version}\n";
