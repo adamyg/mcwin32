@@ -60,7 +60,7 @@ LIBW32_API struct passwd *getpwnam(const char *);
 LIBW32_API void         setpwent(void);
 LIBW32_API void         endpwent(void);
 
-//LIBW32_API int	getpwnam_r(const char *, struct passwd *, char *, size_t, struct passwd **);
+//LIBW32_API int        getpwnam_r(const char *, struct passwd *, char *, size_t, struct passwd **);
 //LIBW32_API int        getpwuid_r(uid_t, struct passwd *, char *, size_t, struct passwd **);
 
 __END_DECLS

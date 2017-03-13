@@ -22,7 +22,7 @@
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  */
@@ -338,6 +338,7 @@ w32_strerror(int errnum)
     if (errnum >= 0 && errnum < _sys_nerr) {
         return strerror(errnum);
     }
+
     switch (errnum) {
     /* Standard library */
     case EPERM:             err = "Operation not permitted"; break;
@@ -383,57 +384,232 @@ w32_strerror(int errnum)
 #endif
 
     /* Socket */
-    case ELOOP:             err = "Too many symbolic links"; break;
-    case EOPNOTSUPP:        err = "Operation not supported on transport"; break;
-    case EPFNOSUPPORT:      err = "Protocol family not supported"; break;
-    case ECONNRESET:        err = "Connection reset by peer"; break;
-    case ENOBUFS:           err = "No buffer space availabled"; break;
-    case EAFNOSUPPORT:      err = "Family cannot be used with this socket"; break;
-    case EPROTOTYPE:        err = "EPROTOTYPE"; break;
-    case ENOTSOCK:          err = "Not a socket"; break;
-    case ENOPROTOOPT:       err = "This option is unsupported"; break;
-    case ESHUTDOWN:         err = "Connection shutdown"; break;
-    case ECONNREFUSED:      err = "Connection refused"; break;
-    case EADDRINUSE:        err = "Address already in use"; break;
-    case ECONNABORTED:      err = "The connection was aborted"; break;
-    case ENETUNREACH:       err = "The network can't be reached"; break;
-    case ENETDOWN:          err = "Network down."; break;
-    case ETIMEDOUT:         err = "Connection timed out"; break;
-    case EHOSTDOWN:         err = "Host down"; break;
-    case EHOSTUNREACH:      err = "Host unreachable"; break;
-    case EINPROGRESS:       err = "In progress"; break;
-    case EALREADY:          err = "Already"; break;
-    case EDESTADDRREQ:      err = "EDESTADDRREQ"; break;
-    case EMSGSIZE:          err = "Message size"; break;
-    case EPROTONOSUPPORT:   err = "Protocol not supported"; break;
-    case ESOCKTNOSUPPORT:   err = "ESOCKTNOSUPPORT"; break;
-    case EADDRNOTAVAIL:     err = "EADDRNOTAVAIL"; break;
-    case ENETRESET:         err = "Network reset"; break;
-    case EISCONN:           err = "Socket is already connected"; break;
-    case ENOTCONN:          err = "Socket is not connected"; break;
-    case ETOOMANYREFS:      err = "ETOOMANYREFS"; break;
-    case EPROCLIM:          err = "EPROCLIM"; break;
-    case EUSERS:            err = "EUSERS"; break;
-    case EDQUOT:            err = "EDQUOT"; break;
-    case ESTALE:            err = "Stale"; break;
-    case EREMOTE:           err = "Resource is remote"; break;
-    case ENOTINITIALISED:   err = "Winsock not initialised"; break;
-#if defined(EREFUSED)
-    case EREFUSED:          err = "Refused"; break;
+    case WSAEINTR:          /*10004*/ err = "Interrupted system call"; break;
+    case WSAEBADF:          /*10009*/ err = "Bad file number"; break;
+    case WSAEACCES:         /*10013*/ err = "Permission denied"; break;
+    case WSAEFAULT:         /*10014*/ err = "Bad address"; break;
+    case WSAEINVAL:         /*10022*/ err = "Invalid argument"; break;
+    case WSAEMFILE:         /*10024*/ err = "Too many open files"; break;
+    case WSAEWOULDBLOCK:    /*10035*/ err = "Operation would block"; break;
+    case WSAEINPROGRESS:    /*10036*/ err = "Operation now in progress"; break;
+    case WSAEALREADY:       /*10037*/ err = "Operation already in progress"; break;
+    case WSAENOTSOCK:       /*10038*/ err = "Socket operation on non-socket"; break;
+    case WSAEDESTADDRREQ:   /*10039*/ err = "Destination address required"; break;
+    case WSAEMSGSIZE:       /*10040*/ err = "Message too long"; break;
+    case WSAEPROTOTYPE:     /*10041*/ err = "Protocol wrong type for socket"; break;
+    case WSAENOPROTOOPT:    /*10042*/ err = "Bad protocol option"; break;
+    case WSAEPROTONOSUPPORT:/*10043*/ err = "Protocol not supported"; break;
+    case WSAESOCKTNOSUPPORT:/*10044*/ err = "Socket type not supported"; break;
+    case WSAEOPNOTSUPP:     /*10045*/ err = "Operation not supported on socket"; break;
+    case WSAEPFNOSUPPORT:   /*10046*/ err = "Protocol family not supported"; break;
+    case WSAEAFNOSUPPORT:   /*10047*/ err = "Address family not supported by protocol family"; break;
+    case WSAEADDRINUSE:     /*10048*/ err = "Address already in use"; break;
+    case WSAEADDRNOTAVAIL:  /*10049*/ err = "Can't assign requested address"; break;
+    case WSAENETDOWN:       /*10050*/ err = "Network is down"; break;
+    case WSAENETUNREACH:    /*10051*/ err = "Network is unreachable"; break;
+    case WSAENETRESET:      /*10052*/ err = "Net dropped connection or reset"; break;
+    case WSAECONNABORTED:   /*10053*/ err = "Software caused connection abort"; break;
+    case WSAECONNRESET:     /*10054*/ err = "Connection reset by peer"; break;
+    case WSAENOBUFS:        /*10055*/ err = "No buffer space available"; break;
+    case WSAEISCONN:        /*10056*/ err = "Socket is already connected"; break;
+    case WSAENOTCONN:       /*10057*/ err = "Socket is not connected"; break;
+    case WSAESHUTDOWN:      /*10058*/ err = "Can't send after socket shutdown"; break;
+    case WSAETOOMANYREFS:   /*10059*/ err = "Too many references, can't splice"; break;
+    case WSAETIMEDOUT:      /*10060*/ err = "Connection timed out"; break;
+    case WSAECONNREFUSED:   /*10061*/ err = "Connection refused"; break;
+    case WSAELOOP:          /*10062*/ err = "Too many levels of symbolic links"; break;
+#if (ENAMETOOLONG != WSAENAMETOOLON)
+    case WSAENAMETOOLONG:   /*10063*/ err = "File name too long"; break;
 #endif
+    case WSAEHOSTDOWN:      /*10064*/ err = "Host is down"; break;
+    case WSAEHOSTUNREACH:   /*10065*/ err = "No Route to Host"; break;
+#if (ENOTEMPTY != WSAENOTEMPTY)
+    case WSAENOTEMPTY:      /*10066*/ err = "Directory not empty"; break;
+#endif
+    case WSAEPROCLIM:       /*10067*/ err = "Too many processes"; break;
+    case WSAEUSERS:         /*10068*/ err = "Too many users"; break;
+    case WSAEDQUOT:         /*10069*/ err = "Disc Quota Exceeded"; break;
+    case WSAESTALE:         /*10070*/ err = "Stale NFS file handle"; break;
+    case WSASYSNOTREADY:    /*10091*/ err = "Network SubSystem is unavailable"; break;
+    case WSAVERNOTSUPPORTED:/*10092*/ err = "WINSOCK DLL Version out of range"; break;
+    case WSANOTINITIALISED: /*10093*/ err = "Successful WSASTARTUP not yet performed"; break;
+    case WSAEREMOTE:        /*10071*/ err = "Too many levels of remote in path"; break;
+    case WSAHOST_NOT_FOUND: /*11001*/ err = "Host not found"; break;
+    case WSATRY_AGAIN:      /*11002*/ err = "Non-Authoritative Host not found"; break;
+    case WSANO_RECOVERY:    /*11003*/ err = "Non-Recoverable errors"; break;
+    case WSANO_DATA:        /*11004*/ err = "Valid name, no data record of requested type"; break;
+#if (WSANO_DATA != WSANO_DATA)
+    case WSANO_ADDRESS:     /*11004*/ err = "No address, look for MX record "; break;
+#endif
+
+    /* BSD/POSIX Socket Errors */
+//  case EINTR:             err = "Interrupted system call"; break;
+//  case EBADF:             err = "Bad file number"; break;
+//  case EACCES:            err = "Permission denied"; break;
+//  case EFAULT:            err = "Bad address"; break;
+//  case EINVAL:            err = "Invalid argument"; break;
+//  case EMFILE:            err = "Too many open files"; break;
+#if (EWOULDBLOCK != WSAEWOULDBLOCK)
+    case EWOULDBLOCK:       err = "Operation would block"; break;
+#endif
+#if (EINPROGRESS != WSAEINPROGRESS)
+    case EINPROGRESS:       err = "Operation now in progress"; break;
+#endif
+#if (EALREADY != WSAEALREADY)
+    case EALREADY:          err = "Operation already in progress"; break;
+#endif
+#if (ENOTSOCK != WSAENOTSOCK)
+    case ENOTSOCK:          err = "Socket operation on non-socket"; break;
+#endif
+#if (EDESTADDRREQ != WSAEDESTADDRREQ)
+    case EDESTADDRREQ:      err = "Destination address required"; break;
+#endif
+#if (EMSGSIZE != WSAEMSGSIZE)
+    case EMSGSIZE:          err = "Message too long"; break;
+#endif
+#if (EPROTOTYPE != WSAEPROTOTYPE)
+    case EPROTOTYPE:        err = "Protocol wrong type for socket"; break;
+#endif
+#if (ENOPROTOOPT != WSAENOPROTOOPT)
+    case ENOPROTOOPT:       err = "Bad protocol option"; break;
+#endif
+#if (EPROTONOSUPPORT != WSAEPROTONOSUPPORT)
+    case EPROTONOSUPPORT:   err = "Protocol not supported"; break;
+#endif
+#if (ESOCKTNOSUPPORT != WSAESOCKTNOSUPPORT)
+    case ESOCKTNOSUPPORT:   err = "Socket type not supported"; break;
+#endif
+#if (EOPNOTSUPP != WSAEOPNOTSUPP)
+    case EOPNOTSUPP:        err = "Operation not supported on socket"; break;
+#endif
+#if (EPFNOSUPPORT != WSAEPFNOSUPPORT)
+    case EPFNOSUPPORT:      err = "Protocol family not supported"; break;
+#endif
+#if (EAFNOSUPPORT != WSAEAFNOSUPPORT)
+    case EAFNOSUPPORT:      err = "Address family not supported by protocol family"; break;
+#endif
+#if (EADDRINUSE != WSAEADDRINUSE)
+    case EADDRINUSE:        err = "Address already in use"; break;
+#endif
+#if (EADDRNOTAVAIL != WSAEADDRNOTAVAIL)
+    case EADDRNOTAVAIL:     err = "Can't assign requested address"; break;
+#endif
+#if (ENETDOWN != WSAENETDOWN)
+    case ENETDOWN:          err = "Network is down"; break;
+#endif
+#if (ENETUNREACH != WSAENETUNREACH)
+    case ENETUNREACH:       err = "Network is unreachable"; break;
+#endif
+#if (ENETRESET != WSAENETRESET)
+    case ENETRESET:         err = "Net dropped connection or reset"; break;
+#endif
+#if (ECONNABORTED != WSAECONNABORTED)
+    case ECONNABORTED:      err = "Software caused connection abort"; break;
+#endif
+#if (ECONNRESET != WSAECONNRESET)
+    case ECONNRESET:        err = "Connection reset by peer"; break;
+#endif
+#if (ENOBUFS != WSAENOBUFS)
+    case ENOBUFS:           err = "No buffer space available"; break;
+#endif
+#if (EISCONN != WSAEISCONN)
+    case EISCONN:           err = "Socket is already connected"; break;
+#endif
+#if (ENOTCONN != WSAENOTCONN)
+    case ENOTCONN:          err = "Socket is not connected"; break;
+#endif
+#if (ESHUTDOWN != WSAESHUTDOWN)
+    case ESHUTDOWN:         err = "Can't send after socket shutdown"; break;
+#endif
+#if (ETOOMANYREFS != WSAETOOMANYREFS)
+    case ETOOMANYREFS:      err = "Too many references, can't splice"; break;
+#endif
+#if (ETIMEDOUT != WSAETIMEDOUT)
+    case ETIMEDOUT:         err = "Connection timed out"; break;
+#endif
+#if (ECONNREFUSED != WSAECONNREFUSED)
+    case ECONNREFUSED:      err = "Connection refused"; break;
+#endif
+#if (ELOOP != WSAELOOP)
+    case ELOOP:             err = "Too many levels of symbolic links"; break;
+#endif
+//#if (ENAMETOOLONG != WSAENAMETOOLONG)
+//  case ENAMETOOLONG:      err = "File name too long"; break;
+//#endif
+#if (EHOSTDOWN != WSAEHOSTDOWN)
+    case EHOSTDOWN:         err = "Host is down"; break;
+#endif
+#if (EHOSTUNREACH != WSAEHOSTUNREACH)
+    case EHOSTUNREACH:      err = "No Route to Host"; break;
+#endif
+//#if (ENOTEMPTY != WSAENOTEMPTY)
+//  case ENOTEMPTY:         err = "Directory not empty"; break;
+//#endif
+#if (EPROCLIM != WSAEPROCLIM)
+    case EPROCLIM:          err = "Too many processes"; break;
+#endif
+#if (EUSERS != WSAEUSERS)
+    case EUSERS:            err = "Too many users"; break;
+#endif
+#if (EDQUOT != WSAEDQUOT)
+    case EDQUOT:            err = "Disc Quota Exceeded"; break;
+#endif
+#if (ESTALE != WSAESTALE)
+    case ESTALE:            err = "Stale NFS file handle"; break;
+#endif
+#if (ENOTINITIALISED != WSANOTINITIALISED)
+    case ENOTINITIALISED:   err = "Successful WSASTARTUP not yet performed"; break;
+#endif
+
+    /* POSIX */
+//  case EADDRINUSE:        /*100*/ err = "Address already in use"; break;
+//  case EADDRNOTAVAIL:     /*101*/ err = "EADDRNOTAVAIL"; break;
+//  case EAFNOSUPPORT:      /*102*/ err = "Family cannot be used with this socket"; break;
+//  case EALREADY:          /*103*/ err = "Already"; break;
+    case EBADMSG:           /*104*/ err = "Bad message"; break;
+    case ECANCELED:         /*105*/ err = "Operation cancelled"; break;
+//  case ECONNABORTED:      /*106*/ err = "The connection was aborted"; break;
+//  case ECONNREFUSED:      /*107*/ err = "Connection refused"; break;
+//  case ECONNRESET:        /*108*/ err = "Connection reset by peer"; break;
+//  case EDESTADDRREQ:      /*109*/ err = "EDESTADDRREQ"; break;
+//  case EHOSTUNREACH:      /*110*/ err = "Host unreachable"; break;
+    case EIDRM:             /*111*/ err = "Identifier removed"; break;
+//  case EINPROGRESS:       /*112*/ err = "In progress"; break;
+//  case EISCONN:           /*113*/ err = "Socket is already connected"; break;
+//  case ELOOP:             /*114*/ err = "Too many symbolic links"; break;
+//  case EMSGSIZE:          /*115*/ err = "Message size"; break;
+//  case ENETDOWN:          /*116*/ err = "Network down"; break;
+//  case ENETRESET:         /*117*/ err = "Network reset"; break;
+//  case ENETUNREACH:       /*118*/ err = "The network can't be reached"; break;
+//  case ENOBUFS:           /*119*/ err = "No buffer space availabled"; break;
+    case ENODATA:           /*120*/ err = "No data (for no delay io)"; break;
+    case ENOLINK:           /*121*/ err = "Virtual circuit is gone"; break;
+    case ENOMSG:            /*122*/ err = "No message"; break;
+//  case ENOPROTOOPT:       /*123*/ err = "This option is unsupported"; break;
+    case ENOSR:             /*124*/ err = "No stream resources"; break;
+    case ENOSTR:            /*125*/ err = "Not a stream"; break;
+//  case ENOTCONN:          /*126*/ err = "Socket is not connected"; break;
+//  case ENOTRECOVERABLE:   /*127*/ err = "Not recoverable"; break;
+//  case ENOTSOCK:          /*128*/ err = "Not a socket"; break;
+    case ENOTSUP:           /*129*/ err = "Not supported"; break;
+//  case EOPNOTSUPP:        /*130*/ err = "Operation not supported on transport"; break;
+    case EOTHER:            /*131*/ err = "Other error"; break;
+    case EOVERFLOW:         /*132*/ err = "Overflow"; break;
+    case EOWNERDEAD:        /*133*/ err = "Owner dead"; break;
+    case EPROTO:            /*134*/ err = "Protocol error"; break;
+//  case EPROTONOSUPPORT:   /*135*/ err = "Protocol not supported"; break;
+//  case EPROTOTYPE:        /*136*/ err = "Protype error"; break;
+    case ETIME:             /*137*/ err = "Stream ioctl timeout"; break;
+//  case ETIMEDOUT:         /*138*/ err = "Connection timed out"; break;
+    case ETXTBSY:           /*139*/ err = "Text file busy"; break;
+//  case EWOULDBLOCK:       /*140*/ err = "Operation would block"; break;
 
     /* BSD/SysV messages */
 #if defined(ENOTBLK)
     case ENOTBLK:           err = "Block device required"; break;
 #endif
-#if defined(ETSTBSY)
-    case ETXTBSY:           err = "Text file busy"; break;
-#endif
 #if defined(EUCLEAN)
     case EUCLEAN:           err = "UCLEAN"; break;
-#endif
-#if defined(EIDRM)
-    case EIDRM:             err = "Identifier removed"; break;
 #endif
 #if defined(ECHRNG)
     case ECHRNG:            err = "Channel number out of range"; break;
@@ -480,26 +656,8 @@ w32_strerror(int errnum)
 #if defined(EBFONT)
     case EBFONT:            err = "Bad font file fmt"; break;
 #endif
-#if defined(ENOSTR)
-    case ENOSTR:            err = "Not a stream"; break;
-#endif
-#if defined(ENODATA)
-    case ENODATA:           err = "No data (for no delay io)"; break;
-#endif
-#if defined(ETIME)
-    case ETIME:             err = "Stream ioctl timeout"; break;
-#endif
-#if defined(ENOSR)
-    case ENOSR:             err = "No stream resources"; break;
-#endif
-#if defined(ENONET)
-    case ENONET:            err = "Machine is not on the network"; break;
-#endif
 #if defined(ENOPKG)
     case ENOPKG:            err = "No package"; break;
-#endif
-#if defined(ENOLINK)
-    case ENOLINK:           err = "Virtual circuit is gone"; break;
 #endif
 #if defined(EADV)
     case EADV:              err = "Advertise error"; break;
@@ -510,9 +668,6 @@ w32_strerror(int errnum)
 #if defined(ECOMM)
     case ECOMM:             err = "Communication error"; break;
 #endif
-#if defined(EPROTO)
-    case EPROTO:            err = "Protocol error"; break;
-#endif
 #if defined(EMULTIHOP)
     case EMULTIHOP:         err = "Multihop attempted"; break;
 #endif
@@ -521,12 +676,6 @@ w32_strerror(int errnum)
 #endif
 #if defined(EDOTDOT)
     case EDOTDOT:           err = "Cross mount point"; break;
-#endif
-#if defined(ENOMSG)
-    case ENOMSG:            err = "No message"; break;
-#endif
-#if defined(EBADMSG)
-    case EBADMSG:           err = "Bad message"; break;
 #endif
 #if defined(ENOTUNIQ)
     case ENOTUNIQ:          err = "Name not unique"; break;
@@ -540,15 +689,13 @@ w32_strerror(int errnum)
 #if defined(ENMFILE)
     case ENMFILE:           err = "No more files"; break;
 #endif
-#if defined(ENOTSUP)
-    case ENOTSUP:           err = "Not supported"; break;
-#endif
 #if defined(ENOMEDIUM)
     case ENOMEDIUM:         err = "No medium"; break;
 #endif
 #if defined(ENOSHARE)
     case ENOSHARE:          err = "No such host or network path"; break;
 #endif
+
     default:
         _snprintf(errbuffer, sizeof(errbuffer),
             (errnum >= WSABASEERR ? "unknown winsock error" : "unknown error"), errnum);
@@ -567,5 +714,6 @@ w32_strerror(int errnum)
         err = err2;
     }
 #endif
-    return ((char *) err);
+    return (err);
 }
+

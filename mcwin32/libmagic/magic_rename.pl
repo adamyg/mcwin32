@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: magic_rename.pl,v 1.2 2017/03/01 23:57:02 cvsuser Exp $
+# $Id: magic_rename.pl,v 1.3 2017/03/12 18:53:03 cvsuser Exp $
 # libmagic import tool
 # Rename global libmagic symbols, prefixing with library version number.
 #
@@ -162,6 +162,7 @@ ProcessFile($$;$)       # (dir, file, outfile)
     $text =~ s/file_/file${o_version}_/g;
     $text =~ s/cdf_/file${o_version}_cdf_/g;
     $text =~ s/file${o_version}_opts\.h/file_opts.h/g;
+    $text =~ s/^(strlcpy|strlcat)/${o_version_$1/g;
 
     $text =~ s/file_fmt_check/softmagic${o_version}_fmt_check/g;
         $text =~ s/fmtcheck/file${o_version}_fmtcheck/g;

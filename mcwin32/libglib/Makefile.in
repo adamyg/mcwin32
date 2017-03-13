@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.1 2017/03/06 12:04:30 cvsuser Exp $
+# $Id: Makefile.in,v 1.2 2017/03/13 16:21:44 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -114,7 +114,6 @@ CEXTRA_LIBCHARSET = \
 CEXTRA_PCRE = \
 	-DHAVE_CONFIG_H \
 	-DGPCRE_COMPILATION \
-	-DPCRE_STATIC \
 	-DLINK_SIZE=2 \
 	-DMAX_NAME_SIZE=32 \
 	-DMAX_NAME_COUNT=10000 \
@@ -127,6 +126,7 @@ CEXTRA_PCRE = \
 	-DG_LOG_DOMAIN="GLib-GRegex" \
 	-UBSR_ANYCRLF \
 	-UEBCDIC
+##	-DPCRE_STATIC	##global
 ##	-DNEWLINE=-1	#see config.h
 
 CEXTRA_GTHREAD = \
@@ -323,7 +323,7 @@ $(GLIBLIB):		$(GLIBLIBOBJS)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
-$(GLIBDLL):		CEXTRA += -DGLIB_DYNAMIC_COMPILATION -DDLL_EXPORT
+$(GLIBDLL):		CEXTRA += -DGLIB_DYNAMIC_COMPILATION -DDLL_EXPORT -DPCRE_STATIC
 $(GLIBDLL):		$(GLIBDLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) -o $@ $^ $(LDLIBS)

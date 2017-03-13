@@ -21,7 +21,7 @@
 
 __BEGIN_DECLS
 
-LIBW32_API int          w32x_tracing_enabled;
+LIBW32_API extern int   w32x_tracing_enabled;
 
 LIBW32_API void         w32_Trace (const char *, ...);
 LIBW32_API void         w32_trace (const char *, ...);

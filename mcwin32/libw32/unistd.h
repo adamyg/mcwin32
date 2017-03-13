@@ -37,12 +37,12 @@
 #endif
 #endif
 #endif
-
 #pragma warning(disable:4115)
 
 #if defined(_POSIX_)
 #error unistd.h: _POSIX_ enabled
 #endif
+
 #if !defined(_CRT_SECURE_NO_DEPRECATE)
 #define _CRT_SECURE_NO_DEPRECATE                /* disable deprecate warnings */
 #endif
@@ -86,6 +86,8 @@
  *      which among others includes <ctype.h>
  */
 
+#include <win32_errno.h>
+
 #include <sys/cdefs.h>                          /* __BEGIN_DECLS, __PDECL */
 #include <sys/utypes.h>
 #include <sys/stat.h>
@@ -99,7 +101,6 @@
 
 #include <stdio.h>                              /* FILE */
 #include <stdlib.h>
-#include <errno.h>
 #include <malloc.h>
 #include <string.h>                             /* memset, memmove ... */
 #include <fcntl.h>
@@ -152,6 +153,7 @@ __BEGIN_DECLS
 #undef  S_ISBLK
 #undef  S_ISFIFO
 #endif
+
 #if defined(__MINGW32__)
 #undef  S_IFBLK
 #undef  S_ISBLK
@@ -212,10 +214,10 @@ __BEGIN_DECLS
 #else
 #define S_IFIFO         0010000
 #endif
+
 #if defined(S_IFFIFO)                           /* fifo??? */
 #error  S_IFFIFO is defined ??? ...
 #endif
-
 
 /* de facto standard definitions */
 #if !defined(S_ISUID)
@@ -233,6 +235,7 @@ __BEGIN_DECLS
 #else
 #define S_IRWXU         0000700                 /* read, write, execute: owner */
 #endif
+
 #if defined(S_IRUSR)
 #if (S_IRUSR != 0000400)
 #error  S_IRUSR redefinition error ...
@@ -256,18 +259,29 @@ __BEGIN_DECLS
 #define __S_ISTYPE(__mode,__mask) \
                         (((__mode) & S_IFFMT) == __mask)
 
+#ifndef S_ISBLK                                 /* test for a block special */
+#define S_ISBLK(m)      __S_ISTYPE(m, S_IFBLK)
+#endif
+#if !defined(__MINGW32__)
+#ifndef S_ISFIFO                                /* test for a pipe or FIFO special file */
+#define S_ISFIFO(m)     __S_ISTYPE(m, S_IFIFO)
+#endif
+#endif
 #ifndef S_ISDIR                                 /* test for a directory */
 #define S_ISDIR(m)      __S_ISTYPE(m, S_IFDIR)
+#endif
+#ifndef S_ISCHR
+#define S_ISCHR(m)      __S_ISTYPE(m, S_IFCHR)
 #endif
 #ifndef S_ISREG                                 /* test for a regular file */
 #define S_ISREG(m)      __S_ISTYPE(m, S_IFREG)
 #endif
-#ifndef S_ISBLK                                 /* test for a block special */
-#define S_ISBLK(m)      __S_ISTYPE(m, S_IFBLK)
+#ifndef S_ISLNK                                 /* test for a symbolic link */
+#define S_ISLNK(m)      __S_ISTYPE(m, S_IFLNK)
 #endif
-#define S_ISLNK(m)      __S_ISTYPE(m, S_IFLNK)  /* test for a symbolic link */
+#ifndef S_ISSOCK
 #define S_ISSOCK(m)     __S_ISTYPE(m, S_IFSOCK) /* test for a socket */
-#define S_ISFIFO(m)     __S_ISTYPE(m, S_IFIFO)  /* test for a pipe or FIFO special file */
+#endif
 
 #ifndef S_ISVTX
 #define S_ISVTX         0                       /* on directories, restricted deletion flag; not supported */
@@ -279,137 +293,6 @@ __BEGIN_DECLS
 #define STDOUT_FILENO   1
 #define STDERR_FILENO   2
 #endif
-
-
-/*errno.h, also see sys/socket.h*/
-/*
- *  Addition UNIX style errno's, plus Windows Sockets errors redefined
- *  as regular Berkeley error constants.
- *
- *  These are normally commented out in winsock.h in Windows NT to avoid conflicts with errno.h.
- *  MSVC 2010 these are defined, plus others EADDRINUSE ... EWOULDBLOCK.
- */
-
-#if !defined(_MSC_VER) || (_MSC_VER < 1600)
-#define EIDRM           100
-#define EBADRQC         101
-#define ENODATA         102
-#define ENONET          103
-#define ENOTUNIQ        104
-#define ECOMM           105
-#define ENOLINK         106
-#define ENOMEDIUM       107
-#define ENOTSUP         108
-#define EBADFD          109
-#define ENOMSG          110
-#define EBADMSG         111
-
-#if !defined(EALREADY)
-#define EALREADY        WSAEALREADY
-#elif (EALREADY != WSAEALREADY)
-#error  Inconsistent EALREADY definition ....
-#endif
-#endif
-
-#define ENOTINITIALISED WSANOTINITIALISED
-#if !defined(EWOULDBLOCK)
-#define EWOULDBLOCK     WSAEWOULDBLOCK
-#endif
-#if !defined(EINPROGRESS)
-#define EINPROGRESS     WSAEINPROGRESS
-#endif
-#if !defined(ENOTSOCK)
-#define ENOTSOCK        WSAENOTSOCK
-#endif
-#if !defined(EDESTADDRREQ)
-#define EDESTADDRREQ    WSAEDESTADDRREQ
-#endif
-#if !defined(EMSGSIZE)
-#define EMSGSIZE        WSAEMSGSIZE
-#endif
-#if !defined(EPROTOTYPE)
-#define EPROTOTYPE      WSAEPROTOTYPE
-#endif
-#if !defined(ENOPROTOOPT)
-#define ENOPROTOOPT     WSAENOPROTOOPT
-#endif
-#if !defined(EPROTONOSUPPORT)
-#define EPROTONOSUPPORT WSAEPROTONOSUPPORT
-#endif
-#if !defined(ESOCKTNOSUPPORT)
-#define ESOCKTNOSUPPORT WSAESOCKTNOSUPPORT
-#endif
-#if !defined(EOPNOTSUPP)
-#define EOPNOTSUPP      WSAEOPNOTSUPP
-#endif
-#if !defined(EPFNOSUPPORT)
-#define EPFNOSUPPORT    WSAEPFNOSUPPORT
-#endif
-#if !defined(EAFNOSUPPORT)
-#define EAFNOSUPPORT    WSAEAFNOSUPPORT
-#endif
-#if !defined(EADDRINUSE)
-#define EADDRINUSE      WSAEADDRINUSE
-#endif
-#if !defined(EADDRNOTAVAIL)
-#define EADDRNOTAVAIL   WSAEADDRNOTAVAIL
-#endif
-#if !defined(ENETDOWN)
-#define ENETDOWN        WSAENETDOWN
-#endif
-#if !defined(ENETUNREACH)
-#define ENETUNREACH     WSAENETUNREACH
-#endif
-#if !defined(ENETRESET)
-#define ENETRESET       WSAENETRESET
-#endif
-#if !defined(ECONNABORTED)
-#define ECONNABORTED    WSAECONNABORTED
-#endif
-#if !defined(ECONNRESET)
-#define ECONNRESET      WSAECONNRESET
-#endif
-#if !defined(ENOBUFS)
-#define ENOBUFS         WSAENOBUFS
-#endif
-#if !defined(EISCONN)
-#define EISCONN         WSAEISCONN
-#endif
-#if !defined(ENOTCONN)
-#define ENOTCONN        WSAENOTCONN
-#endif
-#if !defined(ESHUTDOWN)
-#define ESHUTDOWN       WSAESHUTDOWN
-#endif
-#if !defined(ETOOMANYREFS)
-#define ETOOMANYREFS    WSAETOOMANYREFS
-#endif
-#if !defined(ETIMEDOUT)
-#define ETIMEDOUT       WSAETIMEDOUT
-#endif
-#if !defined(ECONNREFUSED)
-#define ECONNREFUSED    WSAECONNREFUSED
-#endif
-#if !defined(ELOOP)
-#define ELOOP           WSAELOOP
-#endif
-#if !defined(ENAMETOOLONG)
-#define ENAMETOOLONG    WSAENAMETOOLONG
-#endif
-#if !defined(EHOSTDOWN)
-#define EHOSTDOWN       WSAEHOSTDOWN
-#endif
-#if !defined(EHOSTUNREACH)
-#define EHOSTUNREACH    WSAEHOSTUNREACH
-#endif
-#if !defined(ENOTEMPTY)
-#define ENOTEMPTY       WSAENOTEMPTY
-#endif
-#define EPROCLIM        WSAEPROCLIM
-#define EUSERS          WSAEUSERS
-#define EDQUOT          WSAEDQUOT
-#define ESTALE          WSAESTALE
-#define EREMOTE         WSAEREMOTE
 
 /*signal.h*/
 #define SIGCHLD         -101
@@ -446,12 +329,12 @@ LIBW32_API int          w32_kill (int pid, int sig);
 #endif /*WIN32_UNISTD_MAP*/
 
 #if !defined(WEXITSTATUS)
-LIBW32_API int           WEXITSTATUS (int status);
-LIBW32_API int           WIFEXITED (int status);
-LIBW32_API int           WIFSIGNALED (int status);
-LIBW32_API int           WTERMSIG (int status);
-LIBW32_API int           WCOREDUMP (int status);
-LIBW32_API int           WIFSTOPPED(int status);
+LIBW32_API int          WEXITSTATUS (int status);
+LIBW32_API int          WIFEXITED (int status);
+LIBW32_API int          WIFSIGNALED (int status);
+LIBW32_API int          WTERMSIG (int status);
+LIBW32_API int          WCOREDUMP (int status);
+LIBW32_API int          WIFSTOPPED(int status);
 #endif
 
 /* <stdlib.h> */
@@ -468,7 +351,7 @@ LIBW32_API int          strncasecmp(const char *s1, const char *s2, size_t len);
 #define NEED_STRNLEN                            /*see: w32_string.c*/
 #endif
 #if defined(NEED_STRNLEN)
-LIBW32_API size_t	strnlen(const char *s, size_t maxlen);
+LIBW32_API size_t       strnlen(const char *s, size_t maxlen);
 #endif
 
 /* <unistd.h> */
@@ -476,21 +359,6 @@ LIBW32_API int          gettimeofday (struct timeval *tv, struct timezone *tz);
 LIBW32_API int          w32_utime (const char *path, const struct utimbuf *times);
 LIBW32_API int          w32_gethostname (char *name, size_t namelen);
 LIBW32_API int          w32_getdomainname (char *name, size_t namelen);
-
-#if (XXX)
-//#if defined(WIN32_UNISTD_MAP)
-//#if !defined(_WINSOCKAPI_) && !defined(_WINSOCK2API_)
-//#ifndef gethostname
-//#define gethostname(__name,__namelen) \
-//                w32_gethostname (__name, __namelen)
-//#endif /*gethostname*/
-//#endif
-//#ifndef getdomainname
-//#define getdomainname(__name,__namelen) \
-//                w32_getdomainname (__name, __namelen)
-//#endf  /*getdomainname*/
-//#endif /*WIN32_UNISTD_MAP*/
-#endif
 
 LIBW32_API const char * getlogin (void);
 LIBW32_API int          getlogin_r (char *name, size_t namesize);
@@ -531,8 +399,8 @@ LIBW32_API int          w32_open (const char *path, int, ...);
 LIBW32_API int          w32_stat (const char *path, struct stat *sb);
 LIBW32_API int          w32_lstat (const char *path, struct stat *sb);
 LIBW32_API int          w32_fstat (int fd, struct stat *sb);
-LIBW32_API int          w32_read (int fd, void *buffer, unsigned int cnt);
-LIBW32_API int          w32_write (int fd, const void *buffer, unsigned int cnt);
+LIBW32_API int          w32_read (int fd, void *buffer, size_t cnt);
+LIBW32_API int          w32_write (int fd, const void *buffer, size_t cnt);
 LIBW32_API int          w32_close (int fd);
 LIBW32_API const char * w32_strerror (int errnum);
 LIBW32_API int          w32_link (const char *from, const char *to);
@@ -546,10 +414,14 @@ LIBW32_API int          w32_unlink (const char *fname);
 #define read(a,b,c)     w32_read(a, b, c)
 #define write(a,b,c)    w32_write(a, b, c)
 #define close(a)        w32_close(a)
-#define strerror(a)     w32_strerror(a)
 #define link(f,t)       w32_link(f,t)
 #define unlink(p)       w32_unlink(p)
 #endif /*WIN32_UNISTD_MAP*/
+
+#if defined(WIN32_UNISTD_MAP) || \
+    defined(WIN32_SOCKET_MAP_FD) || defined(WIN32_SOCKET_MAP_NATIVE)
+#define strerror(a)     w32_strerror(a)
+#endif
 
 LIBW32_API int          w32_mkdir (const char *fname, int mode);
 LIBW32_API int          w32_chdir (const char *fname);
@@ -606,7 +478,6 @@ LIBW32_API int          mknod (const char *path, int mode, int dev);
 LIBW32_API int          fcntl (int fd, int ctrl, int);
 LIBW32_API int          w32_fsync (int fildes);
 
-
 /*string.h*/
 LIBW32_API char *       strsep (char **stringp, const char *delim);
 #if defined(_MSC_VER)
@@ -614,7 +485,6 @@ LIBW32_API size_t       strlcat (char *dst, const char *src, size_t siz);
 LIBW32_API size_t       strlcpy (char *dst, const char *src, size_t siz);
 #if (_MSC_VER <= 1600)
 LIBW32_API unsigned long long strtoull (const char * nptr, char ** endptr, int base);
-LIBW32_API unsigned long strtoul (const char * nptr, char ** endptr, int base);
 #endif
 #endif
 

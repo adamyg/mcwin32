@@ -318,21 +318,21 @@
 */
 
 int
-w32_write(int fildes, const void *buffer, unsigned int cnt)
+w32_write(int fildes, const void *buffer, size_t nbyte)
 {
-	SOCKET s;
+    SOCKET s = -1;
     int ret;
 
     if (fildes < 0) {
         errno = EBADF;
         ret = -1;
 	} else if (w32_issockfd(fildes, &s)) {
-        if ((ret = sendto(s, buffer, cnt, 0, NULL, 0)) == SOCKET_ERROR) {
+        if ((ret = sendto(s, buffer, (int)nbyte, 0, NULL, 0)) == SOCKET_ERROR) {
             w32_neterrno_set();
             ret = -1;
         }
     } else {
-        ret = _write(fildes, buffer, cnt);
+        ret = _write(fildes, buffer, (int)nbyte);
     }
     return ret;
 }

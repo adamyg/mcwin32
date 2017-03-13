@@ -1126,8 +1126,9 @@ system_SET(int argc, const char **argv)
 static const char *
 IsScript(const char *cmd)
 {
-    char t_cmd[1024] = { 0 }, *argv[3] = { 0 }, magic[128] = { 0 };
-        const char *script = NULL;
+    char t_cmd[1024] = { 0 }, magic[128] = { 0 };
+    const char *script = NULL;
+    const char *argv[3] = { 0 };
     int fd;
 
     strncpy(t_cmd, cmd, sizeof(t_cmd)-1);
@@ -1917,3 +1918,4 @@ mc_build_filename(const char *first_element, ...)
 }
 
 /*end*/
+

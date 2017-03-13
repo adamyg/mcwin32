@@ -33,6 +33,7 @@ __BEGIN_DECLS
 	defined(__WATCOMC__)
 LIBW32_API const char * gai_strerror(int ecode);
 #endif
+LIBW32_API const char * w32_gai_strerror(int ecode);
 
 __END_DECLS
 

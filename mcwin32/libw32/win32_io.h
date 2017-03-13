@@ -77,7 +77,7 @@ __BEGIN_DECLS
 #define F_SETFL         2
 #endif
 
-LIBW32_API int		fcntl (int fildes, int ctrl, int);
+LIBW32_API int          fcntl (int fildes, int ctrl, int);
 LIBW32_API int          w32_fsync (int fildes);
 
 /*io.h*/
@@ -110,8 +110,9 @@ LIBW32_API int          w32_root_unc (const char *path);
 LIBW32_API const char * w32_strslash (const char *path);
 
 LIBW32_API int          w32_errno_set (void);
+LIBW32_API int          w32_errno_setas (unsigned nerrno);
 LIBW32_API int          w32_errno_cnv (unsigned rc);
-LIBW32_API int		w32_neterrno_set (void);
+LIBW32_API int          w32_neterrno_set (void);
 
 __END_DECLS
 

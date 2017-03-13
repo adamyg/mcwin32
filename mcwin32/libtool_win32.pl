@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.4 2017/03/07 13:36:43 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.6 2017/03/13 16:52:06 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -493,7 +493,7 @@ Link() {
                 #       ecw         set default calling convention to __watcall (default)
                 #
                 #   Warning:
-               #       The OpenWatcom run-time library utilise either register or stack based (by default register) calls,
+                #       The OpenWatcom run-time library utilise either register or stack based (by default register) calls,
                 #       hence use of the alternative convention via a '-ecx' option may create major compatiblity issues.
                 #
                 #       For example atexit() and qsort() shall assume register/stack yet as the default is applied the
@@ -997,18 +997,25 @@ Clean() {
         unlink($lib);
     }
 
+    my %dirs = ();
     foreach(@OBJECTS) {
         my $obj = $_;
         if ($obj =~ /\.lo$/ && -f $obj) {       # object artifact
             my $true_object = true_object($obj);
+            my $extra = $true_object;
+            $dirs{dirname($true_object)}++;
             Verbose "rm: ${true_object}";
             unlink($true_object);
-            rmdir(dirname($true_object));
+            unlink($extra)
+                if ($extra =~ s/\.obj$/\.mbr/); # TODO, toolchain specific
         }
         Verbose "rm: ${obj}";
         unlink($obj);
     }
 
+    foreach(keys %dirs) {
+        rmdir($_);
+    }
     return 0;
 }
 

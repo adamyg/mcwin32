@@ -99,6 +99,7 @@ LIBW32_API const char * w32_strslash (const char *path);
 LIBW32_API int          w32_neterrno_map (int nerrno);
 LIBW32_API int          w32_neterrno_set (void);
 LIBW32_API int          w32_errno_set (void);
+LIBW32_API int          w32_errno_setas (unsigned nerrno);
 LIBW32_API int          w32_errno_cnv (unsigned rc);
 
 LIBW32_API SOCKET       w32_sockhandle (int fd);
@@ -108,7 +109,7 @@ LIBW32_API int          w32_sockfd_limit (int limit);
 LIBW32_API void         w32_sockfd_open (int fd, SOCKET s);
 LIBW32_API SOCKET       w32_sockfd_get (int fd);
 LIBW32_API void         w32_sockfd_close (int fd, SOCKET s);
-LIBW32_API int		w32_issockfd (int fd, SOCKET *s);
+LIBW32_API int          w32_issockfd (int fd, SOCKET *s);
 
 __END_DECLS
 

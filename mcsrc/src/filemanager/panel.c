@@ -2541,6 +2541,12 @@ panel_select_unselect_files (WPanel * panel, const char *title, const char *hist
     };
 #endif
 
+    quick_dialog_t qdlg = {
+        -1, -1, 50,
+        title, "[Select/Unselect Files]",
+        quick_widgets, NULL, NULL
+    };
+
 #if defined(WIN32)  //WIN32, quick
     qc = XQUICK_INPUT (qc, INPUT_LAST_TEXT, history_name, &reg_exp, NULL,
                     FALSE, FALSE, INPUT_COMPLETE_FILENAMES);
@@ -2551,15 +2557,8 @@ panel_select_unselect_files (WPanel * panel, const char *title, const char *hist
     qc =    XQUICK_CHECKBOX (qc, N_("&Case sensitive"), &case_sens, NULL);
     qc = XQUICK_STOP_COLUMNS (qc);
     qc = XQUICK_END (qc);
-  //printf("offset: %u\n", qc - quick_widgets);
     assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif
-
-    quick_dialog_t qdlg = {
-        -1, -1, 50,
-        title, "[Select/Unselect Files]",
-        quick_widgets, NULL, NULL
-    };
 
     if (quick_dialog (&qdlg) == B_CANCEL)
         return;

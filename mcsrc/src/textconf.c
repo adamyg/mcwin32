@@ -234,8 +234,9 @@ show_datadirs_extended (void)
             { "local-menu:",  EDIT_LOCAL_MENU   },
             { "home-menu:",   EDIT_HOME_MENU    }
             };
+        int i;
 
-        for (int i = 0; i < (sizeof(editpaths)/sizeof(editpaths[i])); ++i) {
+        for (i = 0; i < (sizeof(editpaths)/sizeof(editpaths[i])); ++i) {
             char *f = mc_config_get_full_path (editpaths[i].key);
             printf ("\tmcedit %-8s %s\n", editpaths[i].desc, (f ? f : "n/a"));
             g_free (f);

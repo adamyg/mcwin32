@@ -280,9 +280,9 @@
 //          fildes is associated with a pipe or FIFO. [Option End]
 */
 int
-w32_read(int fildes, void *buf, unsigned int nbyte)
+w32_read(int fildes, void *buf, size_t nbyte)
 {
-	SOCKET s;
+    SOCKET s = -1;
     int ret;
 
     if (fildes < 0) {
@@ -290,21 +290,15 @@ w32_read(int fildes, void *buf, unsigned int nbyte)
         ret = -1;
 
     } else if (w32_issockfd(fildes, &s)) {
-        if ((ret = recvfrom(s, buf, nbyte, 0, NULL, 0)) == SOCKET_ERROR) {
-			w32_neterrno_set();
+        if ((ret = recvfrom(s, buf, (int)nbyte, 0, NULL, 0)) == SOCKET_ERROR) {
+            w32_neterrno_set();
             ret = -1;
         }
 
     } else {
-		ret = _read(fildes, buf, nbyte);
-
-//		DWORD count = 0;
-//		if (ReadFile(handle, (LPCVOID)buf, (DWORD)nbyte, &count, NULL)) {
-//			ret = count;
-//		} else {
-//			w32_errno_set();
-//			ret = -1;
-//		}
+        ret = _read(fildes, buf, (int)nbyte);
     }
     return ret;
 }
+/*end*/
+

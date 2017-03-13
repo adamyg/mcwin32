@@ -33,6 +33,10 @@
 #define _CRT_SECURE_NO_DEPRECATE                /* disable deprecate warnings */
 #endif
 
+#if !defined(_CRT_NO_POSIX_ERROR_CODES)
+#define _CRT_NO_POSIX_ERROR_CODES               /* disable POSIX error number, see <errno.h> */
+#endif
+
 #if !defined(HAVE_WINSOCK2_H_INCLUDED)
 #define HAVE_WINSOCK2_H_INCLUDED
 #undef gethostname                              /* unistd.h name mangling */

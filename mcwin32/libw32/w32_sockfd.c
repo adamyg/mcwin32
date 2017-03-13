@@ -146,6 +146,18 @@ w32_sockfd_close(int fd, SOCKET s)
 /*
  *      determine whether a socket file descriptor, for read/write/close usage.
  */
+//  static int
+//  IsStdHandle(int fd)
+//  {
+//      switch((DWORD)fd) {
+//	case STD_INPUT_HANDLE:	// (DWORD)-10   The standard input device. Initially, this is the console input buffer, CONIN$.
+//      case STD_OUTPUT_HANDLE: // (DWORD)-11   The standard output device. Initially, this is the active console screen buffer, CONOUT$.
+//      case STD_ERROR_HANDLE:  // (DWORD)-12   The standard error device. Initially, this is the active console screen buffer, CONOUT$.
+//          return 1;
+//      }
+//	return 0;
+//  }
+
 int
 w32_issockfd(int fd, SOCKET *s)
 {
@@ -153,6 +165,12 @@ w32_issockfd(int fd, SOCKET *s)
 
     if (fd >= 0) {
         if (fd >= WIN32_FILDES_MAX) {           /* not an osf handle; hard limit */
+            /*
+             *  TODO: restrict logic further
+             *      HANDLES should always be DWORD aligned, hence must be "(fd & 0x7) == 0"
+             *      Confirm and can this go futher??
+             *          Mininal handle value??
+             */
             t_s = (SOCKET)fd;
 
         } else if (fd >= x_fdinit ||            /* local socket mapping */
@@ -171,5 +189,7 @@ w32_issockfd(int fd, SOCKET *s)
 }
 
 /*end*/
+
+
 
 

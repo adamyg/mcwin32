@@ -1,9 +1,10 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.4 2017/03/07 13:36:43 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2017/03/13 16:56:26 cvsuser Exp $
 # libssh2 makefile.
 #
 #
 # Copyright (c) 2016 - 2017 Adam Young.
+# All rights reserved.
 # 
 # This file is part of the Midnight Commander.
 # 

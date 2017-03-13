@@ -57,8 +57,9 @@
 /*warnings*/
 #if defined(_MSC_VER)
 #if !defined(_CRT_SECURE_NO_DEPRECATE)
-#define _CRT_SECURE_NO_DEPRECATE		/* Deprecated warnings */
+#define _CRT_SECURE_NO_DEPRECATE                /* Deprecated warnings */
 #endif
+#pragma warning(disable : 4996)                 /* 'xxx': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _xxx. */
 
 #elif defined(__WATCOMC__)
 #if !defined(__cplusplus)

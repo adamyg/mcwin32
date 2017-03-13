@@ -36,6 +36,8 @@
 #include <assert.h>
 #include <unistd.h>
 
+#pragma comment(lib, "user32.lib")
+
 struct procdata {
     int                 type;
     DWORD               dwProcessId;
@@ -772,7 +774,7 @@ BuildVectors(win32_spawn_t *args, char **argblk, char **envblk)
     if (args->cmd) {
         tmp = (int)strlen(args->cmd) + 1;
     } else {
-        for (vp = args->argv, tmp = 2+2; *vp; tmp += strlen(*vp++) + 1)
+        for (vp = args->argv, tmp = 2+2; *vp; tmp += (int)strlen(*vp++) + 1)
             /**/;
     }
 
@@ -791,7 +793,7 @@ BuildVectors(win32_spawn_t *args, char **argblk, char **envblk)
      *  Allocate space for environment strings tmp counts the number of bytes
      *  in the environment strings including nulls between strings
      */
-    for (vp = envp, tmp = 2; *vp; tmp += strlen(*vp++) + 1)
+    for (vp = envp, tmp = 2; *vp; tmp += (int)strlen(*vp++) + 1)
         /**/;
 
     /* Allocate space for the environment strings plus extra null byte */
@@ -998,4 +1000,3 @@ InternalError(
     DisplayError(GetStdHandle(STD_OUTPUT_HANDLE), pszAPI, NULL);
     ExitProcess(GetLastError());
 }
-

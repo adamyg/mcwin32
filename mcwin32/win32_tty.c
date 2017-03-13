@@ -609,3 +609,4 @@ handle_console_win32 (console_action_t action)
     }
 }
 /*end*/
+
