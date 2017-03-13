@@ -61,6 +61,7 @@ Source: ".\bin\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\file.exe";      DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\*.dll";         DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\man2hlp.pl";    DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\magic.mgc";     DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\etc\*";         Excludes: ".created"; DestDir: "{app}\etc";    Flags: ignoreversion recursesubdirs createallsubdirs
 Source: ".\bin\plugin\*";      Excludes: ".created"; DestDir: "{app}\plugin"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: ".\bin\share\*";       Excludes: ".created"; DestDir: "{app}\share";  Flags: ignoreversion recursesubdirs createallsubdirs

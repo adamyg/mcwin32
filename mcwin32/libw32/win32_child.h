@@ -59,7 +59,7 @@ typedef struct {
 #endif
 
 LIBW32_API const char * w32_getshell (void);
-LIBW32_API const char * w32_gethome (void);
+LIBW32_API const char * w32_gethome (int ignore_env);
 
 LIBW32_API int          w32_iscommand (const char *);
 LIBW32_API int          w32_shell (const char *shell, const char *cmd,

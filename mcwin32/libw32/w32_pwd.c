@@ -292,10 +292,8 @@ fillin(void)
     pw.pw_age       = "";
     pw.pw_comment   = "";
     pw.pw_gecos     = "pc User";
-    pw.pw_dir       = w32_gethome();
+    pw.pw_dir       = w32_gethome(FALSE);
     pw.pw_shell     = w32_getshell();
     pw.pw_audid     = -1;
     pw.pw_audflg    = -1;
 }
-
-

@@ -69,13 +69,17 @@
 //      No errors are defined.
 */
 
-const char *
 #if (defined(_MSC_VER) && (_MSC_VER < 1400)) || \
 	defined(__WATCOMC__)
+const char * 
 gai_strerror(int ecode)
-#else
+{
+    return w32_gai_strerror(ecode);
+}
+#endif //NEED_GAI_STRERROR
+
+const char *
 w32_gai_strerror(int ecode)
-#endif
 {
     switch (ecode) {
 #if defined(EAI_ADDRFAMILY)
@@ -89,7 +93,7 @@ w32_gai_strerror(int ecode)
 #if defined(EAI_NOSECURENAME)
     case EAI_NOSECURENAME:  return "no such host is known securely";
 #endif
-    case EAI_NONAME:        return "host nor service provided, or not known";
+    case EAI_NONAME:        return "name does not resolve for the supplied parameters or host nor service provided";
     case EAI_SERVICE:       return "service not supported for socket type";        
     case EAI_SOCKTYPE:      return "socket type not supported";
 #if defined(EAI_IPSECPOLICY)

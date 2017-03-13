@@ -66,7 +66,7 @@ w32_getshell(void)
  *      Retrieve the default home directory.
  */
 const char *
-w32_gethome(void)
+w32_gethome(int ignore_env)
 {
     static const char *x_home = NULL;
 
@@ -76,7 +76,7 @@ w32_gethome(void)
         int len, done = FALSE;
 
         // <HOME>
-        if ((env = getenv("HOME")) != NULL && (len = strlen(env)) > 0) {
+        if (!ignore_env && (env = getenv("HOME")) != NULL && (len = (int)strlen(env)) > 0) {
             t_path[sizeof(t_path) - 1] = 0;
             if (0 == _access(t_path, 0)) {
                 t_path[len+1] = 0;
@@ -290,13 +290,3 @@ w32_getexedir(char *buf, int maxlen)
     }
     return -1;
 }
-
-
-//  int
-//  w32_screensaver(void)
-//  {
-//      if (FindWindow("WindowsScreenSaverClass", NULL) != NULL) {
-//          return TRUE;
-//      }
-//      return FALSE;
-//  }

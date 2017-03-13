@@ -1,5 +1,9 @@
 -*- encoding: utf-8; -*-
 
+Sun Mar 12 18:53:27 2017 adamy
+
+	* local strlcpy/strlcpy prefixed
+
 Sat Jan 28 16:08:19 2017 adamy
 
 	* binary read io, work-around issues char's > 127.

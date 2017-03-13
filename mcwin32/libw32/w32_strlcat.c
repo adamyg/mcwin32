@@ -16,6 +16,8 @@
  *      $OpenBSD: strlcat.c,v 1.13 2005/08/08 08:05:37 espie Exp$
  */
 
+#include "w32config.h"
+
 /*
 //  NAME
 //       strlcpy, strlcat - size-bounded string copying and concatenation

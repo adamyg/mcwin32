@@ -40,7 +40,7 @@ struct w32_pollfd {
 
 #if !defined(POLLIN)
 #if (defined(_MSC_VER) && (_MSC_VER >= 1400)) || \
-	defined(__MINGW32__)
+	defined(__MINGW32__) || defined(__WATCOMC__)
 /*
  *  POLLRDNORM          Data on priority band 0 may be read. 
  *  POLLRDBAND          Data on priority bands greater than 0 may be read. 
@@ -76,8 +76,19 @@ struct pollfd {
 
 __BEGIN_DECLS
 
-LIBW32_API int          w32_poll(struct pollfd *fds, int cnt, int timeout);
+LIBW32_API int          w32_poll_fd(struct pollfd *fds, int cnt, int timeout);
 LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout);
+
+#if defined(WIN32_SOCKET_MAP_FD)
+#if !defined(WIN32_SOCKET_H_INCLUDED)
+#define poll(a,b,c)             w32_poll_fd(a,b,c)
+#endif
+
+#elif defined(WIN32_SOCKET_MAP_NATIVE)
+#if !defined(WIN32_SOCKET_H_INCLUDED)
+#define poll(a,b,c)             w32_poll_native(a,b,c)
+#endif
+#endif /*WIN32_SOCKET_MAP_FD|NATIVE*/
 
 __END_DECLS
 

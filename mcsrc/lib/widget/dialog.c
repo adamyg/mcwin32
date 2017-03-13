@@ -203,7 +203,11 @@ static int
 dlg_find_widget_callback (const void *a, const void *b)
 {
     const Widget *w = CONST_WIDGET (a);
+#if defined(WIN32) //WIN32, cast
+    const widget_cb_fn f = (widget_cb_fn) b;
+#else
     const widget_cb_fn f = b;
+#endif
 
     return (w->callback == f) ? 0 : 1;
 }

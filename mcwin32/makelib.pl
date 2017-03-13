@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.5 2017/03/09 03:36:04 cvsuser Exp $
+# $Id: makelib.pl,v 1.8 2017/03/13 16:52:06 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -223,7 +223,7 @@ my %x_environment   = (
 
                 # -q        Operate quietly.
                 # -6r       Register calling conventions.
-		#		warning: dont not mix module calling conventions.
+                #               warning: dont not mix module calling conventions.
                 # -j        Signed character (default unsigned).
                 # -ei       Force enum base type to use at least an int;
                 #               otherwise smallest data-type to fit data-range.
@@ -231,22 +231,28 @@ my %x_environment   = (
                 # -d2       Full symbolic debugging information
                 #   -d2i        C++ only; d2 and debug inlines.
                 # -hc       Generate Codeview debugging information.
-		#  or -hw   Generate Watcomc debugging information.
+                #  or -hw   Generate Watcomc debugging information.
                 # -db       Generate browsing information (.mbr).
                 # -of+      Always generate traceable stack frames.
                 # -zlf      Add default library information to objects.
-                # -za99     Enable C99 ANSI compliance (and features).
                 # -aa       Allow non-constant initialisation expressions.
                 # -bt=nt    Build target Windows NT (or greater).
                 # -bm       Multi-threaded environment.
-		# -br	    Build with dll run-time library.
+                # -br       Build with dll run-time library.
                 # -sg       Enable stack guard management (for functions with >= 4K of local variables).
                 #
                 # -cc++     Treat source files as C++ code.
                 # -xs       Exception handling: balanced (C++).
                 # -xr       Enable RTTI (C++).
                 #
-            CFLAGS          => '-q -6r -j -ei -d2  -hw -db -of+ -zlf -bt=nt -bm -br -za99 -aa -sg',
+                # Others:
+                # -za99     Enable C99 ANSI compliance (1).
+                # -ecc      __cdecl (2).
+                #
+                # (1) Use with caution, beta undocumented feature and not 100% stable.
+                # (2) Avoid changing the call convention from #r/#s, otherwise runtime library issues.
+                #
+            CFLAGS          => '-q -6r -j -ei -d2  -hw -db -of+ -zlf -bt=nt -bm -br -aa -sg',
             CXXFLAGS        => '-q -6r -j -ei -d2i -nw -db -of+ -zlf -bt=nt -bm -br -cc++ -xs -xr',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
@@ -406,9 +412,9 @@ my @x_headers       = (
         'sys/cdefs.h',
         'sys/bsdtypes.h',
         'sys/param.h',
+        'sys/socket.h',
         'sys/time.h',
         'sys/select.h',
-        'sys/socket.h',
         'sys/wait.h',
         'sys/mman.h',
         'sys/utime.h',
@@ -437,6 +443,7 @@ my @x_headers       = (
         'fcntl.h',
         'fenv.h',
         'float.h',
+        'poll.h',
         'io.h',
         'memory.h',
         'process.h',
@@ -465,7 +472,6 @@ my @x_types         = (
         '__int16',
         '__int32',
         '__int64',
-        'int64_t',
         'intmax_t',
         'uintmax_t',
         'intptr_t',
@@ -484,7 +490,11 @@ my @x_types         = (
         'uint_fast16_t',
         'uint_fast32_t',
         'uint_fast64_t',
+        'wchar_t',
+        'char16_t',
+        'char32_t',
         'bool',
+        '_Bool:C99BOOL',
         '_bool',
         'ssize_t',
         );
@@ -515,12 +525,12 @@ my @x_functions     = (
         'strftime',
         'strchr', 'strrchr', 'strdup',
         'strlcpy', 'strlcat',                   # bsd/linux
-            'strsep', 'strcasestr', 'strtonum',
+            'strsep', 'strnstr', 'strcasestr', 'strcasestr_l', 'strtonum',
         'strtof', 'strtold', 'strtoll',
         'strverscmp', '__strverscmp',
         'mkdtemp',                              # bsd/linux
         'err',                                  # bsd/linux: err, warn etc
-             'setproname', 'getprocname',
+             'setprocname', 'getprocname',
         'setproctitle',                         # bsd
         'alloca',
         '_alloca',                              # msvc
@@ -563,6 +573,10 @@ our @x_libraries    = ();   # local libraries -l<xxx> lib<xxx>.lib
 our @x_libraries2   = ();   # local libraries -l<xxx> xxx.lib
 our @x_optlibraries = ();   # optional libraries
 our @x_makefiles    = ();   # local makefiles; build order
+
+my %CONFIG_O        = (     # optional config.h values
+        HAVE_EIGHTBIT           => '1'
+        );
 
 my %CONFIG_H        = (     # predefined config.h values
         IS_LITTLE_ENDIAN        => '1',         # TODO
@@ -646,7 +660,7 @@ main()
                 'gnuwin32=s'    => \$o_gnuwin32,
                 'gnulibs'       => \$o_gnulibs,
                 'contrib'       => \$o_contrib,
-		'libtool'	=> \$LIBTOOL,
+                'libtool'       => \$LIBTOOL,
                 'libhunspell=s' => \$o_libhunspell,
                 'libarchive=s'  => \$o_libarchive,
                 'libmagic=s'    => \$o_libmagic,
@@ -759,7 +773,7 @@ Usage: perl makelib.pl [options] <command>
 Options:
     --help                  command line help.
 
-    --libtool=<path>	    path to libtool_win32.pl.
+    --libtool=<path>        path to libtool_win32.pl.
 
     --binpath=<path>        path of support binaries (gmake etc), otherwise these are assumed to be in the path.
 
@@ -819,14 +833,14 @@ Configure($$)           # (type, version)
         $PERLPATH .= '/';
     }
 
-    if (! $LIBTOOL) {				# derive libtool location
-	if (-f "${CWD}/win32/libtool_win32.pl") {
-	    $LIBTOOL = "${CWD}/win32/libtool_win32.pl";
-	} elsif (-f "${CWD}/libtool_win32.pl") {
-	    $LIBTOOL = "${CWD}/libtool_win32.pl";
-	} else {
-	    $LIBTOOL = "libtool_win32.pl";
-	}
+    if (! $LIBTOOL) {                           # derive libtool location
+        if (-f "${CWD}/win32/libtool_win32.pl") {
+            $LIBTOOL = "${CWD}/win32/libtool_win32.pl";
+        } elsif (-f "${CWD}/libtool_win32.pl") {
+            $LIBTOOL = "${CWD}/libtool_win32.pl";
+        } else {
+            $LIBTOOL = "libtool_win32.pl";
+        }
     }
 
     # environment
@@ -841,10 +855,10 @@ Configure($$)           # (type, version)
 
     if ('dj' ne $type) {                        # WIN32 profile
         foreach my $entry (keys %win_entries) {
-	    my $token = $win_entries{$entry};
+            my $token = $win_entries{$entry};
 
-	    $token =~ s/\$\<LIBTOOL>/${LIBTOOL}/;
-	    $x_tokens{$entry} = $token;
+            $token =~ s/\$\<LIBTOOL>/${LIBTOOL}/;
+            $x_tokens{$entry} = $token;
         }
     }
 
@@ -920,18 +934,25 @@ Configure($$)           # (type, version)
     }
 
     # types
-    foreach my $name (@x_types) {
+    foreach my $typespec (@x_types) {
+        my $name   = $typespec;
+        my $define = uc($typespec);
+        $define =~ s/ /_/g;
+        if ($typespec =~ /^(.+):(.+)$/) {
+            $name   = $1;
+            $define = $2;                       # optional explicit #define
+        }
+
         my $cached = (exists $TYPES{$name});
         my $status = ($cached ? $TYPES{$name} : -1);
 
         print "type:     ${name} ...";
         print " " x (28 - length($name));
+
         if (1 == $status ||
                 (-1 == $status && 0 == CheckType($type, $name))) {
             $TYPES{$name} = 1;
-            $name = uc($name);
-            $name =~ s/ /_/g;
-            $CONFIG_H{"HAVE_${name}"} = 1;
+            $CONFIG_H{"HAVE_${define}"} = 1;
             print ($cached ? "[yes, cached]" : "[yes]");
         } else {
             $TYPES{$name} = 0;
@@ -1312,8 +1333,6 @@ CheckCompiler($$)       # (type, env)
            (exists $$env{ISWITCH} ? $$env{ISWITCH} : '-I').$_.' ';
     }
 
-    $CONFIG_H{GRIEF_CC_COMPILER} = "\"".basename(${x_compiler})."\"";
-    $CONFIG_H{GRIEF_CC_VERSION} = "\"${x_version}\"";
     $CONFIG_H{MAKELIB_CC_COMPILER} = "\"".basename(${x_compiler})."\"";
     $CONFIG_H{MAKELIB_CC_VERSION} = "\"${x_version}\"";
 
@@ -1348,7 +1367,8 @@ CheckType($$)           # (type, name)
     my $BASE   = "${type}_${t_name}";
     my $SOURCE = "${BASE}.c";
     my ($cmd, $cmdparts)
-              = CheckCommand($BASE, $SOURCE);
+            = CheckCommand($BASE, $SOURCE);
+    my $config = CheckConfig();
 
     my $asctime = asctime(localtime());
     chop($asctime);
@@ -1356,20 +1376,11 @@ CheckType($$)           # (type, name)
             die "cannot create ${x_tmpdir}/$SOURCE : $!\n";
     print TMP<<EOT;
 /*
- *  Generated by makelib.pl, $asctime
+ *  Generated by makelib.pl, $asctime (CheckType)
 $cmdparts
  */
-#if defined(__STDC__)
-#include <sys/types.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#endif
+${config}
 EOT
-
-    foreach my $header (@HEADERS) {
-        print TMP "#include <$header>\n";       # list should be more selective
-    }
 
     if ($t_name =~ /inline/) {
         print TMP<<EOT;
@@ -1407,7 +1418,8 @@ CheckSize($$)           # (type, name)
     my $BASE   = "${type}_${t_name}";
     my $SOURCE = "${BASE}.c";
     my ($cmd, $cmdparts)
-               = CheckCommand($BASE, $SOURCE);
+            = CheckCommand($BASE, $SOURCE);
+    my $config = CheckConfig();
 
     $name = 'void *'
         if ($name eq 'void_p');
@@ -1418,14 +1430,10 @@ CheckSize($$)           # (type, name)
             die "cannot create ${x_tmpdir}/$SOURCE : $!\n";
     print TMP<<EOT;
 /*
- *  Generated by makelib.pl, $asctime
+ *  Generated by makelib.pl, $asctime (CheckSize)
 $cmdparts
  */
-#if defined(__STDC__)
-#include <sys/types.h>
-#include <stdio.h>
-#include <stdlib.h>
-#endif
+${config}
 int main(int argc, char **argv) {
     return sizeof($name);
 }
@@ -1449,7 +1457,8 @@ CheckFunction($$)       # (type, name)
     my $BASE   = "${type}_${name}";
     my $SOURCE = "${BASE}.c";
     my ($cmd, $cmdparts)
-               = CheckCommand($BASE, $SOURCE);
+            = CheckCommand($BASE, $SOURCE);
+    my $config = CheckConfig();
 
     my $tmpsource = "${x_tmpdir}/$SOURCE";
     my $asctime = asctime(localtime());
@@ -1459,9 +1468,10 @@ CheckFunction($$)       # (type, name)
             die "cannot create ${tmpsource} : $!\n";
     print TMP<<EOT;
 /*
- *  Generated by makelib.pl, $asctime
+ *  Generated by makelib.pl, $asctime (CheckFunction)
 $cmdparts
  */
+${config}
 #if defined(__STDC__)
 #include <stdio.h>
 #include <stdlib.h>
@@ -1500,7 +1510,7 @@ CheckICUFunction($)     # (type, name)
     my $BASE   = "icufunction_${name}";
     my $SOURCE = "${BASE}.cpp";
     my ($cmd, $cmdparts)
-               = CheckCommand($BASE, $SOURCE, 'icu');
+            = CheckCommand($BASE, $SOURCE, 'icu');
 
     my $tmpsource = "${x_tmpdir}/$SOURCE";
     my $asctime = asctime(localtime());
@@ -1601,6 +1611,48 @@ EOT
 
     return CheckExec($BASE, $cmd, 1);
 }
+
+#   Function: CheckConfig
+#       Build the <config.h> definition to use during check commands.
+#   Returns:
+#       config_h
+#
+sub
+CheckConfig()
+{
+    my $config = '';
+
+    $config = "
+#if defined(__STDC__)
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#endif";
+    $config .= "\n#define HAVE_INTTYPES_H"
+            if (exists $CONFIG_H{HAVE_INTTYPES_H});
+    $config .= "\n#define HAVE_STDINT_H"
+            if (exists $CONFIG_H{HAVE_STDINT_H});
+    $config .= "\n#define HAVE_STDBOOL_H"
+            if (exists $CONFIG_H{HAVE_STDBOOL_H});
+    $config .= "\n#define HAVE_WCHAR_H"
+            if (exists $CONFIG_H{HAVE_WCHAR_H});
+    $config .= "
+#if defined(HAVE_INTTYPES_H)
+#include <inttypes.h>
+#elif defined(HAVE_STDINT_H)
+#include <stdint.h>
+#endif
+#if defined(HAVE_STDBOOL_H)
+#include <stdbool.h>
+#endif
+#if defined(HAVE_WCHAR_H)
+#include <wchar.h>
+#endif
+";
+    return $config;
+}
+
 
 #   Function: CheckCommand
 #       Build the compile check exec command.
@@ -1879,7 +1931,7 @@ Makefile($$$)           # (type, dir, file)
             $xclean .= ' $(D_OBJ)/*.mbr';
         }
 
-	# libraries
+        # libraries
         foreach my $library (@x_libraries) {
             $text =~ s/-l${library}([\n\t \\])/lib${library}.lib$1/g;
         }
@@ -1986,9 +2038,9 @@ Config($$)              # (type, dir)
     my $text = "";
 
     # import
-    if ($dir =~ /libw32/) {			# override 'w32config.h'
-	$file = 'w32config.h'
-	    if (-f "${dir}/w32config.hin" || "${dir}/w32config.h.in");
+    if ($dir =~ /libw32/) {                     # override 'w32config.h'
+        $file = 'w32config.h'
+            if (-f "${dir}/w32config.hin" || "${dir}/w32config.h.in");
     }
 
     printf "building: $dir/$file\n";
@@ -2005,14 +2057,23 @@ Config($$)              # (type, dir)
 
     # update characteristics
     my @MISSING = ();
+    my @MULTIPLE = ();
 
     foreach my $config (sort keys %CONFIG_H) {
         my $value = $CONFIG_H{$config};
 
-        if ($text =~ /undef[\s]+${config}.*\n/) {
-            $text =~ s/undef[\s]+${config}.*\n/define ${config} ${value}\n/;
+        if ($text =~ /^([ \t]*#[ \t]*undef[ \t]+${config})([ \t]*|[ \t]+.+)$/m) {
+            my $count = 0;
+
+            while ($text =~ s/^([ \t]*#[ \t]*undef[ \t]+${config})([ \t]*|[ \t]+.+)$/#define ${config} ${value}/m) {
+                ++$count;
+            }
+            push @MULTIPLE, $config
+                if ($count > 1);
+
         } else {
-            push @MISSING, $config;
+            push @MISSING, $config
+                if (!exists $CONFIG_O{$config});
         }
     }
     $text =~ s/(#undef[^*\n]+)\n/\/* $1 *\/\n/g;
@@ -2022,6 +2083,13 @@ Config($$)              # (type, dir)
             print "missing:  $config\n";
         }
     }
+
+    if (scalar @MULTIPLE) {
+        foreach my $config (@MULTIPLE) {
+            print "multiple: $config\n";
+        }
+    }
+
 
     # export
     my $asctime = asctime(localtime());
@@ -2082,3 +2150,7 @@ systemrcode($)          # (retcode)
 }
 
 #end
+
+
+
+

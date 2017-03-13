@@ -27,6 +27,8 @@
  * SUCH DAMAGE.
  */
 
+#include "w32config.h"
+
 #include <limits.h>
 #include <errno.h>
 #include <ctype.h>

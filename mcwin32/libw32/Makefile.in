@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.2 2017/03/06 11:23:15 cvsuser Exp $
+# $Id: Makefile.in,v 1.3 2017/03/13 16:51:35 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -98,6 +98,7 @@ CSOURCES=\
 	w32_getcwd.c \
 	w32_gethostname.c \
 	w32_getopt.c \
+	w32_getsubopt.c \
 	w32_gistrerror.c \
 	w32_grp.c \
 	w32_iconv.c \
@@ -110,6 +111,8 @@ CSOURCES=\
 	w32_mkstemp.c \
 	w32_mmap.c \
 	w32_neterr.c \
+	w32_poll.c \
+	w32_progname.c \
 	w32_popen.c \
 	w32_pwd.c \
 	w32_read.c \
@@ -117,8 +120,11 @@ CSOURCES=\
 	w32_shell.c \
 	w32_signal.c \
 	w32_slang.c \
+	w32_sockbase.c \
 	w32_socket.c \
+	w32_socket2.c \
 	w32_sockfd.c \
+	w32_sockpair.c \
 	w32_statfs.c \
 	w32_strftime.c \
 	w32_string.c \

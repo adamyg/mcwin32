@@ -1,6 +1,22 @@
+Mon Mar 13 16:52:53 2017 adamy
+
+	* build 205
+	
+	* mc-inno-setup.iss: packaged magic.mgc definitions.
+
+Fri Mar 10 15:24:32 2017 adamy
+
+	* removed several compiler warnings.
+
+	* build scripts, libw32: aligned mcwin32 unistd.h/error with external projects.
+
+	* split poll into w32_poll.c, imported w32_sockpair.c.
+
+	* removed OWC -za99 CC option; possible issues, minor code changes.
+
 Thu Mar  9 00:26:54 2017 adamy
 
-	* build 202.
+	* build 204.
 
 Wed Mar  8 01:17:24 2017 adamy
 

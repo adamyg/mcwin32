@@ -252,3 +252,4 @@ mc_pclose (mc_pipe_t * p, GError ** error)
     free(p);
 }
 /*end*/
+

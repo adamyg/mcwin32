@@ -1,10 +1,10 @@
-#ifndef GR_CONFIG_H_INCLUDED
-#define GR_CONFIG_H_INCLUDED
+#ifndef WIN32_CONFIG_H_INCLUDED
+#define WIN32_CONFIG_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_config_h, "$Id: w32config.hin,v 1.3 2017/03/09 03:36:05 cvsuser Exp $")
+__CIDENT_RCSID(gr_config_h, "$Id: w32config.hin,v 1.4 2017/03/13 16:51:36 cvsuser Exp $")
 __CPRAGMA_ONCE
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.3 2017/03/09 03:36:05 cvsuser Exp $
+/* $Id: w32config.hin,v 1.4 2017/03/13 16:51:36 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
@@ -51,6 +51,10 @@ __CPRAGMA_ONCE
 #pragma warning (disable : 4702)                // unreachable code
 #pragma warning (disable : 4706)                // assignment within conditional expression
 #pragma warning (disable : 4996)
+
+#if !defined(_CRT_NO_POSIX_ERROR_CODES)
+#define _CRT_NO_POSIX_ERROR_CODES               // disable POSIX error number, see <errno.h>
+#endif
 
 #elif defined(__WATCOMC__)
 #if !defined(__cplusplus)
@@ -146,7 +150,6 @@ __CPRAGMA_ONCE
 #undef HAVE_SYS_UTSNAME_H
 #undef HAVE_SYS_SELECT_H
 #undef HAVE_SYS_SOCKET_H
-#undef HAVE_SYS_UTIME_H
 #undef HAVE_SYS_WAIT_H
 #undef HAVE_SYS_STAT_H
 #undef HAVE_SYS_STATFS_H
@@ -190,9 +193,7 @@ __CPRAGMA_ONCE
 #undef HAVE_STRINGS_H
 #undef HAVE_STRING_H
 #undef HAVE_UNISTD_H
-#undef HAVE_LIMITS_H
 #undef HAVE_ARGZ_H
-#undef HAVE_UTIME_H
 #undef HAVE_LIBGEN_H
 #undef HAVE_REGEX_H
 #undef HAVE_ALLOCA_H
@@ -288,12 +289,25 @@ __CPRAGMA_ONCE
 #undef HAVE_UINTPTR_T
 #undef HAVE_LONG_LONG_INT
 #undef HAVE_UNSIGNED_LONG_LONG_INT
+#undef HAVE_INT8_T
+#undef HAVE_INT16_T
+#undef HAVE_INT32_T
 #undef HAVE_INT64_T
+#undef HAVE_UINT8_T
+#undef HAVE_UINT16_T
+#undef HAVE_UINT32_T
+#undef HAVE_UINT64_T
+#undef HAVE_UINT_FAST8_T
+#undef HAVE_UINT_FAST16_T
+#undef HAVE_UINT_FAST32_T
+#undef HAVE_UINT_FAST64_T
 #undef HAVE___INT64
 #undef HAVE___INT16
 #undef HAVE___INT32
 #undef HAVE___INT8
+#undef HAVE_WCHAR_T
 #undef HAVE_SSIZE_T
+#undef HAVE_C99BOOL
 #undef HAVE_BOOL
 #undef HAVE__BOOL
 
@@ -307,17 +321,17 @@ __CPRAGMA_ONCE
 #undef IS_UNIVERSAL_BUILD
 #undef AC_APPLE_UNIVERSAL_BUILD
 #if !defined(IS_BIG_ENDIAN) && !defined(IS_LITTLE_ENDIAN)
-#	if defined(_M_IX86)
-#		define IS_LITTLE_ENDIAN 1
-#	elif defined(_M_MRX000)
-#		define IS_LITTLE_ENDIAN 1
-#	elif defined(_M_ALPHA)
-#		define IS_LITTLE_ENDIAN 1
-#	elif defined(_M_PPC)
-#		define IS_LITTLE_ENDIAN 1
-#	else
-#		error unknown endian
-#	endif
+#       if defined(_M_IX86)
+#               define IS_LITTLE_ENDIAN 1
+#       elif defined(_M_MRX000)
+#               define IS_LITTLE_ENDIAN 1
+#       elif defined(_M_ALPHA)
+#               define IS_LITTLE_ENDIAN 1
+#       elif defined(_M_PPC)
+#               define IS_LITTLE_ENDIAN 1
+#       else
+#               error unknown endian
+#       endif
 #endif
 
 
@@ -330,11 +344,6 @@ __CPRAGMA_ONCE
 #undef HAVE_STDBOOL_H
 #undef HAVE_STDATOMIC_H
 #undef HAVE_THREADS_H
-
-#undef HAVE_STDARG_H
-#undef HAVE_STDIO_H
-#undef HAVE_STDLIB_H
-#undef HAVE_WCTYPE_H
 #undef HAVE_WCHAR_H
 
 #undef mode_t
@@ -399,9 +408,7 @@ __CPRAGMA_ONCE
 #undef HAVE_STRICMP
 #undef HAVE_STRRCHR
 #undef HAVE_STRDUP
-#undef HAVE_STRERROR
 #undef HAVE_STRFTIME
-#undef HAVE_STRICMP
 #undef HAVE_STRTOF
 #undef HAVE_STRTOLD
 #undef HAVE_STRTOLL
@@ -411,7 +418,11 @@ __CPRAGMA_ONCE
 #undef HAVE_STRNLEN
 #undef HAVE_STRLCAT
 #undef HAVE_STRLCPY
-#undef HAVE_STRFTIME
+#undef HAVE_STRSEP
+#undef HAVE_STRNSTR
+#undef HAVE_STRCASESTR
+#undef HAVE_STRCASESTR_L
+#undef HAVE_STRTONUM
 
 #undef HAVE_ISASCII
 #undef HAVE___ISASCII
@@ -419,9 +430,6 @@ __CPRAGMA_ONCE
 #undef HAVE___ISBLANK
 #undef HAVE_ISCSYM
 #undef HAVE___ISCSYM
-
-#undef HAVE_FGETPOS
-#undef HAVE_FSETPOS
 
 #undef HAVE_DECL_TZNAME
 #undef HAVE_GETLOGIN
@@ -447,7 +455,6 @@ __CPRAGMA_ONCE
 #undef HAVE_SETPGRP
 #undef HAVE_SETSID
 
-#undef HAVE_WCHAR_H
 #undef HAVE_WCTYPE_H
 #undef HAVE_MBRTOWC
 #undef HAVE_WCRTOMB
@@ -477,16 +484,6 @@ __CPRAGMA_ONCE
 #undef HAVE__SNPRINTF
 #undef HAVE_VSNPRINTF
 #undef HAVE__VSNPRINTF
-
-#undef HAVE_MBRTOWC
-#undef HAVE_WCRTOMB
-#undef HAVE_WCSCMP
-#undef HAVE_WCSCPY
-#undef HAVE_WCSLEN
-#undef HAVE_WCTOMB
-#undef HAVE_WMEMCMP
-#undef HAVE_WMEMCPY
-#undef HAVE_WMEMMOVE
 
 #undef HAVE_LOCALE_H
 #undef HAVE_SETLOCALE
@@ -691,4 +688,5 @@ __CPRAGMA_ONCE
 
 #define GRIEF_DATADIR "C:/Program Files/Grief/lib"
 
-#endif  /*GR_CONFIG_H_INCLUDED*/
+#endif  /*WIN32_CONFIG_H_INCLUDED*/
+
