@@ -75,6 +75,10 @@
 #pragma comment(lib, "psapi.lib")
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "uuid.lib")
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244) // conversion from 'xxx' to 'xxx', possible loss of data
+#pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
+#endif
 
 static BOOL                 my_GetFinalPathNameByHandle(HANDLE handle, char *name, int length);
 
@@ -476,7 +480,7 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, DWORD length, DWORD flag
                     do {                        // Look up each device name
                         t_drive[0] = *p;
 
-                        if (QueryDosDevice(t_drive, t_name, sizeof(t_name) - 1)) {
+                        if (QueryDosDeviceA(t_drive, t_name, sizeof(t_name) - 1)) {
                             const size_t namelen = strlen(t_name);
 
                             if (namelen < MAX_PATH) {
@@ -521,7 +525,7 @@ my_GetFinalPathNameByHandle(HANDLE handle, char *path, int length)
     if (NULL == x_GetFinalPathNameByHandleA) {
         HINSTANCE hinst;                        // Vista+
 
-        if (0 == (hinst = LoadLibrary("Kernel32")) ||
+        if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_GetFinalPathNameByHandleA =
                         (GetFinalPathNameByHandleA_t)GetProcAddress(hinst, "GetFinalPathNameByHandleA"))) {
                                                 // XP+
@@ -716,7 +720,7 @@ w32_symlink(const char *name1, const char *name2)
     } else if (strlen(name1) > MAX_PATH || strlen(name2) > MAX_PATH) {
         errno = ENAMETOOLONG;
 
-    } else if (GetFileAttributes(name2) != INVALID_FILE_ATTRIBUTES /*0xffffffff*/) {
+    } else if (GetFileAttributesA(name2) != INVALID_FILE_ATTRIBUTES /*0xffffffff*/) {
         errno = EEXIST;
 
     } else if (CreateShortcut(name2, name1, "", name1) == FALSE) {
@@ -1269,10 +1273,10 @@ IsExec(const char *name, const char *magic)
         }
 
     if (-1 == idx) {                            /* only local drives */
-        if ((driveType = GetDriveType(name)) == DRIVE_FIXED) {
+        if ((driveType = GetDriveTypeA(name)) == DRIVE_FIXED) {
             DWORD binaryType = 0;
 
-            if (GetBinaryType(name, &binaryType)) {
+            if (GetBinaryTypeA(name, &binaryType)) {
                 /*
                 switch(binaryType) {
                 case SCS_32BIT_BINARY:          // 32-bit Windows-based application
@@ -1294,7 +1298,7 @@ IsExec(const char *name, const char *magic)
 static const char *
 HasExtension(const char *name)
 {
-        const unsigned len = strlen(name);
+        const size_t len = strlen(name);
         const char *cursor;
         for (cursor = name + len; --cursor >= name;) {
                 if (*cursor == '.')
@@ -1346,7 +1350,7 @@ Readlink(const char *path, const char **suffixes, char *buf, int maxlen)
         strcpy(buf + length, suffix);           // concat suffix
 
         /* File attributes */
-        if ((attrs = GetFileAttributes(buf)) == 0xffffffff) {
+        if ((attrs = GetFileAttributesA(buf)) == 0xffffffff) {
             DWORD rc;
 
             if ((rc = GetLastError()) == ERROR_ACCESS_DENIED ||
@@ -1406,7 +1410,7 @@ Readlink(const char *path, const char **suffixes, char *buf, int maxlen)
             sa.lpSecurityDescriptor = NULL;
             sa.bInheritHandle = FALSE;
 
-            if ((fh = CreateFile (buf, GENERIC_READ, FILE_SHARE_READ,
+            if ((fh = CreateFileA(buf, GENERIC_READ, FILE_SHARE_READ,
                         &sa, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
 
                 // read header
@@ -1631,7 +1635,7 @@ ReadReparse(const char *name, char *buf, int maxlen)
     DWORD returnedLength;
     int ret = 0;
                                                 /* open the file image */
-    if ((fileHandle = CreateFile(name, 0,
+    if ((fileHandle = CreateFileA(name, 0,
                 FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
             FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE) {
         ret = GetLastError();
@@ -1703,7 +1707,7 @@ Stat(const char *name, struct stat *sb)
     } else if (strchr(name, '?') || strchr(name, '*')) {
         ret = -ENOENT;                          /* wildcards -- break FindFirstFile() */
 
-    } else if ((flength = GetFullPathName(name, sizeof(fullname), fullname, &pfname)) == 0) {
+    } else if ((flength = GetFullPathNameA(name, sizeof(fullname), fullname, &pfname)) == 0) {
         ret = -ENOENT;
 
     } else if (flength >= (int)sizeof(fullname)) {
@@ -1711,7 +1715,7 @@ Stat(const char *name, struct stat *sb)
 
     } else {
         HANDLE h;
-        WIN32_FIND_DATA fb;
+        WIN32_FIND_DATAA fb;
         int root = FALSE, drive = 0;
 
         /*
@@ -1724,11 +1728,11 @@ Stat(const char *name, struct stat *sb)
         /*
          *  retrieve the file details
          */
-        if ((h = FindFirstFile(fullname, &fb)) == INVALID_HANDLE_VALUE) {
+        if ((h = FindFirstFileA(fullname, &fb)) == INVALID_HANDLE_VALUE) {
 
             if (((fullname[0] && fullname[1] == ':' &&
                         ISSLASH(fullname[2]) && fullname[3] == '\0')) &&
-                    GetDriveType(fullname) > 1) {
+                    GetDriveTypeA(fullname) > 1) {
                                                 /* "x:\" */
                 /*
                  *  root directories

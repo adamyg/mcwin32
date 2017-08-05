@@ -36,7 +36,7 @@
 
 typedef struct fsid {                           /* file system id type */
     unsigned long   val[2]; 
-} fsid_t;                       
+} fsid_t;
 
 struct statfs {
     long            f_spare2;                   /* placeholder */
@@ -59,7 +59,7 @@ struct statfs {
 
 __BEGIN_DECLS
 
-LIBW32_API int		statfs(const char *, struct statfs *);
+LIBW32_API int      statfs(const char *, struct statfs *);
 LIBW32_API int      fstatfs(int, struct statfs *);
 
 __END_DECLS

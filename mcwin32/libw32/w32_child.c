@@ -37,6 +37,10 @@
 #include <unistd.h>
 
 #pragma comment(lib, "user32.lib")
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244) // conversion from 'xxx' to 'xxx', possible loss of data
+#pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
+#endif
 
 struct procdata {
     int                 type;
@@ -62,7 +66,7 @@ static int              BuildVectors(win32_spawn_t *args, char **argblk, char **
 static char *           Getpath(const char *src, char *dst, unsigned maxlen);
 static const char *     Getenv(const char *const *envp, const char *val);
 static HANDLE           ExecChild(win32_spawn_t *args,
-			    const char *arg0, char *argv, char *envp, STARTUPINFO *si, PROCESS_INFORMATION *pi);
+                            const char *arg0, char *argv, char *envp, STARTUPINFOA *si, PROCESS_INFORMATION *pi);
 static void             DisplayError(HANDLE hOutput, const char *pszAPI, const char *args);
 static void             InternalError(const char *pszAPI);
   
@@ -544,7 +548,7 @@ w32_child_exec(
     struct win32_spawn *args, HANDLE hStdIn, HANDLE hStdOut, HANDLE hStdErr)
 {
     PROCESS_INFORMATION pi = {0};
-    STARTUPINFO si = {0};
+    STARTUPINFOA si = {0};
     HANDLE hProc = 0;
     char *argblk;
     char *envblk;
@@ -644,11 +648,11 @@ done:;  if (buf != NULL) {
 
 static HANDLE
 ExecChild(win32_spawn_t *args,
-    const char *arg0, char *argv, char *envp, STARTUPINFO *si, PROCESS_INFORMATION *pi)
+    const char *arg0, char *argv, char *envp, STARTUPINFOA *si, PROCESS_INFORMATION *pi)
 {
     HANDLE hProc = 0;
 
-    if (CreateProcess(
+    if (CreateProcessA(
             arg0, argv,                         // [in]  application name/args.
             NULL, NULL,                         // [in]  SD's.
             TRUE,                               // [in]  handle inheritance options.
@@ -978,17 +982,17 @@ DisplayError(
 {
     const DWORD rc = GetLastError();
     LPVOID  lpvMessageBuffer;
-    CHAR    szPrintBuffer[512];
+    char    szPrintBuffer[512];
     DWORD   nCharsWritten;
 
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPTSTR)&lpvMessageBuffer, 0, NULL);
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&lpvMessageBuffer, 0, NULL);
 
     _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
         "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
             args ? args : "", args ? "\n" : "" );
 
-    WriteConsole(hOutput, szPrintBuffer, lstrlen(szPrintBuffer), &nCharsWritten, NULL);
+    WriteConsoleA(hOutput, szPrintBuffer, lstrlenA(szPrintBuffer), &nCharsWritten, NULL);
     LocalFree(lpvMessageBuffer);
 }
 

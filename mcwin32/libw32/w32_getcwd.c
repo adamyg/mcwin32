@@ -115,7 +115,7 @@ w32_getcwd(char *path, int size)
         //  is the size, in characters, of the buffer that is required to hold 
         //  the path and the terminating null character.
         //
-        if ((ret = GetCurrentDirectory(sizeof(t_path), t_path)) == 0) {
+        if ((ret = GetCurrentDirectoryA(sizeof(t_path), t_path)) == 0) {
             w32_errno_set();
             
         } else if (ret >= (DWORD)size || ret >= sizeof(t_path)) {
@@ -127,7 +127,7 @@ w32_getcwd(char *path, int size)
 
             for (in = t_path, out = path; *in; ++in) {
                 if ('~' == *in) {               /* shortname expand */
-                    (void) GetLongPathName(t_path, t_path, sizeof(t_path));
+                    (void) GetLongPathNameA(t_path, t_path, sizeof(t_path));
                     for (in = t_path, out = path; *in; ++in) {
                         *out++ = ('\\' == *in ? '/' : *in);
                     }
@@ -189,7 +189,7 @@ w32_getcwdd(char drive, char *path, int size)
         //
         pathrel[0] = ('A' + nDrive);            /* A ... Z */
 
-        if ((ret = GetFullPathName(pathrel, sizeof(t_path), t_path, &file)) == 0) {
+        if ((ret = GetFullPathNameA(pathrel, sizeof(t_path), t_path, &file)) == 0) {
             w32_errno_set();
 
         } else if (ret >= (DWORD)size || ret >= sizeof(t_path)) {
@@ -201,7 +201,7 @@ w32_getcwdd(char drive, char *path, int size)
             
             for (in = t_path, out = path; *in; ++in) {
                 if ('~' == *in) {               /* shortname expand */
-                    (void) GetLongPathName(t_path, t_path, sizeof(t_path));
+                    (void) GetLongPathNameA(t_path, t_path, sizeof(t_path));
                     for (in = t_path, out = path; *in; ++in) {
                         *out++ = ('\\' == *in ? '/' : *in);
                     }

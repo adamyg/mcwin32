@@ -101,21 +101,35 @@ drive_cmd_b(void)
 static void
 drive_sel(WPanel *panel)
 {
-    char buffer[7], drives[27 * 8] = {0};       /* temporary and drive buffer */
+    char t_drives[27 * 8] = {0}, *cursor,       /* temporary drives and cursor */
+            drives[27 * 8] = {0};               /* resulting */
     int x_pos, y_pos, y_height, x_width;
+    char root[4] = "?:\\";
     WDialog *drive_dlg;
     int totaldrives, d;
     const char *path;
     GQueue *buttons;
 
-    /*
-     *  Get drives name and count
-     */
+    /* Get active drives name and count */
+    GetLogicalDriveStrings(sizeof(t_drives) - 1, t_drives);
+    for (totaldrives = 0, path = t_drives, cursor = drives; *path;) {
+        const int length = strlen(path);
+        const char drive = toupper(*path);
+        int type;
 
-    GetLogicalDriveStrings(sizeof(drives) - 1, drives);
-    for (totaldrives = 0, path = drives; *path; ++totaldrives) {
-        *((char *)path) = toupper(*path);
-        path += strlen(path) + 1;
+        assert(length < 8);
+        assert(drive >= 'A' && drive <= 'Z');
+
+        root[0] = drive;
+        if ((type = GetDriveType(root)) != DRIVE_UNKNOWN && type != DRIVE_NO_ROOT_DIR)
+            if (drive < 'C' ||                  /* assume floppies; FIXME, shell32?? */
+                    GetDiskFreeSpaceExA(root, NULL, NULL, NULL)) {
+                (void) memcpy(cursor, path, length);
+                cursor[0] = drive;
+                cursor += length + 1;
+                ++totaldrives;
+            }
+        path += length + 1;
     }
 
     /* Create Dialog */
@@ -142,7 +156,7 @@ drive_sel(WPanel *panel)
 //      dlg_create(TRUE, y_pos, x_pos, y_height, x_width, dialog_colors,
 //              drive_dlg_callback, NULL, "[Chdrive]", _("Chdrive command"), 0);
         dlg_create(TRUE, y_pos, x_pos, y_height, x_width, WPOS_CENTER | WPOS_TRYUP, FALSE,
-		dialog_colors, drive_dlg_callback, NULL /*TODO-MOUSE*/, "[Chdrive]", _("Chdrive command"));
+                dialog_colors, drive_dlg_callback, NULL /*TODO-MOUSE*/, "[Chdrive]", _("Chdrive command"));
 
     /*
      *  Drive buttons
@@ -152,6 +166,7 @@ drive_sel(WPanel *panel)
 
     if (totaldrives > D_PERLINE) {
         int y = 1, x = D_BUTSTART;
+        char buffer[7];
                                                 /* multiple lines */
         for (path = drives, d = 0; d < totaldrives; ++d) {
             sprintf(buffer, "&%c", *path);
@@ -165,7 +180,7 @@ drive_sel(WPanel *panel)
 
     } else {
         int x = ((x_width - (totaldrives * D_BUTWIDTH)) / 2) + 1;
-
+        char buffer[7];
                                                 /* single line */
         for (path = drives, d = 0; d < totaldrives; ++d) {
             sprintf(buffer, "&%c", *path);

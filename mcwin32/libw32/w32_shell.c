@@ -34,6 +34,11 @@
 #include <signal.h>
 #include <assert.h>
 #include <unistd.h>
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244) // function : conversion from 'xxx' to 'xxx', possible loss of data
+#pragma warning(disable : 4311) // type cast : pointer truncation from 'HANDLE' to 'int'
+#pragma warning(disable : 4312) // type cast : conversion from 'xxx' to 'xxx' of greater size
+#endif
 
 struct procdata {
     int                 type;
@@ -100,38 +105,38 @@ w32_shell(const char *shell, const char *cmd,
     hInFile = hOutFile = hErrFile = INVALID_HANDLE_VALUE;
 
     if (fstdin) {                               // O_RDONLY
-        hInFile = CreateFile(fstdin, GENERIC_READ,
+        hInFile = CreateFileA(fstdin, GENERIC_READ,
                         0, &sa, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     }
 
     if (fstdout) {
         if (! xstdout)  {                       // O_RDWR|O_CREAT|O_TRUNC
-            hOutFile = CreateFile(fstdout, GENERIC_READ | GENERIC_WRITE,
+            hOutFile = CreateFileA(fstdout, GENERIC_READ | GENERIC_WRITE,
                             0, &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
         } else {                                // O_RDWR|O_CREAT|O_APPEND
-            hOutFile = CreateFile(fstdout, GENERIC_READ | GENERIC_WRITE | FILE_APPEND_DATA,
+            hOutFile = CreateFileA(fstdout, GENERIC_READ | GENERIC_WRITE | FILE_APPEND_DATA,
                             0, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         }
     }
 
     if (fstderr) {
         if (! xstderr)  {                       // O_RDWR|O_CREAT|O_TRUNC
-            hErrFile = CreateFile(fstderr, GENERIC_READ | GENERIC_WRITE,
+            hErrFile = CreateFileA(fstderr, GENERIC_READ | GENERIC_WRITE,
                             0, &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
         } else {                                // O_RDWR|O_CREAT|O_APPEND
-            hErrFile = CreateFile(fstderr, GENERIC_READ | GENERIC_WRITE | FILE_APPEND_DATA,
+            hErrFile = CreateFileA(fstderr, GENERIC_READ | GENERIC_WRITE | FILE_APPEND_DATA,
                             0, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         }
 
     } else if (fstdout) {
         if (! xstdout)  {                       // O_RDWR|O_CREAT|O_TRUNC
-            hErrFile = CreateFile(fstdout, GENERIC_READ | GENERIC_WRITE,
+            hErrFile = CreateFileA(fstdout, GENERIC_READ | GENERIC_WRITE,
                             0, &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
         } else {                                // O_RDWR|O_CREAT|O_APPEND
-            hErrFile = CreateFile(fstdout, GENERIC_READ | GENERIC_WRITE | FILE_APPEND_DATA,
+            hErrFile = CreateFileA(fstdout, GENERIC_READ | GENERIC_WRITE | FILE_APPEND_DATA,
                             0, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         }
     }
@@ -604,18 +609,18 @@ DisplayError(
 {
     DWORD   rc = GetLastError();
     LPVOID  lpvMessageBuffer;
-    CHAR    szPrintBuffer[512];
+    char    szPrintBuffer[512];
     DWORD   nCharsWritten;
 
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpvMessageBuffer, 0, NULL);
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &lpvMessageBuffer, 0, NULL);
 
     _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
         "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
         args ? args : "", args ? "\n" : "");
 
-    WriteConsole(hOutput, szPrintBuffer,
-        lstrlen(szPrintBuffer), &nCharsWritten, NULL);
+    WriteConsoleA(hOutput, szPrintBuffer,
+        lstrlenA(szPrintBuffer), &nCharsWritten, NULL);
 
     LocalFree(lpvMessageBuffer);
 }

@@ -26,6 +26,7 @@
 
 #include <config.h>
 #include "libw32.h"
+#include "libw32/termemu_vio.h"                 /* vio driver */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,10 +48,10 @@
 #include "win32_key.h"
 
 static wchar_t      origTitle[200];
-static USHORT       origRows, origCols;
-static CHAR_INFO *  origImage = NULL;
-static COORD        origCoord;
-static CONSOLE_CURSOR_INFO origInfo;
+//static USHORT       origRows, origCols;
+//static CHAR_INFO *  origImage = NULL;
+//static COORD        origCoord;
+//static CONSOLE_CURSOR_INFO origInfo;
 
 extern int tty_use_256colors(void);             /* screen color depth */
 
@@ -65,11 +66,11 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
     }
 
     if (getenv("COLORTERM") == NULL) {
-		if (tty_use_256colors()) {              // TODO: command line, max colors.
-			(void) putenv("COLORTERM=24bit");   /* allow true-color skins */
-		} else {
-			(void) putenv("COLORTERM=16");
-		}
+        if (tty_use_256colors()) {              /* TODO: command line, max colors. */
+            (void) putenv("COLORTERM=24bit");   /* allow true-color skins */
+        } else {
+            (void) putenv("COLORTERM=16");
+        }
     }
 
     SLsmg_init_smg ();
@@ -123,7 +124,7 @@ void
 tty_reset_shell_mode (void)
 {
     if (origTitle[0]) SetConsoleTitleW(origTitle);
-	SLsmg_touch_screen();
+        SLsmg_touch_screen();
     key_shell_mode();
 }
 
@@ -182,8 +183,8 @@ tty_reset_screen (void)
 void
 tty_touch_screen (void)
 {
-	SLsmg_touch_lines(0, LINES);
-	SLsmg_touch_screen();
+    SLsmg_touch_lines(0, LINES);
+    SLsmg_touch_screen();
 }
 
 
@@ -444,138 +445,6 @@ tty_beep (void)
 }
 
 
-static void
-vio_save (void)
-{
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO sbinfo;
-    COORD iSz, iPs;
-    SMALL_RECT wRec;
-    int rows, cols;
-
-    /*
-     *  Size arena
-     */
-    GetConsoleScreenBufferInfo(hConsole, &sbinfo);
-    rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
-    cols = 1 + sbinfo.srWindow.Right - sbinfo.srWindow.Left;
-
-    if (!origImage || origRows != rows || origCols != cols) {
-        CHAR_INFO *newImage;
-
-        if (rows <= 0 || cols <= 0 ||
-                NULL == (newImage = malloc(rows * cols * sizeof(CHAR_INFO)))) {
-            return;
-        }
-        free(origImage);
-        origImage = newImage;
-    }
-
-    /*
-     *  Save cursor
-     */
-    GetConsoleCursorInfo(hConsole, &origInfo);
-    origCoord.X = sbinfo.dwCursorPosition.X;
-    origCoord.Y = sbinfo.dwCursorPosition.Y;
-    origRows = rows;
-    origCols = cols;
-
-    /*
-     *  Save image
-     */
-    wRec.Left = 0;                              /* source screen rectangle */
-    wRec.Right = cols - 1;
-    wRec.Top = 0;
-    wRec.Bottom = rows - 1;
-
-    iSz.Y = rows;                               /* size of image */
-    iSz.X = cols;
-    iPs.X = 0;                                  /* top left src cell in image */
-    iPs.Y = 0;
-
-    ReadConsoleOutputW(hConsole, origImage, iSz, iPs, &wRec);
-}
-
-
-static void
-vio_setcursor (HANDLE hConsole, int col, int row)
-{
-    COORD coord;
-
-    coord.X = col;
-    coord.Y = row;
-    SetConsoleCursorPosition(hConsole, coord);
-}
-
-
-static void
-vio_restore (void)
-{
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO sbinfo = {0};
-    COORD iSz, iPs;
-    SMALL_RECT wRec;
-    CHAR_INFO * newImage;
-    int rows, cols;
-
-    if (origImage == NULL)
-        return;
-
-    GetConsoleScreenBufferInfo(hConsole, &sbinfo);
-    rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
-    cols = 1 + sbinfo.srWindow.Right - sbinfo.srWindow.Left;
-
-                                                /* resize */
-    if ((rows != origRows || cols != origCols) && rows && cols &&
-            (newImage = malloc( rows * cols * sizeof(CHAR_INFO))) != NULL) {
-
-        CHAR_INFO blank = { ' ', FOREGROUND_INTENSITY };
-        int cnt = (cols > origCols ? origCols : cols) * sizeof(CHAR_INFO);
-        int r, c;
-
-        for (r = 0; r < rows; r++) {
-            if (r < origRows) {                 /* copy oldimage */
-                memcpy( newImage + (r*cols), (const void *)(origImage + (r*origCols)), cnt );
-            }
-
-                                                /* blank new cells */
-            if ((c = (r >= origRows ? 0 : origCols)) < cols) {
-                CHAR_INFO *p = newImage + (r*cols) + c;
-                do {
-                    *p++ = blank;
-                } while (++c < cols);
-            }
-        }
-
-        free((void *)origImage);
-        origImage = newImage;
-        origRows = rows;
-        origCols = cols;
-    }
-
-    /*
-     *  Restore image
-     */
-    wRec.Left   = 0;                            /* dest. screen rectangle */
-    wRec.Right  = origCols - 1;
-    wRec.Top    = 0;
-    wRec.Bottom = origRows - 1;
-    iSz.Y       = origRows;                     /* size of image */
-    iSz.X       = origCols;
-    iPs.X       = 0;                            /* top left src cell in image */
-    iPs.Y       = 0;
-                                                /* write out image */
-    WriteConsoleOutputW(hConsole, origImage, iSz, iPs, &wRec);
-
-    /*
-     *  Restore cursor
-     */
-    vio_setcursor(hConsole, 0, 0);
-    vio_setcursor(hConsole, origCoord.X, origCoord.Y);
-    SetConsoleCursorInfo(hConsole, &origInfo);
-}
-
-
 /*
  *  cons.handler.c support
  */
@@ -584,7 +453,7 @@ void
 show_console_contents_win32 (
     int starty, unsigned char begin_line, unsigned char end_line )
 {
-    vio_restore();
+    SLtt_restore();
     SLsmg_touch_screen();
 }
 
@@ -598,10 +467,10 @@ handle_console_win32 (console_action_t action)
     case CONSOLE_DONE:
         break;
     case CONSOLE_SAVE:
-        vio_save();
+        SLtt_save();
         break;
     case CONSOLE_RESTORE:
-        vio_restore();
+        SLtt_restore();
         SLsmg_touch_screen();
         break;
     default:
@@ -609,4 +478,3 @@ handle_console_win32 (console_action_t action)
     }
 }
 /*end*/
-

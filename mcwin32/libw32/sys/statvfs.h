@@ -131,8 +131,8 @@ struct statvfs {
 
 __BEGIN_DECLS
 
-LIBW32_API int		statvfs (const char *path, struct statvfs *fs);
-LIBW32_API int		fstatvfs (int, struct statvfs *);
+LIBW32_API int          statvfs (const char *path, struct statvfs *fs);
+LIBW32_API int          fstatvfs (int, struct statvfs *);
 
 __END_DECLS
 

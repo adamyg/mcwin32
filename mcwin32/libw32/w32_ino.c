@@ -175,7 +175,7 @@ w32_ino_file(const char *path)
 
     if (NULL != path && *path &&
             INVALID_HANDLE_VALUE != (handle = 
-                CreateFile(path, 0, 0, NULL, OPEN_EXISTING,
+                CreateFileA(path, 0, 0, NULL, OPEN_EXISTING,
                             FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL))) {
         const ino_t ino = w32_ino_handle(handle);
         CloseHandle(handle);

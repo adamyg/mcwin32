@@ -24,6 +24,7 @@
  * ==end==
  */
 
+#include <sys/utypes.h>				/* off_t */
 #include <stddef.h>                             /* size_t */
 
 /*

@@ -510,15 +510,15 @@ Close2(HANDLE handle, const char *desc)
  */
 static void
 DisplayError(
-    HANDLE hOutput, const char *pszAPI, const char *args )
+    HANDLE hOutput, const char *pszAPI, const char *args)
 {
     DWORD   rc = GetLastError();
     LPVOID  lpvMessageBuffer;
-    CHAR    szPrintBuffer[512];
+    char    szPrintBuffer[512];
     DWORD   nCharsWritten;
 
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpvMessageBuffer, 0, NULL);
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&lpvMessageBuffer, 0, NULL);
 
     _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
         "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
@@ -528,18 +528,16 @@ DisplayError(
         hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     }
 
-    WriteConsole(hOutput, szPrintBuffer, lstrlen(szPrintBuffer), &nCharsWritten, NULL);
+    WriteConsoleA(hOutput, szPrintBuffer, lstrlenA(szPrintBuffer), &nCharsWritten, NULL);
     LocalFree(lpvMessageBuffer);
 }
 
 
 static void
-InternalError(
-    const char *pszAPI)
+InternalError(const char *pszAPI)
 {
     DisplayError(INVALID_HANDLE_VALUE, pszAPI, NULL);
     ExitProcess(GetLastError());
 }
 
 /*end*/
-

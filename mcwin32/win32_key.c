@@ -902,7 +902,13 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
             case FOCUS_EVENT:
                 (void)ReadConsoleInput(hConsole, &k, 1, &count);
                 if (k.Event.FocusEvent.bSetFocus) {
+#if defined(_MSC_VER)
+                    if (! IsDebuggerPresent()) {
+                        SLsmg_touch_screen();
+                    }
+#else
                     SLsmg_touch_screen();
+#endif
                 }
                 break;
 
@@ -1134,20 +1140,18 @@ key_mapwin32(
 int
 get_key_code(int no_delay)
 {
-        DWORD count, rc;
-        INPUT_RECORD k;
-        int c;
+    DWORD count, rc;
+    INPUT_RECORD k;
+    int c;
 
-        do {
+    do {
         rc = WaitForSingleObject(hConsole, no_delay ? 0 : INFINITE);
         if (rc == WAIT_OBJECT_0 &&
                 ReadConsoleInput(hConsole, &k, 1, &count)) {
-
             switch (k.EventType) {
             case KEY_EVENT:
                 if (k.Event.KeyEvent.bKeyDown) {
                     const KEY_EVENT_RECORD *pKey = &k.Event.KeyEvent;
-
                     if ((c = key_mapwin32(pKey->dwControlKeyState,
                                 pKey->wVirtualKeyCode, pKey->uChar.AsciiChar)) != -1) {
                         return c;
@@ -1155,7 +1159,6 @@ get_key_code(int no_delay)
                 }
                 check_winch();
                 break;
-
             default:
                 check_winch();
                 break;
@@ -1191,7 +1194,7 @@ is_idle (void)
 
     while (hConsole && WaitForSingleObject(hConsole, 0 /*NONBLOCKING*/) == WAIT_OBJECT_0 &&
                 PeekConsoleInput(hConsole, &k, 1, &count) && count == 1) {
-        if (k.EventType == FOCUS_EVENT ||
+        if (/*k.EventType == FOCUS_EVENT ||*/
                 (k.EventType == KEY_EVENT && !k.Event.KeyEvent.bKeyDown)) {
             //
             //  Focus or key-up, consume
@@ -1236,3 +1239,4 @@ disable_bracketed_paste (void)
 }
 
 /*end*/
+

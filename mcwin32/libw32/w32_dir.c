@@ -34,6 +34,10 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244) // conversion from 'xxx' to 'xxx', possible loss of data
+#pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
+#endif
 const char *            x_w32_cwdd[26];         /* current working directory, per drive */
 
 const char *            x_w32_vfscwd = NULL;    /* virtual UNC path, if any */
@@ -385,7 +389,7 @@ w32_root_unc(const char *path)
                 if (GetComputerNameA(computerName, &computerSz)) {
                     if (serverlen == computerSz &&
                             0 == _strnicmp(path + 2, computerName, serverlen)) {
-                        return serverlen;
+                        return (int)serverlen;
                     }
                 }
             }

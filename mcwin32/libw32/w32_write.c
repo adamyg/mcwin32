@@ -326,7 +326,7 @@ w32_write(int fildes, const void *buffer, size_t nbyte)
     if (fildes < 0) {
         errno = EBADF;
         ret = -1;
-	} else if (w32_issockfd(fildes, &s)) {
+    } else if (w32_issockfd(fildes, &s)) {
         if ((ret = sendto(s, buffer, (int)nbyte, 0, NULL, 0)) == SOCKET_ERROR) {
             w32_neterrno_set();
             ret = -1;

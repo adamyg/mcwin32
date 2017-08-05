@@ -276,7 +276,7 @@ w32_ostype(void)
 int
 w32_getexedir(char *buf, int maxlen)
 {
-    if (GetModuleFileName(NULL, buf, maxlen)) {
+    if (GetModuleFileNameA(NULL, buf, maxlen)) {
         const int len = (int)strlen(buf);
         char *cp;
 

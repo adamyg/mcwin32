@@ -161,10 +161,10 @@ w32_close(int fildes)
 #define SD_SEND         0x01
 #define SD_BOTH         0x02
 #endif
-		w32_sockfd_close(fildes, s);
+        w32_sockfd_close(fildes, s);
         (void) shutdown(s, SD_BOTH);
         if ((ret = closesocket(s)) == SOCKET_ERROR) {
-			w32_neterrno_set();
+            w32_neterrno_set();
             ret = -1;
         }
     } else {

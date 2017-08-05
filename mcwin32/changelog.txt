@@ -1,3 +1,11 @@
+Fri Mar 31 02:38:24 2017 adamy
+
+	* console/slang video driver performance improvements.
+
+Thu Mar 16 22:45:22 2017 adamy
+
+	* Console2 and Windows 10 extended console detection.
+
 Mon Mar 13 16:52:53 2017 adamy
 
 	* build 205

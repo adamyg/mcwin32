@@ -32,37 +32,30 @@ __BEGIN_DECLS
 
 #define SLang_TT_Baud_Rate      19000
 
-//#define SLANG_VERSION           20104
-//#define SLANG_VERSION_STRING    "2.1.4 libw32"
-
 #define SLANG_VERSION           30000           /* interface version only; needs confirming */
 #define SLANG_VERSION_STRING    "3.0.0 libw32"
 
-LIBW32_API extern const int SLang_Version;
+LIBW32_API extern const int     SLang_Version;
     /*
      *  Used to test for specific Slang features, currently only true color support.
      *
      *  true-color was added versions:
-     *      64bit       20301   slang-2.3.1
-     *	    32bit	30000	slang-3 	(projected)
+     *      64bit   20301   slang-2.3.1
+     *	    32bit   30000   slang-3 (projected)
      */
 
-typedef unsigned char       SLsmg_Char_Type;
-typedef uint32_t            SLtt_Char_Type;
-typedef uint32_t            SLwchar_Type;
+typedef unsigned char          SLsmg_Char_Type;
+typedef uint32_t               SLtt_Char_Type;
+typedef uint32_t               SLwchar_Type;
 
-LIBW32_API extern int       SLsmg_Display_Eight_Bit;
-//LIBW32_API extern int     SLsmg_Newline_Behavior;
-//LIBW32_API extern int     SLsmg_Backspace_Moves;
+LIBW32_API extern int          SLsmg_Display_Eight_Bit;
 
-LIBW32_API extern int       SLtt_Screen_Rows;
-LIBW32_API extern int       SLtt_Screen_Cols;
-//LIBW32_API extern int     SLtt_Ignore_Beep;
-LIBW32_API extern int       SLtt_Use_Ansi_Colors;
-//LIBW32_API extern int     SLtt_Term_Cannot_Scroll;
-//LIBW32_API extern int     SLtt_Term_Cannot_Insert;
-LIBW32_API extern int       SLtt_Try_Termcap;
-#define                     SLtt_Has_Alt_Charset 1  /* FIXME */
+LIBW32_API extern int          SLtt_Screen_Rows;
+LIBW32_API extern int          SLtt_Screen_Cols;
+LIBW32_API extern int          SLtt_Ignore_Beep;
+LIBW32_API extern int          SLtt_Use_Ansi_Colors;
+LIBW32_API extern int          SLtt_Try_Termcap;
+#define                        SLtt_Has_Alt_Charset 1  /* FIXME */
 
  /*
   * not implemented
@@ -75,7 +68,7 @@ LIBW32_API extern int       SLtt_Try_Termcap;
   */
 
 #define SLTT_BOLD_MASK          0x01000000UL    /* Bold */
-#define SLTT_BLINK_MASK         0x02000000UL
+#define SLTT_BLINK_MASK         0x02000000UL    /* Blinking (non implemented) */
 #define SLTT_ULINE_MASK         0x04000000UL    /* Underline */
 #define SLTT_REV_MASK           0x08000000UL    /* Reverse */
 #define SLTT_ITALIC_MASK        0x10000000UL    /* Italic (4.8.14) */
@@ -175,6 +168,7 @@ LIBW32_API void             SLsmg_set_char_set (int alt_charset);
 LIBW32_API int              SLsmg_get_char_set (void);
 LIBW32_API void             SLsmg_write_char (SLtt_Char_Type);
 LIBW32_API void             SLsmg_write_string (const char *);
+LIBW32_API void             SLsmg_write_nstring (const char *s, unsigned n);
 LIBW32_API void             SLsmg_printf (const char *, ...);
 LIBW32_API void             SLsmg_vprintf (const char *fmt, va_list);
 LIBW32_API void             SLsmg_normal_video (void);
@@ -188,6 +182,9 @@ LIBW32_API int              SLsmg_get_row (void);
 LIBW32_API int              SLsmg_get_column (void);
 LIBW32_API void             SLsmg_fill_region (int, int, unsigned int, unsigned int, SLwchar_Type);
 
+LIBW32_API int              SLtt_initialize (const char *term);
+LIBW32_API void             SLtt_save (void);
+LIBW32_API void             SLtt_restore (void);
 LIBW32_API int              SLtt_set_font (const char *font);
 LIBW32_API const char *     SLtt_get_font (char *buffer, size_t buflen);
 LIBW32_API void             SLtt_set_color (int, const char *, const char *, const char *);

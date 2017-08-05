@@ -1261,7 +1261,6 @@ show_dir (const WPanel * panel)
 
     set_colors (panel);
     tty_draw_box (w->y, w->x, w->lines, w->cols, FALSE);
-
     if (panels_options.show_mini_info)
     {
         int y;

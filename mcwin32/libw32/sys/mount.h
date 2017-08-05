@@ -48,4 +48,3 @@ LIBW32_API int		getmntinfo(struct statfs **mntbufp, int flags);
 __END_DECLS
 
 #endif
-

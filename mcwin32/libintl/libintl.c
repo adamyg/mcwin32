@@ -50,9 +50,4 @@ DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved)
     return TRUE;
 }
 
-
-void
-trace_log(const char *fmt, ...)
-{
-}
 /*end*/

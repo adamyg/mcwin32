@@ -30,5 +30,3 @@
 #include <sys/cdefs.h>
 
 /*end*/
-
-
