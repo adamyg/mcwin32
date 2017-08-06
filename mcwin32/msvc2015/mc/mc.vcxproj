@@ -1,0 +1,1115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\mcsrc\lib\charsets.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\event\event.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/event/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/event/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\event\manage.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/event/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/event/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\event\raise.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/event/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/event/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\filehighlight\common.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/hilite/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/hilite/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\filehighlight\get-color.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/hilite/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/hilite/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\filehighlight\ini-file-read.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/hilite/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/hilite/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\glibcompat.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\global.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\hook.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\keybind.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\lock.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\logging.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\mcconfig\common.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\mcconfig\get.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\mcconfig\paths.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\mcconfig\set.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\search\glob.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\search\hex.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\search\lib.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\search\normal.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\search\regex.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\search\search.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/search/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\serialize.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\shell.c" />
+    <ClCompile Include="..\..\..\mcsrc\lib\skin\colors-old.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\skin\colors.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\skin\common.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\skin\hc-skins.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\skin\ini-file.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\skin\lines.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\replace.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\strescape.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\strutil.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\strutil8bit.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\strutilascii.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\strutilutf8.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\strverscmp.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\xstrtol.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\timefmt.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\timer.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\tty\color-internal.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\tty\color-slang.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\tty\color.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\tty\mouse.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\tty\tty.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\util.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\vfs\direntry.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\vfs\gc.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\vfs\interface.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\vfs\netutil.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\vfs\parse_ls_vga.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\vfs\path.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\vfs\utilvfs.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\vfs\vfs.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\button.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\buttonbar.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\check.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\dialog-switch.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\dialog.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\gauge.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\groupbox.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\history.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\hline.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\input.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\input_complete.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\label.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\listbox-window.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\listbox.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\menu.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\mouse.c" />
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\quick.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\radio.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\widget-common.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\wtools.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\args.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\clipboard.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\cons.handler.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\diffviewer\search.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/diffviewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/diffviewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\diffviewer\ydiff.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/diffviewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/diffviewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\bookmark.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\choosesyntax.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\edit.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editbuffer.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editcmd.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editcmd_dialogs.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editdraw.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editmenu.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editoptions.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editwidget.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\etags.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\format.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\spell.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\spell_dialogs.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\syntax.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\events_init.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\execute.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\achown.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\boxes.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\chmod.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\chown.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\cmd.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\command.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\dir.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\ext.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\file.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\filegui.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\filenot.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\fileopctx.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\find.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\hotlist.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\info.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\layout.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\listmode.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\midnight.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\mountlist.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\panel.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\panelize.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\tree.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\treestore.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\usermenu.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\help.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\keybind-defaults.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\learn.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\main.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\selcodepage.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\setup.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\textconf.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\util.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\cpio\cpio.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\extfs\extfs.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\ftpfs\ftpfs.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\local\local.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\plugins_init.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sfs\sfs.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\config_parser.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\connection.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\dir.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\file.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\init.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\internal.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\vfs_class.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\vfs_subclass.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\tar\tar.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\actions_cmd.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\ascii.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\coord_cache.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\datasource.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\dialogs.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\display.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\growbuf.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\hex.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\lib.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\mcviewer.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\move.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\nroff.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\viewer\search.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drive.c" />
+    <ClCompile Include="..\..\libw32\w32_check.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_child.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_chown.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_close.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_dir.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_dirent.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_errno.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_fcntl.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_fsync.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_getcwd.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_gethostname.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_getopt.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_getsubopt.c" />
+    <ClCompile Include="..\..\libw32\w32_gistrerror.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_grp.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_iconv.c" />
+    <ClCompile Include="..\..\libw32\w32_iconv_native.c" />
+    <ClCompile Include="..\..\libw32\w32_ino.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_io.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_langinfo.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_link.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_mknod.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_mkstemp.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_mmap.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_neterr.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_poll.c" />
+    <ClCompile Include="..\..\libw32\w32_popen.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_progname.c" />
+    <ClCompile Include="..\..\libw32\w32_pwd.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_read.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_select.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_shell.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_signal.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_slang.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_sockbase.c" />
+    <ClCompile Include="..\..\libw32\w32_socket.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_socket2.c" />
+    <ClCompile Include="..\..\libw32\w32_sockfd.c" />
+    <ClCompile Include="..\..\libw32\w32_sockpair.c" />
+    <ClCompile Include="..\..\libw32\w32_statfs.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_strftime.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_string.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_strlcat.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_strlcpy.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_strtoll.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_strtoull.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_sysdir.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_time.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_trace.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_truncate.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_uname.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_unlink.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_user.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_util.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_write.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\win32_glib.c" />
+    <ClCompile Include="..\..\win32_key.c" />
+    <ClCompile Include="..\..\win32_pipe.c" />
+    <ClCompile Include="..\..\win32_tty.c" />
+    <ClCompile Include="..\..\win32_utl.c" />
+    <ClCompile Include="..\..\win32_win.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\mc.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\mcsrc\lib\charsets.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\event-types.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\event.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\event\internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\filehighlight.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\filehighlight\internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\fileloc.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\fs.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\glibcompat.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\global.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\hook.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\keybind.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\lock.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\logging.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\mcconfig.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\search.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\search\internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\serialize.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\skin.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\skin\internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\strescape.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\strutil.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\timefmt.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\timer.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\color-internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\color-slang.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\color.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\key.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\mouse.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\tty-internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\tty-ncurses.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\tty-slang.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\tty.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\win.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\tty\x11conn.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\unixcompat.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\util.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\utilunix.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\vfs\gc.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\vfs\netutil.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\vfs\path.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\vfs\utilvfs.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\vfs\vfs.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\vfs\xdirentry.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\button.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\buttonbar.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\check.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\dialog-switch.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\dialog.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\gauge.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\groupbox.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\history.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\hline.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\input.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\input_complete.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\label.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\listbox-window.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\listbox.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\menu.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\quick.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\radio.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\widget-common.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\wtools.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\args.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\clipboard.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\diffviewer\internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\diffviewer\ydiff.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\edit-impl.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\edit.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\editbuffer.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\editcmd_dialogs.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\editwidget.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\etags.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\spell.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\spell_dialogs.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\events_init.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\execute.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\achown.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\boxes.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\chmod.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\chown.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\cmd.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\command.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\dir.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\ext.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\file.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\filegui.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\filenot.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\fileopctx.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\find.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\hotlist.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\info.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\layout.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\listmode.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\midnight.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\mountlist.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\panel.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\panelize.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\tree.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\treestore.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\usermenu.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\help.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\history.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\keybind-defaults.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\learn.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\selcodepage.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\setup.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\textconf.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\util.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\cpio\cpio.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\extfs\extfs.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\ftpfs\ftpfs.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\local\local.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\plugins_init.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\sfs\sfs.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\sftpfs\init.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\sftpfs\internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\tar\tar.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\viewer\inlines.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\viewer\internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\viewer\mcviewer.h" />
+    <ClInclude Include="..\..\buildinfo.h" />
+    <ClInclude Include="..\..\config.h" />
+    <ClInclude Include="..\..\drive.h" />
+    <ClInclude Include="..\..\libw32\alloca.h" />
+    <ClInclude Include="..\..\libw32\dirent.h" />
+    <ClInclude Include="..\..\libw32\edidentifier.h" />
+    <ClInclude Include="..\..\libw32\getopt.h" />
+    <ClInclude Include="..\..\libw32\grp.h" />
+    <ClInclude Include="..\..\libw32\langinfo.h" />
+    <ClInclude Include="..\..\libw32\netdb.h" />
+    <ClInclude Include="..\..\libw32\package.h" />
+    <ClInclude Include="..\..\libw32\poll.h" />
+    <ClInclude Include="..\..\libw32\pwd.h" />
+    <ClInclude Include="..\..\libw32\slang.h" />
+    <ClInclude Include="..\..\libw32\sys\cdefs.h" />
+    <ClInclude Include="..\..\libw32\sys\ioctl.h" />
+    <ClInclude Include="..\..\libw32\sys\mman.h" />
+    <ClInclude Include="..\..\libw32\sys\mount.h" />
+    <ClInclude Include="..\..\libw32\sys\param.h" />
+    <ClInclude Include="..\..\libw32\sys\select.h" />
+    <ClInclude Include="..\..\libw32\sys\socket.h" />
+    <ClInclude Include="..\..\libw32\sys\statfs.h" />
+    <ClInclude Include="..\..\libw32\sys\statvfs.h" />
+    <ClInclude Include="..\..\libw32\sys\time.h" />
+    <ClInclude Include="..\..\libw32\sys\uio.h" />
+    <ClInclude Include="..\..\libw32\sys\utsname.h" />
+    <ClInclude Include="..\..\libw32\sys\utypes.h" />
+    <ClInclude Include="..\..\libw32\sys\vfs.h" />
+    <ClInclude Include="..\..\libw32\sys\wait.h" />
+    <ClInclude Include="..\..\libw32\unicode_cp437.h" />
+    <ClInclude Include="..\..\libw32\unicode_table.h" />
+    <ClInclude Include="..\..\libw32\unistd.h" />
+    <ClInclude Include="..\..\libw32\w32config.h" />
+    <ClInclude Include="..\..\libw32\w32_colors256.h" />
+    <ClInclude Include="..\..\libw32\w32_trace.h" />
+    <ClInclude Include="..\..\libw32\win32.h" />
+    <ClInclude Include="..\..\libw32\win32_child.h" />
+    <ClInclude Include="..\..\libw32\win32_include.h" />
+    <ClInclude Include="..\..\libw32\win32_internal.h" />
+    <ClInclude Include="..\..\libw32\win32_io.h" />
+    <ClInclude Include="..\..\libw32\win32_misc.h" />
+    <ClInclude Include="..\..\libw32\win32_time.h" />
+    <ClInclude Include="..\..\win32_key.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{881E18BB-52B1-4B72-BEF1-55BF0A7F15BD}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>mc</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32=0x501;_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../..;../../../mcsrc;../../include;../../libw32/msvc;../../libw32;../../include/glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>../../lib/libglib-2.0.lib;../../lib/libintl.lib;../../lib/libssh2.lib;../../lib/libmagic.lib;../../lib/libz.lib;../../lib/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d /e "$(ProjectDir)..\..\bin\etc"        "$(OutDir)\etc\"
+xcopy /y /d /e "$(ProjectDir)..\..\bin\plugin"  "$(OutDir)\plugin\"
+xcopy /y /d /e "$(ProjectDir)..\..\bin\share"    "$(OutDir)\share\"
+xcopy /y /d      "$(ProjectDir)..\..\bin\*.dll"      "$(OutDir)"
+xcopy /y /d      "$(ProjectDir)..\..\bin\busybox.exe" "$(OutDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Import external artifacts</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32=0x501;_WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../..;../../include;../../libw32;../../libw32/msvc;../../../mcsrc;../../../gtk/include;../../../gtk/include/glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>../../lib/libglib-2.0.lib;../../lib/libintl.lib;../../lib/libssh2.lib;../../lib/libmagic.lib;../../lib/libz.lib;../../lib/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
