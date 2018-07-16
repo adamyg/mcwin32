@@ -584,7 +584,12 @@ Link() {
         #
         #   MSVC/Watcom
         #
-        $cmd = "\"%VCINSTALLDIR%\\bin\\link\" \@$cmdfile";
+		if (defined $ENV{'VCINSTALLDIR'}) {		# 2008
+			$cmd = "\"%VCINSTALLDIR%\\bin\\link\" \@$cmdfile";
+
+		} else {								# 2010 plus
+			$cmd = "\"%VCToolsInstallDir%\\bin\\Hostx86\\x86\\link\" \@$cmdfile";
+		}
 
         open(CMD, ">${cmdfile}") or
             die "cannot create <${$cmdfile}>: $!\n";
@@ -1503,9 +1508,3 @@ Error {
 }
 
 #end
-
-
-
-
-
-

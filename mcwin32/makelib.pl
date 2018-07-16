@@ -55,6 +55,8 @@ my $x_libw32                = 'libw32';
 
 my %x_environment   = (
         'dj'            => {    # DJGPPP
+            TOOLCHAIN       => 'dj',
+            TOOLCHAINEXT    => '.dj',
             CC              => 'gcc',
             CXX             => 'g++',
             AR              => 'ar',
@@ -64,6 +66,8 @@ my %x_environment   = (
 
         'mingw'         => {    # MingW
             build_os        => 'mingw32',
+            TOOLCHAIN       => 'mingw',
+            TOOLCHAINEXT    => '.mingw',
             CC              => 'gcc',
             CXX             => 'g++',
             OSWITCH         => '',
@@ -87,6 +91,8 @@ my %x_environment   = (
             },
 
         'vc1200'        => {    # Visual Studio 7
+            TOOLCHAIN       => 'vs70',
+            TOOLCHAINEXT    => '.vs70',
             CC              => 'cl',
             COMPILERPATH    => '%VCINSTALLDIR%/bin',
             OSWITCH         => '-Fo',
@@ -103,6 +109,8 @@ my %x_environment   = (
             },
 
         'vc1400'        => {    # 2005, Visual Studio 8
+            TOOLCHAIN       => 'vs80',
+            TOOLCHAINEXT    => '.vs80',
             CC              => 'cl',
             COMPILERPATH    => '%VCINSTALLDIR%/bin',
             VSWITCH         => '',
@@ -129,6 +137,8 @@ my %x_environment   = (
             },
 
         'vc1500'        => {    # 2008, Visual Studio 9
+            TOOLCHAIN       => 'vs90',
+            TOOLCHAINEXT    => '.vs90',
             CC              => 'cl',
             COMPILERPATH    => '%VCINSTALLDIR%/bin',
             VSWITCH         => '',
@@ -147,6 +157,8 @@ my %x_environment   = (
             },
 
         'vc1600'        => {    # 2010, Visual Studio 10
+            TOOLCHAIN       => 'vs100',
+            TOOLCHAINEXT    => '.vs100',
             CC              => 'cl',
             COMPILERPATH    => '%VCINSTALLDIR%/bin',
             VSWITCH         => '',
@@ -173,6 +185,8 @@ my %x_environment   = (
             },
 
        'vc1900'        => {    # 2015, Visual Studio 19
+            TOOLCHAIN       => 'vs140',
+            TOOLCHAINEXT    => '.vs140',
             CC              => 'cl',
             COMPILERPATH    => '%VCINSTALLDIR%/bin',
             VSWITCH         => '',
@@ -190,8 +204,40 @@ my %x_environment   = (
             LDMAPFILE       => '-Fm$(MAPFILE)',
             },
 
+       # See: VsDevCmd.bat
+       #  The VsDevCmd.bat file is a new file delivered with Visual Studio 2017.
+       #  Visual Studio 2015 and earlier versions used VSVARS32.bat for the same purpose.
+       #  This file was stored in \Program Files\Microsoft Visual Studio\[Version]\Common7\Tools
+       #                       or \Program Files (x86)\Microsoft Visual Studio\Version\Common7\Tools.
+       #
+       #  pushd "C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/Tools"
+       #  call  VsDevCmd.bat
+       #  call  VsDevCmd.bat -test
+       #  popd
+       #
+       'vc1910'        => {    # 2017, Visual Studio 19.10 -- 19.1x
+            TOOLCHAIN       => 'vs141',
+            TOOLCHAINEXT    => '.vs141',
+            CC              => 'cl',
+            COMPILERPATH    => '%VCToolsInstallDir%/bin/Hostx86/x86',
+            VSWITCH         => '',
+            VPATTERN        => undef,
+            OSWITCH         => '-Fo',
+            LSWITCH         => '',
+            XSWITCH         => '-Fe',
+            AR              => 'lib',
+            CINCLUDE        => '-I$(ROOT)/libw32 -I$(ROOT)/libw32/msvc',
+            CFLAGS          => '-nologo -Zi -RTC1 -MDd -fp:precise',
+            CXXFLAGS        => '-nologo -Zi -RTC1 -MDd -EHsc -fp:precise',
+            CWARN           => '-W3',
+            CXXWARN         => '-W3',
+            LDEBUG          => '-nologo -Zi -RTC1 -MTd',
+            LDMAPFILE       => '-Fm$(MAPFILE)',
+            },
 
         'wc1300'        => {    # Watcom 11
+            TOOLCHAIN       => 'wc11',
+            TOOLCHAINEXT    => '.wc11',
             CC              => 'wcl386',
             COMPILERPATH    => '%WATCOM%/binnt',
             VSWITCH         => '-c',
@@ -210,6 +256,8 @@ my %x_environment   = (
             },
 
         'owc1900'       => {    # Open Watcom 1.9
+            TOOLCHAIN       => 'owc19',
+            TOOLCHAINEXT    => '.owc19',
             CC              => 'wcl386',
             COMPILERPATH    => '%WATCOM%/binnt',
             VSWITCH         => '-c',
@@ -675,19 +723,25 @@ main()
 
     my $cmd = $ARGV[0];
 
-    # MSVC++ 14.0 _MSC_VER == 1900 (Visual Studio 2015)
-    # MSVC++ 12.0 _MSC_VER == 1800 (Visual Studio 2013)
-    # MSVC++ 11.0 _MSC_VER == 1700 (Visual Studio 2012)
-    # MSVC++ 10.0 _MSC_VER == 1600 (Visual Studio 2010)
-    # MSVC++ 9.0  _MSC_VER == 1500 (Visual Studio 2008)
-    # MSVC++ 8.0  _MSC_VER == 1400 (Visual Studio 2005)
-    # MSVC++ 7.1  _MSC_VER == 1310 (Visual Studio 2003)
+    # see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+    #
+    #   MSVC++ 9.0   _MSC_VER == 1500 (Visual Studio 2008 version 9.0)
+    #   MSVC++ 10.0  _MSC_VER == 1600 (Visual Studio 2010 version 10.0)
+    #   MSVC++ 11.0  _MSC_VER == 1700 (Visual Studio 2012 version 11.0)
+    #   MSVC++ 12.0  _MSC_VER == 1800 (Visual Studio 2013 version 12.0)
+    #   MSVC++ 14.0  _MSC_VER == 1900 (Visual Studio 2015 version 14.0)
+    #   MSVC++ 14.1  _MSC_VER == 1910 (Visual Studio 2017 version 15.0)
+    #   MSVC++ 14.11 _MSC_VER == 1911 (Visual Studio 2017 version 15.3)
+    #   MSVC++ 14.12 _MSC_VER == 1912 (Visual Studio 2017 version 15.5)
+    #   MSVC++ 14.13 _MSC_VER == 1913 (Visual Studio 2017 version 15.6)
+    #   MSVC++ 14.14 _MSC_VER == 1914 (Visual Studio 2017 version 15.7)
     #
     if ('vc12' eq $cmd)         { $o_version = 1200, $cmd = 'vc' }
     elsif ('vc14' eq $cmd)      { $o_version = 1400; $cmd = 'vc' } elsif ('vc2005' eq $cmd) { $o_version = 1400; $cmd = 'vc' }
     elsif ('vc15' eq $cmd)      { $o_version = 1400; $cmd = 'vc' } elsif ('vc2008' eq $cmd) { $o_version = 1500; $cmd = 'vc' }
     elsif ('vc16' eq $cmd)      { $o_version = 1600; $cmd = 'vc' } elsif ('vc2010' eq $cmd) { $o_version = 1600; $cmd = 'vc' }
     elsif ('vc19' eq $cmd)      { $o_version = 1900; $cmd = 'vc' } elsif ('vc2015' eq $cmd) { $o_version = 1900; $cmd = 'vc' }
+    elsif ('vc1910' eq $cmd)    { $o_version = 1910; $cmd = 'vc' } elsif ('vc2017' eq $cmd) { $o_version = 1910; $cmd = 'vc' }
     if (! $o_version) {
         if ($cmd eq 'vc')       { $o_version = 1400; }
         elsif ($cmd eq 'wc')    { $o_version = 1300; }
@@ -2150,6 +2204,7 @@ systemrcode($)          # (retcode)
 }
 
 #end
+
 
 
 

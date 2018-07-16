@@ -19,9 +19,9 @@ wd*.bat
 WinSparkle-0.3/
 include/
 patch/
-bin/
-lib/
-objects/
+bin*/
+lib*/
+objects*/
 Makefile
 buildinfo.h
 BUILDNUMBER

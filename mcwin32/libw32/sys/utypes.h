@@ -31,12 +31,15 @@
 #if (_MSC_VER != 1500)                          /* MSVC 9/2008 */
 #if (_MSC_VER != 1600)                          /* MSVC 10/2010 */
 #if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
-#error utypes.h: untested MSVC c/c++ Version (CL 12.xx - 19.xx) only ...
-#endif
-#endif
-#endif
-#endif
-#endif
+#if (_MSC_VER <  1910 || _MSC_VER > 1914)       /* MSVC 19.10 .. 14/2017 */
+#error utypes.h: untested MSVC Version (2005 -- 2017) only ...
+ //see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+#endif	//2017
+#endif	//2015
+#endif	//2010
+#endif	//2008
+#endif	//2005
+#endif	//_MSC_VER
 
 #pragma warning(disable:4115)
 
@@ -133,9 +136,15 @@ typedef long suseconds_t;                       /* sys/types.h */
 typedef int uid_t;
 typedef int gid_t;
 #endif
+#if !defined(id_t)
 typedef int id_t;                               /* used as a general identifier; can contain least a pid_t, uid_t, or gid_t. */
+#endif
+#if !defined(ssize_t)
 typedef int ssize_t;
+#endif
+#if !defined(mode_t)
 typedef unsigned short mode_t;
+#endif
 
 #elif defined(__MINGW32__)
 #if !defined(uid_t) && !defined(gid_t)

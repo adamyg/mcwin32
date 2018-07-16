@@ -159,10 +159,10 @@ RMDFLAGS=	-rf
 
 # Directories
 
-D_BIN=		$(ROOT)/bin
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
 D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects
-D_LIB=		$(ROOT)/lib
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
 LW=		$(D_LIB)/$(LP)
 
 D_ETC=		$(D_BIN)/etc

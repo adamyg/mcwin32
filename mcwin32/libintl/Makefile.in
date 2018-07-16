@@ -49,10 +49,10 @@ RMFLAGS=	-f
 
 # Directories
 
-D_BIN=		$(ROOT)/bin
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
 D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects/libintl
-D_LIB=		$(ROOT)/lib
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/libintl
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
 
 ############################################################
 
