@@ -2,7 +2,7 @@
 /*
  * internal definitions
  *
- * Copyright (c) 2016 - 2017 Adam Young.
+ * Copyright (c) 2016 - 2018 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

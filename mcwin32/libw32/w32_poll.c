@@ -5,7 +5,7 @@ __CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.1 2017/03/13 17:26:39 cvsuser 
 /*
  * win32 poll system calls
  *
- * Copyright (c) 1998 - 2017, Adam Young.
+ * Copyright (c) 1998 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the GRIEF Editor.

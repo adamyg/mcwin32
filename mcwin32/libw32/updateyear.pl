@@ -3,7 +3,7 @@
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # Update the copyright year within the specified files
 #
-# Copyright (c) 2012-2017, Adam Young.
+# Copyright (c) 2012-2018, Adam Young.
 # All Rights Reserved
 #
 
@@ -154,9 +154,10 @@ load($$)                # (file)
         chomp(); chomp();
         if ($result < 0) {
             if (/Copyright.*[ -]201\d.*Adam/i) {
-                s/2012,/2012 - 2017/ or
-		    s/ - 2016/ - 2017/ or
-		    s/ - 2015/ - 2017/;
+                s/2012,/2012 - 2018/ or
+		    s/ - 2017/ - 2018/ or
+		    s/ - 2016/ - 2018/ or
+		    s/ - 2015/ - 2018/;
                 $result = scalar @lines;
             }
         }

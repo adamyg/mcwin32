@@ -5,7 +5,7 @@ __CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.2 2017/03/07 15:38:31 cvsuse
 /*
  * win32 iconv dynamic loader.
  *
- * Copyright (c) 1998 - 2017, Adam Young.
+ * Copyright (c) 1998 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

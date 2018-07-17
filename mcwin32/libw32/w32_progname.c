@@ -5,7 +5,7 @@ __CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.1 2017/03/13 16:51:36 
 /*
  * win32 set/getprogname
  *
- * Copyright (c) 2016 - 2017, Adam Young.
+ * Copyright (c) 2016 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the GRIEF Editor.

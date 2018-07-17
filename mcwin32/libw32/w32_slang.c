@@ -2,7 +2,7 @@
 /*
  * win32 slang emulation.
  *
- * Copyright (c) 2007, 2012 - 2017 Adam Young.
+ * Copyright (c) 2007, 2012 - 2018 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -1099,4 +1099,3 @@ utf8_decode_safe(const void *src, const void *cpend, int32_t *cooked)
     return ret;
 }
 /*end*/
-

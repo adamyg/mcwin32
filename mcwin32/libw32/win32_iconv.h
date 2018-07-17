@@ -4,7 +4,7 @@
 /*
  * win32 iconv dynamic loader.
  *
- * Copyright (c) 2007, 2012 - 2017, Adam Young.
+ * Copyright (c) 2007, 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  *
