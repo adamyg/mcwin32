@@ -1,3 +1,7 @@
+Thu Jun  9 21:26:18 2018 adamy
+
+	* msvc 2017 builds
+
 Fri Mar 31 02:38:24 2017 adamy
 
 	* console/slang video driver performance improvements.
@@ -9,7 +13,7 @@ Thu Mar 16 22:45:22 2017 adamy
 Mon Mar 13 16:52:53 2017 adamy
 
 	* build 205
-	
+
 	* mc-inno-setup.iss: packaged magic.mgc definitions.
 
 Fri Mar 10 15:24:32 2017 adamy

@@ -18,7 +18,7 @@
 #       $(D_LIB)/%.lo:      %.cpp
 #               $(LIBTOOL) --mode=compile $(CXX) $(CXXFLAGS) -o $(D_OBJ)/$@ -c $<
 #
-# Copyright Adam Young 2012-2017
+# Copyright Adam Young 2012-2018
 #
 # This file is part of the Midnight Commander.
 #

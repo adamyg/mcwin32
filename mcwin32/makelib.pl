@@ -4,7 +4,7 @@
 # -*- tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
 #
-# Copyright Adam Young 2012-2017
+# Copyright Adam Young 2012-2018
 # This file is part of the Midnight Commander.
 #
 # The Midnight Commander is free software: you can redistribute it
