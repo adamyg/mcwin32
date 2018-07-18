@@ -300,5 +300,5 @@ w32_read(int fildes, void *buf, size_t nbyte)
     }
     return ret;
 }
-/*end*/
 
+/*end*/

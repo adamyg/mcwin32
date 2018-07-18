@@ -170,5 +170,5 @@ w32_link(const char *to, const char *from)
     }
     return 0;
 }
-/*end*/
 
+/*end*/

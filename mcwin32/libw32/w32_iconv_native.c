@@ -1775,3 +1775,5 @@ iso2022jp_flush(csconv_t *cv, uchar *buf, int bufsize)
     }
     return 0;
 }
+
+/*end*/

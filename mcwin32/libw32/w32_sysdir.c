@@ -85,3 +85,5 @@ w32_selectfolder(
     }
     return (Result);
 }
+
+/*end*/

@@ -368,4 +368,5 @@ w32_poll(int native, struct pollfd *fds, int cnt, int timeout)
 
     return ret;
 }
+
 /*end*/

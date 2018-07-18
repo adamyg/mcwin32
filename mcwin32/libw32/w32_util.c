@@ -290,3 +290,5 @@ w32_getexedir(char *buf, int maxlen)
     }
     return -1;
 }
+
+/*end*/

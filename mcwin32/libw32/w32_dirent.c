@@ -967,4 +967,5 @@ dir_ishpf(const char *directory)
     return ((rc) &&
         (flags & (FS_CASE_SENSITIVE | FS_CASE_IS_PRESERVED))) ? TRUE : FALSE;
 }
+
 /*end*/

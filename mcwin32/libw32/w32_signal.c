@@ -45,3 +45,5 @@ sigaction(int sig, struct sigaction *a, struct sigaction *b)
     return -1;
 }
 #endif /*__MINGW32__*/
+
+/*end*/

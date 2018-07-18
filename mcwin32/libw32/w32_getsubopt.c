@@ -96,3 +96,5 @@ getsubopt(char **optionp, char * const *tokens, char **valuep)
 			return(cnt);
 	return(-1);
 }
+
+/*end*/

@@ -503,3 +503,5 @@ _add (const char *str)
             return(1);
     }
 }
+
+/*end*/

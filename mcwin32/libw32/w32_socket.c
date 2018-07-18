@@ -427,5 +427,5 @@ w32_sockhandle(int fd)
     }
     return ret;
 }
-/*end*/
 
+/*end*/

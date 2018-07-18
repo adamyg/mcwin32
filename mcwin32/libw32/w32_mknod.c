@@ -185,6 +185,5 @@ mknod(const char *path, int mode, int dev)
     errno = EIO;
     return -1;
 }
+
 /*end*/
-
-

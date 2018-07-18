@@ -397,4 +397,5 @@ w32_root_unc(const char *path)
     }
     return 0;
 }
+
 /*end*/

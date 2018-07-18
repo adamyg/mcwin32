@@ -634,3 +634,4 @@ InternalError(
     ExitProcess(GetLastError());
 }
 
+/*end*/

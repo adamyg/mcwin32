@@ -1004,3 +1004,5 @@ InternalError(
     DisplayError(GetStdHandle(STD_OUTPUT_HANDLE), pszAPI, NULL);
     ExitProcess(GetLastError());
 }
+
+/*end*/

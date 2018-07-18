@@ -73,3 +73,4 @@ getprogname(void)
     return (progname ? progname : "program");
 }
 
+/*end*/

@@ -717,3 +717,4 @@ w32_strerror(int errnum)
     return (err);
 }
 
+/*end*/

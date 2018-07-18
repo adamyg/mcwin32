@@ -81,3 +81,5 @@ w32_gethostname(char *name, size_t namelen)
     strncpy(name, (const char *)host, namelen);
     return 0;
 }
+
+/*end*/

@@ -195,5 +195,5 @@ w32_sockerror(void)
 {
     return w32_neterrno_set();
 }
-/*end*/
 
+/*end*/

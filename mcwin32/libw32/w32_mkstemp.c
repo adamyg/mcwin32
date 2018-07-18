@@ -203,3 +203,5 @@ gettemp(char *path, register int *fildes, int temporary)
     }
     /*NOTREACHED*/
 }
+
+/*end*/

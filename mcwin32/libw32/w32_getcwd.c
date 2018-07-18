@@ -217,3 +217,5 @@ w32_getcwdd(char drive, char *path, int size)
     if (path && size > 0) path[0] = 0;
     return NULL;
 }
+
+/*end*/

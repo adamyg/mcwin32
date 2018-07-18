@@ -143,4 +143,3 @@ w32_sockerrno_map(int nerrno)
     return nerrno;
 }
 #endif //DEFUNCT
-

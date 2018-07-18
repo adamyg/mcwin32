@@ -183,3 +183,5 @@ w32_ino_file(const char *path)
     }
     return 0;
 }
+
+/*end*/

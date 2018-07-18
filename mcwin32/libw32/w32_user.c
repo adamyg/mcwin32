@@ -275,4 +275,5 @@ getlogin_r (char *name, size_t namesize)
     memcpy(name, login, length + 1);
     return (int)length;
 }
+
 /*end*/
