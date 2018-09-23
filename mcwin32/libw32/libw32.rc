@@ -51,7 +51,7 @@ BEGIN
 			VALUE "InternalName",	"libwin32.dll\0"
 
 			VALUE "LegalCopyright",
-				"Copyright (c) 2007 - 2017 Adam Young\0"
+				"Copyright (c) 2007 - 2018 Adam Young\0"
 
 			VALUE "OriginalFilename",
 				"libwin32." LIBW32_VERSION ".dll\0"

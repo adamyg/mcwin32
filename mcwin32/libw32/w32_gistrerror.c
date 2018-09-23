@@ -112,3 +112,4 @@ w32_gai_strerror(int ecode)
     return "unknown error, gai_strerror";
 }
 /*end*/
+

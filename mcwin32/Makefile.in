@@ -1,7 +1,7 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
 # Midnight command WIN32 builds 4.8.19, as at 01/03/17
 #
-# Copyright (c) 2007, 2012 - 2017 Adam Young.
+# Copyright (c) 2007, 2012 - 2018 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -111,6 +111,20 @@ E=		.exe
 CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
 XCLEAN=
 
+# Directories
+
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
+D_INC=		$(ROOT)/include
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
+LW=		$(D_LIB)/$(LP)
+
+D_ETC=		$(D_BIN)/etc
+D_PLUGIN=	$(D_BIN)/plugin
+D_SHARE=	$(D_BIN)/share
+D_DOC=		$(D_BIN)/doc
+D_LOCALE=	$(D_BIN)/locale
+
 # Compilers, programs
 
 CC=		@CC@
@@ -131,7 +145,7 @@ MCSOURCE=	../mcsrc
 ##GTKINSTALL=	../gtk
 GTKINSTALL=	.
 
-MAN2HLP=	$(PERL) bin/man2hlp.pl
+MAN2HLP=	$(PERL) $(D_BIN)/man2hlp.pl
 RMFLAGS=	-f
 ARFLAGS=	-nologo
 
@@ -156,20 +170,6 @@ LXFLAGS=	$(LDLIBS) @LIBS@
 
 RMFLAGS=	-f
 RMDFLAGS=	-rf
-
-# Directories
-
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
-D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
-LW=		$(D_LIB)/$(LP)
-
-D_ETC=		$(D_BIN)/etc
-D_PLUGIN=	$(D_BIN)/plugin
-D_SHARE=	$(D_BIN)/share
-D_DOC=		$(D_BIN)/doc
-D_LOCALE=	$(D_BIN)/locale
 
 
 #########################################################################################

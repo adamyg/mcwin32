@@ -399,3 +399,4 @@ w32_root_unc(const char *path)
 }
 
 /*end*/
+

@@ -169,7 +169,7 @@ struct colorinfo {                              // color information.
 #define VIO_FNORMAL         0x0002      // normal foreground/background.
 #define VIO_F16             0x0004      // vt/xterm 16 color palette.
 #define VIO_F256            0x0008      // vt/xterm 256 color palette (fg and/or bg).
-#define VIO_FRGB            0x0010		// RGB otherwise vt/xterm (fg and/or bg).
+#define VIO_FRGB            0x0010      // RGB otherwise vt/xterm (fg and/or bg).
     WORD                Flags;
     WORD                Attributes;
     short               fg, bg;                 // WIN/VT/16 and VT/256
@@ -223,7 +223,7 @@ static void             CopyOut(unsigned offset, unsigned len, unsigned flags);
 #if defined(WIN32_CONSOLEEXT)
 #if defined(WIN32_CONSOLE256)
 static void             CopyOutEx(unsigned pos, unsigned cnt, unsigned flags);
-#define WIN32_CONSOLEVIRTUAL                    // XXX
+#define WIN32_CONSOLEVIRTUAL
 #if defined(WIN32_CONSOLEVIRTUAL)
 static void             CopyOutEx2(size_t pos, size_t cnt, unsigned flags);
 #endif  //WIN32_CONSOLEVIRTUAL
@@ -670,14 +670,14 @@ vio_profile(int rebuild)
 
         } else if (IsVirtualConsole(&depth)) {
 #if defined(WIN32_CONSOLEVIRTUAL)
-//            if (depth > 16) {
+            if (depth > 16) {
                 printf("Running under a virtual console, enabling 256/true-color support\n");
                 vio.isvirtualconsole = 1;
                 vio.maxcolors = 256;
-//            } else {
-//                printf("Running under a prelim virtual console, disabling 256 support\n");
-//                vio.maxcolors = 16;
-//            }
+            } else {
+                printf("Running under a prelim virtual console, disabling 256 support\n");
+                vio.maxcolors = 16;
+            }
 #else
             printf("Running under a virtual console, disabling 256 support\n");
             vio.maxcolors = 16;
@@ -1332,6 +1332,8 @@ CopyOut(unsigned pos, unsigned cnt, unsigned flags)
         }
     }
 
+    if (0 == modcnt) return;
+
     wr.Left   = 0;                              /* src. screen rectangle */
     wr.Right  = (SHORT)(cols - 1);
     wr.Top    = (SHORT)(pos / cols);
@@ -1357,7 +1359,7 @@ CopyOut(unsigned pos, unsigned cnt, unsigned flags)
         //
         const BOOL isvisible = IsWindowVisible(vio.whandle);
         CONSOLE_CURSOR_INFO cinfo = {0};
-        BOOL omode;
+        int omode = -1;
 
 #if defined(WIN32_CONSOLEVIRTUAL)
         if (vio.isvirtualconsole) {
@@ -1366,11 +1368,11 @@ CopyOut(unsigned pos, unsigned cnt, unsigned flags)
         }
 #endif  //WIN32_CONSOLEVIRTUAL
 
-        if (modcnt && isvisible) {              // flush changes, disable updates
-            GetConsoleCursorInfo(chandle, &cinfo);            
+        if (isvisible) {                        // flush changes, disable updates
+            GetConsoleCursorInfo(chandle, &cinfo);
             if (0 != (omode = cinfo.bVisible)) {
-                cinfo.bVisible = FALSE;         // hide cursor
-                SetConsoleCursorInfo(chandle, &cinfo);
+               cinfo.bVisible = FALSE;          // hide cursor
+               SetConsoleCursorInfo(chandle, &cinfo);
             }
 
             SendMessage(vio.whandle, WM_SETREDRAW, FALSE, 0);
@@ -1385,16 +1387,14 @@ CopyOut(unsigned pos, unsigned cnt, unsigned flags)
 
         CopyOutEx(pos, cnt, flags);             // export text
 
-        if (modcnt && isvisible) {              // restore cursor
-            if (0 != (cinfo.bVisible = omode)) { 
-                SetConsoleCursorInfo(chandle, &cinfo);
-            }
+        if (-1 != omode) {
+           if (0 != (cinfo.bVisible = omode)) { // restore cursor
+               SetConsoleCursorInfo(chandle, &cinfo);
+           }
         }
 
     } else {
-        if (modcnt) {
-            WriteConsoleOutputW(chandle, vio.oshadow + pos, is, ic, &wr);
-        }
+        WriteConsoleOutputW(chandle, vio.oshadow + pos, is, ic, &wr);
     }
 #endif  //CONSOLE256
 
@@ -1406,10 +1406,9 @@ CopyOut(unsigned pos, unsigned cnt, unsigned flags)
         StrikeOutEx(pos, cnt);                  // overstrike region
     }
 
+
 #else   //CONSOLEEXT
-    if (modcnt) {
-        WriteConsoleOutputW(chandle, vio.oshadow + pos, is, ic, &wr);
-    }
+    WriteConsoleOutputW(chandle, vio.oshadow + pos, is, ic, &wr);
 
 #endif
 }
@@ -1496,7 +1495,7 @@ COLOR256(const struct colorinfo *color, COLORREF *fg, COLORREF *bg)
         }
     }
 
-    if (!flags) {								// windows native attribute
+    if (!flags) {                               // windows native attribute
         t_fg = vio.rgb256[ win2vt[ color->Attributes & 0x0f] ];
         t_bg = vio.rgb256[ win2vt[(color->Attributes & 0xf0) >> 4] ];
     }
@@ -1525,7 +1524,7 @@ SameCell(const WCHAR_INFO *c1, const WCHAR_INFO *c2)
         c1->Info.bgrgb == c2->Info.bgrgb);
 }
 
-     
+
 static __inline int
 SameAttributes(const WCHAR_INFO *cell, const struct colorinfo *info, const COLORREF fg, const COLORREF bg, const WORD viomask)
 {
@@ -1780,22 +1779,22 @@ CopyOutEx2(size_t pos, size_t cnt, unsigned flags)
                             break;              // flush
                         }
                         continue;
-                    } 
+                    }
                     //else, attribute change.
                 }
 
                 //  ESC[<n> m                   SGR, Set Graphics Rendition, Set the format of the screen and text as specified by <n>.
                 //
-                //      0	                    Default, returns all attributes to the default state prior to modification.
+                //      0                           Default, returns all attributes to the default state prior to modification.
                 //
                 //      1                       Bold / Bright Applies brightness / intensity flag to foreground color.
                 //      4                       Underline
                 //      7                       Negative; swaps foreground and background colors.
                 //
                 //      38; 2; <r>; <g>; <b>    Set foreground color to RGB value specified in <r>, <g>, <b> parameters.
-                //      48; 2; <r>; <g>; <b>	Set background color to RGB value specified in <r>, <g>, <b> parameters.
-                //      38; 5; <s>	            Set foreground color to <s> index in 88 or 256 color table.
-                //      48; 5; <s>	            Set background color to <s> index in 88 or 256 color table.
+                //      48; 2; <r>; <g>; <b>    Set background color to RGB value specified in <r>, <g>, <b> parameters.
+                //      38; 5; <s>                  Set foreground color to <s> index in 88 or 256 color table.
+                //      48; 5; <s>                  Set background color to <s> index in 88 or 256 color table.
                 //
                 ocursor[col++] = cell;          // update out image.
 
@@ -1805,16 +1804,16 @@ CopyOutEx2(size_t pos, size_t cnt, unsigned flags)
                 wctext += wsprintfW(wctext, L_VTCSI L"0m" L_VTCSI L"38;2;%u;%u;%um" L_VTCSI L"48;2;%u;%u;%um",
                                 GetRValue(fg), GetGValue(fg), GetBValue(fg), GetRValue(bg), GetGValue(bg), GetBValue(bg));
 
-		{   const WORD Attributes = info.Attributes;
-		    if (Attributes) {		// special attributes.
-			if (Attributes & VIO_UNDERLINE)           wctext += wsprintfW(wctext, L_VTCSI L"4m");
-			if (Attributes & (VIO_BOLD | VIO_BLINK))  wctext += wsprintfW(wctext, L_VTCSI L"1m");
-			if (Attributes & VIO_INVERSE)             wctext += wsprintfW(wctext, L_VTCSI L"7m");
-		    //if (Attributes & VIO_ITALIC)
-		    //if (Attributes & VIO_STRIKE)
-		    //if (Attributes & VIO_FAINT)
-		    }
-		}
+                {   const WORD Attributes = info.Attributes;
+                    if (Attributes) {           // special attributes.
+                        if (Attributes & VIO_UNDERLINE)           wctext += wsprintfW(wctext, L_VTCSI L"4m");
+                        if (Attributes & (VIO_BOLD | VIO_BLINK))  wctext += wsprintfW(wctext, L_VTCSI L"1m");
+                        if (Attributes & VIO_INVERSE)             wctext += wsprintfW(wctext, L_VTCSI L"7m");
+                    //if (Attributes & VIO_ITALIC)
+                    //if (Attributes & VIO_STRIKE)
+                    //if (Attributes & VIO_FAINT)
+                    }
+                }
 
                 *wctext++ = cell.Char.UnicodeChar;
 
@@ -2792,7 +2791,7 @@ vio_open(int *rows, int *cols)
     if (cols) *cols = vio.cols;
     TRACE_LOG(("open(rows:%d, cols:%d)", vio.rows, vio.cols))
 
-#if (0) // dump character table.
+#if (0)     // dump character table.
     {   static unsigned once;
         if (!once++) {
             const int width = (vio.cols - 10);
@@ -2809,7 +2808,7 @@ vio_open(int *rows, int *cols)
             getch();
         }
     }
-#endif  //XXX
+#endif
 
     return 0;
 }
@@ -2827,7 +2826,7 @@ vio_close(void)
     TRACE_LOG(("close(rows:%d, cols:%d)", vio.rows, vio.cols))
     if (vio.maximised) {
         vio_setsize(vio.maximised_oldrows, vio.maximised_oldcols);
-        if (vio.isvirtualconsole) {            
+        if (vio.isvirtualconsole) {
             if (3 == vio.isvirtualconsole) {    /* restore? */
                 if (vio.oldConsoleMode) SetConsoleMode(vio.chandle, vio.oldConsoleMode);
                 if (vio.oldConsoleCP) SetConsoleOutputCP(vio.oldConsoleCP);
@@ -3061,18 +3060,18 @@ vio_define_attr(int obj, const char *what, const char *fg, const char *bg)
         if (fcolor < 16) fcolor = win2vt[ fcolor ];
         if (bcolor < 16) bcolor = win2vt[ bcolor ];
 
-	} else {									// native
-		assert(0 == flags);
-		assert(fcolor >= 0 && fcolor < 16);
-	    assert(bcolor >= 0 && bcolor < 16);
-		fattr  |=  fcolor & 0x0f;
-		battr  |= (bcolor & 0x0f) << 4;
-		fcolor =  win2vt[fcolor & 0x0f];
-		bcolor =  win2vt[bcolor & 0x0f];
+    } else {                                    // native
+        assert(0 == flags);
+        assert(fcolor >= 0 && fcolor < 16);
+        assert(bcolor >= 0 && bcolor < 16);
+        fattr |=  fcolor & 0x0f;
+        battr |= (bcolor & 0x0f) << 4;
+        fcolor = win2vt[fcolor & 0x0f];
+        bcolor = win2vt[bcolor & 0x0f];
     }
 
     // apply
-	vio.c_attrs[obj].Flags = flags;
+    vio.c_attrs[obj].Flags = flags;
     vio.c_attrs[obj].Attributes = fattr | battr;
     vio.c_attrs[obj].fg = fcolor;
     vio.c_attrs[obj].bg = bcolor;
@@ -3526,5 +3525,5 @@ vio_putc(unsigned ch, unsigned cnt, int move)
         vio.c_col = col, vio.c_row = row;
     }
 }
-
 /*end*/
+

@@ -3,7 +3,7 @@
 /*
  *  win32 Midnight Commander -- config.h
  *
- *  Written by: Adam Young 2012 - 2017
+ *  Written by: Adam Young 2012 - 2018
  *
  *  This file is part of the Midnight Commander.
  *

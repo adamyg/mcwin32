@@ -292,3 +292,4 @@ w32_getexedir(char *buf, int maxlen)
 }
 
 /*end*/
+

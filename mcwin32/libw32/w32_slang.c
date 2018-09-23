@@ -601,7 +601,7 @@ static void
 write_string(const char *str, unsigned cnt)
 {
     const struct colorinfo *color = &vio.c_color;
-        const char *send = str + cnt;
+    const char *send = str + cnt;
     WCHAR_INFO *cursor, *cend;
     unsigned flags = 0, nl;
     unsigned char ch;
@@ -763,9 +763,9 @@ SLsmg_vprintf(const char *fmt, va_list ap)
 
     if (0 == vio.inited) return;
     len = _vsnprintf(buf, sizeof(buf)-1, fmt, ap);
-        if (len > 0) {
+    if (len > 0) {
         buf[len] = 0; write_string(buf, len);
-        }
+    }
 }
 
 
@@ -1098,5 +1098,5 @@ utf8_decode_safe(const void *src, const void *cpend, int32_t *cooked)
     *cooked = result;
     return ret;
 }
+/*end*/	
 
-/*end*/

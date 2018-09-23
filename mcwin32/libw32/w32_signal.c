@@ -47,3 +47,4 @@ sigaction(int sig, struct sigaction *a, struct sigaction *b)
 #endif /*__MINGW32__*/
 
 /*end*/
+
