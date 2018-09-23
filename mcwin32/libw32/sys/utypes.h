@@ -141,9 +141,11 @@ typedef int id_t;                               /* used as a general identifier;
 #endif
 #if !defined(ssize_t)
 typedef int ssize_t;
+#define ssize_t ssize_t                         /* see libssh */
 #endif
 #if !defined(mode_t)
 typedef unsigned short mode_t;
+#define mode_t mode_t
 #endif
 
 #elif defined(__MINGW32__)

@@ -75,9 +75,9 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
 
     SLsmg_init_smg ();
 
-    if ((COLS < 10) || (LINES < 5) || (COLS > 255) || (LINES > 255)) {
+    if ((COLS < 10) || (LINES < 5) || (COLS > 500 /*255*/) || (LINES > 500 /*255*/)) {
         fprintf (stderr,
-                 _("Screen size %dx%d is not supported.\n"
+                 _("Screen size %dx%d is not supported; limit 500x500.\n"
                    "Check the TERM environment variable.\n"), COLS, LINES);
         exit (EXIT_FAILURE);
     }

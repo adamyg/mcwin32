@@ -43,6 +43,13 @@ LP=		lib
 CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
 XCLEAN=
 
+# Directories
+
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
+D_INC=		$(ROOT)/include
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/libglib
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
+
 # Compilers, programs
 
 CC=		@CC@
@@ -72,16 +79,9 @@ CFLAGS=		$(CPPFLAGS) $(CDEBUG) $(COPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
 CXXFLAGS=	$(CPPFLAGS) $(CDEBUG) $(CXXOPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
 YFLAGS=		-d
 LDFLAGS=	$(LDEBUG) @LDFLAGS@
-LDLIBS=		../lib/$(LP)intl$(A) winmm.lib @EXTRALIBS@
+LDLIBS=		$(D_LIB)/$(LP)intl$(A) winmm.lib @EXTRALIBS@
 
 RMFLAGS=	-f
-
-# Directories
-
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
-D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/libglib
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
 
 ############################################################
 

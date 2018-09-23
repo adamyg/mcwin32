@@ -8,3 +8,6 @@ gtk-source.txt
 mcwin32-build*.exe
 mcwin32-build*.zip
 
+/mcwin32/mc.aps
+/encrypt.bat
+/mc.zip

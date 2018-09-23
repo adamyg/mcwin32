@@ -2,7 +2,7 @@
 /*
  * libtermemu console driver
  *
- * Copyright (c) 2007, 2012 - 2017 Adam Young.
+ * Copyright (c) 2007, 2012 - 2018 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -19,6 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ==end==
+ */
 
 /*
  * Notes:
@@ -75,6 +76,10 @@ static void                         vio_trace(const char *, ...);
 #define MAXCOLORS                   256
 #define MAXOBJECTS                  256
 #define MASKOBJECTS                 0xff
+
+#ifndef CP_UTF8
+#define CP_UTF8                     65001       /* UTF-8 translation */
+#endif
 
 #define ISACS                       0x1000000   /* ACS mapped character */
 
@@ -164,7 +169,7 @@ struct colorinfo {                              // color information.
 #define VIO_FNORMAL         0x0002      // normal foreground/background.
 #define VIO_F16             0x0004      // vt/xterm 16 color palette.
 #define VIO_F256            0x0008      // vt/xterm 256 color palette (fg and/or bg).
-#define VIO_FRGB            0x0018      // RGB otherwise vt/xterm (fg and/or bg).
+#define VIO_FRGB            0x0010		// RGB otherwise vt/xterm (fg and/or bg).
     WORD                Flags;
     WORD                Attributes;
     short               fg, bg;                 // WIN/VT/16 and VT/256
@@ -197,7 +202,7 @@ static void             vio_reset(void);
 static void             vio_setcursor(int col, int row);
 static int              rgb_search(const int maxval, const COLORREF rgb);
 
-static BOOL             IsVirtualConsole(void);
+static BOOL             IsVirtualConsole(int *depth);
 static BOOL             IsConsole2(void);
 
 static uint32_t         unicode_remap(uint32_t ch);
@@ -218,10 +223,14 @@ static void             CopyOut(unsigned offset, unsigned len, unsigned flags);
 #if defined(WIN32_CONSOLEEXT)
 #if defined(WIN32_CONSOLE256)
 static void             CopyOutEx(unsigned pos, unsigned cnt, unsigned flags);
-#endif
+#define WIN32_CONSOLEVIRTUAL                    // XXX
+#if defined(WIN32_CONSOLEVIRTUAL)
+static void             CopyOutEx2(size_t pos, size_t cnt, unsigned flags);
+#endif  //WIN32_CONSOLEVIRTUAL
+#endif  //WIN32_CONSOLE256
 static void             UnderOutEx(unsigned pos, unsigned cnt);
 static void             StrikeOutEx(unsigned pos, unsigned cnt);
-#endif
+#endif  //WIN32_CONSOLEEXT
 
 #if defined(WIN32_CONSOLE256)
 static int              consolefontset(int height, int width, const char *facename);
@@ -312,6 +321,9 @@ static struct {                                 /* Video state */
     int                 dynamic;                /* Dynamic bindings */
     int                 envtest;                /* One-shot environment tests */
     int                 notruecolor;            /* Disable true-color decoding */
+    int                 isvirtualconsole;       /* Virtual console mode (1=detected, 2=enabled. 3=enabled+restore) */
+    DWORD               oldConsoleMode;         /* Previous console mode */
+    unsigned            oldConsoleCP;
 
     int                 maximised;              /* Maximised status */
     int                 maximised_oldrows;
@@ -320,7 +332,7 @@ static struct {                                 /* Video state */
     CONSOLE_CURSOR_INFO cinfo;
     COORD               ccoord;
 
-    int                 displaymode;            /* Diplay mode (0=Normal,1=Full) */
+    int                 displaymode;            /* Display mode (0=Normal, 1=Full) */
     int                 rows, cols;             /* Screen size */
 
     ULONG               size;                   /* Screen buffer size, in character cells */
@@ -450,6 +462,7 @@ static const struct attrmap win16_foreground[] = {
     { NULL }
     };
 
+#if (0)
 static const struct localecodepage {
     /*
      *  Code Page Bitfields; see FONTSIGNATURE and LOCALESIGNATURE structures.
@@ -459,44 +472,46 @@ static const struct localecodepage {
     const char *description;
 
 } localecodepages[] = {
-    { 0,    1252,   "Latin 1" },
-    { 1,    1250,   "Latin 2: Central Europe" },
-    { 2,    1251,   "Cyrillic" },
-    { 3,    1253,   "Greek" },
-    { 4,    1254,   "Turkish" },
-    { 5,    1255,   "Hebrew" },
-    { 6,    1256,   "Arabic" },
-    { 7,    1257,   "Baltic" },
-    { 8,    1258,   "Vietnamese" },
-        // 9 - 15   Reserved for ANSI
-    { 16,   874,    "Thai" },
-    { 17,   932,    "Japanese, Shift-JIS" },
-    { 18,   936,    "Simplified Chinese (PRC, Singapore)" },
-    { 19,   949,    "Korean Unified Hangul Code (Hangul TongHabHyung Code)" },
-    { 20,   950,    "Traditional Chinese (Taiwan; Hong Kong SAR, PRC)" },
-    { 21,   1361,   "Korean (Johab)" },
-        // 22 - 29  Reserved for alternate ANSI and OEM
+    { 0,    1252,       "Latin 1" },
+    { 1,    1250,       "Latin 2: Central Europe" },
+    { 2,    1251,       "Cyrillic" },
+    { 3,    1253,       "Greek" },
+    { 4,    1254,       "Turkish" },
+    { 5,    1255,       "Hebrew" },
+    { 6,    1256,       "Arabic" },
+    { 7,    1257,       "Baltic" },
+    { 8,    1258,       "Vietnamese" },
+        // 9 - 15   Reserved for ANSI.
+    { 16,   874,        "Thai" },
+    { 17,   932,        "Japanese, Shift-JIS" },
+    { 18,   936,        "Simplified Chinese (PRC, Singapore)" },
+    { 19,   949,        "Korean Unified Hangul Code (Hangul TongHabHyung Code)" },
+    { 20,   950,        "Traditional Chinese (Taiwan; Hong Kong SAR, PRC)" },
+    { 21,   1361,       "Korean (Johab)" },
+        // 22 - 29  Reserved for alternate ANSI and OEM.
         // 30 - 31  Reserved by system.
-        // 32 - 46  Reserved for OEM
-    { 47,   1258,   "Vietnamese" },
-    { 48,   869,    "Modern Greek" },
-    { 49,   866,    "Russian" },
-    { 50,   865,    "Nordic" },
-    { 51,   864,    "Arabic" },
-    { 52,   863,    "Canadian French" },
-    { 53,   862,    "Hebrew" },
-    { 54,   861,    "Icelandic" },
-    { 55,   860,    "Portuguese" },
-    { 56,   857,    "Turkish" },
-    { 57,   855,    "Cyrillic; primarily Russian" },
-    { 58,   852,    "Latin 2" },
-    { 59,   775,    "Baltic" },
-    { 60,   737,    "Greek; formerly 437G" },
-    { 61,   708,    "Arabic; ASMO 708" },
-    { 61,   720,    "Arabic; ASMO 708" },
-    { 62,   850,    "Multilingual Latin 1" },
-    { 63,   437,    "US" },
+        // 32 - 46  Reserved for OEM.
+    { 47,   1258,       "Vietnamese" },
+    { 48,   869,        "Modern Greek" },
+    { 49,   866,        "Russian" },
+    { 50,   865,        "Nordic" },
+    { 51,   864,        "Arabic" },
+    { 52,   863,        "Canadian French" },
+    { 53,   862,        "Hebrew" },
+    { 54,   861,        "Icelandic" },
+    { 55,   860,        "Portuguese" },
+    { 56,   857,        "Turkish" },
+    { 57,   855,        "Cyrillic; primarily Russian" },
+    { 58,   852,        "Latin 2" },
+    { 59,   775,        "Baltic" },
+    { 60,   737,        "Greek; formerly 437G" },
+    { 61,   708,        "Arabic; ASMO 708" },
+    { 61,   720,        "Arabic; ASMO 708" },
+    { 62,   850,        "Multilingual Latin 1" },
+    { 63,   437,        "US" },
     };
+#endif
+
 
 static void
 vio_trace(const char *fmt, ...)
@@ -646,14 +661,27 @@ vio_profile(int rebuild)
     //
 #if defined(WIN32_CONSOLEEXT) && defined(WIN32_CONSOLE256)
     if (! vio.envtest) {                        // one-shot
+        int depth = 0;
+
         if (GetModuleHandleA("ConEmuHk.dll") ||
                 GetModuleHandleA("ConEmuHk64.dll")) {
             printf("Running under ConEmu, disabling 256 support\n");
             vio.maxcolors = 16;
 
-        } else if (IsVirtualConsole()) {
+        } else if (IsVirtualConsole(&depth)) {
+#if defined(WIN32_CONSOLEVIRTUAL)
+//            if (depth > 16) {
+                printf("Running under a virtual console, enabling 256/true-color support\n");
+                vio.isvirtualconsole = 1;
+                vio.maxcolors = 256;
+//            } else {
+//                printf("Running under a prelim virtual console, disabling 256 support\n");
+//                vio.maxcolors = 16;
+//            }
+#else
             printf("Running under a virtual console, disabling 256 support\n");
             vio.maxcolors = 16;
+#endif  //WIN32_CONSOLEVIRTUAL
 
         } else if (IsConsole2()) {
             printf("Running under Console2, disabling 256 support\n");
@@ -916,22 +944,64 @@ w32_GetParentProcessId()
 }
 
 
+#if defined(__WATCOMC__)
+typedef struct _OSVERSIONINFOW RTL_OSVERSIONINFOW, *PRTL_OSVERSIONINFOW;
+#endif
+
 static BOOL
-IsVirtualConsole(void)
+w32_RtlGetVersion(RTL_OSVERSIONINFOW *rovi)
+{
+    typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+#define STATUS_SUCCESS      (0x00000000)
+
+    HMODULE hMod = GetModuleHandleA("ntdll.dll");
+    if (hMod) {
+        RtlGetVersionPtr cb = (RtlGetVersionPtr)GetProcAddress(hMod, "RtlGetVersion");
+        if (cb) {
+            rovi->dwOSVersionInfoSize = sizeof(*rovi);
+            if (STATUS_SUCCESS == cb(rovi)) {
+                return TRUE;
+            }
+        }
+    }
+    memset(rovi, 0, sizeof(*rovi));
+    return FALSE;
+}
+
+
+static BOOL
+IsVirtualConsole(int *depth)
 {
 #if !defined(ENABLE_VIRTUAL_TERMINAL_PROCESSING)
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
+#if !defined(DISABLE_NEWLINE_AUTO_RETURN)
+#define DISABLE_NEWLINE_AUTO_RETURN 0x0008
+#endif
+
+    RTL_OSVERSIONINFOW rovi = {0};
     HANDLE chandle = vio.chandle;
     DWORD mode;
 
-    if (GetConsoleMode(chandle, &mode)) {       // Windows 10 virtual console test
-        if (mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) {
-            return TRUE;
+    //  #include <VersionHelpers.h>
+    //  if (! IsWindows10OrGreater()) {
+    //        // BOOL WINAPI IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor);
+    //     return FALSE;
+    //  }
 
-        } else if (SetConsoleMode(chandle, mode|ENABLE_VIRTUAL_TERMINAL_PROCESSING)) {
-            (void) SetConsoleMode(chandle, mode);
-            return TRUE;
+    if (w32_RtlGetVersion(&rovi)) {             // Note: GetVersionEx() only returns the compatibily details.
+        const int t_depth =                     // Build 14931+
+            (rovi.dwBuildNumber >= 14931 ? 256 : 16);
+
+        if (GetConsoleMode(chandle, &mode)) {   // Windows 10 virtual console test.
+            if (mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) {
+                *depth = t_depth;
+                return TRUE;
+            } else if (SetConsoleMode(chandle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING)) {
+                (void)SetConsoleMode(chandle, mode);
+                *depth = t_depth;
+                return TRUE;
+            }
         }
     }
     return FALSE;
@@ -1276,37 +1346,50 @@ CopyOut(unsigned pos, unsigned cnt, unsigned flags)
 #if defined(WIN32_CONSOLEEXT)
 #if defined(WIN32_CONSOLE256)
     if (activecolors > 16) {
-            //                                  // update console buffer
-            //  cursor-get
-            //  cursor-hide
-            //  updates-disable (stop screen update flicker)
-            //      console-write-std
-            //  update-enable
-            //  console-write-extended
-            //  cursor-show
-            //
-            CONSOLE_CURSOR_INFO cinfo = {0};
-            BOOL omode;
+        //                                      // update console buffer
+        //  cursor-get
+        //  cursor-hide
+        //  updates-disable (stop screen update flicker)
+        //      console-write-std
+        //  update-enable
+        //  console-write-extended
+        //  cursor-show
+        //
+        const BOOL isvisible = IsWindowVisible(vio.whandle);
+        CONSOLE_CURSOR_INFO cinfo = {0};
+        BOOL omode;
 
-            if (modcnt) {                       // flush changes, disable updates
-                GetConsoleCursorInfo(chandle, &cinfo);
-                if (0 != (omode = cinfo.bVisible)) {
-                    cinfo.bVisible = FALSE;     // hide cursor
-                    SetConsoleCursorInfo(chandle, &cinfo);
-                }
-                                                
-                SendMessage(vio.whandle, WM_SETREDRAW, FALSE, 0);
-                WriteConsoleOutputW(chandle, vio.oshadow + pos, is, ic, &wr);
-                SendMessage(vio.whandle, WM_SETREDRAW, TRUE, 0);
+#if defined(WIN32_CONSOLEVIRTUAL)
+        if (vio.isvirtualconsole) {
+            CopyOutEx2(pos, cnt, flags);        // export text
+            return;
+        }
+#endif  //WIN32_CONSOLEVIRTUAL
+
+        if (modcnt && isvisible) {              // flush changes, disable updates
+            GetConsoleCursorInfo(chandle, &cinfo);            
+            if (0 != (omode = cinfo.bVisible)) {
+                cinfo.bVisible = FALSE;         // hide cursor
+                SetConsoleCursorInfo(chandle, &cinfo);
             }
 
-            CopyOutEx(pos, cnt, flags);         // export text
+            SendMessage(vio.whandle, WM_SETREDRAW, FALSE, 0);
+            WriteConsoleOutputW(chandle, vio.oshadow + pos, is, ic, &wr);
+            SendMessage(vio.whandle, WM_SETREDRAW, TRUE, 1);
+                // Note: If the application sends the WM_SETREDRAW message to a hidden window,
+                //  the window becomes visible (that is, the operating system adds the WS_VISIBLE style to the window).
 
-            if (modcnt) {                       // restore cursor
-                if (0 != (cinfo.bVisible = omode)) { 
-                    SetConsoleCursorInfo(chandle, &cinfo);
-                }
+        } else {
+            WriteConsoleOutputW(chandle, vio.oshadow + pos, is, ic, &wr);
+        }
+
+        CopyOutEx(pos, cnt, flags);             // export text
+
+        if (modcnt && isvisible) {              // restore cursor
+            if (0 != (cinfo.bVisible = omode)) { 
+                SetConsoleCursorInfo(chandle, &cinfo);
             }
+        }
 
     } else {
         if (modcnt) {
@@ -1413,12 +1496,10 @@ COLOR256(const struct colorinfo *color, COLORREF *fg, COLORREF *bg)
         }
     }
 
-    if (!flags)
-    {                                           // windows native attribute
+    if (!flags) {								// windows native attribute
         t_fg = vio.rgb256[ win2vt[ color->Attributes & 0x0f] ];
         t_bg = vio.rgb256[ win2vt[(color->Attributes & 0xf0) >> 4] ];
     }
-
 
     if (t_fg == t_bg) {                         // default, normal
         t_fg = vio.rgb256[ COLIDX_FOREGROUND ];
@@ -1444,17 +1525,14 @@ SameCell(const WCHAR_INFO *c1, const WCHAR_INFO *c2)
         c1->Info.bgrgb == c2->Info.bgrgb);
 }
 
-
+     
 static __inline int
-SameAttributes(const WCHAR_INFO *cell, const struct colorinfo *info, const COLORREF fg, const COLORREF bg)
+SameAttributes(const WCHAR_INFO *cell, const struct colorinfo *info, const COLORREF fg, const COLORREF bg, const WORD viomask)
 {
     COLORREF cfg, cbg;
 
-#define VIO_TYPEFACE_ATTRIBUTES \
-    (VIO_BOLD|VIO_BLINK|VIO_ITALIC|VIO_FAINT)
-
-    if ((cell->Info.Attributes & (VIO_TYPEFACE_ATTRIBUTES)) !=
-             (info->Attributes & (VIO_TYPEFACE_ATTRIBUTES))) {
+    if ((cell->Info.Attributes & viomask) !=
+             (info->Attributes & viomask)) {
         return 0;                               // type-face change.
     }
 
@@ -1523,7 +1601,7 @@ CopyOutEx(size_t pos, size_t cnt, unsigned flags)
                 const WCHAR_INFO cell = *cursor++;
 
                 if (start >= 0) {               // attribute run
-                    if (SameAttributes(&cell, &info, fg, bg)) {
+                    if (SameAttributes(&cell, &info, fg, bg, VIO_BOLD|VIO_BLINK|VIO_ITALIC|VIO_FAINT)) {
                         ocursor[col++] = cell;  // update out image
                         *text = cell.Char.UnicodeChar;
                         if (++text >= etext)
@@ -1535,7 +1613,7 @@ CopyOutEx(size_t pos, size_t cnt, unsigned flags)
                 }
 
                 if (0 == (flags & TRASHED) &&
-                        SameCell(&cell, ocursor + col)) {
+                    SameCell(&cell, ocursor + col)) {
                     ++col;
                     continue;                   // up-to-date
                 }
@@ -1552,7 +1630,7 @@ CopyOutEx(size_t pos, size_t cnt, unsigned flags)
 
                 if (vio.fbHandle || vio.fiHandle) {
                     HFONT fhandle = vio.fnHandle;
-                    if (((VIO_BOLD|VIO_BLINK) & info.Attributes) && vio.fbHandle) {
+                    if (((VIO_BOLD | VIO_BLINK) & info.Attributes) && vio.fbHandle) {
                         fhandle = vio.fbHandle;
                         if ((VIO_ITALIC & info.Attributes) && vio.fbiHandle) {
                             fhandle = vio.fbiHandle;
@@ -1607,7 +1685,7 @@ CopyOutEx(size_t pos, size_t cnt, unsigned flags)
 //                  SetTextColor(wdc, fg);
 //                  SetTextAlign(wdc, GetTextAlign(wdc) | TA_CENTER);
 //                  ExtTextOutW(wdc, left, top, ETO_OPAQUE, NULL, textbuf, text - textbuf, NULL);
-               }
+                }
             }
         }
         ++row;
@@ -1617,7 +1695,151 @@ CopyOutEx(size_t pos, size_t cnt, unsigned flags)
     SelectObject(wdc, oldfont);
     DeleteDC(wdc);
 }
-#endif  //CONSOLE256
+#endif  //WIN32_CONSOLE256
+
+
+#if defined(WIN32_CONSOLEVIRTUAL)
+/*  Function:           CopyOutEx2
+ *      Virtual console drivers.
+ *
+ *  Reference:
+ *      https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
+ */
+static void
+CopyOutEx2(size_t pos, size_t cnt, unsigned flags)
+{
+    const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
+    HANDLE chandle = vio.chandle;
+    const int cols = vio.cols;
+    unsigned restoreCP = 0;
+    int row = (int)(pos / cols);
+
+    WCHAR wcbuf[2 * 1024],                      // ExtTextOut limit
+        *wcend = wcbuf + ((sizeof(wcbuf) / sizeof(wcbuf[0])) - 128);
+    char  u8buf[sizeof(wcbuf) * 4];
+
+    assert(pos < vio.size);
+    assert(0 == (pos % cols));
+    assert((pos + cnt) <= vio.size);
+    assert(vio.isvirtualconsole);
+
+    if (1 == vio.isvirtualconsole) {            // enable Windows 10 virtual console
+        const UINT cp = GetConsoleOutputCP();
+        DWORD mode = 0;
+
+        vio.isvirtualconsole = 2;
+
+        if (GetConsoleMode(chandle, &mode)) {
+            if (0 == (mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING)) {
+                SetConsoleMode(chandle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN);
+                if (CP_UTF8 != cp) vio.oldConsoleMode = mode;
+                vio.oldConsoleCP = cp;
+                vio.isvirtualconsole = 3;       // restore
+
+            } else if (0 == (mode & DISABLE_NEWLINE_AUTO_RETURN)) {
+                SetConsoleMode(chandle, mode | DISABLE_NEWLINE_AUTO_RETURN);
+                if (CP_UTF8 != cp) vio.oldConsoleMode = mode;
+                vio.oldConsoleCP = cp;
+                vio.isvirtualconsole = 3;       // restore
+            }
+        }
+    }
+
+#define L_VTESC     L"\x1b"
+#define L_VTCSI     L"\x1b["
+
+    do {    //forearch(row)
+        WCHAR_INFO *ocursor = vio.oimage + (row * cols);
+        int start = -1, col = 0;
+        struct colorinfo info = {0};            // accumulator
+        COLORREF bg = -1, fg = -1;              // current colors
+        WCHAR *wctext = NULL;
+        char *u8text = NULL;
+
+        while (col < cols) {
+            start = -1;
+            do {
+                const WCHAR_INFO cell = *cursor++;
+
+                //  ESC[<y>; <x> H              CUP, Cursor Position *Cursor moves to <x>; <y> coordinate within the viewport, where <x> is the column of the <y> line.
+                //
+                if (-1 == start) {
+                    if (0 == (flags & TRASHED) &&
+                        SameCell(&cell, ocursor + col)) {
+                        ++col;
+                        continue;               // up-to-date
+                    }
+                    wctext = wcbuf + wsprintfW(wcbuf, L_VTCSI L"%u;%uH", row + 1, col + 1);
+                    start = col;
+
+                } else {                        // attribute run
+                    if (SameAttributes(&cell, &info, fg, bg, VIO_UNDERLINE|VIO_BOLD|VIO_BLINK|VIO_INVERSE)) {
+                        ocursor[col++] = cell;  // update out image
+                        *wctext = cell.Char.UnicodeChar;
+                        if (++wctext >= wcend) {
+                            break;              // flush
+                        }
+                        continue;
+                    } 
+                    //else, attribute change.
+                }
+
+                //  ESC[<n> m                   SGR, Set Graphics Rendition, Set the format of the screen and text as specified by <n>.
+                //
+                //      0	                    Default, returns all attributes to the default state prior to modification.
+                //
+                //      1                       Bold / Bright Applies brightness / intensity flag to foreground color.
+                //      4                       Underline
+                //      7                       Negative; swaps foreground and background colors.
+                //
+                //      38; 2; <r>; <g>; <b>    Set foreground color to RGB value specified in <r>, <g>, <b> parameters.
+                //      48; 2; <r>; <g>; <b>	Set background color to RGB value specified in <r>, <g>, <b> parameters.
+                //      38; 5; <s>	            Set foreground color to <s> index in 88 or 256 color table.
+                //      48; 5; <s>	            Set background color to <s> index in 88 or 256 color table.
+                //
+                ocursor[col++] = cell;          // update out image.
+
+                info = cell.Info;
+                COLOR256(&info, &fg, &bg);
+
+                wctext += wsprintfW(wctext, L_VTCSI L"0m" L_VTCSI L"38;2;%u;%u;%um" L_VTCSI L"48;2;%u;%u;%um",
+                                GetRValue(fg), GetGValue(fg), GetBValue(fg), GetRValue(bg), GetGValue(bg), GetBValue(bg));
+
+		{   const WORD Attributes = info.Attributes;
+		    if (Attributes) {		// special attributes.
+			if (Attributes & VIO_UNDERLINE)           wctext += wsprintfW(wctext, L_VTCSI L"4m");
+			if (Attributes & (VIO_BOLD | VIO_BLINK))  wctext += wsprintfW(wctext, L_VTCSI L"1m");
+			if (Attributes & VIO_INVERSE)             wctext += wsprintfW(wctext, L_VTCSI L"7m");
+		    //if (Attributes & VIO_ITALIC)
+		    //if (Attributes & VIO_STRIKE)
+		    //if (Attributes & VIO_FAINT)
+		    }
+		}
+
+                *wctext++ = cell.Char.UnicodeChar;
+
+            } while (col < cols);
+
+            if (start >= 0) {                   // write text.
+                const int size =
+                    WideCharToMultiByte(CP_UTF8, 0, wcbuf, (int)(wctext - wcbuf), u8buf, sizeof(u8buf), NULL, NULL);
+
+                if (CP_UTF8 != vio.oldConsoleMode) {
+                    SetConsoleOutputCP(CP_UTF8);
+                    restoreCP = vio.oldConsoleMode;
+                }
+                WriteFile(chandle, u8buf, size, NULL, 0);
+            }
+        }
+        ++row;
+
+    } while (cursor < end);
+
+    if (restoreCP) {                            // restore code-page.
+        SetConsoleOutputCP(restoreCP);
+    }
+}
+#endif  //WIN32_CONSOLEVIRTUAL
 
 
 #if defined(WIN32_CONSOLEEXT)
@@ -1708,7 +1930,7 @@ StrikeOutEx(size_t pos, size_t cnt)
 {
     const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
     const int cols = vio.cols;
-    float fcwidth, fcheight;                    // proportional sizing
+    float fcwidth, fcheight;                    // proportional sizing.
     RECT rect = {0};
     int row = (int)(pos / cols);
     HDC wdc;
@@ -1717,7 +1939,7 @@ StrikeOutEx(size_t pos, size_t cnt)
         return;
     }
 
-    wdc = GetDC(vio.whandle);                   // client area DC
+    wdc = GetDC(vio.whandle);                   // client area DC.
     GetClientRect(vio.whandle, &rect);
     fcwidth = (float)rect.right / vio.cols;
     fcheight = (float)rect.bottom / vio.rows;
@@ -1732,18 +1954,18 @@ StrikeOutEx(size_t pos, size_t cnt)
                 const WCHAR_INFO cell = *cursor++;
 
                 if (VIO_STRIKE & cell.Info.Attributes) {
-                    if (start < 0) {            // inside
+                    if (start < 0) {            // inside.
                         COLOR256(&cell.Info, &fg, &bg);
                         start = col;
                     }
                 } else if (start >= 0) {
                     ++col;
-                    break;                      // flush
+                    break;                      // flush.
                 }
                 ++col;
             } while (col < cols);
 
-            if (start >= 0) {                   // underline current extent
+            if (start >= 0) {                   // underline current extent.
                 const int y = (int)((fcheight * (row + 1)) - (fcheight / 2)),
                         x = (int)(fcwidth * start);
                 HPEN oldpen;
@@ -1864,7 +2086,7 @@ consolefontsenum(void)
         RegCloseKey(hKey);
     }
 
-    if (0 == names) {                           // default, iso-8859-x coverage
+    if (0 == names) {                           // default, iso-8859-x coverage.
         fcnpush("Lucida Console", 0);
     }
 
@@ -1962,7 +2184,7 @@ consolefontset(int height, int width, const char *facename)
     wdc = GetDC(whandle);
     GetClientRect(whandle, &rect);
 
-    if (-1 == height) {                         // -1, implied
+    if (-1 == height) {                         // -1, implied.
         height = (int)((float)rect.bottom/vio.rows);
     }
 
@@ -1994,7 +2216,7 @@ consolefontset(int height, int width, const char *facename)
         //  Select first available.
         //
         if (! fnHandle) {
-            while (1) {                         // test availablity
+            while (1) {                         // test availablity.
                 fcname = vio.fcnames + faceindex;
 
                 if (NULL == (facename = fcname->name)) {
@@ -2013,7 +2235,7 @@ consolefontset(int height, int width, const char *facename)
                     }
 
                     fnHandle = consolefontcreate(height, t_width, WEIGHT_REGULAR, FALSE, facename);
-                    if (fnHandle) {             // bold, italic, bold+italic, faint
+                    if (fnHandle) {             // bold, italic, bold+italic, faint.
                         fbHandle  = consolefontcreate(height, t_width, WEIGHT_BOLD,    FALSE, facename);
                         fiHandle  = consolefontcreate(height, t_width, WEIGHT_REGULAR, TRUE,  facename);
                         fbiHandle = consolefontcreate(height, t_width, WEIGHT_BOLD,    TRUE,  facename);
@@ -2198,10 +2420,10 @@ parse_color(const char *color, const char *defname, const struct attrmap *map, i
 
     //  color[;attribute[;...]]
     //
-    if (!defname || !*defname)                   // undefined; assume white/black
+    if (!defname || !*defname)                   // undefined; assume white/black.
         defname = (map == win16_foreground ? "white" : "black");
 
-    if (!color || !*color) color = defname;      // undefined, apply default
+    if (!color || !*color) color = defname;      // undefined, apply default.
 
     //  optional trailing attributes
     if (NULL != (a = strchr(color, ';'))) {
@@ -2276,23 +2498,24 @@ parse_attributes(const char *attr)
     int attributes = 0;
 
     while (attr) {                              // foreach(attribute)
-        while (';' == *attr || ' ' == *attr || '\t' == *attr)
+        while (';' == *attr || ' ' == *attr || '\t' == *attr) {
             ++attr;                             // leading whitespace
+        }
 
         if (*attr) {
-            if (0 == strncmp(attr, "bold", 4)) {
+            if (0 == _strnicmp(attr, "bold", 4)) {
                 attributes |= VIO_BOLD;
-            } else if (0 == strncmp(attr, "blink", 5)) {
+            } else if (0 == _strnicmp(attr, "blink", 5)) {
                 attributes |= VIO_BLINK;
-            } else if (0 == strncmp(attr, "underline", 9)) {
+            } else if (0 == _strnicmp(attr, "underline", 9)) {
                 attributes |= VIO_UNDERLINE;
-            } else if (0 == strncmp(attr, "italic", 6)) {
+            } else if (0 == _strnicmp(attr, "italic", 6)) {
                 attributes |= VIO_ITALIC;
-            } else if (0 == strncmp(attr, "inverse", 7) || 0 == strncmp(attr, "reverse", 7)) {
+            } else if (0 == _strnicmp(attr, "inverse", 7) || 0 == _strnicmp(attr, "reverse", 7)) {
                 attributes |= VIO_INVERSE;
-                        } else if (0 == strncmp(attr, "strike", 6)) {
-                                attributes |= VIO_STRIKE;
-            } else if (0 == strncmp(attr, "faint", 5)) {
+            } else if (0 == _strnicmp(attr, "strike", 6)) {
+                attributes |= VIO_STRIKE;
+            } else if (0 == _strnicmp(attr, "faint", 5)) {
                 attributes |= VIO_FAINT;
             }
         }
@@ -2322,7 +2545,7 @@ check_activecolors(void)
 }
 
 
-/*  Function:
+/*  Function:       winnormal
  *      Apply color foreground/background defaults for WIN_COLOR specifications.
  *
  *  Parameters
@@ -2340,7 +2563,7 @@ winnormal(const int color)
 }
 
 
-/*  Function:
+/*  Function:       vtnormal
  *      Apply color foreground/background defaults for VT_COLOR specifications.
  *
  *  Parameters
@@ -2408,9 +2631,9 @@ ImageSave(HANDLE console, unsigned pos, unsigned cnt)
     SMALL_RECT wr = {0};
     DWORD rc;
 
-    assert(pos < (rows * cols));
+    assert(pos < (unsigned)(rows * cols));
     assert(cnt && 0 == (pos % cols));
-    assert((pos + cnt) <= (rows * cols));
+    assert((pos + cnt) <= (unsigned)(rows * cols));
 
     wr.Left   = 0;                              // src. screen rectangle.
     wr.Right  = (SHORT)(cols - 1);
@@ -2422,7 +2645,6 @@ ImageSave(HANDLE console, unsigned pos, unsigned cnt)
 
     ic.X      = 0;                              // top left src cell in image.
     ic.Y      = 0;
-
                                                 // read in image.
     rc = ReadConsoleOutputW(console, vio_state.image + pos, is, ic, &wr);
 
@@ -2467,12 +2689,11 @@ vio_restore(void)
         int r, c;
 
         for (r = 0; r < rows; ++r) {
-            if (r < vio_state.rows) {           // merge previous image
+            if (r < vio_state.rows) {           // merge previous image.
                 memcpy(nimage + (r * cols),
                     (const void *)(vio_state.image + (r * vio_state.cols)), cnt);
             }
-
-                                                // blank new cells
+                                                // blank new cells.
             if ((c = (r >= vio_state.rows ? 0 : vio_state.cols)) < cols) {
                 CHAR_INFO *p = nimage + (r * cols) + c;
                 do {
@@ -2481,7 +2702,7 @@ vio_restore(void)
             }
         }
 
-        free((void *)vio_state.image);          // replace image
+        free((void *)vio_state.image);          // replace image.
         vio_state.image = nimage;
         vio_state.rows = rows;
         vio_state.cols = cols;
@@ -2490,9 +2711,9 @@ vio_restore(void)
     /*
      *  Restore image and cursor
      */
-    SetConsoleCursorPosition(console, iHome);   // home cursor
+    SetConsoleCursorPosition(console, iHome);   // home cursor.
 
-    ImageRestore(console, 0, rows * cols);      // write out image
+    ImageRestore(console, 0, rows * cols);      // write out image.
 
                                                 // original cursor
     SetConsoleCursorPosition(console, vio_state.cursorcoord);
@@ -2508,10 +2729,10 @@ ImageRestore(HANDLE console, unsigned pos, unsigned cnt)
     SMALL_RECT wr = {0};
     DWORD rc;
 
-    assert(pos < (rows * cols));
+    assert(pos < (unsigned)(rows * cols));
     assert(0 == (pos % cols));
     assert(cnt && 0 == (cnt % rows));
-    assert((pos + cnt) <= (rows * cols));
+    assert((pos + cnt) <= (unsigned)(rows * cols));
 
     wr.Left   = 0;                              // src. screen rectangle.
     wr.Right  = (SHORT)(cols - 1);
@@ -2571,7 +2792,7 @@ vio_open(int *rows, int *cols)
     if (cols) *cols = vio.cols;
     TRACE_LOG(("open(rows:%d, cols:%d)", vio.rows, vio.cols))
 
-#if (0)     // dump character table.
+#if (0) // dump character table.
     {   static unsigned once;
         if (!once++) {
             const int width = (vio.cols - 10);
@@ -2588,7 +2809,7 @@ vio_open(int *rows, int *cols)
             getch();
         }
     }
-#endif
+#endif  //XXX
 
     return 0;
 }
@@ -2606,6 +2827,13 @@ vio_close(void)
     TRACE_LOG(("close(rows:%d, cols:%d)", vio.rows, vio.cols))
     if (vio.maximised) {
         vio_setsize(vio.maximised_oldrows, vio.maximised_oldcols);
+        if (vio.isvirtualconsole) {            
+            if (3 == vio.isvirtualconsole) {    /* restore? */
+                if (vio.oldConsoleMode) SetConsoleMode(vio.chandle, vio.oldConsoleMode);
+                if (vio.oldConsoleCP) SetConsoleOutputCP(vio.oldConsoleCP);
+            }
+            vio.isvirtualconsole = 1;
+        }
         ShowWindow(vio.whandle, /*SW_RESTORE*/ SW_NORMAL);
         vio.maximised = 0;
     }
@@ -2809,17 +3037,17 @@ vio_define_attr(int obj, const char *what, const char *fg, const char *bg)
 
     if ((bcolor = parse_true_color(bg, &brgb, &battr)) >= 0) {
         flags |= VIO_FRGB;
-    } else if ((bcolor = parse_color(bg, "black", win16_background, &battr)) >= 16) {
+    } else if ((bcolor = parse_color(bg, "black", win16_foreground /*background*/, &battr)) >= 16) {
         flags |= VIO_F256;
     }
 
-    if (flags & (VIO_F256|VIO_FRGB)) {
-        if (vio.maxcolors <= 16) {              // only apply, if supported.
-            return -1;
-        }
-    }
+//  if (flags & (VIO_F256|VIO_FRGB)) {
+//      if (vio.maxcolors <= 16) {              // only apply, if supported.
+//          return -1;
+//      }
+//  }
 
-    if (VIO_INVERSE & (fattr|battr)) {          // apply inverse
+    if (VIO_INVERSE & (fattr|battr)) {          // apply inverse.
         SWAPFGBG(fcolor, bcolor);
         SWAPRGB(frgb, brgb);
     }
@@ -2833,18 +3061,18 @@ vio_define_attr(int obj, const char *what, const char *fg, const char *bg)
         if (fcolor < 16) fcolor = win2vt[ fcolor ];
         if (bcolor < 16) bcolor = win2vt[ bcolor ];
 
-    } else {                                    // native
-        assert(0 == flags);
-        assert(fcolor >= 0 && fcolor < 16);
-        assert(bcolor >= 0 && bcolor < 16);
-        fattr |=  fcolor & 0x0f;
-        battr |= (bcolor & 0x0f) << 4;
-        fcolor = win2vt[ fcolor & 0x0f ];
-        bcolor = win2vt[ bcolor & 0x0f ];
+	} else {									// native
+		assert(0 == flags);
+		assert(fcolor >= 0 && fcolor < 16);
+	    assert(bcolor >= 0 && bcolor < 16);
+		fattr  |=  fcolor & 0x0f;
+		battr  |= (bcolor & 0x0f) << 4;
+		fcolor =  win2vt[fcolor & 0x0f];
+		bcolor =  win2vt[bcolor & 0x0f];
     }
 
     // apply
-    vio.c_attrs[obj].Flags = flags;
+	vio.c_attrs[obj].Flags = flags;
     vio.c_attrs[obj].Attributes = fattr | battr;
     vio.c_attrs[obj].fg = fcolor;
     vio.c_attrs[obj].bg = bcolor;
@@ -2946,7 +3174,7 @@ vio_define_flags(int obj, uint16_t attributes)
 {
     assert(obj >= 0 && obj < MAXOBJECTS);
     if (obj < 0 || obj >= MAXOBJECTS) return;
-    vio.c_attrs[obj].Attributes &= 0xff00;
+    vio.c_attrs[obj].Attributes &= 0x00ff;
     vio.c_attrs[obj].Attributes |= (attributes & 0xff00);
 }
 
@@ -3298,5 +3526,5 @@ vio_putc(unsigned ch, unsigned cnt, int move)
         vio.c_col = col, vio.c_row = row;
     }
 }
-/*end*/
 
+/*end*/
