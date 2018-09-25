@@ -1,7 +1,7 @@
 /*
    Learn keys
 
-   Copyright (C) 1995-2017
+   Copyright (C) 1995-2018
    Free Software Foundation, Inc.
 
    Written by:
@@ -194,7 +194,7 @@ learn_check_key (int c)
             }
             else
             {
-                message (D_ERROR, learn_title,
+                message (D_ERROR, learn_title, "%s",
                          _
                          ("Great! You have a complete terminal database!\n"
                           "All your keys work well."));

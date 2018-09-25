@@ -3,33 +3,35 @@
 # This file is distributed under the same license as the mc package.
 #
 # Translators:
-# AlexL <loginov.alex.valer@gmail.com>, 2015-2016
 # Alex Tkachenko <alex@bcs.zp.ua>, 1998
-# Andrew Borodin <aborodin@vmail.ru>, 2009-2017
-# Andrew V. Samoilov <sav@bcs.zp.ua>, 1999,2014
-# Anton Sergeevich Chumak <nightfast@yahoo.co.uk>, 2005
-# Dimitriy Ryazantcev <DJm00n@mail.ru>, 2015
 # Evgeny Bulgakov <bgav@netvision.net.il>, 1999
-# Ilia Maslakov <il.smind@gmail.com>, 2009
-# NaiLi (aka jamesjames) Rootaerc <theism@mail.ru>, 2012
 # Sergey Panov <sipan@mit.edu>, 1999
-# Simple88, 2016
-# Slava Zanko <slavazanko@gmail.com>, 2009,2011
+# Andrew V. Samoilov <sav@bcs.zp.ua>, 1999, 2014
 # Valek Filippov <frob@df.ru>, 2000
+# Anton Sergeevich Chumak <nightfast@yahoo.co.uk>, 2005
+# Andrew Borodin <aborodin@vmail.ru>, 2011-2018
+# Ilia Maslakov <il.smind@gmail.com>, 2009
+# Slava Zanko <slavazanko@gmail.com>, 2009, 2011
+# AlexL <loginov.alex.valer@gmail.com>, 2015-2017
+# NaiLi (aka jamesjames) Rootaerc <theism@mail.ru>, 2012
+# Dimitriy Ryazantcev <DJm00n@mail.ru>, 2015
+# Simple88, 2016
+# Piotr Drąg <piotrdrag@gmail.com>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2017-02-24 22:45+0100\n"
-"PO-Revision-Date: 2017-02-26 07:57+0300\n"
-"Last-Translator: Andrew Borodin <aborodin@vmail.ru>\n"
+"POT-Creation-Date: 2018-09-09 19:12+0300\n"
+"PO-Revision-Date: 2018-04-30 12:37+0000\n"
+"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Russian (http://www.transifex.com/mc/mc/language/ru/)\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ru\n"
-"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Poedit 1.8.9\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
+"%100>=11 && n%100<=14)? 2 : 3);\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "Warning: cannot load codepages list"
@@ -112,7 +114,9 @@ msgstr ""
 "Ваши старые настройки перенесены из %s\n"
 "в %s\n"
 
-msgid "Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in hex)"
+msgid ""
+"Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
+"hex)"
 msgstr ""
 
 msgid "Invalid character"
@@ -134,7 +138,8 @@ msgid "Not implemented yet"
 msgstr "Пока не реализовано"
 
 msgid "Num of replace tokens not equal to num of found tokens"
-msgstr "Количество шаблонных полей не соответствует количеству полей для замены"
+msgstr ""
+"Количество шаблонных полей не соответствует количеству полей для замены"
 
 #, c-format
 msgid "Invalid token number %d"
@@ -498,25 +503,25 @@ msgstr ""
 "Проверьте переменную окружения TERM.\n"
 
 msgid "B"
-msgstr ""
+msgstr "Б"
 
 msgid "kB"
-msgstr ""
+msgstr "кБ"
 
 msgid "KiB"
-msgstr ""
+msgstr "КиБ"
 
 msgid "MB"
-msgstr ""
+msgstr "МБ"
 
 msgid "MiB"
-msgstr ""
+msgstr "МиБ"
 
 msgid "GB"
-msgstr ""
+msgstr "ГБ"
 
 msgid "GiB"
-msgstr ""
+msgstr "ГиБ"
 
 msgid "Cannot create pipe descriptor"
 msgstr "Не удалось создать дескриптор канала"
@@ -597,7 +602,6 @@ msgstr "Временные файлы будут создаваться в ка�
 msgid "Temporary files will not be created\n"
 msgstr "Временные файлы не будут создаваться\n"
 
-#, c-format
 msgid "Press any key to continue..."
 msgstr "Для продолжения нажмите любую клавишу..."
 
@@ -666,6 +670,9 @@ msgstr "Распечатать параметры конфигурации"
 msgid "Print last working directory to specified file"
 msgstr "Записать последний рабочий каталог в указанный файл"
 
+msgid "<file>"
+msgstr "<файл>"
+
 msgid "Enables subshell support (default)"
 msgstr "Включить поддержку встроенной командной оболочки (по умолчанию)"
 
@@ -678,11 +685,17 @@ msgstr "Записывать диалог с FTP в заданный файл"
 msgid "Set debug level"
 msgstr "Установить уровень отладки"
 
+msgid "<integer>"
+msgstr "<целое число>"
+
 msgid "Launches the file viewer on a file"
 msgstr "Просматривать файл"
 
 msgid "Edit files"
 msgstr "Редактировать файлы"
+
+msgid "<file> ..."
+msgstr "<файл> ..."
 
 msgid "Forces xterm features"
 msgstr "Подразумевать свойства xterm"
@@ -712,7 +725,8 @@ msgid "Load definitions of key bindings from specified file"
 msgstr "Чтение определений привязок клавиш из указанного файла"
 
 msgid "Don't load definitions of key bindings from file, use defaults"
-msgstr "Не загружать привязки клавиш из файла, использовать привязки по умолчанию"
+msgstr ""
+"Не загружать привязки клавиш из файла, использовать привязки по умолчанию"
 
 msgid "Requests to run in black and white"
 msgstr "Принудительно установить черно-белый режим"
@@ -722,6 +736,9 @@ msgstr "Принудительно установить цветной режи�
 
 msgid "Specifies a color configuration"
 msgstr "Определить настройки цветов"
+
+msgid "<string>"
+msgstr "<строка>"
 
 msgid "Show mc with specified skin"
 msgstr "Отобразить mc с указанным скином"
@@ -749,22 +766,26 @@ msgid ""
 msgstr ""
 "--colors КЛЮЧЕВОЕ_СЛОВО={ТЕКСТ},{ФОН},{АТРИБУТ}:КЛЮЧЕВОЕ_СЛОВО2=...\n"
 "\n"
-"{ТЕКСТ}, {ФОН} и {АТРИБУТ} можно опустить, чтобы использовать значения по умолчанию\n"
+"{ТЕКСТ}, {ФОН} и {АТРИБУТ} можно опустить, чтобы использовать значения по "
+"умолчанию\n"
 "\n"
 "Ключевые слова:\n"
 "   Общие:              errors, disabled, reverse, gauge, header\n"
 "                       input, inputmark, inputunchanged, commandlinemark\n"
 "                       bbarhotkey, bbarbutton, statusbar\n"
 "   Отображение файлов: normal, selected, marked, markselect\n"
-"   Диалоги:            dnormal, dfocus, dhotnormal, dhotfocus, errdhotnormal,\n"
+"   Диалоги:            dnormal, dfocus, dhotnormal, dhotfocus, "
+"errdhotnormal,\n"
 "                       errdhotfocus\n"
-"   Меню:               menunormal, menuhot, menusel, menuhotsel, menuinactive\n"
+"   Меню:               menunormal, menuhot, menusel, menuhotsel, "
+"menuinactive\n"
 "   Всплывающие меню:   pmenunormal, pmenusel, pmenutitle\n"
 "   Редактор:           editnormal, editbold, editmarked, editwhitespace,\n"
 "                       editlinestate, editbg, editframe, editframeactive\n"
 "                       editframedrag\n"
 "   Просмотрщик:        viewnormal, viewbold, viewunderline, viewselected\n"
-"   Справка:            helpnormal, helpitalic, helpbold, helplink, helpslink\n"
+"   Справка:            helpnormal, helpitalic, helpbold, helplink, "
+"helpslink\n"
 
 #. TRANSLATORS: don't translate color names and attributes
 msgid ""
@@ -788,19 +809,23 @@ msgstr ""
 "   от color16 до color255 или от rgb000 до rgb555 и от gray0 до gray23\n"
 "\n"
 "Атрибуты:\n"
-"   bold, italic, underline, reverse, blink; несколько атрибутов объединяются знаком \"+\"\n"
+"   bold, italic, underline, reverse, blink; несколько атрибутов объединяются "
+"знаком \"+\"\n"
 
 msgid "Color options"
 msgstr "Цветовые настройки"
 
-msgid "+number"
-msgstr "+число"
+msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
+msgstr "[+номер_строки] файл1[:номер_строки] [файл1[:номер_строки]...]"
+
+msgid "file"
+msgstr "файл"
+
+msgid "file1 file2"
+msgstr "файл1 файл2"
 
 msgid "[this_dir] [other_panel_dir]"
 msgstr "[этот_каталог] [каталог_другой_панели]"
-
-msgid "Set initial line number for the internal editor"
-msgstr "Задать начальную строку для встроенного редактора"
 
 msgid ""
 "\n"
@@ -1641,8 +1666,8 @@ msgstr ""
 "Текстовый редактор с дружественным интерфейсом пользователя.\n"
 "Создан для Midnight Commander."
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2016 the Free Software Foundation"
+msgid "Copyright (C) 1996-2018 the Free Software Foundation"
+msgstr ""
 
 msgid "About"
 msgstr "О программе"
@@ -1794,7 +1819,6 @@ msgstr "Невозможно получить локальную копию %s"
 msgid "The shell is already running a command"
 msgstr "Интерпретатор занят выполнением команды"
 
-#, c-format
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Введите exit для возврата в Midnight Commander"
 
@@ -1829,6 +1853,15 @@ msgid ""
 msgstr ""
 "Невозможно изменить режим доступа к \"%s\"\n"
 "%s"
+
+msgid "&Ignore"
+msgstr "&Игнорировать"
+
+msgid "Ignore &all"
+msgstr "Игнорировать в&сё"
+
+msgid "&Retry"
+msgstr "По&вторить"
 
 #, c-format
 msgid ""
@@ -1921,6 +1954,9 @@ msgstr "Смена &каталога по ссылкам"
 
 msgid "Sa&fe delete"
 msgstr "Безопасное &удаление"
+
+msgid "Safe overwrite"
+msgstr ""
 
 msgid "A&uto save setup"
 msgstr "&Автосохранение настроек"
@@ -2032,7 +2068,7 @@ msgstr "столбцы"
 msgid "User &mini status"
 msgstr "Строка &мини-статуса в формате пользователя"
 
-msgid "Listing mode"
+msgid "Listing format"
 msgstr "Формат списка файлов"
 
 msgid "Executable &first"
@@ -2044,8 +2080,7 @@ msgstr "&Обратный"
 msgid "Sort order"
 msgstr "Порядок сортировки"
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
-#. prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
 msgid "Confirmation|&Delete"
 msgstr "&Удаление"
 
@@ -2435,16 +2470,25 @@ msgid " %s%s file error"
 msgstr "ошибка файла %s%s"
 
 #, c-format
-msgid "The format of the %smc.ext file has changed with version 3.0. It seems that the installation failed. Please fetch a fresh copy from the Midnight Commander package."
-msgstr "Формат %smc.ext изменён с версии 3.0. Возможно, произошёл сбой при установке. Пожалуйста, возьмите свежую копию из пакета Midnight Commander."
+msgid ""
+"The format of the %smc.ext file has changed with version 3.0. It seems that "
+"the installation failed. Please fetch a fresh copy from the Midnight "
+"Commander package."
+msgstr ""
+"Формат %smc.ext изменён с версии 3.0. Возможно, произошёл сбой при "
+"установке. Пожалуйста, возьмите свежую копию из пакета Midnight Commander."
 
 #, c-format
 msgid "%s file error"
 msgstr "ошибка файла %s"
 
 #, c-format
-msgid "The format of the %s file has changed with version 3.0. You may either want to copy it from %smc.ext or use that file as an example of how to write it."
-msgstr "Формат файла %s изменён с версии 3.0. Вы можете либо скопировать его с %s/mc.ext, либо использовать этот файл как пример и написать свой."
+msgid ""
+"The format of the %s file has changed with version 3.0. You may either want "
+"to copy it from %smc.ext or use that file as an example of how to write it."
+msgstr ""
+"Формат файла %s изменён с версии 3.0. Вы можете либо скопировать его с %s/mc."
+"ext, либо использовать этот файл как пример и написать свой."
 
 msgid "DialogTitle|Copy"
 msgstr "Копирование"
@@ -2471,9 +2515,6 @@ msgstr "%o %f%n\"%s\"%m"
 #, no-c-format
 msgid "%o %d %f%m"
 msgstr "%o эти %f (%d шт.)%m"
-
-msgid "file"
-msgstr "файл"
 
 msgid "files"
 msgstr "файлы"
@@ -2503,11 +2544,12 @@ msgstr ""
 "%s"
 
 msgid ""
-"Cannot make stable symlinks acrossnon-local filesystems:\n"
+"Cannot make stable symlinks across non-local filesystems:\n"
 "\n"
 "Option Stable Symlinks will be disabled"
 msgstr ""
-"Невозможно создать устойчивые симв. ссылки через нелокальные файловые системы:\n"
+"Невозможно создать устойчивые симв. ссылки через нелокальные файловые "
+"системы:\n"
 "\n"
 "Опция \"Устойчивые символические ссылки\" будет отменена"
 
@@ -2519,11 +2561,32 @@ msgstr ""
 "Невозможно создать целевую симв. ссылку \"%s\"\n"
 "%s"
 
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same directory"
+msgstr ""
+"\"%s\"\n"
+"и\n"
+"\"%s\"\n"
+"один и тот же каталог"
+
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same file"
+msgstr ""
+"\"%s\"\n"
+"и\n"
+"\"%s\"\n"
+"один и тот же файл"
+
 msgid "Ski&p all"
 msgstr "Пропустить вс&ё"
-
-msgid "&Retry"
-msgstr "По&вторить"
 
 #, c-format
 msgid ""
@@ -2548,23 +2611,19 @@ msgstr "Ни &одного"
 
 #, c-format
 msgid ""
+"Cannot remove file \"%s\"\n"
+"%s"
+msgstr ""
+"Невозможно удалить файл \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
 "Cannot stat file \"%s\"\n"
 "%s"
 msgstr ""
 "Невозможно получить свойства файла \"%s\"\n"
 "%s"
-
-#, c-format
-msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same file"
-msgstr ""
-"\"%s\"\n"
-"и\n"
-"\"%s\"\n"
-"один и тот же файл"
 
 #, c-format
 msgid "Cannot overwrite directory \"%s\""
@@ -2576,22 +2635,6 @@ msgid ""
 "%s"
 msgstr ""
 "Невозможно переместить файл \"%s\" в \"%s\"\n"
-"%s"
-
-#, c-format
-msgid ""
-"Cannot remove file \"%s\"\n"
-"%s"
-msgstr ""
-"Невозможно удалить файл \"%s\"\n"
-"%s"
-
-#, c-format
-msgid ""
-"Cannot delete file \"%s\"\n"
-"%s"
-msgstr ""
-"Невозможно удалить файл \"%s\"\n"
 "%s"
 
 #, c-format
@@ -2609,6 +2652,25 @@ msgid ""
 msgstr ""
 "Невозможно переписать каталог \"%s\"\n"
 "%s"
+
+#, c-format
+msgid ""
+"Cannot overwrite file \"%s\"\n"
+"%s"
+msgstr ""
+"Невозможно переписать файл \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot move directory \"%s\" to \"%s\"\n"
+"%s"
+msgstr ""
+"Невозможно переместить каталог \"%s\" в \"%s\"\n"
+"%s"
+
+msgid "Cannot operate on \"..\"!"
+msgstr "Эту операцию невозможно выполнить на \"..\"!"
 
 #, c-format
 msgid ""
@@ -2775,39 +2837,8 @@ msgstr ""
 "%s"
 
 #, c-format
-msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same directory"
-msgstr ""
-"\"%s\"\n"
-"и\n"
-"\"%s\"\n"
-"один и тот же каталог"
-
-#, c-format
-msgid ""
-"Cannot overwrite file \"%s\"\n"
-"%s"
-msgstr ""
-"Невозможно переписать файл \"%s\"\n"
-"%s"
-
-#, c-format
-msgid ""
-"Cannot move directory \"%s\" to \"%s\"\n"
-"%s"
-msgstr ""
-"Невозможно переместить каталог \"%s\" в \"%s\"\n"
-"%s"
-
-#, c-format
 msgid "Directories: %zu, total size: %s"
 msgstr "Каталоги: %zu, общий объём: %s"
-
-msgid "Cannot operate on \"..\"!"
-msgstr "Эту операцию невозможно выполнить на \"..\"!"
 
 msgid "Sorry, I could not put the job in background"
 msgstr "Извините, сделать это в фоновом режиме невозможно"
@@ -3011,6 +3042,14 @@ msgstr[0] "Завершено (пропущен %zu каталог)"
 msgstr[1] "Завершено (пропущено %zu каталога)"
 msgstr[2] "Завершено (пропущено %zu каталогов)"
 msgstr[3] "Завершено (пропущено %zu каталогов)"
+
+#, c-format
+msgid "Find File: \"%s\". Content: \"%s\""
+msgstr "Поиск файла:  \"%s\". Содержимое: \"%s\""
+
+#, c-format
+msgid "Find File: \"%s\""
+msgstr "Поиск файла:  \"%s\""
 
 msgid "Searching"
 msgstr "Ищем"
@@ -3241,7 +3280,7 @@ msgstr "&Быстрый просмотр"
 msgid "&Info"
 msgstr "&Информация"
 
-msgid "&Listing mode..."
+msgid "&Listing format..."
 msgstr "Фор&мат списка..."
 
 msgid "&Sort order..."
@@ -3677,51 +3716,6 @@ msgstr ""
 "Невозможно писать в файл %s:\n"
 "%s\n"
 
-msgid "Debug"
-msgstr "Отладка"
-
-msgid "ERROR:"
-msgstr "ОШИБКА:"
-
-msgid "True:"
-msgstr "Истина:"
-
-msgid "False:"
-msgstr "Ложь:"
-
-msgid "Error calling program"
-msgstr "Ошибка выполнения программы"
-
-msgid "Warning -- ignoring file"
-msgstr "Предупреждение - файл игнорируется"
-
-#, c-format
-msgid ""
-"File %s is not owned by root or you or is world writable.\n"
-"Using it may compromise your security"
-msgstr ""
-"Файл %s в текущем каталоге не принадлежит ни root'у, ни Вам,\n"
-"или доступен другим на запись. Использование такого файла неприемлемо\n"
-"c точки зрения безопасности."
-
-msgid "Format error on file Extensions File"
-msgstr "Ошибка в формате файла Расширений файлов"
-
-#, c-format
-msgid "The %%var macro has no default"
-msgstr "Макрос %%var не имеет значения по умолчанию"
-
-#, c-format
-msgid "The %%var macro has no variable"
-msgstr "Макрос %%var не имеет переменной"
-
-#, c-format
-msgid "No suitable entries found in %s"
-msgstr "Не найдено подходящих элементов в %s"
-
-msgid "User menu"
-msgstr "Меню пользователя"
-
 msgid "Help file format error\n"
 msgstr "Ошибка в формате файла помощи\n"
 
@@ -3938,6 +3932,51 @@ msgstr "Пользовательские данные"
 
 msgid "Cache directory:"
 msgstr "Каталог с кэшируемыми данными:"
+
+msgid "Debug"
+msgstr "Отладка"
+
+msgid "ERROR:"
+msgstr "ОШИБКА:"
+
+msgid "True:"
+msgstr "Истина:"
+
+msgid "False:"
+msgstr "Ложь:"
+
+msgid "Error calling program"
+msgstr "Ошибка выполнения программы"
+
+msgid "Warning -- ignoring file"
+msgstr "Предупреждение - файл игнорируется"
+
+#, c-format
+msgid ""
+"File %s is not owned by root or you or is world writable.\n"
+"Using it may compromise your security"
+msgstr ""
+"Файл %s в текущем каталоге не принадлежит ни root'у, ни Вам,\n"
+"или доступен другим на запись. Использование такого файла неприемлемо\n"
+"c точки зрения безопасности."
+
+msgid "Format error on file Extensions File"
+msgstr "Ошибка в формате файла Расширений файлов"
+
+#, c-format
+msgid "The %%var macro has no default"
+msgstr "Макрос %%var не имеет значения по умолчанию"
+
+#, c-format
+msgid "The %%var macro has no variable"
+msgstr "Макрос %%var не имеет переменной"
+
+#, c-format
+msgid "No suitable entries found in %s"
+msgstr "Не найдено подходящих элементов в %s"
+
+msgid "User menu"
+msgstr "Меню пользователя"
 
 #, c-format
 msgid ""
@@ -4228,6 +4267,10 @@ msgstr "sftp: сбой установки SSH-сессии"
 
 msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: нет обработчика считываемого файла"
+
+#, c-format
+msgid "sftp: socket error: %s"
+msgstr "sftp: ошибка сокета: %s"
 
 #, c-format
 msgid "sftp: (Ctrl-G break) Listing... %s"

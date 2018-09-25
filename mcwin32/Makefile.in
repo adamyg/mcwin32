@@ -37,7 +37,7 @@ PKG_TARNAME	= @PACKAGE_TARNAME@
 PKG_URL		= @PACKAGE_URL@
 PKG_VERSION	= @PACKAGE_VERSION@
 ifeq ("","$(PKG_VERSION)")
-PKG_VERSION	= 4.8.19
+PKG_VERSION	= 4.8.21
 endif
 PKG_VERSION_1	=$(word 1,$(subst ., ,$(PKG_VERSION)))
 PKG_VERSION_2	=$(word 2,$(subst ., ,$(PKG_VERSION)))
@@ -192,6 +192,7 @@ MC_SRC=	\
 	$(D_OBJ)/setup$(O)			\
 	$(D_OBJ)/textconf$(O)			\
 	$(D_OBJ)/util$(O)			\
+	$(D_OBJ)/usermenu$(O)			\
 	$(D_OBJ)/win32_glib$(O)
 
 #	$(D_OBJ)/background$(O)
@@ -224,7 +225,6 @@ MC_FILEMANAGER=\
 	$(D_OBJFM)/panelize$(O)			\
 	$(D_OBJFM)/tree$(O)			\
 	$(D_OBJFM)/treestore$(O)		\
-	$(D_OBJFM)/usermenu$(O)			\
 	\
 	$(D_OBJFM)/drive$(O)
 
@@ -526,6 +526,7 @@ CFG_DOC=\
 	$(D_DOC)/MAINTAINERS			\
 	$(D_DOC)/AUTHORS			\
 	$(D_DOC)/NEWS				\
+	$(D_DOC)/NEWS.4.7			\
 	$(D_DOC)/NEWS.OLD			\
 	$(D_DOC)/README				\
 	$(D_DOC)/TODO

@@ -18,12 +18,12 @@
 
       Components:
 
-           o mcsrc      Midnight Commander source (currently 4.8.19),
+           o mcsrc      Midnight Commander source (currently 4.8.21),
                         mc-win32 changes enclosed within "if defined(WIN32)"
                         and/or //WIN32 comment blocks.
 
            o mcwin32    Windows specific code and build env.
-   
+
       Build steps:
 
         a. Install the gnuwin32 tool set or similar. (optional) set the

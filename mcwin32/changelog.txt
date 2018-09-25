@@ -1,6 +1,14 @@
+Wed Sep 26 00:47:14 2018 adamy
+
+	* build 209 - beta
+	* Symlink support enhancements
+	* Color256 emulation tweaks
+	* window 10 console support
+	* mc 4.8.21 merge
+
 Thu Jun  9 21:26:18 2018 adamy
 
-	* msvc 2017 builds
+	* msvc 2015/2017 builds
 
 Fri Mar 31 02:38:24 2017 adamy
 

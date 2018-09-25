@@ -1,11 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the mc package.
-# 
+#
 # Translators:
 # Arthur Titeica <arthur@psw.ro>, 2013
-# Arthur Țițeică <arthur.titeica@gmail.com>, 2013-2014
-# Mihai Draghicioiu <mihai.draghicioiu@gmail.com>, 2016
+# Arthur Țițeică <arthur.titeica@gmail.com>, 2013-2014,2017
+# Christian Eichert, 2018
+# Mihai Draghicioiu <inactive+vampirefrog@transifex.com>, 2016
 # Nicolae Crefelean, 2014
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # Sorin Sfirlogea, 2016
@@ -14,15 +15,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-11-21 13:19+0300\n"
-"PO-Revision-Date: 2016-11-22 08:19+0000\n"
+"POT-Creation-Date: 2018-09-09 19:12+0300\n"
+"PO-Revision-Date: 2018-04-30 12:37+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Romanian (http://www.transifex.com/mc/mc/language/ro/)\n"
+"Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ro\n"
-"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
+"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?"
+"2:1));\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "Warning: cannot load codepages list"
@@ -60,7 +62,10 @@ msgid ""
 "File \"%s\" is already being edited.\n"
 "User: %s\n"
 "Process ID: %d"
-msgstr "Fișierul \"%s\" este deja deschis pentru editare.\nUtilizator: %s\nID proces: %d"
+msgstr ""
+"Fișierul \"%s\" este deja deschis pentru editare.\n"
+"Utilizator: %s\n"
+"ID proces: %d"
 
 msgid "File locked"
 msgstr "Fișier blocat"
@@ -88,13 +93,40 @@ msgid ""
 "to Freedesktop recommended dirs.\n"
 "To get more info, please visit\n"
 "http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html"
-msgstr "Vechile tale setări au fost migrate din %s\nîn dosarele recomandate de Freedesktop.\nPentru mai multe informații, te rog vizitează\nhttp://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html"
+msgstr ""
+"Vechile tale setări au fost migrate din %s\n"
+"în dosarele recomandate de Freedesktop.\n"
+"Pentru mai multe informații, te rog vizitează\n"
+"http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html"
 
 #, c-format
 msgid ""
 "Your old settings were migrated from %s\n"
 "to %s\n"
-msgstr "Vechile tale setări au fost migrate din %s\nîn %s\n"
+msgstr ""
+"Vechile tale setări au fost migrate din %s\n"
+"în %s\n"
+
+msgid ""
+"Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
+"hex)"
+msgstr ""
+"Număr în afara intervalului (ar trebui să fie în intervalul octet, 0 <= n <= "
+"0xFF, exprimat în hex)"
+
+msgid "Invalid character"
+msgstr "Caracter nevalid"
+
+msgid "Unmatched quotes character"
+msgstr "Caracterul ghilimelelor neîmperecheate"
+
+#, c-format
+msgid ""
+"Hex pattern error at position %d:\n"
+"%s."
+msgstr ""
+"Eroare model Hex la poziția %d\n"
+"%s."
 
 msgid "Search string not found"
 msgstr "Șirul căutat nu a fost găsit"
@@ -128,13 +160,17 @@ msgstr "Căutare me&tacaracter"
 msgid ""
 "Unable to load '%s' skin.\n"
 "Default skin has been loaded"
-msgstr "Nu se poate încărca tematica '%s'.\nA fost încărcată tematica implicită"
+msgstr ""
+"Nu se poate încărca tematica '%s'.\n"
+"A fost încărcată tematica implicită"
 
 #, c-format
 msgid ""
 "Unable to parse '%s' skin.\n"
 "Default skin has been loaded"
-msgstr "Nu se poate interpreta tematica '%s'.\nA fost încărcată tematica implicită"
+msgstr ""
+"Nu se poate interpreta tematica '%s'.\n"
+"A fost încărcată tematica implicită"
 
 #, c-format
 msgid ""
@@ -142,25 +178,31 @@ msgid ""
 "%s\n"
 "Default skin has been loaded"
 msgstr ""
+"Nu se poate folosi tema '%s' cu suport pentru culori reale:\n"
+"%s\n"
+"Tema implicita a fost încărcata"
 
 #, c-format
 msgid ""
 "Unable to use '%s' skin with 256 colors support\n"
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
-msgstr "Nu se poate folosi tematica '%s' cu suport pentru 256 de culori\npe un terminal non-256.\nA fost încărcată tematica implicită"
+msgstr ""
+"Nu se poate folosi tematica '%s' cu suport pentru 256 de culori\n"
+"pe un terminal non-256.\n"
+"A fost încărcată tematica implicită"
 
 msgid "True color not supported with ncurses."
-msgstr ""
+msgstr "CULORI REALE nu sunt acceptate cu ncurses."
 
 msgid "True color not supported in this slang version."
-msgstr ""
+msgstr "CULORI REALE  nu sunt acceptate în această versiune slang."
 
 msgid "Your terminal doesn't even seem to support 256 colors."
-msgstr ""
+msgstr "Terminalul dvs. nu pare ca nu suporta 256 de culori."
 
 msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
-msgstr ""
+msgstr "Setați COLORTERM=truecolor dacă terminalul dvs. suporta culori reale."
 
 msgid "Escape"
 msgstr "Escape"
@@ -452,46 +494,52 @@ msgstr "Variabila de mediu TERM nu este setată!\n"
 msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
-msgstr "Mărimea %dx%d a ecranului nu este suportată.\nVerificați variabila de mediu TERM.\n"
+msgstr ""
+"Mărimea %dx%d a ecranului nu este suportată.\n"
+"Verificați variabila de mediu TERM.\n"
 
 msgid "B"
-msgstr ""
+msgstr "B"
 
 msgid "kB"
-msgstr ""
+msgstr "kB"
 
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 msgid "MB"
-msgstr ""
+msgstr "MB"
 
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 msgid "GB"
-msgstr ""
+msgstr "GB"
 
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 msgid "Cannot create pipe descriptor"
-msgstr ""
+msgstr "Nu pot crea descriptorul filtrului"
 
 msgid "Cannot create pipe streams"
-msgstr ""
+msgstr "Nu pot crea fluxul filtrului"
 
 #, c-format
 msgid ""
 "Unexpected error in select() reading data from a child process:\n"
 "%s"
 msgstr ""
+"Eroare neașteptată în select() se accesează datele dintr-un proces copil :\n"
+"%s"
 
 #, c-format
 msgid ""
 "Unexpected error in waitpid():\n"
 "%s"
 msgstr ""
+"Eroare surpriza in waitpid():\n"
+"%s"
 
 msgid "Warning"
 msgstr "Atenție"
@@ -515,7 +563,7 @@ msgstr "%s: %s: %s %3d%% (%lld) bytes transferați"
 
 #, c-format
 msgid "%s: %s: %s %lld bytes transferred"
-msgstr ""
+msgstr "%s: %s: %s %lld bytes transferați "
 
 msgid "Starting linear transfer..."
 msgstr "Pornesc transferul liniar..."
@@ -550,7 +598,6 @@ msgstr "Fișierele temporare vor fi create în %s\n"
 msgid "Temporary files will not be created\n"
 msgstr "Nu vor fi create fișiere temporare\n"
 
-#, c-format
 msgid "Press any key to continue..."
 msgstr "Apăsați o tastă pentru a continua..."
 
@@ -599,7 +646,7 @@ msgstr "Eroare"
 
 #, c-format
 msgid "%s (%d)"
-msgstr ""
+msgstr "%s (%d)"
 
 msgid "&Abort"
 msgstr "&Anulează"
@@ -619,6 +666,9 @@ msgstr "Afișează opțiunile de configurare"
 msgid "Print last working directory to specified file"
 msgstr "Arată ultimul dosar curent în fișierul specificat"
 
+msgid "<file>"
+msgstr ""
+
 msgid "Enables subshell support (default)"
 msgstr "Activează suportul pentru subshell (implicit)"
 
@@ -631,11 +681,17 @@ msgstr "Înregistrează dialogul ftp în fișierul specificat"
 msgid "Set debug level"
 msgstr "Nivelul de depanare"
 
+msgid "<integer>"
+msgstr ""
+
 msgid "Launches the file viewer on a file"
 msgstr "Lansează vizualizatorul pe un fișier"
 
 msgid "Edit files"
 msgstr "Editează fișiere"
+
+msgid "<file> ..."
+msgstr ""
 
 msgid "Forces xterm features"
 msgstr "Forțează facilitățile xterm"
@@ -665,7 +721,9 @@ msgid "Load definitions of key bindings from specified file"
 msgstr "Încarcă definițiile de combinații de taste din fișierul specificat"
 
 msgid "Don't load definitions of key bindings from file, use defaults"
-msgstr "Nu încarca definițiile de combinații de taste din fișier, folosește tastele implicite"
+msgstr ""
+"Nu încarca definițiile de combinații de taste din fișier, folosește tastele "
+"implicite"
 
 msgid "Requests to run in black and white"
 msgstr "Cerere de rulare în alb/negru"
@@ -675,6 +733,9 @@ msgstr "Cerere de rulare în culori"
 
 msgid "Specifies a color configuration"
 msgstr "Specifică o configurație de culori"
+
+msgid "<string>"
+msgstr ""
 
 msgid "Show mc with specified skin"
 msgstr "Arată mc cu tematica specificată"
@@ -700,6 +761,24 @@ msgid ""
 "   Viewer:       viewnormal,viewbold, viewunderline, viewselected\n"
 "   Help:         helpnormal, helpitalic, helpbold, helplink, helpslink\n"
 msgstr ""
+"--colors KEYWORD={FORE},{BACK},{ATTR}:KEYWORD2=...\n"
+"\n"
+"{FORE}, {BACK} and {ATTR} can be omitted, and the default will be used\n"
+"\n"
+" Keywords:\n"
+"   Global:       errors, disabled, reverse, gauge, header\n"
+"                 input, inputmark, inputunchanged, commandlinemark\n"
+"                 bbarhotkey, bbarbutton, statusbar\n"
+"   File display: normal, selected, marked, markselect\n"
+"   Dialog boxes: dnormal, dfocus, dhotnormal, dhotfocus, errdhotnormal,\n"
+"                 errdhotfocus\n"
+"   Menus:        menunormal, menuhot, menusel, menuhotsel, menuinactive\n"
+"   Popup menus:  pmenunormal, pmenusel, pmenutitle\n"
+"   Editor:       editnormal, editbold, editmarked, editwhitespace,\n"
+"                 editlinestate, editbg, editframe, editframeactive\n"
+"                 editframedrag\n"
+"   Viewer:       viewnormal,viewbold, viewunderline, viewselected\n"
+"   Help:         helpnormal, helpitalic, helpbold, helplink, helpslink\n"
 
 #. TRANSLATORS: don't translate color names and attributes
 msgid ""
@@ -714,24 +793,41 @@ msgid ""
 "Attributes:\n"
 "   bold, italic, underline, reverse, blink; append more with '+'\n"
 msgstr ""
+"Culori standard:\n"
+"   black, gray, red, brightred, green, brightgreen, brown,\n"
+"   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n"
+"   brightcyan, lightgray and white\n"
+"\n"
+"Culori extinse, cînd 256 de culori sunt disponibile:\n"
+"   color16 la color255, sau rgb000 la rgb555 si gray0 la gray23\n"
+"\n"
+"Atribute:\n"
+"   bold, italic, underline, reverse, blink; append more with '+'\n"
 
 msgid "Color options"
 msgstr "Opțiuni culori"
 
-msgid "+number"
-msgstr "+număr"
+msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
+msgstr "[+lineno] file1[:lineno] [file2[:lineno]...]"
+
+msgid "file"
+msgstr "fișierul"
+
+msgid "file1 file2"
+msgstr "file1 file2"
 
 msgid "[this_dir] [other_panel_dir]"
 msgstr "[acest_dir] [celălalt_panou_dir]"
-
-msgid "Set initial line number for the internal editor"
-msgstr "Numărul primei linii pentru editorul intern"
 
 msgid ""
 "\n"
 "Please send any bug reports (including the output of 'mc -V')\n"
 "as tickets at www.midnight-commander.org\n"
-msgstr "\nTe rog trimite rapoartele de disfuncționalitate (inclusiv rezultatul comenzii 'mc -V')\nca tichet pe www.midnight-commander.org\n"
+msgstr ""
+"\n"
+"Te rog trimite rapoartele de disfuncționalitate (inclusiv rezultatul "
+"comenzii 'mc -V')\n"
+"ca tichet pe www.midnight-commander.org\n"
 
 #, c-format
 msgid "GNU Midnight Commander %s\n"
@@ -770,7 +866,9 @@ msgstr "Procesul copil a murit neașteptat"
 msgid ""
 "Background process sent us a request for more arguments\n"
 "than we can handle."
-msgstr "Sarcina din fundal a cerut mai multe argumente\ndecât putem gestiona."
+msgstr ""
+"Sarcina din fundal a cerut mai multe argumente\n"
+"decât putem gestiona."
 
 msgid "&Dismiss"
 msgstr "Închi&de"
@@ -800,20 +898,27 @@ msgstr "Căutarea este dezactivată"
 msgid ""
 "Cannot create temporary diff file\n"
 "%s"
-msgstr "Nu se poate crea fișierul temporare de diferențe\n%s"
+msgstr ""
+"Nu se poate crea fișierul temporare de diferențe\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create backup file\n"
 "%s%s\n"
 "%s"
-msgstr "Nu se poate crea fișierul pentru copia de siguranță\n%s%s\n%s"
+msgstr ""
+"Nu se poate crea fișierul pentru copia de siguranță\n"
+"%s%s\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create temporary merge file\n"
 "%s"
-msgstr "Nu se poate crea fișierul temporar pentru unire\n%s"
+msgstr ""
+"Nu se poate crea fișierul temporar pentru unire\n"
+"%s"
 
 msgid "&Fastest (Assume large files)"
 msgstr "Rapid (Presupune &fișiere mari)"
@@ -890,7 +995,9 @@ msgstr "Fișierul a fost modificat. Salvezi la ieșire?"
 msgid ""
 "Midnight Commander is being shut down.\n"
 "Save modified file(s)?"
-msgstr "Midnight Commander este în curs de închidere.\nSalvezi fișierul modificat?"
+msgstr ""
+"Midnight Commander este în curs de închidere.\n"
+"Salvezi fișierul modificat?"
 
 msgid "Diff:"
 msgstr "Diff:"
@@ -903,7 +1010,9 @@ msgstr "\"%s\" este un dosar"
 msgid ""
 "Cannot stat \"%s\"\n"
 "%s"
-msgstr "Nu se poate găsi \"%s\"\n%s"
+msgstr ""
+"Nu se poate găsi \"%s\"\n"
+"%s"
 
 msgid "Diff viewer: invalid mode"
 msgstr "Vizualizator diff: mod invalid"
@@ -950,7 +1059,9 @@ msgstr "\"%s\" nu este un fișier obișnuit"
 msgid ""
 "File \"%s\" is too large.\n"
 "Open it anyway?"
-msgstr "Fișierul \"%s\" este prea mare.\nÎl deschizi oricum?"
+msgstr ""
+"Fișierul \"%s\" este prea mare.\n"
+"Îl deschizi oricum?"
 
 #, c-format
 msgid "Error reading from pipe: %s"
@@ -1118,7 +1229,9 @@ msgstr "[FărăNume]"
 msgid ""
 "File %s was modified.\n"
 "Save before close?"
-msgstr "Fișierul %s a fost modificat.\nSalvezi înainte de închidere?"
+msgstr ""
+"Fișierul %s a fost modificat.\n"
+"Salvezi înainte de închidere?"
 
 msgid "Close file"
 msgstr "Închide fișier"
@@ -1127,7 +1240,9 @@ msgstr "Închide fișier"
 msgid ""
 "Midnight Commander is being shut down.\n"
 "Save modified file %s?"
-msgstr "Midnight Commander este în curs de închidere.\nSalvezi fișierul modificat %s?"
+msgstr ""
+"Midnight Commander este în curs de închidere.\n"
+"Salvezi fișierul modificat %s?"
 
 msgid "This function is not implemented"
 msgstr "Această funcție nu este implementată"
@@ -1163,7 +1278,8 @@ msgid "Run sort"
 msgstr "Rulează sortarea"
 
 msgid "Enter sort options (see manpage) separated by whitespace:"
-msgstr "Introdu opțiunile de sortare (vezi pagina de manual) separate prin spațiu:"
+msgstr ""
+"Introdu opțiunile de sortare (vezi pagina de manual) separate prin spațiu:"
 
 msgid "Sort"
 msgstr "Sortare"
@@ -1211,7 +1327,9 @@ msgstr "Apasă orice tastă:"
 msgid ""
 "Current text was modified without a file save.\n"
 "Continue discards these changes"
-msgstr "Textul curent a fost modificat fără a se salva fișierul.\nDacă se continuă schimbările vor fi pierdute."
+msgstr ""
+"Textul curent a fost modificat fără a se salva fișierul.\n"
+"Dacă se continuă schimbările vor fi pierdute."
 
 msgid "In se&lection"
 msgstr "În se&lecție"
@@ -1243,7 +1361,9 @@ msgstr "Renunță"
 msgid ""
 "Current text was modified without a file save.\n"
 "Continue discards these changes."
-msgstr "Textul curent a fost modificat fără a se salva fișierul.\nDacă se continuă schimbările vor fi pierdute."
+msgstr ""
+"Textul curent a fost modificat fără a se salva fișierul.\n"
+"Dacă se continuă schimbările vor fi pierdute."
 
 msgid "NoName"
 msgstr "FărăNume"
@@ -1525,7 +1645,7 @@ msgid "Cursor be&yond end of line"
 msgstr "Cursor &dincolo de sfârşit fișier"
 
 msgid "&Group undo"
-msgstr ""
+msgstr "&Group undo"
 
 msgid "Word wrap line length:"
 msgstr "Lungime linie pentru curgere cuvinte:"
@@ -1536,10 +1656,12 @@ msgstr "Opțiuni editor"
 msgid ""
 "A user friendly text editor\n"
 "written for the Midnight Commander."
-msgstr "Un editor de text ușor de utilizat\ncreat pentru Midnight Commander."
+msgstr ""
+"Un editor de text ușor de utilizat\n"
+"creat pentru Midnight Commander."
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2016 Free Software Foundation"
+msgid "Copyright (C) 1996-2018 the Free Software Foundation"
+msgstr ""
 
 msgid "About"
 msgstr "Despre"
@@ -1665,7 +1787,9 @@ msgstr "Încarcă fișier de sintaxă"
 msgid ""
 "Cannot open file %s\n"
 "%s"
-msgstr "Nu se poate deschide fișierul %s\n%s"
+msgstr ""
+"Nu se poate deschide fișierul %s\n"
+"%s"
 
 #, c-format
 msgid "Error in file %s on line %d"
@@ -1676,7 +1800,11 @@ msgid ""
 "the subshell claims you are in. Perhaps you have\n"
 "deleted your working directory, or given yourself\n"
 "extra access permissions with the \"su\" command?"
-msgstr "Commander nu poate schimba calea în dosarul în care\npretinde subterminalul că te afli. Probabil ai șters\ndosarul de lucru sau ți-ai acordat permisiuni\nsuplimentare prin comanda \"su\"?"
+msgstr ""
+"Commander nu poate schimba calea în dosarul în care\n"
+"pretinde subterminalul că te afli. Probabil ai șters\n"
+"dosarul de lucru sau ți-ai acordat permisiuni\n"
+"suplimentare prin comanda \"su\"?"
 
 #, c-format
 msgid "Cannot fetch a local copy of %s"
@@ -1685,7 +1813,6 @@ msgstr "Nu se poate prelua o copie locală a %s"
 msgid "The shell is already running a command"
 msgstr "Terminalul deja rulează o comandă"
 
-#, c-format
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Tastați `exit' pentru a reveni în Midnight Commander"
 
@@ -1717,13 +1844,26 @@ msgstr "Comandă avansată chown"
 msgid ""
 "Cannot chmod \"%s\"\n"
 "%s"
-msgstr "Nu se poate aplica chmod \"%s\"\n%s"
+msgstr ""
+"Nu se poate aplica chmod \"%s\"\n"
+"%s"
+
+msgid "&Ignore"
+msgstr ""
+
+msgid "Ignore &all"
+msgstr ""
+
+msgid "&Retry"
+msgstr "&Reîncearcă"
 
 #, c-format
 msgid ""
 "Cannot chown \"%s\"\n"
 "%s"
-msgstr "Nu se poate aplica chown \"%s\"\n%s"
+msgstr ""
+"Nu se poate aplica chown \"%s\"\n"
+"%s"
 
 msgid "< Default >"
 msgstr "< Implicit >"
@@ -1809,6 +1949,9 @@ msgstr "Cd urmărește le&găturile"
 msgid "Sa&fe delete"
 msgstr "Ștergere sigu&ră"
 
+msgid "Safe overwrite"
+msgstr ""
+
 msgid "A&uto save setup"
 msgstr "Auto-salvare a configurației"
 
@@ -1867,7 +2010,7 @@ msgid "Pa&ge scrolling"
 msgstr "Derulare pa&gină"
 
 msgid "Center &scrolling"
-msgstr ""
+msgstr "Centreaza &scrolling"
 
 msgid "&Mouse page scrolling"
 msgstr "Derulare pagină cu ajutorul &mausului"
@@ -1895,7 +2038,11 @@ msgid ""
 "directory contents. In this case you'll need to do a\n"
 "manual reload of the directory. See the man page for\n"
 "the details."
-msgstr "Când se folosește opțiunea de reîncărcare rapidă conținutul dosarelor\neste posibil să nu reflecte realitatea. În astfel de cazuri va fi nevoie\nde o reîncărcare manuală a dosarului. Vezi pagina de manual\npentru detalii."
+msgstr ""
+"Când se folosește opțiunea de reîncărcare rapidă conținutul dosarelor\n"
+"este posibil să nu reflecte realitatea. În astfel de cazuri va fi nevoie\n"
+"de o reîncărcare manuală a dosarului. Vezi pagina de manual\n"
+"pentru detalii."
 
 msgid "&Full file list"
 msgstr "Listă de &fișiere completă"
@@ -1915,8 +2062,8 @@ msgstr "coloane"
 msgid "User &mini status"
 msgstr "&Mini-status utilizator"
 
-msgid "Listing mode"
-msgstr "Mod de listare"
+msgid "Listing format"
+msgstr "formatul de listare"
 
 msgid "Executable &first"
 msgstr "Mai întâ&i executabilele"
@@ -1927,8 +2074,7 @@ msgstr "In&vers"
 msgid "Sort order"
 msgstr "Ordinea de sortare"
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
-#. prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
 msgid "Confirmation|&Delete"
 msgstr "Confirmation|Șter&ge"
 
@@ -2222,12 +2368,16 @@ msgstr "&Completă"
 msgid ""
 "Both panels should be in the listing mode\n"
 "to use this command"
-msgstr "Pentru a utiliza această comandă ambele\ntrebuie să fie în modul listare"
+msgstr ""
+"Pentru a utiliza această comandă ambele\n"
+"trebuie să fie în modul listare"
 
 msgid ""
 "Not an xterm or Linux console;\n"
 "the panels cannot be toggled."
-msgstr "Nu este o consolă xterm sau Linux;\npanourile nu pot fi comutate."
+msgstr ""
+"Nu este o consolă xterm sau Linux;\n"
+"panourile nu pot fi comutate."
 
 #, c-format
 msgid "'%s' is not a symbolic link"
@@ -2266,7 +2416,9 @@ msgstr "Recuperare fișiere dintr-o partiție de tip ext2"
 msgid ""
 "Enter device (without /dev/) to undelete\n"
 "files on: (F1 for details)"
-msgstr "Introdu dispozitivul (fără /dev/) în care se vor recupera\nfișiere: (F1 pentru detalii)"
+msgstr ""
+"Introdu dispozitivul (fără /dev/) în care se vor recupera\n"
+"fișiere: (F1 pentru detalii)"
 
 msgid "Directory scanning"
 msgstr "Scanarea dosarelor"
@@ -2289,7 +2441,9 @@ msgstr "Nu se pot executa comenzi în sisteme de fișiere ne-locale"
 msgid ""
 "Cannot chdir to \"%s\"\n"
 "%s"
-msgstr "Nu se poate chdir în \"%s\"\n%s"
+msgstr ""
+"Nu se poate chdir în \"%s\"\n"
+"%s"
 
 msgid "Cannot read directory contents"
 msgstr "Nu pot citi conținutul dosarului"
@@ -2301,7 +2455,9 @@ msgstr "Parametru"
 msgid ""
 "Cannot create temporary command file\n"
 "%s"
-msgstr "Nu se poate crea fișierul temporar pentru linia de comandă\n%s"
+msgstr ""
+"Nu se poate crea fișierul temporar pentru linia de comandă\n"
+"%s"
 
 #, c-format
 msgid " %s%s file error"
@@ -2312,7 +2468,9 @@ msgid ""
 "The format of the %smc.ext file has changed with version 3.0. It seems that "
 "the installation failed. Please fetch a fresh copy from the Midnight "
 "Commander package."
-msgstr "Formatul fișierului %smc.ext a fost schimbat în versiunea 3.0. Se pare că instalarea a eșuat. Te rog să obții o copie din pachetul Midnight Commander."
+msgstr ""
+"Formatul fișierului %smc.ext a fost schimbat în versiunea 3.0. Se pare că "
+"instalarea a eșuat. Te rog să obții o copie din pachetul Midnight Commander."
 
 #, c-format
 msgid "%s file error"
@@ -2322,7 +2480,9 @@ msgstr "%s eroare fișier"
 msgid ""
 "The format of the %s file has changed with version 3.0. You may either want "
 "to copy it from %smc.ext or use that file as an example of how to write it."
-msgstr "Formatul fișierului %s a fost schimbat în versiunea 3.0. Vei putea să îl copiezi din %smc.ext sau poți folosi acel fișier ca exemplu."
+msgstr ""
+"Formatul fișierului %s a fost schimbat în versiunea 3.0. Vei putea să îl "
+"copiezi din %smc.ext sau poți folosi acel fișier ca exemplu."
 
 msgid "DialogTitle|Copy"
 msgstr "DialogTitle|Copiere"
@@ -2350,9 +2510,6 @@ msgstr "%o %f%n\"%s\"%m"
 msgid "%o %d %f%m"
 msgstr "%o %d %f%m"
 
-msgid "file"
-msgstr "fișierul"
-
 msgid "files"
 msgstr "fișiere"
 
@@ -2376,47 +2533,38 @@ msgstr "Nu se poate crea o legătură dură"
 msgid ""
 "Cannot read source link \"%s\"\n"
 "%s"
-msgstr "Nu se poate citi legătura sursă \"%s\"\n%s"
+msgstr ""
+"Nu se poate citi legătura sursă \"%s\"\n"
+"%s"
 
 msgid ""
-"Cannot make stable symlinks acrossnon-local filesystems:\n"
+"Cannot make stable symlinks across non-local filesystems:\n"
 "\n"
 "Option Stable Symlinks will be disabled"
-msgstr "Nu se pot face legături simbolice stabile care traversează sisteme de fișiere ne-locale:\n\nOpțiunea pentru legături simbolice stabile va fi dezactivată"
+msgstr ""
+"Nu pot face symlink-uri stabile în sistemele de fișiere non-locale:\n"
+"\n"
+"Opțiunea symlink-uri stabile va fi dezactivată"
 
 #, c-format
 msgid ""
 "Cannot create target symlink \"%s\"\n"
 "%s"
-msgstr "Nu se poate crea legătura destinație \"%s\"\n%s"
-
-msgid "Ski&p all"
-msgstr "Sări t&ot"
-
-msgid "&Retry"
-msgstr "&Reîncearcă"
-
-#, c-format
-msgid ""
-"Directory \"%s\" not empty.\n"
-"Delete it recursively?"
-msgstr "Dosarul \"%s\" nu este gol.\nÎl ștergi în mod recursiv?"
-
-#, c-format
-msgid ""
-"Background process:\n"
-"Directory \"%s\" not empty.\n"
-"Delete it recursively?"
-msgstr "Sarcină în fundal:\nDosarul \"%s\" nu este gol.\nÎl ștergi în mod recursiv?"
-
-msgid "Non&e"
-msgstr "&Nimic"
-
-#, c-format
-msgid ""
-"Cannot stat file \"%s\"\n"
+msgstr ""
+"Nu se poate crea legătura destinație \"%s\"\n"
 "%s"
-msgstr "Nu se poate găsi fișierul \"%s\"\n%s"
+
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same directory"
+msgstr ""
+"\"%s\"\n"
+"și\n"
+"\"%s\"\n"
+"sunt în același dosar"
 
 #, c-format
 msgid ""
@@ -2424,7 +2572,51 @@ msgid ""
 "and\n"
 "\"%s\"\n"
 "are the same file"
-msgstr "\"%s\"\nși\n\"%s\"\nsunt același fișier"
+msgstr ""
+"\"%s\"\n"
+"și\n"
+"\"%s\"\n"
+"sunt același fișier"
+
+msgid "Ski&p all"
+msgstr "Sări t&ot"
+
+#, c-format
+msgid ""
+"Directory \"%s\" not empty.\n"
+"Delete it recursively?"
+msgstr ""
+"Dosarul \"%s\" nu este gol.\n"
+"Îl ștergi în mod recursiv?"
+
+#, c-format
+msgid ""
+"Background process:\n"
+"Directory \"%s\" not empty.\n"
+"Delete it recursively?"
+msgstr ""
+"Sarcină în fundal:\n"
+"Dosarul \"%s\" nu este gol.\n"
+"Îl ștergi în mod recursiv?"
+
+msgid "Non&e"
+msgstr "&Nimic"
+
+#, c-format
+msgid ""
+"Cannot remove file \"%s\"\n"
+"%s"
+msgstr ""
+"Nu se poate șterge fișierul \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot stat file \"%s\"\n"
+"%s"
+msgstr ""
+"Nu se poate găsi fișierul \"%s\"\n"
+"%s"
 
 #, c-format
 msgid "Cannot overwrite directory \"%s\""
@@ -2434,61 +2626,84 @@ msgstr "Nu se poate suprascrie dosarul \"%s\""
 msgid ""
 "Cannot move file \"%s\" to \"%s\"\n"
 "%s"
-msgstr "Nu se poate muta fișierul \"%s\" în \"%s\"\n%s"
-
-#, c-format
-msgid ""
-"Cannot remove file \"%s\"\n"
+msgstr ""
+"Nu se poate muta fișierul \"%s\" în \"%s\"\n"
 "%s"
-msgstr "Nu se poate șterge fișierul \"%s\"\n%s"
-
-#, c-format
-msgid ""
-"Cannot delete file \"%s\"\n"
-"%s"
-msgstr "Nu se poate șterge fișierul \"%s\"\n%s"
 
 #, c-format
 msgid ""
 "Cannot remove directory \"%s\"\n"
 "%s"
-msgstr "Nu se poate șterge dosarul \"%s\"\n%s"
+msgstr ""
+"Nu se poate șterge dosarul \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
-msgstr "Nu se poate suprascrie dosarul \"%s\"\n%s"
+msgstr ""
+"Nu se poate suprascrie dosarul \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot overwrite file \"%s\"\n"
+"%s"
+msgstr ""
+"Nu se poate suprascrie fișierul \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot move directory \"%s\" to \"%s\"\n"
+"%s"
+msgstr ""
+"Nu se poate muta dosarul \"%s\" în \"%s\"\n"
+"%s"
+
+msgid "Cannot operate on \"..\"!"
+msgstr "Nu se poate acționa asupra \"..\"!"
 
 #, c-format
 msgid ""
 "Cannot stat source file \"%s\"\n"
 "%s"
-msgstr "Nu se poate găsi fișierul sursă \"%s\"\n%s"
+msgstr ""
+"Nu se poate găsi fișierul sursă \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create special file \"%s\"\n"
 "%s"
-msgstr "Nu se poate crea fișierul special \"%s\"\n%s"
+msgstr ""
+"Nu se poate crea fișierul special \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot chown target file \"%s\"\n"
 "%s"
-msgstr "Nu se poate aplica chown pe fișierul destinație \"%s\"\n%s"
+msgstr ""
+"Nu se poate aplica chown pe fișierul destinație \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot chmod target file \"%s\"\n"
 "%s"
-msgstr "Nu se poate aplica chmod pe fișierul destinație \"%s\"\n%s"
+msgstr ""
+"Nu se poate aplica chmod pe fișierul destinație \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot open source file \"%s\"\n"
 "%s"
-msgstr "Nu se poate deschide fișierul sursă \"%s\"\n%s"
+msgstr ""
+"Nu se poate deschide fișierul sursă \"%s\"\n"
+"%s"
 
 msgid "Reget failed, about to overwrite file"
 msgstr "Re-descărcarea a eșuat, se va suprascrie fișierul"
@@ -2497,37 +2712,49 @@ msgstr "Re-descărcarea a eșuat, se va suprascrie fișierul"
 msgid ""
 "Cannot fstat source file \"%s\"\n"
 "%s"
-msgstr "Nu se poate găsi fișierul sursă \"%s\"\n%s"
+msgstr ""
+"Nu se poate găsi fișierul sursă \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create target file \"%s\"\n"
 "%s"
-msgstr "Nu se poate crea fișierul destinație \"%s\"\n%s"
+msgstr ""
+"Nu se poate crea fișierul destinație \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot fstat target file \"%s\"\n"
 "%s"
-msgstr "Nu se poate găsi fișierul destinație \"%s\"\n%s"
+msgstr ""
+"Nu se poate găsi fișierul destinație \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot preallocate space for target file \"%s\"\n"
 "%s"
-msgstr "Nu se poate pre-aloca spațiu pentru fișierul destinație \"%s\"\n%s"
+msgstr ""
+"Nu se poate pre-aloca spațiu pentru fișierul destinație \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot read source file \"%s\"\n"
 "%s"
 msgstr ""
+"Nu se poate citi fișierul sursă \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot write target file \"%s\"\n"
 "%s"
-msgstr "Nu se poate scrie fișierul destinație \"%s\"\n%s"
+msgstr ""
+"Nu se poate scrie fișierul destinație \"%s\"\n"
+"%s"
 
 msgid "(stalled)"
 msgstr "(oprit)"
@@ -2536,13 +2763,17 @@ msgstr "(oprit)"
 msgid ""
 "Cannot close source file \"%s\"\n"
 "%s"
-msgstr "Nu se poate închide fișierul sursă \"%s\"\n%s"
+msgstr ""
+"Nu se poate închide fișierul sursă \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot close target file \"%s\"\n"
 "%s"
-msgstr "Nu se poate închide fișierul destinație \"%s\"\n%s"
+msgstr ""
+"Nu se poate închide fișierul destinație \"%s\"\n"
+"%s"
 
 msgid "Incomplete file was retrieved. Keep it?"
 msgstr "Fișierul a fost transferat incomplet. Îl păstrez?"
@@ -2554,64 +2785,53 @@ msgstr "&Păstrează"
 msgid ""
 "Cannot stat source directory \"%s\"\n"
 "%s"
-msgstr "Nu se poate găsi dosarul sursă \"%s\"\n%s"
+msgstr ""
+"Nu se poate găsi dosarul sursă \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Source \"%s\" is not a directory\n"
 "%s"
-msgstr "Sursa \"%s\" nu este un dosar\n%s"
+msgstr ""
+"Sursa \"%s\" nu este un dosar\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot copy cyclic symbolic link\n"
 "\"%s\""
-msgstr "Nu se poate copia legătura simbolică ciclică\n\"%s\""
+msgstr ""
+"Nu se poate copia legătura simbolică ciclică\n"
+"\"%s\""
 
 #, c-format
 msgid ""
 "Destination \"%s\" must be a directory\n"
 "%s"
-msgstr "Destinația \"%s\" trebuie să fie un dosar\n%s"
+msgstr ""
+"Destinația \"%s\" trebuie să fie un dosar\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create target directory \"%s\"\n"
 "%s"
-msgstr "Nu se poate crea dosarul destinație \"%s\"\n%s"
+msgstr ""
+"Nu se poate crea dosarul destinație \"%s\"\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot chown target directory \"%s\"\n"
 "%s"
-msgstr "Nu se poate aplica chown pe dosarul destinație \"%s\"\n%s"
-
-#, c-format
-msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same directory"
-msgstr "\"%s\"\nși\n\"%s\"\nsunt în același dosar"
-
-#, c-format
-msgid ""
-"Cannot overwrite file \"%s\"\n"
+msgstr ""
+"Nu se poate aplica chown pe dosarul destinație \"%s\"\n"
 "%s"
-msgstr "Nu se poate suprascrie fișierul \"%s\"\n%s"
-
-#, c-format
-msgid ""
-"Cannot move directory \"%s\" to \"%s\"\n"
-"%s"
-msgstr "Nu se poate muta dosarul \"%s\" în \"%s\"\n%s"
 
 #, c-format
 msgid "Directories: %zu, total size: %s"
-msgstr ""
-
-msgid "Cannot operate on \"..\"!"
-msgstr "Nu se poate acționa asupra \"..\"!"
+msgstr "Directoare: %zu, mărime totală: %s"
 
 msgid "Sorry, I could not put the job in background"
 msgstr "Scuze, nu am putut pune sarcina în fundal"
@@ -2760,7 +2980,7 @@ msgstr "&Editare - F4"
 
 #, c-format
 msgid "Found: %lu"
-msgstr ""
+msgstr "Găsit : %lu"
 
 msgid "Malformed regular expression"
 msgstr "Expresie regulată incorectă"
@@ -2811,9 +3031,17 @@ msgstr "Terminat"
 #, c-format
 msgid "Finished (ignored %zu directory)"
 msgid_plural "Finished (ignored %zu directories)"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Finalizat (au fost ignorate %zu dosar)"
+msgstr[1] "Finalizat (au fost ignorate %zu dosare)"
+msgstr[2] "Finalizat (au fost ignorate %zu dosare)"
+
+#, c-format
+msgid "Find File: \"%s\". Content: \"%s\""
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Find File: \"%s\""
+msgstr "Caută fișier"
 
 msgid "Searching"
 msgstr "Caut"
@@ -2893,7 +3121,9 @@ msgstr "Sigur dorești ștergerea înregistrării \"%s\"?"
 msgid ""
 "Group \"%s\" is not empty.\n"
 "Remove it?"
-msgstr "Grupul \"%s\" nu este gol.\nÎl ștergi?"
+msgstr ""
+"Grupul \"%s\" nu este gol.\n"
+"Îl ștergi?"
 
 msgid "Hotlist Load"
 msgstr "Încarcă lista rapidă"
@@ -2902,7 +3132,9 @@ msgstr "Încarcă lista rapidă"
 msgid ""
 "MC was unable to write %s file,\n"
 "your old hotlist entries were not deleted"
-msgstr "MC nu a putut scrie în fișierul %s,\nînregistrările din vechea listă rapidă nu au fost șterse"
+msgstr ""
+"MC nu a putut scrie în fișierul %s,\n"
+"înregistrările din vechea listă rapidă nu au fost șterse"
 
 #, c-format
 msgid "Label for \"%s\":"
@@ -2971,9 +3203,9 @@ msgstr "Mărime: %s"
 #, c-format
 msgid " (%lu block)"
 msgid_plural " (%lu blocks)"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] " (%lu bloc)"
+msgstr[1] " (%lu blocuri)"
+msgstr[2] " (%lu blocuri)"
 
 #, c-format
 msgid "Owner:      %s/%s"
@@ -3039,8 +3271,8 @@ msgstr "Vizualizare &rapidă"
 msgid "&Info"
 msgstr "&Info"
 
-msgid "&Listing mode..."
-msgstr "Mod de &afișare..."
+msgid "&Listing format..."
+msgstr "formatul de  &listare "
 
 msgid "&Sort order..."
 msgstr "&Ordinea sortării..."
@@ -3207,9 +3439,9 @@ msgstr "Panouri:"
 #, c-format
 msgid "You have %zu opened screen. Quit anyway?"
 msgid_plural "You have %zu opened screens. Quit anyway?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Ai %zu ecran deschis. Închizi oricum?"
+msgstr[1] "Ai %zu ecrane deschise. Închizi oricum?"
+msgstr[2] "Ai %zu ecrane deschise. Închizi oricum?"
 
 msgid "The Midnight Commander"
 msgstr "Midnight Commander"
@@ -3381,7 +3613,8 @@ msgid "Do you really want to execute?"
 msgstr "Chiar dorești să execuți?"
 
 msgid "User supplied format looks invalid, reverting to default."
-msgstr "Formatul furnizat de utilizator pare invalid, se revine la cel implicit"
+msgstr ""
+"Formatul furnizat de utilizator pare invalid, se revine la cel implicit"
 
 msgid "&Add new"
 msgstr "&Adaugă nou"
@@ -3426,7 +3659,9 @@ msgstr "Caută programe SUID și SGID"
 msgid ""
 "Cannot open the %s file for writing:\n"
 "%s\n"
-msgstr "Nu pot deschide fișierul %s pentru scriere:\n%s\n"
+msgstr ""
+"Nu pot deschide fișierul %s pentru scriere:\n"
+"%s\n"
 
 #, c-format
 msgid "Copy \"%s\" directory to:"
@@ -3440,7 +3675,9 @@ msgstr "Mută dosarul \"%s\" în:"
 msgid ""
 "Cannot stat the destination\n"
 "%s"
-msgstr "Nu se poate găsi destinația\n%s"
+msgstr ""
+"Nu se poate găsi destinația\n"
+"%s"
 
 #, c-format
 msgid "Delete %s?"
@@ -3465,49 +3702,9 @@ msgstr "ButtonBar|Rmdir"
 msgid ""
 "Cannot write to the %s file:\n"
 "%s\n"
-msgstr "Nu se poate scrie în fișierul %s:\n%s\n"
-
-msgid "Debug"
-msgstr "Debug"
-
-msgid "ERROR:"
-msgstr "EROARE:"
-
-msgid "True:"
-msgstr "Adevărat:"
-
-msgid "False:"
-msgstr "Fals:"
-
-msgid "Error calling program"
-msgstr "Eroare la executarea programului"
-
-msgid "Warning -- ignoring file"
-msgstr "Atenție -- se ignoră fișierul"
-
-#, c-format
-msgid ""
-"File %s is not owned by root or you or is world writable.\n"
-"Using it may compromise your security"
-msgstr "Fișierul %s nu este deținut de root ori dvs. sau poate fi modificat de oricine.\nUtilizându-l vă puteți compromite securitatea"
-
-msgid "Format error on file Extensions File"
-msgstr "Format eronat în fișierul de extensii"
-
-#, c-format
-msgid "The %%var macro has no default"
-msgstr "Macro-ul %%var nu are o stare inițială"
-
-#, c-format
-msgid "The %%var macro has no variable"
-msgstr "Macro-ul %%var nu are o variabilă"
-
-#, c-format
-msgid "No suitable entries found in %s"
-msgstr "Nu au fost găsite înregistrări potrivite in %s"
-
-msgid "User menu"
-msgstr "Meniu utilizator"
+msgstr ""
+"Nu se poate scrie în fișierul %s:\n"
+"%s\n"
 
 msgid "Help file format error\n"
 msgstr "Format eronat al fișierului de ajutor\n"
@@ -3544,7 +3741,15 @@ msgid ""
 "\n"
 "If you want to escape, press a single Escape key\n"
 "and wait as well."
-msgstr "Te rog apasă %s\niar apoi așteaptă până când acest mesaj dispare.\n\nApoi, apas-o din nou pentru a vedea dacă apare OK\nlângă butonul său.\n\nDacă dorești să ieși, apasă o singură dată tasta Escape\nși așteaptă."
+msgstr ""
+"Te rog apasă %s\n"
+"iar apoi așteaptă până când acest mesaj dispare.\n"
+"\n"
+"Apoi, apas-o din nou pentru a vedea dacă apare OK\n"
+"lângă butonul său.\n"
+"\n"
+"Dacă dorești să ieși, apasă o singură dată tasta Escape\n"
+"și așteaptă."
 
 msgid "Cannot accept this key"
 msgstr "Această tastă nu poate fi acceptată"
@@ -3560,7 +3765,9 @@ msgstr "OK"
 msgid ""
 "It seems that all your keys already\n"
 "work fine. That's great."
-msgstr "Se pare că toate tastele dvs. deja\nfuncționează corect. Excelent."
+msgstr ""
+"Se pare că toate tastele dvs. deja\n"
+"funcționează corect. Excelent."
 
 msgid "&Discard"
 msgstr "&Anulează"
@@ -3568,19 +3775,26 @@ msgstr "&Anulează"
 msgid ""
 "Great! You have a complete terminal database!\n"
 "All your keys work well."
-msgstr "Excelent! Aveți o bază de date terminal completă!\nToate tastele dvs. funcționează corect."
+msgstr ""
+"Excelent! Aveți o bază de date terminal completă!\n"
+"Toate tastele dvs. funcționează corect."
 
 msgid ""
 "Press all the keys mentioned here. After you have done it, check\n"
 "which keys are not marked with OK. Press space on the missing\n"
 "key, or click with the mouse to define it. Move around with Tab."
-msgstr "Apasă toate tastele menționate aici. După ce ai terminat verifică\ncare taste nu sunt marcate cu OK. Apasă tasta spațiu pentru cheile\nlipsă sau apasă cu mausul pentru a le defini. Te poți mișca cu Tab."
+msgstr ""
+"Apasă toate tastele menționate aici. După ce ai terminat verifică\n"
+"care taste nu sunt marcate cu OK. Apasă tasta spațiu pentru cheile\n"
+"lipsă sau apasă cu mausul pentru a le defini. Te poți mișca cu Tab."
 
 #, c-format
 msgid ""
 "Failed to run:\n"
 "%s\n"
-msgstr "A eșuat executarea:\n%s\n"
+msgstr ""
+"A eșuat executarea:\n"
+"%s\n"
 
 msgid "Home directory path is not absolute"
 msgstr "Calea către dosarul acasă nu este absolută"
@@ -3590,7 +3804,10 @@ msgid ""
 "\n"
 "Failed while close:\n"
 "%s\n"
-msgstr "\nA eșuat în timpul închiderii:\n%s\n"
+msgstr ""
+"\n"
+"A eșuat în timpul închiderii:\n"
+"%s\n"
 
 msgid "Choose codepage"
 msgstr "Alege pagina de cod"
@@ -3608,13 +3825,18 @@ msgstr "%b %e %H:%M"
 msgid ""
 "Cannot save file %s:\n"
 "%s"
-msgstr "Nu se poate salva fișierul %s:\n%s"
+msgstr ""
+"Nu se poate salva fișierul %s:\n"
+"%s"
 
 msgid ""
 "GNU Midnight Commander is already\n"
 "running on this terminal.\n"
 "Subshell support will be disabled."
-msgstr "GNU Midnight Commander rulează\ndeja în acest terminal.\nSuportul pentru subshell va fi dezactivat."
+msgstr ""
+"GNU Midnight Commander rulează\n"
+"deja în acest terminal.\n"
+"Suportul pentru subshell va fi dezactivat."
 
 #, c-format
 msgid "Cannot open named pipe %s\n"
@@ -3675,8 +3897,11 @@ msgstr "Sistem virtual de fișiere:"
 msgid "Data types:"
 msgstr "Tipuri de date:"
 
-msgid "Root directory:"
-msgstr "Dosar rădăcină:"
+msgid "Home directory:"
+msgstr "Director acasă:"
+
+msgid "Profile root directory:"
+msgstr "Director rădăcină:"
 
 msgid "System data"
 msgstr "Date sistem"
@@ -3699,17 +3924,66 @@ msgstr "Date utilizator"
 msgid "Cache directory:"
 msgstr "Dosarul pentru cache:"
 
+msgid "Debug"
+msgstr "Debug"
+
+msgid "ERROR:"
+msgstr "EROARE:"
+
+msgid "True:"
+msgstr "Adevărat:"
+
+msgid "False:"
+msgstr "Fals:"
+
+msgid "Error calling program"
+msgstr "Eroare la executarea programului"
+
+msgid "Warning -- ignoring file"
+msgstr "Atenție -- se ignoră fișierul"
+
+#, c-format
+msgid ""
+"File %s is not owned by root or you or is world writable.\n"
+"Using it may compromise your security"
+msgstr ""
+"Fișierul %s nu este deținut de root ori dvs. sau poate fi modificat de "
+"oricine.\n"
+"Utilizându-l vă puteți compromite securitatea"
+
+msgid "Format error on file Extensions File"
+msgstr "Format eronat în fișierul de extensii"
+
+#, c-format
+msgid "The %%var macro has no default"
+msgstr "Macro-ul %%var nu are o stare inițială"
+
+#, c-format
+msgid "The %%var macro has no variable"
+msgstr "Macro-ul %%var nu are o variabilă"
+
+#, c-format
+msgid "No suitable entries found in %s"
+msgstr "Nu au fost găsite înregistrări potrivite in %s"
+
+msgid "User menu"
+msgstr "Meniu utilizator"
+
 #, c-format
 msgid ""
 "Cannot open cpio archive\n"
 "%s"
-msgstr "Nu pot deschide arhiva cpio\n%s"
+msgstr ""
+"Nu pot deschide arhiva cpio\n"
+"%s"
 
 #, c-format
 msgid ""
 "Premature end of cpio archive\n"
 "%s"
-msgstr "Sfârșit prematur al arhivei cpio\n%s"
+msgstr ""
+"Sfârșit prematur al arhivei cpio\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -3717,7 +3991,10 @@ msgid ""
 "%s\n"
 "in cpio archive\n"
 "%s"
-msgstr "Legături reale inconsistente ale%s\nîn arhiva cpio\n%s"
+msgstr ""
+"Legături reale inconsistente ale%s\n"
+"în arhiva cpio\n"
+"%s"
 
 #, c-format
 msgid "%s contains duplicate entries! Skipping!"
@@ -3727,19 +4004,25 @@ msgstr "%s conține intrări duplicate! Trec peste!"
 msgid ""
 "Corrupted cpio header encountered in\n"
 "%s"
-msgstr "Antet corupt al arhivei cpio în\n%s"
+msgstr ""
+"Antet corupt al arhivei cpio în\n"
+"%s"
 
 #, c-format
 msgid ""
 "Unexpected end of file\n"
 "%s"
-msgstr "Sfârșit de fișier (EOF) neașteptat\n%s"
+msgstr ""
+"Sfârșit de fișier (EOF) neașteptat\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot open %s archive\n"
 "%s"
-msgstr "Nu pot deschide arhiva %s\n%s"
+msgstr ""
+"Nu pot deschide arhiva %s\n"
+"%s"
 
 msgid "Inconsistent extfs archive"
 msgstr "Arhivă extfs inconsistentă"
@@ -3756,7 +4039,9 @@ msgid "fish: Waiting for initial line..."
 msgstr "fish: Se așteptă linia inițială..."
 
 msgid "Sorry, we cannot do password authenticated connections for now."
-msgstr "Ne pare rău, deocamdată nu se pot efectua conectări autentificate prin parolă."
+msgstr ""
+"Ne pare rău, deocamdată nu se pot efectua conectări autentificate prin "
+"parolă."
 
 #, c-format
 msgid "fish: Password is required for %s"
@@ -3906,7 +4191,9 @@ msgstr "ftpfs: se stochează fișierul"
 msgid ""
 "~/.netrc file has incorrect mode\n"
 "Remove password or correct mode"
-msgstr "fișierul ~/.netrc are permisiuni incorecte\nÎnlătură parola sau corectează permisiunile"
+msgstr ""
+"fișierul ~/.netrc are permisiuni incorecte\n"
+"Înlătură parola sau corectează permisiunile"
 
 #, c-format
 msgid "%s: Warning: file %s not found\n"
@@ -3916,13 +4203,17 @@ msgstr "%s: Atenție: fișierul %s nu a fost găsit\n"
 msgid ""
 "Warning: Invalid line in %s:\n"
 "%s\n"
-msgstr "Atenție: Linie invalidă în %s:\n%s\n"
+msgstr ""
+"Atenție: Linie invalidă în %s:\n"
+"%s\n"
 
 #, c-format
 msgid ""
 "Warning: Invalid flag %c in %s:\n"
 "%s\n"
-msgstr "Atenție: Indicator %c invalid în %s:\n%s\n"
+msgstr ""
+"Atenție: Indicator %c invalid în %s:\n"
+"%s\n"
 
 #, c-format
 msgid "sftp: an error occurred while reading %s: %s"
@@ -3964,10 +4255,14 @@ msgid "sftp: Password is empty."
 msgstr "sftp: Parola este goală."
 
 msgid "sftp: Failure establishing SSH session"
-msgstr ""
+msgstr "sftp: Eroare la stabilirea unei sesiuni SSH"
 
 msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: Nu există date de manipulare a citirii fișierului"
+
+#, c-format
+msgid "sftp: socket error: %s"
+msgstr ""
 
 #, c-format
 msgid "sftp: (Ctrl-G break) Listing... %s"
@@ -4007,7 +4302,9 @@ msgstr "%s se redenumesc fișierele\n"
 msgid ""
 "Cannot open tar archive\n"
 "%s"
-msgstr "Nu pot deschide arhiva tar\n%s"
+msgstr ""
+"Nu pot deschide arhiva tar\n"
+"%s"
 
 msgid "Inconsistent tar archive"
 msgstr "Arhivă tar trunchiată"
@@ -4019,7 +4316,9 @@ msgstr "Sfârșit de fișier (EOF) neașteptat în fișierul arhivă"
 msgid ""
 "%s\n"
 "doesn't look like a tar archive."
-msgstr "%s\nnu pare a fi o arhivă tar."
+msgstr ""
+"%s\n"
+"nu pare a fi o arhivă tar."
 
 msgid "undelfs: error"
 msgstr "undelfs: eroare"
@@ -4064,7 +4363,9 @@ msgstr "undelfs: citesc harta inodurilor..."
 msgid ""
 "Cannot load inode bitmap from:\n"
 "%s"
-msgstr "Nu se poate încărca harta inodurilor din:\n%s"
+msgstr ""
+"Nu se poate încărca harta inodurilor din:\n"
+"%s"
 
 msgid "undelfs: reading block bitmap..."
 msgstr "undelfs: citesc harta blocurilor..."
@@ -4073,7 +4374,9 @@ msgstr "undelfs: citesc harta blocurilor..."
 msgid ""
 "Cannot load block bitmap from:\n"
 "%s"
-msgstr "Nu se poate încărca harta blocurilor din:\n%s"
+msgstr ""
+"Nu se poate încărca harta blocurilor din:\n"
+"%s"
 
 msgid "vfs_info is not fs!"
 msgstr "vfs_info nu este fs!"
@@ -4103,7 +4406,9 @@ msgstr "&Renunță la ieșire"
 msgid ""
 "Midnight Commander is being shut down.\n"
 "Save modified file?"
-msgstr "Midnight Commander este în curs de închidere.\nSalvezi fișierul modificat?"
+msgstr ""
+"Midnight Commander este în curs de închidere.\n"
+"Salvezi fișierul modificat?"
 
 msgid "&Line number"
 msgstr "Număr &linie"
@@ -4155,19 +4460,26 @@ msgid ""
 "Failed to read data from child stdout:\n"
 "%s"
 msgstr ""
+"Eroare la citirea datelor de la stdout-ul copil:\n"
+"%s"
 
 #, c-format
 msgid ""
 "Error while closing the file:\n"
 "%s\n"
 "Data may have been written or not"
-msgstr "Eroare la închiderea fișierului:\n%s\nEste posibil ca datele să nu fi fost scrise"
+msgstr ""
+"Eroare la închiderea fișierului:\n"
+"%s\n"
+"Este posibil ca datele să nu fi fost scrise"
 
 #, c-format
 msgid ""
 "Cannot save file:\n"
 "%s"
-msgstr "Nu se poate salva fișierul:\n%s"
+msgstr ""
+"Nu se poate salva fișierul:\n"
+"%s"
 
 msgid "View: "
 msgstr "Vizualizează: "
@@ -4176,7 +4488,9 @@ msgstr "Vizualizează: "
 msgid ""
 "Cannot open \"%s\"\n"
 "%s"
-msgstr "Nu se poate deschide \"%s\"\n%s"
+msgstr ""
+"Nu se poate deschide \"%s\"\n"
+"%s"
 
 msgid "Cannot view: not a regular file"
 msgstr "Nu se poate vizualiza: nu este un fișier regulat"
@@ -4185,7 +4499,9 @@ msgstr "Nu se poate vizualiza: nu este un fișier regulat"
 msgid ""
 "Cannot open \"%s\" in parse mode\n"
 "%s"
-msgstr "Nu se poate deschide \"%s\" în mod parsare\n%s"
+msgstr ""
+"Nu se poate deschide \"%s\" în mod parsare\n"
+"%s"
 
 msgid "Search done"
 msgstr "Căutarea a fost efectuată"

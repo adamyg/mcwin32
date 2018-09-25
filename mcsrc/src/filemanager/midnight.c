@@ -1,7 +1,7 @@
 /*
    Main dialog (file panels) of the Midnight Commander
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2018
    Free Software Foundation, Inc.
 
    Written by:
@@ -182,7 +182,7 @@ listmode_cmd (void)
         return;
 
     g_free (current_panel->user_format);
-    current_panel->list_type = list_user;
+    current_panel->list_format = list_user;
     current_panel->user_format = newmode;
     set_panel_formats (current_panel);
 
@@ -203,7 +203,8 @@ create_panel_menu (void)
     entries = g_list_prepend (entries, menu_entry_create (_("&Tree"), CK_PanelTree));
     entries = g_list_prepend (entries, menu_separator_create ());
     entries =
-        g_list_prepend (entries, menu_entry_create (_("&Listing mode..."), CK_PanelListingChange));
+        g_list_prepend (entries,
+                        menu_entry_create (_("&Listing format..."), CK_SetupListingFormat));
     entries = g_list_prepend (entries, menu_entry_create (_("&Sort order..."), CK_Sort));
     entries = g_list_prepend (entries, menu_entry_create (_("&Filter..."), CK_Filter));
 #ifdef HAVE_CHARSET
@@ -696,19 +697,6 @@ create_panels (void)
 #endif /* ENABLE_VFS */
 
     mc_event_add (MCEVENT_GROUP_CORE, "vfs_print_message", print_vfs_message, NULL, NULL);
-
-    /* Create the nice widgets */
-    cmdline = command_new (0, 0, 0);
-    the_prompt = label_new (0, 0, mc_prompt);
-    the_prompt->transparent = 1;
-    the_bar = buttonbar_new (mc_global.keybar_visible);
-
-    the_hint = label_new (0, 0, 0);
-    the_hint->transparent = 1;
-    the_hint->auto_adjust_cols = 0;
-    WIDGET (the_hint)->cols = COLS;
-
-    the_menubar = menubar_new (0, 0, COLS, NULL, menubar_visible);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -931,30 +919,37 @@ done_mc (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-create_panels_and_run_mc (void)
+create_file_manager (void)
 {
     midnight_dlg->get_shortcut = midnight_get_shortcut;
     midnight_dlg->get_title = midnight_get_title;
     /* allow rebind tab */
     widget_want_tab (WIDGET (midnight_dlg), TRUE);
 
-    create_panels ();
-
+    the_menubar = menubar_new (0, 0, COLS, NULL, menubar_visible);
     add_widget (midnight_dlg, the_menubar);
     init_menu ();
 
+    create_panels ();
     add_widget (midnight_dlg, get_panel_widget (0));
     add_widget (midnight_dlg, get_panel_widget (1));
 
+    the_hint = label_new (0, 0, 0);
+    the_hint->transparent = 1;
+    the_hint->auto_adjust_cols = 0;
+    WIDGET (the_hint)->cols = COLS;
     add_widget (midnight_dlg, the_hint);
+
+    cmdline = command_new (0, 0, 0);
     add_widget (midnight_dlg, cmdline);
+
+    the_prompt = label_new (0, 0, mc_prompt);
+    the_prompt->transparent = TRUE;
     add_widget (midnight_dlg, the_prompt);
 
+    the_bar = buttonbar_new (mc_global.keybar_visible);
     add_widget (midnight_dlg, the_bar);
     midnight_set_buttonbar (the_bar);
-
-    /* Run the Midnight Commander if no file was specified in the command line */
-    dlg_run (midnight_dlg);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1121,8 +1116,8 @@ midnight_execute_cmd (Widget * sender, long command)
     case CK_HotListAdd:
         add2hotlist_cmd ();
         break;
-    case CK_PanelListingChange:
-        change_listing_cmd ();
+    case CK_SetupListingFormat:
+        setup_listing_format_cmd ();
         break;
     case CK_ChangeMode:
         chmod_cmd ();
@@ -1131,7 +1126,7 @@ midnight_execute_cmd (Widget * sender, long command)
         chown_cmd ();
         break;
     case CK_ChangeOwnAdvanced:
-        chown_advanced_cmd ();
+        advanced_chown_cmd ();
         break;
     case CK_CompareDirs:
         compare_dirs_cmd ();
@@ -1361,9 +1356,6 @@ midnight_execute_cmd (Widget * sender, long command)
     case CK_LinkSymbolic:
         link_cmd (LINK_SYMLINK_ABSOLUTE);
         break;
-    case CK_PanelListingSwitch:
-        toggle_listing_cmd ();
-        break;
     case CK_ShowHidden:
         toggle_show_hidden ();
         break;
@@ -1418,6 +1410,54 @@ midnight_execute_cmd (Widget * sender, long command)
     }
 
     return res;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Whether the command-line should not respond to key events.
+ *
+ * This is TRUE if a QuickView or TreeView have the focus, as they're going
+ * to consume some keys and there's no sense in passing to the command-line
+ * just the leftovers.
+ */
+static gboolean
+is_cmdline_mute (void)
+{
+    /* When one of panels is other than view_listing,
+       current_panel points to view_listing panel all time independently of
+       it's activity. Thus, we can't use get_current_type() here.
+       current_panel should point to actualy current active panel
+       independently of it's type. */
+    return (current_panel->active == 0
+            && (get_other_type () == view_quick || get_other_type () == view_tree));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Handles the Enter key on the command-line.
+ *
+ * Returns TRUE if non-whitespace was indeed processed.
+ */
+static gboolean
+handle_cmdline_enter (void)
+{
+    size_t i;
+
+    for (i = 0; cmdline->buffer[i] != '\0' && whitespace (cmdline->buffer[i]); i++)
+        ;
+
+    if (cmdline->buffer[i] != '\0')
+    {
+        send_message (cmdline, NULL, MSG_KEY, '\n', NULL);
+        return TRUE;
+    }
+
+    input_insert (cmdline, "", FALSE);
+    cmdline->point = 0;
+
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1477,31 +1517,11 @@ midnight_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void
         if (widget_get_state (WIDGET (the_menubar), WST_FOCUSED))
             return MSG_NOT_HANDLED;
 
-        if (parm == '\n')
+        if (parm == '\n' && !is_cmdline_mute ())
         {
-            size_t i;
-
-            /* HACK: don't execute command in the command line if Enter was pressed
-               in the quick viewer panel. */
-            /* TODO: currently, when one of panels is other than view_listing,
-               current_panel points to view_listing panel all time independently of
-               it's activity. Thus, we can't use get_current_type() here.
-               current_panel should point to actualy current active panel
-               independently of it's type. */
-            if (current_panel->active == 0 && get_other_type () == view_quick)
-                return MSG_NOT_HANDLED;
-
-            for (i = 0; cmdline->buffer[i] != '\0' && whitespace (cmdline->buffer[i]); i++)
-                ;
-
-            if (cmdline->buffer[i] != '\0')
-            {
-                send_message (cmdline, NULL, MSG_KEY, parm, NULL);
+            if (handle_cmdline_enter ())
                 return MSG_HANDLED;
-            }
-
-            input_insert (cmdline, "", FALSE);
-            cmdline->point = 0;
+            /* Else: the panel will handle it. */
         }
 
         if ((!mc_global.tty.alternate_plus_minus
@@ -1564,7 +1584,7 @@ midnight_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void
             if (command != CK_IgnoreKey)
                 v = midnight_execute_cmd (NULL, command);
 
-            if (v == MSG_NOT_HANDLED && command_prompt)
+            if (v == MSG_NOT_HANDLED && command_prompt && !is_cmdline_mute ())
                 v = send_message (cmdline, NULL, MSG_KEY, parm, NULL);
 
             return v;
@@ -1786,7 +1806,10 @@ do_nc (void)
 
         setup_mc ();
         mc_filehighlight = mc_fhl_new (TRUE);
-        create_panels_and_run_mc ();
+
+        create_file_manager ();
+        (void) dlg_run (midnight_dlg);
+
         mc_fhl_free (&mc_filehighlight);
 
         ret = TRUE;

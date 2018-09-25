@@ -1,7 +1,7 @@
 /*
    Hypertext file browser.
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2018
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -50,6 +50,7 @@
 #include <config.h>
 
 #include <errno.h>
+#include <limits.h>             /* MB_LEN_MAX */
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -358,7 +359,7 @@ start_link_area (int x, int y, const char *link_name)
     Link_Area *la;
 
     if (inside_link_area)
-        message (D_NORMAL, _("Warning"), _("Internal bug: Double start of link area"));
+        message (D_NORMAL, _("Warning"), "%s", _("Internal bug: Double start of link area"));
 
     /* Allocate memory for a new link area */
     la = g_new (Link_Area, 1);

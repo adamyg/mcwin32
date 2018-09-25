@@ -1,7 +1,7 @@
 /*
    Panel managing.
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2018
    Free Software Foundation, Inc.
 
    Written by:
@@ -65,6 +65,8 @@
 #include "src/subshell/subshell.h"      /* do_subshell_chdir() */
 #endif
 
+#include "src/usermenu.h"
+
 #include "dir.h"
 #include "boxes.h"
 #include "tree.h"
@@ -72,7 +74,6 @@
 #include "layout.h"             /* Most layout variables are here */
 #include "cmd.h"
 #include "command.h"            /* cmdline */
-#include "usermenu.h"
 #include "midnight.h"
 #include "mountlist.h"          /* my_statfs */
 
@@ -953,7 +954,7 @@ repaint_file (WPanel * panel, int file_index, gboolean mv, int attr, gboolean is
     {
         if (!panel_is_split && fln > 0)
         {
-            if (panel->list_type != list_long)
+            if (panel->list_format != list_long)
                 width = fln;
             else
             {
@@ -1261,6 +1262,7 @@ show_dir (const WPanel * panel)
 
     set_colors (panel);
     tty_draw_box (w->y, w->x, w->lines, w->cols, FALSE);
+
     if (panels_options.show_mini_info)
     {
         int y;
@@ -1488,7 +1490,7 @@ panel_destroy (WPanel * p)
     delete_format (p->status_format);
 
     g_free (p->user_format);
-    for (i = 0; i < LIST_TYPES; i++)
+    for (i = 0; i < LIST_FORMATS; i++)
         g_free (p->user_status_format[i]);
 
     g_free (p->dir.list);
@@ -1575,7 +1577,7 @@ panel_print_header (const WPanel * panel)
             {
                 g_string_set_size (format_txt, 0);
 
-                if (panel->list_type == list_long
+                if (panel->list_format == list_long
                     && strcmp (format->id, panel->sort_field->id) == 0)
                     g_string_append (format_txt,
                                      panel->sort_info.reverse
@@ -1583,8 +1585,7 @@ panel_print_header (const WPanel * panel)
 
                 g_string_append (format_txt, format->title);
 
-                if (panel->filter != NULL && *panel->filter != '\0'
-                    && strcmp (format->id, "name") == 0)
+                if (panel->filter != NULL && strcmp (format->id, "name") == 0)
                 {
                     g_string_append (format_txt, " [");
                     g_string_append (format_txt, panel->filter);
@@ -1611,7 +1612,7 @@ panel_print_header (const WPanel * panel)
 
     g_string_free (format_txt, TRUE);
 
-    if (panel->list_type != list_long)
+    if (panel->list_format != list_long)
         panel_paint_sort_info (panel);
 }
 
@@ -1911,7 +1912,7 @@ static const char *
 panel_format (WPanel * panel)
 {
 
-    switch (panel->list_type)
+    switch (panel->list_format)
     {
     case list_long:
         return "full perm space nlink space owner space group space size space mtime space name";
@@ -1946,9 +1947,9 @@ static const char *
 mini_status_format (WPanel * panel)
 {
     if (panel->user_mini_status)
-        return panel->user_status_format[panel->list_type];
+        return panel->user_status_format[panel->list_format];
 
-    switch (panel->list_type)
+    switch (panel->list_format)
     {
     case list_long:
         return "full perm space nlink space owner space group space size space mtime space name";
@@ -2876,6 +2877,18 @@ do_enter (WPanel * panel)
     return do_enter_on_file_entry (selection (panel));
 }
 
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_cycle_listing_format (WPanel * panel)
+{
+    panel->list_format = (panel->list_format + 1) % LIST_FORMATS;
+
+    if (set_panel_formats (panel) == 0)
+        do_refresh ();
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 static void
@@ -3454,6 +3467,9 @@ panel_execute_cmd (WPanel * panel, long command)
 
     switch (command)
     {
+    case CK_CycleListingFormat:
+        panel_cycle_listing_format (panel);
+        break;
     case CK_PanelOtherCd:
         chdir_other_panel (panel);
         break;
@@ -3875,7 +3891,7 @@ panel_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
 
         if (!is_active)
             change_panel ();
-        /* fall through */
+        MC_FALLTHROUGH;
 
     case MSG_MOUSE_DRAG:
         {
@@ -4187,7 +4203,7 @@ panel_recursive_cd_to_parent (const vfs_path_t * vpath)
 
         /* check if path contains only '/' */
         panel_cwd_path = vfs_path_as_str (cwd_vpath);
-        if (IS_PATH_SEP (panel_cwd_path[0]) && panel_cwd_path[1] == '\0')
+        if (panel_cwd_path != NULL && IS_PATH_SEP (panel_cwd_path[0]) && panel_cwd_path[1] == '\0')
             return NULL;
 
         tmp_vpath = vfs_path_vtokens_get (cwd_vpath, 0, -1);
@@ -4336,7 +4352,7 @@ panel_new_with_dir (const char *panel_name, const vfs_path_t * vpath)
     panel->codepage = SELECT_CHARSET_NO_TRANSLATE;
 #endif
 
-    for (i = 0; i < LIST_TYPES; i++)
+    for (i = 0; i < LIST_FORMATS; i++)
         panel->user_status_format[i] = g_strdup (DEFAULT_USER_FORMAT);
 
     panel->search_buffer[0] = '\0';
@@ -4487,8 +4503,8 @@ set_panel_formats (WPanel * p)
     }
     if (retcode & 0x02)
     {
-        g_free (p->user_status_format[p->list_type]);
-        p->user_status_format[p->list_type] = g_strdup (DEFAULT_USER_FORMAT);
+        g_free (p->user_status_format[p->list_format]);
+        p->user_status_format[p->list_format] = g_strdup (DEFAULT_USER_FORMAT);
     }
 
     return retcode;

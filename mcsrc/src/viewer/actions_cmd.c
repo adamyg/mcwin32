@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Callback function for some actions (hotkeys, menu)
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2018
    Free Software Foundation, Inc.
 
    Written by:
@@ -105,7 +105,7 @@ mcview_search (WView * view, gboolean start_search)
     {
         if (mcview_dialog_search (view))
         {
-            if (view->hex_mode)
+            if (view->mode_flags.hex)
                 want_search_start = view->hex_cursor;
 
             mcview_do_search (view, want_search_start);
@@ -113,7 +113,7 @@ mcview_search (WView * view, gboolean start_search)
     }
     else
     {
-        if (view->hex_mode)
+        if (view->mode_flags.hex)
         {
             if (!mcview_search_options.backwards)
                 want_search_start = view->hex_cursor + 1;
@@ -416,7 +416,7 @@ mcview_execute_cmd (WView * view, long command)
                     mcview_moveto_offset (view, addr);
                 else
                 {
-                    message (D_ERROR, _("Warning"), _("Invalid value"));
+                    message (D_ERROR, _("Warning"), "%s", _("Invalid value"));
                     view->dirty++;
                 }
             }
@@ -459,11 +459,11 @@ mcview_execute_cmd (WView * view, long command)
         mcview_move_right (view, 1);
         break;
     case CK_LeftQuick:
-        if (!view->hex_mode)
+        if (!view->mode_flags.hex)
             mcview_move_left (view, 10);
         break;
     case CK_RightQuick:
-        if (!view->hex_mode)
+        if (!view->mode_flags.hex)
             mcview_move_right (view, 10);
         break;
     case CK_SearchContinue:
@@ -552,7 +552,7 @@ mcview_handle_key (WView * view, int key)
     key = convert_from_input_c (key);
 #endif
 
-    if (view->hex_mode)
+    if (view->mode_flags.hex)
     {
         if (view->hexedit_mode && (mcview_handle_editkey (view, key) == MSG_HANDLED))
             return MSG_HANDLED;
@@ -667,15 +667,14 @@ mcview_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *
         return MSG_HANDLED;
 
     case MSG_CURSOR:
-        if (view->hex_mode)
+        if (view->mode_flags.hex)
             mcview_place_cursor (view);
         return MSG_HANDLED;
 
     case MSG_KEY:
         i = mcview_handle_key (view, parm);
         mcview_update (view);
-        /* don't pass any chars to command line in QuickView mode */
-        return mcview_is_in_panel (view) ? MSG_HANDLED : i;
+        return i;
 
     case MSG_ACTION:
         i = mcview_execute_cmd (view, parm);
@@ -692,6 +691,27 @@ mcview_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *
         if (mcview_is_in_panel (view))
         {
             delete_hook (&select_file_hook, mcview_hook);
+
+            /*
+             * In some cases when mc startup is very slow and one panel is in quick vew mode,
+             * @view is registered in two hook lists at the same time:
+             *   mcview_callback (MSG_INIT) -> add_hook (&select_file_hook)
+             *   mcview_hook () -> add_hook (&idle_hook).
+             * If initialization of file manager is not completed yet, but user switches
+             * panel mode from qick view to another one (by pressing C-x q), the following
+             * occurs:
+             *   view hook is deleted from select_file_hook list via following call chain:
+             *      set_display_type (view_listing) -> widget_replace () ->
+             *      send_message (MSG_DESTROY) -> mcview_callback (MSG_DESTROY) ->
+             *      delete_hook (&select_file_hook);
+             *   @view object is free'd:
+             *      set_display_type (view_listing) -> g_free (old_widget);
+             *   but @view still is in idle_hook list and tried to be executed:
+             *      frontend_dlg_run () -> execute_hooks (idle_hook).
+             * Thus here we have access to free'd @view object. To prevent this, remove view hook
+             * from idle_hook list.
+             */
+            delete_hook (&idle_hook, mcview_hook);
 
             if (mc_global.midnight_shutdown)
                 mcview_ok_to_quit (view);

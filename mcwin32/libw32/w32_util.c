@@ -202,6 +202,7 @@ w32_strslash(const char *path)
     return NULL;
 }
 
+
 enum w32ostype
 w32_ostype(void)
 {
@@ -292,4 +293,3 @@ w32_getexedir(char *buf, int maxlen)
 }
 
 /*end*/
-

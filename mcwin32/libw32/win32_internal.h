@@ -111,6 +111,8 @@ LIBW32_API SOCKET       w32_sockfd_get (int fd);
 LIBW32_API void         w32_sockfd_close (int fd, SOCKET s);
 LIBW32_API int          w32_issockfd (int fd, SOCKET *s);
 
+LIBW32_API int          w32_reparse_read(const char *name, char *buf, int maxlen);
+
 __END_DECLS
 
 #endif /*LIBW32_WIN32_INTERNAL_H_INCLUDED*/

@@ -112,10 +112,11 @@ CSOURCES=\
 	w32_mmap.c \
 	w32_neterr.c \
 	w32_poll.c \
-	w32_progname.c \
 	w32_popen.c \
+	w32_progname.c \
 	w32_pwd.c \
 	w32_read.c \
+	w32_reparse.c \
 	w32_select.c \
 	w32_shell.c \
 	w32_signal.c \

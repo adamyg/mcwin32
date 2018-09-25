@@ -21,7 +21,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2017
+   Written by: Adam Young 2012 - 2018
 
    Portions sourced from lib/utilunix.c, see for additional information.
 

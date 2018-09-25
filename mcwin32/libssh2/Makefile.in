@@ -161,7 +161,7 @@ installinc:		../include/.created
 clean:
 		-@$(LIBTOOL) --mode=clean $(RM) $(SSH2DLL) $(DLLOBJS) >/dev/null 2>&1
 		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
-		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
+		-@$(RM) $(OBJS) >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

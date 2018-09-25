@@ -33,14 +33,12 @@
 #define _WIN32_WINNT        0x0501              /* enable xp+ features */
 #endif
 
+#include <assert.h>
+
 #include "win32_internal.h"
 #include "win32_misc.h"
 #include "win32_io.h"
 
-#include <winioctl.h>                           /* DeviceIoControls */
-#if defined(HAVE_NTIFS_H)
-#include <ntifs.h>
-#endif
 #if defined(__WATCOMC__)
 #include <shellapi.h>                           /* SHSTDAPI */
 #endif
@@ -1250,19 +1248,31 @@ IsExec(const char *name, const char *magic)
                 while (*exec && ' ' == *exec) ++exec;
                 if (*exec == '/') {
                     if (0 == strncmp(exec, "/bin/sh", len = (sizeof("/bin/sh")-1)))
-                            isscript = 1;
-                    else if (0 == strncmp(exec, "/bin/ash", len = (sizeof("/bin/ash")-1)))
-                            isscript = 1;
+                        isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/ash",  len = (sizeof("/bin/ash")-1)))
+                        isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/csh",  len = (sizeof("/bin/csh")-1)))
+                        isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/ksh",  len = (sizeof("/bin/ksh")-1)))
+                        isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/zsh",  len = (sizeof("/bin/zsh")-1)))
+                        isscript = 1;
                     else if (0 == strncmp(exec, "/bin/bash", len = (sizeof("/bin/bash")-1)))
-                            isscript = 1;
-                    else if (0 == strncmp(exec, "/bin/sed", len = (sizeof("/bin/sed")-1)))
-                            isscript = 1;
-                    else if (0 == strncmp(exec, "/bin/awk", len = (sizeof("/bin/awk")-1)))
-                            isscript = 1;
+                        isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/dash", len = (sizeof("/bin/dash")-1)))
+                        isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/fish", len = (sizeof("/bin/fish")-1)))
+                        isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/tcsh", len = (sizeof("/bin/tcsh")-1)))
+                        isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/sed",  len = (sizeof("/bin/sed")-1)))
+                        isscript = 1;
+                    else if (0 == strncmp(exec, "/bin/awk",  len = (sizeof("/bin/awk")-1)))
+                        isscript = 1;
                     else if (0 == strncmp(exec, "/usr/bin/perl", len = (sizeof("/usr/bin/perl")-1)))
-                            isscript = 1;
+                        isscript = 1;
                     else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1)))
-                            isscript = 1;
+                        isscript = 1;
                     if (isscript &&
                             exec[len] != ' ' && exec[len] != '\n' && exec[len] != '\r') {
                         isscript = 0;           /* bad termination, ignore */
@@ -1298,15 +1308,16 @@ IsExec(const char *name, const char *magic)
 static const char *
 HasExtension(const char *name)
 {
-        const size_t len = strlen(name);
-        const char *cursor;
-        for (cursor = name + len; --cursor >= name;) {
-                if (*cursor == '.')
-                        return cursor;                      /* extension */
-                if (*cursor == '/' || *cursor == '\\')
-                        break;
-        }
-        return NULL;
+    const size_t len = strlen(name);
+    const char *cursor;
+
+    for (cursor = name + len; --cursor >= name;) {
+        if (*cursor == '.')
+            return cursor;                      /* extension */
+        if (*cursor == '/' || *cursor == '\\')
+            break;
+    }
+    return NULL;
 }
 
 
@@ -1382,7 +1393,7 @@ Readlink(const char *path, const char **suffixes, char *buf, int maxlen)
 
         /* .. win32 readparse point */
         } else if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-            if ((ret = ReadReparse(path, buf, maxlen)) < 0) {
+            if ((ret = w32_reparse_read(path, buf, maxlen)) < 0) {
                 ret = -EIO;
             } else {
                 ret = (int)strlen(buf);
@@ -1596,97 +1607,6 @@ CreateShortcut(const char *link, const char *name, const char *working, const ch
 }
 
 
-#if !defined(HAVE_NTIFS_H)
-typedef struct _REPARSE_DATA_BUFFER {
-    ULONG  ReparseTag;
-    USHORT ReparseDataLength;
-    USHORT Reserved;
-    union {
-        struct {
-            USHORT SubstituteNameOffset;
-            USHORT SubstituteNameLength;
-            USHORT PrintNameOffset;
-            USHORT PrintNameLength;
-            ULONG  Flags;
-            WCHAR  PathBuffer[1];
-        } SymbolicLinkReparseBuffer;
-        struct {
-            USHORT SubstituteNameOffset;
-            USHORT SubstituteNameLength;
-            USHORT PrintNameOffset;
-            USHORT PrintNameLength;
-            WCHAR  PathBuffer[1];
-        } MountPointReparseBuffer;
-        struct {
-            UCHAR DataBuffer[1];
-        } GenericReparseBuffer;
-    };
-} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
-#endif
-
-static int
-ReadReparse(const char *name, char *buf, int maxlen)
-{
-#define MAX_REPARSE_SIZE    (512+(16*1024))     /* Header + 16k */
-    HANDLE fileHandle;
-    BYTE reparseBuffer[ MAX_REPARSE_SIZE ];
-    PREPARSE_GUID_DATA_BUFFER reparseInfo = (PREPARSE_GUID_DATA_BUFFER) reparseBuffer;
-    PREPARSE_DATA_BUFFER rdb = (PREPARSE_DATA_BUFFER) reparseBuffer;
-    DWORD returnedLength;
-    int ret = 0;
-                                                /* open the file image */
-    if ((fileHandle = CreateFileA(name, 0,
-                FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
-            FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE) {
-        ret = GetLastError();
-        return -1;
-    }
-
-                                                /* retrieve reparse details */
-    if (DeviceIoControl(fileHandle, FSCTL_GET_REPARSE_POINT,
-                NULL, 0, reparseInfo, sizeof(reparseBuffer), &returnedLength, NULL)) {
-//      if (IsReparseTagMicrosoft(reparseInfo->ReparseTag)) {
-            int length;
-
-#ifndef IO_REPARSE_TAG_SYMLINK
-#define IO_REPARSE_TAG_SYMLINK      0xA000000C
-#endif
-
-            switch (reparseInfo->ReparseTag) {
-            case IO_REPARSE_TAG_SYMLINK:
-                //
-                //  Symbolic links
-                //
-                if ((length = rdb->SymbolicLinkReparseBuffer.SubstituteNameLength) >= 4) {
-                    const size_t offset = rdb->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
-                    const wchar_t* symlink = rdb->SymbolicLinkReparseBuffer.PathBuffer + offset;
-
-                    wcstombs(buf, symlink, maxlen);
-                    return 0;
-                }
-                break;
-
-            case IO_REPARSE_TAG_MOUNT_POINT:
-                //
-                //  Mount points and junctions
-                //
-                if ((length = rdb->MountPointReparseBuffer.SubstituteNameLength) > 0) {
-                    const size_t offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
-                    const wchar_t* mount = rdb->MountPointReparseBuffer.PathBuffer + offset;
-
-                    wcstombs(buf, mount, maxlen);
-                    return 0;
-                }
-                break;
-            }
-//      }
-    }
-    CloseHandle(fileHandle);
-
-    return -1;
-}
-
-
 /*
  *  Stat() system call
  */
@@ -1846,4 +1766,3 @@ Stat(const char *name, struct stat *sb)
     return ret;
 }
 /*end*/
-

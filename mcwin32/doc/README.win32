@@ -7,6 +7,7 @@ Windows XP+/32 bit native port of GNU Midnight Commander, based on
 the current 4.8.x development stream.
 
         Version         Latest Build
+        4.8.21          209 (windows 10 console, beta)
         4.8.19          204 (configuration updates), 201 (sftp/ssh)
         4.8.14          189 (beta)
         4.8.13          188, 187 (beta)

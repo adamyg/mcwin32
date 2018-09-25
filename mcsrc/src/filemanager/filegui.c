@@ -10,7 +10,7 @@
    Janne Kukonlehto added much error recovery to them for being used
    in an interactive program.
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2018
    Free Software Foundation, Inc.
 
    Written by:
@@ -157,7 +157,7 @@ statfs (char const *filename, struct fs_info *buf)
 #include "lib/util.h"
 #include "lib/widget.h"
 
-#include "src/setup.h"          /* verbose */
+#include "src/setup.h"          /* verbose, safe_overwrite */
 
 #include "midnight.h"
 #include "fileopctx.h"          /* FILE_CONT */
@@ -284,13 +284,11 @@ statvfs_works (void)
 #endif
 
 /* --------------------------------------------------------------------------------------------- */
+
 static gboolean
 filegui__check_attrs_on_fs (const char *fs_path)
 {
     STRUCT_STATVFS stfs;
-
-    if (!copymove_persistent_attr)
-        return FALSE;
 
 #if USE_STATVFS && defined(STAT_STATVFS)
     if (statvfs_works () && statvfs (fs_path, &stfs) != 0)
@@ -409,7 +407,7 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
     const int rd_ylen = 1;
     int rd_xlen = 60;
     int y = 2;
-    unsigned long yes_id;
+    unsigned long yes_id, no_id;
 
     struct
     {
@@ -565,7 +563,7 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
 
     ADD_RD_LABEL (4, 0, 0, y);  /* Overwrite this target? */
     yes_id = ADD_RD_BUTTON (5, y);      /* Yes */
-    ADD_RD_BUTTON (6, y);       /* No */
+    no_id = ADD_RD_BUTTON (6, y);       /* No */
 
     /* "this target..." widgets */
     if (!S_ISDIR (ui->d_stat->st_mode))
@@ -591,7 +589,7 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
 
     label_set_text (LABEL (label1), str_trunc (stripped_name, rd_xlen - 8));
     dlg_set_size (ui->replace_dlg, y + 3, rd_xlen);
-    dlg_select_by_id (ui->replace_dlg, yes_id);
+    dlg_select_by_id (ui->replace_dlg, safe_overwrite ? no_id : yes_id);
     result = dlg_run (ui->replace_dlg);
     dlg_destroy (ui->replace_dlg);
 
@@ -702,7 +700,7 @@ check_progress_buttons (file_op_context_t * ctx)
         ctx->suspended = !ctx->suspended;
         place_progress_buttons (ui->op_dlg, ctx->suspended);
         dlg_redraw (ui->op_dlg);
-        /* fallthrough */
+        MC_FALLTHROUGH;
     default:
         if (ctx->suspended)
             goto get_event;
@@ -890,12 +888,12 @@ file_progress_show (file_op_context_t * ctx, off_t done, off_t total,
 
     if (total == 0)
     {
-        gauge_show (ui->progress_file_gauge, 0);
+        gauge_show (ui->progress_file_gauge, FALSE);
         return;
     }
 
     gauge_set_value (ui->progress_file_gauge, 1024, (int) (1024 * done / total));
-    gauge_show (ui->progress_file_gauge, 1);
+    gauge_show (ui->progress_file_gauge, TRUE);
 
     if (!force_update)
         return;
@@ -964,12 +962,12 @@ file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ct
     if (ui->progress_total_gauge != NULL)
     {
         if (ctx->progress_bytes == 0)
-            gauge_show (ui->progress_total_gauge, 0);
+            gauge_show (ui->progress_total_gauge, FALSE);
         else
         {
             gauge_set_value (ui->progress_total_gauge, 1024,
                              (int) (1024 * copied_bytes / ctx->progress_bytes));
-            gauge_show (ui->progress_total_gauge, 1);
+            gauge_show (ui->progress_total_gauge, TRUE);
         }
     }
 
@@ -1143,9 +1141,11 @@ file_progress_real_query_replace (file_op_context_t * ctx,
     case REPLACE_REGET:
         /* Careful: we fall through and set do_append */
         ctx->do_reget = _d_stat->st_size;
+        MC_FALLTHROUGH;
 
     case REPLACE_APPEND:
         ctx->do_append = TRUE;
+        MC_FALLTHROUGH;
 
     case REPLACE_YES:
     case REPLACE_ALWAYS:
@@ -1178,8 +1178,8 @@ file_mask_dialog (file_op_context_t * ctx, FileOperation operation,
     if (ctx == NULL)
         return NULL;
 
-    /* unselect checkbox if target filesystem don't support attributes */
-    ctx->op_preserve = filegui__check_attrs_on_fs (def_text);
+    /* unselect checkbox if target filesystem doesn't support attributes */
+    ctx->op_preserve = copymove_persistent_attr && filegui__check_attrs_on_fs (def_text);
     ctx->stable_symlinks = FALSE;
     *do_bg = FALSE;
 
@@ -1336,7 +1336,8 @@ file_mask_dialog (file_op_context_t * ctx, FileOperation operation,
         {
             g_free (def_text_secure);
             g_free (source_mask);
-            return dest_dir;
+            g_free (dest_dir);
+            return NULL;
         }
 
         ctx->search_handle = mc_search_new (source_mask, NULL);

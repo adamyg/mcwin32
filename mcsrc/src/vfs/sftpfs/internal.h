@@ -66,16 +66,18 @@ void sftpfs_init_subclass_callbacks (void);
 void sftpfs_init_config_variables_patterns (void);
 void sftpfs_deinit_config_variables_patterns (void);
 
+gboolean sftpfs_is_sftp_error (LIBSSH2_SFTP * sftp_session, int sftp_res, int sftp_error);
 void sftpfs_ssherror_to_gliberror (sftpfs_super_data_t * super_data, int libssh_errno,
                                    GError ** mcerror);
-int sftpfs_waitsocket (sftpfs_super_data_t * super_data, GError ** mcerror);
+gboolean sftpfs_waitsocket (sftpfs_super_data_t * super_data, int sftp_res, GError ** mcerror);
 
 const char *sftpfs_fix_filename (const char *file_name, unsigned int *length);
-void sftpfs_blksize (struct stat *s);
+void sftpfs_attr_to_stat (const LIBSSH2_SFTP_ATTRIBUTES * attrs, struct stat *s);
 int sftpfs_lstat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror);
 int sftpfs_stat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror);
 int sftpfs_readlink (const vfs_path_t * vpath, char *buf, size_t size, GError ** mcerror);
 int sftpfs_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** mcerror);
+int sftpfs_utime (const vfs_path_t * vpath, time_t atime, time_t mtime, GError ** mcerror);
 int sftpfs_chmod (const vfs_path_t * vpath, mode_t mode, GError ** mcerror);
 int sftpfs_unlink (const vfs_path_t * vpath, GError ** mcerror);
 int sftpfs_rename (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** mcerror);

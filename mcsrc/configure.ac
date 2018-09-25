@@ -45,6 +45,8 @@ if test "x$enable_werror" = xyes; then
     mc_CHECK_ONE_CFLAG([-Werror])
 fi
 
+AX_GCC_FUNC_ATTRIBUTE([fallthrough])
+
 AC_PROG_LIBTOOL
 
 
@@ -55,9 +57,7 @@ dnl ############################################################################
 PKG_PROG_PKG_CONFIG
 AC_PROG_INSTALL
 AC_PROG_LN_S
-AC_PATH_PROG([PERL], [perl], [/usr/bin/perl])
-AC_PATH_PROG([PYTHON], [python], [/usr/bin/python])
-AC_PATH_PROG([RUBY], [ruby], [/usr/bin/ruby])
+dnl See also the "OS specific stuff" section below.
 
 dnl Check nroff and the options it supports
 AC_CHECK_PROG(HAVE_nroff, nroff, true, false)
@@ -160,6 +160,8 @@ AC_CHECK_HEADERS([string.h memory.h limits.h malloc.h \
 	utime.h sys/statfs.h sys/vfs.h \
 	sys/select.h sys/ioctl.h stropts.h arpa/inet.h \
 	sys/socket.h])
+dnl This macro is redefined in m4.include/gnulib/sys_types_h.m4
+dnl   to work around a buggy version in autoconf <= 2.69.
 AC_HEADER_MAJOR
 
 
@@ -181,7 +183,7 @@ AC_TYPE_PID_T
 AC_TYPE_UID_T
 
 AC_STRUCT_ST_BLOCKS
-AC_CHECK_MEMBERS([struct stat.st_blksize, struct stat.st_rdev])
+AC_CHECK_MEMBERS([struct stat.st_blksize, struct stat.st_rdev, struct stat.st_mtim])
 gl_STAT_SIZE
 
 AH_TEMPLATE([sig_atomic_t],
@@ -229,9 +231,6 @@ AC_CHECK_FUNCS([\
 	realpath
 ])
 
-dnl utimensat is supported since glibc 2.6 and specified in POSIX.1-2008
-AC_CHECK_FUNCS([utimensat])
-
 dnl getpt is a GNU Extension (glibc 2.1.x)
 AC_CHECK_FUNCS(posix_openpt, , [AC_CHECK_FUNCS(getpt)])
 AC_CHECK_FUNCS(grantpt, , [AC_CHECK_LIB(pt, grantpt)])
@@ -273,8 +272,20 @@ AM_GNU_GETTEXT_VERSION([0.18.1])
 mc_I18N
 
 dnl ############################################################################
-dnl OS specific flags
+dnl OS specific stuff
 dnl ############################################################################
+
+case $host_os in
+*os400)
+    AC_PATH_PROG([PERL], [perl], [/QOpenSys/pkgs/bin/perl])
+    AC_PATH_PROG([PYTHON], [python], [/QOpenSys/pkgs/bin/python2])
+    AC_PATH_PROG([RUBY], [ruby], [/QOpenSys/pkgs/bin/ruby])
+    ;;
+*)
+    AC_PATH_PROG([PERL], [perl], [/usr/bin/perl])
+    AC_PATH_PROG([PYTHON], [python], [/usr/bin/python])
+    AC_PATH_PROG([RUBY], [ruby], [/usr/bin/ruby])
+esac
 
 case $host_os in
 aux*)
@@ -299,6 +310,27 @@ AC_EGREP_CPP([yes],
     [
         AC_MSG_RESULT(no)
     ])
+
+dnl utimensat is supported since glibc 2.6 and specified in POSIX.1-2008
+dnl utimensat() causes different timespec structures to cause failures on IBM i
+case $host_os in
+*os400)
+    ;;
+*)
+    AC_CHECK_FUNCS([utimensat])
+    ;;
+esac
+
+case $host_os in
+*os400)
+    AC_DEFINE([PTY_ZEROREAD], [1], [read(1) can return 0 for a non-closed fd])
+esac
+
+dnl Check linux/fs.h for FICLONE to support BTRFS's file clone operation
+case $host_os in
+linux*)
+    AC_CHECK_HEADERS([linux/fs.h])
+esac
 
 dnl Check if the OS is supported by the console saver.
 cons_saver=""
@@ -367,8 +399,20 @@ AC_ARG_WITH([homedir],
     AS_HELP_STRING([--with-homedir],
                    [Choose any place of user settings relative to home dir, or XDG for respect XDG standards @<:@XDG@:>@]),
     [
+	dnl Unfortunately, there is no way to tell AC_ARG_WITH that the
+	dnl argument value is required, so we can't differentiate
+	dnl between `--with-homedir` and `--with-homedir=yes`, because
+	dnl `with_homedir` is set to `yes` in both cases.
+	dnl
+	dnl We opt to set `with_homedir` to `.mc` if the value is `yes`
+	dnl in order to avoid the surprise for users using
+	dnl `--with-homedir` w/o any value and then getting mc to store
+	dnl settings in the `yes` directory.
+
 	if test "x$withval" = "xXDG"; then
 	    with_homedir=XDG
+	elif test "x$withval" = "xyes"; then
+	    with_homedir=.mc
 	else
 	    with_homedir=$withval
 	fi

@@ -1,7 +1,7 @@
 /*
    Setup loading/saving.
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2018
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -87,6 +87,8 @@ gboolean boot_current_is_left = TRUE;
 
 /* If on, default for "No" in delete operations */
 gboolean safe_delete = FALSE;
+/* If on, default for "No" in overwrite files */
+gboolean safe_overwrite = FALSE;
 
 /* Controls screen clearing before an exec */
 gboolean clear_before_exec = TRUE;
@@ -231,8 +233,8 @@ static char *panels_profile_name = NULL;        /* ${XDG_CACHE_HOME}/mc/panels.i
 static const struct
 {
     const char *key;
-    int  list_type;
-} list_types [] = {
+    int  list_format;
+} list_formats [] = {
     { "full",  list_full  },
     { "brief", list_brief },
     { "long",  list_long  },
@@ -293,6 +295,7 @@ static const struct
     { "confirm_directory_hotlist_delete", &confirm_directory_hotlist_delete },
     { "confirm_view_dir", &confirm_view_dir },
     { "safe_delete", &safe_delete },
+    { "safe_overwrite", &safe_overwrite },
 #ifndef HAVE_CHARSET
     { "eight_bit_clean", &mc_global.eight_bit_clean },
     { "full_eight_bits", &mc_global.full_eight_bits },
@@ -302,7 +305,7 @@ static const struct
     { "mouse_close_dialog", &mouse_close_dialog},
     { "fast_refresh", &fast_refresh },
     { "drop_menus", &drop_menus },
-    { "wrap_mode",  &mcview_global_wrap_mode },
+    { "wrap_mode",  &mcview_global_flags.wrap },
     { "old_esc_mode", &old_esc_mode },
     { "cd_symlinks", &mc_global.vfs.cd_symlinks },
     { "show_all_if_ambiguous", &mc_global.widget.show_all_if_ambiguous },
@@ -1456,12 +1459,13 @@ panel_load_setup (WPanel * panel, const char *section)
     size_t i;
     char *buffer, buffer2[BUF_TINY];
 
-    panel->sort_info.reverse = mc_config_get_int (mc_global.panels_config, section, "reverse", 0);
+    panel->sort_info.reverse =
+        mc_config_get_bool (mc_global.panels_config, section, "reverse", FALSE);
     panel->sort_info.case_sensitive =
-        mc_config_get_int (mc_global.panels_config, section, "case_sensitive",
-                           OS_SORT_CASE_SENSITIVE_DEFAULT);
+        mc_config_get_bool (mc_global.panels_config, section, "case_sensitive",
+                            OS_SORT_CASE_SENSITIVE_DEFAULT);
     panel->sort_info.exec_first =
-        mc_config_get_int (mc_global.panels_config, section, "exec_first", 0);
+        mc_config_get_bool (mc_global.panels_config, section, "exec_first", FALSE);
 
     /* Load sort order */
     buffer = mc_config_get_string (mc_global.panels_config, section, "sort_order", "name");
@@ -1471,13 +1475,18 @@ panel_load_setup (WPanel * panel, const char *section)
 
     g_free (buffer);
 
-    /* Load the listing mode */
-    buffer = mc_config_get_string (mc_global.panels_config, section, "list_mode", "full");
-    panel->list_type = list_full;
-    for (i = 0; list_types[i].key != NULL; i++)
-        if (g_ascii_strcasecmp (list_types[i].key, buffer) == 0)
+    /* Load the listing format */
+    buffer = mc_config_get_string (mc_global.panels_config, section, "list_format", NULL);
+    if (buffer == NULL)
+    {
+        /* fallback to old option */
+        buffer = mc_config_get_string (mc_global.panels_config, section, "list_mode", "full");
+    }
+    panel->list_format = list_full;
+    for (i = 0; list_formats[i].key != NULL; i++)
+        if (g_ascii_strcasecmp (list_formats[i].key, buffer) == 0)
         {
-            panel->list_type = list_types[i].list_type;
+            panel->list_format = list_formats[i].list_format;
             break;
         }
     g_free (buffer);
@@ -1489,7 +1498,7 @@ panel_load_setup (WPanel * panel, const char *section)
     panel->user_format =
         mc_config_get_string (mc_global.panels_config, section, "user_format", DEFAULT_USER_FORMAT);
 
-    for (i = 0; i < LIST_TYPES; i++)
+    for (i = 0; i < LIST_FORMATS; i++)
     {
         g_free (panel->user_status_format[i]);
         g_snprintf (buffer2, sizeof (buffer2), "user_status%lld", (long long) i);
@@ -1509,17 +1518,19 @@ panel_save_setup (WPanel * panel, const char *section)
     char buffer[BUF_TINY];
     size_t i;
 
-    mc_config_set_int (mc_global.panels_config, section, "reverse", panel->sort_info.reverse);
-    mc_config_set_int (mc_global.panels_config, section, "case_sensitive",
-                       panel->sort_info.case_sensitive);
-    mc_config_set_int (mc_global.panels_config, section, "exec_first", panel->sort_info.exec_first);
+    mc_config_set_bool (mc_global.panels_config, section, "reverse", panel->sort_info.reverse);
+    mc_config_set_bool (mc_global.panels_config, section, "case_sensitive",
+                        panel->sort_info.case_sensitive);
+    mc_config_set_bool (mc_global.panels_config, section, "exec_first",
+                        panel->sort_info.exec_first);
 
     mc_config_set_string (mc_global.panels_config, section, "sort_order", panel->sort_field->id);
 
-    for (i = 0; list_types[i].key != NULL; i++)
-        if (list_types[i].list_type == (int) panel->list_type)
+    for (i = 0; list_formats[i].key != NULL; i++)
+        if (list_formats[i].list_format == (int) panel->list_format)
         {
-            mc_config_set_string (mc_global.panels_config, section, "list_mode", list_types[i].key);
+            mc_config_set_string (mc_global.panels_config, section, "list_format",
+                                  list_formats[i].key);
             break;
         }
 
@@ -1527,7 +1538,7 @@ panel_save_setup (WPanel * panel, const char *section)
 
     mc_config_set_string (mc_global.panels_config, section, "user_format", panel->user_format);
 
-    for (i = 0; i < LIST_TYPES; i++)
+    for (i = 0; i < LIST_FORMATS; i++)
     {
         g_snprintf (buffer, sizeof (buffer), "user_status%lld", (long long) i);
         mc_config_set_string (mc_global.panels_config, section, buffer,

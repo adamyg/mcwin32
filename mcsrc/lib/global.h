@@ -27,6 +27,12 @@
 /* for sig_atomic_t */
 #include <signal.h>
 
+#ifdef HAVE_FUNC_ATTRIBUTE_FALLTHROUGH
+#define MC_FALLTHROUGH __attribute__((fallthrough))
+#else
+#define MC_FALLTHROUGH
+#endif
+
 /*** typedefs(not structures) and defined constants **********************************************/
 
 /* The O_BINARY definition was taken from gettext */
@@ -146,8 +152,15 @@
 #define TMPDIR_DEFAULT "/tmp"
 #define SCRIPT_SUFFIX ""
 #define get_default_editor() "vi"
-#define OS_SORT_CASE_SENSITIVE_DEFAULT 1
+#define OS_SORT_CASE_SENSITIVE_DEFAULT TRUE
 #define UTF8_CHAR_LEN 6
+
+/* struct stat members */
+#ifdef __APPLE__
+#define st_atim st_atimespec
+#define st_ctim st_ctimespec
+#define st_mtim st_mtimespec
+#endif
 
 /* Used to distinguish between a normal MC termination and */
 /* one caused by typing 'exit' or 'logout' in the subshell */

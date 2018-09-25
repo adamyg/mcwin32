@@ -271,7 +271,7 @@ sel_console(Select_t *selfd)
                     break;
                 }
             }
-	    (void) ReadConsoleInput (h, &k, 1, &count);
+            (void) ReadConsoleInput (h, &k, 1, &count);
         }
 }
 

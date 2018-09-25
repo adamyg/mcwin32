@@ -1,21 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the mc package.
-# 
+#
 # Translators:
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-11-21 13:19+0300\n"
-"PO-Revision-Date: 2016-11-22 08:19+0000\n"
+"POT-Creation-Date: 2018-09-09 19:12+0300\n"
+"PO-Revision-Date: 2018-04-30 12:37+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Azerbaijani (http://www.transifex.com/mc/mc/language/az/)\n"
+"Language: az\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: az\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
@@ -88,6 +88,23 @@ msgstr ""
 msgid ""
 "Your old settings were migrated from %s\n"
 "to %s\n"
+msgstr ""
+
+msgid ""
+"Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
+"hex)"
+msgstr ""
+
+msgid "Invalid character"
+msgstr ""
+
+msgid "Unmatched quotes character"
+msgstr ""
+
+#, c-format
+msgid ""
+"Hex pattern error at position %d:\n"
+"%s."
 msgstr ""
 
 msgid "Search string not found"
@@ -446,7 +463,9 @@ msgstr "TERM dəyişəni bildirilməyib!\n"
 msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
-msgstr "%dx%d ekran böyüklüyü dəstəklənmir.\nTERM sistem dəyişgənini yoxla.\n"
+msgstr ""
+"%dx%d ekran böyüklüyü dəstəklənmir.\n"
+"TERM sistem dəyişgənini yoxla.\n"
 
 msgid "B"
 msgstr ""
@@ -544,7 +563,6 @@ msgstr ""
 msgid "Temporary files will not be created\n"
 msgstr ""
 
-#, c-format
 msgid "Press any key to continue..."
 msgstr "Davam etmək üçün istədiyiniz bir düyməyə basın..."
 
@@ -613,6 +631,9 @@ msgstr ""
 msgid "Print last working directory to specified file"
 msgstr ""
 
+msgid "<file>"
+msgstr ""
+
 msgid "Enables subshell support (default)"
 msgstr "Subshell dəstəyini fəallaşdırar (əsas)"
 
@@ -625,10 +646,16 @@ msgstr "Ftp dialoqlarını bildirilən fayla qeyd edər"
 msgid "Set debug level"
 msgstr ""
 
+msgid "<integer>"
+msgstr ""
+
 msgid "Launches the file viewer on a file"
 msgstr "Faylda göstərici proqramı başladar"
 
 msgid "Edit files"
+msgstr ""
+
+msgid "<file> ..."
 msgstr ""
 
 msgid "Forces xterm features"
@@ -669,6 +696,9 @@ msgstr "Rəngli modda başlat"
 
 msgid "Specifies a color configuration"
 msgstr "Rəng qurğularını bildir"
+
+msgid "<string>"
+msgstr ""
 
 msgid "Show mc with specified skin"
 msgstr ""
@@ -712,13 +742,16 @@ msgstr ""
 msgid "Color options"
 msgstr ""
 
-msgid "+number"
+msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
+msgstr ""
+
+msgid "file"
+msgstr "fayl"
+
+msgid "file1 file2"
 msgstr ""
 
 msgid "[this_dir] [other_panel_dir]"
-msgstr ""
-
-msgid "Set initial line number for the internal editor"
 msgstr ""
 
 msgid ""
@@ -1532,7 +1565,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgid "Copyright (C) 1996-2018 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1679,7 +1712,6 @@ msgstr ""
 msgid "The shell is already running a command"
 msgstr ""
 
-#, c-format
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr ""
 
@@ -1712,6 +1744,15 @@ msgid ""
 "Cannot chmod \"%s\"\n"
 "%s"
 msgstr ""
+
+msgid "&Ignore"
+msgstr ""
+
+msgid "Ignore &all"
+msgstr ""
+
+msgid "&Retry"
+msgstr "Təzədən &sına"
 
 #, c-format
 msgid ""
@@ -1801,6 +1842,9 @@ msgid "Cd follows lin&ks"
 msgstr ""
 
 msgid "Sa&fe delete"
+msgstr ""
+
+msgid "Safe overwrite"
 msgstr ""
 
 msgid "A&uto save setup"
@@ -1909,8 +1953,8 @@ msgstr ""
 msgid "User &mini status"
 msgstr ""
 
-msgid "Listing mode"
-msgstr "Sıralama modu"
+msgid "Listing format"
+msgstr ""
 
 msgid "Executable &first"
 msgstr ""
@@ -1921,8 +1965,7 @@ msgstr "Tə&rs"
 msgid "Sort order"
 msgstr "Süzmə əmri"
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
-#. prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
 msgid "Confirmation|&Delete"
 msgstr ""
 
@@ -2344,9 +2387,6 @@ msgstr ""
 msgid "%o %d %f%m"
 msgstr "%o %d %f%m"
 
-msgid "file"
-msgstr "fayl"
-
 msgid "files"
 msgstr "fayllar"
 
@@ -2373,7 +2413,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Cannot make stable symlinks acrossnon-local filesystems:\n"
+"Cannot make stable symlinks across non-local filesystems:\n"
 "\n"
 "Option Stable Symlinks will be disabled"
 msgstr ""
@@ -2384,11 +2424,24 @@ msgid ""
 "%s"
 msgstr ""
 
-msgid "Ski&p all"
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same directory"
 msgstr ""
 
-msgid "&Retry"
-msgstr "Təzədən &sına"
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same file"
+msgstr ""
+
+msgid "Ski&p all"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2408,16 +2461,14 @@ msgstr "heç&biri"
 
 #, c-format
 msgid ""
-"Cannot stat file \"%s\"\n"
+"Cannot remove file \"%s\"\n"
 "%s"
 msgstr ""
 
 #, c-format
 msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same file"
+"Cannot stat file \"%s\"\n"
+"%s"
 msgstr ""
 
 #, c-format
@@ -2432,18 +2483,6 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot remove file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot delete file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
 "Cannot remove directory \"%s\"\n"
 "%s"
 msgstr ""
@@ -2452,6 +2491,21 @@ msgstr ""
 msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot overwrite file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot move directory \"%s\" to \"%s\"\n"
+"%s"
+msgstr ""
+
+msgid "Cannot operate on \"..\"!"
 msgstr ""
 
 #, c-format
@@ -2581,30 +2635,7 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same directory"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot overwrite file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot move directory \"%s\" to \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
 msgid "Directories: %zu, total size: %s"
-msgstr ""
-
-msgid "Cannot operate on \"..\"!"
 msgstr ""
 
 msgid "Sorry, I could not put the job in background"
@@ -2807,6 +2838,14 @@ msgid "Finished (ignored %zu directory)"
 msgid_plural "Finished (ignored %zu directories)"
 msgstr[0] ""
 msgstr[1] ""
+
+#, c-format
+msgid "Find File: \"%s\". Content: \"%s\""
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Find File: \"%s\""
+msgstr "Faylı tap"
 
 msgid "Searching"
 msgstr "Axtarılır"
@@ -3031,8 +3070,8 @@ msgstr ""
 msgid "&Info"
 msgstr ""
 
-msgid "&Listing mode..."
-msgstr "Sıra&lama modu ..."
+msgid "&Listing format..."
+msgstr ""
 
 msgid "&Sort order..."
 msgstr "&Sıralama əmri..."
@@ -3371,7 +3410,8 @@ msgid "Do you really want to execute?"
 msgstr ""
 
 msgid "User supplied format looks invalid, reverting to default."
-msgstr "İstifadəçi tərəfindən bildirlən şəkillandirmə düzgün deyil, əsasa keçirəm."
+msgstr ""
+"İstifadəçi tərəfindən bildirlən şəkillandirmə düzgün deyil, əsasa keçirəm."
 
 msgid "&Add new"
 msgstr "Təzə bir d&ədə əlavə et"
@@ -3416,7 +3456,9 @@ msgstr "SUID və SGID proqramları tap"
 msgid ""
 "Cannot open the %s file for writing:\n"
 "%s\n"
-msgstr "%s faylını yazmaq üçün aça bilmədim :\n%s\n"
+msgstr ""
+"%s faylını yazmaq üçün aça bilmədim :\n"
+"%s\n"
 
 #, c-format
 msgid "Copy \"%s\" directory to:"
@@ -3455,49 +3497,9 @@ msgstr ""
 msgid ""
 "Cannot write to the %s file:\n"
 "%s\n"
-msgstr "%s faylına yaza bilmirəm:\n%s\n"
-
-msgid "Debug"
 msgstr ""
-
-msgid "ERROR:"
-msgstr ""
-
-msgid "True:"
-msgstr ""
-
-msgid "False:"
-msgstr ""
-
-msgid "Error calling program"
-msgstr ""
-
-msgid "Warning -- ignoring file"
-msgstr ""
-
-#, c-format
-msgid ""
-"File %s is not owned by root or you or is world writable.\n"
-"Using it may compromise your security"
-msgstr " %s faylının yiyəsi root və ya sən deyilsiniz.\nBunu istifadə etmək bir az təhlükəsizliyə xələl gətirə bilər"
-
-msgid "Format error on file Extensions File"
-msgstr ""
-
-#, c-format
-msgid "The %%var macro has no default"
-msgstr ""
-
-#, c-format
-msgid "The %%var macro has no variable"
-msgstr ""
-
-#, c-format
-msgid "No suitable entries found in %s"
-msgstr ""
-
-msgid "User menu"
-msgstr ""
+"%s faylına yaza bilmirəm:\n"
+"%s\n"
 
 msgid "Help file format error\n"
 msgstr ""
@@ -3534,7 +3536,15 @@ msgid ""
 "\n"
 "If you want to escape, press a single Escape key\n"
 "and wait as well."
-msgstr "Lütfən, %s basın\nvə ismarıc itənə qədər gözləyin.\n\nSonra OLDU görünməsi üçün sonrakı düyməni \nyenə tıqlayın.\n\nÇıxmaq istəyirsiniz isə Çıx (Escape) düyməsini bir dəfə\ntıqlayın və gözləyin."
+msgstr ""
+"Lütfən, %s basın\n"
+"və ismarıc itənə qədər gözləyin.\n"
+"\n"
+"Sonra OLDU görünməsi üçün sonrakı düyməni \n"
+"yenə tıqlayın.\n"
+"\n"
+"Çıxmaq istəyirsiniz isə Çıx (Escape) düyməsini bir dəfə\n"
+"tıqlayın və gözləyin."
 
 msgid "Cannot accept this key"
 msgstr ""
@@ -3550,7 +3560,9 @@ msgstr "Oldu"
 msgid ""
 "It seems that all your keys already\n"
 "work fine. That's great."
-msgstr "Dəyəsən büyün düymələriniz yaxşı işləyir.\nƏntiqə."
+msgstr ""
+"Dəyəsən büyün düymələriniz yaxşı işləyir.\n"
+"Əntiqə."
 
 msgid "&Discard"
 msgstr "U&nut"
@@ -3558,7 +3570,9 @@ msgstr "U&nut"
 msgid ""
 "Great! You have a complete terminal database!\n"
 "All your keys work well."
-msgstr "Ə'la! Terminal databeyzi qurtardınız!\nBütün düymələriniz yaxşı işləyir."
+msgstr ""
+"Ə'la! Terminal databeyzi qurtardınız!\n"
+"Bütün düymələriniz yaxşı işləyir."
 
 msgid ""
 "Press all the keys mentioned here. After you have done it, check\n"
@@ -3665,7 +3679,10 @@ msgstr ""
 msgid "Data types:"
 msgstr ""
 
-msgid "Root directory:"
+msgid "Home directory:"
+msgstr ""
+
+msgid "Profile root directory:"
 msgstr ""
 
 msgid "System data"
@@ -3689,17 +3706,65 @@ msgstr ""
 msgid "Cache directory:"
 msgstr ""
 
+msgid "Debug"
+msgstr ""
+
+msgid "ERROR:"
+msgstr ""
+
+msgid "True:"
+msgstr ""
+
+msgid "False:"
+msgstr ""
+
+msgid "Error calling program"
+msgstr ""
+
+msgid "Warning -- ignoring file"
+msgstr ""
+
+#, c-format
+msgid ""
+"File %s is not owned by root or you or is world writable.\n"
+"Using it may compromise your security"
+msgstr ""
+" %s faylının yiyəsi root və ya sən deyilsiniz.\n"
+"Bunu istifadə etmək bir az təhlükəsizliyə xələl gətirə bilər"
+
+msgid "Format error on file Extensions File"
+msgstr ""
+
+#, c-format
+msgid "The %%var macro has no default"
+msgstr ""
+
+#, c-format
+msgid "The %%var macro has no variable"
+msgstr ""
+
+#, c-format
+msgid "No suitable entries found in %s"
+msgstr ""
+
+msgid "User menu"
+msgstr ""
+
 #, c-format
 msgid ""
 "Cannot open cpio archive\n"
 "%s"
-msgstr "%s\ncpio arxivini aça bilmədim"
+msgstr ""
+"%s\n"
+"cpio arxivini aça bilmədim"
 
 #, c-format
 msgid ""
 "Premature end of cpio archive\n"
 "%s"
-msgstr "Cpio arxivinin erkən bitməsi\n%s"
+msgstr ""
+"Cpio arxivinin erkən bitməsi\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -3707,7 +3772,10 @@ msgid ""
 "%s\n"
 "in cpio archive\n"
 "%s"
-msgstr "Cpio arxivinin\n%s da(də)\n%sdüzgün olmayan ağır bağlar"
+msgstr ""
+"Cpio arxivinin\n"
+"%s da(də)\n"
+"%sdüzgün olmayan ağır bağlar"
 
 #, c-format
 msgid "%s contains duplicate entries! Skipping!"
@@ -3717,19 +3785,25 @@ msgstr "%s cüt girişlər daxiledir! Keçirəm!"
 msgid ""
 "Corrupted cpio header encountered in\n"
 "%s"
-msgstr "Cpio başlığı pozulması burada görüldü\n%s"
+msgstr ""
+"Cpio başlığı pozulması burada görüldü\n"
+"%s"
 
 #, c-format
 msgid ""
 "Unexpected end of file\n"
 "%s"
-msgstr "Faylın gözlənilməz bitişi görüldü\n%s"
+msgstr ""
+"Faylın gözlənilməz bitişi görüldü\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot open %s archive\n"
 "%s"
-msgstr "%s arxivi açıla bilmir\n%s"
+msgstr ""
+"%s arxivi açıla bilmir\n"
+"%s"
 
 msgid "Inconsistent extfs archive"
 msgstr "extfs arxivi xəsərlidir"
@@ -3906,13 +3980,17 @@ msgstr ""
 msgid ""
 "Warning: Invalid line in %s:\n"
 "%s\n"
-msgstr "Xəbərdarlıq: %s də xətalı sətir:\n%s\n"
+msgstr ""
+"Xəbərdarlıq: %s də xətalı sətir:\n"
+"%s\n"
 
 #, c-format
 msgid ""
 "Warning: Invalid flag %c in %s:\n"
 "%s\n"
-msgstr "Xəbərdarlıq: %2$s də xətalı %1$c bayrağı:\n%3$s\n"
+msgstr ""
+"Xəbərdarlıq: %2$s də xətalı %1$c bayrağı:\n"
+"%3$s\n"
 
 #, c-format
 msgid "sftp: an error occurred while reading %s: %s"
@@ -3960,6 +4038,10 @@ msgid "sftp: No file handler data present for reading file"
 msgstr ""
 
 #, c-format
+msgid "sftp: socket error: %s"
+msgstr ""
+
+#, c-format
 msgid "sftp: (Ctrl-G break) Listing... %s"
 msgstr ""
 
@@ -3997,7 +4079,9 @@ msgstr ""
 msgid ""
 "Cannot open tar archive\n"
 "%s"
-msgstr "%s\ntar arxivini aça bilmədim"
+msgstr ""
+"%s\n"
+"tar arxivini aça bilmədim"
 
 msgid "Inconsistent tar archive"
 msgstr "Tar arxivi düzgün deyildir"

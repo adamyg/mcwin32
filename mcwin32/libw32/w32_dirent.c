@@ -42,10 +42,6 @@
 #pragma comment(lib, "Netapi32.lib")
 #pragma comment(lib, "Advapi32.lib")
 #include <lm.h>                                 /* NetEnum... */
-#include <winioctl.h>                           /* DeviceIoControls */
-#if defined(HAVE_NTIFS_H)
-#include <ntifs.h>
-#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -65,8 +61,6 @@ typedef BOOL (WINAPI *Wow64RevertWow64FsRedirection_t)(PVOID OldValue);
 #define DISABLE_HARD_ERRORS     SetErrorMode (0)
 #define ENABLE_HARD_ERRORS      SetErrorMode (SEM_FAILCRITICALERRORS | \
                                         SEM_NOOPENFILEERRORBOX)
-
-static int                      ReadReparse(const char *name, char *buf, int maxlen);
 
 static DIR *                    unc_populate(const char *path);
 
@@ -202,7 +196,7 @@ opendir(const char *name)
             return (DIR *)NULL;
         }
         if (FILE_ATTRIBUTE_REPARSE_POINT & attr) {
-            if (-1 == ReadReparse(path, reparse, sizeof(reparse))) {
+            if (-1 == w32_reparse_read(path, reparse, sizeof(reparse))) {
                 errno = EACCES;
                 return (DIR *)NULL;
             }
@@ -213,11 +207,11 @@ opendir(const char *name)
     /* Strip trailing slashes, so we can append "\*.*" */
     len = strlen(path);
     while (len > 0) {
-        len--;
+        --len;
         if (path[len] == '\\') {
             path[len] = '\0';                   /* remove slash */
         } else {
-            len++;                              /* end of path */
+            ++len;                              /* end of path */
             break;
         }
     }
@@ -241,10 +235,9 @@ opendir(const char *name)
 
     /* Open directory
      *
-     *    If you are writing a 32-bit application to list all the files in a
-     *    directory and the application may be run on a 64-bit computer, you should
-     *    call Wow64DisableWow64FsRedirection before calling FindFirstFileEx and call
-     *    Wow64RevertWow64FsRedirection after the last call to FindNextFile.
+     *    If you are writing a 32-bit application to list all the files in a directory and the 
+     *    application may be running on a 64-bit computer, you should call Wow64DisableWow64FsRedirection
+     *    before calling FindFirstFileEx and call Wow64RevertWow64FsRedirection after the last call to FindNextFile.
      *
      *    For more information, see File System Redirector.
      */
@@ -258,98 +251,6 @@ opendir(const char *name)
         }
     }
     return dp;
-}
-
-
-#if !defined(HAVE_NTIFS_H) && !defined(__MINGW32__)
-typedef struct _REPARSE_DATA_BUFFER {
-    ULONG  ReparseTag;
-    USHORT ReparseDataLength;
-    USHORT Reserved;
-    union {
-        struct {
-            USHORT SubstituteNameOffset;
-            USHORT SubstituteNameLength;
-            USHORT PrintNameOffset;
-            USHORT PrintNameLength;
-            ULONG  Flags;
-            WCHAR  PathBuffer[1];
-        } SymbolicLinkReparseBuffer;
-        struct {
-            USHORT SubstituteNameOffset;
-            USHORT SubstituteNameLength;
-            USHORT PrintNameOffset;
-            USHORT PrintNameLength;
-            WCHAR  PathBuffer[1];
-        } MountPointReparseBuffer;
-        struct {
-            UCHAR DataBuffer[1];
-        } GenericReparseBuffer;
-    };
-} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
-
-#ifndef IO_REPARSE_TAG_MOUNT_POINT
-#define IO_REPARSE_TAG_MOUNT_POINT  0xA0000003L
-#endif
-#ifndef IO_REPARSE_TAG_SYMLINK
-#define IO_REPARSE_TAG_SYMLINK      0xA000000CL
-#endif
-
-#endif	//HAVE_NTIFS_H
-
-static int
-ReadReparse(const char *name, char *buf, int maxlen)
-{
-#define MAX_REPARSE_SIZE        (512+(16*1024)) /* Header + 16k */
-    HANDLE fileHandle;
-    BYTE reparseBuffer[ MAX_REPARSE_SIZE ];
-    PREPARSE_GUID_DATA_BUFFER reparseInfo = (PREPARSE_GUID_DATA_BUFFER) reparseBuffer;
-    PREPARSE_DATA_BUFFER rdb = (PREPARSE_DATA_BUFFER) reparseBuffer;
-    DWORD returnedLength;
-                                                /* open the file image */
-    if ((fileHandle = CreateFile(name, 0,
-                FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
-                FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE) {
-        return -1;
-    }
-
-                                                /* retrieve reparse details */
-    if (DeviceIoControl(fileHandle, FSCTL_GET_REPARSE_POINT,
-                NULL, 0, reparseInfo, sizeof(reparseBuffer), &returnedLength, NULL)) {
-//      if (IsReparseTagMicrosoft(reparseInfo->ReparseTag)) {
-            int length;
-
-            switch (reparseInfo->ReparseTag) {
-            case IO_REPARSE_TAG_SYMLINK:
-                //
-                //  Symbolic links
-                //
-                if ((length = rdb->SymbolicLinkReparseBuffer.SubstituteNameLength) >= 4) {
-                    const size_t offset = rdb->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
-                    const wchar_t* symlink = rdb->SymbolicLinkReparseBuffer.PathBuffer + offset;
-
-                    wcstombs(buf, symlink, maxlen);
-                    return 0;
-                }
-                break;
-
-            case IO_REPARSE_TAG_MOUNT_POINT:
-                //
-                //  Mount points and junctions
-                //
-                if ((length = rdb->MountPointReparseBuffer.SubstituteNameLength) > 0) {
-                    const size_t offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
-                    const wchar_t* mount = rdb->MountPointReparseBuffer.PathBuffer + offset;
-
-                    wcstombs(buf, mount, maxlen);
-                    return 0;
-                }
-                break;
-            }
-//      }
-    }
-    CloseHandle(fileHandle);
-    return -1;
 }
 
 
@@ -969,4 +870,3 @@ dir_ishpf(const char *directory)
 }
 
 /*end*/
-

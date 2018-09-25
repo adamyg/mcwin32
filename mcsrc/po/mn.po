@@ -1,21 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the mc package.
-# 
+#
 # Translators:
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-11-21 13:19+0300\n"
-"PO-Revision-Date: 2016-11-22 08:19+0000\n"
+"POT-Creation-Date: 2018-09-09 19:12+0300\n"
+"PO-Revision-Date: 2018-04-30 12:37+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Mongolian (http://www.transifex.com/mc/mc/language/mn/)\n"
+"Language: mn\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: mn\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
@@ -88,6 +88,23 @@ msgstr ""
 msgid ""
 "Your old settings were migrated from %s\n"
 "to %s\n"
+msgstr ""
+
+msgid ""
+"Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
+"hex)"
+msgstr ""
+
+msgid "Invalid character"
+msgstr ""
+
+msgid "Unmatched quotes character"
+msgstr ""
+
+#, c-format
+msgid ""
+"Hex pattern error at position %d:\n"
+"%s."
 msgstr ""
 
 msgid "Search string not found"
@@ -446,7 +463,9 @@ msgstr "TERM хувьсагч утга аваагүй байна!\n"
 msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
-msgstr "Дэлгэцийн %dx%d хэмжээсийг сонгох боломжгүй байна.\nTERM хувьсагчийн утгыг шалгана уу.\n"
+msgstr ""
+"Дэлгэцийн %dx%d хэмжээсийг сонгох боломжгүй байна.\n"
+"TERM хувьсагчийн утгыг шалгана уу.\n"
 
 msgid "B"
 msgstr ""
@@ -544,7 +563,6 @@ msgstr " Түр зуурын файлууд нь %s д үүссэн\n"
 msgid "Temporary files will not be created\n"
 msgstr "Түр зуурын файлууд үүссэнгүй\n"
 
-#, c-format
 msgid "Press any key to continue..."
 msgstr "Дурын товчлуур дарж үргэлжлүүл..."
 
@@ -613,6 +631,9 @@ msgstr ""
 msgid "Print last working directory to specified file"
 msgstr "Заагдсан файл руу хамгийн сүүлд ажилласан лавлахыг хэвлэх"
 
+msgid "<file>"
+msgstr ""
+
 msgid "Enables subshell support (default)"
 msgstr "Subshell боломжыг нээх (анхны утга)"
 
@@ -625,10 +646,16 @@ msgstr "Тусгайлсан файл руу тэмдэглэх FTP диалог
 msgid "Set debug level"
 msgstr "Дебаг түвшинг тодорхойлох"
 
+msgid "<integer>"
+msgstr ""
+
 msgid "Launches the file viewer on a file"
 msgstr "Файл харагчыг ажиллуулах"
 
 msgid "Edit files"
+msgstr ""
+
+msgid "<file> ..."
 msgstr ""
 
 msgid "Forces xterm features"
@@ -669,6 +696,9 @@ msgstr "өнгөт горимд ажиллахад хариулна"
 
 msgid "Specifies a color configuration"
 msgstr "өнгөний тусгай тохиргоо"
+
+msgid "<string>"
+msgstr ""
 
 msgid "Show mc with specified skin"
 msgstr ""
@@ -712,14 +742,17 @@ msgstr ""
 msgid "Color options"
 msgstr ""
 
-msgid "+number"
-msgstr "+дугаар"
+msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
+msgstr ""
+
+msgid "file"
+msgstr "файл"
+
+msgid "file1 file2"
+msgstr ""
 
 msgid "[this_dir] [other_panel_dir]"
 msgstr ""
-
-msgid "Set initial line number for the internal editor"
-msgstr "дотоод засварлагчын эхлэл мөрийн дугаарыг оноо"
 
 msgid ""
 "\n"
@@ -1532,7 +1565,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgid "Copyright (C) 1996-2018 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1679,7 +1712,6 @@ msgstr ""
 msgid "The shell is already running a command"
 msgstr ""
 
-#, c-format
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr ""
 
@@ -1712,6 +1744,15 @@ msgid ""
 "Cannot chmod \"%s\"\n"
 "%s"
 msgstr ""
+
+msgid "&Ignore"
+msgstr ""
+
+msgid "Ignore &all"
+msgstr ""
+
+msgid "&Retry"
+msgstr "&Дахих"
 
 #, c-format
 msgid ""
@@ -1801,6 +1842,9 @@ msgid "Cd follows lin&ks"
 msgstr ""
 
 msgid "Sa&fe delete"
+msgstr ""
+
+msgid "Safe overwrite"
 msgstr ""
 
 msgid "A&uto save setup"
@@ -1909,8 +1953,8 @@ msgstr ""
 msgid "User &mini status"
 msgstr ""
 
-msgid "Listing mode"
-msgstr "Жасгаалтын горим"
+msgid "Listing format"
+msgstr ""
 
 msgid "Executable &first"
 msgstr ""
@@ -1921,8 +1965,7 @@ msgstr "&Эсрэг"
 msgid "Sort order"
 msgstr "Эрэмбэлэх дараалал"
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
-#. prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
 msgid "Confirmation|&Delete"
 msgstr ""
 
@@ -2344,9 +2387,6 @@ msgstr ""
 msgid "%o %d %f%m"
 msgstr "%o энэ %f (%d шт.)%m"
 
-msgid "file"
-msgstr "файл"
-
 msgid "files"
 msgstr "файлууд"
 
@@ -2373,7 +2413,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Cannot make stable symlinks acrossnon-local filesystems:\n"
+"Cannot make stable symlinks across non-local filesystems:\n"
 "\n"
 "Option Stable Symlinks will be disabled"
 msgstr ""
@@ -2384,11 +2424,24 @@ msgid ""
 "%s"
 msgstr ""
 
-msgid "Ski&p all"
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same directory"
 msgstr ""
 
-msgid "&Retry"
-msgstr "&Дахих"
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same file"
+msgstr ""
+
+msgid "Ski&p all"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2408,16 +2461,14 @@ msgstr "&үгүй"
 
 #, c-format
 msgid ""
-"Cannot stat file \"%s\"\n"
+"Cannot remove file \"%s\"\n"
 "%s"
 msgstr ""
 
 #, c-format
 msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same file"
+"Cannot stat file \"%s\"\n"
+"%s"
 msgstr ""
 
 #, c-format
@@ -2432,18 +2483,6 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot remove file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot delete file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
 "Cannot remove directory \"%s\"\n"
 "%s"
 msgstr ""
@@ -2452,6 +2491,21 @@ msgstr ""
 msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot overwrite file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot move directory \"%s\" to \"%s\"\n"
+"%s"
+msgstr ""
+
+msgid "Cannot operate on \"..\"!"
 msgstr ""
 
 #, c-format
@@ -2581,30 +2635,7 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same directory"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot overwrite file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot move directory \"%s\" to \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
 msgid "Directories: %zu, total size: %s"
-msgstr ""
-
-msgid "Cannot operate on \"..\"!"
 msgstr ""
 
 msgid "Sorry, I could not put the job in background"
@@ -2807,6 +2838,14 @@ msgid "Finished (ignored %zu directory)"
 msgid_plural "Finished (ignored %zu directories)"
 msgstr[0] ""
 msgstr[1] ""
+
+#, c-format
+msgid "Find File: \"%s\". Content: \"%s\""
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Find File: \"%s\""
+msgstr "Файл хайх"
 
 msgid "Searching"
 msgstr "Хайж байна"
@@ -3031,8 +3070,8 @@ msgstr ""
 msgid "&Info"
 msgstr ""
 
-msgid "&Listing mode..."
-msgstr "&Жагсаалтын горим..."
+msgid "&Listing format..."
+msgstr ""
 
 msgid "&Sort order..."
 msgstr "Эрэмбэлэх &дараалал..."
@@ -3416,7 +3455,9 @@ msgstr " SUID/SGID программуудыг хайх"
 msgid ""
 "Cannot open the %s file for writing:\n"
 "%s\n"
-msgstr " %s файлыг уншихаар нээж чадсангүй:\n%s\n"
+msgstr ""
+" %s файлыг уншихаар нээж чадсангүй:\n"
+"%s\n"
 
 #, c-format
 msgid "Copy \"%s\" directory to:"
@@ -3455,49 +3496,9 @@ msgstr ""
 msgid ""
 "Cannot write to the %s file:\n"
 "%s\n"
-msgstr " %s файл руу бичиж чадсангүй:\n%s\n"
-
-msgid "Debug"
 msgstr ""
-
-msgid "ERROR:"
-msgstr ""
-
-msgid "True:"
-msgstr ""
-
-msgid "False:"
-msgstr ""
-
-msgid "Error calling program"
-msgstr ""
-
-msgid "Warning -- ignoring file"
-msgstr ""
-
-#, c-format
-msgid ""
-"File %s is not owned by root or you or is world writable.\n"
-"Using it may compromise your security"
-msgstr "Файл %s нь таны эсвэл root ийн эзэмшил биш,\nАюулгүй байдлын үүднээс хэрэглэдэг"
-
-msgid "Format error on file Extensions File"
-msgstr ""
-
-#, c-format
-msgid "The %%var macro has no default"
-msgstr ""
-
-#, c-format
-msgid "The %%var macro has no variable"
-msgstr ""
-
-#, c-format
-msgid "No suitable entries found in %s"
-msgstr ""
-
-msgid "User menu"
-msgstr ""
+" %s файл руу бичиж чадсангүй:\n"
+"%s\n"
 
 msgid "Help file format error\n"
 msgstr ""
@@ -3534,7 +3535,15 @@ msgid ""
 "\n"
 "If you want to escape, press a single Escape key\n"
 "and wait as well."
-msgstr "Та товчлуураа дараад %s\nэнэ мэдээллийг гарч иртэл түр хүлээнэ үү.\n\nДараа нь ОК гэж гарч иртэл ,\nдахин дараад түр хүлээнэ үү.\n\nХэрвээ та сургалтаа зогсоохыг хүсвэл\n Esc товчоо дараад түр хүлээнэ үү."
+msgstr ""
+"Та товчлуураа дараад %s\n"
+"энэ мэдээллийг гарч иртэл түр хүлээнэ үү.\n"
+"\n"
+"Дараа нь ОК гэж гарч иртэл ,\n"
+"дахин дараад түр хүлээнэ үү.\n"
+"\n"
+"Хэрвээ та сургалтаа зогсоохыг хүсвэл\n"
+" Esc товчоо дараад түр хүлээнэ үү."
 
 msgid "Cannot accept this key"
 msgstr ""
@@ -3550,7 +3559,9 @@ msgstr "OK"
 msgid ""
 "It seems that all your keys already\n"
 "work fine. That's great."
-msgstr "Таны бүх товчруурууд хэвийн ажиллаж байна.\nБаяр хүргэе!"
+msgstr ""
+"Таны бүх товчруурууд хэвийн ажиллаж байна.\n"
+"Баяр хүргэе!"
 
 msgid "&Discard"
 msgstr "&Хаах"
@@ -3558,7 +3569,9 @@ msgstr "&Хаах"
 msgid ""
 "Great! You have a complete terminal database!\n"
 "All your keys work well."
-msgstr "Сайн! Та бүх баазыг дуусгалаа.\nТаны бүх товчлуурууд дажгүй ажиллаж байна."
+msgstr ""
+"Сайн! Та бүх баазыг дуусгалаа.\n"
+"Таны бүх товчлуурууд дажгүй ажиллаж байна."
 
 msgid ""
 "Press all the keys mentioned here. After you have done it, check\n"
@@ -3665,7 +3678,10 @@ msgstr ""
 msgid "Data types:"
 msgstr ""
 
-msgid "Root directory:"
+msgid "Home directory:"
+msgstr ""
+
+msgid "Profile root directory:"
 msgstr ""
 
 msgid "System data"
@@ -3689,17 +3705,65 @@ msgstr ""
 msgid "Cache directory:"
 msgstr ""
 
+msgid "Debug"
+msgstr ""
+
+msgid "ERROR:"
+msgstr ""
+
+msgid "True:"
+msgstr ""
+
+msgid "False:"
+msgstr ""
+
+msgid "Error calling program"
+msgstr ""
+
+msgid "Warning -- ignoring file"
+msgstr ""
+
+#, c-format
+msgid ""
+"File %s is not owned by root or you or is world writable.\n"
+"Using it may compromise your security"
+msgstr ""
+"Файл %s нь таны эсвэл root ийн эзэмшил биш,\n"
+"Аюулгүй байдлын үүднээс хэрэглэдэг"
+
+msgid "Format error on file Extensions File"
+msgstr ""
+
+#, c-format
+msgid "The %%var macro has no default"
+msgstr ""
+
+#, c-format
+msgid "The %%var macro has no variable"
+msgstr ""
+
+#, c-format
+msgid "No suitable entries found in %s"
+msgstr ""
+
+msgid "User menu"
+msgstr ""
+
 #, c-format
 msgid ""
 "Cannot open cpio archive\n"
 "%s"
-msgstr "cpio-архивыг нээж чадсангүй\n%s"
+msgstr ""
+"cpio-архивыг нээж чадсангүй\n"
+"%s"
 
 #, c-format
 msgid ""
 "Premature end of cpio archive\n"
 "%s"
-msgstr "cpio архивийн цагаасаа өмнө төгсөх\n%s"
+msgstr ""
+"cpio архивийн цагаасаа өмнө төгсөх\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -3707,7 +3771,11 @@ msgid ""
 "%s\n"
 "in cpio archive\n"
 "%s"
-msgstr "%s cpio архив дахь \nхүнд холбоос нь\nтохироогүй \n%s"
+msgstr ""
+"%s cpio архив дахь \n"
+"хүнд холбоос нь\n"
+"тохироогүй \n"
+"%s"
 
 #, c-format
 msgid "%s contains duplicate entries! Skipping!"
@@ -3717,19 +3785,25 @@ msgstr "%s давхардсан бичлэг агуулж байна! Алгас
 msgid ""
 "Corrupted cpio header encountered in\n"
 "%s"
-msgstr "cpio толгой нь эвдрэл таарсан\n%s"
+msgstr ""
+"cpio толгой нь эвдрэл таарсан\n"
+"%s"
 
 #, c-format
 msgid ""
 "Unexpected end of file\n"
 "%s"
-msgstr "Файлын төгсөлийн алдаа\n%s"
+msgstr ""
+"Файлын төгсөлийн алдаа\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot open %s archive\n"
 "%s"
-msgstr " %s-архивыг нээж чадсангүй\n%s"
+msgstr ""
+" %s-архивыг нээж чадсангүй\n"
+"%s"
 
 msgid "Inconsistent extfs archive"
 msgstr "Алдаатай архив extfs"
@@ -3906,13 +3980,17 @@ msgstr ""
 msgid ""
 "Warning: Invalid line in %s:\n"
 "%s\n"
-msgstr "Анхаар: %s д алдаатай мөр:\n%s\n"
+msgstr ""
+"Анхаар: %s д алдаатай мөр:\n"
+"%s\n"
 
 #, c-format
 msgid ""
 "Warning: Invalid flag %c in %s:\n"
 "%s\n"
-msgstr "Анхаар: Алдаатай флаг %c %s -д байна:\n%s\n"
+msgstr ""
+"Анхаар: Алдаатай флаг %c %s -д байна:\n"
+"%s\n"
 
 #, c-format
 msgid "sftp: an error occurred while reading %s: %s"
@@ -3960,6 +4038,10 @@ msgid "sftp: No file handler data present for reading file"
 msgstr ""
 
 #, c-format
+msgid "sftp: socket error: %s"
+msgstr ""
+
+#, c-format
 msgid "sftp: (Ctrl-G break) Listing... %s"
 msgstr ""
 
@@ -3997,7 +4079,9 @@ msgstr ""
 msgid ""
 "Cannot open tar archive\n"
 "%s"
-msgstr "tar-архивыг нээж чадсангүй\n%s"
+msgstr ""
+"tar-архивыг нээж чадсангүй\n"
+"%s"
 
 msgid "Inconsistent tar archive"
 msgstr "Алдаатай архив tar"
@@ -4030,7 +4114,8 @@ msgstr ""
 
 #, c-format
 msgid "undelfs: loading deleted files information %d inodes"
-msgstr "undelfs: %d зангилаануудын устгагдсан файлуудын мэдээллийг ачаалж байна "
+msgstr ""
+"undelfs: %d зангилаануудын устгагдсан файлуудын мэдээллийг ачаалж байна "
 
 #, c-format
 msgid "while calling ext2_block_iterate %d"

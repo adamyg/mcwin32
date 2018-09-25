@@ -1526,7 +1526,7 @@ SameCell(const WCHAR_INFO *c1, const WCHAR_INFO *c2)
 
 
 static __inline int
-SameAttributes(const WCHAR_INFO *cell, const struct colorinfo *info, const COLORREF fg, const COLORREF bg, const WORD viomask)
+SameAttributesFGBG(const WCHAR_INFO *cell, const struct colorinfo *info, const COLORREF fg, const COLORREF bg, const WORD viomask)
 {
     COLORREF cfg, cbg;
 
@@ -1541,6 +1541,22 @@ SameAttributes(const WCHAR_INFO *cell, const struct colorinfo *info, const COLOR
     }
     return (cfg == fg && cbg == bg);            // foreground and background.
 }
+
+
+static __inline int
+SameAttributesBG(const WCHAR_INFO *cell, const struct colorinfo *info, const COLORREF bg, const WORD viomask)
+{
+    COLORREF cfg, cbg;
+
+    if ((cell->Info.Attributes & viomask) !=
+        (info->Attributes & viomask)) {
+        return 0;                               // type-face change.
+    }
+
+    COLOR256(&cell->Info, &cfg, &cbg);          // cell colors.
+    return (cbg == bg);                         // background only.
+}
+
 
 
 /*private*/
@@ -1600,7 +1616,7 @@ CopyOutEx(size_t pos, size_t cnt, unsigned flags)
                 const WCHAR_INFO cell = *cursor++;
 
                 if (start >= 0) {               // attribute run
-                    if (SameAttributes(&cell, &info, fg, bg, VIO_BOLD|VIO_BLINK|VIO_ITALIC|VIO_FAINT)) {
+                    if (SameAttributesFGBG(&cell, &info, fg, bg, VIO_BOLD|VIO_BLINK|VIO_ITALIC|VIO_FAINT)) {
                         ocursor[col++] = cell;  // update out image
                         *text = cell.Char.UnicodeChar;
                         if (++text >= etext)
@@ -1612,16 +1628,27 @@ CopyOutEx(size_t pos, size_t cnt, unsigned flags)
                 }
 
                 if (0 == (flags & TRASHED) &&
-                    SameCell(&cell, ocursor + col)) {
+                        SameCell(&cell, ocursor + col)) {
                     ++col;
                     continue;                   // up-to-date
                 }
                 ocursor[col] = cell;            // update out image
 
+                // start of new draw arena
                 start = col++;
-                info = cell.Info;
+                text  = textbuf;
+                info  = cell.Info;
                 COLOR256(&info, &fg, &bg);
-                text = textbuf; *text++ = cell.Char.UnicodeChar;
+
+                if (start > 0) {                // if previous is space, also redraw; address font cell draw bleeding.
+                    const WCHAR_INFO backcell = cursor[-2];
+                    if (IsSpace(backcell.Char.UnicodeChar) &&
+                            SameAttributesBG(&backcell, &info, bg, VIO_BOLD | VIO_BLINK | VIO_ITALIC | VIO_FAINT)) {
+                        *text++ = backcell.Char.UnicodeChar;
+                        --start;
+                    }
+                }
+                *text++ = cell.Char.UnicodeChar;
 
             } while (col < cols);
 
@@ -1772,7 +1799,7 @@ CopyOutEx2(size_t pos, size_t cnt, unsigned flags)
                     start = col;
 
                 } else {                        // attribute run
-                    if (SameAttributes(&cell, &info, fg, bg, VIO_UNDERLINE|VIO_BOLD|VIO_BLINK|VIO_INVERSE)) {
+                    if (SameAttributesFGBG(&cell, &info, fg, bg, VIO_UNDERLINE|VIO_BOLD|VIO_BLINK|VIO_INVERSE)) {
                         ocursor[col++] = cell;  // update out image
                         *wctext = cell.Char.UnicodeChar;
                         if (++wctext >= wcend) {
@@ -1785,7 +1812,7 @@ CopyOutEx2(size_t pos, size_t cnt, unsigned flags)
 
                 //  ESC[<n> m                   SGR, Set Graphics Rendition, Set the format of the screen and text as specified by <n>.
                 //
-                //      0                           Default, returns all attributes to the default state prior to modification.
+                //      0                       Default, returns all attributes to the default state prior to modification.
                 //
                 //      1                       Bold / Bright Applies brightness / intensity flag to foreground color.
                 //      4                       Underline
@@ -1793,8 +1820,8 @@ CopyOutEx2(size_t pos, size_t cnt, unsigned flags)
                 //
                 //      38; 2; <r>; <g>; <b>    Set foreground color to RGB value specified in <r>, <g>, <b> parameters.
                 //      48; 2; <r>; <g>; <b>    Set background color to RGB value specified in <r>, <g>, <b> parameters.
-                //      38; 5; <s>                  Set foreground color to <s> index in 88 or 256 color table.
-                //      48; 5; <s>                  Set background color to <s> index in 88 or 256 color table.
+                //      38; 5; <s>              Set foreground color to <s> index in 88 or 256 color table.
+                //      48; 5; <s>              Set background color to <s> index in 88 or 256 color table.
                 //
                 ocursor[col++] = cell;          // update out image.
 
@@ -1809,9 +1836,9 @@ CopyOutEx2(size_t pos, size_t cnt, unsigned flags)
                         if (Attributes & VIO_UNDERLINE)           wctext += wsprintfW(wctext, L_VTCSI L"4m");
                         if (Attributes & (VIO_BOLD | VIO_BLINK))  wctext += wsprintfW(wctext, L_VTCSI L"1m");
                         if (Attributes & VIO_INVERSE)             wctext += wsprintfW(wctext, L_VTCSI L"7m");
-                    //if (Attributes & VIO_ITALIC)
-                    //if (Attributes & VIO_STRIKE)
-                    //if (Attributes & VIO_FAINT)
+                      //if (Attributes & VIO_ITALIC)
+                      //if (Attributes & VIO_STRIKE)
+                      //if (Attributes & VIO_FAINT)
                     }
                 }
 

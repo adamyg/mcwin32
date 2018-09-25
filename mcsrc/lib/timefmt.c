@@ -1,7 +1,7 @@
 /*
    Time formatting functions
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2018
    Free Software Foundation, Inc.
 
    Written by:
@@ -37,6 +37,7 @@
 #include <config.h>
 
 #include <stdlib.h>
+#include <limits.h>             /* MB_LEN_MAX */
 
 #include "lib/global.h"
 #include "lib/strutil.h"

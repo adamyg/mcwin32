@@ -1,7 +1,7 @@
 /*
    Default values for keybinding engine
 
-   Copyright (C) 2009-2017
+   Copyright (C) 2009-2018
    Free Software Foundation, Inc.
 
    Written by:
@@ -115,7 +115,6 @@ static const global_keymap_ini_t default_main_keymap[] = {
     /* Panel refresh */
     {"Reread", "ctrl-r"},
     /* Switch listing between long, user defined and full formats */
-    {"PanelListingSwitch", "alt-t"},
     /* Swap panels */
     {"Swap", "ctrl-u"},
     /* Resize panels */
@@ -174,6 +173,7 @@ static const global_keymap_ini_t default_main_x_keymap[] = {
 
 /* panel */
 static const global_keymap_ini_t default_panel_keymap[] = {
+    {"CycleListingFormat", "alt-t"},
     {"PanelOtherCd", "alt-o"},
     {"PanelOtherCdLink", "alt-l"},
     {"CopySingle", "f15"},

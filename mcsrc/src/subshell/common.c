@@ -1,7 +1,7 @@
 /*
    Concurrent shell support for the Midnight Commander
 
-   Copyright (C) 1994-2017
+   Copyright (C) 1994-2018
    Free Software Foundation, Inc.
 
    Written by:
@@ -73,6 +73,20 @@
 #ifdef HAVE_STROPTS_H
 #include <stropts.h>            /* For I_PUSH */
 #endif /* HAVE_STROPTS_H */
+
+#ifdef HAVE_OPENPTY
+/* includes for openpty() */
+#ifdef HAVE_PTY_H
+#include <pty.h>
+#endif
+#ifdef HAVE_UTIL_H
+#include <util.h>
+#endif
+/* <sys/types.h> is a prerequisite of <libutil.h> on FreeBSD 8.0.  */
+#ifdef HAVE_LIBUTIL_H
+#include <libutil.h>
+#endif
+#endif /* HAVE_OPENPTY */
 
 #include "lib/global.h"
 
@@ -558,9 +572,14 @@ feed_subshell (int how, gboolean fail_on_error)
 
             if (bytes <= 0)
             {
+#ifdef PTY_ZEROREAD
+                /* On IBM i, read(1) can return 0 for a non-closed fd */
+                continue;
+#else
                 tcsetattr (STDOUT_FILENO, TCSANOW, &shell_mode);
                 fprintf (stderr, "read (subshell_pty...): %s\r\n", unix_error_string (errno));
                 exit (EXIT_FAILURE);
+#endif
             }
 
             if (how == VISIBLY)
@@ -624,6 +643,8 @@ feed_subshell (int how, gboolean fail_on_error)
 
 /* --------------------------------------------------------------------------------------------- */
 /* pty opening functions */
+
+#ifndef HAVE_OPENPTY
 
 #ifdef HAVE_GRANTPT
 
@@ -778,6 +799,7 @@ pty_open_slave (const char *pty_name)
 }
 #endif /* !HAVE_GRANTPT */
 
+#endif /* !HAVE_OPENPTY */
 
 /* --------------------------------------------------------------------------------------------- */
 /**
@@ -908,8 +930,10 @@ init_subshell_precmd (char *precmd, size_t buff_size)
  * replaced by the backslash-escape sequence \0nnn, where "nnn" is the
  * numeric value of the character converted to octal number.
  * 
- *   cd "`printf "%b" 'ABC\0nnnDEF\0nnnXYZ'`"
+ *   cd "`printf '%b' 'ABC\0nnnDEF\0nnnXYZ'`"
  *
+ * N.B.: Use single quotes for conversion specifier to work around
+ *       tcsh 6.20+ parser breakage, see ticket #3852 for the details.
  */
 
 static GString *
@@ -921,7 +945,7 @@ subshell_name_quote (const char *s)
 
     if (mc_global.shell->type == SHELL_FISH)
     {
-        quote_cmd_start = "(printf \"%b\" '";
+        quote_cmd_start = "(printf '%b' '";
         quote_cmd_end = "')";
     }
     /* TODO: When BusyBox printf is fixed, get rid of this "else if", see
@@ -933,7 +957,7 @@ subshell_name_quote (const char *s)
        } */
     else
     {
-        quote_cmd_start = "\"`printf \"%b\" '";
+        quote_cmd_start = "\"`printf '%b' '";
         quote_cmd_end = "'`\"";
     }
 
@@ -1019,6 +1043,15 @@ init_subshell (void)
 
         /* FIXME: We may need to open a fresh pty each time on SVR4 */
 
+#ifdef HAVE_OPENPTY
+        if (openpty (&mc_global.tty.subshell_pty, &subshell_pty_slave, NULL, NULL, NULL))
+        {
+            fprintf (stderr, "Cannot open master and slave sides of pty: %s\n",
+                     unix_error_string (errno));
+            mc_global.tty.use_subshell = FALSE;
+            return;
+        }
+#else
         mc_global.tty.subshell_pty = pty_open_master (pty_name);
         if (mc_global.tty.subshell_pty == -1)
         {
@@ -1034,6 +1067,7 @@ init_subshell (void)
             mc_global.tty.use_subshell = FALSE;
             return;
         }
+#endif /* HAVE_OPENPTY */
 
         /* Create a pipe for receiving the subshell's CWD */
 

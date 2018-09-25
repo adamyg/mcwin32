@@ -1,21 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the mc package.
-# 
+#
 # Translators:
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-11-21 13:19+0300\n"
-"PO-Revision-Date: 2016-11-22 08:19+0000\n"
+"POT-Creation-Date: 2018-09-09 19:12+0300\n"
+"PO-Revision-Date: 2018-04-30 12:37+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Walloon (http://www.transifex.com/mc/mc/language/wa/)\n"
+"Language: wa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: wa\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
@@ -88,6 +88,23 @@ msgstr ""
 msgid ""
 "Your old settings were migrated from %s\n"
 "to %s\n"
+msgstr ""
+
+msgid ""
+"Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
+"hex)"
+msgstr ""
+
+msgid "Invalid character"
+msgstr ""
+
+msgid "Unmatched quotes character"
+msgstr ""
+
+#, c-format
+msgid ""
+"Hex pattern error at position %d:\n"
+"%s."
 msgstr ""
 
 msgid "Search string not found"
@@ -544,7 +561,6 @@ msgstr ""
 msgid "Temporary files will not be created\n"
 msgstr ""
 
-#, c-format
 msgid "Press any key to continue..."
 msgstr "Tchôkîz so tot l' minme li kéne tape po tcheryî pus lon..."
 
@@ -613,6 +629,9 @@ msgstr ""
 msgid "Print last working directory to specified file"
 msgstr ""
 
+msgid "<file>"
+msgstr ""
+
 msgid "Enables subshell support (default)"
 msgstr ""
 
@@ -625,10 +644,16 @@ msgstr ""
 msgid "Set debug level"
 msgstr ""
 
+msgid "<integer>"
+msgstr ""
+
 msgid "Launches the file viewer on a file"
 msgstr "Enonder li håyneu di fitchî so on fitchî"
 
 msgid "Edit files"
+msgstr ""
+
+msgid "<file> ..."
 msgstr ""
 
 msgid "Forces xterm features"
@@ -669,6 +694,9 @@ msgstr "Fé roter e coleurs"
 
 msgid "Specifies a color configuration"
 msgstr "Dire avou kénès coleurs"
+
+msgid "<string>"
+msgstr ""
 
 msgid "Show mc with specified skin"
 msgstr ""
@@ -712,13 +740,16 @@ msgstr ""
 msgid "Color options"
 msgstr ""
 
-msgid "+number"
+msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
+msgstr ""
+
+msgid "file"
+msgstr "fitchî"
+
+msgid "file1 file2"
 msgstr ""
 
 msgid "[this_dir] [other_panel_dir]"
-msgstr ""
-
-msgid "Set initial line number for the internal editor"
 msgstr ""
 
 msgid ""
@@ -1532,7 +1563,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgid "Copyright (C) 1996-2018 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1679,7 +1710,6 @@ msgstr ""
 msgid "The shell is already running a command"
 msgstr ""
 
-#, c-format
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr ""
 
@@ -1712,6 +1742,15 @@ msgid ""
 "Cannot chmod \"%s\"\n"
 "%s"
 msgstr ""
+
+msgid "&Ignore"
+msgstr ""
+
+msgid "Ignore &all"
+msgstr ""
+
+msgid "&Retry"
+msgstr "&Rissayî"
 
 #, c-format
 msgid ""
@@ -1801,6 +1840,9 @@ msgid "Cd follows lin&ks"
 msgstr ""
 
 msgid "Sa&fe delete"
+msgstr ""
+
+msgid "Safe overwrite"
 msgstr ""
 
 msgid "A&uto save setup"
@@ -1909,8 +1951,8 @@ msgstr ""
 msgid "User &mini status"
 msgstr ""
 
-msgid "Listing mode"
-msgstr "Môde djîvêye"
+msgid "Listing format"
+msgstr ""
 
 msgid "Executable &first"
 msgstr ""
@@ -1921,8 +1963,7 @@ msgstr "Å&rvier"
 msgid "Sort order"
 msgstr "Ôrde po relire"
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
-#. prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
 msgid "Confirmation|&Delete"
 msgstr ""
 
@@ -2344,9 +2385,6 @@ msgstr ""
 msgid "%o %d %f%m"
 msgstr "%o %d %f%m"
 
-msgid "file"
-msgstr "fitchî"
-
 msgid "files"
 msgstr "fitchîs"
 
@@ -2373,7 +2411,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Cannot make stable symlinks acrossnon-local filesystems:\n"
+"Cannot make stable symlinks across non-local filesystems:\n"
 "\n"
 "Option Stable Symlinks will be disabled"
 msgstr ""
@@ -2384,11 +2422,24 @@ msgid ""
 "%s"
 msgstr ""
 
-msgid "Ski&p all"
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same directory"
 msgstr ""
 
-msgid "&Retry"
-msgstr "&Rissayî"
+#, c-format
+msgid ""
+"\"%s\"\n"
+"and\n"
+"\"%s\"\n"
+"are the same file"
+msgstr ""
+
+msgid "Ski&p all"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2408,16 +2459,14 @@ msgstr "&Nouk"
 
 #, c-format
 msgid ""
-"Cannot stat file \"%s\"\n"
+"Cannot remove file \"%s\"\n"
 "%s"
 msgstr ""
 
 #, c-format
 msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same file"
+"Cannot stat file \"%s\"\n"
+"%s"
 msgstr ""
 
 #, c-format
@@ -2432,18 +2481,6 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot remove file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot delete file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
 "Cannot remove directory \"%s\"\n"
 "%s"
 msgstr ""
@@ -2452,6 +2489,21 @@ msgstr ""
 msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot overwrite file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot move directory \"%s\" to \"%s\"\n"
+"%s"
+msgstr ""
+
+msgid "Cannot operate on \"..\"!"
 msgstr ""
 
 #, c-format
@@ -2581,30 +2633,7 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid ""
-"\"%s\"\n"
-"and\n"
-"\"%s\"\n"
-"are the same directory"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot overwrite file \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot move directory \"%s\" to \"%s\"\n"
-"%s"
-msgstr ""
-
-#, c-format
 msgid "Directories: %zu, total size: %s"
-msgstr ""
-
-msgid "Cannot operate on \"..\"!"
 msgstr ""
 
 msgid "Sorry, I could not put the job in background"
@@ -2807,6 +2836,14 @@ msgid "Finished (ignored %zu directory)"
 msgid_plural "Finished (ignored %zu directories)"
 msgstr[0] ""
 msgstr[1] ""
+
+#, c-format
+msgid "Find File: \"%s\". Content: \"%s\""
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Find File: \"%s\""
+msgstr "Trover Fitchî"
 
 msgid "Searching"
 msgstr "Dji cwîr"
@@ -3031,8 +3068,8 @@ msgstr ""
 msgid "&Info"
 msgstr ""
 
-msgid "&Listing mode..."
-msgstr "Môde &Djîvêye..."
+msgid "&Listing format..."
+msgstr ""
 
 msgid "&Sort order..."
 msgstr "Ôrde po &Relire..."
@@ -3416,7 +3453,9 @@ msgstr "Trover les programes SUID eyet SGID"
 msgid ""
 "Cannot open the %s file for writing:\n"
 "%s\n"
-msgstr "Dji n' sai drovî li fitchî %s po scrire divins:\n%s\n"
+msgstr ""
+"Dji n' sai drovî li fitchî %s po scrire divins:\n"
+"%s\n"
 
 #, c-format
 msgid "Copy \"%s\" directory to:"
@@ -3455,49 +3494,9 @@ msgstr ""
 msgid ""
 "Cannot write to the %s file:\n"
 "%s\n"
-msgstr "Dji n' sai scrire e fitchî %s :\n%s\n"
-
-msgid "Debug"
 msgstr ""
-
-msgid "ERROR:"
-msgstr ""
-
-msgid "True:"
-msgstr ""
-
-msgid "False:"
-msgstr ""
-
-msgid "Error calling program"
-msgstr ""
-
-msgid "Warning -- ignoring file"
-msgstr ""
-
-#, c-format
-msgid ""
-"File %s is not owned by root or you or is world writable.\n"
-"Using it may compromise your security"
-msgstr "Li fitchî %s n' est ni da vosse ni da root. Tot l' monde pout bén scrire divins.\nDo côp, si vos vos e siervoz, ça pôreut esse dandjureu..."
-
-msgid "Format error on file Extensions File"
-msgstr ""
-
-#, c-format
-msgid "The %%var macro has no default"
-msgstr ""
-
-#, c-format
-msgid "The %%var macro has no variable"
-msgstr ""
-
-#, c-format
-msgid "No suitable entries found in %s"
-msgstr ""
-
-msgid "User menu"
-msgstr ""
+"Dji n' sai scrire e fitchî %s :\n"
+"%s\n"
 
 msgid "Help file format error\n"
 msgstr ""
@@ -3534,7 +3533,16 @@ msgid ""
 "\n"
 "If you want to escape, press a single Escape key\n"
 "and wait as well."
-msgstr "Tchôkîz so %s\net s'  rawårdez djusk' a tant ki li messaedje eva.\n\nAdon, tchôkîz co on côp sol minme tape po vey s' i gn a on 'I Va' k' aparexhe\ndjusse asto do boton.\n\nSi vos voloz spiter foû, tchôkîz on côp so Escape\net ratindoz eto."
+msgstr ""
+"Tchôkîz so %s\n"
+"et s'  rawårdez djusk' a tant ki li messaedje eva.\n"
+"\n"
+"Adon, tchôkîz co on côp sol minme tape po vey s' i gn a on 'I Va' k' "
+"aparexhe\n"
+"djusse asto do boton.\n"
+"\n"
+"Si vos voloz spiter foû, tchôkîz on côp so Escape\n"
+"et ratindoz eto."
 
 msgid "Cannot accept this key"
 msgstr ""
@@ -3550,7 +3558,9 @@ msgstr "I Va"
 msgid ""
 "It seems that all your keys already\n"
 "work fine. That's great."
-msgstr "Dj' a l' idêye ki totes vos tapes rotèt ddja \na môde di djin. Clapant, edon?"
+msgstr ""
+"Dj' a l' idêye ki totes vos tapes rotèt ddja \n"
+"a môde di djin. Clapant, edon?"
 
 msgid "&Discard"
 msgstr "&Taper la hatch et match"
@@ -3558,7 +3568,9 @@ msgstr "&Taper la hatch et match"
 msgid ""
 "Great! You have a complete terminal database!\n"
 "All your keys work well."
-msgstr "Clapant! Li båze di dnêyes po vosse terminå est pår fwaite!\nTotes vos tapes rotèt a l' idêye."
+msgstr ""
+"Clapant! Li båze di dnêyes po vosse terminå est pår fwaite!\n"
+"Totes vos tapes rotèt a l' idêye."
 
 msgid ""
 "Press all the keys mentioned here. After you have done it, check\n"
@@ -3665,7 +3677,10 @@ msgstr ""
 msgid "Data types:"
 msgstr ""
 
-msgid "Root directory:"
+msgid "Home directory:"
+msgstr ""
+
+msgid "Profile root directory:"
 msgstr ""
 
 msgid "System data"
@@ -3689,11 +3704,58 @@ msgstr ""
 msgid "Cache directory:"
 msgstr ""
 
+msgid "Debug"
+msgstr ""
+
+msgid "ERROR:"
+msgstr ""
+
+msgid "True:"
+msgstr ""
+
+msgid "False:"
+msgstr ""
+
+msgid "Error calling program"
+msgstr ""
+
+msgid "Warning -- ignoring file"
+msgstr ""
+
+#, c-format
+msgid ""
+"File %s is not owned by root or you or is world writable.\n"
+"Using it may compromise your security"
+msgstr ""
+"Li fitchî %s n' est ni da vosse ni da root. Tot l' monde pout bén scrire "
+"divins.\n"
+"Do côp, si vos vos e siervoz, ça pôreut esse dandjureu..."
+
+msgid "Format error on file Extensions File"
+msgstr ""
+
+#, c-format
+msgid "The %%var macro has no default"
+msgstr ""
+
+#, c-format
+msgid "The %%var macro has no variable"
+msgstr ""
+
+#, c-format
+msgid "No suitable entries found in %s"
+msgstr ""
+
+msgid "User menu"
+msgstr ""
+
 #, c-format
 msgid ""
 "Cannot open cpio archive\n"
 "%s"
-msgstr "Dji n' sai drovî li fitchî cpio\n%s"
+msgstr ""
+"Dji n' sai drovî li fitchî cpio\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -3957,6 +4019,10 @@ msgid "sftp: Failure establishing SSH session"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"
+msgstr ""
+
+#, c-format
+msgid "sftp: socket error: %s"
 msgstr ""
 
 #, c-format
