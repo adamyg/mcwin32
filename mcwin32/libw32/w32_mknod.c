@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_mknod_c,"$Id: w32_mknod.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mknod() system calls. 
@@ -32,26 +35,28 @@
 #endif
 
 #include "win32_internal.h"
+
+#include <sys/cdefs.h>
 #include <unistd.h>
 
 /*
 //  NAME
 //      mknod - make a directory, a special file, or a regular file
-//  
+//
 //  SYNOPSIS
-//  
+//
 //      #include <sys/stat.h>
-//  
+//
 //      int mknod(const char *path, mode_t mode, dev_t dev);
-//  
+//
 //  DESCRIPTION
-//  
+//
 //      The mknod() function shall create a new file named by the pathname to which the
 //      argument path points.
-//  
+//
 //      The file type for path is OR'ed into the mode argument, and the application shall
 //      select one of the following symbolic constants:
-//  
+//
 //          Name        Description
 //
 //          S_IFIFO     FIFO-special
@@ -94,7 +99,7 @@
 //          S_IXGRP     Execute (search) by group.
 //
 //          S_IRWXO     Read, write, or execute (search) by others.
-//                  
+//
 //          S_IROTH     Read by others.
 //
 //          S_IWOTH     Write by others.
@@ -178,10 +183,12 @@
 //          Pathname resolution of a symbolic link produced an intermediate result whose
 //          length exceeds {PATH_MAX}.
 */
-int
+LIBW32_API int
 mknod(const char *path, int mode, int dev)
 {
-    (void) path, mode, dev;
+    __CUNUSED(path)
+    __CUNUSED(mode)
+    __CUNUSED(dev)
     errno = EIO;
     return -1;
 }

@@ -1,5 +1,8 @@
 #ifndef LIBW32_POLL_H_INCLUDED
 #define LIBW32_POLL_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_poll_h,"$Id: poll.h,v 1.6 2018/09/29 02:22:53 cvsuser Exp $")
+__CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -40,20 +43,20 @@ struct w32_pollfd {
 
 #if !defined(POLLIN)
 #if (defined(_MSC_VER) && (_MSC_VER >= 1400)) || \
-	defined(__MINGW32__) || defined(__WATCOMC__)
+        defined(__MINGW32__) || defined(__WATCOMC__)
 /*
- *  POLLRDNORM          Data on priority band 0 may be read. 
- *  POLLRDBAND          Data on priority bands greater than 0 may be read. 
- *  POLLIN              Same effect as POLLRDNORM | POLLRDBAND. 
- *  POLLPRI             High priority data may be read. 
- *  POLLOUT             Same value as POLLWRNORM. 
- *  POLLWRNORM          Data on priority band 0 may be written. 
+ *  POLLRDNORM          Data on priority band 0 may be read.
+ *  POLLRDBAND          Data on priority bands greater than 0 may be read.
+ *  POLLIN              Same effect as POLLRDNORM | POLLRDBAND.
+ *  POLLPRI             High priority data may be read.
+ *  POLLOUT             Same value as POLLWRNORM.
+ *  POLLWRNORM          Data on priority band 0 may be written.
  *  POLLWRBAND          Data on priority bands greater than 0 may be
  *                      written. This event only examines bands that have
  *                      been written to at least once.
- *  POLLERR             An error has occurred (revents only). 
- *  POLLHUP             Device has been disconnected (revents only). 
- *  POLLNVAL            Invalid fd member (revents only). 
+ *  POLLERR             An error has occurred (revents only).
+ *  POLLHUP             Device has been disconnected (revents only).
+ *  POLLNVAL            Invalid fd member (revents only).
  */
 struct pollfd {
     SOCKET              fd;
@@ -71,7 +74,7 @@ struct pollfd {
 #define POLLERR         0x0001
 #define POLLHUP         0x0002
 #define POLLNVAL        0x0004
-#endif /*_MSC_VER || __MINGW32__*/
+#endif /*_MSC_VER || __MINGW32__ || __WATCOMC__ */
 #endif /*POLLING*/
 
 __BEGIN_DECLS

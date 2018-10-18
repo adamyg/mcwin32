@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.4 2018/09/29 02:22:54 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 signal support
@@ -39,7 +42,7 @@ sigemptyset(sigset_t *ss)
 }
 
 
-int      
+int
 sigaction(int sig, struct sigaction *a, struct sigaction *b)
 {
     return -1;

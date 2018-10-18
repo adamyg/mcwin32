@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.5 2018/10/12 00:52:04 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 interface support
@@ -35,9 +38,9 @@
 #include <unistd.h>
 
 
-int
+LIBW32_API int
 w32_getsysdir(
-    int id, char *buf, int maxlen )
+    int id, char *buf, int maxlen)
 {
     char szPath[ MAX_PATH ];
     HRESULT hres;
@@ -52,17 +55,17 @@ w32_getsysdir(
     }
 
     hres = SHGetSpecialFolderPath(NULL, szPath, id, FALSE);
-    if (SUCCEEDED(hres) && 
+    if (SUCCEEDED(hres) &&
             (len = (int)strlen(szPath)) <= maxlen) {
         (void) strcpy(buf, (const char *)szPath);
         return len;
-    }            
+    }
     return (-1);
 }
 
 
-const char *
-w32_selectfolder( 
+LIBW32_API const char *
+w32_selectfolder(
     const char *strMessage, char *szBuffer)
 {
     char const * Result = NULL;

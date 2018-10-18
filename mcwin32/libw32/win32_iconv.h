@@ -1,5 +1,9 @@
-#ifndef WIN32_ICONV_H_INCLUDED
-#define WIN32_ICONV_H_INCLUDED
+#ifndef LIBW32_WIN32_ICONV_H_INCLUDED
+#define LIBW32_WIN32_ICONV_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_win32_iconv_h,"$Id: win32_iconv.h,v 1.5 2018/10/09 16:03:48 cvsuser Exp $")
+__CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 iconv dynamic loader.
@@ -51,4 +55,4 @@ typedef void *iconv_t;
 
 __END_DECLS
 
-#endif /*WIN32_ICONV_H_INCLUDED*/
+#endif /*LIBW32_WIN32_ICONV_H_INCLUDED*/

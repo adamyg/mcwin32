@@ -1,11 +1,14 @@
-#ifndef WIN32_STATFS_H_INCLUDED
-#define WIN32_STATFS_H_INCLUDED
+#ifndef LIBW32_SYS_STATFS_H_INCLUDED
+#define LIBW32_SYS_STATFS_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_statfs_h,"$Id: statfs.h,v 1.5 2018/09/29 02:22:56 cvsuser Exp $")
+__CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 [f]statfs implementation
  *
- * Copyright (c) 2012 - 2017, Adam Young.
+ * Copyright (c) 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -64,4 +67,4 @@ LIBW32_API int      fstatfs(int, struct statfs *);
 
 __END_DECLS
 
-#endif  /*WIN32_STATFS_H_INCLUDED*/
+#endif  /*LIBW32_SYS_STATFS_H_INCLUDED*/

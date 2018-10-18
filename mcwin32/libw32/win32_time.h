@@ -1,11 +1,15 @@
-#ifndef LIBW32_WIN32TIME_H_INCLUDED
-#define LIBW32_WIN32TIME_H_INCLUDED
+#ifndef LIBW32_WIN32_TIME_H_INCLUDED
+#define LIBW32_WIN32_TIME_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_win32_time_h,"$Id: win32_time.h,v 1.7 2018/10/09 16:03:48 cvsuser Exp $")
+__CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 time functionality.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 1998 - 2018, Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
@@ -47,4 +51,4 @@ LIBW32_API int          w32_utime(const char *path, const struct utimbuf *times)
 
 __END_DECLS
 
-#endif /*LIBW32_WIN32TIME_H_INCLUDED*/
+#endif /*LIBW32_WIN32_TIME_H_INCLUDED*/

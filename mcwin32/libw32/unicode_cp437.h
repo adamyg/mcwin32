@@ -1,8 +1,10 @@
 #ifndef UNICODE_CP437_H_INCLUDED
 #define UNICODE_CP437_H_INCLUDED
-//
-//  UNICODE to CP437 table
-//
+/* -*- mode: c; indent-width: 4; -*- */
+/* $Id: unicode_cp437.h,v 1.2 2018/09/29 02:22:53 cvsuser Exp $
+ *
+ *  UNICODE to CP437 table
+ */
 
 #include "unicode_table.h"
 
@@ -124,6 +126,8 @@ unicode_cp437[] = {
     { 0x03c4, 0xe7 },	// #GREEK SMALL LETTER TAU
     { 0x03c6, 0xed },	// #GREEK SMALL LETTER PHI
 //  { 0x04f4,	   },	// #CYRILLIC CAPITAL LETTER CHE WITH DIAERESIS
+    { 0x2018, '\'' },	// #LEFT SINGLE QUOTATION MARK
+    { 0x2019, '\'' },	// #RIGHT SINGLE QUOTATION MARK
     { 0x2022, 0xf8 },	// BULLET (*)
     { 0x207f, 0xfc },	// #SUPERSCRIPT LATIN SMALL LETTER N
     { 0x20a7, 0x9e },	// #PESETA SIGN
@@ -192,5 +196,4 @@ unicode_cp437[] = {
     };
 
 #endif	//UNICODE_CP437_H_INCLUDED
-
 

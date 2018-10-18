@@ -1,3 +1,7 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_socket_c,"$Id: w32_socket.c,v 1.7 2018/10/12 00:52:04 cvsuser Exp $")
+
+/* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 socket () system calls
  *
@@ -45,12 +49,12 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#pragma comment(lib, "Ws2_32.lib")          
+#pragma comment(lib, "Ws2_32.lib")
 
 /*
  *  socket() system call
  */
-int
+LIBW32_API int
 w32_socket_fd(int af, int type, int protocol)
 {
     int done = 0, ret;
@@ -81,7 +85,7 @@ retry:;
 /*
  *  connect() system call
  */
-int
+LIBW32_API int
 w32_connect_fd(int fd, const struct sockaddr *name, socklen_t namelen)
 {
     SOCKET osf;
@@ -101,7 +105,7 @@ w32_connect_fd(int fd, const struct sockaddr *name, socklen_t namelen)
 /*
  *  bind() system call
  */
-int
+LIBW32_API int
 w32_bind_fd(int fd, const struct sockaddr *name, socklen_t namelen)
 {
     SOCKET osf;
@@ -121,7 +125,7 @@ w32_bind_fd(int fd, const struct sockaddr *name, socklen_t namelen)
 /*
  *  getsockopt() system call
  */
-int
+LIBW32_API int
 w32_getsockopt_fd(int fd, int level, int optname, void *optval, int *optlen)
 {
     SOCKET osf;
@@ -141,7 +145,7 @@ w32_getsockopt_fd(int fd, int level, int optname, void *optval, int *optlen)
 /*
  *  setsockopt() system call
  */
-int
+LIBW32_API int
 w32_setsockopt_fd(
     int fd, int level, int optname, const void *optval, int optlen )
 {
@@ -162,7 +166,7 @@ w32_setsockopt_fd(
 /*
  *  listen() system call
  */
-int
+LIBW32_API int
 w32_listen_fd(int fd, int num)
 {
     SOCKET osf;
@@ -182,7 +186,7 @@ w32_listen_fd(int fd, int num)
 /*
  *  accept() system call
  */
-int
+LIBW32_API int
 w32_accept_fd(int fd, struct sockaddr *addr, int *addrlen)
 {
     SOCKET osf;
@@ -197,7 +201,7 @@ w32_accept_fd(int fd, struct sockaddr *addr, int *addrlen)
         if ((s = accept((SOCKET)osf, addr, addrlen)) == INVALID_SOCKET) {
             w32_sockerror();
             ret = -1;
-        } else if ((ret = (int)s) < WIN32_FILDES_MAX && 
+        } else if ((ret = (int)s) < WIN32_FILDES_MAX &&
                          (ret = _open_osfhandle((long)s, 0)) == -1) {
             (void) closesocket(s);
             errno = EMFILE;
@@ -217,7 +221,7 @@ w32_accept_fd(int fd, struct sockaddr *addr, int *addrlen)
 /*
  *  getpeername() system call
  */
-int
+LIBW32_API int
 w32_getpeername_fd(int fd, struct sockaddr *name, socklen_t *namelen)
 {
     SOCKET osf;
@@ -236,7 +240,7 @@ w32_getpeername_fd(int fd, struct sockaddr *name, socklen_t *namelen)
 /*
  *  getsockname() system call.
  */
-int
+LIBW32_API int
 w32_getsockname_fd(int fd, struct sockaddr *name, socklen_t *namelen)
 {
     SOCKET osf;
@@ -255,7 +259,7 @@ w32_getsockname_fd(int fd, struct sockaddr *name, socklen_t *namelen)
 /*
  *  ioctl() system call; aka read() for sockets.
  */
-int
+LIBW32_API int
 w32_ioctlsocket_fd(int fd, long cmd, int *argp)
 {
     SOCKET osf;
@@ -279,7 +283,7 @@ w32_ioctlsocket_fd(int fd, long cmd, int *argp)
 /*
  *  send() system call
  */
-int
+LIBW32_API int
 w32_send_fd(int fd, const void *buf, size_t len, int flags)
 {
     SOCKET osf;
@@ -298,7 +302,7 @@ w32_send_fd(int fd, const void *buf, size_t len, int flags)
 /*
  *  sendto() system call
  */
-int
+LIBW32_API int
 w32_sendto_fd(int fd, const void *buf, size_t len, int flags,
         const struct sockaddr *dest_addr, socklen_t addrlen)
 {
@@ -318,7 +322,7 @@ w32_sendto_fd(int fd, const void *buf, size_t len, int flags,
 /*
  *  recv() system call
  */
-int
+LIBW32_API int
 w32_recv_fd(int fd, char *buf, int len, int flags)
 {
     SOCKET osf;
@@ -337,7 +341,7 @@ w32_recv_fd(int fd, char *buf, int len, int flags)
 /*
  *  recvfrom() system call
  */
-int
+LIBW32_API int
 w32_recvfrom_fd(int fd, char *buf, int len, int flags,
         struct sockaddr *from_addr, int *fromlen)
 {
@@ -357,7 +361,7 @@ w32_recvfrom_fd(int fd, char *buf, int len, int flags,
 /*
  *  sockwrite() system call; aka write() for sockets.
  */
-int
+LIBW32_API int
 w32_sockwrite_fd(int fd, const void *buffer, unsigned int cnt)
 {
     SOCKET osf;
@@ -369,7 +373,7 @@ w32_sockwrite_fd(int fd, const void *buffer, unsigned int cnt)
     } else if ((ret = sendto(osf, buffer, cnt, 0, NULL, 0)) == -1 /*SOCKET_ERROR*/) {
         if (w32_sockerror() == ENOTSOCK) {
             ret = _write(fd, buffer, cnt);
-        }      
+        }
     }
     return ret;
 }
@@ -378,7 +382,7 @@ w32_sockwrite_fd(int fd, const void *buffer, unsigned int cnt)
 /*
  *  sockwrite() system call; aka read() for sockets.
  */
-int
+LIBW32_API int
 w32_sockread_fd(int fd, void *buf, unsigned int nbyte)
 {
     SOCKET osf;
@@ -399,7 +403,7 @@ w32_sockread_fd(int fd, void *buf, unsigned int nbyte)
 /*
  *  shutdown() system call
  */
-int
+LIBW32_API int
 w32_shutdown_fd(int fd, int how)
 {
     SOCKET osf;
@@ -416,9 +420,9 @@ w32_shutdown_fd(int fd, int how)
 
 
 /*
- *  determine whether a valid socket file descriptor. 
+ *  determine whether a valid socket file descriptor.
  */
-SOCKET
+LIBW32_API SOCKET
 w32_sockhandle(int fd)
 {
     SOCKET ret;

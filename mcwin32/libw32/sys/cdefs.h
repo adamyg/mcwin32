@@ -1,10 +1,14 @@
-#ifndef WIN32_CDEFS_H_INCLUDED
-#define WIN32_CDEFS_H_INCLUDED
-/* -*- mode: c; indent-width: 4; -*- */
-/* 
+#ifndef LIBW32_SYS_CDEFS_H_INCLUDED
+#define LIBW32_SYS_CDEFS_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_cdefs_h,"$Id: cdefs.h,v 1.4 2018/09/29 02:22:55 cvsuser Exp $")
+__CPRAGMA_ONCE
+
+/* -*- mode: c; indent-width: 4; -*-
+ *
  * win32 declaration helpers
  *
- * Copyright (c) 1998 - 2017, Adam Young.
+ * Copyright (c) 1998 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -25,14 +29,14 @@
  */
 /*LINTLIBRARY*/
 
-/* 
+/*
  *  Disable (global) toolchain specific warnings:
  */
 #if (defined(lint) || defined(_lint))
 
 #elif (defined(_MSC_VER) && _MSC_VER >= 800)
-#pragma warning(disable:4514)                   /* unreferenced inline function has been removed */
-#pragma warning(disable:4115)                   /* forward reference of struct * */
+#pragma warning(disable:4514)   /* unreferenced inline function has been removed */
+#pragma warning(disable:4115)   /* forward reference of struct * */
 #endif
 
 /* 
@@ -168,18 +172,18 @@
              * for this. line +e530 turns that checking back on.  Error 527
              * has to do with unreachable code.
              */
-#       define __PUNUSED(x)     \
+#       define __PUNUSED(x) \
             /*lint -e527 -e530 */ \
-            { (x) = (x); } \
+            { (x) = (x); }        \
             /*lint +e527 +e530 */
 
 #  elif ((defined(_MSC_VER) && _MSC_VER >= 800) || \
          defined(__BORLANDC__) || defined(__PARADIGM__))
-#       define __PUNUSED(x)     (void)x
+#       define __PUNUSED(x)     (void)x;
 #  elif defined(__WATCOMC__)
-#       define __PUNUSED(x)     (void)x
+#       define __PUNUSED(x)     (void)x;
 #  elif defined(__GNUC__)
-#       define __PUNUSED(x)     (void)x
+#       define __PUNUSED(x)     (void)x;
 #       define __PUNUSED_ATTRIBUTE__    __attribute__((unused))
 #  endif
 
@@ -189,6 +193,9 @@
 #  ifndef __PUNUSED_ATTRIBUTE__
 #        define __PUNUSED_ATTRIBUTE__   /*default*/
 #  endif
+#endif
+#ifndef __CUNUSED
+#  define __CUNUSED(x)          __PUNUSED(x)
 #endif
 
 
@@ -222,8 +229,8 @@
 #  if (defined(lint) || defined(_lint))
 #     define __packed_pre__     /**/
 #     define __packed_post__    /**/
-#  elif ( (defined(_MSC_VER) && _MSC_VER >= 800) || \
-         defined(__BORLANDC__) || defined(__PARADIGM__) )
+#  elif ((defined(_MSC_VER) && _MSC_VER >= 800) || \
+            defined(__BORLANDC__) || defined(__PARADIGM__) )
 #     define __packed_pre__     /**/
 #     define __packed_post__    /**/
 #  elif defined(__WATCOMC__)
@@ -297,21 +304,21 @@
  * didn't permit keeping the keywords out of the application namespace).
  */
 #if __GNUC__ < 2 || __GNUC__ == 2 && __GNUC_MINOR__ < 7
-#define	__printflike(fmtarg, firstvararg)
-#define	__scanflike(fmtarg, firstvararg)
+#define __printflike(fmtarg, firstvararg)
+#define __scanflike(fmtarg, firstvararg)
 #else
-#define	__printflike(fmtarg, firstvararg) \
-	                __attribute__((__format__ (__printf__, fmtarg, firstvararg)))
-#define	__scanflike(fmtarg, firstvararg) \
-	    __attribute__((__format__ (__scanf__, fmtarg, firstvararg)))
+#define __printflike(fmtarg, firstvararg) \
+                        __attribute__((__format__ (__printf__, fmtarg, firstvararg)))
+#define __scanflike(fmtarg, firstvararg) \
+                                __attribute__((__format__ (__scanf__, fmtarg, firstvararg)))
 #endif
 
 /* Compiler-dependent macros that rely on FreeBSD-specific extensions. */
 #if __FreeBSD_cc_version >= 300001
-#define	__printf0like(fmtarg, firstvararg) \
-	                __attribute__((__format__ (__printf0__, fmtarg, firstvararg)))
+#define __printf0like(fmtarg, firstvararg) \
+                                __attribute__((__format__ (__printf0__, fmtarg, firstvararg)))
 #else
-#define	__printf0like(fmtarg, firstvararg)
+#define __printf0like(fmtarg, firstvararg)
 #endif
 
-#endif /*WIN32_CDEFS_H_INCLUDED*/
+#endif /*LIBW32_SYS_CDEFS_H_INCLUDED*/

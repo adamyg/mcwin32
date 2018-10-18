@@ -1,5 +1,9 @@
 #ifndef LIBW32_PWD_H_INCLUDED
 #define LIBW32_PWD_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_pwd_h,"$Id: pwd.h,v 1.6 2018/09/29 02:22:53 cvsuser Exp $")
+__CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <pwd.h> implementation

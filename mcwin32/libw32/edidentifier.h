@@ -1,8 +1,8 @@
-#ifndef GR_EDIDENTIFIER_H_INCLUDED
-#define GR_EDIDENTIFIER_H_INCLUDED
+#ifndef LIBW32_EDIDENTIFIER_H_INCLUDED
+#define LIBW32_EDIDENTIFIER_H_INCLUDED
 
 /* -*- mode: c; indent-width: 4; -*- */
-/*  $Id: edidentifier.h,v 1.1 2017/03/01 23:57:35 cvsuser Exp $
+/*  $Id: edidentifier.h,v 1.3 2018/09/29 02:22:53 cvsuser Exp $
  *  Compiler specific object identify functionality.
  *
  *      __CIDENT(description)
@@ -185,4 +185,4 @@ static void __CIDENT_JOIN(RCSFN_,__tag)(const char *tag) {          \
 
 __CPRAGMA_ONCE
 
-#endif  /*GR_EDIDENTIFIER_H_INCLUDED*/
+#endif  /*LIBW32_EDIDENTIFIER_H_INCLUDED*/

@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.7 2018/10/12 00:52:03 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getcwd() implementation
@@ -78,7 +81,7 @@
 //      [ENOMEM]
 //          Insufficient storage space is available.
 */
-char *
+LIBW32_API char *
 w32_getcwd(char *path, int size)
 {
     char t_path[1024];
@@ -144,7 +147,7 @@ w32_getcwd(char *path, int size)
 }
 
 
-char *
+LIBW32_API char *
 w32_getcwdd(char drive, char *path, int size)
 {
     const unsigned nDrive = 

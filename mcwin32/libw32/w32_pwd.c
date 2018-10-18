@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 pwd(2) implementation
@@ -41,66 +44,66 @@ static int                  counter;
 /*
 //  NAME
 //      endpwent, getpwent, setpwent - user database functions
-//  
+//
 //  SYNOPSIS
-//  
+//
 //      #include <pwd.h>
-//  
+//
 //      void endpwent(void);
 //      struct passwd *getpwent(void);
 //      void setpwent(void); [Option End]
-//  
+//
 //  DESCRIPTION
-//  
+//
 //      These functions shall retrieve information about users.
-//  
+//
 //      The getpwent() function shall return a pointer to a structure containing the
 //      broken-out fields of an entry in the user database. Each entry in the user database
 //      contains a passwd structure. When first called, getpwent() shall return a pointer
-//      to a passwd structure containing the first entry in the user database. Thereafter, 
+//      to a passwd structure containing the first entry in the user database. Thereafter,
 //      it shall return a pointer to a passwd structure containing the next entry in the
 //      user database. Successive calls can be used to search the entire user database.
-//  
+//
 //      If an end-of-file or an error is encountered on reading, getpwent() shall return a
 //      null pointer.
-//  
+//
 //      An implementation that provides extended security controls may impose further
-//      implementation-defined restrictions on accessing the user database. In particular, 
+//      implementation-defined restrictions on accessing the user database. In particular,
 //      the system may deny the existence of some or all of the user database entries
 //      associated with users other than the caller.
-//  
+//
 //      The setpwent() function effectively rewinds the user database to allow repeated
 //      searches.
-//  
+//
 //      The endpwent() function may be called to close the user database when processing is
 //      complete.
-//  
+//
 //      These functions need not be reentrant. A function that is not required to be
 //      reentrant is not required to be thread-safe.
-//  
+//
 //  RETURN VALUE
-//  
+//
 //      The getpwent() function shall return a null pointer on end-of-file or error.
-//  
+//
 //  ERRORS
-//  
+//
 //      The getpwent(), setpwent(), and endpwent() functions may fail if:
-//  
+//
 //      [EIO]
 //          An I/O error has occurred.
-//  
+//
 //      In addition, getpwent() and setpwent() may fail if:
-//  
+//
 //      [EMFILE]
 //          {OPEN_MAX} file descriptors are currently open in the calling process.
-//  
+//
 //      [ENFILE]
 //          The maximum allowable number of files is currently open in the system.
-//  
+//
 //      The return value may point to a static area which is overwritten by a subsequent
 //      call to getpwuid(), getpwnam(), or getpwent().
 */
-struct passwd *
+LIBW32_API struct passwd *
 getpwent(void)
 {
     if (counter == 0) {
@@ -115,26 +118,26 @@ getpwent(void)
 /*
 //  NAME
 //      getpwuid, getpwuid_r - search user database for a user ID
-//  
+//
 //  SYNOPSIS
-//  
+//
 //      #include <pwd.h>
-//  
+//
 //      struct passwd *getpwuid(uid_t uid);
 //      int getpwuid_r(uid_t uid, struct passwd *pwd, char *buffer,
 //              size_t bufsize, struct passwd **result); [Option End]
-//  
+//
 //  DESCRIPTION
 //      The getpwuid() function shall search the user database for an entry with a matching
 //      uid.
-//  
+//
 //      The getpwuid() function need not be reentrant. A function that is not required to
 //      be reentrant is not required to be thread-safe.
-//  
+//
 //      Applications wishing to check for error situations should set errno to 0 before
 //      calling getpwuid(). If getpwuid() returns a null pointer and errno is set to
 //      non-zero, an error occurred.
-//  
+//
 //      The getpwuid_r() function shall update the passwd structure pointed to by pwd and
 //      store a pointer to that structure at the location pointed to by result. The
 //      structure shall contain an entry from the user database with a matching uid.
@@ -143,43 +146,43 @@ getpwent(void)
 //      buffer can be determined with the {_SC_GETPW_R_SIZE_MAX} sysconf() parameter. A
 //      NULL pointer shall be returned at the location pointed to by result on error or if
 //      the requested entry is not found. [Option End]
-//  
+//
 //  RETURN VALUE
-//  
+//
 //      The getpwuid() function shall return a pointer to a struct passwd with the
 //      structure as defined in <pwd.h> with a matching entry if found. A null pointer
-//      shall be returned if the requested entry is not found, or an error occurs. On error, 
+//      shall be returned if the requested entry is not found, or an error occurs. On error,
 //      errno shall be set to indicate the error.
-//  
+//
 //      The return value may point to a static area which is overwritten by a subsequent
 //      call to getpwent(), getpwnam(), or getpwuid().
-//  
+//
 //      If successful, the getpwuid_r() function shall return zero; otherwise, an error
 //      number shall be returned to indicate the error. [Option End]
-//  
+//
 //  ERRORS
-//  
+//
 //      The getpwuid() and getpwuid_r() functions may fail if:
-//  
+//
 //      [EIO]
 //          An I/O error has occurred.
-//  
+//
 //      [EINTR]
 //          A signal was caught during getpwuid().
-//  
+//
 //      [EMFILE]
 //          {OPEN_MAX} file descriptors are currently open in the calling process.
-//  
+//
 //      [ENFILE]
 //          The maximum allowable number of files is currently open in the system.
-//  
+//
 //      The getpwuid_r() function may fail if:
-//  
+//
 //      [ERANGE]
 //          Insufficient storage was supplied via buffer and bufsize to contain the data to
 //          be referenced by the resulting passwd structure. [Option End]
 */
-struct passwd *
+LIBW32_API struct passwd *
 getpwuid(int uid)
 {
     fillin();
@@ -190,29 +193,29 @@ getpwuid(int uid)
 
 /*
 //  NAME
-//  
+//
 //      getpwnam, getpwnam_r - search user database for a name
-//  
+//
 //  SYNOPSIS
-//  
+//
 //      #include <pwd.h>
-//  
+//
 //      struct passwd *getpwnam(const char *name);
 //      int getpwnam_r(const char *name, struct passwd *pwd, char *buffer,
 //              size_t bufsize, struct passwd **result); [Option End]
-//  
+//
 //  DESCRIPTION
-//  
+//
 //      The getpwnam() function shall search the user database for an entry with a matching
 //      name.
-//  
+//
 //      The getpwnam() function need not be reentrant. A function that is not required to
 //      be reentrant is not required to be thread-safe.
-//  
+//
 //      Applications wishing to check for error situations should set errno to 0 before
 //      calling getpwnam(). If getpwnam() returns a null pointer and errno is non-zero, an
 //      error occurred.
-//  
+//
 //      The getpwnam_r() function shall update the passwd structure pointed to by pwd and
 //      store a pointer to that structure at the location pointed to by result. The
 //      structure shall contain an entry from the user database with a matching name.
@@ -221,43 +224,43 @@ getpwuid(int uid)
 //      buffer can be determined with the {_SC_GETPW_R_SIZE_MAX} sysconf() parameter. A
 //      NULL pointer shall be returned at the location pointed to by result on error or if
 //      the requested entry is not found. [Option End]
-//  
+//
 //  RETURN VALUE
-//  
+//
 //      The getpwnam() function shall return a pointer to a struct passwd with the
 //      structure as defined in <pwd.h> with a matching entry if found. A null pointer
-//      shall be returned if the requested entry is not found, or an error occurs. On error, 
+//      shall be returned if the requested entry is not found, or an error occurs. On error,
 //      errno shall be set to indicate the error.
-//  
+//
 //      The return value may point to a static area which is overwritten by a subsequent
 //      call to getpwent(), getpwnam(), or getpwuid().
-//  
+//
 //      If successful, the getpwnam_r() function shall return zero; otherwise, an error
 //      number shall be returned to indicate the error. [Option End]
-//  
+//
 //  ERRORS
-//  
+//
 //      The getpwnam() and getpwnam_r() functions may fail if:
-//  
+//
 //      [EIO]
 //          An I/O error has occurred.
-//  
+//
 //      [EINTR]
 //          A signal was caught during getpwnam().
-//  
+//
 //      [EMFILE]
 //          {OPEN_MAX} file descriptors are currently open in the calling process.
-//  
+//
 //      [ENFILE]
 //          The maximum allowable number of files is currently open in the system.
-//  
+//
 //      The getpwnam_r() function may fail if:
-//  
+//
 //      [ERANGE]
 //          Insufficient storage was supplied via buffer and bufsize to contain the data to
 //          be referenced by the resulting passwd structure. [Option End]
 */
-struct passwd *
+LIBW32_API struct passwd *
 getpwnam(const char *name)
 {
     fillin();
@@ -268,14 +271,14 @@ getpwnam(const char *name)
 }
 
 
-void
+LIBW32_API void
 setpwent(void)
 {
     counter = 0;
 }
 
 
-void
+LIBW32_API void
 endpwent(void)
 {
     counter = 0;

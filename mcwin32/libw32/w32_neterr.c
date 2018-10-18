@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_neterr_c,"$Id: w32_neterr.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 network errno mapping support
@@ -18,6 +21,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
@@ -34,23 +38,23 @@
 /*
  *     winsock error mapping to unix error.
  */
-int
+LIBW32_API int
 w32_neterrno_map(int nerrno)
 {
     if (nerrno < WSABASEERR) return nerrno;
 
     /*
-     *  map a few basic winsock file errno's to their unix equivalent.
+     *  map a few basic winsock file i / o errno's to their unix equivalent.
      */
     switch (errno) {
-    case WSAEINTR:               nerrno = EINTR; break;
-    case WSAEBADF:               nerrno = EBADF; break;
-    case WSAEACCES:              nerrno = EACCES; break;
-    case WSAEFAULT:              nerrno = EFAULT; break;
-    case WSAEINVAL:              nerrno = EINVAL; break;
-    case WSAEMFILE:              nerrno = EMFILE; break;
-    case WSAENAMETOOLONG:        nerrno = ENAMETOOLONG; break;
-    case WSAENOTEMPTY:           nerrno = ENOTEMPTY; break;
+    case WSAEINTR:              nerrno = EINTR; break;
+    case WSAEBADF:              nerrno = EBADF; break;
+    case WSAEACCES:             nerrno = EACCES; break;
+    case WSAEFAULT:             nerrno = EFAULT; break;
+    case WSAEINVAL:             nerrno = EINVAL; break;
+    case WSAEMFILE:             nerrno = EMFILE; break;
+    case WSAENAMETOOLONG:       nerrno = ENAMETOOLONG; break;
+    case WSAENOTEMPTY:          nerrno = ENOTEMPTY; break;
     default:
         break;
     }
@@ -61,7 +65,7 @@ w32_neterrno_map(int nerrno)
 /*
  *      last network error to errno
  */
-int
+LIBW32_API int
 w32_neterrno_set(void)
 {
     const int nerrno = w32_neterrno_map((int)WSAGetLastError());
@@ -74,7 +78,7 @@ w32_neterrno_set(void)
 /*
  *  winsock error mapping to unix
  */
-int
+LIBW32_API int
 w32_sockerrno_map(int nerrno)
 {
     if (nerrno < WSABASEERR) return nerrno;

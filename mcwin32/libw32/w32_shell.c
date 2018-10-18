@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.5 2018/09/29 02:22:54 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 shell and sub-process support
@@ -34,6 +37,7 @@
 #include <signal.h>
 #include <assert.h>
 #include <unistd.h>
+
 #if defined(_MSC_VER)
 #pragma warning(disable : 4244) // function : conversion from 'xxx' to 'xxx', possible loss of data
 #pragma warning(disable : 4311) // type cast : pointer truncation from 'HANDLE' to 'int'

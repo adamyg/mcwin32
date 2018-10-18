@@ -136,6 +136,8 @@ RC=		@RC@
 PERL=		@PERL@
 TAR=		@TAR@
 INSTALL=	@INSTALL@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+INSTALL_DATA=	@INSTALL_DATA@
 
 BUSYBOX=	$(shell which busybox)
 CLBR19=		$(shell which clbr19.dll)
@@ -192,8 +194,7 @@ MC_SRC=	\
 	$(D_OBJ)/setup$(O)			\
 	$(D_OBJ)/textconf$(O)			\
 	$(D_OBJ)/util$(O)			\
-	$(D_OBJ)/usermenu$(O)			\
-	$(D_OBJ)/win32_glib$(O)
+	$(D_OBJ)/usermenu$(O)
 
 #	$(D_OBJ)/background$(O)
 #	$(D_OBJ)/subshell/common$(O)
@@ -299,6 +300,8 @@ MC_OBJS=\
 #		+ $(D_OBJ)/win32_tty$(O)
 #		+ $(D_OBJ)/win32_win$(O)
 #		+ $(D_OBJ)/win32_pipe$(O)
+#		+ $(D_OBJ)/win32_glib$(O)
+#
 #	lib/vfs
 #	lib/widget
 #
@@ -365,6 +368,7 @@ MC_LIBMC=\
 	$(D_OBJMC)/win32_win$(O)		\
 	$(D_OBJMC)/win32_utl$(O)		\
 	$(D_OBJMC)/win32_pipe$(O)		\
+	$(D_OBJMC)/win32_glib$(O)		\
 	\
 	$(D_OBJMC)/vfs_direntry$(O)		\
 	$(D_OBJMC)/vfs_gc$(O)			\

@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.4 2018/10/12 00:52:03 cvsuser Exp $")
+
 /*
  * iconv implementation using Win32 API to convert.
 
@@ -704,7 +707,7 @@ load_mlang(void)
     return TRUE;
 }
 
-iconv_t
+LIBW32_API iconv_t
 w32native_iconv_open(const char *tocode, const char *fromcode)
 {
     rec_iconv_t *cd;
@@ -724,7 +727,7 @@ w32native_iconv_open(const char *tocode, const char *fromcode)
     return (iconv_t)(-1);
 }
 
-int
+LIBW32_API int
 w32native_iconv_close(iconv_t _cd)
 {
     rec_iconv_t *cd = (rec_iconv_t *)_cd;
@@ -735,7 +738,7 @@ w32native_iconv_close(iconv_t _cd)
     return r;
 }
 
-size_t
+LIBW32_API size_t
 w32native_iconv(iconv_t _cd, const char **inbuf, size_t *inbytesleft, char **outbuf, size_t *outbytesleft)
 {
     rec_iconv_t *cd = (rec_iconv_t *)_cd;

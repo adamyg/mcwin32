@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.4 2018/10/12 00:52:04 cvsuser Exp $")
+
 /*
  * win32 socket () system calls
  * Base functionality.
@@ -46,7 +49,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#pragma comment(lib, "Ws2_32.lib")          
+#pragma comment(lib, "Ws2_32.lib")
 
 static int x_sockinit = 0;                      /* initialisation status */
 LIBW32_API int w32_h_errno = 0;                 /* lookup error */
@@ -55,7 +58,7 @@ LIBW32_API int w32_h_errno = 0;                 /* lookup error */
 /*
  *  w32_sockinit() system run-time initialisation.
  */
-int
+LIBW32_API int
 w32_sockinit(void)
 {
     if (0 == x_sockinit) {
@@ -77,7 +80,7 @@ w32_sockinit(void)
 /*
  *  getaddrinfo() system/library call
  */
-int
+LIBW32_API int
 w32_getaddrinfo(const char *nodename, const char *servname,
         const struct addrinfo *hints, struct addrinfo **res)
 {
@@ -101,7 +104,7 @@ retry:;
 /*
  *  getnameinfo() system/library call
  */
-int
+LIBW32_API int
 w32_getnameinfo(const struct sockaddr *sa, socklen_t salen,
     char *node, socklen_t nodelen, char * service, socklen_t servicelen, int flags)
 {
@@ -129,7 +132,7 @@ retry:;
  *      getaddrinfo function. Developers creating Windows Sockets 2 applications are urged
  *      to use the getaddrinfo function instead of gethostbyname.
  */
-struct hostent *
+LIBW32_API struct hostent *
 w32_gethostbyname(const char *host)
 {
     struct hostent *hp;
@@ -157,7 +160,7 @@ retry:;
 /*
  *  hstrerror() system/library call
  */
-const char *
+LIBW32_API const char *
 w32_hstrerror(int herrno)
 {
     switch(herrno) {
@@ -170,7 +173,7 @@ w32_hstrerror(int herrno)
     case WSANO_RECOVERY:
         return "no recovery";
     case WSANO_DATA:
-	return "no data";
+        return "no data";
     }
     return "no address";
 }
@@ -179,7 +182,7 @@ w32_hstrerror(int herrno)
 /*
  *  herror() system/library call
  */
-void
+LIBW32_API void
 w32_herror(const char *msg)
 {
     fprintf(stderr, "%s: %s\n",                 /*XXX*/
@@ -190,7 +193,7 @@ w32_herror(const char *msg)
 /*
  *  export the last socket error.
  */
-int
+LIBW32_API int
 w32_sockerror(void)
 {
     return w32_neterrno_set();

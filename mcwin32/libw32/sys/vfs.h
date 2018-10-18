@@ -1,9 +1,12 @@
-#ifndef WIN32_SYS_VFS_H
-#define WIN32_SYS_VFS_H
+#ifndef LIBW32_SYS_VFS_H
+#define LIBW32_SYS_VFS_H
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_vfs_h,"$Id: vfs.h,v 1.3 2018/09/29 02:22:56 cvsuser Exp $")
+__CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * Copyright (c) 2012 - 2017, Adam Young.
+ * Copyright (c) 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  *
@@ -23,6 +26,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ==end==
  */
+
 #include <sys/statvfs.h>
 
-#endif /*WIN32_SYS_VFS_H*/
+#endif /*LIBW32_SYS_VFS_H*/

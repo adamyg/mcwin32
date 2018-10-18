@@ -101,9 +101,13 @@ extern int                  win32_pclose(FILE *file);
 #define HAVE_MEMORY_H 1
 #define HAVE_PWD_H 1
 #define HAVE_GRP_H 1
-#undef  HAVE_STRUCT_STATVFS_F_BASETYPE
-#undef  HAVE_STRUCT_STATVFS_F_FSTYPENAME
-#undef  HAVE_STRUCT_STATFS_F_FSTYPENAME
+
+#define HAVE_GETFSSTAT 1
+#define HAVE_GETMNTINFO 1
+#if defined(HAVE_GETMNTINFO)
+#define HAVE_INFOMOUNT_LIST 1                   /* see: mountlist.c */
+#define MOUNTED_GETMNTINFO 1
+#endif
 
 #define HAVE_LIBMAGIC
 #undef  HAVE_ASPELL
@@ -113,7 +117,7 @@ extern int                  win32_pclose(FILE *file);
 #undef  HAVE_TEXTMODE_X11_SUPPORT
 #undef  HAVE_LIBGPM
 
-#undef  HAVE_REALPATH
+#undef  HAVE_REALPATH                           /* FIXME */
 #define HAVE_STRCASECMP 1
 #define HAVE_STRNCASECMP 1
 #define HAVE_GETOPT 1

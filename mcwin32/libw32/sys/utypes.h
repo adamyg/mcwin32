@@ -1,10 +1,14 @@
-#ifndef WIN32_SYS_UTYPES_H_INCLUDED
-#define WIN32_SYS_UTYPES_H_INCLUDED
-/* -*- mode: c; tabs: 4 -*- */
-/*
- *  win32 unix types
+#ifndef LIBW32_SYS_UTYPES_H_INCLUDED
+#define LIBW32_SYS_UTYPES_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_utypes_h,"$Id: utypes.h,v 1.7 2018/10/18 22:39:47 cvsuser Exp $")
+__CPRAGMA_ONCE
+
+/* -*- mode: c; indent-width: 4; -*- */
+/* 
+ * win32 unix types
  *
- * Copyright (c) 2012 - 2017, Adam Young.
+ * Copyright (c) 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  *
@@ -80,7 +84,7 @@ typedef unsigned long   ulong;
 #include <stdint.h>
 #else
 #if defined(_MSC_VER) && !defined(_MSC_STDINT_H_TYPES)
-#if (_MSC_VER < 1300)	
+#if (_MSC_VER < 1300)
 typedef signed char int8_t;
 typedef signed short int16_t;
 typedef signed int int32_t;
@@ -102,7 +106,7 @@ typedef uint8_t uint_fast8_t;                   /* optional C11 */
 typedef uint16_t uint_fast16_t;
 typedef uint32_t uint_fast32_t;
 typedef uint64_t uint_fast64_t;
-#endif	
+#endif
 #define _MSC_STDINT_H_TYPES
 #endif  /*_MSC_STDINT_H_TYPES*/
 #endif  /*stdint.h*/
@@ -127,7 +131,13 @@ typedef unsigned long fixpt_t;                  /* fixed point number */
 #endif  /*BSD_SOURCE*/
 
 /* system identifiers */
+#if !defined(HAVE_PID_T)
+#if !defined(__WATCOMC__) || \
+        (defined(__WATCOMC__) && (__WATCOMC__ < 1300 /*owc20*/))
 typedef int pid_t;                              /* process identifier */
+#endif
+#define HAVE_PID_T
+#endif
 
 typedef long suseconds_t;                       /* sys/types.h */
 
@@ -155,7 +165,13 @@ typedef int gid_t;
 #endif
 #endif
 
+#if !defined(HAVE_NLINK_T)
+#if !defined(__WATCOMC__) || \
+        (defined(__WATCOMC__) && (__WATCOMC__ < 1300 /*owc20*/))
 typedef unsigned nlink_t;                       /* link count */
+#endif
+#define HAVE_NLINK_T
+#endif
 
 #ifndef major
 #define major(devnum)   (((devnum) >> 8) & 0xff)
@@ -168,4 +184,4 @@ typedef unsigned nlink_t;                       /* link count */
                         ((((major) & 0xff) << 8) | ((minor) & 0xff))
 #endif
 
-#endif /*WIN32_SYS_UTYPES_H_INCLUDED*/
+#endif /*LIBW32_SYS_UTYPES_H_INCLUDED*/

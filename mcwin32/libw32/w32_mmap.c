@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_mmap_c,"$Id: w32_mmap.c,v 1.7 2018/10/12 00:52:04 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mmap() system calls.
@@ -106,7 +109,7 @@
 //  
 //          Symbolic Constant 	Description
 //          MAP_SHARED 	        Changes are shared.
-//          MAP_PRIVATE 	        Changes are private.
+//          MAP_PRIVATE         Changes are private.
 //          MAP_FIXED 	        Interpret addr exactly.
 //  
 //      MAP_SHARED and MAP_PRIVATE describe the disposition of write references to the
@@ -238,7 +241,7 @@
 //   EXAMPLES
 //      None. 
 */
-void *
+LIBW32_API void *
 mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
 {
     HANDLE  hMapping = INVALID_HANDLE_VALUE;
@@ -288,13 +291,13 @@ mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
             }
         }
 
-    } else {    /* SHARED and PRIVATE are not exclusive, or missing */                           
+    } else {    /* SHARED and PRIVATE are not exclusive, or missing */
         errno = EINVAL;
         return MAP_FAILED;
     }
 
     /*
-     *  Convert 'fd' to system handle 
+     *  Convert 'fd' to system handle; unless an ANON mapping.
      */
     if (0 == (flags & MAP_ANONYMOUS) &&         /* extension */
             INVALID_HANDLE_VALUE == (hFile = (HANDLE)_get_osfhandle(fildes))) {
@@ -415,7 +418,7 @@ mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
 //  EXAMPLES
 //      None. 
 */
-int
+LIBW32_API int
 mprotect(void *addr, size_t len, int prot)
 {
     DWORD oldprot;
@@ -520,7 +523,7 @@ mprotect(void *addr, size_t len, int prot)
 //          outside the range allowed for the address space of a process or specify one or
 //          more pages that are not mapped.
 */
-int
+LIBW32_API int
 msync(void *addr, size_t len, int flags)
 {
     BOOL ret;
@@ -592,7 +595,7 @@ msync(void *addr, size_t len, int flags)
 //      [EINVAL]
 //          The addr argument is not a multiple of the page size as returned by sysconf().
 */
-int
+LIBW32_API int
 munmap(void *addr, size_t len)
 {
     BOOL ret;

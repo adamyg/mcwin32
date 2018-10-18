@@ -1,10 +1,14 @@
-#ifndef WIN32_SYS_SOCKET_H_INCLUDED
-#define WIN32_SYS_SOCKET_H_INCLUDED
-/* -*- mode: c; tabs: 4 -*- */
+#ifndef LIBW32_SYS_SOCKET_H_INCLUDED
+#define LIBW32_SYS_SOCKET_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_socket_h,"$Id: socket.h,v 1.8 2018/10/08 21:54:48 cvsuser Exp $")
+__CPRAGMA_ONCE
+
+/* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <sys/socket.h>
  *
- * Copyright (c) 2012 - 2017, Adam Young.
+ * Copyright (c) 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -107,10 +111,10 @@ LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout
 #undef  h_errno
 #define h_errno                 w32_h_errno
 
-#ifndef gethostname //unistd.h
+#ifndef gethostname     /*<unistd.h>*/
 #define gethostname(a,b)        w32_gethostname(a,b)
 #endif
-#ifndef getdomainname //unistd.h
+#ifndef getdomainname   /*<unistd.h>*/
 #define getdomainname(a,b)      w32_getdomainname(a,b)
 #endif
 
@@ -142,9 +146,9 @@ LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout
 #define send(a,b,c,d)           w32_send_fd(a,b,c,d)
 #define sendto(a,b,c,d,e)       w32_sendto_fd(a,b,c,d,e)
 #define recv(a,b,c,d)           w32_recv_fd(a,b,c,d)
-#define recvfrom(a,b,c,d,e)     w32_sendto_fd(a,b,c,d,e)
+#define recvfrom(a,b,c,d,e,f)   w32_recvfrom_fd(a,b,c,d,e,f)
 #define shutdown(a,b)           w32_shutdown_fd(a,b)
-#if !defined(WIN32_POLL_H_INCLUDED)
+#if !defined(LIBW32_SYS_POLL_H_INCLUDED)
 #define poll(a,b,c)             w32_poll_fd(a,b,c)
 #endif
 
@@ -166,9 +170,9 @@ LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout
 #define send(a,b,c,d)           w32_send_native(a,b,c,d)
 #define sendto(a,b,c,d,e)       w32_sendto_native(a,b,c,d,e)
 #define recv(a,b,c,d)           w32_recv_native(a,b,c,d)
-#define recvfrom(a,b,c,d,e)     w32_sendto_native(a,b,c,d,e)
+#define recvfrom(a,b,c,d,e,f)   w32_recvfrom_native(a,b,c,d,e,f)
 #define shutdown(a,b)           w32_shutdown_native(a,b)
-#if !defined(WIN32_POLL_H_INCLUDED)
+#if !defined(LIBW32_SYS_POLL_H_INCLUDED)
 #define poll(a,b,c)             w32_poll_native(a,b,c)
 #endif /*SOCKET_MAPCALLS*/
 
@@ -176,5 +180,5 @@ LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout
 
 __END_DECLS
 
-#endif /*WIN32_SYS_SOCKET_H_INCLUDED*/
+#endif /*LIBW32_SYS_SOCKET_H_INCLUDED*/
 

@@ -1,5 +1,9 @@
-#ifndef WIN32_ERRNO_H_INCLUDED
-#define WIN32_ERRNO_H_INCLUDED
+#ifndef LIBW32_WIN32_ERRNO_H_INCLUDED
+#define LIBW32_WIN32_ERRNO_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.5 2018/10/09 16:03:48 cvsuser Exp $")
+__CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * <errno.h>
@@ -30,49 +34,66 @@
  */
 
     /*
-     *  Verify that MSVC POSIX errno number are not active;
-     *      if the case warn and undef clashing constants
-     *
-     *  Generally <sys/socket.h> is included before <errno.h>
-     *  as such the following should not occur.
+     *  Verify that MSVC POSIX errno number are not active; if the case warn and undef clashing constants
+     *  Generally <sys/socket.h> is included before <errno.h> as such the following should not occur.
      */
 #if defined(EADDRINUSE) && (EADDRINUSE != 10048)
-#if defined(_MSC_VER) && \
-        (EADDRINUSE == 100) && !defined(_CRT_NO_POSIX_ERROR_CODES)
+#if defined(_MSC_VER)
+#if (EADDRINUSE == 100)
+#if !defined(_CRT_NO_POSIX_ERROR_CODES)
 #pragma message("_CRT_NO_POSIX_ERROR_CODES should be defined: EADDRINUSE (and others) are inconsistent with WinSock aliases; redefining")
 #else
-#pragma message("EADDRINUSE (and others) are inconsistent with WinSock aliases; redefining")
+#pragma message("_CRT_NO_POSIX_ERROR_CODES is defined: yet EADDRINUSE (and others) are inconsistent with WinSock aliases as <errno.h> include order is incorrect; redefining")
 #endif
-
-#if defined(_MSC_VER)
-#undef EADDRINUSE
-#undef EADDRNOTAVAIL
-#undef EAFNOSUPPORT
-#undef EALREADY
-#undef ECONNABORTED
-#undef ECONNREFUSED
-#undef ECONNRESET
-#undef EDESTADDRREQ
-#undef EHOSTUNREACH
-#undef EINPROGRESS
-#undef EISCONN
-#undef ELOOP
-#undef EMSGSIZE
-#undef ENETDOWN
-#undef ENETRESET
-#undef ENETUNREACH
-#undef ENOBUFS
-#undef ENOPROTOOPT
-#undef ENOTCONN
-#undef ENOTRECOVERABLE
-#undef ENOTSOCK
-#undef EOPNOTSUPP
-#undef EPROTONOSUPPORT
-#undef EPROTOTYPE
-#undef ETIMEDOUT
-#undef EWOULDBLOCK
+#else
+#error unexpected EADDRINUSE value
+#endif
 #endif //_MSC_VER
+#endif //EADDRINUSE != 10048
 
+#if defined(_MSC_VER) || defined(__MAKEDEPEND__)
+#undef EADDRINUSE           //100
+#undef EADDRNOTAVAIL        //101
+#undef EAFNOSUPPORT         //102
+#undef EALREADY             //103
+//#define EBADMSG           104
+//#define ECANCELED         105
+#undef ECONNABORTED         //106
+#undef ECONNREFUSED         //107
+#undef ECONNRESET           //108
+#undef EDESTADDRREQ         //109
+#undef EHOSTUNREACH         //110
+//#define EIDRM             111
+#undef EINPROGRESS          //112
+#undef EISCONN              //113
+#undef ELOOP                //114
+#undef EMSGSIZE             //115g
+#undef ENETDOWN             //116
+#undef ENETRESET            //117
+#undef ENETUNREACH          //118
+#undef ENOBUFS              //119
+//#define ENODATA           120
+//#define ENOLINK           121
+//#define ENOMSG            122
+#undef ENOPROTOOPT          //123
+//#define ENOSR             124
+//#define ENOSTR            125
+//#define ENOTCONN          126
+#undef ENOTCONN             //126
+#undef ENOTRECOVERABLE      //127
+#undef ENOTSOCK             //128
+//#define ENOTSUP           129
+#undef EOPNOTSUPP           //130
+//#define EOTHER            131
+//#define EOVERFLOW         132
+//#define EOWNERDEAD        133
+//#define EPROTO            134
+#undef EPROTONOSUPPORT      //135
+#undef EPROTOTYPE           //136
+//#define ETIME             137
+#undef ETIMEDOUT            //138
+//#define ETXTBSY           139
+#undef EWOULDBLOCK          //140
 #endif //EADDRINUSE
 
 /*
@@ -122,8 +143,8 @@
     /*
      *  WinSock errors are aliased to their BSD/POSIX counter part.
      *
-     *  This works for *most* errors, yet the following result in conflicts and are
-     *  explicty remapped during i/o operations.
+     *  Note: This works for *most* errors, yet the following result in conflicts and are
+     *      explicity remapped during i/o operations.
      *
 #define EINTR           WSAEINTR                // 10004 "Interrupted system call"
 #define EBADF           WSAEBADF                // 10009 "Bad file number"
@@ -135,15 +156,15 @@
 #define ENOTEMPTY       WSAENOTEMPTY            // 10066 "Directory not empty"
      */
 
-#endif  /*WIN32_ERRNO_H_INCLUDED*/
+#endif  /*LIBW32_WIN32_ERRNO_H_INCLUDED*/
 
     /*
      *  Outside include guard, set/verify WinSock error mapping.
      *  Note: Force errors on inconsistent redefinitions
      */
 #if defined(WSAEINTR)
-    //  && !defined(WIN32_ERRNO_WINSOCK)
-    //  #define WIN32_ERRNO_WINSOCK
+    //  && !defined(LIBW32_ERRNO_WINSOCK)
+    //  #define LIBW32_ERRNO_WINSOCK
 
 #if !defined(EWOULDBLOCK)
 #define EWOULDBLOCK     WSAEWOULDBLOCK          /* 10035 "Operation would block" */
@@ -367,7 +388,7 @@
 #error Inconsistent EREMOTE definition ....
 #endif
 
-#else   //WIN32_ERRNO_WINSOCK
+#else   //LIBW32_ERRNO_WINSOCK
     /*
      *  Map not socket specific errors.
      */
@@ -400,6 +421,6 @@
 #define ELOOP           10062                   /* 10062 "Too many levels of symbolic links" */
 #endif
 
-#endif  //!WIN32_ERRNO_WINSOCK
+#endif  //!LIBW32_ERRNO_WINSOCK
 
 /*end*/

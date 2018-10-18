@@ -1,8 +1,11 @@
 #ifndef LIBW32_GETOPT_H_INCLUDED
 #define LIBW32_GETOPT_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.5 2018/10/15 08:46:48 cvsuser Exp $")
+__CPRAGMA_ONCE
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * win32 <getopt.h> implementation
+ * win <getopt.h>
  *
  * Copyright (c) 2007, 2012 - 2018 Adam Young.
  *
@@ -27,13 +30,13 @@
 
 __BEGIN_DECLS
 
-extern  int             opterr,                 /* if error message should be printed */
-                        optind,                 /* index into parent argv vector */
-                        optopt,                 /* character checked for validity */
-                        optreset;               /* reset getopt */
-extern char             *optarg;                /* argument associated with option */
+LIBW32_API extern int   opterr;                 /* if error message should be printed */
+LIBW32_API extern int   optind;                 /* index into parent argv vector */
+LIBW32_API extern int   optopt;                 /* character checked for validity */
+LIBW32_API extern int   optreset;               /* reset getopt */
+LIBW32_API extern char *optarg;
 
-LIBW32_API int          getopt __P((int nargc, char * const *nargv, const char *ostr));
+LIBW32_API int          getopt(int nargc, char * const *nargv, const char *options);
 
 __END_DECLS
 

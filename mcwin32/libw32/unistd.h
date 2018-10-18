@@ -1,5 +1,9 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.11 2018/10/15 08:45:38 cvsuser Exp $")
+__CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <unistd.h> compat header file -
@@ -147,7 +151,7 @@ __BEGIN_DECLS
 #endif
 #else
 #define S_IFFMT         0170000
-#endif
+#endif  /*S_IFFMT*/
 
 #if defined(__WATCOMC__)                        /* note, defined as 0 */
 #undef  S_IFSOCK
@@ -156,12 +160,12 @@ __BEGIN_DECLS
 #undef  S_ISLNK
 #undef  S_ISBLK
 #undef  S_ISFIFO
-#endif
+#endif  /*__WATCOMC__*/
 
 #if defined(__MINGW32__)
 #undef  S_IFBLK
 #undef  S_ISBLK
-#endif
+#endif  /*__MINGW32__*/
 
 #if defined(S_IFSOCK)
 #if S_IFSOCK != 0140000
@@ -169,7 +173,7 @@ __BEGIN_DECLS
 #endif
 #else
 #define S_IFSOCK        0140000                 /* socket */
-#endif
+#endif  /*S_IFSOCK*/
 
 #if defined(S_IFLNK)
 #if S_IFLNK != 0120000
@@ -177,7 +181,7 @@ __BEGIN_DECLS
 #endif
 #else
 #define S_IFLNK         0120000                 /* symbolic link */
-#endif
+#endif  /*S_IFLNK*/
 
 #if defined(S_IFREG)                            /* regular file */
 #if (S_IFREG != 0100000)
@@ -185,7 +189,7 @@ __BEGIN_DECLS
 #endif
 #else
 #define S_IFREG         0100000
-#endif
+#endif  /*S_IFREG*/
 
 #if defined(S_IFBLK)                            /* block device */
 #if (S_IFBLK != 0060000)
@@ -193,7 +197,7 @@ __BEGIN_DECLS
 #endif
 #else
 #define S_IFBLK         0060000
-#endif
+#endif  /*S_IFBLK*/
 
 #if defined(S_IFDIR)                            /* regular file */
 #if (S_IFDIR != 0040000)
@@ -201,7 +205,7 @@ __BEGIN_DECLS
 #endif
 #else
 #define S_IFDIR         0040000
-#endif
+#endif  /*S_IFDIR*/
 
 #if defined(S_IFCHR)                            /* character special device */
 #if (S_IFCHR != 0020000)
@@ -209,7 +213,7 @@ __BEGIN_DECLS
 #endif
 #else
 #define S_IFCHR         0020000
-#endif
+#endif  /*S_IFCHR*/
 
 #if defined(S_IFIFO)                            /* fifo */
 #if (S_IFIFO != 0010000)
@@ -217,19 +221,40 @@ __BEGIN_DECLS
 #endif
 #else
 #define S_IFIFO         0010000
-#endif
+#endif  /*S_IFIFO*/
 
 #if defined(S_IFFIFO)                           /* fifo??? */
 #error  S_IFFIFO is defined ??? ...
 #endif
 
 /* de facto standard definitions */
-#if !defined(S_ISUID)
-#define S_ISUID         0002000                 /* set user id on execution */
+#if defined(S_ISUID)
+#if (S_ISUID != 0004000)
+#error  S_ISUID redefinition error ...
+#endif
+#else
+#define	S_ISUID	        0004000			/* set user id on execution */
 #endif
 
-#if !defined(S_ISGID)
-#define S_ISGID         0001000                 /* set group id on execution */
+#if defined(S_ISGID)
+#if (S_ISGID != 0002000)
+#error  S_ISGID redefinition error ...
+#endif
+#else
+#define	S_ISGID	        0002000			/* set group id on execution */
+#endif
+
+#ifndef _POSIX_SOURCE
+#if defined(S_ISTXT)
+#if (S_ISTXT != 0001000)
+#endif
+#else
+#define S_ISTXT         0001000                 /* sticky bit */
+#endif /*S_ISTXT*/
+#endif /*_POSIX_SOURCE*/
+
+#ifndef S_ISVTX
+#define S_ISVTX         0                       /* on directories, restricted deletion flag; not supported */
 #endif
 
 #if defined(S_IRWXU)
@@ -238,7 +263,7 @@ __BEGIN_DECLS
 #endif
 #else
 #define S_IRWXU         0000700                 /* read, write, execute: owner */
-#endif
+#endif  /*S_IRWXU*/
 
 #if defined(S_IRUSR)
 #if (S_IRUSR != 0000400)
@@ -248,7 +273,27 @@ __BEGIN_DECLS
 #define S_IRUSR         0000400                 /* read permission: owner */
 #define S_IWUSR         0000200                 /* write permission: owner */
 #define S_IXUSR         0000100                 /* execute permission: owner */
+#endif  /*S_IRUSR*/
+
+#ifdef  _S_IREAD        /*verify environment*/
+#if (_S_IREAD  != 0000400)
+#error  _S_IREAD definition error ...
 #endif
+#if (_S_IWRITE != 0000200)
+#error  _S_IWRITE definition error ...
+#endif
+#if (_S_IEXEC  != 0000100)
+#error  _S_IEXEC definition error ...
+#endif
+#endif /*_S_IREAD*/
+
+#ifndef _POSIX_SOURCE
+#ifndef S_IREAD
+#define	S_IREAD		S_IRUSR
+#define	S_IWRITE	S_IWUSR
+#define	S_IEXEC		S_IXUSR
+#endif /*S_IREAD*/
+#endif /*_POSIX_SOURCE*/
 
 #define S_IRWXG         0000070                 /* read, write, execute: group */
 #define S_IRGRP         0000040                 /* read permission: group */
@@ -270,7 +315,7 @@ __BEGIN_DECLS
 #ifndef S_ISFIFO                                /* test for a pipe or FIFO special file */
 #define S_ISFIFO(m)     __S_ISTYPE(m, S_IFIFO)
 #endif
-#endif
+#endif /*__MINGW32__*/
 #ifndef S_ISDIR                                 /* test for a directory */
 #define S_ISDIR(m)      __S_ISTYPE(m, S_IFDIR)
 #endif
@@ -287,8 +332,10 @@ __BEGIN_DECLS
 #define S_ISSOCK(m)     __S_ISTYPE(m, S_IFSOCK) /* test for a socket */
 #endif
 
-#ifndef S_ISVTX
-#define S_ISVTX         0                       /* on directories, restricted deletion flag; not supported */
+#ifndef _POSIX_SOURCE
+#define ACCESSPERMS     (S_IRWXU|S_IRWXG|S_IRWXO) /* 0777 */
+#define ALLPERMS        (S_ISUID|S_ISGID|S_ISTXT|S_IRWXU|S_IRWXG|S_IRWXO) /* 7777 */
+#define DEFFILEMODE     (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH) /* 0666 */
 #endif
 
 /*stdio.h*/
@@ -317,7 +364,7 @@ struct sigaction {
 
 LIBW32_API int          sigemptyset (sigset_t *);
 LIBW32_API int          sigaction (int, struct sigaction *, struct sigaction *);
-#endif
+#endif /*__MINGW32__*/
 
 /*shell support*/
 #if !defined(WNOHANG)
@@ -345,10 +392,10 @@ LIBW32_API int          WIFSTOPPED(int status);
 LIBW32_API int          getsubopt (char **optionp, char * const *tokens, char **valuep);
 
 /* <string.h> */
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__WATCOMC__)
 LIBW32_API int          strcasecmp(const char *s1, const char *s2);
 LIBW32_API int          strncasecmp(const char *s1, const char *s2, size_t len);
-#endif
+#endif /*_MSC_VER*/
 
 #if (defined(_MSC_VER) && (_MSC_VER < 1400)) || \
             defined(__MINGW32__) || defined(__WATCOMC__)
@@ -356,11 +403,23 @@ LIBW32_API int          strncasecmp(const char *s1, const char *s2, size_t len);
 #endif
 #if defined(NEED_STRNLEN)
 LIBW32_API size_t       strnlen(const char *s, size_t maxlen);
-#endif
+#endif /*NEED_STRNLEN*/
 
 /* <unistd.h> */
 LIBW32_API int          gettimeofday (struct timeval *tv, struct timezone *tz);
 LIBW32_API int          w32_utime (const char *path, const struct utimbuf *times);
+
+#if defined(WIN32_UNISTD_MAP)
+/*
+#if !defined(_WINSOCKAPI_) && !defined(_WINSOCK2API_)
+#define gethostname(__name,__namelen) \
+                w32_gethostname (__name, __namelen)
+#endif
+*/
+#define getdomainname(__name,__namelen) \
+                w32_getdomainname (__name, __namelen)
+#endif /*WIN32_UNISTD_MAP*/
+
 LIBW32_API int          w32_gethostname (char *name, size_t namelen);
 LIBW32_API int          w32_getdomainname (char *name, size_t namelen);
 
@@ -379,12 +438,12 @@ LIBW32_API int          w32_getegid (void);
 LIBW32_API int          w32_getgpid (void);
 
 #if defined(WIN32_UNISTD_MAP)
-#define getuid()        w32_getuid ()
-#define geteuid()       w32_geteuid ()
-#define getgid()        w32_getgid ()
-#define getegid()       w32_getegid ()
-#define getgpid()       w32_getgpid ()
-#endif
+#define getuid()        w32_getuid()
+#define geteuid()       w32_geteuid()
+#define getgid()        w32_getgid()
+#define getegid()       w32_getegid()
+#define getgpid()       w32_getgpid()
+#endif /*WIN32_UNISTD_MAP*/
 
 LIBW32_API int          getgroups (int gidsetsize, gid_t grouplist[]);
 
@@ -410,6 +469,9 @@ LIBW32_API const char * w32_strerror (int errnum);
 LIBW32_API int          w32_link (const char *from, const char *to);
 LIBW32_API int          w32_unlink (const char *fname);
 
+LIBW32_API ssize_t      pread (int fildes, void *buf, size_t nbyte, off_t offset);
+LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t offset);
+
 #if defined(WIN32_UNISTD_MAP)
 #define open            w32_open
 #define stat(a,b)       w32_stat(a, b)
@@ -425,6 +487,7 @@ LIBW32_API int          w32_unlink (const char *fname);
 #if defined(WIN32_UNISTD_MAP) || \
     defined(WIN32_SOCKET_MAP_FD) || defined(WIN32_SOCKET_MAP_NATIVE)
 #define strerror(a)     w32_strerror(a)
+	//#define g_strerror(a)   w32_strerror(a)         /* must also replace libglib version */
 #endif
 
 LIBW32_API int          w32_mkdir (const char *fname, int mode);
@@ -463,6 +526,7 @@ LIBW32_API int          w32_readlink (const char *path, char *name, int sz);
 LIBW32_API int          w32_symlink (const char *from, const char *to);
 
 LIBW32_API char *       w32_realpath (const char *path, char *resolved_path /*PATH_MAX*/);
+LIBW32_API char *       w32_realpath2 (const char *path, char *resolved_path, int maxlen);
 
 #if defined(WIN32_UNISTD_MAP)
 #define readlink(__path,__name, __sz) \
@@ -479,7 +543,10 @@ LIBW32_API int          mknod (const char *path, int mode, int dev);
 #define F_SETFL                         2
 #endif
 
+#if !defined(fcntl)
 LIBW32_API int          fcntl (int fd, int ctrl, int);
+#endif
+LIBW32_API int          w32_fcntl (int fd, int ctrl, int);
 LIBW32_API int          w32_fsync (int fildes);
 
 /*string.h*/
@@ -489,10 +556,10 @@ LIBW32_API size_t       strlcat (char *dst, const char *src, size_t siz);
 LIBW32_API size_t       strlcpy (char *dst, const char *src, size_t siz);
 #if (_MSC_VER <= 1600)
 LIBW32_API unsigned long long strtoull (const char * nptr, char ** endptr, int base);
+LIBW32_API long long    strtoll(const char * nptr, char ** endptr, int base);
 #endif
-#endif
+#endif /*_MSC_VER*/
 
 __END_DECLS
 
 #endif /*LIBW32_UNISTD_H_INCLUDED*/
-

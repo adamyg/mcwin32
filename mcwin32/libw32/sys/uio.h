@@ -1,9 +1,14 @@
-#ifndef WIN32_SYS_UIO_H_INCLUDED
-#define WIN32_SYS_UIO_H_INCLUDED
+#ifndef LIBW32_SYS_UIO_H_INCLUDED
+#define LIBW32_SYS_UIO_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_uio_h,"$Id: uio.h,v 1.4 2018/09/29 02:22:56 cvsuser Exp $")
+__CPRAGMA_ONCE
+
+/* -*- mode: c; indent-width: 4; -*- */
 /*
  *  win32 sys/uio.h
  *
- * Copyright (c) 2012 - 2017, Adam Young.
+ * Copyright (c) 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  *
@@ -43,4 +48,4 @@ LIBW32_API size_t           writev(int, const struct iovec *, int);
 
 __END_DECLS
 
-#endif /*WIN32_SYS_UIO_H_INCLUDED */
+#endif /*LIBW32_SYS_UIO_H_INCLUDED */

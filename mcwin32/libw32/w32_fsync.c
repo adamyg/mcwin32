@@ -1,5 +1,10 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_fsync_c,"$Id: w32_fsync.c,v 1.5 2018/10/12 00:52:03 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
+ * win32 fsync() system calls
+ *
  * Copyright (c) 2007, 2012 - 2018 Adam Young.
  *
  * This file is part of the Midnight Commander.
@@ -35,53 +40,53 @@
 /*
 //  NAME
 //      fsync - synchronize changes to a file
-//  
+//
 //  SYNOPSIS
-//  
+//
 //      #include <unistd.h>
-//  
+//
 //      int fsync(int fildes);
-//  
+//
 //  DESCRIPTION
-//  
+//
 //      The fsync() function shall request that all data for the open file descriptor named
 //      by fildes is to be transferred to the storage device associated with the file
 //      described by fildes. The nature of the transfer is implementation-defined. The
 //      fsync() function shall not return until the system has completed that action or
 //      until an error is detected.
-//  
+//
 //      If _POSIX_SYNCHRONIZED_IO is defined, the fsync() function shall force all
 //      currently queued I/O operations associated with the file indicated by file
 //      descriptor fildes to the synchronized I/O completion state. All I/O operations
 //      shall be completed as defined for synchronized I/O file integrity completion.
 //      [Option End]
-//  
+//
 //  RETURN VALUE
-//  
+//
 //      Upon successful completion, fsync() shall return 0. Otherwise, -1 shall be returned
 //      and errno set to indicate the error. If the fsync() function fails, outstanding I/O
 //      operations are not guaranteed to have been completed.
-//  
+//
 //  ERRORS
-//  
+//
 //      The fsync() function shall fail if:
-//  
+//
 //      [EBADF]
 //          The fildes argument is not a valid descriptor.
-//  
+//
 //      [EINTR]
 //          The fsync() function was interrupted by a signal.
-//  
+//
 //      [EINVAL]
 //          The fildes argument does not refer to a file on which this operation is possible.
-//  
+//
 //      [EIO]
 //          An I/O error occurred while reading from or writing to the file system.
-//  
+//
 //      In the event that any of the queued I/O operations fail, fsync() shall return the
 //      error conditions defined for read() and write().
 */
-int
+LIBW32_API int
 w32_fsync(int fd)
 {
     HANDLE handle;
@@ -90,7 +95,7 @@ w32_fsync(int fd)
     if (fd < 0) {
         errno = EBADF;
         ret = -1;
-    } else if (fd >= WIN32_FILDES_MAX || 
+    } else if (fd >= WIN32_FILDES_MAX ||
             (handle = (HANDLE) _get_osfhandle(fd)) == INVALID_HANDLE_VALUE) {
         errno = EBADF;
         ret = -1;

@@ -1,5 +1,9 @@
 #ifndef LIBW32_GRP_H_INCLUDED
 #define LIBW32_GRP_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_grp_h,"$Id: grp.h,v 1.4 2018/09/29 02:22:53 cvsuser Exp $")
+__CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <grp.h> implementation

@@ -1,3 +1,7 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_strtoull_c,"$Id: w32_strtoull.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+
+/* -*- mode: c; indent-width: 4; -*- */
 /*-
  * Copyright (c) 1992, 1993
  *      The Regents of the University of California.  All rights reserved.
@@ -43,7 +47,7 @@
  *  alphabets and digits are each contiguous.
  */
 #if defined(_MSC_VER) && (_MSC_VER <= 1600)
-unsigned long long
+LIBW32_API unsigned long long
 strtoull(const char * nptr, char ** endptr, int base)
 {
         const char *s;

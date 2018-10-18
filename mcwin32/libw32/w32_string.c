@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_string_c,"$Id: w32_string.c,v 1.5 2018/10/12 00:52:04 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 string functionality
@@ -33,7 +36,7 @@
 #include <unistd.h>
 
 
-int
+LIBW32_API int
 strcasecmp(const char *s1, const char *s2)
 {
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -45,7 +48,7 @@ strcasecmp(const char *s1, const char *s2)
 
 
 
-int
+LIBW32_API int
 strncasecmp(const char *s1, const char *s2, size_t len)
 {
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -57,7 +60,7 @@ strncasecmp(const char *s1, const char *s2, size_t len)
 
 
 #if defined(NEED_STRNLEN)
-size_t
+LIBW32_API size_t
 strnlen(const char *s, size_t maxlen)
 {
     register const char *e;

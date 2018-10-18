@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.7 2018/10/12 00:52:03 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 directory access services ...
@@ -27,12 +30,10 @@
  * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
- *
- * Sourced originally from a public domain implementation and highly.
  */
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT            0x0501
+#define _WIN32_WINNT            0x0501          /* reparse */
 #endif
 
 #define _DIRENT_SOURCE
@@ -58,10 +59,7 @@
 typedef BOOL (WINAPI *Wow64DisableWow64FsRedirection_t)(PVOID *OldValue);
 typedef BOOL (WINAPI *Wow64RevertWow64FsRedirection_t)(PVOID OldValue);
 
-#define DISABLE_HARD_ERRORS     SetErrorMode (0)
-#define ENABLE_HARD_ERRORS      SetErrorMode (SEM_FAILCRITICALERRORS | \
-                                        SEM_NOOPENFILEERRORBOX)
-
+static BOOL                     isshortcut(const char *path);
 static DIR *                    unc_populate(const char *path);
 
 static int                      dir_populate(DIR *dp, const char *path);
@@ -75,7 +73,7 @@ static BOOL                     d_Wow64RevertWow64FsRedirection(PVOID OldValue);
 static Wow64DisableWow64FsRedirection_t x_Wow64DisableWow64FsRedirection;
 static Wow64RevertWow64FsRedirection_t x_Wow64RevertWow64FsRedirection;
 
-static int              x_dirid = 1;            /* singleton */
+static int                      x_dirid = 1;    /* singleton */
 
 
 /*
@@ -132,15 +130,14 @@ static int              x_dirid = 1;            /* singleton */
 //      [ENFILE]
 //          Too many files are currently open in the system.
 */
-DIR *
+LIBW32_API DIR *
 opendir(const char *name)
 {
-    char fullpath[ MAX_PATH ], reparse[ MAX_PATH ],
-            *path = fullpath;
+    char fullpath[ MAX_PATH ], symlink[ MAX_PATH ], reparse[ MAX_PATH ],
+        *path = fullpath;
     LPVOID OldValue = NULL;
-    DIR *dp;
-    int i, len;
-    int rc;
+    DIR  *dp;
+    int  i, len;
 
     /* Copy to working buffer */
     if (0 == (len = strlen(name))) {
@@ -162,13 +159,12 @@ opendir(const char *name)
         last = &fullpath[len - 1];
 
         /*
-         *  DOS is very picky about its directory names.
-         *  The following are valid.
+         *  DOS is very picky about its directory names; the following are valid.
          *      c:/
          *      c:.
          *      c:name/name1
          *
-         *  the following are not valid
+         *  whereas the following are not valid
          *      c:name/
          */
         if ((*last == '\\') && (len > 1) && (!((len == 3) &&
@@ -179,23 +175,48 @@ opendir(const char *name)
 
     /* Is a directory ? */
     if (0 != strcmp(path, ".")) {
+        UINT  errormode;
         DWORD attr;
+        int rc = 0;
 
-        rc = 0;
-        DISABLE_HARD_ERRORS;
-        if ((attr = GetFileAttributes(path)) == INVALID_FILE_ATTRIBUTES ||
-                0 == (attr & FILE_ATTRIBUTE_DIRECTORY)) {
+        errormode = SetErrorMode(0);            // disable hard errors
+        if (INVALID_FILE_ATTRIBUTES == (attr = GetFileAttributesA(path))) {
+            switch(GetLastError()) {
+            case ERROR_ACCESS_DENIED:
+            case ERROR_SHARING_VIOLATION:
+                rc = EACCES;  break;
+            case ERROR_FILE_NOT_FOUND:
+                rc = ENOENT;  break;
+            case ERROR_PATH_NOT_FOUND:
+            case ERROR_INVALID_DRIVE:
+                rc = ENOTDIR; break;
+            default:
+                rc = EIO;
+            }
+
+        } else if (0 == (FILE_ATTRIBUTE_DIRECTORY & attr)) {
             rc = ENOTDIR;
+            if (isshortcut(path)) {             // possible shortcut
+                if (w32_readlink(path, symlink, sizeof(symlink)) > 0) {
+                    if ((attr = GetFileAttributesA(symlink)) != INVALID_FILE_ATTRIBUTES &&
+                            (FILE_ATTRIBUTE_DIRECTORY & attr)) {
+                        path = symlink;         // redirect
+                        rc = 0;
+                    }
+                }
+            }
         }
-        ENABLE_HARD_ERRORS;
+        (void) SetErrorMode(errormode);         // restore errors
+
         if (rc) {
             if (w32_root_unc(path)) {
                 return unc_populate(path);      /* //servername[/] */
             }
-            errno = ENOTDIR;
+            errno = rc;
             return (DIR *)NULL;
         }
-        if (FILE_ATTRIBUTE_REPARSE_POINT & attr) {
+
+        if (attr & FILE_ATTRIBUTE_REPARSE_POINT) {
             if (-1 == w32_reparse_read(path, reparse, sizeof(reparse))) {
                 errno = EACCES;
                 return (DIR *)NULL;
@@ -251,6 +272,24 @@ opendir(const char *name)
         }
     }
     return dp;
+}
+
+
+static BOOL
+isshortcut(const char *name)
+{
+    const size_t len = strlen(name);
+    const char *cursor;
+
+    for (cursor = name + len; --cursor >= name;) {
+        if (*cursor == '.') {                   // extension
+            return (*++cursor && 0 == WIN32_STRICMP(cursor, "lnk"));
+        }
+        if (*cursor == '/' || *cursor == '\\') {
+            break;                              // delimiter
+        }
+    }
+    return FALSE;
 }
 
 
@@ -318,30 +357,26 @@ dir_populate(DIR *dp, const char *path)
     struct _dirlist *dplist;
     WIN32_FIND_DATA finddata;
     HANDLE hSearch;
+    UINT errormode;
     BOOL isHPFS = FALSE;
     int rc, ret = 0;
 
-    DISABLE_HARD_ERRORS;
-    hSearch = FindFirstFile(path, &finddata);
-    ENABLE_HARD_ERRORS;
+    errormode = SetErrorMode(0);                // disable hard errors
+    hSearch = FindFirstFileA(path, &finddata);
+    (void) SetErrorMode(errormode);             // restore errors
 
     if (INVALID_HANDLE_VALUE == hSearch) {
-        rc = GetLastError();
+        switch (GetLastError()) {
 #if defined(ERROR_EMPTY_DIR)
-        if (rc == ERROR_EMPTY_DIR)  {
-            return 0;                           /* entry list */
-        }
+        case ERROR_EMPTY_DIR:
+            return 0;
 #endif
-        switch (rc) {
         case ERROR_NO_MORE_FILES:
         case ERROR_FILE_NOT_FOUND:
         case ERROR_PATH_NOT_FOUND:
             return ENOENT;
-            break;
         case ERROR_NOT_ENOUGH_MEMORY:
             return ENOMEM;
-        default:
-            break;
         }
         return EINVAL;
     }
@@ -353,7 +388,10 @@ dir_populate(DIR *dp, const char *path)
 
     do {
 #if defined(FILE_ATTRIBUTE_VOLUME)              /* skip volume labels */
-        if (finddata.ff_attrib & FILE_ATTRIBUTE_VOLUME) {
+        // Not listed by Microsoft but it's there.
+        //  Indicates a directory entry without corresponding file, used only to denote the name of a hard drive volume.
+        //  Was used to 'hack' the long file name system of Windows 95.
+        if (finddata.dwFileAttributes & FILE_ATTRIBUTE_VOLUME) {
             continue;
         }
 #endif
@@ -361,7 +399,6 @@ dir_populate(DIR *dp, const char *path)
         if (0 == strcmp(finddata.cFileName, ".")) {
             continue;
         }
-
                                                 /* create new entry */
         if (NULL == (dplist = dir_list_push(dp, finddata.cFileName))) {
             FindClose(hSearch);
@@ -376,10 +413,10 @@ dir_populate(DIR *dp, const char *path)
 #endif
         }
         dplist->dl_size2 = finddata.nFileSizeHigh;
-        dplist->dl_size = finddata.nFileSizeLow;
-        dplist->dl_attr = finddata.dwFileAttributes;
+        dplist->dl_size  = finddata.nFileSizeLow;
+        dplist->dl_attr  = finddata.dwFileAttributes;
 
-    } while (FindNextFile(hSearch, &finddata));
+    } while (FindNextFileA(hSearch, &finddata));
 
     if ((rc = GetLastError()) == ERROR_NO_MORE_FILES) {
         dp->dd_current = dp->dd_contents;       /* seed cursor */
@@ -452,7 +489,7 @@ dir_list_push(DIR *dp, const char *filename)
 //      [EINTR]
 //          The closedir() function was interrupted by a signal.
 */
-int
+LIBW32_API int
 closedir(DIR *dp)
 {
     if (NULL == dp) {
@@ -570,7 +607,7 @@ closedir(DIR *dp)
 //      [EBADF]
 //          The dirp argument does not refer to an open directory stream.
 */
-struct dirent *
+LIBW32_API struct dirent *
 readdir(DIR *dp)
 {
     struct _dirlist *pEntry;
@@ -642,7 +679,7 @@ readdir(DIR *dp)
 //  ERRORS
 //      No errors are defined.
 */
-void
+LIBW32_API void
 seekdir(DIR *dp, long off)
 {
     struct _dirlist *dplist;
@@ -691,7 +728,7 @@ seekdir(DIR *dp, long off)
 //  ERRORS
 //      No errors are defined.
 */
-void
+LIBW32_API void
 rewinddir(DIR *dp)
 {
     if (NULL == dp) {
@@ -726,7 +763,7 @@ rewinddir(DIR *dp)
 //  ERRORS
 //      No errors are defined.
 */
-long
+LIBW32_API long
 telldir(DIR *dp)
 {
     if (dp == (DIR *)NULL) {
@@ -845,6 +882,7 @@ d_Wow64RevertWow64FsRedirection(PVOID OldValue)
 static int
 dir_ishpf(const char *directory)
 {
+    UINT errormode;
     unsigned nDrive;
     char szCurDir[MAX_PATH + 1];
     char bName[4] = "x:\\";
@@ -855,15 +893,15 @@ dir_ishpf(const char *directory)
             isalpha((unsigned char)directory[0]) && directory[1] == ':') {
         nDrive = toupper(directory[0]) - 'A';
     } else {
-        GetCurrentDirectory (MAX_PATH, szCurDir);
+        GetCurrentDirectoryA(MAX_PATH, szCurDir);
         nDrive = toupper(szCurDir[0]) - 'A';
     }
     bName[0] = (char)(nDrive + 'A');
 
-    DISABLE_HARD_ERRORS;
-    rc = GetVolumeInformation(bName, (LPTSTR)NULL, 0,
+    errormode = SetErrorMode(0);                // disable hard errors
+    rc = GetVolumeInformationA(bName, (LPTSTR)NULL, 0,
                 (LPDWORD)NULL, &maxname, &flags, (LPTSTR)NULL, 0);
-    ENABLE_HARD_ERRORS;
+    (void) SetErrorMode(errormode);             // restore errors
 
     return ((rc) &&
         (flags & (FS_CASE_SENSITIVE | FS_CASE_IS_PRESERVED))) ? TRUE : FALSE;

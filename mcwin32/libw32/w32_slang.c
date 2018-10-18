@@ -41,8 +41,8 @@
 
 #include "slang.h"
 
-#define  TERMEMU_VIO_STATIC                     /* private interface */
-#include "termemu_vio.h"
+#define  TERMEMU_VIO_SOURCE                     /* private interface */
+#define  TERMEMU_VIO_STATIC                     /* static binding */
 #include "termemu_vio.c"
 
 #include "unicode_cp437.h"
@@ -600,7 +600,7 @@ write_char(SLwchar_Type ch, unsigned cnt)
 static void
 write_string(const char *str, unsigned cnt)
 {
-    const struct colorinfo *color = &vio.c_color;
+    const WCHAR_COLORINFO *color = &vio.c_color;
     const char *send = str + cnt;
     WCHAR_INFO *cursor, *cend;
     unsigned flags = 0, nl;

@@ -1,5 +1,8 @@
-#ifndef LIBW32_WIN32IO_H_INCLUDED
-#define LIBW32_WIN32IO_H_INCLUDED
+#ifndef LIBW32_WIN32_IO_H_INCLUDED
+#define LIBW32_WIN32_IO_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.7 2018/10/15 08:46:48 cvsuser Exp $")
+__CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -81,6 +84,7 @@ __BEGIN_DECLS
 #endif
 
 LIBW32_API int          fcntl (int fildes, int ctrl, int);
+LIBW32_API int          w32_fcntl (int fildes, int ctrl, int);
 LIBW32_API int          w32_fsync (int fildes);
 
 /*io.h*/
@@ -90,6 +94,7 @@ LIBW32_API int          w32_open (const char *name, int, ...);
 LIBW32_API int          w32_stat (const char *name, struct stat *sb);
 LIBW32_API int          w32_read (int fildes, void *buf, unsigned int nbyte);
 LIBW32_API int          w32_write (int fildes, const void *buf, unsigned int nbyte);
+
 LIBW32_API int          w32_close (int fildes);
 LIBW32_API const char * w32_strerror (int errnum);
 LIBW32_API int          w32_unlink (const char *fname);
@@ -119,4 +124,4 @@ LIBW32_API int          w32_neterrno_set (void);
 
 __END_DECLS
 
-#endif /*LIBW32_WIN32IO_H_INCLUDED*/
+#endif /*LIBW32_WIN32_IO_H_INCLUDED*/

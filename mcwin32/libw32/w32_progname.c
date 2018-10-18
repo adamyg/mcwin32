@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.1 2017/03/13 16:51:36 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.3 2018/10/12 00:52:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -41,7 +41,7 @@ __CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.1 2017/03/13 16:51:36 
 
 static const char *progname = NULL;
 
-void
+LIBW32_API void
 setprogname(const char *name)
 {
     char *p;
@@ -59,7 +59,7 @@ setprogname(const char *name)
     }
 }
 
-const char *
+LIBW32_API const char *
 getprogname(void)
 {
     if (NULL == progname) {

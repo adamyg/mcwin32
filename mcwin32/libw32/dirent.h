@@ -1,5 +1,9 @@
 #ifndef LIBW32_DIRENT_H_INCLUDED
 #define LIBW32_DIRENT_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.6 2018/10/12 00:52:03 cvsuser Exp $")
+__CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <dirent.h> implementation
@@ -70,7 +74,7 @@ typedef void *DIR;
         char *          dl_entry;
         struct _dirlist *dl_next;
     };
-    #endif /*_DIRENT_SOURCE*/
+#endif /*_DIRENT_SOURCE*/
 
 typedef struct _dirdesc {
     int                 dd_fd;                  /* File descriptor associated with directory */
@@ -82,7 +86,7 @@ typedef struct _dirdesc {
     long                dd_seek;                /* Magic cookie returned by getdirentries */
     void  *             dd_ddloc;               /* Linked list of ddloc structs for telldir/seekdir */
 
-    /* Extensions, USE AT OWN RISK */
+    /*extensions/internal*/
     unsigned long       dd_magic;               /* Structure magic */
     unsigned long       dd_flags;
     struct _dirlist *   dd_contents;
@@ -103,7 +107,7 @@ LIBW32_API void         rewinddir __P((DIR *));
 LIBW32_API void         seekdir __P((DIR *, long));
 LIBW32_API long         telldir __P((DIR *));
 LIBW32_API int          alphasort __P((const void *, const void *));
-LIBW32_API int          scandir __P(());
+LIBW32_API int          scandir __P((void));
 LIBW32_API int          getdirentries __P((int, char *, int, long *));
 #endif  /*_POSIX_SOURCE*/
 

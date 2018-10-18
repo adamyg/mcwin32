@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.6 2018/10/12 00:52:05 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 user identification functionality
@@ -56,7 +59,7 @@
 //  ERRORS
 //      No errors are defined.
 */
-int
+LIBW32_API int
 w32_getuid (void)
 {
     return 42;
@@ -108,12 +111,11 @@ w32_geteuid (void)
 //  ERRORS
 //      No errors are defined.
 */
-int
+LIBW32_API int
 w32_getgid (void)
 {
     return 42;
 }
-
 
 
 /*
@@ -164,12 +166,11 @@ w32_getegid (void)
 //  ERRORS
 //      No errors are defined.
 */
-int
+LIBW32_API int
 issetugid (void)
 {
     return 0;
 }
-
 
 
 /*
@@ -234,7 +235,7 @@ issetugid (void)
 //          The value of namesize is smaller than the length of the string to be returned
 //          including the terminating null character.
 */
-const char *
+LIBW32_API const char *
 getlogin (void)
 {
     static char buffer[100];                    /* one-shot */
@@ -246,7 +247,7 @@ getlogin (void)
 
         if (p == NULL) p = getenv("USERNAME");  /* NT */
 
-        if (GetUserName(buffer, &size))         /* requires: advapi32.lib */
+        if (GetUserNameA(buffer, &size))        /* requires: advapi32.lib */
             p = buffer;
 
         if (p == NULL)
@@ -262,7 +263,7 @@ getlogin (void)
 }
 
 
-int
+LIBW32_API int
 getlogin_r (char *name, size_t namesize)
 {
     const char *login = getlogin();
@@ -276,5 +277,69 @@ getlogin_r (char *name, size_t namesize)
     return (int)length;
 }
 
+
+#if defined(_MSC_VER) && (_MSC_VER < 1500)
+#define TokenElevation          20
+typedef struct _TOKEN_ELEVATION {
+    DWORD TokenIsElevated;
+} TOKEN_ELEVATION;
+typedef TOKEN_ELEVATION *PTOKEN_ELEVATION;
+#endif
+
+LIBW32_API int
+w32_IsElevated(void)
+{
+    BOOL fRet = FALSE;
+    HANDLE hToken = NULL;
+
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+        TOKEN_ELEVATION Elevation;
+        DWORD cbSize = sizeof(TOKEN_ELEVATION);
+
+        if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
+            fRet = Elevation.TokenIsElevated;
+        }
+        CloseHandle(hToken);
+    }
+    return fRet;
+}
+
+
+/*  Function:           w32_IsAdministrator
+ *      This routine returns TRUE if the caller's process is a member of the
+ *      Administrators local group.
+ *
+ *      Caller is NOT expected to be impersonating anyone and is expected
+ *      to be able to open its own process and process token.
+ *
+ *  Arguments:
+ *      None
+ *
+ *  Return Value:
+ *      TRUE    - Caller has Administrators local group.
+ *      FALSE   - Caller does not have Administrators local group.
+ */
+LIBW32_API int
+w32_IsAdministrator(void)
+{
+    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+    PSID AdministratorsGroup;
+    BOOL b;
+
+    b = AllocateAndInitializeSid(
+            &NtAuthority, 2,
+            SECURITY_BUILTIN_DOMAIN_RID,
+            DOMAIN_ALIAS_RID_ADMINS,
+            0, 0, 0, 0, 0, 0,
+            &AdministratorsGroup);
+
+    if (b) {
+        if (! CheckTokenMembership(NULL, AdministratorsGroup, &b)) {
+            b = FALSE;
+        }
+        FreeSid(AdministratorsGroup);
+    }
+    return b;
+}
 /*end*/
 

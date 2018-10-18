@@ -1,7 +1,7 @@
 #ifndef TERMEMU_VIO_H_INCLUDED
 #define TERMEMU_VIO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.1 2017/04/20 01:27:15 cvsuser Exp $")
+__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.3 2018/09/29 02:22:53 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -26,8 +26,6 @@ __CPRAGMA_ONCE
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ==end==
  */
-
-__BEGIN_DECLS
 
 #include <stdarg.h>
 #include <unistd.h>
@@ -90,6 +88,28 @@ enum vt_colors {
 #define VIO_FAINT           0x8000
 #define VIO_ATTRIBUTES      0xff00
 
+#if defined(TERMEMU_VIO_SOURCE)
+typedef struct WCHAR_COLORINFO {                // color information.
+#define VIO_FOBJECT         0x0001                  // object reference.
+#define VIO_FNORMAL         0x0002                  // normal foreground/background.
+#define VIO_F16             0x0004                  // vt/xterm 16 color palette.
+#define VIO_F256            0x0008                  // vt/xterm 256 color palette (fg and/or bg).
+#define VIO_FRGB            0x0010                  // RGB otherwise vt/xterm (fg and/or bg).
+    WORD                Flags;
+    WORD                Attributes;
+    short               fg, bg;                 // WIN/VT/16 and VT/256
+    COLORREF            fgrgb, bgrgb;           // RGB.
+} WCHAR_COLORINFO;
+
+typedef struct WCHAR_INFO {                     // extended CHAR_INFO
+    WCHAR_COLORINFO Info;
+    union {
+        unsigned        UnicodeChar;
+        unsigned char   AsciiChar;
+    } Char;
+} WCHAR_INFO;
+#endif  // TERMEMU_VIO_SOURCE
+
 __BEGIN_DECLS
 
 #if defined(TERMEMU_VIO_STATIC)
@@ -141,7 +161,7 @@ LIBVIO_API int              vio_atprintf(int row, int col, const char *fmt, ...)
 LIBVIO_API void             vio_putc(unsigned ch, unsigned cnt, int move);
 LIBVIO_API void             vio_flush(void);
 
-#undef VIO_API
+#undef LIBVIO_API
 
 __END_DECLS
 

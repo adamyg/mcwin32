@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.5 2018/10/12 00:52:03 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 system io functionality
@@ -19,13 +22,14 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
  * Group. Copyright remains with the authors and the original Standard can be obtained 
  * online at http://www.opengroup.org/unix/online.html.
- * ==end==
+ * ==extra==
  */
 
 #ifndef _WIN32_WINNT
@@ -38,31 +42,31 @@
 #if defined(HAVE_SYS_SOCKET_H) || defined(__MINGW32__)
 #include <sys/socket.h>
 #else
-#error missing sys/socket.h
+#error missing <sys/socket.h>
 #endif
 
 #if defined(HAVE_SYS_MOUNT_H) || defined(__MINGW32__)
 #include <sys/mount.h>
 #else
-#error missing sys/mount.h
+#error missing <sys/mount.h>
 #endif
 
 #if defined(HAVE_SYS_STATFS_H) || defined(__MINGW32__)
 #include <sys/statfs.h>
 #else
-#error missing sys/statfs.h
+#error missing <sys/statfs.h>
 #endif
 
 #if defined(HAVE_SYS_STATVFS_H) || defined(__MINGW32__)
 #include <sys/statvfs.h>
 #else
-#error missing sys/statvfs.h
+#error missing <sys/statvfs.h>
 #endif
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #else
-#error missing sys/time.h
+#error missing <sys/time.h>
 #endif
 
 #ifdef HAVE_PWD_H
@@ -73,16 +77,39 @@
 #include <grp.h>
 #endif
 
+#ifdef HAVE_DLFCN_H
+#include <dlfcn.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
+#if defined(HAVE_INTTYPES_H) || defined(__MINGW32__)
+#include <inttypes.h>
+#else
+#error missing <inttypes.h>
+#endif
+#if defined(HAVE_STDINT_H) || defined(__MINGW32__)
+#include <stdint.h>
+#else
+#include missing <stdint.h>
+#endif
+#include <stdbool.h>
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #else
-#error missing unistd.h
+#error missing <unistd.h>
 #endif
 
+#include <sys/pack1.h>
+struct __packed_pre__ mypackedstruct {
+    int field;
+} __packed_post__;
+#include <sys/pack0.h>
+
+extern int __w32_check_attr(mode_t mode);
 
 /*
  *  check for unique mode bits ...

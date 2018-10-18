@@ -1,4 +1,11 @@
-/* $Id: telnet.h,v 1.1 2017/02/24 15:36:49 cvsuser Exp $ */
+#ifndef LIBW32_ARPA_TELNET_H_INCLUDED
+#define LIBW32_ARPA_TELNET_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_arpa_telnet_h,"$Id: telnet.h,v 1.2 2018/09/29 02:22:55 cvsuser Exp $")
+__CPRAGMA_ONCE
+
+/* -*- mode: c; indent-width: 4; -*- */
+/* $Id: telnet.h,v 1.2 2018/09/29 02:22:55 cvsuser Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,9 +40,6 @@
  *
  *	@(#)telnet.h	8.2 (Berkeley) 12/15/93
  */
-
-#ifndef _TELNET_H_
-#define	_TELNET_H_
 
 /*
  * Definitions for the TELNET protocol.
@@ -322,4 +326,5 @@ extern char *enctype_names[];
 #ifdef WIN32
 typedef unsigned long u_long;
 #endif
-#endif /* !_TELNET_H_ */
+
+#endif /*LIBW32_ARPA_TELNET_H_INCLUDED*/

@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.8 2018/10/12 00:52:03 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 directory system calls.
@@ -24,7 +27,7 @@
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  */
@@ -38,8 +41,10 @@
 #pragma warning(disable : 4244) // conversion from 'xxx' to 'xxx', possible loss of data
 #pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
 #endif
-const char *            x_w32_cwdd[26];         /* current working directory, per drive */
 
+static BOOL             isshortcut(const char *name);
+
+const char *            x_w32_cwdd[26];         /* current working directory, per drive */
 const char *            x_w32_vfscwd = NULL;    /* virtual UNC path, if any */
 
 
@@ -119,7 +124,7 @@ const char *            x_w32_vfscwd = NULL;    /* virtual UNC path, if any */
 //          As a result of encountering a symbolic link in resolution of the path argument,
 //          the length of the substituted pathname string exceeded {PATH_MAX}.
 */
-int
+LIBW32_API int
 w32_mkdir(const char *path, int mode)
 {
     (void) mode;
@@ -184,17 +189,34 @@ w32_mkdir(const char *path, int mode)
 //          As a result of encountering a symbolic link in resolution of the path argument,
 //          the length of the substituted pathname string exceeded { PATH_MAX}.
 */
-int
+LIBW32_API int
 w32_chdir(const char *path)
 {
-    char t_path[1024];
+    BOOL success;
 
-    if (! SetCurrentDirectoryA(path)) {
+    if (NULL == path || !*path) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    success = SetCurrentDirectoryA(path);
+
+    if (! success) {                            // possible shortcut.
+        if (isshortcut(path)) {
+            char symbuf[1024] = { 0 };
+
+            if (w32_readlink(path, symbuf, sizeof(symbuf)) > 0) {
+                success = SetCurrentDirectoryA(symbuf);
+            }
+        }
+    }
+
+    if (! success) {
         int serverlen = w32_root_unc(path);
 
         if (serverlen > 0) {                    // UNC root path (//servername/)
-	    free((void *)x_w32_vfscwd);
-	    if (NULL != (x_w32_vfscwd = malloc(serverlen + 4))) {
+            free((void *)x_w32_vfscwd);
+            if (NULL != (x_w32_vfscwd = malloc(serverlen + 4))) {
                 char *cursor = (char *)x_w32_vfscwd;
 
                 path += 2;
@@ -215,42 +237,59 @@ w32_chdir(const char *path)
 
     if (!(('/' == path[0] && '/' == path[1]) || // UNC paths
                 ('\\' == path[0] && '\\' == path[1]))) {
+        char t_cwd[1024] = {0};
 
-        if (w32_getcwd(t_path, sizeof(t_path))) {
-            if (isalpha((unsigned char)t_path[0]) && ':' == t_path[1]) {
-                const unsigned nDrive =
-                        toupper(t_path[0]) - 'A';
+        if (w32_getcwd(t_cwd, sizeof(t_cwd))) {
+            if (isalpha((unsigned char)t_cwd[0]) && ':' == t_cwd[1]) {
+                const unsigned nDrive = toupper(t_cwd[0]) - 'A';
                 char env_var[4] = { "=X:" };
 
                 /*
-                *   Cache drive specific directory
-                */
+                 *  Cache drive specific directory
+                 */
                 free((char *)x_w32_cwdd[nDrive]);
-                x_w32_cwdd[nDrive] = WIN32_STRDUP(t_path);
+                x_w32_cwdd[nDrive] = WIN32_STRDUP(t_cwd);
 
                 /*
-                *   Update the environment (=)
-                *       This is required to support the MSVCRT runtime logic based on
-                *       the current-directory-on-drive environment variables. Function
-                *       like (fullpath, spawn, etc) *may* need them to be set.
-                *
-                *   If associated with a 'drive', the current directory should
-                *   have the form of the example below:
-                *       
-                *       C:\Program and Settings\users\
-                *
-                *   so that the environment variable should be of the form:
-                *
-                *       =C:=C:\Program and Settings\users\
-                */
-                env_var[1] = toupper(t_path[0]);
-                w32_unix2dos(t_path);
-                (void) SetEnvironmentVariableA(env_var, t_path);
+                 *  Update the environment (=)
+                 *      This is required to support the MSVCRT runtime logic based on the current-directory-on-drive
+                 *      environment variables. Function like (fullpath, spawn, etc) *may* need them to be set.
+                 *
+                 *  If associated with a 'drive', the current directory should have the form of the example below:
+                 *       
+                 *       C:\Program and Settings\users\
+                 *
+                 *  so that the environment variable should be of the form:
+                 *
+                 *      =C:=C:\Program and Settings\users\
+                 */
+                env_var[1] = toupper(t_cwd[0]);
+                w32_unix2dos(t_cwd);
+                (void) SetEnvironmentVariableA(env_var, t_cwd);
             }
         }
     }
     return 0;
 }
+
+
+static BOOL
+isshortcut(const char *name)
+{
+    const size_t len = strlen(name);
+    const char *cursor;
+
+    for (cursor = name + len; --cursor >= name;) {
+        if (*cursor == '.') {                   // extension
+            return (*++cursor && 0 == WIN32_STRICMP(cursor, "lnk"));
+        }
+        if (*cursor == '/' || *cursor == '\\') {
+            break;                              // delimiter
+        }
+    }
+    return FALSE;
+}
+
 
 
 /*
@@ -353,7 +392,7 @@ w32_chdir(const char *path)
 //          As a result of encountering a symbolic link in resolution of the path argument,
 //          the length of the substituted pathname string exceeded { PATH_MAX}.
 */
-int
+LIBW32_API int
 w32_rmdir(const char *path)
 {
     if (! RemoveDirectoryA(path)) {
@@ -367,7 +406,7 @@ w32_rmdir(const char *path)
  *  w32_root_unc ---
  *      determine if the specific path is a UNC root (i.e. //servername[/])
  */
-int
+LIBW32_API int
 w32_root_unc(const char *path)
 {
     if (('/' == path[0] && '/' == path[1]) ||   // UNC prefix?
@@ -399,4 +438,3 @@ w32_root_unc(const char *path)
 }
 
 /*end*/
-

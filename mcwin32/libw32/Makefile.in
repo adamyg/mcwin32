@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.3 2017/03/13 16:51:35 cvsuser Exp $
+# $Id: Makefile.in,v 1.6 2018/10/10 11:00:45 cvsuser Exp $
 # libwin32 makefile.
 #
 #
-# Copyright (c) 2007, 2012 - 2017 Adam Young.
+# Copyright (c) 2007, 2012 - 2018 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -116,6 +116,7 @@ CSOURCES=\
 	w32_progname.c \
 	w32_pwd.c \
 	w32_read.c \
+	w32_realpath.c \
 	w32_reparse.c \
 	w32_select.c \
 	w32_shell.c \

@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_mkstemp_c,"$Id: w32_mkstemp.c,v 1.5 2018/10/12 00:52:04 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mkstemp() implementation
@@ -18,13 +21,14 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
- * ==end==
+ * ==extra==
  */
 
 #include "win32_internal.h"
@@ -33,6 +37,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <ctype.h>
 #include <unistd.h>
 
 #define DISABLE_HARD_ERRORS     (void)SetErrorMode (0);
@@ -43,38 +48,37 @@
 /*
 //  NAME
 //      mkstemp - make a unique filename
-//  
+//
 //  SYNOPSIS
 //      #include <stdlib.h>
-//  
+//
 //      int mkstemp(char *template);
-//  
+//
 //  DESCRIPTION
-//  
+//
 //      The mkstemp() function shall replace the contents of the string pointed to by
 //      template by a unique filename, and return a file descriptor for the file open for
 //      reading and writing. The function thus prevents any possible race condition between
 //      testing whether the file exists and opening it for use.
-//  
+//
 //      The string in template should look like a filename with six trailing 'X' s;
 //      mkstemp() replaces each 'X' with a character from the portable filename character
 //      set. The characters are chosen such that the resulting name does not duplicate the
 //      name of an existing file at the time of a call to mkstemp().
-//  
+//
 //      Each successful call to mkstemp modifies template. In each subsequent call from the same
 //      process or thread with the same template argument, mkstemp checks for filenames that
 //      match names returned by mkstemp in previous calls. If no file exists for a given name,
 //      mkstemp returns that name. If files exist for all previously returned names, mkstemp
 //      creates a new name by replacing the alphabetic character it used in the previously
 //      returned name with the next available lowercase letter, in order, from 'a' through 'z'.
-//  
+//
 //  RETURN VALUE
-//  
+//
 //      Upon successful completion, mkstemp() shall return an open file descriptor.
 //      Otherwise, -1 shall be returned if no suitable file could be created.
-//  
+//
 //  ERRORS
-//  
 //      No errors are defined.
 */
 
@@ -84,7 +88,7 @@
 static int                  gettemp(char *path, register int *fd, int temporary);
 
 
-int
+LIBW32_API int
 w32_mkstemp(char *path)
 {
     int fildes = -1;
@@ -92,7 +96,7 @@ w32_mkstemp(char *path)
 }
 
 
-int
+LIBW32_API int
 w32_mkstempx(char *path)
 {
     int fildes = -1;
@@ -111,10 +115,10 @@ gettemp(char *path, register int *fildes, int temporary)
 
     pid = (unsigned) WIN32_GETPID();
     for (trv = path; *trv; ++trv)           /* extra X's get set to 0's */
-            /*continue*/;
+        /*continue*/;
     while (*--trv == 'X' && trv >= path) {
-            *trv = (char)((pid % 10) + '0');
-            pid /= 10;
+        *trv = (char)((pid % 10) + '0');
+        pid /= 10;
     }
 
     /*
@@ -127,7 +131,7 @@ gettemp(char *path, register int *fildes, int temporary)
         }
 
         if ((c = *trv) == '/' || c == '\\') {
-                *trv = '\0';
+            *trv = '\0';
             if (trv[-1] == ':') {
                 *trv = c;
                 break;
@@ -165,10 +169,10 @@ gettemp(char *path, register int *fildes, int temporary)
         errno = 0;
         if (fildes) {
                 if ((*fildes = WIN32_OPEN(path, (temporary ? O_MODEX : O_MODE), 0600)) >= 0) {
-                        return GETTEMP_SUCCESS;
+                    return GETTEMP_SUCCESS;
                 }
                 if (EEXIST != errno) {
-                        return GETTEMP_ERROR;
+                    return GETTEMP_ERROR;
                 }
         } else {
                 DISABLE_HARD_ERRORS
@@ -193,7 +197,7 @@ gettemp(char *path, register int *fildes, int temporary)
                 *trv++ = 'a';
             } else {
                 if (isdigit(*trv)) {
-                     *trv = 'a';
+                    *trv = 'a';
                 } else {
                     ++*trv;
                 }

@@ -1,10 +1,14 @@
-#ifndef WIN32_SYS_PARAM_H_INCLUDED
-#define WIN32_SYS_PARAM_H_INCLUDED
-/* -*- mode: c; tabs: 4 -*- */
+#ifndef LIBW32_SYS_PARAM_H_INCLUDED
+#define LIBW32_SYS_PARAM_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_param_h,"$Id: param.h,v 1.4 2018/09/29 02:22:55 cvsuser Exp $")
+__CPRAGMA_ONCE
+
+/* -*- mode: c; indent-width: 4; -*- */
 /*
- * win32 sys/param.h
+ * win32 <sys/param.h>
  *
- * Copyright (c) 2012 - 2017, Adam Young.
+ * Copyright (c) 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -40,4 +44,4 @@
 #define _POSIX2_LINE_MAX	2048
 #define LINE_MAX		2048
 
-#endif /*WIN32_SYS_PARAM_H_INCLUDED*/
+#endif /*LIBW32_SYS_PARAM_H_INCLUDED*/

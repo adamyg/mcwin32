@@ -1,11 +1,14 @@
-#ifndef WIN32_SYS_TIME_H
-#define WIN32_SYS_TIME_H
+#ifndef LIBW32_SYS_TIME_H
+#define LIBW32_SYS_TIME_H
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_time_h,"$Id: time.h,v 1.4 2018/09/29 02:22:56 cvsuser Exp $")
+__CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 sys/time.h implementation.
  *
- * Copyright (c) 2012 - 2017, Adam Young.
+ * Copyright (c) 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -24,9 +27,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ==end==
  */
+
 #include <sys/cdefs.h>
-#include <sys/utypes.h>                         /* suseconds_t */
-#include <sys/select.h>         
+#include <sys/utypes.h>                 /* suseconds_t */
+#include <sys/select.h>
 #include <time.h>
 
 #if defined(NEED_TIMEVAL)
@@ -35,26 +39,26 @@
 //  The <sys/time.h> header shall define the timeval structure that includes at
 //  least the following members:
 //
-//      time_t         tv_sec      Seconds. 
-//      suseconds_t    tv_usec     Microseconds. 
-// 
+//      time_t         tv_sec      Seconds.
+//      suseconds_t    tv_usec     Microseconds.
+//
 //  yet current winsock definitions are as follows.
 //
 struct timeval {
-    long                tv_sec;                 /* seconds */            
-    long                tv_usec;                /* and microseconds */
+    long                tv_sec;         /* seconds */
+    long                tv_usec;        /* and microseconds */
 };
 #endif
 #endif
 
 struct w32_timeval {
-    time_t              tv_sec;                 /* seconds */            
-    suseconds_t         tv_usec;                /* and microseconds */
+    time_t              tv_sec;         /* seconds */
+    suseconds_t         tv_usec;        /* and microseconds */
 };
 
 struct itimerval {
-    struct timeval      it_interval;            /* timer interval */
-    struct timeval      it_value;               /* current value */ 
+    struct timeval      it_interval;    /* timer interval */
+    struct timeval      it_value;       /* current value */
 };
 
 /*
@@ -143,5 +147,5 @@ LIBW32_API struct tm *  gmtime_r(const time_t *ctm, struct tm *res);
 
 __END_DECLS
 
-#endif  /*WIN32_SYS_TIME_H*/
+#endif  /*LIBW32_SYS_TIME_H*/
 

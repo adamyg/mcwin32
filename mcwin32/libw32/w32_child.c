@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.8 2018/10/12 00:52:03 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 sub-process support
@@ -31,12 +34,14 @@
 #include "win32_internal.h"
 #include "win32_child.h"
 
+#include <sys/cdefs.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <assert.h>
 #include <unistd.h>
 
 #pragma comment(lib, "user32.lib")
+
 #if defined(_MSC_VER)
 #pragma warning(disable : 4244) // conversion from 'xxx' to 'xxx', possible loss of data
 #pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
@@ -69,7 +74,7 @@ static HANDLE           ExecChild(win32_spawn_t *args,
                             const char *arg0, char *argv, char *envp, STARTUPINFOA *si, PROCESS_INFORMATION *pi);
 static void             DisplayError(HANDLE hOutput, const char *pszAPI, const char *args);
 static void             InternalError(const char *pszAPI);
-  
+
 
 /*
 //  NAME
@@ -280,7 +285,7 @@ static void             InternalError(const char *pszAPI);
 //      [EINVAL]
 //          The options argument is not valid.
 */
-int
+LIBW32_API int
 w32_waitpid(int pid, int *status, int options)
 {
     int ret = -1;
@@ -303,44 +308,46 @@ w32_waitpid(int pid, int *status, int options)
 }
 
 
-int
+LIBW32_API int
 WEXITSTATUS(int status)
 {
     return ((status) >> 8) & 0xff;
 }
 
 
-int
+LIBW32_API int
 WCOREDUMP(int status)
 {
+    __CUNUSED(status)
     return 0;
 }
 
 
-int
+LIBW32_API int
 WTERMSIG(int status)
 {
     return (status & 0xff);
 }
 
 
-int
-WIFSIGNALED(int status) 
+LIBW32_API int
+WIFSIGNALED(int status)
 {
     return (WTERMSIG (status) != 0);
 }
 
 
-int
+LIBW32_API int
 WIFEXITED(int status)
 {
     return (WTERMSIG (status) == 0);
 }
 
 
-int
+LIBW32_API int
 WIFSTOPPED(int status)
 {
+    __CUNUSED(status)
     return 0;
 }
 
@@ -417,7 +424,7 @@ WIFSTOPPED(int status)
 //      [ESRCH]
 //          No process or process group can be found corresponding to that specified by pid.
 */
-int
+LIBW32_API int
 w32_kill(int pid, int value)
 {
     if (pid > 0) {
@@ -504,7 +511,7 @@ SendCloseMessage(HANDLE hProc)
  *  w32_iscommand ---
  *      Determine the given shell is a DOS/WIN command processor
  */
-int
+LIBW32_API int
 w32_iscommand(const char *shell)
 {
     const int slen = (int)strlen(shell);
@@ -524,7 +531,7 @@ static int
 cmdis(const char *shell, int slen, const char *cmd)
 {
     const int clen = (int)strlen(cmd);
-    const char *p = shell+slen-clen;
+    const char *p = shell + slen - clen;
 
     if (slen == clen || (slen > clen && (p[-1] == '\\' || p[-1] == '/'))) {
         if (_stricmp(p, cmd) == 0) {
@@ -540,10 +547,10 @@ cmdis(const char *shell, int slen, const char *cmd)
  *      Setup a STARTUPINFO structure and launches redirected child using
  *      the specified stdin/stdout and stderr handles.
  *
- *      This is a low level interface and expects the caller has setup the 
+ *      This is a low level interface and expects the caller has setup the
  *      calling environment.
  */
-HANDLE
+LIBW32_API HANDLE
 w32_child_exec(
     struct win32_spawn *args, HANDLE hStdIn, HANDLE hStdOut, HANDLE hStdErr)
 {
@@ -588,7 +595,7 @@ w32_child_exec(
      */
     if (0 == (hProc = ExecChild(args, NULL, argblk, envblk, &si, &pi))) {
         const char *path, *cmd =
-                (args->argv ? args->argv[0] : args->cmd);
+                        (args->argv ? args->argv[0] : args->cmd);
         char *pfin, *buf = NULL;
 
         //  Complete if,
@@ -706,7 +713,7 @@ WASNOT_ENOENT(void)
  *      for termstat, the return code of the specified process will not be
  *      stored.
  */
-BOOL
+LIBW32_API BOOL
 w32_child_wait(HANDLE hProc, int *status, int nowait)
 {
     DWORD dwStatus, rc;
@@ -715,7 +722,7 @@ w32_child_wait(HANDLE hProc, int *status, int nowait)
     /*
      *  Explicitly check for process_id being -1 or -2.
      *
-     *  In Windows NT, -1 is a handle on the current process, -2 is the
+     *  In Windows NT, -1 is a handle on the current process, -2 is a handle to the
      *  current thread, and it is perfectly legal to to wait (forever) on either.
      */
     if (hProc == (HANDLE)-1 || hProc == (HANDLE)-2) {

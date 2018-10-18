@@ -1,5 +1,9 @@
 #ifndef LIBW32_WIN32_INCLUDE_H_INCLUDED
 #define LIBW32_WIN32_INCLUDE_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_win32_include_h,"$Id: win32_include.h,v 1.5 2018/09/29 02:22:55 cvsuser Exp $")
+__CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * winsock2.h and windows.h include guard
@@ -53,6 +57,6 @@
 #define WINDOWS_MEAN_AND_LEAN
 #endif
 #include <windows.h>
-#endif
+#endif /*HAVE_WINDOWS_H_INCLUDED*/
 
 #endif /*LIBW32_WIN32_INCLUDE_H_INCLUDED*/

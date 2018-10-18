@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_gistrerror_c,"$Id: w32_gistrerror.c,v 1.6 2018/10/12 00:52:03 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 gi_strerror()
@@ -33,19 +36,19 @@
 /*
 //  NAME
 //      gai_strerror - address and name information error description
-//  
+//
 //  SYNOPSIS
 //      #include <netdb.h>
 //      const char *gai_strerror(int ecode);
-//  
+//
 //  DESCRIPTION
-//  
+//
 //      The gai_strerror() function shall return a text string describing an error value
 //      for the getaddrinfo() and getnameinfo() functions listed in the <netdb.h> header.
-//  
+//
 //      When the ecode argument is one of the following values listed in the <netdb.h>
 //      header:
-//  
+//
 //          [EAI_AGAIN]
 //          [EAI_BADFLAGS]
 //          [EAI_FAIL]
@@ -56,22 +59,22 @@
 //          [EAI_SERVICE]
 //          [EAI_SOCKTYPE]
 //          [EAI_SYSTEM]
-//  
+//
 //      the function return value shall point to a string describing the error. If the
 //      argument is not one of those values, the function shall return a pointer to a
 //      string whose contents indicate an unknown error.
-//  
+//
 //  RETURN VALUE
 //      Upon successful completion, gai_strerror() shall return a pointer to an
 //      implementation-defined string.
-//  
+//
 //  ERRORS
 //      No errors are defined.
 */
 
 #if (defined(_MSC_VER) && (_MSC_VER < 1400)) || \
 	defined(__WATCOMC__)
-const char * 
+LIBW32_API const char * 
 gai_strerror(int ecode)
 {
     return w32_gai_strerror(ecode);
@@ -83,18 +86,18 @@ w32_gai_strerror(int ecode)
 {
     switch (ecode) {
 #if defined(EAI_ADDRFAMILY)
-    case EAI_ADDRFAMILY:    return "address family for host not supported";       
+    case EAI_ADDRFAMILY:    return "address family for host not supported";
 #endif
-    case EAI_AGAIN:         return "temporary failure in name resolution";     
-    case EAI_BADFLAGS:      return "invalid flags value";      
-    case EAI_FAIL:          return "non-recoverable failure in name resolution";       
-    case EAI_FAMILY:        return "address family not supported";     
-    case EAI_MEMORY:        return "memory allocation failure";        
+    case EAI_AGAIN:         return "temporary failure in name resolution";
+    case EAI_BADFLAGS:      return "invalid flags value";
+    case EAI_FAIL:          return "non-recoverable failure in name resolution";
+    case EAI_FAMILY:        return "address family not supported";
+    case EAI_MEMORY:        return "memory allocation failure";
 #if defined(EAI_NOSECURENAME)
     case EAI_NOSECURENAME:  return "no such host is known securely";
 #endif
     case EAI_NONAME:        return "name does not resolve for the supplied parameters or host nor service provided";
-    case EAI_SERVICE:       return "service not supported for socket type";        
+    case EAI_SERVICE:       return "service not supported for socket type";
     case EAI_SOCKTYPE:      return "socket type not supported";
 #if defined(EAI_IPSECPOLICY)
     case EAI_IPSECPOLICY:   return "name based IPSEC policy could not be added";
@@ -103,7 +106,7 @@ w32_gai_strerror(int ecode)
     case EAI_SYSTEM:        return "system error";
 #endif
 #if defined(EAI_NODATA) && (EAI_NODATA != EAI_NONAME)
-    case EAI_NODATA:        return "no address associated with host";      
+    case EAI_NODATA:        return "no address associated with host";
 #endif
     case WSANOTINITIALISED: return "winsock is not initialised";
     default:

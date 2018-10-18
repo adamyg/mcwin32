@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_ino_c,"$Id: w32_ino.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 ino implementation
@@ -41,7 +44,7 @@
  *  w32_ino_has ---
  *      Generate a file inode based on a simple hash of the specific file-name.
  */
-ino_t
+LIBW32_API ino_t
 w32_ino_hash(const char *name)
 {
     const char *p = name;
@@ -93,7 +96,7 @@ w32_ino_hash(const char *name)
  *      replaced file, is retained as the file ID of the resulting file.
  *
  */
-ino_t
+LIBW32_API ino_t
 w32_ino_gen(const DWORD fileIndexLow, const DWORD fileIndexHigh)
 {
     //
@@ -120,7 +123,7 @@ w32_ino_gen(const DWORD fileIndexLow, const DWORD fileIndexHigh)
 
     const uint64_t ino64    =                   /* high + low */
             (uint64_t) UINT64MAKE (fileIndexLow, fileIndexHigh);
-    
+
     const uint64_t fileid   =                   /* strip sequence number */
             ino64 & ((~(0ULL)) >> SEQNUMSIZE);
 
@@ -133,7 +136,7 @@ w32_ino_gen(const DWORD fileIndexLow, const DWORD fileIndexHigh)
  *  w32_ino_hande ---
  *      Generate a file inode for the specified open file 'handle'.
  */
-ino_t
+LIBW32_API ino_t
 w32_ino_handle(HANDLE handle)
 {
     BY_HANDLE_FILE_INFORMATION fi = {0};
@@ -149,14 +152,14 @@ w32_ino_handle(HANDLE handle)
  *  w32_ino_fildes ---
  *      Generate a file inode for the specified open osf file 'fildes'.
  */
-ino_t
+LIBW32_API ino_t
 w32_ino_fildes(int fildes)
 {
     HANDLE handle;
 
     if (fildes < 0) {
         return 0;
-    } else if (fildes >= WIN32_FILDES_MAX || 
+    } else if (fildes >= WIN32_FILDES_MAX ||
                 (handle = (HANDLE) _get_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
         return 0;
     }
@@ -168,13 +171,13 @@ w32_ino_fildes(int fildes)
  *  w32_ino_file ---
  *      Generate a file inode for the specified file 'path'.
  */
-ino_t
+LIBW32_API ino_t
 w32_ino_file(const char *path)
 {
     HANDLE handle;
 
     if (NULL != path && *path &&
-            INVALID_HANDLE_VALUE != (handle = 
+            INVALID_HANDLE_VALUE != (handle =
                 CreateFileA(path, 0, 0, NULL, OPEN_EXISTING,
                             FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL))) {
         const ino_t ino = w32_ino_handle(handle);

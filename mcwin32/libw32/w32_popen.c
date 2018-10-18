@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 popen implementation
@@ -18,13 +21,14 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
  * Group. Copyright remains with the authors and the original Standard can be obtained 
  * online at http://www.opengroup.org/unix/online.html.
- * ==end==
+ * ==extra==
  */
 
 #include "win32_internal.h"
@@ -132,7 +136,7 @@ static struct pipe *    pipe_queue = (void *)-1;
 //      if cmd contains '2>&1', we connect the standard error file handle to the standard
 //      output file handle, otherwise create a STDERR stream.
 */
-FILE *
+LIBW32_API FILE *
 w32_popen(const char *cmd, const char *mode)
 {
 #if (defined(_MSVC_VER) || defined(__WATCOMC__)) && \
@@ -282,7 +286,7 @@ pipe_error:
  *  Note:
  *      WIN32 pipes are blocking.
  */
-int
+LIBW32_API int
 w32_pread_err(FILE *file, char *buf, int length)
 {
     if (file) {
@@ -369,7 +373,7 @@ w32_pread_err(FILE *file, char *buf, int length)
 //      [ECHILD]
 //          The status of the child process could not be obtained, as described above.
 */
-int
+LIBW32_API int
 w32_pclose(FILE *file)
 {
 #if (defined(_MSVC_VER) || defined(__WATCOMC__)) && \
@@ -471,7 +475,6 @@ Pipe2(HANDLE *read, HANDLE *write, int inherit)
     errno = EMFILE;                             // popen()
     return FALSE;
 }
-
 
 
 /*

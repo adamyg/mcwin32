@@ -1,14 +1,14 @@
 #ifndef GR_EDPACKAGE_H_INCLUDED
 #define GR_EDPACKAGE_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(edpackage_h, "$Id: package.h.in,v 1.1 2017/03/01 23:57:35 cvsuser Exp $")
+__CIDENT_RCSID(edpackage_h, "$Id: package.h.in,v 1.2 2018/09/29 02:22:53 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: h; set-indent: 4; -*- */
-/* $Id: package.h.in,v 1.1 2017/03/01 23:57:35 cvsuser Exp $
+/* $Id: package.h.in,v 1.2 2018/09/29 02:22:53 cvsuser Exp $
  * Package configuration.
  *
- *			    
+ *
  * This file is part of the Midnight Commander.
  *
  * The Midnight Commander is free software: you can redistribute it

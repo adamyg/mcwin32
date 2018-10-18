@@ -1,5 +1,8 @@
 #ifndef LIBW32_NETDB_H_INCLUDED
 #define LIBW32_NETDB_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_netdb_h,"$Id: netdb.h,v 1.6 2018/09/29 02:22:53 cvsuser Exp $")
+__CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*

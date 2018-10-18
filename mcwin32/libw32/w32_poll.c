@@ -1,30 +1,27 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.1 2017/03/13 17:26:39 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.4 2018/10/12 00:52:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 poll system calls
  *
  * Copyright (c) 1998 - 2018, Adam Young.
- * All rights reserved.
  *
- * This file is part of the GRIEF Editor.
  *
- * The GRIEF Editor is free software: you can redistribute it
- * and/or modify it under the terms of the GRIEF Editor License.
+ * This file is part of the Midnight Commander.
  *
- * Redistributions of source code must retain the above copyright
- * notice, and must be distributed with the license document above.
+ * The Midnight Commander is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
  *
- * Redistributions in binary form must reproduce the above copyright
- * notice, and must include the license document above in
- * the documentation and/or other materials provided with the
- * distribution.
- *
- * The GRIEF Editor is distributed in the hope that it will be useful,
+ * The Midnight Commander is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
@@ -53,6 +50,7 @@ __CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.1 2017/03/13 17:26:39 cvsuser 
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
+
 #if defined(_MSC_VER)
 #pragma warning(disable : 4244) // conversion from 'xxx' to 'xxx', possible loss of data
 #endif
@@ -187,14 +185,14 @@ static int w32_poll(int native, struct pollfd *fds, int cnt, int timeout);
 //      getmsg(), putmsg(), read(), select(), write(), <poll.h>
 */
 
-int
+LIBW32_API int
 w32_poll_fd(struct pollfd *fds, int cnt, int timeout)
 {
     return w32_poll(FALSE, fds, cnt, timeout);
 }
 
 
-int
+LIBW32_API int
 w32_poll_native(struct pollfd *fds, int cnt, int timeout)
 {
     return w32_poll(TRUE, fds, cnt, timeout);

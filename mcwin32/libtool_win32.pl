@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.6 2017/03/13 16:52:06 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.9 2018/10/18 22:37:48 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -168,6 +168,11 @@ Compile() {
     while (scalar @ARGV > 1) {
         $_ = shift @ARGV;
 
+        if (/^\@(.*)$/) {                       # @cmdfile
+            OpenCommandFile($1);
+            next;
+        }
+
         if (/^-o(.*)$/) {                       # -o <object>
             my $val = ($1 ? $1 : shift @ARGV);
             if ($val && $val !~ /\./) {
@@ -330,6 +335,11 @@ Link() {
 
     while (scalar @ARGV) {
         $_ = shift @ARGV;
+
+        if (/^\@(.*)$/) {                       # @cmdfile
+            OpenCommandFile($1);
+            next;
+        }
 
         if (/^-o(.*)$/) {                       # -o <output>
             my $val = ($1 ? $1 : shift @ARGV);
@@ -584,12 +594,12 @@ Link() {
         #
         #   MSVC/Watcom
         #
-		if (defined $ENV{'VCINSTALLDIR'}) {		# 2008
-			$cmd = "\"%VCINSTALLDIR%\\bin\\link\" \@$cmdfile";
+        if (defined $ENV{'VCINSTALLDIR'}) {      # 2008
+            $cmd = "\"%VCINSTALLDIR%\\bin\\link\" \@$cmdfile";
 
-		} else {								# 2010 plus
-			$cmd = "\"%VCToolsInstallDir%\\bin\\Hostx86\\x86\\link\" \@$cmdfile";
-		}
+        } else {                                 # 2010 plus
+            $cmd = "\"%VCToolsInstallDir%\\bin\\Hostx86\\x86\\link\" \@$cmdfile";
+        }
 
         open(CMD, ">${cmdfile}") or
             die "cannot create <${$cmdfile}>: $!\n";
@@ -643,6 +653,7 @@ Link() {
             #   libraries are not used, these options are not required.
             #
         print CMD "name     ${dllpath}\n";
+     #
      #  print CMD "option   modname='${modulepath}'\n";
      #  print CMD "option   copyright=''\n";
         print CMD "option   description=${DESCRIPTION}\n"
@@ -660,6 +671,7 @@ Link() {
       if (! $wc_debugger) {                     # options are exclusive; plus before objects.
         $sympath = "${basepath}${version_number}.sym";
         print CMD "option   symfile=${sympath}\n";
+            #XXX: consider default when -d1, allowing use within a production environment
       } elsif ($wc_debugger eq 'w') {
         print CMD "debug    watcom all\n";      # 'watcom all' is fatal at times!
       } elsif ($wc_debugger eq 'c') {
@@ -787,6 +799,28 @@ Link() {
 }
 
 
+sub
+OpenCommandFile($) {
+    my ($file) = @_;
+    my @NARGV;
+
+    open(CMD, "<${file}") or
+        die "cannot open command line <$file> : $!\n";
+    while (<CMD>) {
+        s/\s*([\n\r]+|$)//;
+        s/^\s+//;
+        next if (!$_ || /^[;\#]/);              # blank or comment
+        push @NARGV, $_;
+    }
+    close(CMD);
+
+    (scalar @NARGV) or
+        die "empty command line <$file>\n";
+
+    unshift(@ARGV, @NARGV);                     # insert results
+}
+
+
 #   Function: ParseDefFile
 #       Parse a definition file.
 #
@@ -825,8 +859,8 @@ ParseDefFile($$$) {
             Warning("link: $file ($.), 'NAME $1'option ignored\n");
             next;
 
-        } elsif (/^DESCRIPTION\s+.*$/) {
-            push @$DESCRIPTIONRef, $_;
+        } elsif (/^DESCRIPTION\s+(.*)$/) {
+            $$DESCRIPTIONRef = $1;
             next;
 
         } elsif (/^LIBRARY\s+(.*)/) {
@@ -876,7 +910,7 @@ MSVCExportDef($) {
     my $ret = "";
 
     if ($name =~ /\@(.+)$/) {                   # optional ordinal
-        $ordinal = ",@$1";
+        $ordinal = ",@"."$1";
         $name =~ s/\s*\@.+$//;
     }
 
@@ -949,7 +983,7 @@ ParseSymFile($$) {
     my $mode = 0;
 
     open(SYM, "<${file}") or
-        die "cannot open <$file> : $!\n";
+        die "cannot open symbol file <$file> : $!\n";
     while (<SYM>) {
         s/\s*([\n\r]+|$)//;
         s/^\s+//;
@@ -973,6 +1007,11 @@ Clean() {
     while (scalar @ARGV) {
         $_ = shift @ARGV;
 
+        if (/^\@(.*)$/) {                       # @cmdfile
+            OpenCommandFile($1);
+            next;
+        }
+
         if (/\.lo$/ || /\.o$/ || /\.obj$/ || /\.res$/) {
             push @OBJECTS, $_;
 
@@ -988,7 +1027,7 @@ Clean() {
         my $lib = $_;
         if ($lib =~ /\.la$/ && -f $lib) {       # library artifact
             open(LA, "<${lib}") or
-                die "cannot open <${lib}> : $!\n";
+                die "cannot open library artifact <${lib}> : $!\n";
             while (<LA>) {
                 s/\s*([\n\r]+|$)//;
                 if (/^(lib|dll|map|sym|pdb|exp)=(.*)$/) {
@@ -1037,7 +1076,7 @@ true_object($)          #(lo)
     return $lo
         if ($lo !~ /.lo$/);
     open(LO, "<${lo}") or
-        die "cannot open <$lo> : $!\n";
+        die "cannot open object image <$lo> : $!\n";
     while (<LO>) {
         s/\s*([\n\r]+|$)//;
         next if (!$_ || /^\s#/);
@@ -1084,7 +1123,7 @@ Help {
     print STDERR "@_\n\n"
         if (@_);
     print STDERR << "EOF";
-Minimal windows libtool emulation (version: 0.40)
+Minimal windows libtool emulation (version: 0.41)
 
 usage:  libtool.pl [options] ...
 
@@ -1100,7 +1139,7 @@ Usage {
     print STDERR "@_\n\n"
         if (@_);
     print STDERR << "EOF";
-Minimal win32 libtool emulation (version: 0.3)
+Minimal win32 libtool emulation (version: 0.41)
 
 usage:  libtool.pl [options] ...
 

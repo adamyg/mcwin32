@@ -1,9 +1,12 @@
-#ifndef WIN32_SYS_WAIT_H
-#define WIN32_SYS_WAIT_H
+#ifndef LIBW32_SYS_WAIT_H
+#define LIBW32_SYS_WAIT_H
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_wait_h,"$Id: wait.h,v 1.4 2018/09/29 02:22:56 cvsuser Exp $")
+__CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * Copyright (c) 2012 - 2017 Adam Young.
+ * Copyright (c) 2012 - 2018 Adam Young.
  * All rights reserved.
  *
  *
@@ -24,4 +27,4 @@
  * ==end==
  */
 
-#endif /*WIN32_SYS_WAIT_H*/
+#endif /*LIBW32_SYS_WAIT_H*/

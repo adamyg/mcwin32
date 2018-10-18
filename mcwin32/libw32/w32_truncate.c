@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.4 2018/09/29 02:22:55 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 ftruncate()/truncate() system calls.
@@ -131,7 +134,7 @@
 //
 //       [ENOTDIR]
 //           A component of the path prefix of path is not a directory.
-//           
+//
 //       [EROFS]
 //           The named file resides on a read-only file system.
 //

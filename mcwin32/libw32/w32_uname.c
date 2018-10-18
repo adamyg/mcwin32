@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.5 2018/09/29 02:22:55 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 uname() system calls.
@@ -143,8 +146,10 @@ uname(struct utsname *u)
                  *  6   Windows Vista, Windows Server "Longhorn". Vista or Windows 7.
                  *
                  *  The following table summarizes the most recent operating system version numbers.
-                 *   
+                 *
                  *      Operating system            Version number
+                 *      Windows 10                  10.0
+                 *      Windows 8.1                 6.3
                  *      Windows 8                   6.2
                  *      Windows Server 2012         6.2
                  *      Windows 7                   6.1
@@ -174,7 +179,7 @@ uname(struct utsname *u)
                     } else if (ovi.dwMajorVersion >= 6) {
                         osname = "Vista";       // vista or greater
 
-                        if (0 == oviex.dwMinorVersion) {
+                        if (0 == oviex.dwMinorVersion) { // 6.0
                             if (VER_NT_WORKSTATION == oviex.wProductType) {
                                 osname = "Windows Vista";
 #if defined(VER_SUITE_ENTERPRISE)
@@ -189,25 +194,26 @@ uname(struct utsname *u)
                             } else {
                                 osname = "Windows Server 2008";
                             }
-                        } else if (1 == oviex.dwMinorVersion) {
+                        } else if (1 == oviex.dwMinorVersion) { //6.1
                             if (VER_NT_WORKSTATION == oviex.wProductType) {
                                 osname = "Windows 7";
                             } else {
                                 osname = "Windows Server 2008 R2";
                             }
-                        } else if (2 == oviex.dwMinorVersion) {
+                        } else if (2 == oviex.dwMinorVersion) { //6.2
                             if (VER_NT_WORKSTATION == oviex.wProductType) {
                                 osname = "Windows 8";
                             } else {
                                 osname = "Windows Server 2012";
                             }
-                        } else {
+                        } else {                // 6.3
                             if (VER_NT_WORKSTATION == oviex.wProductType) {
                                 osname = "Windows 8.1";
                             } else {
                                 osname = "Windows Server 2012+";
                             }
                         }
+
 #if defined(TODO)
                         pGPI = (PGPI) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
                         pGPI(osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);

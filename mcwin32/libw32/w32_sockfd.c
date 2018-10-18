@@ -1,29 +1,32 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+
 /*
-* win32 socket file-descriptor support
-*
-* Copyright (c) 2007, 2012 - 2018 Adam Young.
-*
-* This file is part of the Midnight Commander.
-*
-* The Midnight Commander is free software: you can redistribute it
-* and/or modify it under the terms of the GNU General Public License as
-* published by the Free Software Foundation, either version 3 of the License,
-* or (at your option) any later version.
-*
-* The Midnight Commander is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*
-* Notice: Portions of this text are reprinted and reproduced in electronic form. from
-* IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
-* 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
-* Group. Copyright remains with the authors and the original Standard can be obtained
-* online at http://www.opengroup.org/unix/online.html.
-* ==end==
+ * win32 socket file-descriptor support
+ *
+ * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ *
+ * This file is part of the Midnight Commander.
+ *
+ * The Midnight Commander is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * The Midnight Commander is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Notice: Portions of this text are reprinted and reproduced in electronic form. from
+ * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
+ * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
+ * Group. Copyright remains with the authors and the original Standard can be obtained
+ * online at http://www.opengroup.org/unix/online.html.
+ * ==end==
 */
 
 #ifndef _WIN32_WINNT
@@ -53,7 +56,7 @@ static SOCKET *             x_fdsockets;
 /*
  *  file-descriptor association initialisation.
  */
-void
+LIBW32_API void
 w32_sockfd_init(void)
 {
     if (!x_fdinit) {
@@ -72,7 +75,7 @@ w32_sockfd_init(void)
 /*
  *  update the file-descriptor limit
  */
-int
+LIBW32_API int
 w32_sockfd_limit(int fd)
 {
     assert(fd >= -1 /*error*/ && fd < WIN32_FILDES_MAX);
@@ -87,7 +90,7 @@ w32_sockfd_limit(int fd)
 /*
  *  associate a file-descriptor with a socket.
  */
-void
+LIBW32_API void
 w32_sockfd_open(int fd, SOCKET s)
 {
     assert(fd >= 0 && fd < WIN32_FILDES_MAX);
@@ -105,7 +108,7 @@ w32_sockfd_open(int fd, SOCKET s)
 /*
  *      retrieve the socket associated with a file-descriptor.
  */
-SOCKET
+LIBW32_API SOCKET
 w32_sockfd_get(int fd)
 {
     if (fd >= WIN32_FILDES_MAX) {               /* not an osf handle; hard limit */
@@ -132,7 +135,7 @@ w32_sockfd_get(int fd)
 /*
  *      unassociate a file-descriptor with a socket.
  */
-void
+LIBW32_API void
 w32_sockfd_close(int fd, SOCKET s)
 {
     if (fd >= 0 && fd < x_fdinit) {
@@ -158,7 +161,7 @@ w32_sockfd_close(int fd, SOCKET s)
 //	return 0;
 //  }
 
-int
+LIBW32_API int
 w32_issockfd(int fd, SOCKET *s)
 {
     SOCKET t_s = INVALID_SOCKET;

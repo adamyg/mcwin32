@@ -1,14 +1,14 @@
-#ifndef GR_IN_H_INCLUDED
-#define GR_IN_H_INCLUDED
+#ifndef LIBW32_SYS_IN_H_INCLUDED
+#define LIBW32_SYS_IN_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_netinet_in_h,"$Id: in.h,v 1.2 2017/03/13 16:51:36 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_netinet_in_h,"$Id: in.h,v 1.3 2018/09/29 02:22:55 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  *  netinet/in.h
  *
- * Copyright (c) 1998 - 2017, Adam Young.
+ * Copyright (c) 1998 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -31,4 +31,5 @@ __CPRAGMA_ONCE
 #include <sys/cdefs.h>
 #include <win32_include.h>                      /* winsock and windows.h guard */
 
-#endif /*GR_IN_H_INCLUDED*/
+#endif /*LIBW32_SYS_IN_H_INCLUDED*/
+

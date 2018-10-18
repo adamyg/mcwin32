@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.8 2018/10/12 00:52:05 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 util unix functionality.
@@ -41,7 +44,7 @@
  *  w32_getshell ---
  *      Retrieve the default shell.
  */
-const char *
+LIBW32_API const char *
 w32_getshell(void)
 {
     const char *shname;
@@ -65,7 +68,7 @@ w32_getshell(void)
  *  w32_gethome ---
  *      Retrieve the default home directory.
  */
-const char *
+LIBW32_API const char *
 w32_gethome(int ignore_env)
 {
     static const char *x_home = NULL;
@@ -180,7 +183,7 @@ char *
 w32_unix2dos(char *path)
 {
     if (path) {
-	char *p;
+        char *p;
         for (p = path; *p; ++p) {
             if ('/' == *p) *p = '\\';               /* Unix<>DOS */
         }
@@ -203,7 +206,7 @@ w32_strslash(const char *path)
 }
 
 
-enum w32ostype
+LIBW32_API enum w32ostype
 w32_ostype(void)
 {
     static int platform = 0;
@@ -212,7 +215,7 @@ w32_ostype(void)
         OSVERSIONINFO ovi = {0};
         ovi.dwOSVersionInfoSize = sizeof(ovi);
         GetVersionEx(&ovi);
-			// TODO: replace with RtlGetVersion() as GetVersionEx() is now defunct; 8.1+.
+            // TODO: replace with RtlGetVersion() as GetVersionEx() is now defunct; 8.1+.
         switch (ovi.dwPlatformId) {
         case VER_PLATFORM_WIN32s:
         case VER_PLATFORM_WIN32_WINDOWS:
@@ -224,28 +227,28 @@ w32_ostype(void)
             break;
 #endif
         case VER_PLATFORM_WIN32_NT:
-            //  Operating system    Version dw??Version	    Other
-            //                              Major   Minor
+            //  Operating system        Version     Version         Other
+            //                          Number      Major   Minor
             //
-            //  Windows 10	        10.0*	    10	    0	    OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
-            //  Windows Server 2016	10.0*	    10	    0	    OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
-            //  Windows 8.1	        6.3*	    6	    3	    OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
-            //  Windows Server 2012 R2	6.3*	    6	    3	    OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
-            //  8	            6.2	    6	    2	    OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
-            //  Server 2012         6.2	    6       2	    OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
-            //  7	            6.1	    6	    1	    OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
-            //  Server 2008 R2	    6.1	    6	    1	    OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
-            //  Server 2008	    6.0	    6	    0	    OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
-            //  Vista	            6.0     6       0	    OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
-            //  Server 2003 R2	    5.2	    5	    2	    GetSystemMetrics(SM_SERVERR2) != 0
-            //  Home Server	    5.2	    5	    2	    OSVERSIONINFOEX.wSuiteMask & VER_SUITE_WH_SERVER
-            //  Server 2003	    5.2	    5	    2	    GetSystemMetrics(SM_SERVERR2) == 0
-            //  XP Professional x64 5.2	    5	    2	    (OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION) && 
+            //  Windows 10              10.0*       10      0       OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
+            //  Windows Server 2016     10.0*       10      0       OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
+            //  Windows 8.1             6.3*        6       3       OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
+            //  Windows Server 2012 R2  6.3*        6       3       OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
+            //  8                       6.2         6       2       OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
+            //  Server 2012             6.2         6       2       OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
+            //  7                       6.1         6       1       OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
+            //  Server 2008 R2          6.1         6       1       OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
+            //  Server 2008             6.0         6       0       OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
+            //  Vista                   6.0         6       0       OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
+            //  Server 2003 R2          5.2         5       2       GetSystemMetrics(SM_SERVERR2) != 0
+            //  Home Server             5.2         5       2       OSVERSIONINFOEX.wSuiteMask & VER_SUITE_WH_SERVER
+            //  Server 2003             5.2         5       2       GetSystemMetrics(SM_SERVERR2) == 0
+            //  XP Professional x64     5.2         5       2       (OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION) &&
             //                                                      (SYSTEM_INFO.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-            //  XP	                5.1	    5	    1	    Not applicable
-            //  2000	                5.0	    5	    0	    Not applicable
+            //  XP                      5.1         5       1       Not applicable
+            //  2000                    5.0         5       0       Not applicable
             //
-            //      * For applications that have been manifested for Windows 8.1 or Windows 10.  Applications not manifested 
+            //      * For applications that have been manifested for Windows 8.1 or Windows 10.  Applications not manifested
             //      for Windows 8.1 or Windows 10 will return the Windows 8 OS version value (6.2). To manifest your applications
             //      for Windows 8.1 or Windows 10, refer to Targeting your application for Windows.
             //
@@ -274,7 +277,7 @@ w32_ostype(void)
 }
 
 
-int
+LIBW32_API int
 w32_getexedir(char *buf, int maxlen)
 {
     if (GetModuleFileNameA(NULL, buf, maxlen)) {

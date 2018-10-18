@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_select_c,"$Id: w32_select.c,v 1.6 2018/09/29 02:22:54 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  *  Windows 'select' compat interface
@@ -29,6 +32,7 @@
 
 #include "win32_internal.h"
 
+#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #define  WIN32_SOCKET_H_CLEAN                   // disable mapping
@@ -83,6 +87,9 @@ w32_select(
     Select_t *selfds;
     u_int selcnt, invalid;
     DWORD timeout = 0;
+    int ret;
+
+    __CUNUSED(nfs)
 
     selcnt = (readfds ? readfds->fd_count : 0) + (writefds ? writefds->fd_count : 0) +
                 (exceptfds ? exceptfds->fd_count : 0);
@@ -100,7 +107,11 @@ w32_select(
         tm += (tm->tv_sec * 1000);
         tm += (tm->tv_usec / (1000000));
     }
-    return sel_wait( selcnt, selfds, timeout );
+
+    ret = sel_wait(selcnt, selfds, timeout);
+    free(selfds);
+
+    return ret;
 }
 
 
@@ -148,7 +159,7 @@ sel_build(
                             selfds[fd].s_type = FD_CHAR;
                             selfds[fd].s_poll = sel_unknown;
                         }
-                    }    
+                    }
                     break;
 
                 case FILE_TYPE_DISK:            // disk file
@@ -192,7 +203,7 @@ sel_build(
 
 static int
 sel_wait( u_int cnt, Select_t *selfds, DWORD timeout )
-{   
+{
     DWORD stick;
     HANDLE waitfor[MAXIMUM_WAIT_OBJECTS];       // system limit
     u_int i = 0;
@@ -204,7 +215,7 @@ sel_wait( u_int cnt, Select_t *selfds, DWORD timeout )
     while (i < cnt) {                           // build waitfor array
         waitfor[i] = selfds[i].s_handle;
         i++;
-    }    
+    }
 
     stick = GetTickCount();                     // start tick
     for (;;) {
@@ -213,7 +224,7 @@ sel_wait( u_int cnt, Select_t *selfds, DWORD timeout )
             return -EIO;
         }
 
-        // Timeout 
+        // Timeout
         if (ret == WAIT_TIMEOUT) {
             break;
         }
@@ -271,12 +282,12 @@ sel_console(Select_t *selfd)
                     break;
                 }
             }
-            (void) ReadConsoleInput (h, &k, 1, &count);
+	    (void) ReadConsoleInput (h, &k, 1, &count);
         }
 }
 
 
-static void         
+static void
 sel_block(Select_t *selfd)
 {
     assert(0);                                  // TODO
@@ -312,11 +323,11 @@ sel_socket(Select_t *selfd)
         if (FD_ISSET(socket, &rfds)) selfd->s_avail |= T_READ;
         if (FD_ISSET(socket, &wfds)) selfd->s_avail |= T_WRITE;
         if (FD_ISSET(socket, &efds)) selfd->s_avail |= T_EXCEPT;
-    } 
+    }
 }
 
 
-static void         
+static void
 sel_unknown(Select_t *selfd)
 {
     ++selfd->s_error;

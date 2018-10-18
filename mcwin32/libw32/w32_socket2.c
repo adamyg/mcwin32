@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.4 2018/10/12 00:52:04 cvsuser Exp $")
+
 /*
  * win32 socket () system calls
  * Light weight replacement functions, which maintain the global errno.
@@ -62,7 +65,7 @@ nativehandle(int fd)
 /*
  *  socket() system call
  */
-int
+LIBW32_API int
 w32_socket_native(int af, int type, int protocol)
 {
     int done = 0, ret;
@@ -89,7 +92,7 @@ retry:;
 /*
  *  connect() system call
  */
-int
+LIBW32_API int
 w32_connect_native(int fd, const struct sockaddr *name, socklen_t namelen)
 {
     SOCKET osf;
@@ -109,7 +112,7 @@ w32_connect_native(int fd, const struct sockaddr *name, socklen_t namelen)
 /*
  *  bind() system call
  */
-int
+LIBW32_API int
 w32_bind_native(int fd, const struct sockaddr *name, socklen_t namelen)
 {
     SOCKET osf;
@@ -129,7 +132,7 @@ w32_bind_native(int fd, const struct sockaddr *name, socklen_t namelen)
 /*
  *  getsockopt() system call
  */
-int
+LIBW32_API int
 w32_getsockopt_native(int fd, int level, int optname, void *optval, int *optlen)
 {
     SOCKET osf;
@@ -170,7 +173,7 @@ w32_setsockopt_native(
 /*
  *  listen() system call
  */
-int
+LIBW32_API int
 w32_listen_native(int fd, int num)
 {
     SOCKET osf;
@@ -190,7 +193,7 @@ w32_listen_native(int fd, int num)
 /*
  *  accept() system call
  */
-int
+LIBW32_API int
 w32_accept_native(int fd, struct sockaddr *addr, int *addrlen)
 {
     SOCKET osf;
@@ -220,7 +223,7 @@ w32_accept_native(int fd, struct sockaddr *addr, int *addrlen)
 /*
  *  getpeername() system call
  */
-int
+LIBW32_API int
 w32_getpeername_native(int fd, struct sockaddr *name, int *namelen)
 {
     SOCKET osf;
@@ -239,7 +242,7 @@ w32_getpeername_native(int fd, struct sockaddr *name, int *namelen)
 /*
  *  getsockname() system call.
  */
-int
+LIBW32_API int
 w32_getsockname_native(int fd, struct sockaddr *name, int *namelen)
 {
     SOCKET osf;
@@ -258,7 +261,7 @@ w32_getsockname_native(int fd, struct sockaddr *name, int *namelen)
 /*
  *  ioctl() system call; aka read() for sockets.
  */
-int
+LIBW32_API int
 w32_ioctlsocket_native(int fd, long cmd, int *argp)
 {
     SOCKET osf;
@@ -282,7 +285,7 @@ w32_ioctlsocket_native(int fd, long cmd, int *argp)
 /*
  *  send() system call
  */
-int
+LIBW32_API int
 w32_send_native(int fd, const void *buf, size_t len, int flags)
 {
     SOCKET osf;
@@ -301,7 +304,7 @@ w32_send_native(int fd, const void *buf, size_t len, int flags)
 /*
  *  sendto() system call
  */
-int
+LIBW32_API int
 w32_sendto_native(int fd, const void *buf, size_t len, int flags,
         const struct sockaddr *dest_addr, socklen_t addrlen)
 {
@@ -321,7 +324,7 @@ w32_sendto_native(int fd, const void *buf, size_t len, int flags,
 /*
  *  recv() system call
  */
-int
+LIBW32_API int
 w32_recv_native(int fd, char *buf, int len, int flags)
 {
     SOCKET osf;
@@ -340,7 +343,7 @@ w32_recv_native(int fd, char *buf, int len, int flags)
 /*
  *  recvfrom() system call
  */
-int
+LIBW32_API int
 w32_recvfrom_native(int fd, char *buf, int len, int flags,
         struct sockaddr *from_addr, int *fromlen)
 {
@@ -360,7 +363,7 @@ w32_recvfrom_native(int fd, char *buf, int len, int flags,
 /*
  *  sockwrite() system call; aka write() for sockets.
  */
-int
+LIBW32_API int
 w32_sockwrite_native(int fd, const void *buffer, unsigned int cnt)
 {
     SOCKET osf;
@@ -381,7 +384,7 @@ w32_sockwrite_native(int fd, const void *buffer, unsigned int cnt)
 /*
  *  sockwrite() system call; aka read() for sockets.
  */
-int
+LIBW32_API int
 w32_sockread_native(int fd, void *buf, unsigned int nbyte)
 {
     SOCKET osf;
@@ -402,7 +405,7 @@ w32_sockread_native(int fd, void *buf, unsigned int nbyte)
 /*
  *  shutdown() system call
  */
-int
+LIBW32_API int
 w32_shutdown_native(int fd, int how)
 {
     SOCKET osf;

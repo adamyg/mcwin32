@@ -1,10 +1,12 @@
-/* -*- mode: c; tabs: 4 -*- */
-#ifndef WIN32_SYS_UTSNAME_H_INCLUDED
-#define WIN32_SYS_UTSNAME_H_INCLUDED
+#ifndef LIBW32_SYS_UTSNAME_H_INCLUDED
+#define LIBW32_SYS_UTSNAME_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_utsname_h,"$Id: utsname.h,v 1.3 2018/09/29 02:22:56 cvsuser Exp $")
+__CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * Copyright (c) 2012 - 2017, Adam Young.
+ * Copyright (c) 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  *
@@ -41,4 +43,5 @@ __BEGIN_DECLS
 LIBW32_API int          uname(struct utsname *buf);
 __END_DECLS
 
-#endif  /*WIN32_SYS_UTSNAME_H_INCLUDED*/
+#endif  /*LIBW32_SYS_UTSNAME_H_INCLUDED*/
+

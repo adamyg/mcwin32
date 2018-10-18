@@ -4,7 +4,7 @@ Windows minimal posix implementation for Midnight Commander.
 This library fills a few holes which are not generally provided by
 run-time libraries of native WIN32 compiler chains.
 
-Copyright (c) 2007, 2012-2017, Adam Young.
+Copyright (c) 2007, 2012-2018, Adam Young.
 
     ------------------------------------------------------------
 

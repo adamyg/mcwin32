@@ -1,3 +1,7 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_strftime_c,"$Id: w32_strftime.c,v 1.5 2018/10/12 00:52:04 cvsuser Exp $")
+
+/* -*- mode: c; indent-width: 4; -*- */
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -33,6 +37,15 @@
 #include <time.h>
 
 #define TM_YEAR_BASE        1900
+
+//  TODO, investigate MSVC native functions/
+//
+//      _create_locale()/_free_locale()
+//      set_locale()/_get_current_locale()
+//
+//  or underlying
+//      GetLocaleInfo()
+//
 
 typedef struct {
     const char *abday[7];

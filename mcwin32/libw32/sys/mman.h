@@ -1,9 +1,13 @@
-#ifndef WIN32_SYS_MMAN_H_WIN32
-#define WIN32_SYS_MMAN_H_WIN32
-/* -*- mode: c; tabs: 4 -*- */
+#ifndef LIBW32_SYS_MMAN_H_INCLUDED
+#define LIBW32_SYS_MMAN_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_sys_mman_h,"$Id: mman.h,v 1.5 2018/09/29 02:22:55 cvsuser Exp $")
+__CPRAGMA_ONCE
+
+/* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mmap implementation
- * Copyright (c) 2012 - 2017, Adam Young.
+ * Copyright (c) 2012 - 2018, Adam Young.
  * All rights reserved.
  *
  *
@@ -24,7 +28,7 @@
  * ==end==
  */
 
-#include <sys/utypes.h>				/* off_t */
+#include <sys/utypes.h>                         /* off_t */
 #include <stddef.h>                             /* size_t */
 
 /*
@@ -79,5 +83,5 @@ LIBW32_API int          munlock __P((const void *, size_t));
 
 __END_DECLS
 
-#endif /*WIN32_SYS_MMAN_H_WIN32*/
+#endif /*LIBW32_SYS_MMAN_H_INCLUDED*/
 

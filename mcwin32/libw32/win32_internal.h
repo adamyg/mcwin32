@@ -1,5 +1,9 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.7 2018/10/08 21:54:48 cvsuser Exp $")
+__CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * internal definitions
@@ -73,15 +77,6 @@ __BEGIN_DECLS
 extern const char *     x_w32_vfscwd;
 
 extern const char *     x_w32_cwdd[26];
-
-/*
- *  Binding:
- *
- * Usage:
- *      __BEGIN_DECLS
- *      void my_declarations();
- *      __END_DECLS
- */
 
 LIBW32_API ino_t        w32_ino_hash (const char *name);
 LIBW32_API ino_t        w32_ino_gen (const DWORD fileIndexLow, const DWORD fileIndexHigh);

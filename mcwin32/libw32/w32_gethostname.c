@@ -1,3 +1,6 @@
+#include <edidentifier.h>
+__CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.5 2018/10/12 00:52:03 cvsuser Exp $")
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 gethostname
@@ -33,12 +36,12 @@
 /*
 //  NAME
 //      gethostname - get name of current host
-//  
+//
 //  SYNOPSIS
 //      #include <unistd.h>
-//  
+//
 //      int gethostname(char *name, size_t namelen);
-//  
+//
 //  DESCRIPTION
 //      The  gethostname() function shall return the standard host name for the
 //      current machine. The namelen argument shall specify  the  size  of  the
@@ -46,19 +49,19 @@
 //      null-terminated, except that if namelen is an  insufficient  length  to
 //      hold the host name, then the returned name shall be truncated and it is
 //      unspecified whether the returned name is null-terminated.
-//  
+//
 //      Host names are limited to {HOST_NAME_MAX} bytes.
-//  
+//
 //  RETURN VALUE
 //      Upon successful completion, 0 shall be returned; otherwise, -1 shall be
 //      returned.
-//  
+//
 //  ERRORS
 //      No errors are defined.
-//  
+//
 //      The following sections are informative.
 */
-int
+LIBW32_API int
 w32_gethostname(char *name, size_t namelen)
 {
     const char *host;
