@@ -1,16 +1,16 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_config_h, "$Id: w32config.hin,v 1.4 2017/03/13 16:51:36 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_w32config_h, "$Id: w32config.hin,v 1.8 2018/10/18 22:38:15 cvsuser Exp $")
 __CPRAGMA_ONCE
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.4 2017/03/13 16:51:36 cvsuser Exp $
+/* $Id: w32config.hin,v 1.8 2018/10/18 22:38:15 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
  * Windows targets (see makelib.pl for details).
  *
- * Copyright (c) 1998 - 2014, Adam Young.
+ * Copyright (c) 1998 - 2018, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -193,10 +193,15 @@ __CPRAGMA_ONCE
 #undef HAVE_STRINGS_H
 #undef HAVE_STRING_H
 #undef HAVE_UNISTD_H
+
 #undef HAVE_ARGZ_H
 #undef HAVE_LIBGEN_H
 #undef HAVE_REGEX_H
+#if defined(__WATCOMC__) && (__WATCOMC__ >= 1900)
+#define HAVE_ALLOCA_H                           /*intrinsic*/
+#else
 #undef HAVE_ALLOCA_H
+#endif
 
 /*
  *  Available allocator functionality
@@ -265,10 +270,12 @@ __CPRAGMA_ONCE
  *  Platform dependancies
  */
 #if !defined(RETSIGTYPE)
-#if defined(__WATCOMC__) || defined(_MSC_VER)
+#if defined(__WATCOMC__) && (__WATCOMC__ >= 1300)
+#define RETSIGTYPE void __watcall
+#elif defined(__WATCOMC__) || defined(_MSC_VER)
 #define RETSIGTYPE int
 #endif
-#endif
+#endif /*RETSIGTYPE*/
 
 #undef SIZEOF_CHAR 1
 #undef SIZEOF_SHORT 2
@@ -282,6 +289,29 @@ __CPRAGMA_ONCE
 
 #undef HAVE_INLINE
 #undef HAVE___INLINE
+
+#undef HAVE_DECL_SIZE_MAX
+#undef HAVE_DECL_SSIZE_MAX
+#undef HAVE_DECL_INT16_C
+#undef HAVE_DECL_INT16_MIN
+#undef HAVE_DECL_INT16_MAX
+#undef HAVE_DECL_UINT16_MAX
+#undef HAVE_DECL_INT32_C
+#undef HAVE_DECL_INT32_MIN
+#undef HAVE_DECL_INT32_MAX
+#undef HAVE_DECL_UINT32_MAX
+#undef HAVE_DECL_INT64_C
+#undef HAVE_DECL_INT64_MIN
+#undef HAVE_DECL_INT64_MAX
+#undef HAVE_DECL_UINT64_MAX
+#undef HAVE_DECL_INTPTR_MIN
+#undef HAVE_DECL_INTPTR_MAX
+#undef HAVE_DECL_UINTPTR_MAX
+#undef HAVE_DECL_WCHAR_MIN
+#undef HAVE_DECL_WCHAR_MAX
+#undef HAVE_DECL_INTMAX_MIN
+#undef HAVE_DECL_INTMAX_MAX
+#undef HAVE_DECL_UINTMAX_MAX
 
 #undef HAVE_INTMAX_T
 #undef HAVE_UINTMAX_T
@@ -344,7 +374,6 @@ __CPRAGMA_ONCE
 #undef HAVE_STDBOOL_H
 #undef HAVE_STDATOMIC_H
 #undef HAVE_THREADS_H
-#undef HAVE_WCHAR_H
 
 #undef mode_t
 #undef off_t
@@ -455,6 +484,7 @@ __CPRAGMA_ONCE
 #undef HAVE_SETPGRP
 #undef HAVE_SETSID
 
+#undef HAVE_WCHAR_H
 #undef HAVE_WCTYPE_H
 #undef HAVE_MBRTOWC
 #undef HAVE_WCRTOMB
@@ -472,6 +502,26 @@ __CPRAGMA_ONCE
 #undef HAVE_POSIX_MADVISE
 #undef HAVE_MREMAP
 
+#undef HAVE_GETDELIM
+#undef HAVE_GETLINE
+
+
+        /* statfs/statvfs and stat */
+#define HAVE_STRUCT_STAT_ST_DEV 1
+#define HAVE_STRUCT_STAT_ST_RDEV 1
+#undef HAVE_STRUCT_STAT_ST_BLOCKS
+#undef HAVE_STRUCT_STAT_ST_BLKSIZE
+#undef HAVE_STRUCT_STAT_ST_MTIME
+#if defined(HAVE_SYS_STATFS_H) && (HAVE_SYS_STATFS_H)
+#define STAT_STATFS 1
+#define HAVE_STRUCT_STATFS_F_FSTYPENAME 1
+#endif
+#if defined(HAVE_SYS_STATVFS_H) && (HAVE_SYS_STATVFS_H)
+#define STAT_STATVFS 1
+#undef HAVE_STRUCT_STATVFS_F_BASETYPE
+#undef HAVE_STRUCT_STATVFS_F_FSTYPENAME
+#endif
+
 #undef CLOSEDIR_VOID
 #undef GETPGRP_VOID
 
@@ -484,6 +534,10 @@ __CPRAGMA_ONCE
 #undef HAVE__SNPRINTF
 #undef HAVE_VSNPRINTF
 #undef HAVE__VSNPRINTF
+
+#undef HAVE_ALLOCA
+#undef HAVE__ALLOCA
+#undef HAVE_REALLOCARRAY
 
 #undef HAVE_LOCALE_H
 #undef HAVE_SETLOCALE
@@ -602,6 +656,9 @@ __CPRAGMA_ONCE
 #undef HAVE_BZLIB_H
 #undef HAVE_LIBBZ2
 
+#undef HAVE_LIBLZMA
+#undef HAVE_LZMA_H
+
         /* glib */
 #undef HAVE_GLIB
 #undef HAVE_GLIB_GLIB_H
@@ -682,11 +739,6 @@ __CPRAGMA_ONCE
 #endif
 
 
-/*
- *  Installation directories defaults (see edbuildinfo.h)
- */
-
-#define GRIEF_DATADIR "C:/Program Files/Grief/lib"
-
 #endif  /*WIN32_CONFIG_H_INCLUDED*/
+
 
