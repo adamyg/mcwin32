@@ -480,10 +480,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\filemanager\usermenu.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\help.c" />
     <ClCompile Include="..\..\..\mcsrc\src\keybind-defaults.c" />
     <ClCompile Include="..\..\..\mcsrc\src\learn.c" />
@@ -491,6 +487,7 @@
     <ClCompile Include="..\..\..\mcsrc\src\selcodepage.c" />
     <ClCompile Include="..\..\..\mcsrc\src\setup.c" />
     <ClCompile Include="..\..\..\mcsrc\src\textconf.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\usermenu.c" />
     <ClCompile Include="..\..\..\mcsrc\src\util.c" />
     <ClCompile Include="..\..\..\mcsrc\src\vfs\cpio\cpio.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
@@ -604,6 +601,8 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
     </ClCompile>
     <ClCompile Include="..\..\drive.c" />
+    <ClCompile Include="..\..\libw32\bsd_bsearch.c" />
+    <ClCompile Include="..\..\libw32\bsd_qsort.c" />
     <ClCompile Include="..\..\libw32\w32_check.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
@@ -671,6 +670,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_lang.c" />
     <ClCompile Include="..\..\libw32\w32_langinfo.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
@@ -709,6 +709,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_reparse.c" />
     <ClCompile Include="..\..\libw32\w32_select.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
@@ -909,7 +910,6 @@
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\panelize.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\tree.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\treestore.h" />
-    <ClInclude Include="..\..\..\mcsrc\src\filemanager\usermenu.h" />
     <ClInclude Include="..\..\..\mcsrc\src\help.h" />
     <ClInclude Include="..\..\..\mcsrc\src\history.h" />
     <ClInclude Include="..\..\..\mcsrc\src\keybind-defaults.h" />
@@ -917,6 +917,7 @@
     <ClInclude Include="..\..\..\mcsrc\src\selcodepage.h" />
     <ClInclude Include="..\..\..\mcsrc\src\setup.h" />
     <ClInclude Include="..\..\..\mcsrc\src\textconf.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\usermenu.h" />
     <ClInclude Include="..\..\..\mcsrc\src\util.h" />
     <ClInclude Include="..\..\..\mcsrc\src\vfs\cpio\cpio.h" />
     <ClInclude Include="..\..\..\mcsrc\src\vfs\extfs\extfs.h" />
@@ -939,10 +940,14 @@
     <ClInclude Include="..\..\libw32\getopt.h" />
     <ClInclude Include="..\..\libw32\grp.h" />
     <ClInclude Include="..\..\libw32\langinfo.h" />
+    <ClInclude Include="..\..\libw32\libgen.h" />
+    <ClInclude Include="..\..\libw32\libw32.h" />
+    <ClInclude Include="..\..\libw32\libw32_version.h" />
     <ClInclude Include="..\..\libw32\netdb.h" />
     <ClInclude Include="..\..\libw32\package.h" />
     <ClInclude Include="..\..\libw32\poll.h" />
     <ClInclude Include="..\..\libw32\pwd.h" />
+    <ClInclude Include="..\..\libw32\semaphore.h" />
     <ClInclude Include="..\..\libw32\slang.h" />
     <ClInclude Include="..\..\libw32\sys\cdefs.h" />
     <ClInclude Include="..\..\libw32\sys\ioctl.h" />
@@ -959,6 +964,7 @@
     <ClInclude Include="..\..\libw32\sys\utypes.h" />
     <ClInclude Include="..\..\libw32\sys\vfs.h" />
     <ClInclude Include="..\..\libw32\sys\wait.h" />
+    <ClInclude Include="..\..\libw32\termemu_vio.h" />
     <ClInclude Include="..\..\libw32\unicode_cp437.h" />
     <ClInclude Include="..\..\libw32\unicode_table.h" />
     <ClInclude Include="..\..\libw32\unistd.h" />
@@ -966,10 +972,14 @@
     <ClInclude Include="..\..\libw32\w32_colors256.h" />
     <ClInclude Include="..\..\libw32\w32_trace.h" />
     <ClInclude Include="..\..\libw32\win32.h" />
+    <ClInclude Include="..\..\libw32\win32_cdef.h" />
     <ClInclude Include="..\..\libw32\win32_child.h" />
+    <ClInclude Include="..\..\libw32\win32_errno.h" />
+    <ClInclude Include="..\..\libw32\win32_iconv.h" />
     <ClInclude Include="..\..\libw32\win32_include.h" />
     <ClInclude Include="..\..\libw32\win32_internal.h" />
     <ClInclude Include="..\..\libw32\win32_io.h" />
+    <ClInclude Include="..\..\libw32\win32_ioctl.h" />
     <ClInclude Include="..\..\libw32\win32_misc.h" />
     <ClInclude Include="..\..\libw32\win32_time.h" />
     <ClInclude Include="..\..\win32_key.h" />
@@ -1049,14 +1059,14 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>../../lib/libglib-2.0.lib;../../lib/libintl.lib;../../lib/libssh2.lib;../../lib/libmagic.lib;../../lib/libz.lib;../../lib/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../lib.vs140/libglib-2.0.lib;../../lib.vs140/libintl.lib;../../lib.vs140/libssh2.lib;../../lib.vs140/libmagic.lib;../../lib.vs140/libz.lib;../../lib.vs140/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d /e "$(ProjectDir)..\..\bin\etc"        "$(OutDir)\etc\"
-xcopy /y /d /e "$(ProjectDir)..\..\bin\plugin"  "$(OutDir)\plugin\"
-xcopy /y /d /e "$(ProjectDir)..\..\bin\share"    "$(OutDir)\share\"
-xcopy /y /d      "$(ProjectDir)..\..\bin\*.dll"      "$(OutDir)"
-xcopy /y /d      "$(ProjectDir)..\..\bin\busybox.exe" "$(OutDir)"</Command>
+      <Command>xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\etc"                 "$(OutDir)\etc\"
+xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\plugin"           "$(OutDir)\plugin\"
+xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\share"             "$(OutDir)\share\"
+xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\*.dll"               "$(OutDir)"
+xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\busybox.exe" "$(OutDir)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Import external artifacts</Message>
@@ -1091,8 +1101,16 @@ xcopy /y /d      "$(ProjectDir)..\..\bin\busybox.exe" "$(OutDir)"</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>../../lib/libglib-2.0.lib;../../lib/libintl.lib;../../lib/libssh2.lib;../../lib/libmagic.lib;../../lib/libz.lib;../../lib/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../lib.vs140/libglib-2.0.lib;../../lib.vs140/libintl.lib;../../lib.vs140/libssh2.lib;../../lib.vs140/libmagic.lib;../../lib.vs140/libz.lib;../../lib.vs140/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\etc"                 "$(OutDir)\etc\"
+xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\plugin"           "$(OutDir)\plugin\"
+xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\share"             "$(OutDir)\share\"
+xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\*.dll"               "$(OutDir)"
+xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\busybox.exe" "$(OutDir)"</Command>
+      <Message>Import external artifacts</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

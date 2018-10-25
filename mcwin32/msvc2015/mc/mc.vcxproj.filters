@@ -411,9 +411,6 @@
     <ClCompile Include="..\..\..\mcsrc\src\filemanager\treestore.c">
       <Filter>Source Files\mcsrc\filemanager</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\filemanager\usermenu.c">
-      <Filter>Source Files\mcsrc\filemanager</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\editor\bookmark.c">
       <Filter>Source Files\mcsrc\editor</Filter>
     </ClCompile>
@@ -801,6 +798,21 @@
     <ClCompile Include="..\..\libw32\w32_sockpair.c">
       <Filter>Source Files\libw32</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\usermenu.c">
+      <Filter>Source Files\mcsrc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\bsd_bsearch.c">
+      <Filter>Source Files\libw32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\bsd_qsort.c">
+      <Filter>Source Files\libw32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_lang.c">
+      <Filter>Source Files\libw32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_reparse.c">
+      <Filter>Source Files\libw32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\mc.rc">
@@ -956,9 +968,6 @@
       <Filter>Header Files\mcsrc\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\treestore.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\mcsrc\src\filemanager\usermenu.h">
       <Filter>Header Files\mcsrc\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\args.h">
@@ -1301,6 +1310,36 @@
       <Filter>Header Files\libw32\sys</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libw32\w32config.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\usermenu.h">
+      <Filter>Header Files\mcsrc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\libgen.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\libw32.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\libw32_version.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\semaphore.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\termemu_vio.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\win32_cdef.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\win32_errno.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\win32_iconv.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\win32_ioctl.h">
       <Filter>Header Files\libw32</Filter>
     </ClInclude>
   </ItemGroup>
