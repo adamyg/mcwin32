@@ -62,12 +62,15 @@ mc_popen (const char *command, GError ** error)
     win32_exec_t *args = NULL;
     const char *busybox = getenv("MC_BUSYBOX");
     int x_errno = -1;
-    char **argv[32 + 1] = {0};
     char *cmd = NULL;
-    int in = -1;
     mc_pipe_t *p = NULL;
 
     if (error) *error = NULL;
+
+    if (command) {
+        while (' ' == *command) ++command;      /* consume leading whitespace (if any) */
+            /* whitespace within "#! xxx" shall be visible; confusing matching logic below */
+    }
 
     if (busybox && *busybox) {
         /*
@@ -252,4 +255,3 @@ mc_pclose (mc_pipe_t * p, GError ** error)
     free(p);
 }
 /*end*/
-

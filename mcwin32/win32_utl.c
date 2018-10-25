@@ -983,15 +983,20 @@ my_system(int flags, const char *shell, const char *cmd)
     const char *busybox = getenv("MC_BUSYBOX");
     int shelllen, ret = -1;
 
-    if ((flags & EXECUTE_INTERNAL) && cmd)  {
+    if ((flags & EXECUTE_INTERNAL) && cmd) {
         printf("%s\n", cmd);                    /* echo command */
+    }
+
+    if (cmd) {
+        while (' ' == *cmd) ++cmd;              /* consume leading whitespace (if any) */
+            /*whitespace within "#! xxx" shall be visible; confusing matching logic below */
     }
 
     if (busybox && *busybox) {
         if (shell && 0 == strncmp(shell, bin_sh, sizeof(bin_sh)-1)) {
             /*
              *  If <shell> = </bin/sh> <cmd ...>
-             *  execute as <shell> <busybox cmd ...>
+             *  execute as <busybox cmd ...>
              */
             const char *space;
 
@@ -1025,7 +1030,7 @@ my_system(int flags, const char *shell, const char *cmd)
                     space == (cmd + (sizeof(bin_sh) - 1)) && 0 == strncmp(cmd, bin_sh, sizeof(bin_sh)-1)) {
                 char *t_cmd;
 
-                if (NULL != (t_cmd = g_strconcat("\"", busybox, "\"", space, NULL))) {
+                if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" sh", space, NULL))) {
                     key_shell_mode();
                     ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
                     key_prog_mode();
