@@ -36,9 +36,6 @@
         void        enable_bracketed_paste (void);
         void        disable_bracketed_paste (void);
 
-   Copyright (C) 2012
-   The Free Software Foundation, Inc.
-
    Written by: Adam Young 2012 - 2018
 
    This file is part of the Midnight Commander.
@@ -71,15 +68,22 @@
 #include <unistd.h>
 
 #include <w32_trace.h>
+
 #if defined(__WATCOMC__)
-extern char volatile        __WD_Present;
+_WCRTLINK extern char volatile __WD_Present;    /* debugger present? */
 #if defined(_M_IX86)
 extern void                 EnterDebugger(void);
 #pragma aux EnterDebugger = "int 3"
-#define CheckEnterDebugger() \
-    if (__WD_Present) EnterDebugger()
+#define TryEnterDebugger()  __TryEnterDebugger()
+static  int __TryEnterDebugger() {
+    if (__WD_Present) {
+        EnterDebugger();
+        return 1; //triggereds
+    }
+    return 0; //non-available
+}
 #endif
-#endif
+#endif  /*__WATCOMC__*/
 
 #include "lib/global.h"
 
@@ -93,7 +97,10 @@ extern void                 EnterDebugger(void);
 
 #include "src/filemanager/midnight.h"           /* left/right panel */
 
-extern gboolean             quit_cmd_internal (gboolean quiet);
+extern gboolean             quit_cmd_internal (int quiet);
+extern gboolean             confirm_exit;
+
+extern void                 sigintr_set (int state);  /* tty.c */
 
 #include "win32_key.h"
 
@@ -111,13 +118,13 @@ extern gboolean             quit_cmd_internal (gboolean quiet);
 #define W32KEYS     ((int)(sizeof(w32Keys)/sizeof(w32Keys[0])))
 
 static const struct {
-    WORD            vk;                 /* windows virtual key code */
-    int             mods;               /* modifiers */
+    WORD            vk;                         /* windows virtual key code */
+    int             mods;                       /* modifiers */
 #define MOD_ALL             -1
 #define MOD_ENHANCED        -2
 #define MOD_FUNC            -3
-    const char *    desc;               /* description */
-    int             key;                /* interval key value */
+    const char *    desc;                       /* description */
+    int             key;                        /* interval key value */
 
 } w32Keys[] = {
     { VK_PAUSE,         0,              "Complete",     ALT('\t') },
@@ -290,15 +297,14 @@ static HANDLE           hConsole;
 static DWORD            consoleMode = (DWORD) -1;
 
 static int              disabled_channels;
-static int              slinterrupt;
 
-static unsigned         ctrlbreak;
-static unsigned         ctrlc;
-static unsigned         ctrlc_running;
+static unsigned         ctrlbreak_triggered;
+static unsigned         ctrlbreak_running;
+static unsigned         ctrlc_triggered;
 
 int                     mou_auto_repeat     = 100;
 int                     double_click_speed  = 250;
-int                     old_esc_mode        = 0;
+gboolean                old_esc_mode        = 0;
 int                     old_esc_mode_timeout = 1000000;
 int                     use_8th_bit_as_meta = 1;
 
@@ -310,9 +316,14 @@ static const size_t     key_conv_tab_size   = G_N_ELEMENTS (key_name_conv_tab) -
 static const key_code_name_t *
                         key_conv_tab_sorted[G_N_ELEMENTS (key_name_conv_tab) - 1];
 
-static BOOL             CtrlHandler(DWORD fdwCtrlType);
-static void             CtrlC(void);
-static void             CtrlBreak(void);
+typedef DWORD (WINAPI *CancelSynchronousIo_t)(HANDLE hThread);
+
+static HANDLE           primary_thread;
+static CancelSynchronousIo_t CancelSynchronousIoFn;
+
+static DWORD WINAPI     CancelSynchronousIoImp(HANDLE hThread);
+
+static BOOL __stdcall   CtrlHandler(DWORD fdwCtrlType);
 
 
 /*
@@ -322,8 +333,32 @@ void
 init_key (void)
 {
     hConsole = GetStdHandle (STD_INPUT_HANDLE);
+
     mc_global.tty.console_flag = '\001';        /* console save/restore, toggle available */
     tty_reset_prog_mode ();
+
+    if (! CancelSynchronousIoFn) {
+        HINSTANCE hKernel32;
+                                                /* thread handle; must duplicate as GetCurrentThread() is a pseudo handle */
+        DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(),
+            &primary_thread, 0 /*dwDesiredAccess*/, FALSE /*bInheritHandle*/, DUPLICATE_SAME_ACCESS);
+
+                                                /* load CancelSynchronousIo() implementation */
+        if (0 == (hKernel32 = LoadLibraryA("Kernel32")) ||
+                0 == (CancelSynchronousIoFn =   /* Vista+ */
+                        (CancelSynchronousIo_t) GetProcAddress(hKernel32, "CancelSynchronousIo"))) {
+            CancelSynchronousIoFn = CancelSynchronousIoImp;
+            (void) FreeLibrary(hKernel32);
+        }
+    }
+}
+
+
+static DWORD WINAPI
+CancelSynchronousIoImp (HANDLE hThread)
+{
+    SetLastError(ERROR_NOT_SUPPORTED);
+    return 0;
 }
 
 
@@ -355,7 +390,7 @@ key_prog_mode (void)
             GetConsoleMode(hConsole, &consoleMode);
         }
         SetConsoleMode(hConsole, ENABLE_WINDOW_INPUT|ENABLE_MOUSE_INPUT|ENABLE_PROCESSED_INPUT);
-        SetConsoleCtrlHandler((PHANDLER_ROUTINE) CtrlHandler, TRUE);
+        SetConsoleCtrlHandler(CtrlHandler, TRUE);
     }
 }
 
@@ -706,47 +741,6 @@ slang_keypad (int set)
 }
 
 
-static void
-slang_intr (int signo)
-{
-    slinterrupt = 1;
-}
-
-
-void
-enable_interrupt_key (void)
-{
-    struct sigaction act;
-
-    act.sa_handler = slang_intr;
-    sigemptyset (&act.sa_mask);
-    act.sa_flags = 0;
-    sigaction (SIGINT, &act, NULL);
-    slinterrupt = 0;
-}
-
-
-void
-disable_interrupt_key (void)
-{
-    struct sigaction act;
-
-    act.sa_handler = SIG_IGN;
-    act.sa_flags = 0;
-    sigemptyset (&act.sa_mask);
-    sigaction (SIGINT, &act, NULL);
-}
-
-
-int
-got_interrupt (void)
-{
-    int t = slinterrupt;
-    slinterrupt = 0;
-    return t;
-}
-
-
 /*
  *  Returns a character read from stdin with appropriate interpretation. Also
  *  takes care of generated mouse events.
@@ -777,32 +771,35 @@ check_winch (void)
 /*
  *  Returns:
  *      Returns a character read from stdin with appropriate interpretation
- *      EV_MOUSE if it is a mouse event
- *      EV_NONE  if non-blocking
+ *      EV_MOUSE    if it is a mouse event
+ *      EV_NONE     if non-blocking
  *      or interrupt set and nothing was done
  */
 int
-tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
+tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 {
     extern gboolean mc_args__nomouse;           /* args.c */
 
-    static int dirty = 3;
-    static int clicks = 0;
-    DWORD timeout = 1000;
-    int seconds;
+    static int dirty = 3, clicks = 0;
     int c = EV_NONE;
 
     if (0 == hConsole) {
         return 0;                               /* not active */
     }
 
-    if ((3 == dirty) || is_idle ()) {
-        mc_refresh ();
+    if ((dirty >= 3) || is_idle()) {            /* act on winch_flag, otherwise tty_refresh() */
+        mc_refresh();
         dirty = 1;
     } else {
+        if (block) {
+            /*  not performed by standard tty driver, yet helps to corrects a number of display issues
+             *  within the edtitor; mainly during search operations.
+             *   -- but issues are still somethings visible.
+             */
+            tty_refresh(), dirty = 0;
+        }
         ++dirty;
     }
-    tty_refresh ();
 
 #if defined(ENABLE_VFS)
     vfs_timeout_handler ();
@@ -812,12 +809,42 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
         return EV_NONE;
     }
 
-    timeout = (block ? 1000 : 0);               /* one second or non-blocking */
     while (1) {
+        DWORD timeoutms = 0;                    /* non-blocking */
         INPUT_RECORD k = {0};
         DWORD count = 0, rc;
 
-        rc = WaitForSingleObject(hConsole, timeout);
+        if (block) {                            /* blocking request */
+#if defined(ENABLE_VFS)
+            const int seconds = vfs_timeouts();
+            timeoutms = (seconds > 0 ? seconds * 1000: INFINITE);
+#else
+            timeoutms = INFINITE;
+#endif
+        }
+
+        sigintr_set(0);
+        rc = WaitForSingleObject(hConsole, timeoutms);
+
+        if (ctrlc_triggered)  {
+            ctrlc_triggered = ctrlbreak_triggered = 0;
+            errno = EINTR;
+            return EV_NONE;
+
+        } else if (ctrlbreak_triggered) {       /* required??? */
+            ctrlbreak_triggered = 0;
+            if (0 == ctrlbreak_running) {
+                const save_confirm_exit = confirm_exit;
+                ++ctrlbreak_running;
+                confirm_exit = TRUE;
+                (void) quit_cmd_internal (FALSE);
+                confirm_exit = save_confirm_exit;
+                --ctrlbreak_running;
+                errno = EINTR;
+                return EV_NONE;
+            }
+        }
+
         if (rc == WAIT_OBJECT_0 &&
                 PeekConsoleInput(hConsole, &k, 1, &count) && 1 == count) {
 
@@ -826,17 +853,19 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
             c = EV_NONE;
             switch (k.EventType) {
             case KEY_EVENT:
-                if (! k.Event.KeyEvent.bKeyDown) {
-                    (void) ReadConsoleInput(hConsole, &k, 1, &count);
-                    c = -99; //consume
-
-                } else {
-                    c = get_key_code(1);
-                    if (c == (KEY_M_SHIFT | '\n')) { /* <Shift-Return> */
+                if (k.Event.KeyEvent.bKeyDown) {
+                    c = get_key_code(1);        // read and translate key, nonblocking.
+                    if (c == (KEY_M_SHIFT | '\n')) { 
+                        /*
+                         *  <Shift-Return> - Toggle screen size.
+                         */
                         mc_global.tty.winch_flag = TRUE;
                         SLsmg_togglesize();
-                        c = -99; //consume
+                        c = -99;                // consume
                     }
+                } else {
+                    (void) ReadConsoleInput(hConsole, &k, 1, &count);
+                    c = -99;                    // consume
                 }
                 break;
 
@@ -869,7 +898,7 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
                     case DOUBLE_CLICK:
                         if (event->buttons) {
                             event->type = GPM_DOWN;
-                            clicks = k.Event.MouseEvent.dwEventFlags == DOUBLE_CLICK ? 2 : 1;
+                            clicks = (k.Event.MouseEvent.dwEventFlags == DOUBLE_CLICK ? 2 : 1);
                         } else {
                             event->type = 0;
                             event->type = GPM_UP | (2 == clicks ? GPM_DOUBLE : GPM_SINGLE);
@@ -895,12 +924,12 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
                 break;
 
             case WINDOW_BUFFER_SIZE_EVENT:
-                (void)ReadConsoleInput(hConsole, &k, 1, &count);
+                (void) ReadConsoleInput(hConsole, &k, 1, &count);
                 mc_global.tty.winch_flag = TRUE;
                 break;
 
             case FOCUS_EVENT:
-                (void)ReadConsoleInput(hConsole, &k, 1, &count);
+                (void) ReadConsoleInput(hConsole, &k, 1, &count);
                 if (k.Event.FocusEvent.bSetFocus) {
 #if defined(_MSC_VER)
                     if (! IsDebuggerPresent()) {
@@ -913,40 +942,22 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
                 break;
 
             default:
-                (void)ReadConsoleInput(hConsole, &k, 1, &count);
+                (void) ReadConsoleInput(hConsole, &k, 1, &count);
                 break;
             }
 
         } else if (rc == WAIT_FAILED) {
             fprintf (stderr,
                 "Console handle no longer valid, assuming EOF on stdin and exiting\n");
+            fflush (stderr);
+            Beep (600, 200);
             exit (1);
         }
 
-        if (c == -99)
-            continue;
-        if (!block || c != EV_NONE) {
-            break;
-        }
-
-        while (ctrlc)  {
-            ctrlc = 0;
-            if (! ctrlc_running) {
-                int quit;
-                ++ctrlc_running;
-                quit = quit_cmd_internal (FALSE);
-                --ctrlc_running;
-                return EV_NONE;
+        if (c != -99) {                         // event consumed; repoll
+            if (!block || c != EV_NONE) {
+                break;                          // non-blocking or an event.
             }
-        }
-
-        /* next timeout */
-        timeout = INFINITE;
-#if defined(ENABLE_VFS)
-        vfs_timeout_handler ();
-#endif
-        if ((seconds = vfs_timeouts ()) > 0) {
-            timeout = seconds * 1000;           /* next vfs timeout */
         }
     }
     return c;
@@ -970,21 +981,60 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
  *      the registered handlers returns TRUE, the default handler will be used, resulting in the
  *      process being terminated
  *
+ *  Notes:
+ *      Windows 7, Windows 8, Windows 8.1 and Windows 10:
+ *
+ *      If a console application loads the gdi32.dll or user32.dll library, the HandlerRoutine function
+ *      that you specify when you call SetConsoleCtrlHandler does not get called for the CTRL_LOGOFF_EVENT
+ *      and CTRL_SHUTDOWN_EVENT events. The operating system recognizes processes that load gdi32.dll
+ *      or user32.dll as Windows applications rather than console applications. This behavior also occurs
+ *      for console applications that do not call functions in gdi32.dll or user32.dll directly,
+ *      but do call functions such as Shell functions that do in turn call functions in gdi32.dll or user32.dll.
+ *
+ *      To receive events when a user signs out or the device shuts down in these circumstances,
+ *      create a hidden window in your console application, and then handle the WM_QUERYENDSESSION and
+ *      WM_ENDSESSION window messages that the hidden window receives. You can create a hidden window
+ *      by calling the CreateWindowEx method with the dwExStyle parameter set to 0.
  */
-static BOOL
+static BOOL __stdcall
 CtrlHandler(DWORD fdwCtrlType)
 {
     switch (fdwCtrlType) {
     case CTRL_C_EVENT:
-        CtrlC();
+        sigintr_set (1);
+        ++ctrlc_triggered;
+
+        if (CancelSynchronousIoFn) {            /* attempt to cancel current i/o operation */
+            const DWORD rc = CancelSynchronousIoFn(primary_thread);
+                /* Marks pending synchronous I / O operations that are issued by the specified thread as canceled -- nonblocking */
+            if (0 == rc && ERROR_NOT_FOUND == GetLastError()) {
+                ++ctrlc_triggered;
+                    /* nothing to cancel; ++ pure diagnostics only */
+            }
+        }
+
+     /* XXX:
+      * if (child_process) {
+      *     GenerateConsoleCtrlEvent(child_process, CTRL_C_EVENT);
+      * }
+      */
+
+        SetEvent(hConsole);
         return TRUE;
 
     case CTRL_BREAK_EVENT:
-        CtrlBreak();
+#if defined(TryEnterDebugger)
+        if (! TryEnterDebugger()) {
+            ++ctrlbreak_triggered;
+            return TRUE;
+        }
+#endif
+        ++ctrlbreak_triggered;
+        SetEvent(hConsole);
         return TRUE;
 
     case CTRL_CLOSE_EVENT:
-        Beep(600, 200);
+        Beep (600, 200);
         quiet_quit_cmd ();
         return FALSE;
 
@@ -1000,31 +1050,12 @@ CtrlHandler(DWORD fdwCtrlType)
 }
 
 
-static void
-CtrlC(void)
-{
-   ++ctrlc;
-}
-
-
-static void
-CtrlBreak(void)
-{
-#if defined(CheckEnterDebugger)
-    CheckEnterDebugger();
-#endif
-   ++ctrlbreak;
-}
-
-
 /*
  *  Translate the key press into a CRISP identifier.
  */
 static int
-key_mapwin32(
-    unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned AsciiChar)
+key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned AsciiChar)
 {
-//  static int wasescape = 0;
     int mod = 0, ch = -1;
     int i;
 
@@ -1042,18 +1073,6 @@ key_mapwin32(
     if (dwCtrlKeyState & (SHIFT_PRESSED)) {
         mod |= KEY_M_SHIFT;
     }
-
-    /* Filter escapes */
-#if (TODO)
-    if (VK_ESCAPE == AsciiChar && 0 == mod) {
-        if (wasescape) {
-            wasescape = 0;
-            return ESC_CHAR;                    /* ESC, ESC */
-        }
-        ++wasescape;
-        return -1;
-    }
-#endif
 
     /* Virtual keys */
     for (i = W32KEYS-1; i >= 0; i--) {
@@ -1099,22 +1118,6 @@ key_mapwin32(
         }
     }
 
-    /* Convert esc-digits to F-keys */
-#if (TODO)
-    if (wasescape) {
-        if (-1 == ch && 0 == mod) {
-            if (AsciiChar >= '0' && AsciiChar <= '9') {
-                if (AsciiChar >= '1') {         /* F1..F9 */
-                    ch = KEY_F(AsciiChar - '1');
-                } else {
-                    ch = KEY_F(10);             /* F10 */
-                }
-            }
-        }
-        wasescape = 0;
-    }
-#endif  /*XXX*/
-
     /* Convert alt-digits to F-keys */
     if (-1 == ch && KEY_M_ALT == mod) {
         if (AsciiChar >= '0' && AsciiChar <= '9') {
@@ -1138,24 +1141,30 @@ key_mapwin32(
 
 
 int
-get_key_code(int no_delay)
+get_key_code (int no_delay)
 {
-    DWORD count, rc;
-    INPUT_RECORD k;
-    int c;
+    int retry = 0;
 
     do {
+        INPUT_RECORD k = {0};
+        DWORD count = 0, rc;
+
+        retry = 0;
         rc = WaitForSingleObject(hConsole, no_delay ? 0 : INFINITE);
         if (rc == WAIT_OBJECT_0 &&
-                ReadConsoleInput(hConsole, &k, 1, &count)) {
+                ReadConsoleInput(hConsole, &k, 1, &count) && 1 == count) {
             switch (k.EventType) {
             case KEY_EVENT:
                 if (k.Event.KeyEvent.bKeyDown) {
                     const KEY_EVENT_RECORD *pKey = &k.Event.KeyEvent;
+                    int c;
+
                     if ((c = key_mapwin32(pKey->dwControlKeyState,
                                 pKey->wVirtualKeyCode, pKey->uChar.AsciiChar)) != -1) {
                         return c;
                     }
+                } else {
+                    retry = 1;                  /* consume */
                 }
                 check_winch();
                 break;
@@ -1164,7 +1173,7 @@ get_key_code(int no_delay)
                 break;
             }
         }
-    } while (no_delay == 0);
+    } while (retry || no_delay == 0);
 
     return -1;
 }
@@ -1183,24 +1192,35 @@ tty_getch (void)
 
 
 /*
- *  Check if we are idle, i.e. there are no pending keyboard or mouse events.  Return 1
- *  is idle, 0 is there are pending events.
+ *  Check if we are idle, i.e. there are no pending keyboard or mouse events.
+ *  Return 1 is idle, 0 is there are pending events.
  */
-int
+gboolean
 is_idle (void)
 {
+    extern gboolean mc_args__nomouse;           /* args.c */
     DWORD count = 0;
     INPUT_RECORD k;
 
     while (hConsole && WaitForSingleObject(hConsole, 0 /*NONBLOCKING*/) == WAIT_OBJECT_0 &&
                 PeekConsoleInput(hConsole, &k, 1, &count) && count == 1) {
-        if (/*k.EventType == FOCUS_EVENT ||*/
-                (k.EventType == KEY_EVENT && !k.Event.KeyEvent.bKeyDown)) {
-            //
-            //  Focus or key-up, consume
-            //
-            ReadConsoleInput(hConsole, &k, 1, &count);
-            continue;
+        if (KEY_EVENT == k.EventType) {
+            if (!k.Event.KeyEvent.bKeyDown) {
+                //
+                //  key-up, consume
+                //  
+                (void) ReadConsoleInput(hConsole, &k, 1, &count);
+                continue;
+            }
+        } else if (MOUSE_EVENT == k.EventType) {
+            if (mc_args__nomouse ||
+                    (0 == k.Event.MouseEvent.dwButtonState && MOUSE_MOVED == k.Event.MouseEvent.dwEventFlags)) {
+                //
+                //  nomouse or mouse-move only, consume
+                //
+                (void) ReadConsoleInput(hConsole, &k, 1, &count);
+                continue;
+            }
         }
         return FALSE;
     }
@@ -1239,4 +1259,3 @@ disable_bracketed_paste (void)
 }
 
 /*end*/
-

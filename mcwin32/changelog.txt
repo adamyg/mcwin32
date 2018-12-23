@@ -1,14 +1,46 @@
+Wed Nov 21 02:48:21 2018 adamy
+
+	* build 212
+	* libmbedtls integration/build option.
+	* is_idle() mouse filter
+
+Fri Oct 26 01:21:10 2018 adamy
+
+	* Additional SLang compatiblity tweaks.
+	* Ctrl-C / Ctrl-Break handler reimplemented/cleanup.
+
+Thu Oct 25 23:25:17 2018 adamy
+
+	* subshell exec tweaks; F2 menu support.
+	* mc 4.8.21 solution/makefile changes published.
+	* libtool enhancements;
+		cmdfiles, decls and alloca checks.
+
+Fri Oct 19 00:04:31 2018 adamy
+
+	* libw32 merge/additional dll support.
+	* owc 2.0 support; beta.
+	* 2018
+	* libtool cmdfiles, alloca and decls.
+	* enhanced symlink/mount-point support;
+		w32_reparse_read(), w32_stat(), w32_lstat(), w32_symlink(), w32_open(), w32_unlink()
+	* w32_link() hard link support.
+	* vio exec context; optimisation.
+	* additional errno mappings.
+	* w32_select mem leak.
+	* getfsstat and getmntinfo.
+
 Wed Sep 26 00:47:14 2018 adamy
 
 	* build 209 - beta
-	* Symlink support enhancements
-	* Color256 emulation tweaks
+	* symlink support enhancements
+	* color256 emulation tweaks
 	* window 10 console support
 	* mc 4.8.21 merge
 
 Thu Jun  9 21:26:18 2018 adamy
 
-	* msvc 2015/2017 builds
+	* msvc 2015/2017 builds
 
 Fri Mar 31 02:38:24 2017 adamy
 
@@ -58,7 +90,7 @@ Wed Mar  8 01:17:24 2017 adamy
 		idle and type-ahead logic was incorrectly delaying required screen
 		screen updates during edit search completion; as the up keys triggered
 		update optimisation logic.
-
+
 	* imported 4.8.19 configuration changes
 
 		- mc.default.keymap
@@ -69,7 +101,7 @@ Wed Mar  8 01:17:24 2017 adamy
 Tue Mar  7 09:38:28 2017 adamy
 
 	* build 201.
-
+
 Mon Mar  6 14:17:45 2017 adamy
 
 	* corrected /#enc:xxxx handling.
@@ -87,7 +119,7 @@ Mon Mar  6 14:17:45 2017 adamy
 
 		- locale support enabled (either User-Default (windows) or explicit an env, for example LANGUAGE).
 
-	* sftp enabled (libssh2 and libz imported)
+	* sftp enabled (libssh2 and libz imported).
 
 Wed Mar  1 18:16:18 2017 adamy
 
@@ -239,6 +271,3 @@ Tue Aug 14 16:39:56 2012 adamy
                         $PERSONAL/home
                         $PERSONAL
                         c:/
-
-
-

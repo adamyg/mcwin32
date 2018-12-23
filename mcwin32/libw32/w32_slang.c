@@ -1,6 +1,6 @@
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * win32 slang emulation.
+ * win32 Slang Screen Management (SLsmg) function emulation.
  *
  * Copyright (c) 2007, 2012 - 2018 Adam Young.
  *
@@ -41,8 +41,8 @@
 
 #include "slang.h"
 
-#define  TERMEMU_VIO_SOURCE                     /* private interface */
-#define  TERMEMU_VIO_STATIC                     /* static binding */
+#define TERMEMU_VIO_SOURCE                      /* private interface */
+#define TERMEMU_VIO_STATIC                      /* static binding */
 #include "termemu_vio.c"
 
 #include "unicode_cp437.h"
@@ -325,6 +325,7 @@ SLtt_add_color_attribute(int obj, SLtt_Char_Type attr)
     if (attr & SLTT_ITALIC_MASK) nattr |= VIO_ITALIC;
     if (attr & SLTT_ALTC_MASK)   nattr |= VIO_ALTCHARSET;
     vio_define_flags(obj, nattr);
+    ++vio.c_trashed;
 }
 
 
@@ -758,11 +759,12 @@ SLsmg_printf(const char *fmt, ...)
 void
 SLsmg_vprintf(const char *fmt, va_list ap)
 {
-    char buf[1024];
+    char buf[4*1024];
     int len;
 
     if (0 == vio.inited) return;
-    len = _vsnprintf(buf, sizeof(buf)-1, fmt, ap);
+    len = _vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+    assert(len >= 0 && len < sizeof(buf));
     if (len > 0) {
         buf[len] = 0; write_string(buf, len);
     }
@@ -810,21 +812,21 @@ SLsmg_write_char(SLwchar_Type ch)
 
 /*
  *  SLsmg_draw_object ---
- *      Draw an object from the alternate character set.
+ *      Draw an object from the alternate character set at row 'r' and column 'c'.
+ *      The object is really a character from the alternate character set and may be specified using one of the following constants:
  *
- *  Objects:
- *      SLSMG_HLINE_CHAR    Horizontal line.
- *      SLSMG_VLINE_CHAR    Vertical line.
- *      SLSMG_ULCORN_CHAR   Upper left corner.
- *      SLSMG_URCORN_CHAR   Upper right corner.
- *      SLSMG_LLCORN_CHAR   Lower left corner.
- *      SLSMG_LRCORN_CHAR   Lower right corner.
- *      SLSMG_CKBRD_CHAR    Checkboard character.
- *      SLSMG_RTEE_CHAR     Right Tee.
- *      SLSMG_LTEE_CHAR     Left Tee.
- *      SLSMG_UTEE_CHAR     Up Tee.
- *      SLSMG_DTEE_CHAR     Down Tee.
- *      SLSMG_PLUS_CHAR     Plus or Cross character.
+ *          SLSMG_HLINE_CHAR        Horizontal line.
+ *          SLSMG_VLINE_CHAR        Vertical line.
+ *          SLSMG_ULCORN_CHAR       Upper left corner.
+ *          SLSMG_URCORN_CHAR       Upper right corner.
+ *          SLSMG_LLCORN_CHAR       Lower left corner.
+ *          SLSMG_LRCORN_CHAR       Lower right corner.
+ *          SLSMG_CKBRD_CHAR        Checkboard character.
+ *          SLSMG_RTEE_CHAR         Right Tee.
+ *          SLSMG_LTEE_CHAR         Left Tee.
+ *          SLSMG_UTEE_CHAR         Up Tee.
+ *          SLSMG_DTEE_CHAR         Down Tee.
+ *          SLSMG_PLUS_CHAR         Plus or Cross character.
  **/
 void
 SLsmg_draw_object(int r, int c, SLwchar_Type object)
@@ -838,7 +840,8 @@ SLsmg_draw_object(int r, int c, SLwchar_Type object)
 
 /*
  *  SLsmg_draw_bline ---
- *      Draw a horizontal line.
+ *      Draws a horizontal line of length len on the virtual display.
+ *      The position of the virtual cursor is left at the end of the line.
  **/
 void
 SLsmg_draw_hline(int cnt)
@@ -859,13 +862,15 @@ SLsmg_draw_hline(int cnt)
         vio.c_col = cmin;
         write_char(ch, cmax - cmin);
     }
+
     vio.c_col = endcol;
 }
 
 
 /*
  *  SLsmg_draw_vline ---
- *      Draw a vertical line.
+ *      Draws a vertical line of length len on the virtual display.
+ *      The position of the virtual cursor is left at the end of the line.
  **/
 void
 SLsmg_draw_vline(int cnt)
@@ -893,7 +898,9 @@ SLsmg_draw_vline(int cnt)
 
 /*
  *  SLsmg_draw_box ---
- *      Draw a box.
+ *      Draw a box using the SLsmg_draw_box uses the SLsmg_draw_hline and SLsmg_draw_vline functions.
+ *      The box's upper left corner is placed at row 'r' and column 'c'.
+ *      The width and length of the box is specified by 'dc' and 'dr', respectively.
  **/
 void
 SLsmg_draw_box(int r, int c, unsigned int dr, unsigned int dc)
@@ -920,6 +927,8 @@ SLsmg_draw_box(int r, int c, unsigned int dr, unsigned int dc)
 /*
  *  SLsmg_fill_region ---
  *      Fill a rectangular region with a character.
+ *      The rectangle's upper left corner is at row 'r' and column 'c', and spans 'nr' rows and 'nc' columns.
+ *      The position of the virtual cursor will be left at (r, c).
  **/
 void
 SLsmg_fill_region(int r, int c, unsigned nr, unsigned nc, SLwchar_Type ch)
@@ -931,11 +940,12 @@ SLsmg_fill_region(int r, int c, unsigned nr, unsigned nc, SLwchar_Type ch)
     if (1 == cliptoarena(r, nr, 0, vio.rows, &rmin, &rmax) &&
             1 == cliptoarena(c, nc, 0, vio.cols, &cmin, &cmax)) {
         WCHAR_INFO text = {0};
+        int i;
 
         WCHAR_BUILD(ch, &vio.c_color, &text);
-        for (r = rmin; r < rmax; ++r) {
-            WCHAR_INFO *cursor = vio.c_screen[r].text + cmin,
-                *cend = vio.c_screen[r].text + cmax;
+        for (i = rmin; i < rmax; ++i) {
+            WCHAR_INFO *cursor = vio.c_screen[i].text + cmin,
+                *cend = vio.c_screen[i].text + cmax;
             unsigned flags = 0;
 
             while (cursor < cend) {
@@ -945,8 +955,10 @@ SLsmg_fill_region(int r, int c, unsigned nr, unsigned nc, SLwchar_Type ch)
                 }
                 ++cursor;
             }
-            vio.c_screen[r].flags |= TOUCHED;
+            vio.c_screen[i].flags |= flags;
         }
+
+        vio.c_row = r; vio.c_col = c;
     }
 }
 
@@ -1099,4 +1111,3 @@ utf8_decode_safe(const void *src, const void *cpend, int32_t *cooked)
     return ret;
 }
 /*end*/	
-

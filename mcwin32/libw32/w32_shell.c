@@ -254,17 +254,17 @@ int
 w32_spawn(
     win32_spawn_t *args, int Stdout, int Stderr, int *Stdin)
 {
-    assert(Stdout >= 0);
-    assert(Stderr >= 0);
-    assert(Stdin);
+    assert(Stdout >=  0);                       // non-optional
+    assert(Stderr >= -1);                       // optional
+    assert(Stdin);                              // output, non-optional
 
-    if (Stdout < 0 || Stderr < 0 || NULL == Stdin) {
+    if (Stdout < 0 || Stderr < -1 || NULL == Stdin) {
         return 0;
     }
 
     *Stdin = -1;                                // file descriptors
 
-    return w32_spawn2(args, Stdin, &Stdout, &Stderr);
+    return w32_spawn2(args, Stdin, &Stdout, (Stderr >= 0 ? &Stderr : NULL));
 }
 
 

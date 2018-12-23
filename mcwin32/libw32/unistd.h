@@ -30,6 +30,7 @@ __CPRAGMA_ONCE
  */
 
 #if defined(_MSC_VER)
+#ifndef __MAKEDEPEND__
 #if (_MSC_VER != 1200)                          /* MSVC 6 */
 #if (_MSC_VER != 1400)                          /* MSVC 8/2005 */
 #if (_MSC_VER != 1500)                          /* MSVC 9/2008 */
@@ -43,6 +44,7 @@ __CPRAGMA_ONCE
 #endif //2010
 #endif //2008
 #endif //2005
+#endif //__MAKEDEPEND__
 #endif //_MSC_VER
 
 #pragma warning(disable:4115)
@@ -58,6 +60,14 @@ __CPRAGMA_ONCE
 #elif defined(__WATCOMC__)
 #if (__WATCOMC__ < 1200)
 #error unistd.h: old WATCOM Version, upgrade to OpenWatcom ...
+#endif
+#ifndef __MAKEDEPEND__
+#if (__WATCOMC__ != 1290)                       /* 1.9 */
+#if (__WATCOMC__ != 1300)                       /* 2.0 */
+#error unistd.h: untested OpenWatcom Version (1.9 -- 2.0) only ...
+        //see: https://sourceforge.net/p/predef/wiki/Compilers/
+#endif
+#endif
 #endif
 
 #elif defined(__MINGW32__)
@@ -160,6 +170,9 @@ __BEGIN_DECLS
 #undef  S_ISLNK
 #undef  S_ISBLK
 #undef  S_ISFIFO
+#if (__WATCOMC__ >= 1300)
+#undef  S_IFBLK         /*open-watcom 2.0*/
+#endif
 #endif  /*__WATCOMC__*/
 
 #if defined(__MINGW32__)
@@ -192,7 +205,7 @@ __BEGIN_DECLS
 #endif  /*S_IFREG*/
 
 #if defined(S_IFBLK)                            /* block device */
-#if (S_IFBLK != 0060000)
+#if (S_IFBLK != 0060000) && (S_IFBLK != 060000)
 #error  S_IFBLK redefinition error ...
 #endif
 #else
@@ -258,7 +271,7 @@ __BEGIN_DECLS
 #endif
 
 #if defined(S_IRWXU)
-#if (S_IRWXU != 0000700)
+#if (S_IRWXU != 0000700) && (S_IRWXU != 000700)
 #error  S_IRWXU redefinition error ...
 #endif
 #else
@@ -266,7 +279,7 @@ __BEGIN_DECLS
 #endif  /*S_IRWXU*/
 
 #if defined(S_IRUSR)
-#if (S_IRUSR != 0000400)
+#if (S_IRUSR != 0000400) && (S_IRUSR != 000400)
 #error  S_IRUSR redefinition error ...
 #endif
 #else
@@ -295,15 +308,27 @@ __BEGIN_DECLS
 #endif /*S_IREAD*/
 #endif /*_POSIX_SOURCE*/
 
+#if defined(S_IRWXG)
+#if (S_IRWXG != 0000070) && (S_IRWXG != 000070)
+#error  S_IRWXG redefinition error ...
+#endif
+#else
 #define S_IRWXG         0000070                 /* read, write, execute: group */
 #define S_IRGRP         0000040                 /* read permission: group */
 #define S_IWGRP         0000020                 /* write permission: group */
 #define S_IXGRP         0000010                 /* execute permission: group */
+#endif
 
+#if defined(S_IRWXO)
+#if (S_IRWXO != 0000007) && (S_IRWXO != 000007)
+#error  S_IRWXO redefinition error ...
+#endif
+#else
 #define S_IRWXO         0000007                 /* read, write, execute: other */
 #define S_IROTH         0000004                 /* read permission: other */
 #define S_IWOTH         0000002                 /* write permission: other */
 #define S_IXOTH         0000001                 /* execute permission: other */
+#endif
 
 #define __S_ISTYPE(__mode,__mask) \
                         (((__mode) & S_IFFMT) == __mask)

@@ -5,7 +5,7 @@
 #
 #   **Warning**
 #
-#       Functionality is limited to the current GRIEF/MC build requirements.
+#       Functionality is limited to the current GRIEF/MC/WINRSH build requirements.
 #
 #   Example usage:
 #
@@ -656,7 +656,7 @@ Link() {
      #
      #  print CMD "option   modname='${modulepath}'\n";
      #  print CMD "option   copyright=''\n";
-        print CMD "option   description=${DESCRIPTION}\n"
+        print CMD "option   description ${DESCRIPTION}\n"
             if ($DESCRIPTION);
         print CMD "option   implib=${libpath}\n";
         print CMD "option   version=${dll_version}\n"
@@ -774,6 +774,7 @@ Link() {
     print LA "sym=${sympath}\n" if ($sympath);
     print LA "exp=${exppath}\n" if ($exppath);
     print LA "dll=${dllpath}\n";
+    print LA unix2dos("bin=${bindir}/${dllname}\n") if ($bindir);
     print LA "pdb=${pdbpath}\n" if ($pdbpath);
     print LA "[objects]\n";
     foreach(@OBJECTS) {
@@ -1030,7 +1031,7 @@ Clean() {
                 die "cannot open library artifact <${lib}> : $!\n";
             while (<LA>) {
                 s/\s*([\n\r]+|$)//;
-                if (/^(lib|dll|map|sym|pdb|exp)=(.*)$/) {
+                if (/^(lib|dll|map|sym|pdb|bin|exp)=(.*)$/) {
                     Verbose "rm: $2";
                     unlink($2);
                 }

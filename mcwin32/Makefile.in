@@ -579,6 +579,7 @@ LIBRARIES=\
 	$(LW)regex$(A)				\
 	$(LW)z$(A)				\
 	$(LW)magic$(A)				\
+	$(LW)mbedtls$(A)			\
 	$(LW)ssh2$(A)				\
 	$(LW)intl$(A)				\
 	$(LW)glib-2.0$(A)			\
@@ -694,6 +695,8 @@ clean:
 		-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A) >nul 2>&1
 		$(MAKE) -C libglib clean
 		$(MAKE) -C libintl clean
+		$(MAKE) -C libmbedtls clean
+		$(MAKE) -C libssh2 clean
 		$(MAKE) -C libmagic clean
 		$(MAKE) -C libregex clean
 		$(MAKE) -C libz clean
@@ -889,6 +892,10 @@ $(LW)regex$(A):
 .PHONY:		$(LW)magic$(A)
 $(LW)magic$(A):
 		$(MAKE) -C libmagic $(MAKEFLAGS)
+
+.PHONY:		$(LW)mbedtls2$(A)
+$(LW)ssh2$(A):
+		$(MAKE) -C libmbedtls $(MAKEFLAGS)
 
 .PHONY:		$(LW)ssh2$(A)
 $(LW)ssh2$(A):
