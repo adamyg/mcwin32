@@ -1,5 +1,4 @@
-glib-2.*/
-*.org
+mbedtls-2.13.0
 .unpacked.*
 Makefile
 *.err

@@ -1,12 +1,11 @@
-.makelib/
-WinSparkle-0.3/
-include/
-patch/
-bin/
-bin.*/
-lib.*/
-objects*/
-CVS/
+.makelib
+WinSparkle-0.3
+include
+patch
+bin
+bin.*
+lib.*
+objects*
 Makefile
 buildinfo.h
 BUILDNUMBER
@@ -15,7 +14,6 @@ owcsetup.dbg
 .created
 mc.aps
 .#*
-wd*.bat
 *.o
 *.obj
 *.a
@@ -29,5 +27,4 @@ wd*.bat
 *.sav
 *.bak
 *.orig
-
 

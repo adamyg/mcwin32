@@ -893,7 +893,7 @@ $(LW)regex$(A):
 $(LW)magic$(A):
 		$(MAKE) -C libmagic $(MAKEFLAGS)
 
-.PHONY:		$(LW)mbedtls2$(A)
+.PHONY:		$(LW)mbedtls$(A)
 $(LW)ssh2$(A):
 		$(MAKE) -C libmbedtls $(MAKEFLAGS)
 
