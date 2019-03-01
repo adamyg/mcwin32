@@ -1,5 +1,4 @@
-glib-2.*/
-*.org
+libssh2-1.8.0
 .unpacked.*
 Makefile
 *.err

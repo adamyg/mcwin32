@@ -1,5 +1,6 @@
-glib-2.*/
+glib-2.*
 *.org
 .unpacked.*
 Makefile
 *.err
+
