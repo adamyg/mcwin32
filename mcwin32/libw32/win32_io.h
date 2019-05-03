@@ -41,7 +41,7 @@ __CPRAGMA_ONCE
 #if (_MSC_VER != 1500)                          /* MSVC 9/2008 */
 #if (_MSC_VER != 1600)                          /* MSVC 10/2010 */
 #if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
-#if (_MSC_VER <  1910 || _MSC_VER > 1914)       /* MSVC 19.10 .. 14/2017 */
+#if (_MSC_VER <  1910 || _MSC_VER > 1917)       /* MSVC 19.10 .. 14/2017 */
 #error win32_io.h: untested MSVC Version (2005 -- 2017) only ...
 	 //see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 #endif //2017
