@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.2 2018/10/15 08:46:48 cvsuser Exp $
+# $Id: makelib.in,v 1.3 2019/04/25 00:01:36 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -40,12 +40,12 @@ $PACKAGE_H      = 'package.h';
 	'libregex',
 	'libmagic',
 	'libmagic_static',
-        'libmbedcrypto',
-        'libmbedcrypto_static',
-        'libmbedtls',
-        'libmbedtls_static',
-        'libmbedx509',
-        'libmbedx509_static',
+	'libmbedcrypto',
+	'libmbedcrypto_static',
+	'libmbedtls',
+	'libmbedtls_static',
+	'libmbedx509',
+	'libmbedx509_static',
 	'libssh2',
 	'libssh2_static',
 	'libintl',
