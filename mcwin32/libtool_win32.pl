@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.9 2018/10/18 22:37:48 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.11 2019/05/04 02:30:56 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -594,11 +594,16 @@ Link() {
         #
         #   MSVC/Watcom
         #
-        if (defined $ENV{'VCINSTALLDIR'}) {      # 2008
-            $cmd = "\"%VCINSTALLDIR%\\bin\\link\" \@$cmdfile";
+        if (defined $ENV{'VCToolsInstallDir'}) { # 2010 plus
+            my $toolbase = $ENV{'VCToolsInstallDir'};
+            $cmd = "\"${toolbase}\\bin\\Hostx86\\x86\\link\" \@$cmdfile";
 
-        } else {                                 # 2010 plus
-            $cmd = "\"%VCToolsInstallDir%\\bin\\Hostx86\\x86\\link\" \@$cmdfile";
+        } elsif (defined $ENV{'VCINSTALLDIR'}) { # 2008
+            my $toolbase = $ENV{'VCINSTALLDIR'};
+            $cmd = "\"${toolbase}\\bin\\link\" \@$cmdfile";
+
+        } else {                                 # default
+            $cmd = "link \@$cmdfile";
         }
 
         open(CMD, ">${cmdfile}") or
@@ -758,6 +763,8 @@ Link() {
             "#  can be result of an incorrect version of cvtres.exe due to dual VC10/VC2012 installations,\n".
             "#  rename 'C:/Program Files (x86)/Microsoft Visual Studio 10/VC/Bin/cvtres.exe' => cvtres_org.exe\n".
             "#\n";
+            $o_verbose = 0;
+            System("which cvtres");
         }
         exit ($ret);
     }
@@ -1548,3 +1555,4 @@ Error {
 }
 
 #end
+
