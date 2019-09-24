@@ -14,7 +14,7 @@ Build requirements for GNU Midnight Commander
    The following external requirements/packages need to be available
 
         - busybox-win32
-        - glib2 (pre build 201
+        - glib2 (pre build 201)
         - make / binutils
         - perl
         - supported compiler tool-chain
@@ -26,7 +26,7 @@ Installation instructions for GNU Midnight Commander
 
     To compile this package:
 
-        1. Install the required packages, 
+        1. Install the required packages,
 
                 Confirm/update as required the installation paths with the
                 ./win32/Makefile
@@ -89,7 +89,7 @@ Obtaining related software
 
                 https://live.gnome.org/GTK+/Win32/MSVCCompilationOfGTKStack
 
-        at present only the following components are required           
+        at present only the following components are required
 
                 intl.dll
                 libglib-2.0-0.dll
