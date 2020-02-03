@@ -1908,7 +1908,7 @@ CopyOutEx2(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
                 //
                 if (-1 == start) {
                     if (0 == (flags & TRASHED) &&
-                        SameCell(&cell, ocursor + col)) {
+                            SameCell(&cell, ocursor + col)) {
                         ++col;
                         continue;               // up-to-date
                     }
@@ -1918,12 +1918,10 @@ CopyOutEx2(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
                 } else {                        // attribute run
                     if (SameAttributesFGBG(&cell, &info, fg, bg, VIO_UNDERLINE|VIO_BOLD|VIO_BLINK|VIO_INVERSE)) {
                         ocursor[col++] = cell;  // update out image
-                        *wctext = (WCHAR)cell.Char.UnicodeChar;
-                        if (++wctext >= wcend) {
-                            break;              // flush
-                        }
+                        *wctext++ = (WCHAR)cell.Char.UnicodeChar;
                         continue;
                     }
+
                     //else, attribute change.
                 }
 
@@ -1961,7 +1959,7 @@ CopyOutEx2(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
 
                 *wctext++ = (WCHAR)cell.Char.UnicodeChar;
 
-            } while (col < cols);
+            } while (col < cols && wctext < wcend);
 
             if (start >= 0) {                   // write text.
                 const int size =
