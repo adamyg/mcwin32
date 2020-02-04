@@ -8,6 +8,7 @@ the current 4.8.x development stream.
 
         Version         Latest Build
         4.8.21          214 (bug fixes)
+        4.8.21          213 (windows 10 console)
         4.8.21          209 (windows 10 console, beta)
         4.8.19          204 (configuration updates), 201 (sftp/ssh)
         4.8.14          189 (beta)
