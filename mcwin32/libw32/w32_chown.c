@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_chown_c,"$Id: w32_chown.c,v 1.5 2018/10/12 00:52:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_chown_c,"$Id: w32_chown.c,v 1.6 2020/04/28 22:59:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -148,4 +148,3 @@ chown(const char *fname, uid_t uid, gid_t gid)
 }
 
 /*end*/
-

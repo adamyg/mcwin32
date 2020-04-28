@@ -2,7 +2,7 @@
    Interface to the terminal controlling library.
    Ncurses wrapper.
 
-   Copyright (C) 2005-2018
+   Copyright (C) 2005-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -102,6 +102,8 @@ tty_setup_sigwinch (void (*handler) (int))
 #endif /* SA_RESTART */
     sigaction (SIGWINCH, &act, &oact);
 #endif /* SIGWINCH */
+
+    tty_create_winch_pipe ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -109,9 +111,12 @@ tty_setup_sigwinch (void (*handler) (int))
 static void
 sigwinch_handler (int dummy)
 {
+    ssize_t n = 0;
+
     (void) dummy;
 
-    mc_global.tty.winch_flag = 1;
+    n = write (sigwinch_pipe[1], "", 1);
+    (void) n;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -225,6 +230,7 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
 void
 tty_shutdown (void)
 {
+    tty_destroy_winch_pipe ();
     tty_reset_shell_mode ();
     tty_noraw_mode ();
     tty_keypad (FALSE);

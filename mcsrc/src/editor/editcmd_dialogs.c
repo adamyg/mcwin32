@@ -1,7 +1,7 @@
 /*
    Editor dialogs for high level editing commands
 
-   Copyright (C) 2009-2018
+   Copyright (C) 2009-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -397,6 +397,7 @@ editcmd_dialog_raw_key_query (const char *heading, const char *query, gboolean c
     int w, wq;
     int y = 2;
     WDialog *raw_dlg;
+    WGroup *g;
 
     w = str_term_width1 (heading) + 6;
     wq = str_term_width1 (query);
@@ -405,17 +406,19 @@ editcmd_dialog_raw_key_query (const char *heading, const char *query, gboolean c
     raw_dlg =
         dlg_create (TRUE, 0, 0, cancel ? 7 : 5, w, WPOS_CENTER | WPOS_TRYUP, FALSE, dialog_colors,
                     editcmd_dialog_raw_key_query_cb, NULL, NULL, heading);
+    g = GROUP (raw_dlg);
     widget_want_tab (WIDGET (raw_dlg), TRUE);
 
-    add_widget (raw_dlg, label_new (y, 3, query));
-    add_widget (raw_dlg, input_new (y++, 3 + wq + 1, input_colors,
-                                    w - (6 + wq + 1), "", 0, INPUT_COMPLETE_NONE));
+    group_add_widget (g, label_new (y, 3, query));
+    group_add_widget (g,
+                      input_new (y++, 3 + wq + 1, input_colors, w - (6 + wq + 1), "", 0,
+                                 INPUT_COMPLETE_NONE));
     if (cancel)
     {
-        add_widget (raw_dlg, hline_new (y++, -1, -1));
+        group_add_widget (g, hline_new (y++, -1, -1));
         /* Button w/o hotkey to allow use any key as raw or macro one */
-        add_widget_autopos (raw_dlg, button_new (y, 1, B_CANCEL, NORMAL_BUTTON, _("Cancel"), NULL),
-                            WPOS_KEEP_TOP | WPOS_CENTER_HORZ, NULL);
+        group_add_widget_autopos (g, button_new (y, 1, B_CANCEL, NORMAL_BUTTON, _("Cancel"), NULL),
+                                  WPOS_KEEP_TOP | WPOS_CENTER_HORZ, NULL);
     }
 
     w = dlg_run (raw_dlg);
@@ -470,7 +473,7 @@ editcmd_dialog_completion_show (const WEdit * edit, int max_len, GString ** comp
     compl_list = listbox_new (1, 1, compl_dlg_h - 2, compl_dlg_w - 2, FALSE, NULL);
 
     /* add the dialog */
-    add_widget (compl_dlg, compl_list);
+    group_add_widget (GROUP (compl_dlg), compl_list);
 
     /* fill the listbox with the completions */
     for (i = num_compl - 1; i >= 0; i--)        /* reverse order */
@@ -497,10 +500,8 @@ void
 editcmd_dialog_select_definition_show (WEdit * edit, char *match_expr, int max_len, int word_len,
                                        etags_hash_t * def_hash, int num_lines)
 {
-
     int start_x, start_y, offset, i;
     char *curr = NULL;
-    etags_hash_t *curr_def = NULL;
     WDialog *def_dlg;
     WListbox *def_list;
     int def_dlg_h;              /* dialog height */
@@ -528,15 +529,10 @@ editcmd_dialog_select_definition_show (WEdit * edit, char *match_expr, int max_l
     if (offset > 0)
         start_y -= (offset + 1);
 
-    /* create the dialog */
     def_dlg = dlg_create (TRUE, start_y, start_x, def_dlg_h, def_dlg_w, WPOS_KEEP_DEFAULT, TRUE,
                           dialog_colors, NULL, NULL, "[Definitions]", match_expr);
-
-    /* create the listbox */
     def_list = listbox_new (1, 1, def_dlg_h - 2, def_dlg_w - 2, FALSE, NULL);
-
-    /* add the dialog */
-    add_widget (def_dlg, def_list);
+    group_add_widget (GROUP (def_dlg), def_list);
 
     /* fill the listbox with the completions */
     for (i = 0; i < num_lines; i++)
@@ -553,60 +549,47 @@ editcmd_dialog_select_definition_show (WEdit * edit, char *match_expr, int max_l
     /* pop up the dialog and apply the chosen completion */
     if (dlg_run (def_dlg) == B_ENTER)
     {
-        char *tmp_curr_def = (char *) curr_def;
-        int do_moveto = 0;
+        etags_hash_t *curr_def = NULL;
+        gboolean do_moveto = FALSE;
 
-        listbox_get_current (def_list, &curr, (void **) &tmp_curr_def);
-        curr_def = (etags_hash_t *) tmp_curr_def;
-        if (edit->modified)
+        listbox_get_current (def_list, &curr, (void **) &curr_def);
+
+        if (!edit->modified)
+            do_moveto = TRUE;
+        else if (!edit_query_dialog2
+                 (_("Warning"),
+                  _("Current text was modified without a file save.\n"
+                    "Continue discards these changes."), _("C&ontinue"), _("&Cancel")))
         {
-            if (!edit_query_dialog2
-                (_("Warning"),
-                 _("Current text was modified without a file save.\n"
-                   "Continue discards these changes."), _("C&ontinue"), _("&Cancel")))
-            {
-                edit->force |= REDRAW_COMPLETELY;
-                do_moveto = 1;
-            }
-        }
-        else
-        {
-            do_moveto = 1;
+            edit->force |= REDRAW_COMPLETELY;
+            do_moveto = TRUE;
         }
 
-        if (curr && do_moveto)
+        if (curr != NULL && do_moveto && edit_stack_iterator + 1 < MAX_HISTORY_MOVETO)
         {
-            if (edit_stack_iterator + 1 < MAX_HISTORY_MOVETO)
-            {
-                vfs_path_free (edit_history_moveto[edit_stack_iterator].filename_vpath);
-                if (edit->dir_vpath != NULL)
-                {
-                    edit_history_moveto[edit_stack_iterator].filename_vpath =
-                        vfs_path_append_vpath_new (edit->dir_vpath, edit->filename_vpath, NULL);
-                }
-                else
-                {
-                    edit_history_moveto[edit_stack_iterator].filename_vpath =
-                        vfs_path_clone (edit->filename_vpath);
-                }
-                edit_history_moveto[edit_stack_iterator].line = edit->start_line +
-                    edit->curs_row + 1;
-                edit_stack_iterator++;
-                vfs_path_free (edit_history_moveto[edit_stack_iterator].filename_vpath);
+            vfs_path_free (edit_history_moveto[edit_stack_iterator].filename_vpath);
+
+            if (edit->dir_vpath != NULL)
                 edit_history_moveto[edit_stack_iterator].filename_vpath =
-                    vfs_path_from_str ((char *) curr_def->fullpath);
-                edit_history_moveto[edit_stack_iterator].line = curr_def->line;
-                edit_reload_line (edit, edit_history_moveto[edit_stack_iterator].filename_vpath,
-                                  edit_history_moveto[edit_stack_iterator].line);
-            }
+                    vfs_path_append_vpath_new (edit->dir_vpath, edit->filename_vpath, NULL);
+            else
+                edit_history_moveto[edit_stack_iterator].filename_vpath =
+                    vfs_path_clone (edit->filename_vpath);
+
+            edit_history_moveto[edit_stack_iterator].line = edit->start_line + edit->curs_row + 1;
+            edit_stack_iterator++;
+            vfs_path_free (edit_history_moveto[edit_stack_iterator].filename_vpath);
+            edit_history_moveto[edit_stack_iterator].filename_vpath =
+                vfs_path_from_str ((char *) curr_def->fullpath);
+            edit_history_moveto[edit_stack_iterator].line = curr_def->line;
+            edit_reload_line (edit, edit_history_moveto[edit_stack_iterator].filename_vpath,
+                              edit_history_moveto[edit_stack_iterator].line);
         }
     }
 
     /* clear definition hash */
     for (i = 0; i < MAX_DEFINITIONS; i++)
-    {
         g_free (def_hash[i].filename);
-    }
 
     /* destroy dialog before return */
     dlg_destroy (def_dlg);

@@ -1,7 +1,7 @@
 /*
    Main program for the Midnight Commander
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -38,8 +38,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <unistd.h>             /* getsid() */
 
 #include "lib/global.h"
 
@@ -57,7 +59,7 @@
 
 #include "filemanager/midnight.h"       /* current_panel */
 #include "filemanager/treestore.h"      /* tree_store_save */
-#include "filemanager/layout.h" /* command_prompt */
+#include "filemanager/layout.h"
 #include "filemanager/ext.h"    /* flush_extension_file() */
 #include "filemanager/command.h"        /* cmdline */
 #include "filemanager/panel.h"  /* panalized_panel */
@@ -135,7 +137,7 @@ OS_Setup (void)
     else
         mc_global.sysconfig_dir = g_strdup (SYSCONFDIR);
 
-#if defined(WIN32_DATADIR) //WIN32,namespace
+#if defined(WIN32_DATADIR) //WIN32, namespace
     mc_global.share_data_dir = g_strdup (WIN32_DATADIR);
 #else
     mc_global.share_data_dir = g_strdup (DATADIR);
@@ -218,6 +220,39 @@ init_sigchld (void)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/**
+ * Check MC_SID to prevent running one mc from another.
+ *
+ * @return TRUE if no parent mc in our session was found, FALSE otherwise.
+ */
+
+static gboolean
+check_sid (void)
+{
+    pid_t my_sid, old_sid;
+    const char *sid_str;
+
+    sid_str = getenv ("MC_SID");
+    if (sid_str == NULL)
+        return TRUE;
+
+    old_sid = (pid_t) strtol (sid_str, NULL, 0);
+    if (old_sid == 0)
+        return TRUE;
+
+#if defined(WIN32)
+    my_sid = -1;
+#else
+    my_sid = getsid (0);
+    if (my_sid == -1)
+        return TRUE;
+#endif
+
+    /* The parent mc is in a different session, it's OK */
+    return (old_sid != my_sid);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -231,6 +266,8 @@ main (int argc, char *argv[])
     gboolean config_migrated = FALSE;
     char *config_migrate_msg = NULL;
     int exit_code = EXIT_FAILURE;
+
+    mc_global.run_from_parent_mc = !check_sid ();
 
     mc_global.timer = mc_timer_new ();
 
@@ -345,8 +382,8 @@ main (int argc, char *argv[])
     handle_console (CONSOLE_INIT);
 
 #ifdef ENABLE_SUBSHELL
-    /* Don't use subshell when invoked as viewer or editor */
-    if (mc_global.mc_run_mode != MC_RUN_FULL)
+    /* Disallow subshell when invoked as standalone viewer or editor from running mc */
+    if (mc_global.mc_run_mode != MC_RUN_FULL && mc_global.run_from_parent_mc)
         mc_global.tty.use_subshell = FALSE;
 
     if (mc_global.tty.use_subshell)
@@ -362,8 +399,6 @@ main (int argc, char *argv[])
     /* Must be done before init_subshell, to set up the terminal size: */
     /* FIXME: Should be removed and LINES and COLS computed on subshell */
     tty_init (!mc_args__nomouse, mc_global.tty.xterm_flag);
-
-    load_setup ();
 
     /* start check mc_global.display_codepage and mc_global.source_codepage */
     check_codeset ();
@@ -390,32 +425,57 @@ main (int argc, char *argv[])
 #ifdef ENABLE_SUBSHELL
     /* Done here to ensure that the subshell doesn't  */
     /* inherit the file descriptors opened below, etc */
+    if (mc_global.tty.use_subshell && mc_global.run_from_parent_mc)
+    {
+        int r;
+
+        r = query_dialog (_("Warning"),
+                          _("GNU Midnight Commander\nis already running on this terminal.\n"
+                            "Subshell support will be disabled."),
+                          D_ERROR, 2, _("&OK"), _("&Quit"));
+        if (r == 0)
+        {
+            /* parent mc was found and the user wants to continue */
+            ;
+        }
+        else
+        {
+            /* parent mc was found and the user wants to quit mc */
+            mc_global.midnight_shutdown = TRUE;
+        }
+
+        mc_global.tty.use_subshell = FALSE;
+    }
+
     if (mc_global.tty.use_subshell)
         init_subshell ();
 #endif /* ENABLE_SUBSHELL */
 
-    /* Also done after init_subshell, to save any shell init file messages */
-    if (mc_global.tty.console_flag != '\0')
-        handle_console (CONSOLE_SAVE);
-
-    if (mc_global.tty.alternate_plus_minus)
-        application_keypad_mode ();
-
-    /* Done after subshell initialization to allow select and paste text by mouse
-       w/o Shift button in subshell in the native console */
-    init_mouse ();
-
-    /* Done after tty_enter_ca_mode (tty_init) because in VTE bracketed mode is
-       separate for the normal and alternate screens */
-    enable_bracketed_paste ();
-
-    /* subshell_prompt is NULL here */
-    mc_prompt = (geteuid () == 0) ? "# " : "$ ";
-
-    if (config_migrated)
+    if (!mc_global.midnight_shutdown)
     {
-        message (D_ERROR, _("Warning"), "%s", config_migrate_msg);
-        g_free (config_migrate_msg);
+        /* Also done after init_subshell, to save any shell init file messages */
+        if (mc_global.tty.console_flag != '\0')
+            handle_console (CONSOLE_SAVE);
+
+        if (mc_global.tty.alternate_plus_minus)
+            application_keypad_mode ();
+
+        /* Done after subshell initialization to allow select and paste text by mouse
+           w/o Shift button in subshell in the native console */
+        init_mouse ();
+
+        /* Done after tty_enter_ca_mode (tty_init) because in VTE bracketed mode is
+           separate for the normal and alternate screens */
+        enable_bracketed_paste ();
+
+        /* subshell_prompt is NULL here */
+        mc_prompt = (geteuid () == 0) ? "# " : "$ ";
+
+        if (config_migrated)
+        {
+            message (D_ERROR, _("Warning"), "%s", config_migrate_msg);
+            g_free (config_migrate_msg);
+        }
     }
 
     /* Program main loop */

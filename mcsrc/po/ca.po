@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the mc package.
 #
 # Translators:
-# Antoni Bella Pérez <antonibella5@yahoo.com>, 2017-2018
+# Antoni Bella Pérez <antonibella5@yahoo.com>, 2017-2019
 # Daniel <danicases@gmail.com>, 2011
 # Daniel <danicases@gmail.com>, 2011-2012
 # Daniel <danicases@gmail.com>, 2012
@@ -16,9 +16,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-05-21 16:46+0000\n"
-"Last-Translator: Marc Tormo i Bochaca <mtbochaca@gmail.com>\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2019-12-22 22:08+0000\n"
+"Last-Translator: Antoni Bella Pérez <antonibella5@yahoo.com>\n"
 "Language-Team: Catalan (http://www.transifex.com/mc/mc/language/ca/)\n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
@@ -304,10 +304,10 @@ msgid "End key"
 msgstr "Posició final"
 
 msgid "Page Up"
-msgstr "Re. Pàg."
+msgstr "Re Pàg"
 
 msgid "Page Down"
-msgstr "Av. Pàg."
+msgstr "Av Pàg"
 
 msgid "/ on keypad"
 msgstr "/ en el teclat numèric"
@@ -340,10 +340,10 @@ msgid "End on keypad"
 msgstr "Final en el teclat numèric"
 
 msgid "Page Down keypad"
-msgstr "Av. Pàg. en el teclat numèric"
+msgstr "Av Pàg en el teclat numèric"
 
 msgid "Page Up keypad"
-msgstr "Re. Pàg. en el teclat numèric"
+msgstr "Re Pàg en el teclat numèric"
 
 msgid "Insert on keypad"
 msgstr "Insereix en el teclat numèric"
@@ -492,6 +492,27 @@ msgstr "Maj"
 
 msgid "The TERM environment variable is unset!\n"
 msgstr "La variable d'entorn TERM no està definida!\n"
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr "No s'ha pogut comprovar la canonada SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr "No s'han pogut crear la canonada per a SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr "No s'ha pogut configurar l'escriptura final de la canonada SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
+msgstr "No s'ha pogut configurar la lectura final de la canonada SIGWINCH"
 
 #, c-format
 msgid ""
@@ -1382,6 +1403,9 @@ msgstr "&Nou"
 msgid "&Close"
 msgstr "Tan&ca"
 
+msgid "&History..."
+msgstr "&Historial..."
+
 msgid "Save &as..."
 msgstr "Desa com &a..."
 
@@ -1665,8 +1689,9 @@ msgstr ""
 "Un editor de text fàcil d'emprar\n"
 "escrit per al Midnight Commander."
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2018 la Free Software Foundation"
+#, fuzzy
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
+msgstr "Copyright (C) 1996-2019 la Free Software Foundation"
 
 msgid "About"
 msgstr "Quant a"
@@ -1818,6 +1843,13 @@ msgstr "No s'ha pogut obtenir una còpia local de %s"
 msgid "The shell is already running a command"
 msgstr "La shell ja està executant una ordre"
 
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+"No feu servir ni xterm ni una consola Linux.\n"
+"No podreu alternar entre els plafons."
+
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Escriviu «exit» per tornar al Midnight Commander"
 
@@ -1955,7 +1987,7 @@ msgid "Sa&fe delete"
 msgstr "Suprimeix de &forma segura"
 
 msgid "Safe overwrite"
-msgstr "Sobre-escriptura segura"
+msgstr "Sobreescriptura segura"
 
 msgid "A&uto save setup"
 msgstr "Desa &automàticament la configuració"
@@ -2377,13 +2409,6 @@ msgstr ""
 "Ambdós plafons han d'estar en el mode de llistat\n"
 "per usar aquesta ordre"
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-"No feu servir ni xterm ni una consola Linux.\n"
-"No podreu alternar entre els plafons."
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr "«%s» no és un enllaç simbòlic"
@@ -2449,9 +2474,6 @@ msgid ""
 msgstr ""
 "No s'ha pogut fer chdir a «%s»\n"
 "%s"
-
-msgid "Cannot read directory contents"
-msgstr "No s'ha pogut llegir el contingut del directori"
 
 msgid "Parameter"
 msgstr "Paràmetre"
@@ -2532,8 +2554,25 @@ msgstr "fitxers/directoris"
 msgid " with source mask:"
 msgstr " amb màscara d'origen:"
 
-msgid "Cannot make the hardlink"
-msgstr "No s'ha pogut crear l'enllaç dur"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+"No s'ha pogut visualitzar el fitxer d'origen de l'enllaç dur «%s»\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+"No s'ha pogut crear l'enllaç dur de destinació «%s»\n"
+"%s"
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
+msgstr "No s'ha pogut crear l'enllaç dur de destinació «%s»"
 
 #, c-format
 msgid ""
@@ -2869,19 +2908,14 @@ msgstr "%.2f KB/s"
 msgid "%ld B/s"
 msgstr "%ld B/s"
 
-msgid "Target file already exists!"
-msgstr "Ja existeix el fitxer de destinació"
+msgid "New     :"
+msgstr "Nou     :"
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "Nou: %s, mida %s"
+msgid "Existing:"
+msgstr "Existent:"
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "Existent: %s, mida %s"
-
-msgid "Overwrite this target?"
-msgstr "Voleu sobreescriure aquesta destinació?"
+msgid "Overwrite this file?"
+msgstr "Sobreescric aquest fitxer?"
 
 msgid "A&ppend"
 msgstr "A&nnexa"
@@ -2889,14 +2923,20 @@ msgstr "A&nnexa"
 msgid "&Reget"
 msgstr "Reprè&n"
 
-msgid "Overwrite all targets?"
-msgstr "Voleu sobreescriure'ls tots?"
+msgid "Overwrite all files?"
+msgstr "Sobreescric tots els fitxers?"
 
-msgid "&Update"
-msgstr "Actualit&za"
+msgid "Don't overwrite with &zero length file"
+msgstr "No sobreescriure amb un fitxer de longitud &zero"
 
-msgid "If &size differs"
-msgstr "Si difereix la &mida"
+msgid "&Older"
+msgstr "Més a&ntic"
+
+msgid "S&maller"
+msgstr "&Més petit"
+
+msgid "&Size differs"
+msgstr "La mida é&s diferent"
 
 msgid "File exists"
 msgstr "El fitxer ja existeix"
@@ -3043,11 +3083,11 @@ msgstr[1] "Finalitzada (s'han ignorat %zu directoris)"
 
 #, c-format
 msgid "Find File: \"%s\". Content: \"%s\""
-msgstr ""
+msgstr "Troba el fitxer: «%s». Contingut: «%s»"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Find File: \"%s\""
-msgstr "Cerca el fitxer"
+msgstr "Troba el fitxer: «%s»"
 
 msgid "Searching"
 msgstr "Cercant"
@@ -3390,6 +3430,9 @@ msgstr "Mostra les m&ides dels directoris"
 msgid "Command &history"
 msgstr "&Historial de les ordres"
 
+msgid "Viewed/edited files hi&story"
+msgstr "Hi&storial dels fitxers vistos/editats"
+
 msgid "Di&rectory hotlist"
 msgstr "Favorits dels di&rectoris"
 
@@ -3615,6 +3658,9 @@ msgstr "No seleccionis"
 msgid "Do you really want to execute?"
 msgstr "Realment el voleu executar?"
 
+msgid "Cannot read directory contents"
+msgstr "No s'ha pogut llegir el contingut del directori"
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr ""
 "El format facilitat per l'usuari sembla que no és vàlid, s'està tornant al "
@@ -3806,6 +3852,16 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr "El camí del directori d'inici no és absolut"
 
+#, fuzzy
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+"GNU Midnight Commander està\n"
+"funcionant en aquest terminal.\n"
+"El suport Subshell es desactivarà."
+
 #, c-format
 msgid ""
 "\n"
@@ -3836,15 +3892,6 @@ msgstr ""
 "No s'ha pogut desar el fitxer %s:\n"
 "%s"
 
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"GNU Midnight Commander està\n"
-"funcionant en aquest terminal.\n"
-"El suport Subshell es desactivarà."
-
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "No s'ha pogut obrir la canonada anomenada %s\n"
@@ -3856,52 +3903,72 @@ msgstr "L'intèrpret d'ordres encara està actiu. Surto de totes maneres?"
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Avís: no s'ha pogut canviar a %s.\n"
 
-msgid "Using the S-Lang library with terminfo database\n"
-msgstr "Emprant la biblioteca «S-Lang» amb la base de dades «terminfo»\n"
+#, fuzzy
+msgid "With builtin Editor and Aspell support"
+msgstr "Amb editor incorporat i implementació per a Aspell\n"
 
-msgid "Using the ncurses library\n"
-msgstr "Emprant la biblioteca «ncurses»\n"
-
-msgid "Using the ncursesw library\n"
-msgstr "Emprant la biblioteca «ncursesw»\n"
-
-msgid "With builtin Editor\n"
+#, fuzzy
+msgid "With builtin Editor"
 msgstr "Amb editor incorporat\n"
 
-msgid "With optional subshell support\n"
+#, fuzzy
+msgid "With optional subshell support"
 msgstr "Amb implementació opcional de subintèrpret\n"
 
-msgid "With subshell support as default\n"
+#, fuzzy
+msgid "With subshell support as default"
 msgstr "Amb implementació de subintèrpret per omissió\n"
 
-msgid "With support for background operations\n"
+#, fuzzy
+msgid "With support for background operations"
 msgstr "Amb implementació per a operacions en segon pla\n"
 
-msgid "With mouse support on xterm and Linux console\n"
+#, fuzzy
+msgid "With mouse support on xterm and Linux console"
 msgstr ""
 "Amb la possibilitat d'emprar el ratolí al xterm i a la consola de Linux\n"
 
-msgid "With mouse support on xterm\n"
+#, fuzzy
+msgid "With mouse support on xterm"
 msgstr "Amb la possibilitat d'emprar el ratolí al xterm.\n"
 
-msgid "With support for X11 events\n"
+#, fuzzy
+msgid "With support for X11 events"
 msgstr "Amb la possibilitat d'emprar els esdeveniments de l'X11\n"
 
-msgid "With internationalization support\n"
+#, fuzzy
+msgid "With internationalization support"
 msgstr "Amb implementació de la internacionalització\n"
 
-msgid "With multiple codepages support\n"
+#, fuzzy
+msgid "With multiple codepages support"
 msgstr "Amb implementació per a múltiples pàgines de codis\n"
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
 msgstr "Construït amb GLib %d.%d.%d\n"
 
+#, fuzzy, c-format
+msgid "Built with S-Lang %s with terminfo database\n"
+msgstr "Emprant la biblioteca «S-Lang» amb la base de dades «terminfo»\n"
+
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Built with ncursesw %s\n"
+msgstr "Emprant la biblioteca «ncursesw»\n"
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
 msgid "Virtual File Systems:"
 msgstr "Sistemes de fitxers virtuals:"
 
-#, c-format
 msgid "Data types:"
 msgstr "Tipus de dades:"
 
@@ -4521,3 +4588,6 @@ msgstr "Continuo des del començament?"
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr ""
 "No s'ha pogut obtenir una còpia local de /ftp://algun.amfitrió/editam.txt"
+
+#~ msgid "Using the ncurses library\n"
+#~ msgstr "Emprant la biblioteca «ncurses»\n"

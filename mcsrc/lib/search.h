@@ -13,7 +13,6 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-
 #define MC_SEARCH__NUM_REPLACE_ARGS 64
 
 #ifdef SEARCH_TYPE_GLIB
@@ -56,6 +55,7 @@ typedef enum
 typedef mc_search_cbret_t (*mc_search_fn) (const void *user_data, gsize char_offset,
                                            int *current_char);
 typedef mc_search_cbret_t (*mc_update_fn) (const void *user_data, gsize char_offset);
+
 
 /*** structures declarations (and typedefs of structures)*****************************************/
 

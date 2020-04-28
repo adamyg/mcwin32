@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_ino_c,"$Id: w32_ino.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_ino_c,"$Id: w32_ino.c,v 1.7 2020/04/23 00:09:36 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -59,7 +59,7 @@ w32_ino_hash(const char *name)
         if (ISSLASH(*p)) {                      /* convert slashes */
             c = '/';
         } else {
-            c = tolower(*p);
+            c = (char)tolower(*p);
         }
         hash = (hash << 7) + hash + (ino_t)c;
     }

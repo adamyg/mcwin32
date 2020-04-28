@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Common finctions (used from some other mcviewer functions)
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -247,10 +247,9 @@ mcview_done (WView * view)
     if (mc_global.mc_run_mode == MC_RUN_VIEWER && view->dir != NULL)
     {
         /* mcviewer is the owner of file list */
-        dir_list_clean (view->dir);
-        g_free (view->dir->list);
-        g_free (view->dir_idx);
+        dir_list_free_list (view->dir);
         g_free (view->dir);
+        g_free (view->dir_idx);
     }
 
     view->dir = NULL;
@@ -258,10 +257,10 @@ mcview_done (WView * view)
 
 /* --------------------------------------------------------------------------------------------- */
 
+#ifdef HAVE_CHARSET
 void
 mcview_set_codeset (WView * view)
 {
-#ifdef HAVE_CHARSET
     const char *cp_id = NULL;
 
     view->utf8 = TRUE;
@@ -281,21 +280,17 @@ mcview_set_codeset (WView * view)
         view->utf8 = (gboolean) str_isutf8 (cp_id);
         view->dpy_wrap_dirty = TRUE;
     }
-#else
-    (void) view;
-#endif
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-#ifdef HAVE_CHARSET
 void
 mcview_select_encoding (WView * view)
 {
     if (do_select_codepage ())
         mcview_set_codeset (view);
 }
-#endif
+#endif /* HAVE_CHARSET */
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -380,12 +375,14 @@ mcview_eol (WView * view, off_t current)
 char *
 mcview_get_title (const WDialog * h, size_t len)
 {
-    const WView *view = (const WView *) find_widget_type (h, mcview_callback);
-    const char *modified = view->hexedit_mode && (view->change_list != NULL) ? "(*) " : "    ";
+    const WView *view;
+    const char *modified;
     const char *file_label;
     const char *view_filename;
     char *ret_str;
 
+    view = (const WView *) widget_find_by_type (CONST_WIDGET (h), mcview_callback);
+    modified = view->hexedit_mode && (view->change_list != NULL) ? "(*) " : "    ";
     view_filename = vfs_path_as_str (view->filename_vpath);
 
     len -= 4;

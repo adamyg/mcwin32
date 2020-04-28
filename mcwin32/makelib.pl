@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.11 2018/10/18 22:37:48 cvsuser Exp $
+# $Id: makelib.pl,v 1.13 2020/04/28 22:59:43 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
 #
 #
-# Copyright (c) 1998 - 2018, Adam Young.
+# Copyright (c) 1998 - 2020, Adam Young.
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.
@@ -221,6 +221,34 @@ my %x_environment   = (
        'vc1910'        => {    # 2017, Visual Studio 19.10 -- 19.1x
             TOOLCHAIN       => 'vs141',
             TOOLCHAINEXT    => '.vs141',
+            CC              => 'cl',
+            COMPILERPATH    => '%VCToolsInstallDir%/bin/Hostx86/x86',
+            VSWITCH         => '',
+            VPATTERN        => undef,
+            OSWITCH         => '-Fo',
+            LSWITCH         => '',
+            XSWITCH         => '-Fe',
+            AR              => 'lib',
+            CINCLUDE        => '-I$(ROOT)/libw32',
+            CFLAGS          => '-nologo -Zi -RTC1 -MDd -fp:precise',
+            CXXFLAGS        => '-nologo -Zi -RTC1 -MDd -EHsc -fp:precise',
+            CWARN           => '-W3',
+            CXXWARN         => '-W3',
+            LDEBUG          => '-nologo -Zi -RTC1 -MTd',
+            LDMAPFILE       => '-MAP:$(MAPFILE)',
+
+        #   MFCDIR          => '/tools/WinDDK/7600.16385.1',
+        #   MFCCFLAGS       => '-nologo -Zi -RTC1 -MD$(USE_DEBUG)',
+        #   MFCCXXFLAGS     => '-nologo -Zi -RTC1 -MD$(USE_DEBUG) -EHsc',
+        #   MFCCOPT         => '-Zc:wchar_t- -Zc:forScope -Gm',
+        #   MFCCXXOPT       => '-Zc:wchar_t- -Zc:forScope -Gm',
+        #   MFCCINCLUDE     => '-I$(MFCDIR)/inc/atl71 -I$(MFCDIR)/inc/mfc42',
+        #   MFCLIBS         => '/LIBPATH:$(MFCDIR)\lib\atl\i386 /LIBPATH:$(MFCDIR)\lib\mfc\i386'
+            },
+
+       'vc1920'        => {    # 2019, Visual Studio 19.2x
+            TOOLCHAIN       => 'vs142',
+            TOOLCHAINEXT    => '.vs142',
             CC              => 'cl',
             COMPILERPATH    => '%VCToolsInstallDir%/bin/Hostx86/x86',
             VSWITCH         => '',
@@ -504,6 +532,7 @@ my @x_headers       = (
         'env.h',
         'fcntl.h',
         'fenv.h',
+        'math.h',                               # for isnan() etc
         'float.h',
         'poll.h',
         'io.h',
@@ -555,6 +584,7 @@ my @x_decls         = (     #stdint/intypes.h
 my @x_types         = (     #stdint/inttypes/types.h
         'inline',
         '__inline',
+        '__forceinline',
         '__int8',
         '__int16',
         '__int32',
@@ -602,8 +632,9 @@ my @x_functions     = (
         'putenv',
         'setenv',
         'rename',
-        'bcmp', 'bzero',
+        'bcopy', 'bcmp', 'bzero',
         'memcmp', 'memset', 'memmove',
+        'memccpy', '_memccpy',                  # bsd/msvc
         'index', 'rindex',                      # bsd
         'strcasecmp', '__strcasecmp', 'stricmp',
         'strtoul',
@@ -638,9 +669,15 @@ my @x_functions     = (
         'truncate', 'ftruncate',
         'getline', 'getdelim',                  # bsd/linux
         'ctime_r', 'localtime_r', 'gmtime_r', 'asctime_r', #posix.1
+              '_get_timezone',
         'mktime',
         'timegm',                               # bsd/linux extensions
         'feclearexpect',                        # fenv.h/c99
+        'fpclassify',                           # math.h/c99
+            'isnan', '_isnan',
+            'isinf', '_isinf',
+            'isfinite', '_isfinite',
+            'finite', '_finite',
         'round',                                # c99
         'nearbyintf',
         'va_copy', '__va_copy',                 # c99/gnu
@@ -783,6 +820,8 @@ main()
     #   MSVC++ 14.12 _MSC_VER == 1912 (Visual Studio 2017 version 15.5)
     #   MSVC++ 14.13 _MSC_VER == 1913 (Visual Studio 2017 version 15.6)
     #   MSVC++ 14.14 _MSC_VER == 1914 (Visual Studio 2017 version 15.7)
+    #   MSVC++ 14.16 _MSC_VER == 1916 (Visual Studio 2017 version 15.9)
+    #   MSVC++ 14.20 _MSC_VER == 1920 (Visual Studio 2019 version 15.7)
     #
     if ('vc12' eq $cmd)         { $o_version = 1200, $cmd = 'vc' }
     elsif ('vc14' eq $cmd)      { $o_version = 1400; $cmd = 'vc' } elsif ('vc2005' eq $cmd) { $o_version = 1400; $cmd = 'vc' }
@@ -790,6 +829,8 @@ main()
     elsif ('vc16' eq $cmd)      { $o_version = 1600; $cmd = 'vc' } elsif ('vc2010' eq $cmd) { $o_version = 1600; $cmd = 'vc' }
     elsif ('vc19' eq $cmd)      { $o_version = 1900; $cmd = 'vc' } elsif ('vc2015' eq $cmd) { $o_version = 1900; $cmd = 'vc' }
     elsif ('vc1910' eq $cmd)    { $o_version = 1910; $cmd = 'vc' } elsif ('vc2017' eq $cmd) { $o_version = 1910; $cmd = 'vc' }
+    elsif ('vc1920' eq $cmd)    { $o_version = 1920; $cmd = 'vc' } elsif ('vc2019' eq $cmd) { $o_version = 1920; $cmd = 'vc' }
+
     if (! $o_version) {
         if ($cmd eq 'vc')       { $o_version = 1400; }
         elsif ($cmd eq 'wc')    { $o_version = 1300; }
@@ -1358,6 +1399,8 @@ LoadContrib($$$)        # (name, dir, refIncludes)
     my $basepath = ($dir ? $dir : "contrib/${name}");
     my $def = "${basepath}/makelib.def";
     my $lbl = "HAVE_".uc($name);
+    my $lib = '';
+    my $ext = '';
 
     return 0 if (-f $basepath);
 
@@ -1383,11 +1426,14 @@ LoadContrib($$$)        # (name, dir, refIncludes)
                 $lbl = uc($val);
 
             } elsif ('lib' eq $key) {
-                $x_tokens{$lbl} = ExportPath($val);
+                die "$def: multiple lib specifications\n"
+                    if ($lib);
+                $lib = ExportPath($val);
                 print "\tlib: $val (\@$lbl\@)\n";
 
             } elsif ('ext' eq $key) {
-                $x_tokens{$lbl} .= ' '.ExportPath($val);
+                $ext .= ' ' if ($ext);
+                $ext .= ExportPath($val);
                 print "\text: $val (\@$lbl\@)\n";
 
             } elsif ('def' eq $key) {
@@ -1400,6 +1446,13 @@ LoadContrib($$$)        # (name, dir, refIncludes)
             }
         }
     }
+
+    $x_tokens{$lbl} = $lib if ($lib);
+    if ($ext) {
+        $x_tokens{$lbl} .= ' ' if ($x_tokens{$lbl});
+        $x_tokens{$lbl} .= $ext;
+    }
+
     close(CFG);
     return 1;
 }

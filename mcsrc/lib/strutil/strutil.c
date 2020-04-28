@@ -1,7 +1,7 @@
 /*
    Common strings utilities
 
-   Copyright (C) 2007-2018
+   Copyright (C) 2007-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -55,8 +55,14 @@ static const char *const str_utf8_encodings[] = {
 
 /* standard 8bit encodings, no wide or multibytes characters */
 static const char *const str_8bit_encodings[] = {
+    /* Solaris has different names of Windows 1251 encoding */
+#ifdef __sun
+    "ansi-1251",
+    "ansi1251",
+#else
     "cp-1251",
     "cp1251",
+#endif
     "cp-1250",
     "cp1250",
     "cp-866",

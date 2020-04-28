@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-04-30 20:11+0000\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2019-12-16 14:54+0000\n"
 "Last-Translator: David Martin <dhmartina@yahoo.es>\n"
 "Language-Team: Spanish (http://www.transifex.com/mc/mc/language/es/)\n"
 "Language: es\n"
@@ -48,7 +48,7 @@ msgstr "¡Verifique los datos de entrada! ¡Hay parámetros nulos!"
 
 #, c-format
 msgid "Unable to create group '%s' for events!"
-msgstr "Imposible crear el grupo de eventos «%s»"
+msgstr "¡Imposible crear el grupo de eventos «%s»!"
 
 #, c-format
 msgid "Unable to create event '%s'!"
@@ -485,6 +485,27 @@ msgstr "Mayús"
 
 msgid "The TERM environment variable is unset!\n"
 msgstr "¡La variable de entorno TERM está sin definir!\n"
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr "Imposible comprobar tuberia para SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr "Imposible crear tubería para SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr "Imposible configurar extremo de escritura de la tuberia para SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
+msgstr "Imposible configurar extremo de lectura de la tuberia para SIGWINCH"
 
 #, c-format
 msgid ""
@@ -1374,6 +1395,9 @@ msgstr "&Nuevo"
 msgid "&Close"
 msgstr "&Cerrar"
 
+msgid "&History..."
+msgstr "&Historia..."
+
 msgid "Save &as..."
 msgstr "guar&Dar como..."
 
@@ -1657,8 +1681,9 @@ msgstr ""
 "Un editor de texto amigable\n"
 "para Midnight Commander."
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2018 the Free Software Foundation"
+#, fuzzy
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
+msgstr "Copyright (C) 1996-2019 the Free Software Foundation"
 
 msgid "About"
 msgstr "Acerca de..."
@@ -1809,6 +1834,13 @@ msgstr "Imposible obtener una copia local de «%s»"
 
 msgid "The shell is already running a command"
 msgstr "El shell ya está ejecutando un comando"
+
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+"No se está usando ni xterm ni la consola Linux.\n"
+"Los paneles no pueden ser ocultados."
 
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Teclee «exit» para regresar a Midnight Commander"
@@ -2369,13 +2401,6 @@ msgstr ""
 "Ambos paneles deben estar en\n"
 "modo listado para usar esta función"
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-"No se está usando ni xterm ni la consola Linux.\n"
-"Los paneles no pueden ser ocultados."
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr "«%s» no es un enlace simbólico"
@@ -2441,9 +2466,6 @@ msgid ""
 msgstr ""
 "Imposible cambiar al directorio «%s»\n"
 "%s"
-
-msgid "Cannot read directory contents"
-msgstr "Imposible leer directorio"
 
 msgid "Parameter"
 msgstr "Parámetro"
@@ -2525,8 +2547,25 @@ msgstr "archivos/directorios"
 msgid " with source mask:"
 msgstr " aplicando la máscara:"
 
-msgid "Cannot make the hardlink"
-msgstr "Imposible crear el enlace"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+"Imposible identificar enlace «%s» en el origen\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+"Imposible crear enlace «%s» en el destino\n"
+"%s"
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
+msgstr "Imposible crear enlace «%s» en el destino"
 
 #, c-format
 msgid ""
@@ -2861,18 +2900,13 @@ msgstr "%.2f kB/s"
 msgid "%ld B/s"
 msgstr "%ld B/s"
 
-msgid "Target file already exists!"
-msgstr "¡El archivo destino ya existe!"
+msgid "New     :"
+msgstr "Nuevo :"
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "Nuevo : %s, tamaño %s"
+msgid "Existing:"
+msgstr "Actual:"
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "Actual: %s, tamaño %s"
-
-msgid "Overwrite this target?"
+msgid "Overwrite this file?"
 msgstr "¿Sobrescribir este archivo?"
 
 msgid "A&ppend"
@@ -2881,14 +2915,20 @@ msgstr "aña&Dir"
 msgid "&Reget"
 msgstr "&Reintentar"
 
-msgid "Overwrite all targets?"
+msgid "Overwrite all files?"
 msgstr "¿Sobrescribir todos los archivos?"
 
-msgid "&Update"
-msgstr "actuali&Zar"
+msgid "Don't overwrite with &zero length file"
+msgstr "no sobrescribir con archivos de tamaño cer&O"
 
-msgid "If &size differs"
-msgstr "si el ta&Maño difiere"
+msgid "&Older"
+msgstr "antig&Uos"
+
+msgid "S&maller"
+msgstr "&Menores"
+
+msgid "&Size differs"
+msgstr "tamaño di&Ferente"
 
 msgid "File exists"
 msgstr "Archivo ya existe"
@@ -3035,11 +3075,11 @@ msgstr[1] "Terminado (%zu directorios ignorados)"
 
 #, c-format
 msgid "Find File: \"%s\". Content: \"%s\""
-msgstr ""
+msgstr "Buscar archivos: «%s» - Contenido: «%s»"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Find File: \"%s\""
-msgstr " Buscar archivos "
+msgstr "Buscar archivos: «%s»"
 
 msgid "Searching"
 msgstr "Buscando"
@@ -3382,6 +3422,9 @@ msgstr "mostrar &Tamaños de los directorios"
 msgid "Command &history"
 msgstr "&Historia de órdenes"
 
+msgid "Viewed/edited files hi&story"
+msgstr "hi&Storia de archivos"
+
 msgid "Di&rectory hotlist"
 msgstr "&Favoritos..."
 
@@ -3607,6 +3650,9 @@ msgstr "De-seleccionar grupo"
 msgid "Do you really want to execute?"
 msgstr "¿Realmente quiere ejecutar?"
 
+msgid "Cannot read directory contents"
+msgstr "Imposible leer directorio"
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "Formato no parece válido. Recuperando el predeterminado."
 
@@ -3793,6 +3839,16 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr "La ruta del directorio de inicio no es ruta absoluta"
 
+#, fuzzy
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+"GNU Midnight Commander ya se está\n"
+"ejecutando en este terminal.\n"
+"El soporte de subshell quedará deshabilitado."
+
 #, c-format
 msgid ""
 "\n"
@@ -3823,15 +3879,6 @@ msgstr ""
 "Imposible guardar el archivo %s: \n"
 "%s"
 
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"GNU Midnight Commander ya se está\n"
-"ejecutando en este terminal.\n"
-"El soporte de subshell quedará deshabilitado."
-
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "Imposible abrir la tubería con nombre %s\n"
@@ -3843,51 +3890,71 @@ msgstr "El shell todavía está activo. ¿Terminar de todas maneras?"
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Cuidado: Imposible cambiar a %s.\n"
 
-msgid "Using the S-Lang library with terminfo database\n"
-msgstr "Utilizando la biblioteca S-Lang y terminales según terminfo\n"
+#, fuzzy
+msgid "With builtin Editor and Aspell support"
+msgstr "Editor de texto propio y ortografía incluidos\n"
 
-msgid "Using the ncurses library\n"
-msgstr "Utilizando la biblioteca ncurses\n"
-
-msgid "Using the ncursesw library\n"
-msgstr "Utilizando la biblioteca ncursesw\n"
-
-msgid "With builtin Editor\n"
+#, fuzzy
+msgid "With builtin Editor"
 msgstr "Editor de texto propio incluido\n"
 
-msgid "With optional subshell support\n"
+#, fuzzy
+msgid "With optional subshell support"
 msgstr "Soporte subshell optativo\n"
 
-msgid "With subshell support as default\n"
+#, fuzzy
+msgid "With subshell support as default"
 msgstr "Soporte subshell activo por defecto\n"
 
-msgid "With support for background operations\n"
+#, fuzzy
+msgid "With support for background operations"
 msgstr "Soporte para operaciones en 2º plano\n"
 
-msgid "With mouse support on xterm and Linux console\n"
+#, fuzzy
+msgid "With mouse support on xterm and Linux console"
 msgstr "Soporte para ratón en xterm y consola Linux\n"
 
-msgid "With mouse support on xterm\n"
+#, fuzzy
+msgid "With mouse support on xterm"
 msgstr "Soporte para ratón en xterm\n"
 
-msgid "With support for X11 events\n"
+#, fuzzy
+msgid "With support for X11 events"
 msgstr "Soporte para eventos X11\n"
 
-msgid "With internationalization support\n"
+#, fuzzy
+msgid "With internationalization support"
 msgstr "Soporte para idioma local\n"
 
-msgid "With multiple codepages support\n"
+#, fuzzy
+msgid "With multiple codepages support"
 msgstr "Soporte para cambio de juegos de caracteres\n"
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
 msgstr "Construido con GLib %d.%d.%d\n"
 
+#, fuzzy, c-format
+msgid "Built with S-Lang %s with terminfo database\n"
+msgstr "Utilizando la biblioteca S-Lang y terminales según terminfo\n"
+
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Built with ncursesw %s\n"
+msgstr "Utilizando la biblioteca ncursesw\n"
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
 msgid "Virtual File Systems:"
 msgstr "Sistemas de archivos virtuales:"
 
-#, c-format
 msgid "Data types:"
 msgstr "Tipos de datos:"
 
@@ -4057,21 +4124,21 @@ msgstr "fish: Leyendo el directorio %s..."
 
 #, c-format
 msgid "%s: done."
-msgstr "%s: hecho."
+msgstr "%s: Hecho."
 
 #, c-format
 msgid "%s: failure"
-msgstr "%s: fallo"
+msgstr "%s: Fallo."
 
 #, c-format
 msgid "fish: store %s: sending command..."
-msgstr "fish: guardar %s: enviando comando..."
+msgstr "fish: Guardar %s: enviando comando..."
 
 msgid "fish: Local read failed, sending zeros"
 msgstr "fish: Fallo de lectura local, enviando ceros"
 
 msgid "fish: storing file"
-msgstr "ftpfs: guardando archivo"
+msgstr "fish: Guardando archivo"
 
 msgid "Aborting transfer..."
 msgstr "Abortando transferencia."
@@ -4111,7 +4178,7 @@ msgstr "ftpfs: Autorizados"
 
 #, c-format
 msgid "ftpfs: Login incorrect for user %s "
-msgstr "ftpfs: denegada autorización al usuario %s"
+msgstr "ftpfs: Denegada autorización al usuario %s"
 
 msgid "ftpfs: Invalid host name."
 msgstr "ftpfs: Nombre de máquina incorrecto"
@@ -4178,7 +4245,7 @@ msgid "ftpfs: failed; nowhere to fallback to"
 msgstr "ftpfs: Falló; no hay dónde replegarse"
 
 msgid "ftpfs: storing file"
-msgstr "ftpfs: guardando archivo"
+msgstr "ftpfs: Guardando archivo"
 
 msgid ""
 "~/.netrc file has incorrect mode\n"
@@ -4189,7 +4256,7 @@ msgstr ""
 
 #, c-format
 msgid "%s: Warning: file %s not found\n"
-msgstr "%s: Atención: no se encuentra el archivo %s\n"
+msgstr "%s: Atención: No se encuentra el archivo %s\n"
 
 #, c-format
 msgid ""
@@ -4313,7 +4380,7 @@ msgstr ""
 "no parece un archivo de tipo tar."
 
 msgid "undelfs: error"
-msgstr "undelfs: error"
+msgstr "undelfs: Error"
 
 msgid "not enough memory"
 msgstr "memoria insuficiente"
@@ -4331,7 +4398,7 @@ msgstr "al iniciar rastreo de inodos %d"
 
 #, c-format
 msgid "undelfs: loading deleted files information %d inodes"
-msgstr "undelfs: cargando información de archivos eliminados %d inodos"
+msgstr "undelfs: Cargando información de archivos eliminados %d inodos"
 
 #, c-format
 msgid "while calling ext2_block_iterate %d"
@@ -4349,7 +4416,7 @@ msgid "Cannot open file %s"
 msgstr "Imposible abrir el archivo %s"
 
 msgid "undelfs: reading inode bitmap..."
-msgstr "undelfs: leyendo mapa de inodos..."
+msgstr "undelfs: Leyendo mapa de inodos..."
 
 #, c-format
 msgid ""
@@ -4360,7 +4427,7 @@ msgstr ""
 "%s"
 
 msgid "undelfs: reading block bitmap..."
-msgstr "undelfs: leyendo mapa de bloques..."
+msgstr "undelfs: Leyendo mapa de bloques..."
 
 #, c-format
 msgid ""
@@ -4503,3 +4570,6 @@ msgstr "¿Continuar desde el principio?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Imposible obtener una copia local de /ftp://ese.equipo/editame.txt"
+
+#~ msgid "Using the ncurses library\n"
+#~ msgstr "Utilizando la biblioteca ncurses\n"

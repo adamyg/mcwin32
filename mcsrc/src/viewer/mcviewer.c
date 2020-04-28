@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Interface functions
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc
 
    Written by:
@@ -43,7 +43,7 @@
 #include "lib/util.h"           /* load_file_position() */
 #include "lib/widget.h"
 
-#include "src/filemanager/layout.h"     /* menubar_visible */
+#include "src/filemanager/layout.h"
 #include "src/filemanager/midnight.h"   /* the_menubar */
 
 #include "internal.h"
@@ -201,9 +201,11 @@ mcview_new (int y, int x, int lines, int cols, gboolean is_panel)
     w = WIDGET (view);
     widget_init (w, y, x, lines, cols, mcview_callback, mcview_mouse_callback);
     w->options |= WOP_SELECTABLE | WOP_TOP_SELECT;
+    w->keymap = viewer_map;
 
     mcview_clear_mode_flags (&view->mode_flags);
     view->hexedit_mode = FALSE;
+    view->hex_keymap = viewer_hex_map;
     view->hexview_in_text = FALSE;
     view->locked = FALSE;
 
@@ -234,16 +236,22 @@ mcview_viewer (const char *command, const vfs_path_t * file_vpath, int start_lin
     gboolean succeeded;
     WView *lc_mcview;
     WDialog *view_dlg;
+    Widget *vw, *b;
+    WGroup *g;
 
     /* Create dialog and widgets, put them on the dialog */
     view_dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, NULL, mcview_dialog_callback,
                            NULL, "[Internal File Viewer]", NULL);
-    widget_want_tab (WIDGET (view_dlg), TRUE);
+    vw = WIDGET (view_dlg);
+    widget_want_tab (vw, TRUE);
 
-    lc_mcview = mcview_new (0, 0, LINES - 1, COLS, FALSE);
-    add_widget (view_dlg, lc_mcview);
+    g = GROUP (view_dlg);
 
-    add_widget (view_dlg, buttonbar_new (TRUE));
+    lc_mcview = mcview_new (vw->y, vw->x, vw->lines - 1, vw->cols, FALSE);
+    group_add_widget_autopos (g, lc_mcview, WPOS_KEEP_ALL, NULL);
+
+    b = WIDGET (buttonbar_new (TRUE));
+    group_add_widget_autopos (g, b, b->pos_flags, NULL);
 
     view_dlg->get_title = mcview_get_title;
 
@@ -256,7 +264,7 @@ mcview_viewer (const char *command, const vfs_path_t * file_vpath, int start_lin
     else
         dlg_stop (view_dlg);
 
-    if (widget_get_state (WIDGET (view_dlg), WST_CLOSED))
+    if (widget_get_state (vw, WST_CLOSED))
         dlg_destroy (view_dlg);
 
     return succeeded;
@@ -306,7 +314,9 @@ mcview_load (WView * view, const char *command, const char *file, int start_line
     if (!mcview_is_in_panel (view))
         view->dpy_text_column = 0;
 
+#ifdef HAVE_CHARSET
     mcview_set_codeset (view);
+#endif
 
     if (command != NULL && (view->mode_flags.magic || file == NULL || file[0] == '\0'))
         retval = mcview_load_command_output (view, command);

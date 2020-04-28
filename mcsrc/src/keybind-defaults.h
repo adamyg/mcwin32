@@ -17,6 +17,7 @@ extern GArray *main_keymap;
 extern GArray *main_x_keymap;
 extern GArray *panel_keymap;
 extern GArray *dialog_keymap;
+extern GArray *menu_keymap;
 extern GArray *input_keymap;
 extern GArray *listbox_keymap;
 extern GArray *tree_keymap;
@@ -30,7 +31,6 @@ extern GArray *viewer_hex_keymap;
 #ifdef USE_DIFF_VIEW
 extern GArray *diff_keymap;
 #endif
-
 
 extern const global_keymap_t *main_map;
 extern const global_keymap_t *main_x_map;

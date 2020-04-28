@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the mc package.
 #
 # Translators:
-# Keith Bowes <zooplah@gmail.com>, 2011,2016,2018
+# Keith Bowes <zooplah@gmail.com>, 2011,2016,2018-2019
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-04-30 12:37+0000\n"
-"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2019-12-25 01:49+0000\n"
+"Last-Translator: Keith Bowes <zooplah@gmail.com>\n"
 "Language-Team: Esperanto (http://www.transifex.com/mc/mc/language/eo/)\n"
 "Language: eo\n"
 "MIME-Version: 1.0\n"
@@ -483,6 +483,27 @@ msgstr "Uskleca inversigilo"
 msgid "The TERM environment variable is unset!\n"
 msgstr "La medivariablo TERM ne estas valorizita!\n"
 
+msgid "Cannot check SIGWINCH pipe"
+msgstr "Ne eblas kontroli SIGWINCH-dukton"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr "Ne eblas krei duktajn por SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr "Ne eblas agordi skribfinon de SIGWINCH-dukto"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
+msgstr "Ne eblas agordi legfinon de SIGWINCH-dukton"
+
 #, c-format
 msgid ""
 "Screen size %dx%d is not supported.\n"
@@ -642,7 +663,7 @@ msgid "%s (%d)"
 msgstr "%s (%d)"
 
 msgid "&Abort"
-msgstr "Ĉ&esigi"
+msgstr "&Nuligi"
 
 msgid "Displays the current version"
 msgstr "Eligi la uzatan eldonon"
@@ -1072,7 +1093,7 @@ msgid "Searching %s"
 msgstr "Serĉanta en %s"
 
 msgid "File has hard-links. Detach before saving?"
-msgstr "Dosiero havas malmolajn ligilojn. Ĉu elmeti antaŭ ol konservi?"
+msgstr "Dosiero havas rektajn ligilojn. Ĉu elmeti antaŭ ol konservi?"
 
 msgid "The file has been modified in the meantime. Save anyway?"
 msgstr "La dosiero estis ekstere modifita. Ĉu senkonsidere konservi?"
@@ -1321,7 +1342,7 @@ msgid ""
 "Continue discards these changes"
 msgstr ""
 "Aktuala teksto estis modifita sen dosiera konservado.\n"
-"Daŭrigi forviŝas tiujn ŝanĝojn"
+"Daŭrigi forviŝos tiujn ŝanĝojn"
 
 msgid "In se&lection"
 msgstr "En e&lekto"
@@ -1342,7 +1363,7 @@ msgid "A&ll"
 msgstr "Ĉ&io"
 
 msgid "&Skip"
-msgstr "Preter&lasi"
+msgstr "&Preterlasi"
 
 msgid "Confirm replace"
 msgstr "Konfirmi anstataŭigon"
@@ -1368,6 +1389,9 @@ msgstr "&Nova"
 
 msgid "&Close"
 msgstr "&Fermi"
+
+msgid "&History..."
+msgstr "&Historio…"
 
 msgid "Save &as..."
 msgstr "K&onservi kiel..."
@@ -1652,8 +1676,9 @@ msgstr ""
 "Afabla tekstoredaktilo\n"
 "verkita por Midnight Commander."
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
-msgstr ""
+#, fuzzy
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
+msgstr "Kopirajto (C) 1996–2019 la Fondaĵo pri liberaj programoj"
 
 msgid "About"
 msgstr "Pri"
@@ -1805,6 +1830,13 @@ msgstr "Ne eblas atingi lokan kopion de %s"
 msgid "The shell is already running a command"
 msgstr "La ŝelo jam plenumas komandon"
 
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+"Ne xterm-fenestron aŭ linuksan terminalon;\n"
+"la flankojn oni ne povis inversigi."
+
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Tajpu \"exit\" por reiri al Midnight Commander"
 
@@ -1942,7 +1974,7 @@ msgid "Sa&fe delete"
 msgstr "Sendanĝera &forigo"
 
 msgid "Safe overwrite"
-msgstr ""
+msgstr "Sekura anstataŭigo"
 
 msgid "A&uto save setup"
 msgstr "Aŭtomate konservi agor&don"
@@ -1996,7 +2028,7 @@ msgid "Navigation"
 msgstr "Navigo"
 
 msgid "L&ynx-like motion"
-msgstr "&Linko-simila movo"
+msgstr "&Lynx-simila movo"
 
 msgid "Pa&ge scrolling"
 msgstr "Paĝa &rulumado"
@@ -2046,7 +2078,7 @@ msgid "&Long file list"
 msgstr "&Longa dosierlisto"
 
 msgid "&User defined:"
-msgstr "&Uzanto difinata:"
+msgstr "U&zanto difinata:"
 
 msgid "columns"
 msgstr "kolumnojn"
@@ -2161,7 +2193,7 @@ msgid "&Kill"
 msgstr "&Mortigi"
 
 msgid "Background jobs"
-msgstr "F&onaj taskoj"
+msgstr "Fonaj taskoj"
 
 #, c-format
 msgid "Password for \\\\%s\\%s"
@@ -2300,7 +2332,7 @@ msgstr "ligilo: %s"
 
 #, c-format
 msgid "symlink: %s"
-msgstr "mola ligilo: %s"
+msgstr "simbola ligilo: %s"
 
 #, c-format
 msgid "Cannot chdir to \"%s\""
@@ -2364,31 +2396,24 @@ msgstr ""
 "Ambaŭ flankoj estu en la lista reĝimo\n"
 "por uzi ĉi tiun komandon"
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-"Ne xterm-fenestron aŭ linuksan terminalon;\n"
-"la flankojn oni ne povis inversigi."
-
 #, c-format
 msgid "'%s' is not a symbolic link"
-msgstr "'%s' ne estas mola ligilo"
+msgstr "'%s' ne estas simbola ligilo"
 
 #, c-format
 msgid "Symlink '%s' points to:"
 msgstr "Mola ligilo '%s' alidirektas al:"
 
 msgid "Edit symlink"
-msgstr "Redakti molan ligilon"
+msgstr "Redakti simbolan ligilon"
 
 #, c-format
 msgid "edit symlink, unable to remove %s: %s"
-msgstr "redakti molan ligilon, ne eblas forigi %s: %s"
+msgstr "redakti simbolan ligilon, ne eblas forigi %s: %s"
 
 #, c-format
 msgid "edit symlink: %s"
-msgstr "redakti molan ligilon: %s"
+msgstr "redakti simbolan ligilon: %s"
 
 msgid "FTP to machine"
 msgstr "FTP al servilo"
@@ -2436,9 +2461,6 @@ msgid ""
 msgstr ""
 "Ne eblas ŝanĝi dosierujon al \"%s\"\n"
 "%s"
-
-msgid "Cannot read directory contents"
-msgstr "Ne eblas legi dosierujan enhavon"
 
 msgid "Parameter"
 msgstr "Parametro"
@@ -2519,8 +2541,25 @@ msgstr "dosier(uj)ojn"
 msgid " with source mask:"
 msgstr " kun fonta masko:"
 
-msgid "Cannot make the hardlink"
-msgstr "Ne eblas fari la malmolan ligilon"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas trovi rektligilan fontan dosieron \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+"Ne eblas krei celan rektan ligilon \"%s\"\n"
+"%s"
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
+msgstr "Ne eblas krei celan rektan ligilon \"%s\""
 
 #, c-format
 msgid ""
@@ -2535,16 +2574,16 @@ msgid ""
 "\n"
 "Option Stable Symlinks will be disabled"
 msgstr ""
-"Ne eblas fari stabilajn molajn ligilojn inter foraj dosiersistemoj:\n"
+"Ne eblas fari stabilajn simbolajn ligilojn inter foraj dosiersistemoj:\n"
 "\n"
-"La agordaĵo \"Stabilaj molaj ligiloj\" estos malaktivigita"
+"La agordaĵo \"Stabilaj simbolaj ligiloj\" estos malaktivigita"
 
 #, c-format
 msgid ""
 "Cannot create target symlink \"%s\"\n"
 "%s"
 msgstr ""
-"Ne eblas krei celan molan ligilon \"%s\"\n"
+"Ne eblas krei celan simbolan ligilon \"%s\"\n"
 "%s"
 
 #, c-format
@@ -2795,7 +2834,7 @@ msgid ""
 "Cannot copy cyclic symbolic link\n"
 "\"%s\""
 msgstr ""
-"Ne eblas kopii ciklan molan ligilon\n"
+"Ne eblas kopii ciklan simbolan ligilon\n"
 "\"%s\""
 
 #, c-format
@@ -2830,7 +2869,7 @@ msgid "Sorry, I could not put the job in background"
 msgstr "Bedaŭrinde mi ne povis meti la taskon en la fonon"
 
 msgid "S&uspend"
-msgstr "&Paŭzigi"
+msgstr "P&aŭzigi"
 
 msgid "Con&tinue"
 msgstr "&Daŭrigi"
@@ -2841,7 +2880,7 @@ msgstr "%d:%02d.%02d"
 
 #, c-format
 msgid "ETA %s"
-msgstr "Taskita resto: %s"
+msgstr "Proksimuma restanta tempo: %s"
 
 #, c-format
 msgid "%.2f MB/s"
@@ -2855,19 +2894,14 @@ msgstr "%.2f KB/s"
 msgid "%ld B/s"
 msgstr "%ld B/s"
 
-msgid "Target file already exists!"
-msgstr "Cela dosiero jam ekzistas!"
+msgid "New     :"
+msgstr "Nova:"
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "Nova: %s, grando %s"
+msgid "Existing:"
+msgstr "Jama:"
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "Jama: %s, grando %s"
-
-msgid "Overwrite this target?"
-msgstr "Ĉu anstataŭigi ĉi tiun celon?"
+msgid "Overwrite this file?"
+msgstr "Ĉu anstataŭigi ĉi tiun dosieron?"
 
 msgid "A&ppend"
 msgstr "Al&meti"
@@ -2875,14 +2909,20 @@ msgstr "Al&meti"
 msgid "&Reget"
 msgstr "&Reakiri"
 
-msgid "Overwrite all targets?"
-msgstr "Ĉu anstataŭigi ĉiujn celojn?"
+msgid "Overwrite all files?"
+msgstr "Ĉu anstataŭigi ĉiujn dosierojn?"
 
-msgid "&Update"
-msgstr "&Aktualigi"
+msgid "Don't overwrite with &zero length file"
+msgstr "Ne anstataŭigi per &dosiero de nula longo"
 
-msgid "If &size differs"
-msgstr "Se &grando malsamas"
+msgid "&Older"
+msgstr "Pli m&alnova"
+
+msgid "S&maller"
+msgstr "&Pli malgranda"
+
+msgid "&Size differs"
+msgstr "&Grando malsamas"
 
 msgid "File exists"
 msgstr "Dosiero ekzistas"
@@ -2947,7 +2987,7 @@ msgid "Di&ve into subdir if exists"
 msgstr "Plo&nĝi en subdosierujon se ĝi ekzistas"
 
 msgid "&Stable symlinks"
-msgstr "&Stabilaj molaj ligiloj"
+msgstr "&Stabilaj simbolaj ligiloj"
 
 msgid "&Background"
 msgstr "&Fone"
@@ -3029,11 +3069,11 @@ msgstr[1] "Finita (ignoris %zu dosierujojn)"
 
 #, c-format
 msgid "Find File: \"%s\". Content: \"%s\""
-msgstr ""
+msgstr "Trovi dosieron: \"%s\". Enhavo: \"%s\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Find File: \"%s\""
-msgstr "Trovi dosieron"
+msgstr "Trovi dosieron: \"%s\""
 
 msgid "Searching"
 msgstr "Serĉanta"
@@ -3314,10 +3354,10 @@ msgid "&Symlink"
 msgstr "&Mola ligilo"
 
 msgid "Relative symlin&k"
-msgstr "&Relativa mola ligilo"
+msgstr "&Relativa simbola ligilo"
 
 msgid "Edit s&ymlink"
-msgstr "Re&dakti molan ligilon"
+msgstr "Re&dakti simbolan ligilon"
 
 msgid "Ch&own"
 msgstr "Ŝanĝi estre&con"
@@ -3375,6 +3415,9 @@ msgstr "Montri dosierujajn g&randojn"
 
 msgid "Command &history"
 msgstr "Komanda &historio"
+
+msgid "Viewed/edited files hi&story"
+msgstr "H&istorio de viditaj/redaktitaj dosieroj"
 
 msgid "Di&rectory hotlist"
 msgstr "Dosieru&ja rapidolisto"
@@ -3446,7 +3489,7 @@ msgid "&Left"
 msgstr "&Maldekstra"
 
 msgid "&Below"
-msgstr "Mals&upra"
+msgstr "&Malsupra"
 
 msgid "&Right"
 msgstr "D&ekstra"
@@ -3488,7 +3531,7 @@ msgid "sort|v"
 msgstr "sort|e"
 
 msgid "&Version"
-msgstr "&Eldono"
+msgstr "El&dono"
 
 #. TRANSLATORS: one single character to represent 'extension' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
@@ -3600,6 +3643,9 @@ msgstr "Malelekti"
 
 msgid "Do you really want to execute?"
 msgstr "Ĉu vi efekti volas plenumigi?"
+
+msgid "Cannot read directory contents"
+msgstr "Ne eblas legi dosierujan enhavon"
 
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "Uzanto havigita formato aspektas nevalide, restarigante la aprioran."
@@ -3787,6 +3833,16 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr "Hejma-dosieruja vojo ne estas absoluta"
 
+#, fuzzy
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+"Midnight Commander de GNU jam estas\n"
+"plenumiĝi en ĉi tiu terminalo.\n"
+"Subŝelo estos malebligita."
+
 #, c-format
 msgid ""
 "\n"
@@ -3817,15 +3873,6 @@ msgstr ""
 "Ne eblas konservi dosieron %s:\n"
 "%s"
 
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"Midnight Commander de GNU jam estas\n"
-"plenumiĝi en ĉi tiu terminalo.\n"
-"Subŝelo estos malebligita."
-
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "Ne eblas malfermi nomitan dukton %s\n"
@@ -3837,51 +3884,71 @@ msgstr "La ŝelo estas aktiva. Ĉu senkonsidere eliri?"
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Averto: Ne eblas ŝanĝi al %s.\n"
 
-msgid "Using the S-Lang library with terminfo database\n"
-msgstr "Uzanta la bibliotekon S-Lang kun terminfo-datumbazo\n"
+#, fuzzy
+msgid "With builtin Editor and Aspell support"
+msgstr "Kun interna tekstoredaktilo kaj literumilo\n"
 
-msgid "Using the ncurses library\n"
-msgstr "Uzanta la bibliotekon ncurses\n"
-
-msgid "Using the ncursesw library\n"
-msgstr "Uzanta la bibliotekon ncursesw\n"
-
-msgid "With builtin Editor\n"
+#, fuzzy
+msgid "With builtin Editor"
 msgstr "Kun interna tekstoredaktilo\n"
 
-msgid "With optional subshell support\n"
+#, fuzzy
+msgid "With optional subshell support"
 msgstr "Kun laŭvola subŝelo\n"
 
-msgid "With subshell support as default\n"
+#, fuzzy
+msgid "With subshell support as default"
 msgstr "Kun aŭtomata subŝelo\n"
 
-msgid "With support for background operations\n"
+#, fuzzy
+msgid "With support for background operations"
 msgstr "Kun rego de fonaj operacioj\n"
 
-msgid "With mouse support on xterm and Linux console\n"
+#, fuzzy
+msgid "With mouse support on xterm and Linux console"
 msgstr "Kun musa rego ĉe terminaloj xterm-aj kaj linuksaj\n"
 
-msgid "With mouse support on xterm\n"
+#, fuzzy
+msgid "With mouse support on xterm"
 msgstr "Kun musa rego ĉe xterm\n"
 
-msgid "With support for X11 events\n"
+#, fuzzy
+msgid "With support for X11 events"
 msgstr "Kun rego de X11-eventoj\n"
 
-msgid "With internationalization support\n"
+#, fuzzy
+msgid "With internationalization support"
 msgstr "Kun internaciiga rego\n"
 
-msgid "With multiple codepages support\n"
+#, fuzzy
+msgid "With multiple codepages support"
 msgstr "Kun rego de pluraj kodpaĝoj\n"
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
 msgstr "Muntita kun GLib %d.%d.%d\n"
 
+#, fuzzy, c-format
+msgid "Built with S-Lang %s with terminfo database\n"
+msgstr "Uzanta la bibliotekon S-Lang kun terminfo-datumbazo\n"
+
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Built with ncursesw %s\n"
+msgstr "Uzanta la bibliotekon ncursesw\n"
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
 msgid "Virtual File Systems:"
 msgstr "Virtualaj dosiersistemoj:"
 
-#, c-format
 msgid "Data types:"
 msgstr "Datumtipoj:"
 
@@ -3980,7 +4047,7 @@ msgid ""
 "in cpio archive\n"
 "%s"
 msgstr ""
-"Malkonsekvencaj malmolaj ligiloj de\n"
+"Malkonsekvencaj rektaj ligiloj de\n"
 "%s\n"
 "en cpio-dosiero\n"
 "%s"
@@ -4154,10 +4221,10 @@ msgid "ftpfs: CWD failed."
 msgstr "ftpfs: CWD malsukcesis."
 
 msgid "ftpfs: couldn't resolve symlink"
-msgstr "ftpfs: ne eblas solvi molan ligilon"
+msgstr "ftpfs: ne eblas solvi simbolan ligilon"
 
 msgid "Resolving symlink..."
-msgstr "Solvanta molan ligilon..."
+msgstr "Solvanta simbolan ligilon..."
 
 #, c-format
 msgid "ftpfs: Reading FTP directory %s... %s%s"
@@ -4207,7 +4274,7 @@ msgid "sftp: an error occurred while reading %s: %s"
 msgstr "sftp: Eraro okazis dum lego de %s: %s"
 
 msgid "sftp: Unable to get current user name."
-msgstr "sftp: Ne eblas atingi la aktualan salutnomon."
+msgstr "sftp: Ne eblas atingi la uzatan salutnomon."
 
 msgid "sftp: Invalid host name."
 msgstr "sftp: Nevalida retnodnomo."
@@ -4498,3 +4565,6 @@ msgstr "Ĉu deiri de la komenco?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Ne eblas atingi lokan kopion de /ftp://some.host/editme.txt"
+
+#~ msgid "Using the ncurses library\n"
+#~ msgstr "Uzanta la bibliotekon ncurses\n"

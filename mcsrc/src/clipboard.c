@@ -1,7 +1,7 @@
 /*
    Util for external clipboard.
 
-   Copyright (C) 2009-2018
+   Copyright (C) 2009-2020
    Free Software Foundation, Inc.
 
    Written by:

@@ -3,18 +3,19 @@
 # This file is distributed under the same license as the mc package.
 #
 # Translators:
-# Andrius Burokas, 2017
+# Andrius Burokas, 2017-2018
+# Mindaugas <opensuse.lietuviu.kalba@gmail.com>, 2019
 # Nerijus Baliūnas <nerijus@users.sourceforge.net>, 2011
 # Slava Zanko <slavazanko@gmail.com>, 2011
-# Zygi Mantus <zygimantus@gmail.com>, 2016
-# Zygi Mantus <zygimantus@gmail.com>, 2016-2017
+# Zygimantus <zygimantus@gmail.com>, 2016
+# Zygimantus <zygimantus@gmail.com>, 2016-2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-04-30 12:37+0000\n"
-"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2019-12-23 11:49+0000\n"
+"Last-Translator: Mindaugas <opensuse.lietuviu.kalba@gmail.com>\n"
 "Language-Team: Lithuanian (http://www.transifex.com/mc/mc/language/lt/)\n"
 "Language: lt\n"
 "MIME-Version: 1.0\n"
@@ -159,12 +160,16 @@ msgid ""
 "Unable to load '%s' skin.\n"
 "Default skin has been loaded"
 msgstr ""
+"Nepavyko įkelti '%s' apipavidalinimo.\n"
+"Įkeltas numatytasis apipavidalinimas"
 
 #, c-format
 msgid ""
 "Unable to parse '%s' skin.\n"
 "Default skin has been loaded"
 msgstr ""
+"Nepavyko perskaityti '%s' apipavidalinimo.\n"
+"Įkeltas numatytasis apipavidalinimas"
 
 #, c-format
 msgid ""
@@ -172,6 +177,9 @@ msgid ""
 "%s\n"
 "Default skin has been loaded"
 msgstr ""
+"Nepavyko panaudoti '%s' apipavidalinimo su tikrų spalvų palaikymu:\n"
+"%s\n"
+"Įkeltas numatytasis apipavidalinimas"
 
 #, c-format
 msgid ""
@@ -179,6 +187,9 @@ msgid ""
 "on non-256 colors terminal.\n"
 "Default skin has been loaded"
 msgstr ""
+"Nepavyko panaudoti '%s' apipavidalinimo su 256 spalvų palaikymu.\n"
+"Terminalas paleistas ne-256 spalvų režime.\n"
+"Įkeltas numatytasis apipavidalinimas"
 
 msgid "True color not supported with ncurses."
 msgstr ""
@@ -187,10 +198,12 @@ msgid "True color not supported in this slang version."
 msgstr ""
 
 msgid "Your terminal doesn't even seem to support 256 colors."
-msgstr ""
+msgstr "Panašu, kad terminalas nepalaiko 256 spalvų režimo."
 
 msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
 msgstr ""
+"Pateikite nustatymą COLORTERM=truecolor jei terminalas palaiko tikrų spalvų "
+"režimą."
 
 msgid "Escape"
 msgstr ""
@@ -478,6 +491,27 @@ msgstr ""
 msgid "The TERM environment variable is unset!\n"
 msgstr "Aplinkos kintamasis TERM nenustatytas!\n"
 
+msgid "Cannot check SIGWINCH pipe"
+msgstr ""
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr "Nepavyko sukurti laikino aplanko %s: %s\n"
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
+
 #, c-format
 msgid ""
 "Screen size %dx%d is not supported.\n"
@@ -487,25 +521,25 @@ msgstr ""
 "Patikrinkite TERM aplinkos kintamąjį.\n"
 
 msgid "B"
-msgstr ""
+msgstr "B"
 
 msgid "kB"
-msgstr ""
+msgstr "kB"
 
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 msgid "MB"
-msgstr ""
+msgstr "MB"
 
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 msgid "GB"
-msgstr ""
+msgstr "GB"
 
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 msgid "Cannot create pipe descriptor"
 msgstr ""
@@ -651,7 +685,7 @@ msgid "Print last working directory to specified file"
 msgstr "Įrašo paskutinį esamą aplanką į nurodytą failą"
 
 msgid "<file>"
-msgstr ""
+msgstr "<file>"
 
 msgid "Enables subshell support (default)"
 msgstr "Įjungia „subshell“ palaikymą (nenurodžius kitaip)"
@@ -675,7 +709,7 @@ msgid "Edit files"
 msgstr "Redaguoti failus"
 
 msgid "<file> ..."
-msgstr ""
+msgstr "<file> ..."
 
 msgid "Forces xterm features"
 msgstr "Priverčia naudoti „xterm“ galimybes"
@@ -702,10 +736,11 @@ msgid "Resets soft keys on HP terminals"
 msgstr "Iš naujo nustato „soft keys“ HP terminaluose"
 
 msgid "Load definitions of key bindings from specified file"
-msgstr ""
+msgstr "Įkelti klavišų saistymo nustatymus iš failo"
 
 msgid "Don't load definitions of key bindings from file, use defaults"
 msgstr ""
+"Nenaudoti klavišų saistymo nustatymų iš failo, naudoti numatytus saistymus"
 
 msgid "Requests to run in black and white"
 msgstr "Paleidžia nespalvotu režimu"
@@ -856,12 +891,17 @@ msgid ""
 "%s%s\n"
 "%s"
 msgstr ""
+"Nepavyko sukurti atsarginės kopijos\n"
+"%s%s\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create temporary merge file\n"
 "%s"
 msgstr ""
+"Napavyko sukurti sujungimo laikinojo failo\n"
+"%s"
 
 msgid "&Fastest (Assume large files)"
 msgstr "Greičiausias (skirtas dideliems &failams)"
@@ -933,7 +973,7 @@ msgid "Quit"
 msgstr "Išeiti"
 
 msgid "File(s) was modified. Save with exit?"
-msgstr ""
+msgstr "Failas(-ai) buvo pakeisti. Ar išsaugoti pakeitimus?"
 
 msgid ""
 "Midnight Commander is being shut down.\n"
@@ -959,10 +999,10 @@ msgid "Diff viewer: invalid mode"
 msgstr "Diff peržiūra: neteisingas režimas"
 
 msgid "Two files are needed to compare"
-msgstr ""
+msgstr "Palyginimui reikalingi du failai"
 
 msgid "Choose syntax highlighting"
-msgstr ""
+msgstr "Pasirinkti sintaksės žymėjimą"
 
 msgid "< Auto >"
 msgstr "< Auto >"
@@ -1001,6 +1041,8 @@ msgid ""
 "File \"%s\" is too large.\n"
 "Open it anyway?"
 msgstr ""
+"Failas \"%s\" yra per didelis.\n"
+"Vis tiek atidaryti?"
 
 #, c-format
 msgid "Error reading from pipe: %s"
@@ -1034,10 +1076,10 @@ msgstr ""
 
 #, c-format
 msgid "Cannot open file for writing: %s"
-msgstr ""
+msgstr "Failas negali būti atvertas rašymui: %s"
 
 msgid "The file you are saving does not end with a newline."
-msgstr ""
+msgstr "Išsaugomas failas nesibaigia nauja eilute."
 
 msgid "C&ontinue"
 msgstr "&Tęsti"
@@ -1055,7 +1097,7 @@ msgid "&Macintosh format (CR)"
 msgstr ""
 
 msgid "Enter file name:"
-msgstr ""
+msgstr "Įveskite failo vardą:"
 
 msgid "Change line breaks to:"
 msgstr ""
@@ -1088,7 +1130,7 @@ msgid "Save as"
 msgstr "Išsaugoti kaip"
 
 msgid "Cannot save: destination is not a regular file"
-msgstr ""
+msgstr "Neįmanoma išsaugoti: paskirtis nėra įprastas failas"
 
 msgid "A file already exists with this name"
 msgstr "Failas su tokiu vardu jau egzistuoja"
@@ -1137,19 +1179,19 @@ msgid "Syntax file edit"
 msgstr "Sintaksės failo keitimas"
 
 msgid "Which syntax file you want to edit?"
-msgstr ""
+msgstr "Kurį sintaksės failą norite redaguoti?"
 
 msgid "&User"
-msgstr "&Naudotojo"
+msgstr "&Vartotojo"
 
 msgid "&System wide"
 msgstr ""
 
 msgid "Menu edit"
-msgstr ""
+msgstr "Meniu redagavimas"
 
 msgid "Which menu file do you want to edit?"
-msgstr ""
+msgstr "Kurį meniu failą norite redaguoti?"
 
 msgid "&Local"
 msgstr "&Vietinį"
@@ -1190,7 +1232,7 @@ msgid "Copy to clipboard"
 msgstr ""
 
 msgid "Unable to save to file"
-msgstr ""
+msgstr "Nepavyko išsaugoti faile"
 
 msgid "Cut to clipboard"
 msgstr ""
@@ -1266,6 +1308,8 @@ msgid ""
 "Current text was modified without a file save.\n"
 "Continue discards these changes"
 msgstr ""
+"Teksto pakeitimai neišsaugoti faile.\n"
+"Tęsimas atšauks šiuos pakeitimus"
 
 msgid "In se&lection"
 msgstr ""
@@ -1298,6 +1342,8 @@ msgid ""
 "Current text was modified without a file save.\n"
 "Continue discards these changes."
 msgstr ""
+"Teksto pakeitimai neišsaugoti faile.\n"
+"Tęsimas atšauks šiuos pakeitimus."
 
 msgid "NoName"
 msgstr ""
@@ -1311,6 +1357,9 @@ msgstr "&Naujas"
 msgid "&Close"
 msgstr "&Uždaryti"
 
+msgid "&History..."
+msgstr ""
+
 msgid "Save &as..."
 msgstr "Įrašyti kaip..."
 
@@ -1318,10 +1367,10 @@ msgid "&Insert file..."
 msgstr "Įterpti failą..."
 
 msgid "Cop&y to file..."
-msgstr ""
+msgstr "Ko&pijuoti į failą..."
 
 msgid "&User menu..."
-msgstr ""
+msgstr "Vartotojo meni&u..."
 
 msgid "A&bout..."
 msgstr "A&pie"
@@ -1489,13 +1538,13 @@ msgid "Learn &keys..."
 msgstr "Mokytis klavišus"
 
 msgid "Syntax &highlighting..."
-msgstr ""
+msgstr "Sintaksės žymėjimas..."
 
 msgid "S&yntax file"
 msgstr "Sintaksės failas"
 
 msgid "&Menu file"
-msgstr "Meniu failas"
+msgstr "&Meniu failas"
 
 msgid "&Save setup"
 msgstr "Įrašyti nu&statymus"
@@ -1591,8 +1640,10 @@ msgid ""
 "A user friendly text editor\n"
 "written for the Midnight Commander."
 msgstr ""
+"Lengvas vartoti teksto redaktorius\n"
+"sukurtas Midnight Commander aplinkai."
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1720,6 +1771,8 @@ msgid ""
 "Cannot open file %s\n"
 "%s"
 msgstr ""
+"Napavyko atverti failo %s\n"
+"%s"
 
 #, c-format
 msgid "Error in file %s on line %d"
@@ -1737,6 +1790,11 @@ msgid "Cannot fetch a local copy of %s"
 msgstr ""
 
 msgid "The shell is already running a command"
+msgstr ""
+
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
 msgstr ""
 
 msgid "Type 'exit' to return to the Midnight Commander"
@@ -1788,7 +1846,7 @@ msgid ""
 msgstr ""
 
 msgid "< Default >"
-msgstr ""
+msgstr "< Numatytas >"
 
 msgid "Skins"
 msgstr ""
@@ -1806,13 +1864,13 @@ msgid "&Never"
 msgstr "&Niekada"
 
 msgid "On dum&b terminals"
-msgstr ""
+msgstr "Neprogramuojamuose terminaluose"
 
 msgid "Alwa&ys"
 msgstr "Visa&da"
 
 msgid "File operations"
-msgstr ""
+msgstr "Failų veiksmai"
 
 msgid "&Verbose operation"
 msgstr "Išsa&mios operacijos"
@@ -1848,7 +1906,7 @@ msgid "Use internal vie&w"
 msgstr ""
 
 msgid "A&sk new file name"
-msgstr ""
+msgstr "Paprašyti naujo failo vardo"
 
 msgid "Auto m&enus"
 msgstr ""
@@ -1899,10 +1957,10 @@ msgid "Use SI si&ze units"
 msgstr ""
 
 msgid "Mi&x all files"
-msgstr ""
+msgstr "Sumaišyti failus"
 
 msgid "Show &backup files"
-msgstr ""
+msgstr "Rodyti atsargines kopijas"
 
 msgid "Show &hidden files"
 msgstr "Rodyti paslėptus failus"
@@ -1938,7 +1996,7 @@ msgid "&Mouse page scrolling"
 msgstr ""
 
 msgid "File highlight"
-msgstr ""
+msgstr "Failų žymėjimas"
 
 msgid "File &types"
 msgstr "Failų tipai"
@@ -1970,7 +2028,7 @@ msgid "&Full file list"
 msgstr "Pilnas &failų sąrašas"
 
 msgid "&Brief file list:"
-msgstr ""
+msgstr "Trumpas failų sąrašas:"
 
 msgid "&Long file list"
 msgstr "I&lgas failų sąrašas"
@@ -1982,7 +2040,7 @@ msgid "columns"
 msgstr "stulpeliai"
 
 msgid "User &mini status"
-msgstr ""
+msgstr "Vartotojo &mini būsena"
 
 msgid "Listing format"
 msgstr ""
@@ -2197,7 +2255,7 @@ msgid "User name"
 msgstr "Vartotojo vardas"
 
 msgid "<Unknown user>"
-msgstr "<Nežinomas naud.>"
+msgstr "<Nežinomas vart.>"
 
 msgid "<Unknown group>"
 msgstr "<Nežnoma grupė>"
@@ -2215,7 +2273,7 @@ msgid "Filter"
 msgstr "Filtras"
 
 msgid "Set expression for filtering filenames"
-msgstr ""
+msgstr "Failų vardų filtro išraiška"
 
 #, c-format
 msgid "Link %s to:"
@@ -2292,11 +2350,6 @@ msgid ""
 "to use this command"
 msgstr ""
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr ""
@@ -2337,7 +2390,7 @@ msgid ""
 msgstr ""
 
 msgid "Directory scanning"
-msgstr ""
+msgstr "Aplankų skanavimas"
 
 msgid "Setup"
 msgstr "Sąranka"
@@ -2358,9 +2411,6 @@ msgid ""
 "Cannot chdir to \"%s\"\n"
 "%s"
 msgstr ""
-
-msgid "Cannot read directory contents"
-msgstr "Nepavyko perskaityti aplanko turinio"
 
 msgid "Parameter"
 msgstr "Parametras"
@@ -2434,7 +2484,20 @@ msgstr "failus/aplankus"
 msgid " with source mask:"
 msgstr ", tokiu formatu:"
 
-msgid "Cannot make the hardlink"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
 msgstr ""
 
 #, c-format
@@ -2664,6 +2727,8 @@ msgid ""
 "Source \"%s\" is not a directory\n"
 "%s"
 msgstr ""
+"Šaltinis \"%s\" nėra aplankas\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -2676,6 +2741,8 @@ msgid ""
 "Destination \"%s\" must be a directory\n"
 "%s"
 msgstr ""
+"Paskirtis \"%s\" turi būti aplankas\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -2724,19 +2791,14 @@ msgstr "%.2f KB/s"
 msgid "%ld B/s"
 msgstr "%ld B/s"
 
-msgid "Target file already exists!"
-msgstr "Toks failas jau egzistuoja!"
+msgid "New     :"
+msgstr "Naujas  :"
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "Naujas  : %s, dydis %s"
+msgid "Existing:"
+msgstr "Esamas :"
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "Egzistuoja: %s, dydis %s"
-
-msgid "Overwrite this target?"
-msgstr "Perrašyti šią paskirtį?"
+msgid "Overwrite this file?"
+msgstr ""
 
 msgid "A&ppend"
 msgstr "&Papildyti"
@@ -2744,14 +2806,20 @@ msgstr "&Papildyti"
 msgid "&Reget"
 msgstr "P&ratęsti"
 
-msgid "Overwrite all targets?"
-msgstr "Perrašyti visas paskirtis?"
+msgid "Overwrite all files?"
+msgstr ""
 
-msgid "&Update"
-msgstr "Atna&ujinti"
+msgid "Don't overwrite with &zero length file"
+msgstr ""
 
-msgid "If &size differs"
-msgstr "Jei &skiriasi dydis"
+msgid "&Older"
+msgstr ""
+
+msgid "S&maller"
+msgstr ""
+
+msgid "&Size differs"
+msgstr ""
 
 msgid "File exists"
 msgstr "Failas egzistuoja"
@@ -2902,9 +2970,9 @@ msgstr[3] ""
 msgid "Find File: \"%s\". Content: \"%s\""
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Find File: \"%s\""
-msgstr "Rasti failą"
+msgstr ""
 
 msgid "Searching"
 msgstr "Ieškoma"
@@ -3089,7 +3157,7 @@ msgid "&Equal split"
 msgstr "P&o lygiai"
 
 msgid "&Menubar visible"
-msgstr ""
+msgstr "&Meniu juosta matoma"
 
 msgid "Command &prompt"
 msgstr ""
@@ -3218,7 +3286,7 @@ msgid "E&xit"
 msgstr "Išeiti"
 
 msgid "&User menu"
-msgstr "Naudotojo meniu"
+msgstr "Vartotojo meni&u"
 
 msgid "&Directory tree"
 msgstr "&Aplankų medis"
@@ -3242,10 +3310,13 @@ msgid "E&xternal panelize"
 msgstr ""
 
 msgid "Show directory s&izes"
-msgstr "Rodyti katalogų dydžius"
+msgstr "Rodyti aplankų dydžius"
 
 msgid "Command &history"
 msgstr "Komandų istorija"
+
+msgid "Viewed/edited files hi&story"
+msgstr ""
 
 msgid "Di&rectory hotlist"
 msgstr "Aplankų są&rašas"
@@ -3462,7 +3533,7 @@ msgid "Unknown tag on display format:"
 msgstr ""
 
 msgid "&Files only"
-msgstr ""
+msgstr "Tik &failai:"
 
 msgid "&Case sensitive"
 msgstr ""
@@ -3476,8 +3547,11 @@ msgstr "Nebesirinkti"
 msgid "Do you really want to execute?"
 msgstr ""
 
+msgid "Cannot read directory contents"
+msgstr "Nepavyko perskaityti aplanko turinio"
+
 msgid "User supplied format looks invalid, reverting to default."
-msgstr "Naudotojo formatas atrodo netaisyklingai, grįžtu prie pradinio."
+msgstr "Vartotojo formatas atrodo netaisyklingai, grįžtu prie numatytojo."
 
 msgid "&Add new"
 msgstr "Pridėti n&aują"
@@ -3539,6 +3613,8 @@ msgid ""
 "Cannot stat the destination\n"
 "%s"
 msgstr ""
+"Nepavyko pasiekti paskirties\n"
+"%s"
 
 #, c-format
 msgid "Delete %s?"
@@ -3568,7 +3644,7 @@ msgstr ""
 "%s\n"
 
 msgid "Help file format error\n"
-msgstr ""
+msgstr "Klaidingas pagalbos failo formatas\n"
 
 msgid "Internal bug: Double start of link area"
 msgstr ""
@@ -3653,7 +3729,17 @@ msgid ""
 msgstr ""
 
 msgid "Home directory path is not absolute"
+msgstr "Namų aplanko kelias nėra absoliutus"
+
+#, fuzzy
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
 msgstr ""
+"GNU Midnight Commander jau paleistas\n"
+"šiame terminale.\n"
+"„Subshell“ palaikymas neveiks."
 
 #, c-format
 msgid ""
@@ -3679,61 +3765,58 @@ msgid ""
 "Cannot save file %s:\n"
 "%s"
 msgstr ""
-
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"GNU Midnight Commander jau paleistas\n"
-"šiame terminale.\n"
-"„Subshell“ palaikymas neveiks."
+"Nepavyko išsaugoti failo %s:\n"
+"%s"
 
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "Nepavyko atverti vardinio konvejerio „%s“\n"
 
 msgid "The shell is still active. Quit anyway?"
-msgstr ""
+msgstr "Aplinka vis dar aktyvi. Vis tiek išeiti?"
 
 #, c-format
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Įspėjimas: nepavyko įeiti į „%s“.\n"
 
-msgid "Using the S-Lang library with terminfo database\n"
-msgstr ""
-
-msgid "Using the ncurses library\n"
-msgstr ""
-
-msgid "Using the ncursesw library\n"
-msgstr ""
-
-msgid "With builtin Editor\n"
+#, fuzzy
+msgid "With builtin Editor and Aspell support"
 msgstr "Su vidiniu redaktoriumi\n"
 
-msgid "With optional subshell support\n"
-msgstr ""
+#, fuzzy
+msgid "With builtin Editor"
+msgstr "Su vidiniu redaktoriumi\n"
 
-msgid "With subshell support as default\n"
-msgstr ""
+#, fuzzy
+msgid "With optional subshell support"
+msgstr "Išjungia „subshell“ palaikymą"
 
-msgid "With support for background operations\n"
+#, fuzzy
+msgid "With subshell support as default"
+msgstr "Su „subshell“ palaikymu kaip numatytuoju\n"
+
+#, fuzzy
+msgid "With support for background operations"
 msgstr "Su fono operacijų galimybe\n"
 
-msgid "With mouse support on xterm and Linux console\n"
+#, fuzzy
+msgid "With mouse support on xterm and Linux console"
 msgstr "Su pelės palaikymu xterm ir Linux konsolėse\n"
 
-msgid "With mouse support on xterm\n"
+#, fuzzy
+msgid "With mouse support on xterm"
 msgstr "Su pelės palaikymu xterm\n"
 
-msgid "With support for X11 events\n"
+#, fuzzy
+msgid "With support for X11 events"
 msgstr "Su X11 įvykių palaikymu\n"
 
-msgid "With internationalization support\n"
+#, fuzzy
+msgid "With internationalization support"
 msgstr "Su internacionalizacijos palaimymu\n"
 
-msgid "With multiple codepages support\n"
+#, fuzzy
+msgid "With multiple codepages support"
 msgstr "Su daugelio koduočių galimybe\n"
 
 #, c-format
@@ -3741,24 +3824,40 @@ msgid "Built with GLib %d.%d.%d\n"
 msgstr ""
 
 #, c-format
-msgid "Virtual File Systems:"
+msgid "Built with S-Lang %s with terminfo database\n"
 msgstr ""
 
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, c-format
+msgid "Built with ncursesw %s\n"
+msgstr ""
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
+msgid "Virtual File Systems:"
+msgstr ""
+
 msgid "Data types:"
 msgstr ""
 
 msgid "Home directory:"
-msgstr ""
+msgstr "Namų aplankas:"
 
 msgid "Profile root directory:"
-msgstr ""
+msgstr "Profilio šakninis aplankas:"
 
 msgid "System data"
 msgstr ""
 
 msgid "Config directory:"
-msgstr ""
+msgstr "Konfigūracijos aplankas:"
 
 msgid "Data directory:"
 msgstr "Duomenų aplankas:"
@@ -3770,10 +3869,10 @@ msgid "VFS plugins and scripts:"
 msgstr ""
 
 msgid "User data"
-msgstr ""
+msgstr "Vartotojo duomenys"
 
 msgid "Cache directory:"
-msgstr ""
+msgstr "Podėlio aplankas:"
 
 msgid "Debug"
 msgstr "Derinimas"
@@ -3817,7 +3916,7 @@ msgid "No suitable entries found in %s"
 msgstr ""
 
 msgid "User menu"
-msgstr ""
+msgstr "Vartotojo meniu"
 
 #, c-format
 msgid ""
@@ -3955,20 +4054,20 @@ msgstr "ftpfs: siunčiamas slaptažodis"
 
 #, c-format
 msgid "FTP: Account required for user %s"
-msgstr "FTP: %s naudotojui reikia prisijungimo vardo"
+msgstr "FTP: %s varotojui reikia prisijungimo vardo"
 
 msgid "Account:"
 msgstr "Paskyra:"
 
 msgid "ftpfs: sending user account"
-msgstr "ftpfs: siunčiamas naudotojo vardas"
+msgstr "ftpfs: siunčiamas vartotojo vardas"
 
 msgid "ftpfs: logged in"
 msgstr "ftpfs: prisijungta"
 
 #, c-format
 msgid "ftpfs: Login incorrect for user %s "
-msgstr "ftpfs: Neteisingas naudotojo „%s“ jungimasis "
+msgstr "ftpfs: Neteisingas vartotojo „%s“ jungimasis "
 
 msgid "ftpfs: Invalid host name."
 msgstr "ftpfs: Neteisingas kompiuterio vardas."
@@ -3982,7 +4081,7 @@ msgid "ftpfs: making connection to %s"
 msgstr "ftpfs: jungiamasi į %s"
 
 msgid "ftpfs: connection interrupted by user"
-msgstr "ftpfs: jungiamasis nutrauktas"
+msgstr "ftpfs: jungimasis nutrauktas"
 
 #, c-format
 msgid "ftpfs: connection to server failed: %s"
@@ -4067,7 +4166,7 @@ msgid "sftp: an error occurred while reading %s: %s"
 msgstr "sftp: klaida skaitant %s:%s"
 
 msgid "sftp: Unable to get current user name."
-msgstr ""
+msgstr "sftp: Nepavyko gauti vartotojo vardo."
 
 msgid "sftp: Invalid host name."
 msgstr ""
@@ -4081,7 +4180,7 @@ msgid "sftp: making connection to %s"
 msgstr ""
 
 msgid "sftp: connection interrupted by user"
-msgstr ""
+msgstr "sftp:  jungimasis nutrauktas"
 
 #, c-format
 msgid "sftp: connection to server failed: %s"
@@ -4199,7 +4298,7 @@ msgstr ""
 
 #, c-format
 msgid "Cannot open file %s"
-msgstr ""
+msgstr "Nepavyko atverti failo %s"
 
 msgid "undelfs: reading inode bitmap..."
 msgstr "undelfs: skaitomas bloko bitų laukas..."
@@ -4230,7 +4329,7 @@ msgstr ""
 
 #, c-format
 msgid "Cannot open file \"%s\""
-msgstr ""
+msgstr "Nepavyko atverti failo \"%s\""
 
 msgid "Ext2lib error"
 msgstr "Ext2lib klaida"
@@ -4317,6 +4416,8 @@ msgid ""
 "Cannot save file:\n"
 "%s"
 msgstr ""
+"Nepavyko išsaugoti failo:\n"
+"%s"
 
 msgid "View: "
 msgstr ""

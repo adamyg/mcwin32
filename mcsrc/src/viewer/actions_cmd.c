@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Callback function for some actions (hotkeys, menu)
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -58,13 +58,14 @@
 #include "lib/charsets.h"
 #endif
 #include "lib/event.h"          /* mc_event_raise() */
+#include "lib/mcconfig.h"       /* mc_config_history_get() */
 
 #include "src/filemanager/layout.h"
-#include "src/filemanager/cmd.h"
 #include "src/filemanager/midnight.h"   /* current_panel */
 #include "src/filemanager/ext.h"        /* regex_command_for() */
 
 #include "src/history.h"
+#include "src/file_history.h"   /* show_file_history() */
 #include "src/execute.h"
 #include "src/keybind-defaults.h"
 
@@ -139,7 +140,7 @@ mcview_continue_search_cmd (WView * view)
         /* find last search string in history */
         GList *history;
 
-        history = history_get (MC_HISTORY_SHARED_SEARCH);
+        history = mc_config_history_get (MC_HISTORY_SHARED_SEARCH);
         if (history != NULL && history->data != NULL)
         {
             view->last_search_string = (gchar *) g_strdup (history->data);
@@ -299,30 +300,39 @@ mcview_load_next_prev_init (WView * view)
 
         /* TODO: check mtime of directory to reload it */
 
-        const char *fname;
-        size_t fname_len;
-        int i;
         dir_sort_options_t sort_op = { FALSE, TRUE, FALSE };
 
         /* load directory where requested file is */
         view->dir = g_new0 (dir_list, 1);
         view->dir_idx = g_new (int, 1);
 
-        dir_list_load (view->dir, view->workdir_vpath, (GCompareFunc) sort_name, &sort_op, NULL);
-
-        fname = x_basename (vfs_path_as_str (view->filename_vpath));
-        fname_len = strlen (fname);
-
-        /* search current file in the list */
-        for (i = 0; i != view->dir->len; i++)
+        if (dir_list_load
+            (view->dir, view->workdir_vpath, (GCompareFunc) sort_name, &sort_op, NULL))
         {
-            const file_entry_t *fe = &view->dir->list[i];
+            const char *fname;
+            size_t fname_len;
+            int i;
 
-            if (fname_len == fe->fnamelen && strncmp (fname, fe->fname, fname_len) == 0)
-                break;
+            fname = x_basename (vfs_path_as_str (view->filename_vpath));
+            fname_len = strlen (fname);
+
+            /* search current file in the list */
+            for (i = 0; i != view->dir->len; i++)
+            {
+                const file_entry_t *fe = &view->dir->list[i];
+
+                if (fname_len == fe->fnamelen && strncmp (fname, fe->fname, fname_len) == 0)
+                    break;
+            }
+
+            *view->dir_idx = i;
         }
-
-        *view->dir_idx = i;
+        else
+        {
+            message (D_ERROR, MSG_ERROR, _("Cannot read directory contents"));
+            MC_PTR_FREE (view->dir);
+            MC_PTR_FREE (view->dir_idx);
+        }
     }
 }
 
@@ -381,6 +391,30 @@ mcview_load_next_prev (WView * view, int direction)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static void
+mcview_load_file_from_history (WView * view)
+{
+    char *filename;
+    int action;
+
+    filename = show_file_history (CONST_WIDGET (view), &action);
+
+    if (filename != NULL && (action == CK_View || action == CK_Enter))
+    {
+        mcview_done (view);
+        mcview_init (view);
+
+        mcview_load (view, NULL, filename, 0, 0, 0);
+
+        view->dpy_bbar_dirty = FALSE;   /* FIXME */
+        view->dirty++;
+    }
+
+    g_free (filename);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static cb_ret_t
 mcview_execute_cmd (WView * view, long command)
 {
@@ -394,17 +428,25 @@ mcview_execute_cmd (WView * view, long command)
             mc_event_raise (MCEVENT_GROUP_CORE, "help", &event_data);
         }
         break;
-    case CK_WrapMode:
-        /* Toggle between wrapped and unwrapped view */
-        mcview_toggle_wrap_mode (view);
+    case CK_HexMode:
+        /* Toggle between hex view and text view */
+        mcview_toggle_hex_mode (view);
         break;
     case CK_HexEditMode:
         /* Toggle between hexview and hexedit mode */
         mcview_toggle_hexedit_mode (view);
         break;
-    case CK_HexMode:
-        /* Toggle between hex view and text view */
-        mcview_toggle_hex_mode (view);
+    case CK_ToggleNavigation:
+        view->hexview_in_text = !view->hexview_in_text;
+        view->dirty++;
+        break;
+    case CK_LeftQuick:
+        if (!view->mode_flags.hex)
+            mcview_move_left (view, 10);
+        break;
+    case CK_RightQuick:
+        if (!view->mode_flags.hex)
+            mcview_move_right (view, 10);
         break;
     case CK_Goto:
         {
@@ -428,23 +470,44 @@ mcview_execute_cmd (WView * view, long command)
     case CK_Search:
         mcview_search (view, TRUE);
         break;
+    case CK_SearchContinue:
+        mcview_continue_search_cmd (view);
+        break;
     case CK_SearchForward:
         mcview_search_options.backwards = FALSE;
         mcview_search (view, TRUE);
         break;
+    case CK_SearchForwardContinue:
+        mcview_search_options.backwards = FALSE;
+        mcview_continue_search_cmd (view);
+        break;
     case CK_SearchBackward:
         mcview_search_options.backwards = TRUE;
         mcview_search (view, TRUE);
+        break;
+    case CK_SearchBackwardContinue:
+        mcview_search_options.backwards = TRUE;
+        mcview_continue_search_cmd (view);
+        break;
+    case CK_SearchOppositeContinue:
+        {
+            gboolean direction;
+
+            direction = mcview_search_options.backwards;
+            mcview_search_options.backwards = !direction;
+            mcview_continue_search_cmd (view);
+            mcview_search_options.backwards = direction;
+        }
+        break;
+    case CK_WrapMode:
+        /* Toggle between wrapped and unwrapped view */
+        mcview_toggle_wrap_mode (view);
         break;
     case CK_MagicMode:
         mcview_toggle_magic_mode (view);
         break;
     case CK_NroffMode:
         mcview_toggle_nroff_mode (view);
-        break;
-    case CK_ToggleNavigation:
-        view->hexview_in_text = !view->hexview_in_text;
-        view->dirty++;
         break;
     case CK_Home:
         mcview_moveto_bol (view);
@@ -457,28 +520,6 @@ mcview_execute_cmd (WView * view, long command)
         break;
     case CK_Right:
         mcview_move_right (view, 1);
-        break;
-    case CK_LeftQuick:
-        if (!view->mode_flags.hex)
-            mcview_move_left (view, 10);
-        break;
-    case CK_RightQuick:
-        if (!view->mode_flags.hex)
-            mcview_move_right (view, 10);
-        break;
-    case CK_SearchContinue:
-        mcview_continue_search_cmd (view);
-        break;
-    case CK_SearchForwardContinue:
-        mcview_search_options.backwards = FALSE;
-        mcview_continue_search_cmd (view);
-        break;
-    case CK_SearchBackwardContinue:
-        mcview_search_options.backwards = TRUE;
-        mcview_continue_search_cmd (view);
-        break;
-    case CK_Ruler:
-        mcview_display_toggle_ruler (view);
         break;
     case CK_Up:
         mcview_move_up (view, 1);
@@ -505,16 +546,19 @@ mcview_execute_cmd (WView * view, long command)
         mcview_moveto_bottom (view);
         break;
     case CK_Shell:
-        view_other_cmd ();
+        toggle_subshell ();
         break;
-    case CK_BookmarkGoto:
-        view->marks[view->marker] = view->dpy_start;
+    case CK_Ruler:
+        mcview_display_toggle_ruler (view);
         break;
     case CK_Bookmark:
         view->dpy_start = view->marks[view->marker];
         view->dpy_paragraph_skip_lines = 0;     /* TODO: remember this value in the marker? */
         view->dpy_wrap_dirty = TRUE;
         view->dirty++;
+        break;
+    case CK_BookmarkGoto:
+        view->marks[view->marker] = view->dpy_start;
         break;
 #ifdef HAVE_CHARSET
     case CK_SelectCodepage:
@@ -528,9 +572,12 @@ mcview_execute_cmd (WView * view, long command)
         if (!mcview_is_in_panel (view))
             mcview_load_next_prev (view, command == CK_FileNext ? 1 : -1);
         break;
+    case CK_History:
+        mcview_load_file_from_history (view);
+        break;
     case CK_Quit:
         if (!mcview_is_in_panel (view))
-            dlg_stop (WIDGET (view)->owner);
+            dlg_stop (DIALOG (WIDGET (view)->owner));
         break;
     case CK_Cancel:
         /* don't close viewer due to SIGINT */
@@ -539,6 +586,17 @@ mcview_execute_cmd (WView * view, long command)
         res = MSG_NOT_HANDLED;
     }
     return res;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static long
+mcview_lookup_key (WView * view, int key)
+{
+    if (view->mode_flags.hex)
+        return keybind_lookup_keymap_command (view->hex_keymap, key);
+
+    return widget_lookup_key (WIDGET (view), key);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -552,18 +610,12 @@ mcview_handle_key (WView * view, int key)
     key = convert_from_input_c (key);
 #endif
 
-    if (view->mode_flags.hex)
-    {
-        if (view->hexedit_mode && (mcview_handle_editkey (view, key) == MSG_HANDLED))
-            return MSG_HANDLED;
+    if (view->hexedit_mode && view->mode_flags.hex
+        && mcview_handle_editkey (view, key) == MSG_HANDLED)
+        return MSG_HANDLED;
 
-        command = keybind_lookup_keymap_command (viewer_hex_map, key);
-        if ((command != CK_IgnoreKey) && (mcview_execute_cmd (view, command) == MSG_HANDLED))
-            return MSG_HANDLED;
-    }
-
-    command = keybind_lookup_keymap_command (viewer_map, key);
-    if ((command != CK_IgnoreKey) && (mcview_execute_cmd (view, command) == MSG_HANDLED))
+    command = mcview_lookup_key (view, key);
+    if (command != CK_IgnoreKey && mcview_execute_cmd (view, command) == MSG_HANDLED)
         return MSG_HANDLED;
 
 #ifdef MC_ENABLE_DEBUGGING_CODE
@@ -584,18 +636,8 @@ mcview_handle_key (WView * view, int key)
 /* --------------------------------------------------------------------------------------------- */
 
 static inline void
-mcview_adjust_size (WDialog * h)
+mcview_resize (WView * view)
 {
-    WView *view;
-    WButtonBar *b;
-
-    /* Look up the viewer and the buttonbar, we assume only two widgets here */
-    view = (WView *) find_widget_type (h, mcview_callback);
-    b = find_buttonbar (h);
-
-    widget_set_size (WIDGET (view), 0, 0, LINES - 1, COLS);
-    widget_set_size (WIDGET (b), LINES - 1, 0, 1, COLS);
-
     view->dpy_wrap_dirty = TRUE;
     mcview_compute_areas (view);
     mcview_update_bytes_per_line (view);
@@ -687,6 +729,11 @@ mcview_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *
         mcview_update (view);
         return MSG_HANDLED;
 
+    case MSG_RESIZE:
+        widget_default_callback (w, NULL, MSG_RESIZE, 0, data);
+        mcview_resize (view);
+        return MSG_HANDLED;
+
     case MSG_DESTROY:
         if (mcview_is_in_panel (view))
         {
@@ -701,11 +748,11 @@ mcview_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *
              * panel mode from qick view to another one (by pressing C-x q), the following
              * occurs:
              *   view hook is deleted from select_file_hook list via following call chain:
-             *      set_display_type (view_listing) -> widget_replace () ->
+             *      create_panel (view_listing) -> widget_replace () ->
              *      send_message (MSG_DESTROY) -> mcview_callback (MSG_DESTROY) ->
              *      delete_hook (&select_file_hook);
              *   @view object is free'd:
-             *      set_display_type (view_listing) -> g_free (old_widget);
+             *      create_panel (view_listing) -> g_free (old_widget);
              *   but @view still is in idle_hook list and tried to be executed:
              *      frontend_dlg_run () -> execute_hooks (idle_hook).
              * Thus here we have access to free'd @view object. To prevent this, remove view hook
@@ -735,10 +782,6 @@ mcview_dialog_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
 
     switch (msg)
     {
-    case MSG_RESIZE:
-        mcview_adjust_size (h);
-        return MSG_HANDLED;
-
     case MSG_ACTION:
         /* Handle shortcuts. */
 
@@ -747,9 +790,9 @@ mcview_dialog_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
         return mcview_execute_cmd (NULL, parm);
 
     case MSG_VALIDATE:
-        view = (WView *) find_widget_type (h, mcview_callback);
+        view = (WView *) widget_find_by_type (w, mcview_callback);
         /* don't stop the dialog before final decision */
-        widget_set_state (WIDGET (h), WST_ACTIVE, TRUE);
+        widget_set_state (w, WST_ACTIVE, TRUE);
         if (mcview_ok_to_quit (view))
             dlg_stop (h);
         else

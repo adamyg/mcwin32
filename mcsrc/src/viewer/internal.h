@@ -138,6 +138,7 @@ struct WView
 
     /* Hex editor modes */
     gboolean hexedit_mode;      /* Hexview or Hexedit */
+    const global_keymap_t *hex_keymap;
     gboolean hexview_in_text;   /* Is the hexview cursor in the text area? */
     int bytes_per_line;         /* Number of bytes per line in hex mode */
     off_t hex_cursor;           /* Hexview cursor position in file */
@@ -301,8 +302,10 @@ void mcview_toggle_nroff_mode (WView * view);
 void mcview_toggle_hex_mode (WView * view);
 void mcview_init (WView * view);
 void mcview_done (WView * view);
+#ifdef HAVE_CHARSET
 void mcview_select_encoding (WView * view);
 void mcview_set_codeset (WView * view);
+#endif
 void mcview_show_error (WView * view, const char *error);
 off_t mcview_bol (WView * view, off_t current, off_t limit);
 off_t mcview_eol (WView * view, off_t current);

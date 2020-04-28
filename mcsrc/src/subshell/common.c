@@ -1,7 +1,7 @@
 /*
    Concurrent shell support for the Midnight Commander
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -63,6 +63,12 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#else
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 #include <sys/types.h>
 #include <sys/wait.h>
 #ifdef HAVE_SYS_IOCTL_H
@@ -207,7 +213,7 @@ write_all (int fd, const void *buf, size_t count)
         {
             if (errno == EINTR)
             {
-                if (mc_global.tty.winch_flag != 0)
+                if (tty_got_winch ())
                     tty_change_screen_size ();
 
                 continue;
@@ -396,47 +402,6 @@ init_subshell_child (const char *pty_name)
     my_exit (FORK_FAILURE);
 }
 
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Check MC_SID to prevent running one mc from another.
- * Return:
- * 0 if no parent mc in our session was found,
- * 1 if parent mc was found and the user wants to continue,
- * 2 if parent mc was found and the user wants to quit mc.
- */
-
-static int
-check_sid (void)
-{
-    pid_t my_sid, old_sid;
-    const char *sid_str;
-    int r;
-
-    sid_str = getenv ("MC_SID");
-    if (sid_str == NULL)
-        return 0;
-
-    old_sid = (pid_t) strtol (sid_str, NULL, 0);
-    if (old_sid == 0)
-        return 0;
-
-    my_sid = getsid (0);
-    if (my_sid == -1)
-        return 0;
-
-    /* The parent mc is in a different session, it's OK */
-    if (old_sid != my_sid)
-        return 0;
-
-    r = query_dialog (_("Warning"),
-                      _("GNU Midnight Commander is already\n"
-                        "running on this terminal.\n"
-                        "Subshell support will be disabled."), D_ERROR, 2, _("&OK"), _("&Quit"));
-
-    return (r != 0) ? 2 : 1;
-}
-
 /* --------------------------------------------------------------------------------------------- */
 
 static void
@@ -545,7 +510,7 @@ feed_subshell (int how, gboolean fail_on_error)
             /* Despite using SA_RESTART, we still have to check for this */
             if (errno == EINTR)
             {
-                if (mc_global.tty.winch_flag != 0)
+                if (tty_got_winch ())
                     tty_change_screen_size ();
 
                 continue;       /* try all over again */
@@ -891,22 +856,11 @@ init_subshell_precmd (char *precmd, size_t buff_size)
         break;
 
     case SHELL_FISH:
-        /* We also want a fancy user@host:cwd prompt here, but fish makes it very easy to also
-         * use colours, which is what we will do. But first here is a simpler, uncoloured version:
-         * "function fish_prompt; "
-         *     "echo (whoami)@(hostname -s):(pwd)\\$\\ ; "
-         *     "echo \"$PWD\">&%d; "
-         *     "kill -STOP %%self; "
-         * "end\n",
-         *
-         * TODO: fish prompt is shown when panel is hidden (Ctrl-O), but not when it is visible.
-         * Find out how to fix this.
-         */
         g_snprintf (precmd, buff_size,
                     " if not functions -q fish_prompt_mc;"
+                    "functions -e fish_right_prompt;"
                     "functions -c fish_prompt fish_prompt_mc; end;"
                     "function fish_prompt;"
-                    "echo (whoami)@(hostname -s):(set_color $fish_color_cwd)(pwd)(set_color normal)\\$\\ ; "
                     "echo \"$PWD\">&%d; fish_prompt_mc; kill -STOP %%self; end\n",
                     subshell_pipe[WRITE]);
         break;
@@ -1016,19 +970,6 @@ init_subshell (void)
     static char pty_name[BUF_SMALL];
     /* Must be considerably longer than BUF_SMALL (128) to support fancy shell prompts */
     char precmd[BUF_MEDIUM];
-
-    switch (check_sid ())
-    {
-    case 1:
-        mc_global.tty.use_subshell = FALSE;
-        return;
-    case 2:
-        mc_global.tty.use_subshell = FALSE;
-        mc_global.midnight_shutdown = TRUE;
-        return;
-    default:
-        break;
-    }
 
     /* Take the current (hopefully pristine) tty mode and make */
     /* a raw mode based on it now, before we do anything else with it */
@@ -1148,16 +1089,16 @@ invoke_subshell (const char *command, int how, vfs_path_t ** new_dir_vpath)
 
     /* Make the subshell change to MC's working directory */
     if (new_dir_vpath != NULL)
-        do_subshell_chdir (subshell_get_cwd_from_current_panel (), TRUE);
+        do_subshell_chdir (subshell_get_cwd (), TRUE);
 
     if (command == NULL)        /* The user has done "C-o" from MC */
     {
         if (subshell_state == INACTIVE)
         {
             subshell_state = ACTIVE;
-            /* FIXME: possibly take out this hack; the user can
-               re-play it by hitting C-hyphen a few times! */
-            if (subshell_ready)
+
+            /* FIXME: possibly take out this hack; the user can re-play it by hitting C-hyphen a few times! */
+            if (subshell_ready && mc_global.mc_run_mode == MC_RUN_FULL)
                 write_all (mc_global.tty.subshell_pty, " \b", 2);       /* Hack to make prompt reappear */
         }
     }
@@ -1178,7 +1119,7 @@ invoke_subshell (const char *command, int how, vfs_path_t ** new_dir_vpath)
     {
         const char *pcwd;
 
-        pcwd = vfs_translate_path (vfs_path_as_str (subshell_get_cwd_from_current_panel ()));
+        pcwd = vfs_translate_path (vfs_path_as_str (subshell_get_cwd ()));
         if (strcmp (subshell_cwd, pcwd) != 0)
             *new_dir_vpath = vfs_path_from_str (subshell_cwd);  /* Make MC change to the subshell's CWD */
     }
@@ -1222,7 +1163,7 @@ read_subshell_prompt (void)
         {
             if (errno == EINTR)
             {
-                if (mc_global.tty.winch_flag != 0)
+                if (tty_got_winch ())
                     tty_change_screen_size ();
 
                 continue;
@@ -1304,7 +1245,7 @@ do_subshell_chdir (const vfs_path_t * vpath, gboolean update_prompt)
 {
     char *pcwd;
 
-    pcwd = vfs_path_to_str_flags (subshell_get_cwd_from_current_panel (), 0, VPF_RECODE);
+    pcwd = vfs_path_to_str_flags (subshell_get_cwd (), 0, VPF_RECODE);
 
     if (!(subshell_state == INACTIVE && strcmp (subshell_cwd, pcwd) != 0))
     {
@@ -1375,9 +1316,7 @@ do_subshell_chdir (const vfs_path_t * vpath, gboolean update_prompt)
         {
             char *cwd;
 
-            cwd =
-                vfs_path_to_str_flags (subshell_get_cwd_from_current_panel (), 0,
-                                       VPF_STRIP_PASSWORD);
+            cwd = vfs_path_to_str_flags (subshell_get_cwd (), 0, VPF_STRIP_PASSWORD);
             vfs_print_message (_("Warning: Cannot change to %s.\n"), cwd);
             g_free (cwd);
         }

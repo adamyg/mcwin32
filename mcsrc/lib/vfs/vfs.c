@@ -1,7 +1,7 @@
 /*
    Virtual File System switch code
 
-   Copyright (C) 1995-2018
+   Copyright (C) 1995-2020
    Free Software Foundation, Inc.
 
    Written by: 1995 Miguel de Icaza
@@ -81,10 +81,6 @@ GString *vfs_str_buffer = NULL;
 vfs_class *current_vfs = NULL;
 
 /*** file scope macro definitions ****************************************************************/
-
-#if defined(_AIX) && !defined(NAME_MAX)
-#define NAME_MAX FILENAME_MAX
-#endif
 
 #define VFS_FIRST_HANDLE 100
 
@@ -329,6 +325,17 @@ vfs_register_class (struct vfs_class * vfs)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+void
+vfs_unregister_class (struct vfs_class *vfs)
+{
+    if (vfs->done != NULL)
+        vfs->done (vfs);
+
+    g_ptr_array_remove (vfs__classes_list, vfs);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /** Strip known vfs suffixes from a filename (possible improvement: strip
  *  suffix from last path component).
  *  \return a malloced string which has to be freed.
@@ -446,7 +453,7 @@ vfs_current_is_local (void)
 /* --------------------------------------------------------------------------------------------- */
 /* Return flags of the VFS class of the given filename */
 
-vfs_class_flags_t
+vfs_flags_t
 vfs_file_class_flags (const vfs_path_t * vpath)
 {
     const vfs_path_element_t *path_element;
@@ -505,7 +512,7 @@ vfs_shut (void)
 
     for (i = 0; i < vfs__classes_list->len; i++)
     {
-        struct vfs_class *vfs = (struct vfs_class *) g_ptr_array_index (vfs__classes_list, i);
+        struct vfs_class *vfs = VFS_CLASS (g_ptr_array_index (vfs__classes_list, i));
 
         if (vfs->done != NULL)
             vfs->done (vfs);
@@ -536,7 +543,7 @@ vfs_fill_names (fill_names_f func)
 
     for (i = 0; i < vfs__classes_list->len; i++)
     {
-        struct vfs_class *vfs = (struct vfs_class *) g_ptr_array_index (vfs__classes_list, i);
+        struct vfs_class *vfs = VFS_CLASS (g_ptr_array_index (vfs__classes_list, i));
 
         if (vfs->fill_names != NULL)
             vfs->fill_names (vfs, func);
@@ -544,6 +551,7 @@ vfs_fill_names (fill_names_f func)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
 gboolean
 vfs_file_is_local (const vfs_path_t * vpath)
 {

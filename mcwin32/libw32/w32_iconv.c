@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.4 2018/10/12 00:52:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.5 2020/04/23 00:09:36 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -56,8 +56,8 @@ static HINSTANCE        x_msvcrtdll;
 static iconvopenfn_t    x_iconv_open;
 static iconvclosefn_t   x_iconv_close;
 static iconvfn_t        x_iconv;
-static void *           x_iconvctl;
-static void *           x_iconv_errno;
+//  static void *           x_iconvctl;
+//  static void *           x_iconv_errno;
 
 LIBW32_API int
 w32_iconv_connect(int verbose)
@@ -141,26 +141,27 @@ w32_iconv_connect(int verbose)
     x_iconv       = (iconvfn_t)GetProcAddress(x_iconvdll, "libiconv");
     x_iconv_open  = (iconvopenfn_t)GetProcAddress(x_iconvdll, "libiconv_open");
     x_iconv_close = (iconvclosefn_t)GetProcAddress(x_iconvdll, "libiconv_close");
-    x_iconvctl    = (void *)GetProcAddress(x_iconvdll, "libiconvctl");
-    x_iconv_errno = (void *)GetProcAddress(x_iconvdll, "libiconv_errno");
-    if (NULL == x_iconv_errno) {
-        x_iconv_errno = (void *)GetProcAddress(x_msvcrtdll, "_errno");
-    }
+//  x_iconvctl    = (void *)GetProcAddress(x_iconvdll, "libiconvctl");
+//  x_iconv_errno = (void *)GetProcAddress(x_iconvdll, "libiconv_errno");
+//  if (NULL == x_iconv_errno) {
+//      x_iconv_errno = (void *)GetProcAddress(x_msvcrtdll, "_errno");
+//  }
 
 #if defined(DO_TRACE_LOG)
     trace_log("iconv Functions (%s)\n", fullname);
     trace_log("\ticonv:       %p\n", x_iconv);
     trace_log("\ticonv_open:  %p\n", x_iconv_open);
     trace_log("\ticonv_close: %p\n", x_iconv_close);
-    trace_log("\ticonv_errno: %p\n", x_iconv_errno);
-    trace_log("\ticonvctl:    %p\n", x_iconvctl);
+//  trace_log("\ticonv_errno: %p\n", x_iconv_errno);
+//  trace_log("\ticonvctl:    %p\n", x_iconvctl);
 #endif
 
-    if (NULL == x_iconv || NULL== x_iconv_open || NULL == x_iconv_close || NULL == x_iconv_errno) {
+    if (NULL == x_iconv || NULL== x_iconv_open || NULL == x_iconv_close /*|| NULL == x_iconv_errno*/) {
         if (verbose) {
             char buffer[128];
 
-            _snprintf(buffer, sizeof(buffer), "Unable to resolve symbols from %s", ICONVDLL_NAME);
+            (void) _snprintf(buffer, sizeof(buffer), "Unable to resolve symbols from %s", ICONVDLL_NAME);
+            buffer[sizeof(buffer) - 1] = 0;
             MessageBoxA(0, buffer, "Error", MB_OK);
         }
         w32_iconv_shutdown();
@@ -176,8 +177,8 @@ w32_iconv_shutdown(void)
     x_iconv = NULL;
     x_iconv_open = NULL;
     x_iconv_close = NULL;
-    x_iconvctl = NULL;
-    x_iconv_errno = NULL;
+//  x_iconvctl = NULL;
+//  x_iconv_errno = NULL;
 
     if (x_iconvdll) {
        FreeLibrary(x_iconvdll);
@@ -192,7 +193,11 @@ w32_iconv_shutdown(void)
 LIBW32_API void *
 w32_iconv_open(const char *to, const char *from)
 {
+#if defined(DEBUG)
     if (w32_iconv_connect(TRUE) && x_iconv_open) {
+#else
+    if (w32_iconv_connect(FALSE) && x_iconv_open) {
+#endif
         return (x_iconv_open)(to, from);
     }
     return ICONV_NULL;

@@ -103,9 +103,6 @@
     <Filter Include="Header Files\mcsrc\editor">
       <UniqueIdentifier>{b7b52fb1-4fe0-4821-a6a1-5e6cc3b8c0dd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\mcsrc\filemanager">
-      <UniqueIdentifier>{7f19a6d2-651c-4a3b-aedf-57a19bd7522f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\mcsrc\libvfs">
       <UniqueIdentifier>{ed94f321-b300-4dae-8bb1-e8c96bb58922}</UniqueIdentifier>
     </Filter>
@@ -142,29 +139,11 @@
     <Filter Include="Header Files\libw32\sys">
       <UniqueIdentifier>{8225a4a0-ceb1-4c39-ba0c-ec8240199db5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\mcsrc\libmc\widget\filemanager">
+      <UniqueIdentifier>{7f19a6d2-651c-4a3b-aedf-57a19bd7522f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\drive.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\win32_glib.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\win32_key.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\win32_pipe.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\win32_tty.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\win32_utl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\win32_win.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\libw32\w32_check.c">
       <Filter>Source Files\libw32</Filter>
     </ClCompile>
@@ -813,23 +792,54 @@
     <ClCompile Include="..\..\libw32\w32_reparse.c">
       <Filter>Source Files\libw32</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\mc.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\background.c">
+      <Filter>Source Files\mcsrc\libmc\widget</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\frame.c">
+      <Filter>Source Files\mcsrc\libmc\widget</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\group.c">
+      <Filter>Source Files\mcsrc\libmc\widget</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\rect.c">
+      <Filter>Source Files\mcsrc\libmc\widget</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\file_history.c">
+      <Filter>Source Files\mcsrc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\mcconfig\history.c">
+      <Filter>Source Files\mcsrc\libmc\mcconfig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\filevercmp.c">
+      <Filter>Source Files\mcsrc\libmc\strutil</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\win32_glib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\win32_key.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\win32_pipe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\win32_tty.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\win32_utl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\win32_win.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\drive.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\buildinfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\drive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\win32_key.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libw32\alloca.h">
@@ -902,73 +912,73 @@
       <Filter>Header Files\libw32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\achown.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\boxes.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\chmod.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\chown.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\cmd.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\command.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\dir.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\ext.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\file.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\filegui.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\filenot.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\fileopctx.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\find.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\hotlist.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\info.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\layout.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\listmode.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\midnight.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\mountlist.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\panel.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\panelize.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\tree.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\treestore.h">
-      <Filter>Header Files\mcsrc\filemanager</Filter>
+      <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\args.h">
       <Filter>Header Files\mcsrc</Filter>
@@ -1342,5 +1352,31 @@
     <ClInclude Include="..\..\libw32\win32_ioctl.h">
       <Filter>Header Files\libw32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\background.h">
+      <Filter>Header Files\mcsrc\libmc\widget</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\frame.h">
+      <Filter>Header Files\mcsrc\libmc\widget</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\rect.h">
+      <Filter>Header Files\mcsrc\libmc\widget</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\group.h">
+      <Filter>Header Files\mcsrc\libmc\widget</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\file_history.h">
+      <Filter>Header Files\mcsrc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\drive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\win32_key.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\mc.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

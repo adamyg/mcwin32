@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.3 2018/09/26 11:45:04 cvsuser Exp $
+# $Id: Makefile.in,v 1.4 2020/04/28 22:59:43 cvsuser Exp $
 # libssh2 makefile.
 #
 #
-# Copyright (c) 2016 - 2017 Adam Young.
+# Copyright (c) 2016 - 2020 Adam Young.
 # 
 # This file is part of the Midnight Commander.
 # 
@@ -428,7 +428,7 @@ installheaders:		Makefile ../include/.created \
 		@$(CP) $(GLIBINCLUDE)/gversionmacros.h		../include/glib-2.0/glib
 		@$(CP) $(GLIBINCLUDE)/gwin32.h			../include/glib-2.0/glib
 		@$(CP) $(GLIBINCLUDE)/glib-autocleanups.h	../include/glib-2.0/glib
-		@echo publishing glib deprecate headers ...
+		@echo publishing glib deprecated headers ...
 		@$(CP) $(GLIBINCLUDE)/deprecated/gallocator.h	../include/glib-2.0/glib/deprecated
 		@$(CP) $(GLIBINCLUDE)/deprecated/gcache.h	../include/glib-2.0/glib/deprecated
 		@$(CP) $(GLIBINCLUDE)/deprecated/gcompletion.h	../include/glib-2.0/glib/deprecated

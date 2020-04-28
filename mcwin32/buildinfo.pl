@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: buildinfo.pl,v 1.1 2019/04/24 23:40:43 cvsuser Exp $
+# $Id: buildinfo.pl,v 1.2 2020/04/28 22:59:43 cvsuser Exp $
 # buildinfo generation
 #
-# Copyright Adam Young 2018-2019
+# Copyright Adam Young 2018-2020
 #
 
 use strict;

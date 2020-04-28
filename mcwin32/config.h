@@ -3,7 +3,7 @@
 /*
  *  win32 Midnight Commander -- config.h
  *
- *  Written by: Adam Young 2012 - 2018
+ *  Written by: Adam Young 2012 - 2020
  *
  *  This file is part of the Midnight Commander.
  *
@@ -82,6 +82,8 @@ extern int                  win32_pclose(FILE *file);
 #define pclose(__file)      win32_pclose(__file)
 #endif
 
+extern void                 tty_set_title(const char *title);
+
 /*
  *  available components
  */
@@ -133,7 +135,7 @@ extern int                  win32_pclose(FILE *file);
 #undef  SEARCH_TYPE_PCRE
 #define SEARCH_TYPE_GLIB 1
 
-#define LISTMODE_EDITOR 1
+//#define LISTMODE_EDITOR 1                     /* removed, 4.8.24 */
 #define USE_INTERNAL_EDIT 1
 #define USE_DIFF_VIEW 1
 #define USE_LIBMAGIC 1
@@ -145,6 +147,7 @@ extern int                  win32_pclose(FILE *file);
 #define ENABLE_NLS
 #undef  ENABLE_BACKGROUND
 #undef  ENABLE_SUBSHELL
+#define ENABLE_CONFIGURE_ARGS 1                  /* 4.8.24+ */
 
 #define ENABLE_VFS 1
 #define ENABLE_VFS_CPIO 1
@@ -161,4 +164,3 @@ extern int                  win32_pclose(FILE *file);
 #define PROMOTED_MODE_T int                     /* FIXME */
 
 #endif  /*CONFIG_H_INCLUDED*/
-

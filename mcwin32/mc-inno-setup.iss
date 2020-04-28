@@ -9,7 +9,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{CBB4464D-7081-4F1D-9F6D-F5288A4A9B82}
 AppName=GNU Midnight Commander
-AppVersion=4.8.21 (build: {#BUILD_DATE}-{#BUILD_NUMBER})
+AppVersion=4.8.24 (build: {#BUILD_DATE}-{#BUILD_NUMBER})
 ;   AppVerName= ...
 AppPublisher=The Free Software Foundation, Inc.
 AppPublisherURL=https://www.midnight-commander.org/
@@ -54,7 +54,8 @@ Root: HKCU; Subkey: "Console\C:_Program Files (x86)_Midnight Commander_mc.exe"; 
 Root: HKCU; Subkey: "Console\C:_Program Files (x86)_Midnight Commander_mc.exe"; Flags: noerror; ValueType: string; ValueName: "FaceName";         ValueData: "Lucida Console"
 
 [Files]
-Source: ".\bin\changelog.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\README.txt";    DestDir: "{app}"; Flags: ignoreversion
+Source: ".\bin\ChangeLog.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\mc.exe";        DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\mc.map";        DestDir: "{app}"; Flags: ignoreversion
 Source: ".\bin\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion

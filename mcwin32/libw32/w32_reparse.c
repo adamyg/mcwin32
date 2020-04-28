@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_reparse_c,"$Id: w32_reparse.c,v 1.6 2018/10/18 22:39:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_reparse_c,"$Id: w32_reparse.c,v 1.7 2020/04/23 00:09:36 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -166,8 +166,8 @@ w32_reparse_read(const char *name, char *buf, int maxlen)
                                 wcscpy(volume, L"\\\\?\\");
                                 wcscpy(volume + 4, mount + 4);
 
-                                if (GetVolumePathNamesForVolumeNameW(volume, pathNames, sizeof(pathNames), &pathLen) && pathLen > 0) {
-                                    if ((size_t)-1 != (len = wcstombs(resolved, pathNames, sizeof(resolved)-1))) {
+                                if (GetVolumePathNamesForVolumeNameW(volume, pathNames, _countof(pathNames), &pathLen) && pathLen > 0) {
+                                    if ((size_t)-1 != (len = wcstombs(resolved, pathNames, _countof(resolved)-1))) {
                                         memxcpy(buf, resolved, len, maxlen);
                                         ret = 0;
                                     }

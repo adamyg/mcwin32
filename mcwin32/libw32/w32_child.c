@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.8 2018/10/12 00:52:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.10 2020/04/28 22:59:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 sub-process support
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 20120 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -544,11 +544,10 @@ cmdis(const char *shell, int slen, const char *cmd)
 
 /*
  *  w32_child_exec ---
- *      Setup a STARTUPINFO structure and launches redirected child using
+ *      Setup a STARTUPINFO structure and launches a redirected child using
  *      the specified stdin/stdout and stderr handles.
  *
- *      This is a low level interface and expects the caller has setup the
- *      calling environment.
+ *      A low level interface that expects the caller has setup the calling environment.
  */
 LIBW32_API HANDLE
 w32_child_exec(
@@ -940,8 +939,9 @@ Getpath(const char *src, char *dst, unsigned maxlen)
      *  If we copied something and stopped because of a ';', skip ';'
      *  before returning
      */
-    while (*src == ';')
+    while (*src == ';') {
         ++src;
+    }
 
     /*
      *  Store a terminating null.
@@ -997,7 +997,8 @@ DisplayError(
 
     _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
         "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
-            args ? args : "", args ? "\n" : "" );
+            args ? args : "", args ? "\n" : "");
+    szPrintBuffer[sizeof(szPrintBuffer) - 1] = 0;
 
     WriteConsoleA(hOutput, szPrintBuffer, lstrlenA(szPrintBuffer), &nCharsWritten, NULL);
     LocalFree(lpvMessageBuffer);
@@ -1013,4 +1014,3 @@ InternalError(
 }
 
 /*end*/
-

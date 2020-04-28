@@ -37,8 +37,11 @@ include diff.syntax
 file ..\*\\.lsm$ LSM\sFile
 include lsm.syntax
 
-file .\*(bash_completion|profile|\\.(sh|bash_login|bash_profile|bash_logout|bash_aliases|bash_exports|bash_history|bashrc|profile|zlogin|zlogout|zprofile|zshenv|zshrc))$ Shell\sScript ^#!\s\*/(.\*/|usr/bin/env\s)([a-z]?|ba|pdk)sh
+file .\*(bash(_completion|rc)|profile|\\.(sh|bash(rc|_(completion|profile|log(in|out)|aliases|exports|history))|profile|zlog(in|out)|zprofile|zsh(env|rc)))$ Shell\sScript ^#!\s\*/(.\*/|usr/bin/env\s)([a-z]?|ba|pdk)sh
 include sh.syntax
+
+file ..\*\\.((?i:ini)|desktop|busname|(auto)?mount|net(dev|work)|link|path|service|slice|socket|swap|target|timer)$ INI-based\sFile
+include ini.syntax
 
 file ..\*\\.((?i:pl|pm|psgi)|t)$ Perl\sProgram ^#!.\*([\s/]perl|@PERL@)
 include perl.syntax
@@ -70,13 +73,16 @@ include makefile.syntax
 file (CMakeLists.txt|.\*.cmake)$ CMake
 include cmake.syntax
 
+file meson\\.build$ Meson\sBuild\sFile
+include meson.syntax
+
 file ..\*\\.(?i:pas|dpr|inc)$ Pascal\sProgram
 include pascal.syntax
 
 file ..\*\\.(?i:ad[abs])$ Ada\sProgram
 include ada95.syntax
 
-file ..\*\\.(?i:i?tcl)$ Tcl\sProgram
+file ..\*\\.(?i:i?tcl)$ Tcl\sProgram ^#!.\*([\s/]tclsh|[\s/]wish|/usr/bin/tclsh|/usr/bin/wish)
 include tcl.syntax
 
 file ..\*\\.(?i:sl)$ S-Lang\sProgram
@@ -178,7 +184,7 @@ include m4.syntax
 file ..\*\\.(bat|cmd)$ DOS\sBatch
 include dos.syntax
 
-file ..\*\\.(po|pot|pox)$ PO\sFile
+file ..\*\\.po[tx]?$ PO\sFile
 include po.syntax
 
 file ..\*\\.(?i:asm|s)$ ASM\sProgram
@@ -195,9 +201,6 @@ include lua.syntax
 
 file ..\*\\.(?i:idl)$ CORBA\sIDL
 include idl.syntax
-
-file ..\*\\.(?i:ini)$ INI\sFile
-include ini.syntax
 
 file Don_t_match_me Mail\sfolder ^(From|Return-(P|p)ath:|From:|Date:)\s
 include mail.syntax
@@ -274,7 +277,7 @@ include puppet.syntax
 file ..\*\\.(glsl|vert|frag|geom)$ GLSL\sProgram
 include glsl.syntax
 
-file ..\*\\.(cu|cuh)$ CUDA\sProgram
+file ..\*\\.cuh?$ CUDA\sProgram
 include cuda.syntax
 
 file ..\*\\.cl$ OpenCL\sProgram
@@ -294,6 +297,9 @@ include markdown.syntax
 
 file ..\*\\.proto$ Protobuf\sFile
 include protobuf.syntax
+
+file ..\*\\.(?i:yab)$ Yabasic\s(Yet\sAnother\sBASIC)
+include markdown.syntax
 
 file .\* unknown
 include unknown.syntax

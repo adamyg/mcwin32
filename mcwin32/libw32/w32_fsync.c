@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_fsync_c,"$Id: w32_fsync.c,v 1.5 2018/10/12 00:52:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_fsync_c,"$Id: w32_fsync.c,v 1.7 2020/04/28 22:59:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -101,11 +101,24 @@ w32_fsync(int fd)
         ret = -1;
 
     } else if (! FlushFileBuffers(handle)) {
-        w32_errno_set();
+        const DWORD err = GetLastError();
+        switch (err) {
+        case ERROR_ACCESS_DENIED:
+            /* For a read-only handle, fsync should succeed, 
+             *  even though we have no way to sync the access-time changes.
+             */
+            return 0;
+        case ERROR_INVALID_HANDLE:
+            /* Most likely a non-supporting device, eg tty */
+            errno = EINVAL;
+            break;
+        default:
+            w32_errno_setas(err);
+            break;
+        }
         ret = -1;
     }
     return ret;
 }
 
 /*end*/
-

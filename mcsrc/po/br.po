@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-04-25 11:40+0300\n"
-"PO-Revision-Date: 2018-04-30 12:37+0000\n"
+"POT-Creation-Date: 2019-12-15 12:59+0300\n"
+"PO-Revision-Date: 2019-12-16 01:49+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Breton (http://www.transifex.com/mc/mc/language/br/)\n"
 "MIME-Version: 1.0\n"
@@ -457,6 +457,18 @@ msgid "Shift"
 msgstr "Pennlizh"
 
 msgid "The TERM environment variable is unset!\n"
+msgstr ""
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr ""
+
+msgid "Cannot create pipe for SIGWINCH"
+msgstr ""
+
+msgid "Cannot configure write end of SIGWINCH pipe"
+msgstr ""
+
+msgid "Cannot configure read end of SIGWINCH pipe"
 msgstr ""
 
 #, c-format
@@ -1282,6 +1294,9 @@ msgstr ""
 msgid "&Close"
 msgstr ""
 
+msgid "&History..."
+msgstr ""
+
 msgid "Save &as..."
 msgstr ""
 
@@ -1563,7 +1578,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
+msgid "Copyright (C) 1996-2019 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1708,6 +1723,11 @@ msgid "Cannot fetch a local copy of %s"
 msgstr ""
 
 msgid "The shell is already running a command"
+msgstr ""
+
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
 msgstr ""
 
 msgid "Type 'exit' to return to the Midnight Commander"
@@ -2260,11 +2280,6 @@ msgid ""
 "to use this command"
 msgstr ""
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr ""
@@ -2325,9 +2340,6 @@ msgstr ""
 msgid ""
 "Cannot chdir to \"%s\"\n"
 "%s"
-msgstr ""
-
-msgid "Cannot read directory contents"
 msgstr ""
 
 msgid "Parameter"
@@ -2402,7 +2414,20 @@ msgstr ""
 msgid " with source mask:"
 msgstr ""
 
-msgid "Cannot make the hardlink"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
 msgstr ""
 
 #, c-format
@@ -2666,18 +2691,13 @@ msgstr ""
 msgid "%ld B/s"
 msgstr ""
 
-msgid "Target file already exists!"
+msgid "New     :"
 msgstr ""
 
-#, c-format
-msgid "New     : %s, size %s"
+msgid "Existing:"
 msgstr ""
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr ""
-
-msgid "Overwrite this target?"
+msgid "Overwrite this file?"
 msgstr ""
 
 msgid "A&ppend"
@@ -2686,13 +2706,19 @@ msgstr ""
 msgid "&Reget"
 msgstr ""
 
-msgid "Overwrite all targets?"
+msgid "Overwrite all files?"
 msgstr ""
 
-msgid "&Update"
+msgid "Don't overwrite with &zero length file"
 msgstr ""
 
-msgid "If &size differs"
+msgid "&Older"
+msgstr ""
+
+msgid "S&maller"
+msgstr ""
+
+msgid "&Size differs"
 msgstr ""
 
 msgid "File exists"
@@ -2840,6 +2866,14 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
 msgstr[4] ""
+
+#, c-format
+msgid "Find File: \"%s\". Content: \"%s\""
+msgstr ""
+
+#, c-format
+msgid "Find File: \"%s\""
+msgstr ""
 
 msgid "Searching"
 msgstr ""
@@ -3181,6 +3215,9 @@ msgstr ""
 msgid "Command &history"
 msgstr ""
 
+msgid "Viewed/edited files hi&story"
+msgstr ""
+
 msgid "Di&rectory hotlist"
 msgstr ""
 
@@ -3412,6 +3449,9 @@ msgstr ""
 msgid "Do you really want to execute?"
 msgstr ""
 
+msgid "Cannot read directory contents"
+msgstr ""
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr ""
 
@@ -3624,6 +3664,9 @@ msgid "Using the ncurses library\n"
 msgstr ""
 
 msgid "Using the ncursesw library\n"
+msgstr ""
+
+msgid "With builtin Editor and Aspell support\n"
 msgstr ""
 
 msgid "With builtin Editor\n"

@@ -9,13 +9,14 @@
 # Jonas Hultén <jonas@kollektivet.nu>, 2017
 # MagnusHerrlin <m8618@abc.se>, 2016
 # MagnusHerrlin <m8618@abc.se>, 2016
+# Sebastian Rasmussen <sebras@gmail.com>, 2019
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-04-30 12:37+0000\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2019-12-16 01:49+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Swedish (http://www.transifex.com/mc/mc/language/sv/)\n"
 "Language: sv\n"
@@ -487,6 +488,27 @@ msgstr "Skift"
 
 msgid "The TERM environment variable is unset!\n"
 msgstr "Omgivningsvariablen TERM är inte satt!\n"
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr ""
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr "Tunnelströmmar kunde inte skapas"
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -1374,6 +1396,9 @@ msgstr "&Ny"
 msgid "&Close"
 msgstr "S&täng"
 
+msgid "&History..."
+msgstr ""
+
 msgid "Save &as..."
 msgstr "Spa&ra som..."
 
@@ -1657,8 +1682,9 @@ msgstr ""
 "En användarvänlig texteditor\n"
 "skriven för Midnight Commander."
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
-msgstr ""
+#, fuzzy
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
+msgstr "Copyright (C) 1996-2019 Free Software Foundation"
 
 msgid "About"
 msgstr "Om"
@@ -1810,6 +1836,13 @@ msgstr "En lokal kopia av %s kunde inte hämtas"
 msgid "The shell is already running a command"
 msgstr "Skalet kör redan ett kommando"
 
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+"Inte en xterm- eller linuxterminal;\n"
+"panelerna kan inte slås av/på."
+
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Skriv 'exit' för att återvända till Midnight Commander"
 
@@ -1947,7 +1980,7 @@ msgid "Sa&fe delete"
 msgstr "S&äker borttagning"
 
 msgid "Safe overwrite"
-msgstr ""
+msgstr "Säker överskrivning"
 
 msgid "A&uto save setup"
 msgstr "A&utospara inställningar"
@@ -2369,13 +2402,6 @@ msgstr ""
 "Båda panelerna måste vara i fillistläge\n"
 "för att använda detta kommando"
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-"Inte en xterm- eller linuxterminal;\n"
-"panelerna kan inte slås av/på."
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr "'%s' är inte en symbolisk länk"
@@ -2441,9 +2467,6 @@ msgid ""
 msgstr ""
 "Chdir till \"%s\" misslyckades\n"
 "%s"
-
-msgid "Cannot read directory contents"
-msgstr "Kan inte läsa kataloginnehåll"
 
 msgid "Parameter"
 msgstr "Parameter"
@@ -2524,8 +2547,25 @@ msgstr "filer/kataloger"
 msgid " with source mask:"
 msgstr " med källfilter:"
 
-msgid "Cannot make the hardlink"
-msgstr "Den hårda länken kunde inte skapas"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+"Kan inte hämta information om källfil för hårdlänk ”%s”\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+"Kan inte skapa mål för hårdlänk ”%s”\n"
+"%s"
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
+msgstr "Kan inte skapa mål för hårdlänk ”%s”"
 
 #, c-format
 msgid ""
@@ -2860,19 +2900,14 @@ msgstr "%.2f kB/s"
 msgid "%ld B/s"
 msgstr "%ld B/s"
 
-msgid "Target file already exists!"
-msgstr "Målfilen finns redan!"
+msgid "New     :"
+msgstr "Ny      :"
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "Ny       : %s, size %s"
+msgid "Existing:"
+msgstr "Existerande:"
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "Nuvarande: %s, size %s"
-
-msgid "Overwrite this target?"
-msgstr "Skriv över målfilen?"
+msgid "Overwrite this file?"
+msgstr "Skriv över denna fil?"
 
 msgid "A&ppend"
 msgstr "&Lägg till"
@@ -2880,14 +2915,20 @@ msgstr "&Lägg till"
 msgid "&Reget"
 msgstr "&Hämta om"
 
-msgid "Overwrite all targets?"
-msgstr "Skriv över alla målfiler?"
+msgid "Overwrite all files?"
+msgstr "Skriv över alla filer?"
 
-msgid "&Update"
-msgstr "&Uppdatera"
+msgid "Don't overwrite with &zero length file"
+msgstr "Skriv inte över med &noll-längdsfil"
 
-msgid "If &size differs"
-msgstr "Om s&torleken skiljer"
+msgid "&Older"
+msgstr "&Gammal"
+
+msgid "S&maller"
+msgstr "M&indre"
+
+msgid "&Size differs"
+msgstr "&Storlek skiljer sig"
 
 msgid "File exists"
 msgstr "Filen finns"
@@ -3034,11 +3075,11 @@ msgstr[1] "Klar (ignorerade %zu kataloger)"
 
 #, c-format
 msgid "Find File: \"%s\". Content: \"%s\""
-msgstr ""
+msgstr "Hitta fil: ”%s”. Innehåll: ”%s”"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Find File: \"%s\""
-msgstr "Sök Fil"
+msgstr "Hitta fil: ”%s”"
 
 msgid "Searching"
 msgstr "Söker"
@@ -3381,6 +3422,9 @@ msgstr "V&isa katalogstorlekar"
 msgid "Command &history"
 msgstr "Kommando-&historik"
 
+msgid "Viewed/edited files hi&story"
+msgstr ""
+
 msgid "Di&rectory hotlist"
 msgstr "Katalog&favoriter"
 
@@ -3606,6 +3650,9 @@ msgstr "Avmarkera"
 msgid "Do you really want to execute?"
 msgstr "Vill du verkligen exekvera?"
 
+msgid "Cannot read directory contents"
+msgstr "Kan inte läsa kataloginnehåll"
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "Det angivna formatet ser ogiltigt ut, faller tillbaka till standard."
 
@@ -3792,6 +3839,16 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr "Hemkatalogsökvägen är inte absolut"
 
+#, fuzzy
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+"GNU Midnight Commander körs redan\n"
+"i den här terminalen. Underskal-\n"
+"support kommer att inaktiveras."
+
 #, c-format
 msgid ""
 "\n"
@@ -3822,15 +3879,6 @@ msgstr ""
 "Sparning av filen %s misslyckades:\n"
 "%s"
 
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"GNU Midnight Commander körs redan\n"
-"i den här terminalen. Underskal-\n"
-"support kommer att inaktiveras."
-
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "Kan inte öppna namngiven tunnel %s\n"
@@ -3842,51 +3890,71 @@ msgstr "Skalet är fortfarande aktivt. Avsluta ändå?"
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Varning: Kan inte byta till %s.\n"
 
-msgid "Using the S-Lang library with terminfo database\n"
-msgstr "Använder S-Lang-biblioteket med terminfo-databas\n"
+#, fuzzy
+msgid "With builtin Editor and Aspell support"
+msgstr "Med inbyggd redigerare och stöd för aspell\n"
 
-msgid "Using the ncurses library\n"
-msgstr "Använder ncurses-biblioteket\n"
-
-msgid "Using the ncursesw library\n"
-msgstr "Använder ncursesw-biblioteket\n"
-
-msgid "With builtin Editor\n"
+#, fuzzy
+msgid "With builtin Editor"
 msgstr "Med inbyggd editor\n"
 
-msgid "With optional subshell support\n"
+#, fuzzy
+msgid "With optional subshell support"
 msgstr "Med valbar underskalsupport\n"
 
-msgid "With subshell support as default\n"
+#, fuzzy
+msgid "With subshell support as default"
 msgstr "Med underskalsupport förvalt\n"
 
-msgid "With support for background operations\n"
+#, fuzzy
+msgid "With support for background operations"
 msgstr "Med stöd för bakgrundsoperationer\n"
 
-msgid "With mouse support on xterm and Linux console\n"
+#, fuzzy
+msgid "With mouse support on xterm and Linux console"
 msgstr "Med stöd för mus på xterm och linuxkonsoll\n"
 
-msgid "With mouse support on xterm\n"
+#, fuzzy
+msgid "With mouse support on xterm"
 msgstr "Med stöd för mus på xterm\n"
 
-msgid "With support for X11 events\n"
+#, fuzzy
+msgid "With support for X11 events"
 msgstr "Med stöd för X11-händelser\n"
 
-msgid "With internationalization support\n"
+#, fuzzy
+msgid "With internationalization support"
 msgstr "Med internationaliseringsstöd\n"
 
-msgid "With multiple codepages support\n"
+#, fuzzy
+msgid "With multiple codepages support"
 msgstr "Med stöd för flera teckenöversättningar\n"
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
 msgstr "Byggd med GLib %d.%d.%d\n"
 
+#, fuzzy, c-format
+msgid "Built with S-Lang %s with terminfo database\n"
+msgstr "Använder S-Lang-biblioteket med terminfo-databas\n"
+
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Built with ncursesw %s\n"
+msgstr "Använder ncursesw-biblioteket\n"
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
 msgid "Virtual File Systems:"
 msgstr "Virtuella filsystem:"
 
-#, c-format
 msgid "Data types:"
 msgstr "Datatyper:"
 
@@ -4502,3 +4570,6 @@ msgstr "Fortsätt från början?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Kan inte hämta en lokal kopia av /ftp://some.host/editme.txt"
+
+#~ msgid "Using the ncurses library\n"
+#~ msgstr "Använder ncurses-biblioteket\n"

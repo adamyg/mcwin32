@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-04-30 12:37+0000\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2019-12-16 01:49+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Dutch (http://www.transifex.com/mc/mc/language/nl/)\n"
 "Language: nl\n"
@@ -487,6 +487,27 @@ msgstr "Shift"
 
 msgid "The TERM environment variable is unset!\n"
 msgstr "De TERM omgevingsvariabele is niet gezet!\n"
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr ""
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr "Kan pipe streams niet aanmaken"
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -1368,6 +1389,9 @@ msgstr "&Nieuw"
 msgid "&Close"
 msgstr "&Sluiten"
 
+msgid "&History..."
+msgstr ""
+
 msgid "Save &as..."
 msgstr "&Opslaan als..."
 
@@ -1651,7 +1675,7 @@ msgstr ""
 "Eeen gebruikersvriendelijke tekstbewerker\n"
 "geschreven voor de Midnight Commander"
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1803,6 +1827,13 @@ msgstr "Er kan geen lokale kopie van %s worden opgehaald"
 
 msgid "The shell is already running a command"
 msgstr "De shell voert al een opdracht uit"
+
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+"Geen xterm en geen Linux console; \n"
+"de vensters kunnen niet geschakeld worden."
 
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Typ 'exit' om naar de Midnight Commander terug te keren"
@@ -2364,13 +2395,6 @@ msgstr ""
 "Beide panelen moeten in de listingsmodus\n"
 "staan om dit commando te gebruiken"
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-"Geen xterm en geen Linux console; \n"
-"de vensters kunnen niet geschakeld worden."
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr "'%s' is  geen symbolische link"
@@ -2436,9 +2460,6 @@ msgid ""
 msgstr ""
 "Veranderen naar map \"%s\" mislukt \n"
 "%s "
-
-msgid "Cannot read directory contents"
-msgstr "Kan mapinhoud niet lezen"
 
 msgid "Parameter"
 msgstr "Parameter"
@@ -2520,8 +2541,21 @@ msgstr "bestanden/mappen"
 msgid " with source mask:"
 msgstr " met bronmasker:"
 
-msgid "Cannot make the hardlink"
-msgstr "Harde link maken mislukt"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2857,19 +2891,14 @@ msgstr "%.2f KB/s"
 msgid "%ld B/s"
 msgstr "%ld B/s"
 
-msgid "Target file already exists!"
-msgstr "Doelbestand  bestaat reeds!"
+msgid "New     :"
+msgstr ""
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "Nieuw : %s, grootte %s"
+msgid "Existing:"
+msgstr ""
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "Bestaand: %s, grootte %s"
-
-msgid "Overwrite this target?"
-msgstr "Dit doel overschrijven?"
+msgid "Overwrite this file?"
+msgstr ""
 
 msgid "A&ppend"
 msgstr "&Toevoegen"
@@ -2877,14 +2906,20 @@ msgstr "&Toevoegen"
 msgid "&Reget"
 msgstr "&Reget"
 
-msgid "Overwrite all targets?"
-msgstr "Alle doelen overschrijven?"
+msgid "Overwrite all files?"
+msgstr ""
 
-msgid "&Update"
-msgstr "Verversen"
+msgid "Don't overwrite with &zero length file"
+msgstr ""
 
-msgid "If &size differs"
-msgstr "Indien grootte ver&schilt"
+msgid "&Older"
+msgstr ""
+
+msgid "S&maller"
+msgstr ""
+
+msgid "&Size differs"
+msgstr ""
 
 msgid "File exists"
 msgstr "Bestand bestaat"
@@ -3033,9 +3068,9 @@ msgstr[1] "Klaar (%zu directories genegeerd)"
 msgid "Find File: \"%s\". Content: \"%s\""
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Find File: \"%s\""
-msgstr "Bestand zoeken"
+msgstr ""
 
 msgid "Searching"
 msgstr "Aan het zoeken"
@@ -3378,6 +3413,9 @@ msgstr "Toon mappen&grootte"
 msgid "Command &history"
 msgstr "&Opdrachtengeschiedenis"
 
+msgid "Viewed/edited files hi&story"
+msgstr ""
+
 msgid "Di&rectory hotlist"
 msgstr "&Mappen hotslist"
 
@@ -3603,6 +3641,9 @@ msgstr "Selectie wissen"
 msgid "Do you really want to execute?"
 msgstr "Wilt u die opdracht echt uitvoeren? "
 
+msgid "Cannot read directory contents"
+msgstr "Kan mapinhoud niet lezen"
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr ""
 "Door gebruiker gedefinieerde formaat lijkt onjuist, gebruik de standaard."
@@ -3791,6 +3832,16 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr "Pad van thuismap is niet absoluut"
 
+#, fuzzy
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+"GNU Midnight Commander draait al in\n"
+"deze terminal.\n"
+"Subshell support wordt uitgeschakeld."
+
 #, c-format
 msgid ""
 "\n"
@@ -3821,15 +3872,6 @@ msgstr ""
 " Kan bestand %s niet opslaan: \n"
 " %s "
 
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"GNU Midnight Commander draait al in\n"
-"deze terminal.\n"
-"Subshell support wordt uitgeschakeld."
-
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "Openen van 'named pipe' %s mislukt\n"
@@ -3841,51 +3883,71 @@ msgstr "De shell is nog steeds actief. Toch stoppen?"
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Waarschuwing: Schakelen naar %s mislukt.\n"
 
-msgid "Using the S-Lang library with terminfo database\n"
-msgstr "Gebruiken van S-Lang bibliotheek met terminfo database\n"
-
-msgid "Using the ncurses library\n"
-msgstr "Gebruiken van ncurses bibliotheek\n"
-
-msgid "Using the ncursesw library\n"
-msgstr "Gebruiken van ncursesw bibliotheek\n"
-
-msgid "With builtin Editor\n"
+#, fuzzy
+msgid "With builtin Editor and Aspell support"
 msgstr "Met ingebouwde editor\n"
 
-msgid "With optional subshell support\n"
+#, fuzzy
+msgid "With builtin Editor"
+msgstr "Met ingebouwde editor\n"
+
+#, fuzzy
+msgid "With optional subshell support"
 msgstr "Met optionele subshell ondersteuning\n"
 
-msgid "With subshell support as default\n"
+#, fuzzy
+msgid "With subshell support as default"
 msgstr "Met subshell ondersteuning als standaard\n"
 
-msgid "With support for background operations\n"
+#, fuzzy
+msgid "With support for background operations"
 msgstr "Met ondersteuning voor achtergrondtaken\n"
 
-msgid "With mouse support on xterm and Linux console\n"
+#, fuzzy
+msgid "With mouse support on xterm and Linux console"
 msgstr "Met muisondersteuning voor xterms en de Linux-console\n"
 
-msgid "With mouse support on xterm\n"
+#, fuzzy
+msgid "With mouse support on xterm"
 msgstr "Met muisondersteuning voor xterms.\n"
 
-msgid "With support for X11 events\n"
+#, fuzzy
+msgid "With support for X11 events"
 msgstr "Met ondersteuning voor X11 signalen\n"
 
-msgid "With internationalization support\n"
+#, fuzzy
+msgid "With internationalization support"
 msgstr "Met ondersteuning voor internationalisatie\n"
 
-msgid "With multiple codepages support\n"
+#, fuzzy
+msgid "With multiple codepages support"
 msgstr "Met ondersteuning voor meerdere karaktersets\n"
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
 msgstr "Gebouwd met GLib %d.%d.%d\n"
 
+#, fuzzy, c-format
+msgid "Built with S-Lang %s with terminfo database\n"
+msgstr "Gebruiken van S-Lang bibliotheek met terminfo database\n"
+
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Built with ncursesw %s\n"
+msgstr "Gebruiken van ncursesw bibliotheek\n"
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
 msgid "Virtual File Systems:"
 msgstr "Virtuele Bestandssystemen:"
 
-#, c-format
 msgid "Data types:"
 msgstr "Datatypen:"
 
@@ -4493,3 +4555,6 @@ msgstr "Doorgaan vanaf het begin?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Kan geen lokale versie van /ftp://some.host/editme.txt ophalen"
+
+#~ msgid "Using the ncurses library\n"
+#~ msgstr "Gebruiken van ncurses bibliotheek\n"

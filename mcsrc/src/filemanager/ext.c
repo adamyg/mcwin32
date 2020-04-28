@@ -1,7 +1,7 @@
 /*
    Extension dependent execution.
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -359,7 +359,7 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t * filename_vpath)
 static void
 exec_extension_view (void *target, char *cmd, const vfs_path_t * filename_vpath, int start_line)
 {
-#if !defined(WIN32) // APY, c++
+#if !defined(WIN32) //WIN32, C11
     mcview_mode_flags_t def_flags = {
         /* *INDENT-OFF* */
         .wrap  = FALSE,
@@ -372,7 +372,7 @@ exec_extension_view (void *target, char *cmd, const vfs_path_t * filename_vpath,
 
     mcview_mode_flags_t changed_flags;
 
-#if defined(WIN32) // APY, c++
+#if defined(WIN32) //WIN32, C11
     mcview_mode_flags_t def_flags = {0};
     def_flags.wrap  = FALSE;
     def_flags.hex   = mcview_global_flags.hex;
@@ -558,10 +558,13 @@ exec_extension (void *target, const vfs_path_t * filename_vpath, const char *lc_
         if (mc_global.tty.console_flag != '\0')
         {
             handle_console (CONSOLE_SAVE);
-            if (output_lines && mc_global.keybar_visible)
-                show_console_contents (output_start_y,
-                                       LINES - mc_global.keybar_visible -
-                                       output_lines - 1, LINES - mc_global.keybar_visible - 1);
+            if (output_lines != 0 && mc_global.keybar_visible)
+            {
+                unsigned char end_line;
+
+                end_line = LINES - (mc_global.keybar_visible ? 1 : 0) - 1;
+                show_console_contents (output_start_y, end_line - output_lines, end_line);
+            }
         }
 #if defined(WIN32)  //WIN32, command
         w32_unlink (vfs_path_as_str (script_vpath));
@@ -1009,7 +1012,7 @@ regex_command_for (void *target, const vfs_path_t * filename_vpath, const char *
             }
             else if (strncmp (p, "shell/", 6) == 0)
             {
-#if defined(__WATCOMC__) //APY, calling
+#if defined(__WATCOMC__) //WIN32, calling
                 int (__watcall * cmp_func) (const char *s1, const char *s2, size_t n) = strncmp;
 #else
                 int (*cmp_func) (const char *s1, const char *s2, size_t n) = strncmp;

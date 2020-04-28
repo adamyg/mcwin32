@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_langinfo_c,"$Id: w32_langinfo.c,v 1.5 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_langinfo_c,"$Id: w32_langinfo.c,v 1.6 2020/04/28 22:59:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -75,11 +75,10 @@ LIBW32_API const char *
 nl_langinfo(nl_item item)
 {
     switch (item) {
-    case CODESET:               /* assume terminal is UTF-8 */
-        return "UTF-8";
+    case CODESET:                               /* assume terminal is UTF-8 */
+        return "UTF-8";                         /* TODO: Hook vio driver*/
     }
     return "n/a";
 }
 
 /*end*/
-

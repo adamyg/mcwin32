@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_read_c,"$Id: w32_read.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_read_c,"$Id: w32_read.c,v 1.7 2020/04/23 00:09:36 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -285,7 +285,7 @@ __CIDENT_RCSID(gr_w32_read_c,"$Id: w32_read.c,v 1.6 2018/10/12 00:52:04 cvsuser 
 LIBW32_API int
 w32_read(int fildes, void *buf, size_t nbyte)
 {
-    SOCKET s = -1;
+    SOCKET s = (SOCKET)-1;
     int ret;
 
     if (fildes < 0) {

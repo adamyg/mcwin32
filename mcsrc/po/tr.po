@@ -6,6 +6,7 @@
 # Hüsamettin Ertürk <hsmertk@gmail.com>, 2016
 # Muhammet Kara <muhammetk@gmail.com>, 2014
 # Muhammet Kara <muhammetk@gmail.com>, 2014
+# Serdar Sağlam <teknomobil@msn.com>, 2019-2020
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # yusuf <yusuf.aydemir@pisilinux.org>, 2015-2016
 # yusuf <yusuf.aydemir@pisilinux.org>, 2016-2017
@@ -13,9 +14,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-04-30 12:37+0000\n"
-"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2020-01-18 12:57+0000\n"
+"Last-Translator: Serdar Sağlam <teknomobil@msn.com>\n"
 "Language-Team: Turkish (http://www.transifex.com/mc/mc/language/tr/)\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
@@ -113,7 +114,7 @@ msgid "Invalid character"
 msgstr "Geçersiz karakter"
 
 msgid "Unmatched quotes character"
-msgstr ""
+msgstr "Eşleşmeyen tırnak işareti karakteri"
 
 #, c-format
 msgid ""
@@ -183,13 +184,13 @@ msgstr ""
 "Varsayılan önyüz yüklendi"
 
 msgid "True color not supported with ncurses."
-msgstr ""
+msgstr "Gerçek renk ncurses ile desteklenmiyor."
 
 msgid "True color not supported in this slang version."
-msgstr ""
+msgstr "Gerçek renk bu slang sürümünde desteklenmiyor."
 
 msgid "Your terminal doesn't even seem to support 256 colors."
-msgstr ""
+msgstr "Uçbiriminiz 256 rengi bile desteklemiyor gibi görünüyor."
 
 msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
 msgstr ""
@@ -480,6 +481,27 @@ msgstr "Shift"
 msgid "The TERM environment variable is unset!\n"
 msgstr "TERM çevre değişkeni atanmamış!\n"
 
+msgid "Cannot check SIGWINCH pipe"
+msgstr ""
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr "Boru akışı oluşturulamadı"
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
+
 #, c-format
 msgid ""
 "Screen size %dx%d is not supported.\n"
@@ -657,7 +679,7 @@ msgid "Print last working directory to specified file"
 msgstr "Belirlenen dosyaya son çalışılan dizini yaz"
 
 msgid "<file>"
-msgstr ""
+msgstr "<file>"
 
 msgid "Enables subshell support (default)"
 msgstr "Altkabuk desteğini etkinleştirir (öntanımlı)"
@@ -672,7 +694,7 @@ msgid "Set debug level"
 msgstr "Hata ayıklama seviyesini ayarla"
 
 msgid "<integer>"
-msgstr ""
+msgstr "<integer>"
 
 msgid "Launches the file viewer on a file"
 msgstr "Bir dosyayı dosya göstericide açar"
@@ -681,7 +703,7 @@ msgid "Edit files"
 msgstr "Dosyasyaları düzenle"
 
 msgid "<file> ..."
-msgstr ""
+msgstr "<file> ..."
 
 msgid "Forces xterm features"
 msgstr "xterm özelliklerini etkinleştirir"
@@ -723,7 +745,7 @@ msgid "Specifies a color configuration"
 msgstr "Bir renk yapılandırması belirtir"
 
 msgid "<string>"
-msgstr ""
+msgstr "<string>"
 
 msgid "Show mc with specified skin"
 msgstr "Mc'yi belirtilen önyüz ile göster"
@@ -1367,6 +1389,9 @@ msgstr "&Yeni"
 msgid "&Close"
 msgstr "&Kapat"
 
+msgid "&History..."
+msgstr "&Geçmiş..."
+
 msgid "Save &as..."
 msgstr "Farklı kaydet..."
 
@@ -1650,8 +1675,9 @@ msgstr ""
 "Kullanıcı dostu bir metin düzenleyici\n"
 "Midnight Commander için yazıldı"
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
-msgstr ""
+#, fuzzy
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
+msgstr "Telif hakkı (C) 1996-2019 Özgür Yazılım Vakfı"
 
 msgid "About"
 msgstr "Hakkında"
@@ -1805,6 +1831,13 @@ msgstr "`%s'in yerel kopyası alınamadı"
 msgid "The shell is already running a command"
 msgstr "Kabukta halen bir komut etkin"
 
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+"Bir xterm ya da Linux konsolu değil;\n"
+" Paneller değiştirilemez."
+
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Midnight Commander'a dönmek için 'exit' yazın"
 
@@ -1841,10 +1874,10 @@ msgstr ""
 " %s"
 
 msgid "&Ignore"
-msgstr ""
+msgstr "&Yoksay"
 
 msgid "Ignore &all"
-msgstr ""
+msgstr "Tümünü &yoksay"
 
 msgid "&Retry"
 msgstr "&Tekrar"
@@ -1942,7 +1975,7 @@ msgid "Sa&fe delete"
 msgstr "güvenilir si&lme"
 
 msgid "Safe overwrite"
-msgstr ""
+msgstr "Güvenli üzerine yaz"
 
 msgid "A&uto save setup"
 msgstr "&Ayarları otomatik kaydet"
@@ -2365,13 +2398,6 @@ msgstr ""
 "Bu komutu kullanabilmek için\n"
 "iki pano da listeleme kipinde olmalıdır"
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-"Bir xterm ya da Linux konsolu değil;\n"
-" Paneller değiştirilemez."
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr "'%s' sembolik bağlantı değil"
@@ -2437,9 +2463,6 @@ msgid ""
 msgstr ""
 " \"%s\" dizinine geçilemedi \n"
 " %s "
-
-msgid "Cannot read directory contents"
-msgstr "Dizin içeriği okunamadı"
 
 msgid "Parameter"
 msgstr "Parametre"
@@ -2519,8 +2542,21 @@ msgstr "dosya/dizin"
 msgid " with source mask:"
 msgstr " bu maskla:"
 
-msgid "Cannot make the hardlink"
-msgstr "Sabit bağ oluşturulamadı"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2855,19 +2891,14 @@ msgstr "%.2f KB/s"
 msgid "%ld B/s"
 msgstr "%ld B/s"
 
-msgid "Target file already exists!"
-msgstr "Hedef dosya \"s\" zaten var!"
+msgid "New     :"
+msgstr "Yeni     :"
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "Yeni     :%s, boyut %s"
+msgid "Existing:"
+msgstr "Varolan:"
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "Mevcut: %s, boyut %s"
-
-msgid "Overwrite this target?"
-msgstr "Üzerine yazılsın mı?"
+msgid "Overwrite this file?"
+msgstr "Bu dosyanın üzerine mi?"
 
 msgid "A&ppend"
 msgstr "Sonuna &Ekle"
@@ -2875,14 +2906,20 @@ msgstr "Sonuna &Ekle"
 msgid "&Reget"
 msgstr "&Reget"
 
-msgid "Overwrite all targets?"
-msgstr "Tüm hedeflerin üstüne yazılsın mı?"
+msgid "Overwrite all files?"
+msgstr "Tüm dosyaların üzerine mi?"
 
-msgid "&Update"
-msgstr "&Güncelle"
+msgid "Don't overwrite with &zero length file"
+msgstr "&Sıfır uzunlukta dosya ile üzerine yazılmasın"
 
-msgid "If &size differs"
-msgstr "Boyut &Farklıysa"
+msgid "&Older"
+msgstr "&Eski"
+
+msgid "S&maller"
+msgstr "&Küçük"
+
+msgid "&Size differs"
+msgstr "&Boyut farkı"
 
 msgid "File exists"
 msgstr "Dosya var"
@@ -3029,11 +3066,11 @@ msgstr[1] ""
 
 #, c-format
 msgid "Find File: \"%s\". Content: \"%s\""
-msgstr ""
+msgstr "Dosya Bul: \"%s\". İçerik: \"%s\""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Find File: \"%s\""
-msgstr "Dosyayı bul"
+msgstr "Dosya Bul: \"%s\""
 
 msgid "Searching"
 msgstr "Aranıyor"
@@ -3376,6 +3413,9 @@ msgstr "diz&in boyutlarını göster"
 msgid "Command &history"
 msgstr "Komut Geçmişi"
 
+msgid "Viewed/edited files hi&story"
+msgstr "Görüntülenen/düzenlenen dosya &geçmişi"
+
 msgid "Di&rectory hotlist"
 msgstr "Dizin listesi"
 
@@ -3601,6 +3641,9 @@ msgstr "Seçme"
 msgid "Do you really want to execute?"
 msgstr "Gerçekten çalıştırmak istiyor musunuz?"
 
+msgid "Cannot read directory contents"
+msgstr "Dizin içeriği okunamadı"
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "Kullanıcı tanımlı biçim geçersiz: öntanımlısı kullanılacak."
 
@@ -3788,6 +3831,16 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr "Ev dizini yolu mutlak değil"
 
+#, fuzzy
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+"GNU Midnight Commander zaten\n"
+"bu terminalde çalışıyoryor.\n"
+"Altkabuk desteği kapatılacak."
+
 #, c-format
 msgid ""
 "\n"
@@ -3818,15 +3871,6 @@ msgstr ""
 "%s dosyası kaydedilemedi:\n"
 "%s"
 
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"GNU Midnight Commander zaten\n"
-"bu terminalde çalışıyoryor.\n"
-"Altkabuk desteği kapatılacak."
-
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr " %s isimli veri yolu açılamadı\n"
@@ -3838,51 +3882,71 @@ msgstr "Kabuk hala etkin. Yine de çıkılsın mı?"
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Uyarı: %s'e geçilemedi.\n"
 
-msgid "Using the S-Lang library with terminfo database\n"
-msgstr "Terim bilgisi veritabanı ile S-Lang kütüphanesi kullanılarak\n"
+#, fuzzy
+msgid "With builtin Editor and Aspell support"
+msgstr "Yerleşik düzenleyici ve Aspell desteği ile\n"
 
-msgid "Using the ncurses library\n"
-msgstr "Ncurses kütüphanesini kullanılarak\n"
-
-msgid "Using the ncursesw library\n"
-msgstr "ncursesw kitaplığı kullanılarak\n"
-
-msgid "With builtin Editor\n"
+#, fuzzy
+msgid "With builtin Editor"
 msgstr "Yerleşik Düzenleyiciyle\n"
 
-msgid "With optional subshell support\n"
+#, fuzzy
+msgid "With optional subshell support"
 msgstr "Seçimlik altkabuk desteğiyle\n"
 
-msgid "With subshell support as default\n"
+#, fuzzy
+msgid "With subshell support as default"
 msgstr "Öntanımlı olarak altkabuk desteğiyle\n"
 
-msgid "With support for background operations\n"
+#, fuzzy
+msgid "With support for background operations"
 msgstr "Ardalan işlemleri desteğiyle\n"
 
-msgid "With mouse support on xterm and Linux console\n"
+#, fuzzy
+msgid "With mouse support on xterm and Linux console"
 msgstr "xterm ve Linux konsolunda fare desteği ile\n"
 
-msgid "With mouse support on xterm\n"
+#, fuzzy
+msgid "With mouse support on xterm"
 msgstr "xterm üzerinde fare desteği ile\n"
 
-msgid "With support for X11 events\n"
+#, fuzzy
+msgid "With support for X11 events"
 msgstr "X11 eylemleri desteğiyle\n"
 
-msgid "With internationalization support\n"
+#, fuzzy
+msgid "With internationalization support"
 msgstr "i18n desteğiyle\n"
 
-msgid "With multiple codepages support\n"
+#, fuzzy
+msgid "With multiple codepages support"
 msgstr "Çoklu karakter kümesi desteğiyle\n"
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
 msgstr "Glib ile yapılandır %d.%d.%d\n"
 
+#, fuzzy, c-format
+msgid "Built with S-Lang %s with terminfo database\n"
+msgstr "Terim bilgisi veritabanı ile S-Lang kütüphanesi kullanılarak\n"
+
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Built with ncursesw %s\n"
+msgstr "ncursesw kitaplığı kullanılarak\n"
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
 msgid "Virtual File Systems:"
 msgstr "Sanal Dosya Sistemleri:"
 
-#, c-format
 msgid "Data types:"
 msgstr "Veri tipleri:"
 
@@ -3890,7 +3954,7 @@ msgid "Home directory:"
 msgstr "Ev dizini:"
 
 msgid "Profile root directory:"
-msgstr ""
+msgstr "Profil kök dizini:"
 
 msgid "System data"
 msgstr "Sistem verisi"
@@ -4250,7 +4314,7 @@ msgstr "sftp: Dosya okumak için hiç dosya işleyici verisi mevcut değil "
 
 #, c-format
 msgid "sftp: socket error: %s"
-msgstr ""
+msgstr "sftp: soket hatası: %s"
 
 #, c-format
 msgid "sftp: (Ctrl-G break) Listing... %s"
@@ -4499,3 +4563,6 @@ msgstr "Başından devam edilsin mi?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr " /ftp://some.host/editme.txt 'in yerel kopyası alınamadı"
+
+#~ msgid "Using the ncurses library\n"
+#~ msgstr "Ncurses kütüphanesini kullanılarak\n"

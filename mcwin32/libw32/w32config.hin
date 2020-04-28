@@ -1,16 +1,16 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_w32config_h, "$Id: w32config.hin,v 1.8 2018/10/18 22:38:15 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_w32config_h, "$Id: w32config.hin,v 1.9 2020/04/23 00:08:42 cvsuser Exp $")
 __CPRAGMA_ONCE
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.8 2018/10/18 22:38:15 cvsuser Exp $
+/* $Id: w32config.hin,v 1.9 2020/04/23 00:08:42 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
  * Windows targets (see makelib.pl for details).
  *
- * Copyright (c) 1998 - 2018, Adam Young.
+ * Copyright (c) 1998 - 2020, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -52,13 +52,19 @@ __CPRAGMA_ONCE
 #pragma warning (disable : 4706)                // assignment within conditional expression
 #pragma warning (disable : 4996)
 
+#if !defined(__cplusplus)
+    /*
+     *  <system_error> is incompatible with _CRT_NO_POSIX_ERROR_CODES.
+     */
 #if !defined(_CRT_NO_POSIX_ERROR_CODES)
 #define _CRT_NO_POSIX_ERROR_CODES               // disable POSIX error number, see <errno.h>
+#endif
 #endif
 
 #elif defined(__WATCOMC__)
 #if !defined(__cplusplus)
 #pragma disable_message(136)                    // comparison equivalent to 'unsigned == 0'
+#pragma disable_message(138)                    // no newline at end of file
 #endif
 #pragma disable_message(201)                    // unreachable code
 #pragma disable_message(202)                    // symbol 'xxx' has been defined, but not referenced
@@ -162,7 +168,6 @@ __CPRAGMA_ONCE
 #undef HAVE_SYS_MOUNT_H
 
 #undef HAVE_FENV_H
-#undef HAVE_FECLEAREXCEPT
 
 #undef HAVE_FEATURES_H
 #undef HAVE_STDALIGN_H
@@ -270,9 +275,14 @@ __CPRAGMA_ONCE
  *  Platform dependancies
  */
 #if !defined(RETSIGTYPE)
-#if defined(__WATCOMC__) && (__WATCOMC__ >= 1300)
+#if defined(__WATCOMC__)
+#if (__WATCOMC__ >= 1300)
 #define RETSIGTYPE void __watcall
-#elif defined(__WATCOMC__) || defined(_MSC_VER)
+#else
+#define RETSIGTYPE void
+#endif
+#elif defined(_MSC_VER)
+#define SIGNALRETURNSINT
 #define RETSIGTYPE int
 #endif
 #endif /*RETSIGTYPE*/
@@ -289,6 +299,7 @@ __CPRAGMA_ONCE
 
 #undef HAVE_INLINE
 #undef HAVE___INLINE
+#undef HAVE___FORCEINLINE
 
 #undef HAVE_DECL_SIZE_MAX
 #undef HAVE_DECL_SSIZE_MAX
@@ -398,12 +409,15 @@ __CPRAGMA_ONCE
 #undef HAVE_PUTENV
 
         /* system library */
+#undef HAVE_BCOPY
 #undef HAVE_BCMP
 #undef HAVE_BZERO
 
 #undef HAVE_MEMCMP
 #undef HAVE_MEMSET
 #undef HAVE_MEMMOVE
+#undef HAVE_MEMCCPY
+#undef HAVE__MEMCCPY
 
 #undef HAVE_MATHERR
 
@@ -445,9 +459,12 @@ __CPRAGMA_ONCE
 #undef HAVE_STRVERSCMP
 #undef HAVE___STRVERSCMP
 #undef HAVE_STRNLEN
+#undef HAVE_STRNDUP
 #undef HAVE_STRLCAT
 #undef HAVE_STRLCPY
 #undef HAVE_STRSEP
+#undef HAVE_STRNSTR
+#undef HAVE_STRSTR
 #undef HAVE_STRNSTR
 #undef HAVE_STRCASESTR
 #undef HAVE_STRCASESTR_L
@@ -472,6 +489,7 @@ __CPRAGMA_ONCE
 #undef HAVE_LOCALTIME_R
 #undef HAVE_GMTIME_R
 #undef HAVE_ASCTIME_R
+#undef HAVE__GET_TIMEZONE
 
 #undef HAVE_SIGSETMASK
 #undef HAVE_SIGACTION
@@ -534,6 +552,8 @@ __CPRAGMA_ONCE
 #undef HAVE__SNPRINTF
 #undef HAVE_VSNPRINTF
 #undef HAVE__VSNPRINTF
+#undef HAVE_ASPRINTF
+#undef HAVE_VASPRINTF
 
 #undef HAVE_ALLOCA
 #undef HAVE__ALLOCA
@@ -558,6 +578,17 @@ __CPRAGMA_ONCE
 
 #undef HAVE_ROUND
 #undef HAVE_NEARBYINTF
+
+#undef HAVE_FECLEAREXCEPT
+#undef HAVE_FPCLASSIFY
+#undef HAVE_ISNAN
+#undef HAVE__ISNAN
+#undef HAVE_ISINF
+#undef HAVE__ISINF
+#undef HAVE_ISFINITE
+#undef HAVE__ISFINITE
+#undef HAVE_FINITE
+#undef HAVE__FINITE
 
         /* psuedo tty */
 #undef HAVE_PTY_H

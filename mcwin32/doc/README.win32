@@ -7,11 +7,18 @@ Windows XP+/32 bit native port of GNU Midnight Commander, based on
 the current 4.8.x development stream.
 
         Version         Latest Build
+        4.8.24          216 (beta)
+
         4.8.21          214 (bug fixes)
+        4.8.21          213 (windows 10 console)
         4.8.21          209 (windows 10 console, beta)
+
         4.8.19          204 (configuration updates), 201 (sftp/ssh)
+
         4.8.14          189 (beta)
+
         4.8.13          188, 187 (beta)
+
         4.8.12          186
         4.8.11          183
         4.8.8           181
@@ -46,7 +53,7 @@ Install simply though use of the windows installer package.
 Default directories are as follows, available using the '-F' command
 line option, the installation directory maybe be changed at your option:
 
- o XP
+ o Windows XP/Vista/7/8 and 10
 
    Config directory:
         C:/Program Files/Midnight Commander/etc/
@@ -66,9 +73,14 @@ Once installed place the installation directory into your PATH. As an
 alternative keeping your PATH and dll's namespace clean, create a simple
 batch mc.bat which points to the true installation image.
 
+Alternatively, a choco package is being maintained seperately yet the 
+version may lack a little behind.
+
+   https://chocolatey.org/packages/mc
+				     
 
 Getting Started
---------------
+---------------
 
 There are a numerious resources detailing working with Midnight
 Commander, including:
@@ -87,17 +99,19 @@ Commander, including:
 Source
 ------
 
-Window native port for GNU Midnight Commander, the latest build can be
-found in the below link:
+Window native port for GNU Midnight Commander, the latest builds can be
+found at the links:
 
-   http://sourceforge.net/projects/mcwin32/
+   https://sourceforge.net/projects/mcwin32/
+   
+   https://github.com/adamyg/mcwin32
 
 
 Specific information regarding the base Midnight Commander 4.8.x engine,
 can be found at the following
 
    http://en.wikipedia.org/wiki/Midnight_Commander
-
+   
    www.midnight-commander.org
 
 

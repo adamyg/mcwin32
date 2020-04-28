@@ -1,7 +1,7 @@
 /*
    Default values for keybinding engine
 
-   Copyright (C) 2009-2018
+   Copyright (C) 2009-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -28,7 +28,7 @@
 #include <config.h>
 
 #include "lib/global.h"
-#include "lib/widget.h"         /* dialog_map, input_map, listbox_map */
+#include "lib/widget.h"         /* dialog_map, input_map, listbox_map, menu_map */
 
 #include "keybind-defaults.h"
 
@@ -38,6 +38,7 @@ GArray *main_keymap = NULL;
 GArray *main_x_keymap = NULL;
 GArray *panel_keymap = NULL;
 GArray *dialog_keymap = NULL;
+GArray *menu_keymap = NULL;
 GArray *input_keymap = NULL;
 GArray *listbox_keymap = NULL;
 GArray *tree_keymap = NULL;
@@ -97,6 +98,7 @@ static const global_keymap_ini_t default_main_keymap[] = {
     {"MenuLastSelected", "f19"},
     {"QuitQuiet", "f20"},
     {"History", "alt-h"},
+    {"EditorViewerHistory", "alt-shift-e"},
     {"DirSize", "ctrl-space"},
     /* Copy useful information to the command line */
     {"PutCurrentPath", "alt-a"},
@@ -231,6 +233,20 @@ static const global_keymap_ini_t default_dialog_keymap[] = {
     {NULL, NULL}
 };
 
+/* menubar */
+static const global_keymap_ini_t default_menu_keymap[] = {
+    {"Help", "f1"},
+    {"Left", "left; ctrl-b"},
+    {"Right", "right; ctrl-f"},
+    {"Up", "up; ctrl-p"},
+    {"Down", "down; ctrl-n"},
+    {"Home", "home; alt-lt; ctrl-a"},
+    {"End", "end; alt-gt; ctrl-e"},
+    {"Enter", "enter"},
+    {"Quit", "f10; ctrl-g; esc"},
+    {NULL, NULL}
+};
+
 /* input line */
 static const global_keymap_ini_t default_input_keymap[] = {
     /* Motion */
@@ -276,6 +292,9 @@ static const global_keymap_ini_t default_listbox_keymap[] = {
     {"PageDown", "pgdn; ctrl-v"},
     {"Delete", "delete; d"},
     {"Clear", "shift-delete; shift-d"},
+    {"View", "f3"},
+    {"Edit", "f4"},
+    {"Enter", "enter"},
     {NULL, NULL}
 };
 
@@ -475,6 +494,8 @@ static const global_keymap_ini_t default_viewer_keymap[] = {
     {"SearchBackward", "question"},
     {"SearchForwardContinue", "ctrl-s"},
     {"SearchBackwardContinue", "ctrl-r"},
+    {"SearchOppositeContinue", "shift-n"},
+    {"History", "alt-shift-e"},
     {NULL, NULL}
 };
 
@@ -509,6 +530,8 @@ static const global_keymap_ini_t default_viewer_hex_keymap[] = {
     {"SearchBackward", "question"},
     {"SearchForwardContinue", "ctrl-s"},
     {"SearchBackwardContinue", "ctrl-r"},
+    {"SearchOppositeContinue", "shift-n"},
+    {"History", "alt-shift-e"},
     {NULL, NULL}
 };
 
@@ -594,6 +617,7 @@ create_default_keymap (void)
     create_default_keymap_section (keymap, KEYMAP_SECTION_MAIN_EXT, default_main_x_keymap);
     create_default_keymap_section (keymap, KEYMAP_SECTION_PANEL, default_panel_keymap);
     create_default_keymap_section (keymap, KEYMAP_SECTION_DIALOG, default_dialog_keymap);
+    create_default_keymap_section (keymap, KEYMAP_SECTION_MENU, default_menu_keymap);
     create_default_keymap_section (keymap, KEYMAP_SECTION_INPUT, default_input_keymap);
     create_default_keymap_section (keymap, KEYMAP_SECTION_LISTBOX, default_listbox_keymap);
     create_default_keymap_section (keymap, KEYMAP_SECTION_TREE, default_tree_keymap);

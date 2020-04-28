@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.7 2020/04/23 00:09:36 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -523,9 +523,10 @@ DisplayError(
     FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
         NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&lpvMessageBuffer, 0, NULL);
 
-    _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
+    (void) _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
         "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
             args ? args : "", args ? "\n" : "" );
+    szPrintBuffer[sizeof(szPrintBuffer) - 1] = 0;
 
     if (hOutput == INVALID_HANDLE_VALUE) {
         hOutput = GetStdHandle(STD_OUTPUT_HANDLE);

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mmap_c,"$Id: w32_mmap.c,v 1.7 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mmap_c,"$Id: w32_mmap.c,v 1.8 2020/04/23 00:09:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -528,10 +528,13 @@ msync(void *addr, size_t len, int flags)
 {
     BOOL ret;
 
-    (void) flags;
     if (FALSE == (ret = FlushViewOfFile(addr, len))) {
         errno = EINVAL;
+
+    } else if (MS_SYNC & flags) {
+        //TODO - need file handle.
     }
+
     return (ret ? 0 : -1);
 }
 
@@ -606,6 +609,35 @@ munmap(void *addr, size_t len)
     }
     return (ret ? 0 : -1);
 }
+
+
+LIBW32_API int
+mlock(const void *addr, size_t len)
+{
+    BOOL ret;
+
+    if (FALSE == (ret = VirtualLock((LPVOID)addr, len))) {
+        errno = EINVAL;
+    }
+    return (ret ? 0 : -1);
+}
+
+
+LIBW32_API int
+munlock(const void *addr, size_t len)
+{
+    BOOL ret;
+
+    if (FALSE == (ret = VirtualUnlock((LPVOID)addr, len))) {
+        errno = EINVAL;
+    }
+    return (ret ? 0 : -1);
+}
+
+
+//int mlock2(const void *addr, size_t len, int flags);
+//int mlockall(int flags);
+//int munlockall(void);
 
 /*end*/
 

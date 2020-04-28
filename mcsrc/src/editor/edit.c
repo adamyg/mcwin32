@@ -1,7 +1,7 @@
 /*
    Editor low level data handling and cursor fundamentals.
 
-   Copyright (C) 1996-2018
+   Copyright (C) 1996-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -64,7 +64,6 @@
 #include "src/usermenu.h"       /* user_menu_cmd() */
 
 #include "src/setup.h"          /* option_tab_spacing */
-#include "src/learn.h"          /* learn_keys */
 #include "src/keybind-defaults.h"
 
 #include "edit-impl.h"
@@ -1806,7 +1805,7 @@ user_menu (WEdit * edit, const char *menu_file, int selected_entry)
 
     edit_cursor_move (edit, curs - edit->buffer.curs1);
     edit->force |= REDRAW_PAGE;
-    widget_redraw (WIDGET (edit));
+    widget_draw (WIDGET (edit));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2085,21 +2084,18 @@ edit_init (WEdit * edit, int y, int x, int lines, int cols, const vfs_path_t * f
 
     if (edit != NULL)
     {
+        gboolean fullscreen;
+        WRect loc_prev;
+
         /* save some widget parameters */
-        gboolean fullscreen = edit->fullscreen;
-        int y_prev = edit->y_prev;
-        int x_prev = edit->x_prev;
-        int lines_prev = edit->lines_prev;
-        int cols_prev = edit->cols_prev;
+        fullscreen = edit->fullscreen;
+        loc_prev = edit->loc_prev;
 
         edit_purge_widget (edit);
 
         /* restore saved parameters */
         edit->fullscreen = fullscreen;
-        edit->y_prev = y_prev;
-        edit->x_prev = x_prev;
-        edit->lines_prev = lines_prev;
-        edit->cols_prev = cols_prev;
+        edit->loc_prev = loc_prev;
     }
     else
     {
@@ -2110,6 +2106,8 @@ edit_init (WEdit * edit, int y, int x, int lines, int cols, const vfs_path_t * f
         w = WIDGET (edit);
         widget_init (w, y, x, lines, cols, NULL, NULL);
         w->options |= WOP_SELECTABLE | WOP_TOP_SELECT | WOP_WANT_CURSOR;
+        w->keymap = editor_map;
+        w->ext_keymap = editor_x_map;
         edit->fullscreen = TRUE;
         edit_save_size (edit);
     }
@@ -2185,13 +2183,13 @@ edit_clean (WEdit * edit)
 
     /* a stale lock, remove it */
     if (edit->locked)
-        edit->locked = unlock_file (edit->filename_vpath);
+        (void) unlock_file (edit->filename_vpath);
 
     /* save cursor position */
     if (option_save_position)
         edit_save_position (edit);
     else if (edit->serialized_bookmarks != NULL)
-        edit->serialized_bookmarks = (GArray *) g_array_free (edit->serialized_bookmarks, TRUE);
+        g_array_free (edit->serialized_bookmarks, TRUE);
 
     /* File specified on the mcedit command line and never saved */
     if (edit->delete_file)
@@ -2207,8 +2205,7 @@ edit_clean (WEdit * edit)
     vfs_path_free (edit->filename_vpath);
     vfs_path_free (edit->dir_vpath);
     mc_search_free (edit->search);
-    edit->search = NULL;
-    MC_PTR_FREE (edit->last_search_string);
+    g_free (edit->last_search_string);
 
 #ifdef HAVE_CHARSET
     if (edit->converter != str_cnv_from_term)
@@ -2239,10 +2236,7 @@ edit_reload_line (WEdit * edit, const vfs_path_t * filename_vpath, long line)
     *WIDGET (e) = *w;
     /* save some widget parameters */
     e->fullscreen = edit->fullscreen;
-    e->y_prev = edit->y_prev;
-    e->x_prev = edit->x_prev;
-    e->lines_prev = edit->lines_prev;
-    e->cols_prev = edit->cols_prev;
+    e->loc_prev = edit->loc_prev;
 
     if (edit_init (e, w->y, w->x, w->lines, w->cols, filename_vpath, line) == NULL)
     {
@@ -3934,7 +3928,7 @@ edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
         edit_begin_end_repeat_cmd (edit);
         break;
     case CK_ExtendedKeyMap:
-        edit->extmod = TRUE;
+        w->ext_mode = TRUE;
         break;
     default:
         break;

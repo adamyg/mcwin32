@@ -1,7 +1,7 @@
 /*
    Directory panel listing format editor -- for the Midnight Commander
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -44,7 +44,7 @@
 
 #include "lib/tty/tty.h"
 #include "lib/tty/key.h"
-//missing,  #include "lib/skin/skin.h"
+// #include "lib/skin/skin.h"	/* missing */
 
 /* Needed for the extern declarations of integer parameters */
 #include "dir.h"
@@ -74,10 +74,7 @@ struct listmode_button
 {
     int ret_cmd, flags, y, x;
     char *text;
-//WIN32, fix
-//  bcback callback;    
-    bcback_fn callback;
-
+    bcback_fn callback; //WIN32
 };
 
 struct listmode_label
@@ -113,7 +110,7 @@ static WRadio *radio_itemwidth;
 static char *
 select_new_item (void)
 {
-    const char **possible_items;    //APY,fix
+    const char **possible_items;    //WIN32,fix
     char *ret = NULL;
     int i;
     Listbox *mylistbox;
@@ -138,7 +135,7 @@ select_new_item (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-bplus_cback (struct WButton *b, int action)
+bplus_cback (struct WButton * button, int action)
 {
     return 0;
 }
@@ -146,7 +143,7 @@ bplus_cback (struct WButton *b, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-bminus_cback (struct WButton *b, int action)
+bminus_cback (struct WButton * button, int action)
 {
     return 0;
 }
@@ -154,7 +151,7 @@ bminus_cback (struct WButton *b, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-badd_cback (struct WButton *b, int action)
+badd_cback (struct WButton * button, int action)
 {
     char *s = select_new_item ();
     if (s)
@@ -168,7 +165,7 @@ badd_cback (struct WButton *b, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-bremove_cback (struct WButton *b, int action)
+bremove_cback (int action)
 {
     listbox_remove_current (l_listmode);
     return 0;

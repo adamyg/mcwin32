@@ -1,11 +1,20 @@
-Tue Feb  4 00:55:52 2020 adamy
+Tue Apr 28 01:16:29 2020 adamy
 
-	* Display driver buffer management tweaks, possible overflow
-	* build 214
+	* Display driver
+		- Obey console rgb palette, if available, when dealing with legacy attributes.
+		- Possible overflow condition.
+		- Disable Quick edit during panel sessions.
+		- Xterm style title ==> [Option/Layout/Xterm window title].
+		- More reactive winch and font handling.
+		- Obey '--nomouse' command line option.
 
-Wed Sep 25 22:40:28 2019 adamy
+	* use_internal_busybox option,
+		Execute several very-known unix command-line apps via busybox 
+		==> [Configuration/Use internal Busybox (Default FALSE)].
 
-	* build 213
+	* 4.8.24 merge
+	* Minor source reorg
+	* 2020
 
 Thu Apr 25 00:39:08 2019 adamy
 
@@ -285,3 +294,11 @@ Tue Aug 14 16:39:56 2012 adamy
                         $PERSONAL/home
                         $PERSONAL
                         c:/
+
+
+/*
+ * Local Variables: ***
+ * mode: changelog ***
+ * End: ***
+ */
+

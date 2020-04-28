@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-04-30 12:37+0000\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2019-12-16 01:49+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Bulgarian (http://www.transifex.com/mc/mc/language/bg/)\n"
 "Language: bg\n"
@@ -486,6 +486,27 @@ msgstr "Shift"
 
 msgid "The TERM environment variable is unset!\n"
 msgstr "Променливата TERM не е установена!\n"
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr ""
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr "Не могат да се създадат потоци на канала"
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -1357,6 +1378,9 @@ msgstr "&Нов"
 msgid "&Close"
 msgstr "&Затваряне"
 
+msgid "&History..."
+msgstr ""
+
 msgid "Save &as..."
 msgstr "Запис &като..."
 
@@ -1640,7 +1664,7 @@ msgstr ""
 "Удобен за потребителя текстови редактор\n"
 "написан за Midnight Commander-а."
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1792,6 +1816,13 @@ msgstr "Не може да се добие локално копие от %s"
 
 msgid "The shell is already running a command"
 msgstr "Обвивката вече изпълнява команда"
+
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+" Не е xterm или Линукс конзола;\n"
+"панелите не могат да бъдат показвани/скривани."
 
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Напишете 'exit', за да се върнете в Midnight Commander-а"
@@ -2352,13 +2383,6 @@ msgstr ""
 "Двата панела би трябвало да бъдат в\n"
 "списъчен режим, за да можете да използвате тази команда"
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-" Не е xterm или Линукс конзола;\n"
-"панелите не могат да бъдат показвани/скривани."
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr "'%s' не е символичен линк"
@@ -2424,9 +2448,6 @@ msgid ""
 msgstr ""
 "Не може да се chdir в \"%s\"\n"
 "%s"
-
-msgid "Cannot read directory contents"
-msgstr "Не може да се прочете съдържанието на директорията"
 
 msgid "Parameter"
 msgstr "Параметър"
@@ -2508,8 +2529,21 @@ msgstr "файла/директории"
 msgid " with source mask:"
 msgstr " с маска:"
 
-msgid "Cannot make the hardlink"
-msgstr "Не може да направи hard-линка"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2845,19 +2879,14 @@ msgstr "%.2f КБ/с"
 msgid "%ld B/s"
 msgstr "%ld Б/с"
 
-msgid "Target file already exists!"
-msgstr "Целевия файл вече съществува!"
+msgid "New     :"
+msgstr ""
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "Нови: %s, размер %s"
+msgid "Existing:"
+msgstr ""
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "Съществуващи: %s, размер %s"
-
-msgid "Overwrite this target?"
-msgstr "Да презапиша ли този?"
+msgid "Overwrite this file?"
+msgstr ""
 
 msgid "A&ppend"
 msgstr "добави"
@@ -2865,14 +2894,20 @@ msgstr "добави"
 msgid "&Reget"
 msgstr "Препрочитане"
 
-msgid "Overwrite all targets?"
-msgstr "Да презапиша ли всички?"
+msgid "Overwrite all files?"
+msgstr ""
 
-msgid "&Update"
-msgstr "Обнови"
+msgid "Don't overwrite with &zero length file"
+msgstr ""
 
-msgid "If &size differs"
-msgstr "при различен размер"
+msgid "&Older"
+msgstr ""
+
+msgid "S&maller"
+msgstr ""
+
+msgid "&Size differs"
+msgstr ""
 
 msgid "File exists"
 msgstr "Файлът съществува"
@@ -3021,9 +3056,9 @@ msgstr[1] "Завършено (игнорирани %zu директории)"
 msgid "Find File: \"%s\". Content: \"%s\""
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Find File: \"%s\""
-msgstr "Търси файл"
+msgstr ""
 
 msgid "Searching"
 msgstr "Търся"
@@ -3366,6 +3401,9 @@ msgstr "Показване на &размерите на директориит�
 msgid "Command &history"
 msgstr "Командна &история"
 
+msgid "Viewed/edited files hi&story"
+msgstr ""
+
 msgid "Di&rectory hotlist"
 msgstr "Списък за бърз достъп до дире&ктории"
 
@@ -3591,6 +3629,9 @@ msgstr "Деселектиране"
 msgid "Do you really want to execute?"
 msgstr "Наистина ли искате на изпълните това?"
 
+msgid "Cannot read directory contents"
+msgstr "Не може да се прочете съдържанието на директорията"
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "Потребителският формат изглежда невалиден, връщам се към стандартния."
 
@@ -3778,6 +3819,16 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr "Пътят до домашната папка не е абсолютен"
 
+#, fuzzy
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+"GNU Midnight Commander вече е отворен\n"
+"на този терминал.\n"
+"Поддръжката на subshell ще бъде деактивирана."
+
 #, c-format
 msgid ""
 "\n"
@@ -3809,15 +3860,6 @@ msgstr ""
 "Не може да се запише файл %s:\n"
 "%s"
 
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"GNU Midnight Commander вече е отворен\n"
-"на този терминал.\n"
-"Поддръжката на subshell ще бъде деактивирана."
-
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "Не може да се отвори именуваният канал %s\n"
@@ -3829,51 +3871,71 @@ msgstr "Обвивката е още активна. Да се напусне л
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Внимание: Не мога да премина в %s.\n"
 
-msgid "Using the S-Lang library with terminfo database\n"
-msgstr "Използване на S-Lang библиотеката с terminfo базата данни\n"
-
-msgid "Using the ncurses library\n"
-msgstr "Използване на библиотеката ncurses\n"
-
-msgid "Using the ncursesw library\n"
-msgstr "Използване на библиотеката ncursesw\n"
-
-msgid "With builtin Editor\n"
+#, fuzzy
+msgid "With builtin Editor and Aspell support"
 msgstr "С вграден редактор\n"
 
-msgid "With optional subshell support\n"
+#, fuzzy
+msgid "With builtin Editor"
+msgstr "С вграден редактор\n"
+
+#, fuzzy
+msgid "With optional subshell support"
 msgstr "С опционална поддръжка на subshell\n"
 
-msgid "With subshell support as default\n"
+#, fuzzy
+msgid "With subshell support as default"
 msgstr "С поддръжка на subshell по подразбиране\n"
 
-msgid "With support for background operations\n"
+#, fuzzy
+msgid "With support for background operations"
 msgstr "С поддръжка на фонови операции\n"
 
-msgid "With mouse support on xterm and Linux console\n"
+#, fuzzy
+msgid "With mouse support on xterm and Linux console"
 msgstr "С поддръжка на мишка в xterm и Linux конзола\n"
 
-msgid "With mouse support on xterm\n"
+#, fuzzy
+msgid "With mouse support on xterm"
 msgstr "С поддръжка на мишка в xterm\n"
 
-msgid "With support for X11 events\n"
+#, fuzzy
+msgid "With support for X11 events"
 msgstr "С поддръжка на X11 събития\n"
 
-msgid "With internationalization support\n"
+#, fuzzy
+msgid "With internationalization support"
 msgstr "С поддръжка на интернационализация\n"
 
-msgid "With multiple codepages support\n"
+#, fuzzy
+msgid "With multiple codepages support"
 msgstr "С поддръжка на много кодови страници\n"
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
 msgstr "Компилиран с GLib %d.%d.%d\n"
 
+#, fuzzy, c-format
+msgid "Built with S-Lang %s with terminfo database\n"
+msgstr "Използване на S-Lang библиотеката с terminfo базата данни\n"
+
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Built with ncursesw %s\n"
+msgstr "Използване на библиотеката ncursesw\n"
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
 msgid "Virtual File Systems:"
 msgstr "Виртуални файлови системи:"
 
-#, c-format
 msgid "Data types:"
 msgstr "Типове за данни:"
 
@@ -4489,3 +4551,6 @@ msgstr "Да се продължи ли от началото?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Не може да се изтегли локално копие на /ftp://some.host/editme.txt"
+
+#~ msgid "Using the ncurses library\n"
+#~ msgstr "Използване на библиотеката ncurses\n"

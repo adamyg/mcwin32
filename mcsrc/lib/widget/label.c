@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc.
 
    Authors:
@@ -60,7 +60,6 @@ static cb_ret_t
 label_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
 {
     WLabel *l = LABEL (w);
-    WDialog *h = w->owner;
 
     switch (msg)
     {
@@ -79,7 +78,12 @@ label_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
             if (l->transparent)
                 tty_setcolor (disabled ? DISABLED_COLOR : DEFAULT_COLOR);
             else
-                tty_setcolor (disabled ? DISABLED_COLOR : h->color[DLG_COLOR_NORMAL]);
+            {
+                const int *colors;
+
+                colors = widget_get_colors (w);
+                tty_setcolor (disabled ? DISABLED_COLOR : colors[DLG_COLOR_NORMAL]);
+            }
 
             align = (w->pos_flags & WPOS_CENTER_HORZ) != 0 ? J_CENTER_LEFT : J_LEFT;
 
@@ -96,7 +100,7 @@ label_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
                     q[0] = '\0';
                 }
 
-                widget_move (w, y, 0);
+                widget_gotoyx (w, y, 0);
                 tty_print_string (str_fit_to_term (p, w->cols, align));
 
                 if (q == NULL)
@@ -173,7 +177,7 @@ label_set_text (WLabel * label, const char *text)
         }
     }
 
-    widget_redraw (w);
+    widget_draw (w);
 
     if (newcols < w->cols)
         w->cols = newcols;

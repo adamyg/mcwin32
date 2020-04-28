@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.7 2018/10/12 00:52:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.8 2020/04/23 00:09:36 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -190,7 +190,7 @@ w32_getcwdd(char drive, char *path, int size)
         //  is the size, in characters, of the buffer that is required to hold 
         //  the path and the terminating null character.
         //
-        pathrel[0] = ('A' + nDrive);            /* A ... Z */
+        pathrel[0] = (char)('A' + nDrive);      /* A ... Z */
 
         if ((ret = GetFullPathNameA(pathrel, sizeof(t_path), t_path, &file)) == 0) {
             w32_errno_set();

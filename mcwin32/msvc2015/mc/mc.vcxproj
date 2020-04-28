@@ -79,6 +79,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\mcconfig\history.c" />
     <ClCompile Include="..\..\..\mcsrc\lib\mcconfig\paths.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/mcconfig/</ObjectFileName>
@@ -140,6 +141,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/skin/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\strutil\filevercmp.c" />
     <ClCompile Include="..\..\..\mcsrc\lib\strutil\replace.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/strutil/</ObjectFileName>
@@ -236,6 +238,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/vfs/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\background.c" />
     <ClCompile Include="..\..\..\mcsrc\lib\widget\button.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
@@ -256,10 +259,12 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\frame.c" />
     <ClCompile Include="..\..\..\mcsrc\lib\widget\gauge.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\group.c" />
     <ClCompile Include="..\..\..\mcsrc\lib\widget\groupbox.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
@@ -305,6 +310,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\lib\widget\rect.c" />
     <ClCompile Include="..\..\..\mcsrc\lib\widget\widget-common.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/widget/</ObjectFileName>
@@ -480,6 +486,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\file_history.c" />
     <ClCompile Include="..\..\..\mcsrc\src\help.c" />
     <ClCompile Include="..\..\..\mcsrc\src\keybind-defaults.c" />
     <ClCompile Include="..\..\..\mcsrc\src\learn.c" />
@@ -600,7 +607,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="..\..\drive.c" />
     <ClCompile Include="..\..\libw32\bsd_bsearch.c" />
     <ClCompile Include="..\..\libw32\bsd_qsort.c" />
     <ClCompile Include="..\..\libw32\w32_check.c">
@@ -798,15 +804,13 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="..\..\win32_glib.c" />
-    <ClCompile Include="..\..\win32_key.c" />
-    <ClCompile Include="..\..\win32_pipe.c" />
-    <ClCompile Include="..\..\win32_tty.c" />
-    <ClCompile Include="..\..\win32_utl.c" />
-    <ClCompile Include="..\..\win32_win.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\mc.rc" />
+    <ClCompile Include="..\..\src\drive.c" />
+    <ClCompile Include="..\..\src\win32_glib.c" />
+    <ClCompile Include="..\..\src\win32_key.c" />
+    <ClCompile Include="..\..\src\win32_pipe.c" />
+    <ClCompile Include="..\..\src\win32_tty.c" />
+    <ClCompile Include="..\..\src\win32_utl.c" />
+    <ClCompile Include="..\..\src\win32_win.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\mcsrc\lib\charsets.h" />
@@ -854,12 +858,15 @@
     <ClInclude Include="..\..\..\mcsrc\lib\vfs\vfs.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\vfs\xdirentry.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\background.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\button.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\buttonbar.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\check.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\dialog-switch.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\dialog.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\frame.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\gauge.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\group.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\groupbox.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\history.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\hline.h" />
@@ -871,6 +878,7 @@
     <ClInclude Include="..\..\..\mcsrc\lib\widget\menu.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\quick.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\radio.h" />
+    <ClInclude Include="..\..\..\mcsrc\lib\widget\rect.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\widget-common.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\wtools.h" />
     <ClInclude Include="..\..\..\mcsrc\src\args.h" />
@@ -910,6 +918,7 @@
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\panelize.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\tree.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\treestore.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\file_history.h" />
     <ClInclude Include="..\..\..\mcsrc\src\help.h" />
     <ClInclude Include="..\..\..\mcsrc\src\history.h" />
     <ClInclude Include="..\..\..\mcsrc\src\keybind-defaults.h" />
@@ -933,7 +942,6 @@
     <ClInclude Include="..\..\..\mcsrc\src\viewer\mcviewer.h" />
     <ClInclude Include="..\..\buildinfo.h" />
     <ClInclude Include="..\..\config.h" />
-    <ClInclude Include="..\..\drive.h" />
     <ClInclude Include="..\..\libw32\alloca.h" />
     <ClInclude Include="..\..\libw32\dirent.h" />
     <ClInclude Include="..\..\libw32\edidentifier.h" />
@@ -982,7 +990,11 @@
     <ClInclude Include="..\..\libw32\win32_ioctl.h" />
     <ClInclude Include="..\..\libw32\win32_misc.h" />
     <ClInclude Include="..\..\libw32\win32_time.h" />
-    <ClInclude Include="..\..\win32_key.h" />
+    <ClInclude Include="..\..\src\drive.h" />
+    <ClInclude Include="..\..\src\win32_key.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\mc.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{881E18BB-52B1-4B72-BEF1-55BF0A7F15BD}</ProjectGuid>

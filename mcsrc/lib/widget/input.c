@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc.
 
    Authors:
@@ -46,9 +46,9 @@
 #include "lib/skin.h"
 #include "lib/strutil.h"
 #include "lib/util.h"
-#include "lib/keybind.h"        /* global_keymap_t */
 #include "lib/widget.h"
 #include "lib/event.h"          /* mc_event_raise() */
+#include "lib/mcconfig.h"       /* mc_config_history_*() */
 
 #include "input_complete.h"
 
@@ -112,13 +112,13 @@ draw_history_button (WInput * in)
     else
         c = '|';
 
-    widget_move (in, 0, WIDGET (in)->cols - HISTORY_BUTTON_WIDTH);
+    widget_gotoyx (in, 0, WIDGET (in)->cols - HISTORY_BUTTON_WIDTH);
     disabled = widget_get_state (WIDGET (in), WST_DISABLED);
     tty_setcolor (disabled ? DISABLED_COLOR : in->color[WINPUTC_HISTORY]);
 
 #ifdef LARGE_HISTORY_BUTTON
     tty_print_string ("[ ]");
-    widget_move (in, 0, WIDGET (in)->cols - HISTORY_BUTTON_WIDTH + 1);
+    widget_gotoyx (in, 0, WIDGET (in)->cols - HISTORY_BUTTON_WIDTH + 1);
 #endif
 
     tty_print_char (c);
@@ -171,16 +171,22 @@ static void
 do_show_hist (WInput * in)
 {
     size_t len;
-    char *r;
+    history_descriptor_t hd;
 
     len = get_history_length (in->history.list);
 
-    r = history_show (&in->history.list, WIDGET (in),
-                      g_list_position (in->history.list, in->history.list));
-    if (r != NULL)
+    history_descriptor_init (&hd, WIDGET (in)->y, WIDGET (in)->x, in->history.list,
+                             g_list_position (in->history.list, in->history.list));
+    history_show (&hd);
+
+    /* in->history.list was destroyed in history_show().
+     * Apply new history and current postition to avoid use-after-free. */
+    in->history.list = hd.list;
+    in->history.current = in->history.list;
+    if (hd.text != NULL)
     {
-        input_assign_text (in, r);
-        g_free (r);
+        input_assign_text (in, hd.text);
+        g_free (hd.text);
     }
 
     /* Has history cleaned up or not? */
@@ -839,7 +845,7 @@ input_load_history (const gchar * event_group_name, const gchar * event_name,
     (void) event_group_name;
     (void) event_name;
 
-    in->history.list = history_load (ev->cfg, in->history.name);
+    in->history.list = mc_config_history_load (ev->cfg, in->history.name);
     in->history.current = in->history.list;
 
     if (in->init_from_history)
@@ -867,13 +873,13 @@ input_save_history (const gchar * event_group_name, const gchar * event_name,
     (void) event_group_name;
     (void) event_name;
 
-    if (!in->is_password && (WIDGET (in)->owner->ret_value != B_CANCEL))
+    if (!in->is_password && (DIALOG (WIDGET (in)->owner)->ret_value != B_CANCEL))
     {
         ev_history_load_save_t *ev = (ev_history_load_save_t *) data;
 
         push_history (in, in->buffer);
         if (in->history.changed)
-            history_save (ev->cfg, in->history.name, in->history.list);
+            mc_config_history_save (ev->cfg, in->history.name, in->history.list);
         in->history.changed = FALSE;
     }
 
@@ -991,6 +997,7 @@ input_new (int y, int x, const int *colors, int width, const char *def_text,
     w = WIDGET (in);
     widget_init (w, y, x, 1, width, input_callback, input_mouse_callback);
     w->options |= WOP_SELECTABLE | WOP_IS_INPUT | WOP_WANT_CURSOR;
+    w->keymap = input_map;
 
     in->color = colors;
     in->first = TRUE;
@@ -1035,15 +1042,16 @@ cb_ret_t
 input_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
 {
     WInput *in = INPUT (w);
+    WDialog *h = DIALOG (w->owner);
     cb_ret_t v;
 
     switch (msg)
     {
     case MSG_INIT:
         /* subscribe to "history_load" event */
-        mc_event_add (w->owner->event_group, MCEVENT_HISTORY_LOAD, input_load_history, w, NULL);
+        mc_event_add (h->event_group, MCEVENT_HISTORY_LOAD, input_load_history, w, NULL);
         /* subscribe to "history_save" event */
-        mc_event_add (w->owner->event_group, MCEVENT_HISTORY_SAVE, input_save_history, w, NULL);
+        mc_event_add (h->event_group, MCEVENT_HISTORY_SAVE, input_save_history, w, NULL);
         if (in->label != NULL)
             widget_set_state (WIDGET (in->label), WST_DISABLED, widget_get_state (w, WST_DISABLED));
         return MSG_HANDLED;
@@ -1087,14 +1095,14 @@ input_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
         return MSG_HANDLED;
 
     case MSG_CURSOR:
-        widget_move (in, 0, str_term_width2 (in->buffer, in->point) - in->term_first_shown);
+        widget_gotoyx (in, 0, str_term_width2 (in->buffer, in->point) - in->term_first_shown);
         return MSG_HANDLED;
 
     case MSG_DESTROY:
         /* unsubscribe from "history_load" event */
-        mc_event_del (w->owner->event_group, MCEVENT_HISTORY_LOAD, input_load_history, w);
+        mc_event_del (h->event_group, MCEVENT_HISTORY_LOAD, input_load_history, w);
         /* unsubscribe from "history_save" event */
-        mc_event_del (w->owner->event_group, MCEVENT_HISTORY_SAVE, input_save_history, w);
+        mc_event_del (h->event_group, MCEVENT_HISTORY_SAVE, input_save_history, w);
         input_destroy (in);
         return MSG_HANDLED;
 
@@ -1131,8 +1139,7 @@ input_handle_char (WInput * in, int key)
         return v;
     }
 
-    command = keybind_lookup_keymap_command (input_map, key);
-
+    command = widget_lookup_key (WIDGET (in), key);
     if (command == CK_IgnoreKey)
     {
         if (key > 255)
@@ -1166,9 +1173,7 @@ input_key_is_in_map (WInput * in, int key)
 {
     long command;
 
-    (void) in;
-
-    command = keybind_lookup_keymap_command (input_map, key);
+    command = widget_lookup_key (WIDGET (in), key);
     if (command == CK_IgnoreKey)
         return 0;
 
@@ -1286,7 +1291,7 @@ input_update (WInput * in, gboolean clear_first)
     else
         tty_setcolor (in->color[WINPUTC_MAIN]);
 
-    widget_move (in, 0, 0);
+    widget_gotoyx (in, 0, 0);
 
     if (!in->is_password)
     {
@@ -1305,7 +1310,7 @@ input_update (WInput * in, gboolean clear_first)
                 tty_setcolor (in->color[WINPUTC_MARK]);
                 if (m1 < in->term_first_shown)
                 {
-                    widget_move (in, 0, 0);
+                    widget_gotoyx (in, 0, 0);
                     tty_print_string (str_term_substring
                                       (in->buffer, in->term_first_shown,
                                        m2 - in->term_first_shown));
@@ -1314,7 +1319,7 @@ input_update (WInput * in, gboolean clear_first)
                 {
                     int sel_width, buf_width;
 
-                    widget_move (in, 0, m1 - in->term_first_shown);
+                    widget_gotoyx (in, 0, m1 - in->term_first_shown);
                     buf_width = str_term_width2 (in->buffer, m1);
                     sel_width =
                         MIN (m2 - m1, (w->cols - has_history) - (buf_width - in->term_first_shown));

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.6 2019/04/24 23:54:07 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.8 2020/04/28 22:59:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -619,9 +619,10 @@ DisplayError(
     FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
         NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &lpvMessageBuffer, 0, NULL);
 
-    _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
+    (void) _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
         "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
-        args ? args : "", args ? "\n" : "");
+            args ? args : "", args ? "\n" : "");
+    szPrintBuffer[sizeof(szPrintBuffer) - 1] = 0;
 
     WriteConsoleA(hOutput, szPrintBuffer,
         lstrlenA(szPrintBuffer), &nCharsWritten, NULL);
@@ -639,4 +640,3 @@ InternalError(
 }
 
 /*end*/
-

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_grp_c,"$Id: w32_grp.c,v 1.6 2018/10/12 00:52:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_grp_c,"$Id: w32_grp.c,v 1.7 2020/04/28 22:59:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -276,4 +276,3 @@ getgroups(int gidsetsize, gid_t grouplist[])
 }
 
 /*end*/
-

@@ -1,9 +1,9 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the PACKAGE package.
+# The Midnight Commander Italian translation strings
+# Copyright (C) 1998-2019 Free Software Foundation, Inc.
+# This file is distributed under the same license as the Midnight Commander package.
 #
 # Translators:
-# Marco Ciampa <ciampix@libero.it>, 1999-2016
+# Marco Ciampa <ciampix@libero.it>, 1999-2020
 # Andreas Troschka <signupbox001@om.it.eu.org>, 2012.
 # Giuliano Natali <diaolin@diaolin.com>, 1998.
 # Slava Zanko <slavazanko@gmail.com>, 2011.
@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-09-10 08:38+0200\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2020-01-06 12:54+0100\n"
 "Last-Translator: Marco Ciampa <ciampix@libero.it>\n"
 "Language-Team: Italian (http://www.transifex.com/projects/p/mc/language/"
 "it/)\n"
@@ -484,6 +484,27 @@ msgstr "Maiusc"
 
 msgid "The TERM environment variable is unset!\n"
 msgstr "La variabile TERM non è definita!\n"
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr "Impossibile controllare la pipe SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr "Impossibile creare la pipe SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr "Impossibile configurare la fine scrittura della pipe SIGWINCH"
+
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
+msgstr "Impossibile configurare la fine lettura della pipe SIGWINCH"
 
 #, c-format
 msgid ""
@@ -1370,6 +1391,9 @@ msgstr "&Nuovo"
 msgid "&Close"
 msgstr "&Chiudi"
 
+msgid "&History..."
+msgstr "&Cronologia..."
+
 msgid "Save &as..."
 msgstr "Sal&va come..."
 
@@ -1653,8 +1677,9 @@ msgstr ""
 "Un semplice editor di testi\n"
 "scritto per il Midnight Commander."
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2018 the Free Software Foundation"
+#, fuzzy
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
+msgstr "Copyright (C) 1996-2019 the Free Software Foundation"
 
 msgid "About"
 msgstr "Informazioni"
@@ -1805,6 +1830,13 @@ msgstr "Impossibile ricevere una copia locale di %s"
 
 msgid "The shell is already running a command"
 msgstr "La shell sta già eseguendo un comando"
+
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
+msgstr ""
+"Non è né un xterm né una console; \n"
+"i pannelli non possono essere nascosti."
 
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Battere 'exit' per tornare al Midnight Commander"
@@ -2366,13 +2398,6 @@ msgstr ""
 "Entrambi i pannelli devono essere in\n"
 "modalità lista per usare questo comando"
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-"Non è né un xterm né una console; \n"
-"i pannelli non possono essere nascosti."
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr "\"%s\" non è un coll. simbolico"
@@ -2438,9 +2463,6 @@ msgid ""
 msgstr ""
 "Non posso entrare in \"%s\"\n"
 "%s"
-
-msgid "Cannot read directory contents"
-msgstr "Impossibile leggere il contenuto della directory"
 
 msgid "Parameter"
 msgstr "Parametro"
@@ -2521,15 +2543,32 @@ msgstr "file/directory"
 msgid " with source mask:"
 msgstr " con maschera sorgente:"
 
-msgid "Cannot make the hardlink"
-msgstr "Impossibile creare il coll. fisico"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+"Non posso fare stat su coll. fisico file sorg. \"%s\"\n"
+"%s"
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+"Non posso creare il coll. fisico di dest. \"%s\"\n"
+"%s"
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
+msgstr "Non posso creare il coll. fisico di dest. \"%s\""
 
 #, c-format
 msgid ""
 "Cannot read source link \"%s\"\n"
 "%s"
 msgstr ""
-"Non posso leggere il collegamento sorgente \"%s\"\n"
+"Non posso leggere il coll. sorg. \"%s\"\n"
 "%s"
 
 msgid ""
@@ -2537,7 +2576,7 @@ msgid ""
 "\n"
 "Option Stable Symlinks will be disabled"
 msgstr ""
-"Non posso creare coll. simbolici stabili con filesystem non locali:\n"
+"Non posso creare coll. simb. stabili con filesystem non locali:\n"
 "\n"
 "L'opzione coll. simbolici stabili sarà disabilitata"
 
@@ -2546,7 +2585,7 @@ msgid ""
 "Cannot create target symlink \"%s\"\n"
 "%s"
 msgstr ""
-"Impossibile creare collegamento simb. destinazione \"%s\"\n"
+"Non posso creare il coll. simb. di dest. \"%s\"\n"
 "%s"
 
 #, c-format
@@ -2857,19 +2896,14 @@ msgstr "%.2f KB/s"
 msgid "%ld B/s"
 msgstr "%ld B/s"
 
-msgid "Target file already exists!"
-msgstr " Il file obiettivo esiste già!"
+msgid "New     :"
+msgstr "Nuovo   :"
 
-#, c-format
-msgid "New     : %s, size %s"
-msgstr "Nuovo   : %s, dim. %s"
+msgid "Existing:"
+msgstr "Esistente:"
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr "Esistente: %s, dim. %s"
-
-msgid "Overwrite this target?"
-msgstr "Sovrascrivo questo file?"
+msgid "Overwrite this file?"
+msgstr "Sovrascrivere questo file?"
 
 msgid "A&ppend"
 msgstr "Atta&cca"
@@ -2877,14 +2911,20 @@ msgstr "Atta&cca"
 msgid "&Reget"
 msgstr "&Riprendi"
 
-msgid "Overwrite all targets?"
-msgstr "Sovrascrivo tutto?"
+msgid "Overwrite all files?"
+msgstr "Sovrascrivere tutti i file?"
 
-msgid "&Update"
-msgstr "&Aggiorna"
+msgid "Don't overwrite with &zero length file"
+msgstr "Non sovrascrivere con file di lunghezza &zero"
 
-msgid "If &size differs"
-msgstr "Solo se la dimensione è &diversa"
+msgid "&Older"
+msgstr "Più vecchi&o"
+
+msgid "S&maller"
+msgstr "Più picco&lo"
+
+msgid "&Size differs"
+msgstr "Dimensione diver&sa"
 
 msgid "File exists"
 msgstr "Il file esiste"
@@ -3378,6 +3418,9 @@ msgstr "Mostra dimensione d&irectory"
 msgid "Command &history"
 msgstr "Cro&nologia comandi"
 
+msgid "Viewed/edited files hi&story"
+msgstr "Cronologia file vi&sualizzati/modificati "
+
 msgid "Di&rectory hotlist"
 msgstr "&Directory di uso frequente"
 
@@ -3603,6 +3646,9 @@ msgstr "Deseleziona"
 msgid "Do you really want to execute?"
 msgstr "Vuoi veramente eseguirlo?"
 
+msgid "Cannot read directory contents"
+msgstr "Impossibile leggere il contenuto della directory"
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "Il formato utente fornito è errato, uso il default."
 
@@ -3789,6 +3835,16 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr "Il percorso della directory home non è assoluto"
 
+#, fuzzy
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+"GNU Midnight Commander è già in funzione su\n"
+"questo terminale.\n"
+"Il supporto alla subshell verrà disabilitato."
+
 #, c-format
 msgid ""
 "\n"
@@ -3819,15 +3875,6 @@ msgstr ""
 " Impossibile salvare il file %s:\n"
 "%s"
 
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"GNU Midnight Commander è già in funzione su\n"
-"questo terminale.\n"
-"Il supporto alla subshell verrà disabilitato."
-
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "Non posso aprire la pipe %s\n"
@@ -3839,51 +3886,71 @@ msgstr "La shell è ancora attiva. Esco comunque?"
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Attenzione: non posso entrare su %s.\n"
 
-msgid "Using the S-Lang library with terminfo database\n"
-msgstr "Uso della libreria S-Lang con il database terminfo\n"
+#, fuzzy
+msgid "With builtin Editor and Aspell support"
+msgstr "Con editor integrato e supporto Aspell\n"
 
-msgid "Using the ncurses library\n"
-msgstr "Uso della libreria ncurses\n"
-
-msgid "Using the ncursesw library\n"
-msgstr "Uso della libreria ncursesw\n"
-
-msgid "With builtin Editor\n"
+#, fuzzy
+msgid "With builtin Editor"
 msgstr "Con editor integrato\n"
 
-msgid "With optional subshell support\n"
+#, fuzzy
+msgid "With optional subshell support"
 msgstr "Con supporto opzionale subshell\n"
 
-msgid "With subshell support as default\n"
+#, fuzzy
+msgid "With subshell support as default"
 msgstr "Con supporto subshell predefinito\n"
 
-msgid "With support for background operations\n"
+#, fuzzy
+msgid "With support for background operations"
 msgstr "Con supporto per processi in background\n"
 
-msgid "With mouse support on xterm and Linux console\n"
+#, fuzzy
+msgid "With mouse support on xterm and Linux console"
 msgstr "Con supporto del mouse in xterm e in console Linux\n"
 
-msgid "With mouse support on xterm\n"
+#, fuzzy
+msgid "With mouse support on xterm"
 msgstr "Con supporto del mouse in xterm\n"
 
-msgid "With support for X11 events\n"
+#, fuzzy
+msgid "With support for X11 events"
 msgstr "Con supporto per eventi X11\n"
 
-msgid "With internationalization support\n"
+#, fuzzy
+msgid "With internationalization support"
 msgstr "Con supporto internazionale\n"
 
-msgid "With multiple codepages support\n"
+#, fuzzy
+msgid "With multiple codepages support"
 msgstr "Con supporto codepages multiple\n"
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
 msgstr "Creato con GLib %d.%d.%d\n"
 
+#, fuzzy, c-format
+msgid "Built with S-Lang %s with terminfo database\n"
+msgstr "Uso della libreria S-Lang con il database terminfo\n"
+
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Built with ncursesw %s\n"
+msgstr "Uso della libreria ncursesw\n"
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
 msgid "Virtual File Systems:"
 msgstr "File System Virtuali:"
 
-#, c-format
 msgid "Data types:"
 msgstr "Tipo dati:"
 
@@ -4499,3 +4566,6 @@ msgstr "Continuare dall'inizio?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Impossibile ricevere copia locale di /ftp://un.host/modificami.txt"
+
+#~ msgid "Using the ncurses library\n"
+#~ msgstr "Uso della libreria ncurses\n"

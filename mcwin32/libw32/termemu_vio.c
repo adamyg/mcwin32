@@ -2,7 +2,7 @@
 /*
  * libtermemu console driver
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2020 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -59,6 +59,7 @@
 #pragma comment(lib, "Gdi32.lib")
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "Kernel32.lib")
+#pragma comment(lib, "Psapi.lib")
 
 #if defined(WIN32_CONSOLEEXT) && defined(WIN32_CONSOLE256)
 #define WIN32_COLORS                256
@@ -343,6 +344,9 @@ static struct {                                 /* Video state */
     struct WCHAR_COLORINFO c_color;             /* Current color 'attribute' */
     struct WCHAR_COLORINFO c_attrs[MAXOBJECTS]; /* Attribute objects */
     const char *        c_names[MAXOBJECTS];    /* Object names */
+
+    int                 console_rgb16;          /* RGB16 is available */
+    COLORREF            rgb16[16];              /* Console's color settings */
 
     COLORREF            rgb256[256+2];          /* 256-color (plus fg/bg) to RGB color map */
     BYTE                color256to16[256+2];    /* 256-color to win-16-color map */
@@ -837,8 +841,9 @@ vio_profile(int rebuild)
             TRACE_LOG(("Console Colors (BBGGRR)\n"))
             for (c = 0; c < 16; ++c) {
                 TRACE_LOG(("  [%2u] 0x%06x\n", c, (unsigned)csbix.ColorTable[c]))
-                vio.rgb256[c] = csbix.ColorTable[c];
+                vio.rgb16[c] = csbix.ColorTable[c];
             }
+            vio.console_rgb16 = 1;              // RGB16 is available
         }
 
         // current fonts
@@ -1291,8 +1296,11 @@ CopyIn(unsigned pos, unsigned cnt, WCHAR_INFO *image)
 
         (void) memset(cursor, 0, sizeof(WCHAR_INFO) * cnt);
         for (; cursor < end; ++cursor, ++icursor) {
+            cursor->Info.Flags = 0;
             cursor->Info.Attributes = icursor->Attributes;
             cursor->Char.UnicodeChar = icursor->Char.UnicodeChar;
+            cursor->Info.fg = -1;
+            cursor->Info.bg = -1;
         }
     }
 }
@@ -1591,8 +1599,14 @@ COLOR256(const struct WCHAR_COLORINFO *color, COLORREF *fg, COLORREF *bg)
         /*
          *  windows native attribute.
          */
-        t_fg = vio.rgb256[ win2vt[ color->Attributes & 0x0f] ];
-        t_bg = vio.rgb256[ win2vt[(color->Attributes & 0xf0) >> 4] ];
+        const WORD Attributes = color->Attributes;
+        if (vio.console_rgb16) {
+            t_fg = vio.rgb16[  Attributes & 0x0f ];
+            t_bg = vio.rgb16[ (Attributes & 0xf0) >> 4 ];
+        } else {
+            t_fg = vio.rgb256[ win2vt[ Attributes & 0x0f] ];
+            t_bg = vio.rgb256[ win2vt[(Attributes & 0xf0) >> 4] ];
+        }
     }
 
     if (t_fg == t_bg) {                         // default, normal

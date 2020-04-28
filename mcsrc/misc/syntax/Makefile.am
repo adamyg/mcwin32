@@ -53,6 +53,7 @@ SYNTAXFILES =			\
 	makefile.syntax		\
 	markdown.syntax		\
 	ml.syntax		\
+	meson.syntax		\
 	named.syntax		\
 	nemerle.syntax		\
 	nroff.syntax		\
@@ -88,6 +89,7 @@ SYNTAXFILES =			\
 	verilog.syntax		\
 	vhdl.syntax		\
 	xml.syntax		\
+	yabasic.syntax		\
 	yaml.syntax		\
 	yum-repo.syntax		\
 	yxx.syntax

@@ -1,7 +1,7 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# Midnight command WIN32 builds 4.8.19, as at 01/03/17
+# Midnight command WIN32 builds 4.8.24, as at 20/04/20
 #
-# Copyright (c) 2007, 2012 - 2019 Adam Young.
+# Copyright (c) 2007, 2012 - 2020 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -12,11 +12,11 @@
 #
 # The Midnight Commander is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # Notice: Portions of this text are reprinted and reproduced in electronic form. from
 # IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
@@ -37,7 +37,7 @@ PKG_TARNAME	= @PACKAGE_TARNAME@
 PKG_URL		= @PACKAGE_URL@
 PKG_VERSION	= @PACKAGE_VERSION@
 ifeq ("","$(PKG_VERSION)")
-PKG_VERSION	= 4.8.21
+PKG_VERSION	= 4.8.24
 endif
 PKG_VERSION_1	=$(word 1,$(subst ., ,$(PKG_VERSION)))
 PKG_VERSION_2	=$(word 2,$(subst ., ,$(PKG_VERSION)))
@@ -177,7 +177,7 @@ RMDFLAGS=	-rf
 #########################################################################################
 #
 # Note: Objects output paths *must* be specialised as source components are not unique,
-#          for example 'init' and 'common'.
+#       for example 'init' and 'common'.
 #
 
 MC_SRC=	\
@@ -219,7 +219,6 @@ MC_FILEMANAGER=\
 	$(D_OBJFM)/hotlist$(O)			\
 	$(D_OBJFM)/info$(O)			\
 	$(D_OBJFM)/layout$(O)			\
-	$(D_OBJFM)/listmode$(O)			\
 	$(D_OBJFM)/midnight$(O)			\
 	$(D_OBJFM)/mountlist$(O)		\
 	$(D_OBJFM)/panel$(O)			\
@@ -228,6 +227,9 @@ MC_FILEMANAGER=\
 	$(D_OBJFM)/treestore$(O)		\
 	\
 	$(D_OBJFM)/drive$(O)
+	
+#No longer maintained
+#	$(D_OBJFM)/listmode$(O)
 
 D_OBJED=	$(D_OBJ)/editor
 
@@ -399,6 +401,17 @@ MC_LIBMC=\
 	$(D_OBJMC)/widget_radio$(O)		\
 	$(D_OBJMC)/widget_widget-common$(O)	\
 	$(D_OBJMC)/widget_wtools$(O)
+       
+MC_4_8_24=\
+	$(D_OBJ)/file_history$(O)		\
+	$(D_OBJMC)/mcconfig_history$(O) 	\
+	$(D_OBJMC)/strutil_filevercmp$(O)	\
+	$(D_OBJMC)/widget_background$(O)	\
+	$(D_OBJMC)/widget_frame$(O)		\
+	$(D_OBJMC)/widget_group$(O)		\
+	$(D_OBJMC)/widget_rect$(O)
+	
+MC_LIBMC+=$(MC_4_8_24)
 
 #libvfs
 #	vfs/
@@ -537,7 +550,8 @@ CFG_DOC=\
 
 CFG_DOC+=		$(addprefix $(D_DOC)/, \
 				$(filter-out CVS, $(notdir $(wildcard $(WIN32_DOC_SRC)/*))))
-CFG_DOC+=		$(D_BIN)/changelog.txt
+CFG_DOC+=		$(D_BIN)/ChangeLog.txt
+CFG_DOC+=		$(D_BIN)/README.txt
 
 MSGLANGS=		$(notdir $(wildcard $(PO_SRC)/*.po))
 MSGDIRS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=/LC_MESSAGES/.created))
@@ -616,6 +630,8 @@ DIRECTORIES:=\
 #########################################################################################
 # rules
 
+VPATH	= ./src
+
 .DEFAULT:
 .PHONY:				all directories artifacts targets configuration gettext
 
@@ -628,7 +644,7 @@ directories:			$(DIRECTORIES)
 artifacts:			buildinfo.h BUILDNUMBER
 
 %/.created:
-		-@$(PERL) ./mkdir_p.pl $(@D)
+		-@$(PERL) ./support/mkdir_p.pl $(@D)
 		@echo "++ do not delete, midnight commander managed content ++" > $@
 
 targets:			$(LIBRARIES) $(TARGETS)
@@ -654,7 +670,7 @@ configuration-win32:				# unconditional export
 		dos2unix $(D_PLUGIN)/$$x; \
 	done;\
 	for x in $(CFG_WIN32_PLUGIN_EXTFS_D); do \
-		@PERL@ sedin.pl -u $(WIN32_PLUGIN_SRC)/extfs.d/$$x $(D_PLUGIN)/extfs.d/$$x; \
+		@PERL@ ./support/sedin.pl -u $(WIN32_PLUGIN_SRC)/extfs.d/$$x $(D_PLUGIN)/extfs.d/$$x; \
 	done;\
 	for x in $(CFG_WIN32_SKINS); do \
 		echo updating share/skins/$$x ...; \
@@ -738,14 +754,18 @@ $(D_OBJ)/%.res: %.rc
 		$(RC) -nologo -Fo$@ $<
 
 $(D_BIN)/man2hlp.pl:		$(MCSOURCE)/src/man2hlp/man2hlp.in
-		@$(PERL) sedin.pl -u $^ $@
+		@$(PERL) ./support/sedin.pl -u $^ $@
 
 
 #########################################################################################
 # resources
 
 # .. bin
-$(D_BIN)/changelog.txt :	./changelog.txt
+$(D_BIN)/ChangeLog.txt :	./ChangeLog.txt
+		@echo importing $@ ..
+		@$(CP) $^ $@
+
+$(D_BIN)/README.txt :		./doc/README.win32
 		@echo importing $@ ..
 		@$(CP) $^ $@
 
@@ -756,7 +776,7 @@ $(D_ETC)/% :			$(MISC_SRC)/%
 		@$(BUSYBOX) dos2unix $@
 
 $(D_ETC)/% :			$(MISC_SRC)/%.in
-		@$(PERL) sedin.pl -u $^ $@
+		@$(PERL) ./support/sedin.pl -u $^ $@
 
 # .. etc/magic
 $(D_ETC)/magic.mgc:		libmagic/magic.mgc
@@ -770,7 +790,7 @@ $(D_PLUGIN)/% :			$(EXTD_SRC)/%
 		@$(BUSYBOX) dos2unix $@
 
 $(D_PLUGIN)/% :			$(EXTD_SRC)/%.in
-		@$(PERL) sedin.pl -u $^ $@
+		@$(PERL) ./support/sedin.pl -u $^ $@
 
 # .. plugin/extfs.d
 $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%
@@ -779,7 +799,7 @@ $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%
 		@$(BUSYBOX) dos2unix $@
 
 $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%.in
-		@$(PERL) sedin.pl -u $^ $@
+		@$(PERL) ./support/sedin.pl -u $^ $@
 
 # .. plugin/fish
 $(D_PLUGIN)/fish/% :		$(FISH_SRC)/%
@@ -788,6 +808,11 @@ $(D_PLUGIN)/fish/% :		$(FISH_SRC)/%
 		@$(BUSYBOX) dos2unix $@
 
 # .. share
+$(D_SHARE)/mc.charsets :	$(MISC_SRC)/mc.charsets.in
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) dos2unix $@
+
 $(D_SHARE)/% :			$(MISC_SRC)/%
 		@echo importing $@ ..
 		@$(CP) $^ $@
@@ -828,7 +853,7 @@ $(D_SHARE)/syntax/%.syntax :	$(SYNTAX_SRC)/%.syntax
 		@$(BUSYBOX) dos2unix $@
 
 $(D_SHARE)/syntax/% :		$(SYNTAX_SRC)/%.in
-		@$(PERL) sedin.pl -u $^ $@
+		@$(PERL) ./support/sedin.pl -u $^ $@
 
 # .. share/macro.d
 $(D_SHARE)/macros.d/% :		$(MACROSDATA_SRC)/%
@@ -903,13 +928,16 @@ $(LW)glib-2.0$(A):
 # source rules
 #
 # note: output directories must be component specific as object name as not unique,
-#	   for example common and init.
+#       for example common and init.
 
 $(D_OBJ)/%$(O) :		./%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJ)/%$(O) :		$(MCSOURCE)/src/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/%$(O) :		$(MCSOURCE)/src/file/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<)
 
 $(D_OBJFM)/%$(O) :		$(MCSOURCE)/src/filemanager/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

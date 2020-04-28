@@ -45,9 +45,15 @@ if test "x$enable_werror" = xyes; then
     mc_CHECK_ONE_CFLAG([-Werror])
 fi
 
+dnl Compiler can generate warnings for unrecognized flags added to CFLAGS
+dnl which causes attribute checks to fail
+ax_gcc_func_attribute_save_flags=$[]_AC_LANG_PREFIX[]FLAGS
+_AC_LANG_PREFIX[]FLAGS=
 AX_GCC_FUNC_ATTRIBUTE([fallthrough])
+_AC_LANG_PREFIX[]FLAGS=$ax_gcc_func_attribute_save_flags
+unset ax_gcc_func_attribute_save_flags
 
-AC_PROG_LIBTOOL
+LT_INIT
 
 
 dnl ############################################################################
@@ -259,14 +265,16 @@ AC_CHECK_LIB(seq, get_process_stats, [
 		  [Define if you have function `get_process_stats' and
 have to use that instead of gettimeofday])])
 
-mc_AC_GET_FS_INFO
+mc_GET_FS_INFO
 
 
 dnl ############################################################################
 dnl Internationalization
 dnl ############################################################################
 
-AM_GNU_GETTEXT([no-libtool], [need-ngettext])
+AC_CHECK_FUNCS([setlocale])
+
+AM_GNU_GETTEXT([external], [need-ngettext])
 AM_GNU_GETTEXT_VERSION([0.18.1])
 
 mc_I18N
@@ -312,9 +320,9 @@ AC_EGREP_CPP([yes],
     ])
 
 dnl utimensat is supported since glibc 2.6 and specified in POSIX.1-2008
-dnl utimensat() causes different timespec structures to cause failures on IBM i
+dnl utimensat() causes different timespec structures to cause failures on IBM i and AIX
 case $host_os in
-*os400)
+*os400 | aix*)
     ;;
 *)
     AC_CHECK_FUNCS([utimensat])
@@ -538,7 +546,13 @@ dnl Clarify do we really need GModule
 AM_CONDITIONAL([HAVE_GMODULE], [test -n "$g_module_supported" && \
                                 test x"$textmode_x11_support" = x"yes" -o x"$enable_aspell" = x"yes"])
 
-AC_DEFINE_UNQUOTED([MC_CONFIGURE_ARGS], ["$ac_configure_args"], [MC configure arguments])
+AC_ARG_ENABLE([configure-args],
+    AS_HELP_STRING([--enable-configure-args], [Handle all compiler warnings as errors]))
+if test "x$enable_configure_args" != xno; then
+    AC_DEFINE([ENABLE_CONFIGURE_ARGS], 1, [Define to enable showing configure arguments in help])
+    AC_DEFINE_UNQUOTED([MC_CONFIGURE_ARGS], ["$ac_configure_args"], [MC configure arguments])
+fi
+
 
 AC_CONFIG_FILES(
 [
@@ -560,6 +574,7 @@ contrib/dist/pkginfo
 contrib/dist/prototype
 
 misc/Makefile
+misc/mc.charsets
 misc/mc.menu
 misc/mcedit.menu
 misc/skins/Makefile
@@ -605,7 +620,6 @@ src/vfs/extfs/helpers/ualz
 src/vfs/extfs/helpers/uar
 src/vfs/extfs/helpers/uarc
 src/vfs/extfs/helpers/uarj
-src/vfs/extfs/helpers/uc1541
 src/vfs/extfs/helpers/ucab
 src/vfs/extfs/helpers/uha
 src/vfs/extfs/helpers/ulha
@@ -668,7 +682,6 @@ doc/hlp/pl/Makefile
 doc/hlp/ru/Makefile
 doc/hlp/sr/Makefile
 
-intl/Makefile
 po/Makefile.in
 ])
 

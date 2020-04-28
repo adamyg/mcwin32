@@ -1,7 +1,7 @@
 /*
    Some misc dialog boxes for the program.
 
-   Copyright (C) 1994-2018
+   Copyright (C) 1994-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -137,7 +137,7 @@ configure_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, voi
             Widget *ww;
 
             /* input line */
-            ww = dlg_find_by_id (DIALOG (w), configure_time_out_id);
+            ww = widget_find_by_id (w, configure_time_out_id);
             widget_disable (ww, not_single);
 
             return MSG_HANDLED;
@@ -193,12 +193,13 @@ skin_dlg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void
             WDialog *d = DIALOG (w);
             Widget *wd = WIDGET (d->data);
             int y, x;
+            WRect r;
 
             y = wd->y + (wd->lines - w->lines) / 2;
             x = wd->x + wd->cols / 2;
-            dlg_set_position (d, y, x, w->lines, w->cols);
+            rect_init (&r, y, x, w->lines, w->cols);
 
-            return MSG_HANDLED;
+            return dlg_default_callback (w, NULL, MSG_RESIZE, 0, &r);
         }
 
     default:
@@ -251,7 +252,7 @@ sel_skin_button (WButton * button, int action)
     }
 
     /* make list stick to all sides of dialog, effectively make it be resized with dialog */
-    add_widget_autopos (skin_dlg, skin_list, WPOS_KEEP_ALL, NULL);
+    group_add_widget_autopos (GROUP (skin_dlg), skin_list, WPOS_KEEP_ALL, NULL);
 
     result = dlg_run (skin_dlg);
     if (result == B_ENTER)
@@ -275,8 +276,6 @@ sel_skin_button (WButton * button, int action)
 static cb_ret_t
 panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
 {
-    WDialog *h = DIALOG (w);
-
     switch (msg)
     {
     case MSG_NOTIFY:
@@ -285,10 +284,10 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
             WCheck *ch;
             WInput *in1, *in2, *in3;
 
-            in1 = INPUT (dlg_find_by_id (h, panel_user_format_id));
-            in2 = INPUT (dlg_find_by_id (h, panel_brief_cols_id));
-            ch = CHECK (dlg_find_by_id (h, mini_user_status_id));
-            in3 = INPUT (dlg_find_by_id (h, mini_user_format_id));
+            in1 = INPUT (widget_find_by_id (w, panel_user_format_id));
+            in2 = INPUT (widget_find_by_id (w, panel_brief_cols_id));
+            ch = CHECK (widget_find_by_id (w, mini_user_status_id));
+            in3 = INPUT (widget_find_by_id (w, mini_user_format_id));
 
             if (!ch->state)
                 input_assign_text (in3, status_format[RADIO (sender)->sel]);
@@ -304,7 +303,7 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
         {
             WInput *in;
 
-            in = INPUT (dlg_find_by_id (h, mini_user_format_id));
+            in = INPUT (widget_find_by_id (w, mini_user_format_id));
 
             if (CHECK (sender)->state)
             {
@@ -315,7 +314,7 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
             {
                 WRadio *r;
 
-                r = RADIO (dlg_find_by_id (h, panel_list_formats_id));
+                r = RADIO (widget_find_by_id (w, panel_list_formats_id));
                 widget_disable (WIDGET (in), TRUE);
                 input_assign_text (in, status_format[r->sel]);
             }
@@ -356,7 +355,7 @@ sel_charset_button (WButton * button, int action)
             cpname = _("7-bit ASCII");  /* FIXME */
 
         button_set_text (button, cpname);
-        dlg_redraw (WIDGET (button)->owner);
+        widget_draw (WIDGET (WIDGET (button)->owner));
     }
 
     return 0;
@@ -374,10 +373,12 @@ tree_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *da
     {
     case MSG_RESIZE:
         {
+            WRect r;
             Widget *bar;
 
-            /* simply call dlg_set_size() with new size */
-            dlg_set_size (h, LINES - 9, COLS - 20);
+            rect_init (&r, w->y, w->x, LINES - 9, COLS - 20);
+            dlg_default_callback (w, NULL, MSG_RESIZE, 0, &r);
+
             bar = WIDGET (find_buttonbar (h));
             bar->x = 0;
             bar->y = LINES - 1;
@@ -408,7 +409,7 @@ confvfs_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
             Widget *wi;
 
             /* input */
-            wi = dlg_find_by_id (DIALOG (w), ftpfs_proxy_host_id);
+            wi = widget_find_by_id (w, ftpfs_proxy_host_id);
             widget_disable (wi, not_use);
             return MSG_HANDLED;
         }
@@ -485,7 +486,7 @@ task_cb (WButton * button, int action)
     jobs_fill_listbox (bg_list);
 
     /* This can be optimized to just redraw this widget :-) */
-    dlg_redraw (WIDGET (button)->owner);
+    widget_draw (WIDGET (WIDGET (button)->owner));
 
     return 0;
 }
@@ -513,7 +514,7 @@ configure_box (void)
         char *time_out_new;
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[35+2],
+        quick_widget_t quick_widgets[36+2],
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -604,6 +605,7 @@ configure_box (void)
         qc =         XQUICK_CHECKBOX (qc, N_("Cd follows lin&ks"), &mc_global.vfs.cd_symlinks, NULL),
         qc =         XQUICK_CHECKBOX (qc, N_("Sa&fe delete"), &safe_delete, NULL),
         qc =         XQUICK_CHECKBOX (qc, N_("A&uto save setup"), &auto_save_setup, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Use internal busybo&x"), &use_internal_busybox, NULL),
         qc =         XQUICK_SEPARATOR (qc, FALSE),
         qc =         XQUICK_SEPARATOR (qc, FALSE),
         qc =         XQUICK_SEPARATOR (qc, FALSE),
@@ -700,7 +702,7 @@ panel_options_box (void)
     gboolean simple_swap;
 
     simple_swap = mc_config_get_bool (mc_global.main_config, CONFIG_PANELS_SECTION,
-                                      "simple_swap", FALSE) ? 1 : 0;
+                                      "simple_swap", FALSE);
     {
         const char *qsearch_options[] = {
             N_("Case &insensitive"),
@@ -830,28 +832,12 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
                    int *brief_cols)
 {
     int result = -1;
-    char *section = NULL;
+    const char *p = NULL;
 
     if (panel == NULL)
     {
-        const char *p;
-        size_t i;
-
         p = get_nth_panel_name (num);
-        panel = g_new (WPanel, 1);
-        panel->list_format = list_full;
-        panel->user_format = g_strdup (DEFAULT_USER_FORMAT);
-        panel->user_mini_status = FALSE;
-        for (i = 0; i < LIST_FORMATS; i++)
-            panel->user_status_format[i] = g_strdup (DEFAULT_USER_FORMAT);
-        section = g_strconcat ("Temporal:", p, (char *) NULL);
-        if (!mc_config_has_group (mc_global.main_config, section))
-        {
-            g_free (section);
-            section = g_strdup (p);
-        }
-        panel_load_setup (panel, section);
-        g_free (section);
+        panel = panel_empty_new (p);
     }
 
     {
@@ -957,7 +943,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
         }
     }
 
-    if (section != NULL)
+    if (p != NULL)
     {
         int i;
 
@@ -1150,9 +1136,9 @@ display_bits_box (void)
         mc_global.eight_bit_clean = current_mode < 3;
         mc_global.full_eight_bits = current_mode < 2;
 #ifndef HAVE_SLANG
-        meta (stdscr, mc_global.eight_bit_clean);
+        tty_display_8bit (mc_global.eight_bit_clean);
 #else
-        SLsmg_Display_Eight_Bit = mc_global.full_eight_bits ? 128 : 160;
+        tty_display_8bit (mc_global.full_eight_bits);
 #endif
         use_8th_bit_as_meta = !new_meta;
     }
@@ -1249,6 +1235,7 @@ tree_box (const char *current_dir)
 {
     WTree *mytree;
     WDialog *dlg;
+    WGroup *g;
     Widget *wd;
     char *val = NULL;
     WButtonBar *bar;
@@ -1258,13 +1245,14 @@ tree_box (const char *current_dir)
     /* Create the components */
     dlg = dlg_create (TRUE, 0, 0, LINES - 9, COLS - 20, WPOS_CENTER, FALSE, dialog_colors,
                       tree_callback, NULL, "[Directory Tree]", _("Directory tree"));
+    g = GROUP (dlg);
     wd = WIDGET (dlg);
 
     mytree = tree_new (2, 2, wd->lines - 6, wd->cols - 5, FALSE);
-    add_widget_autopos (dlg, mytree, WPOS_KEEP_ALL, NULL);
-    add_widget_autopos (dlg, hline_new (wd->lines - 4, 1, -1), WPOS_KEEP_BOTTOM, NULL);
+    group_add_widget_autopos (g, mytree, WPOS_KEEP_ALL, NULL);
+    group_add_widget_autopos (g, hline_new (wd->lines - 4, 1, -1), WPOS_KEEP_BOTTOM, NULL);
     bar = buttonbar_new (TRUE);
-    add_widget (dlg, bar);
+    group_add_widget (g, bar);
     /* restore ButtonBar coordinates after add_widget() */
     WIDGET (bar)->x = 0;
     WIDGET (bar)->y = LINES - 1;
@@ -1285,7 +1273,7 @@ tree_box (const char *current_dir)
 
 #ifdef ENABLE_VFS
 void
-configure_vfs (void)
+configure_vfs_box (void)
 {
     char buffer2[BUF_TINY];
 #ifdef ENABLE_VFS_FTP
@@ -1411,7 +1399,7 @@ configure_vfs (void)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-cd_dialog (void)
+cd_box (void)
 {
     const Widget *w = CONST_WIDGET (current_panel);
     char *my_str;
@@ -1446,8 +1434,8 @@ cd_dialog (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
-                char **ret_existing, char **ret_new)
+symlink_box (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
+             char **ret_existing, char **ret_new)
 {
 #if defined(WIN32)  //WIN32, quick
     quick_widget_t quick_widgets[5+2],
@@ -1498,7 +1486,7 @@ symlink_dialog (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
 
 #ifdef ENABLE_BACKGROUND
 void
-jobs_cmd (void)
+jobs_box (void)
 {
     struct
     {
@@ -1522,6 +1510,7 @@ jobs_cmd (void)
     const size_t n_but = G_N_ELEMENTS (job_but);
 
     WDialog *jobs_dlg;
+    WGroup *g;
     int cols = 60;
     int lines = 15;
     int x = 0;
@@ -1543,19 +1532,19 @@ jobs_cmd (void)
 
     jobs_dlg = dlg_create (TRUE, 0, 0, lines, cols, WPOS_CENTER, FALSE, dialog_colors, NULL, NULL,
                            "[Background jobs]", _("Background jobs"));
+    g = GROUP (jobs_dlg);
 
     bg_list = listbox_new (2, 2, lines - 6, cols - 6, FALSE, NULL);
     jobs_fill_listbox (bg_list);
-    add_widget (jobs_dlg, bg_list);
+    group_add_widget (g, bg_list);
 
-    add_widget (jobs_dlg, hline_new (lines - 4, -1, -1));
+    group_add_widget (g, hline_new (lines - 4, -1, -1));
 
     x = (cols - x) / 2;
     for (i = 0; i < n_but; i++)
     {
-        add_widget (jobs_dlg,
-                    button_new (lines - 3, x, job_but[i].value, job_but[i].flags, job_but[i].name,
-                                job_but[i].callback));
+        group_add_widget (g, button_new (lines - 3, x, job_but[i].value, job_but[i].flags,
+                                         job_but[i].name, job_but[i].callback));
         x += job_but[i].len + 1;
     }
 

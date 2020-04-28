@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2018-09-09 19:12+0300\n"
-"PO-Revision-Date: 2018-04-30 12:37+0000\n"
+"POT-Creation-Date: 2020-03-09 10:53+0300\n"
+"PO-Revision-Date: 2019-12-16 01:49+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Croatian (http://www.transifex.com/mc/mc/language/hr/)\n"
 "Language: hr\n"
@@ -457,6 +457,27 @@ msgid "Shift"
 msgstr ""
 
 msgid "The TERM environment variable is unset!\n"
+msgstr ""
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr ""
+
+#, c-format
+msgid ""
+"\n"
+"Cannot create pipe for SIGWINCH: %s (%d)\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"\n"
+"Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
 msgstr ""
 
 #, c-format
@@ -1282,6 +1303,9 @@ msgstr ""
 msgid "&Close"
 msgstr ""
 
+msgid "&History..."
+msgstr ""
+
 msgid "Save &as..."
 msgstr ""
 
@@ -1563,7 +1587,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2018 the Free Software Foundation"
+msgid "Copyright (C) 1996-2020 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1708,6 +1732,11 @@ msgid "Cannot fetch a local copy of %s"
 msgstr ""
 
 msgid "The shell is already running a command"
+msgstr ""
+
+msgid ""
+"Not an xterm or Linux console;\n"
+"the panels cannot be toggled."
 msgstr ""
 
 msgid "Type 'exit' to return to the Midnight Commander"
@@ -2259,11 +2288,6 @@ msgid ""
 "to use this command"
 msgstr ""
 
-msgid ""
-"Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
-msgstr ""
-
 #, c-format
 msgid "'%s' is not a symbolic link"
 msgstr ""
@@ -2324,9 +2348,6 @@ msgstr ""
 msgid ""
 "Cannot chdir to \"%s\"\n"
 "%s"
-msgstr ""
-
-msgid "Cannot read directory contents"
 msgstr ""
 
 msgid "Parameter"
@@ -2401,7 +2422,20 @@ msgstr ""
 msgid " with source mask:"
 msgstr ""
 
-msgid "Cannot make the hardlink"
+#, c-format
+msgid ""
+"Cannot stat hardlink source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot create target hardlink \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid "Cannot create target hardlink \"%s\""
 msgstr ""
 
 #, c-format
@@ -2665,18 +2699,13 @@ msgstr ""
 msgid "%ld B/s"
 msgstr ""
 
-msgid "Target file already exists!"
+msgid "New     :"
 msgstr ""
 
-#, c-format
-msgid "New     : %s, size %s"
+msgid "Existing:"
 msgstr ""
 
-#, c-format
-msgid "Existing: %s, size %s"
-msgstr ""
-
-msgid "Overwrite this target?"
+msgid "Overwrite this file?"
 msgstr ""
 
 msgid "A&ppend"
@@ -2685,13 +2714,19 @@ msgstr ""
 msgid "&Reget"
 msgstr ""
 
-msgid "Overwrite all targets?"
+msgid "Overwrite all files?"
 msgstr ""
 
-msgid "&Update"
+msgid "Don't overwrite with &zero length file"
 msgstr ""
 
-msgid "If &size differs"
+msgid "&Older"
+msgstr ""
+
+msgid "S&maller"
+msgstr ""
+
+msgid "&Size differs"
 msgstr ""
 
 msgid "File exists"
@@ -3184,6 +3219,9 @@ msgstr ""
 msgid "Command &history"
 msgstr ""
 
+msgid "Viewed/edited files hi&story"
+msgstr ""
+
 msgid "Di&rectory hotlist"
 msgstr ""
 
@@ -3411,6 +3449,9 @@ msgstr ""
 msgid "Do you really want to execute?"
 msgstr ""
 
+msgid "Cannot read directory contents"
+msgstr ""
+
 msgid "User supplied format looks invalid, reverting to default."
 msgstr ""
 
@@ -3574,6 +3615,12 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr ""
 
+msgid ""
+"GNU Midnight Commander\n"
+"is already running on this terminal.\n"
+"Subshell support will be disabled."
+msgstr ""
+
 #, c-format
 msgid ""
 "\n"
@@ -3599,12 +3646,6 @@ msgid ""
 "%s"
 msgstr ""
 
-msgid ""
-"GNU Midnight Commander is already\n"
-"running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-
 #, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr ""
@@ -3616,40 +3657,34 @@ msgstr ""
 msgid "Warning: Cannot change to %s.\n"
 msgstr ""
 
-msgid "Using the S-Lang library with terminfo database\n"
+msgid "With builtin Editor and Aspell support"
 msgstr ""
 
-msgid "Using the ncurses library\n"
+msgid "With builtin Editor"
 msgstr ""
 
-msgid "Using the ncursesw library\n"
+msgid "With optional subshell support"
 msgstr ""
 
-msgid "With builtin Editor\n"
+msgid "With subshell support as default"
 msgstr ""
 
-msgid "With optional subshell support\n"
+msgid "With support for background operations"
 msgstr ""
 
-msgid "With subshell support as default\n"
+msgid "With mouse support on xterm and Linux console"
 msgstr ""
 
-msgid "With support for background operations\n"
+msgid "With mouse support on xterm"
 msgstr ""
 
-msgid "With mouse support on xterm and Linux console\n"
+msgid "With support for X11 events"
 msgstr ""
 
-msgid "With mouse support on xterm\n"
+msgid "With internationalization support"
 msgstr ""
 
-msgid "With support for X11 events\n"
-msgstr ""
-
-msgid "With internationalization support\n"
-msgstr ""
-
-msgid "With multiple codepages support\n"
+msgid "With multiple codepages support"
 msgstr ""
 
 #, c-format
@@ -3657,10 +3692,26 @@ msgid "Built with GLib %d.%d.%d\n"
 msgstr ""
 
 #, c-format
-msgid "Virtual File Systems:"
+msgid "Built with S-Lang %s with terminfo database\n"
 msgstr ""
 
 #, c-format
+msgid "Built with ncurses %s\n"
+msgstr ""
+
+msgid "Built with ncurses (unknown version)"
+msgstr ""
+
+#, c-format
+msgid "Built with ncursesw %s\n"
+msgstr ""
+
+msgid "Built with ncursesw (unknown version)"
+msgstr ""
+
+msgid "Virtual File Systems:"
+msgstr ""
+
 msgid "Data types:"
 msgstr ""
 

@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.13 2019/05/04 02:30:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.14 2020/04/23 00:08:25 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -36,9 +36,11 @@ __CPRAGMA_ONCE
 #if (_MSC_VER != 1500)                          /* MSVC 9/2008 */
 #if (_MSC_VER != 1600)                          /* MSVC 10/2010 */
 #if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
-#if (_MSC_VER <  1910 || _MSC_VER > 1918)       /* MSVC 19.10 .. 14/2017 */
-#error unistd.h: untested MSVC Version (2005 -- 2017) only ...
+#if (_MSC_VER <  1910 || _MSC_VER > 1916)       /* MSVC 19.10 .. 16/2017 */
+#if (_MSC_VER > 1920)                           /* MSVC 19.20 /2019 */
+#error unistd.h: untested MSVC Version (2005 -- 2019) only ...
 	//see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+#endif //2019
 #endif //2017
 #endif //2015
 #endif //2010
@@ -129,6 +131,10 @@ __CPRAGMA_ONCE
 #define  NEED_GETOPT
 #endif
 #include <getopt.h>                             /* getopt */
+#endif
+
+#ifndef _countof
+#define _countof(__type) (sizeof(__type)/sizeof(__type[0]))
 #endif
 
 __BEGIN_DECLS
@@ -246,7 +252,7 @@ __BEGIN_DECLS
 #error  S_ISUID redefinition error ...
 #endif
 #else
-#define	S_ISUID	        0004000			/* set user id on execution */
+#define S_ISUID         0004000                 /* set user id on execution */
 #endif
 
 #if defined(S_ISGID)
@@ -254,7 +260,7 @@ __BEGIN_DECLS
 #error  S_ISGID redefinition error ...
 #endif
 #else
-#define	S_ISGID	        0002000			/* set group id on execution */
+#define S_ISGID         0002000                 /* set group id on execution */
 #endif
 
 #ifndef _POSIX_SOURCE
@@ -302,9 +308,9 @@ __BEGIN_DECLS
 
 #ifndef _POSIX_SOURCE
 #ifndef S_IREAD
-#define	S_IREAD		S_IRUSR
-#define	S_IWRITE	S_IWUSR
-#define	S_IEXEC		S_IXUSR
+#define S_IREAD         S_IRUSR
+#define S_IWRITE        S_IWUSR
+#define S_IEXEC         S_IXUSR
 #endif /*S_IREAD*/
 #endif /*_POSIX_SOURCE*/
 

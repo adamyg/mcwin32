@@ -107,6 +107,9 @@ extern panel_view_mode_t startup_right_mode;
 extern gboolean boot_current_is_left;
 extern gboolean use_internal_view;
 extern gboolean use_internal_edit;
+#if defined(WIN32) //WIN32, exec
+extern gboolean use_internal_busybox;
+#endif
 
 #ifdef HAVE_CHARSET
 extern int default_source_codepage;

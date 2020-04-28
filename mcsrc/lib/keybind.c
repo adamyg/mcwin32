@@ -1,7 +1,7 @@
 /*
    Definitions of key bindings.
 
-   Copyright (C) 2005-2018
+   Copyright (C) 2005-2020
    Free Software Foundation, Inc.
 
    Written by:
@@ -94,6 +94,7 @@ static name_keymap_t command_names[] = {
 #ifdef HAVE_CHARSET
     {"SelectCodepage", CK_SelectCodepage},
 #endif
+    {"EditorViewerHistory", CK_EditorViewerHistory},
     {"History", CK_History},
     {"HistoryNext", CK_HistoryNext},
     {"HistoryPrev", CK_HistoryPrev},
@@ -181,7 +182,7 @@ static name_keymap_t command_names[] = {
     {"SetupListingFormat", CK_SetupListingFormat},
     {"PanelListing", CK_PanelListing},
 #ifdef LISTMODE_EDITOR
-    {"ListMode", CK_ListMode}, //APY, optional
+    {"ListMode", CK_ListMode},
 #endif
     {"OptionsPanel", CK_OptionsPanel},
     {"CdQuick", CK_CdQuick},
@@ -345,6 +346,7 @@ static name_keymap_t command_names[] = {
     {"SearchBackward", CK_SearchBackward},
     {"SearchForwardContinue", CK_SearchForwardContinue},
     {"SearchBackwardContinue", CK_SearchBackwardContinue},
+    {"SearchOppositeContinue", CK_SearchOppositeContinue},
 
 #ifdef USE_DIFF_VIEW
     /* diff viewer */
