@@ -1,13 +1,12 @@
 CVS/
-gtk/
-gtk3/
+gtk*/
+mcgit/
 mcmerge/
 busybox/
+mcwin32/bin/
 directory.txt
 gtk-source.txt
+mcgtk-source.txt
 mcwin32-build*.exe
-mcwin32-build*.zip
+.#*
 
-/mcwin32/mc.aps
-/encrypt.bat
-/mc.zip
