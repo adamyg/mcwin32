@@ -701,7 +701,7 @@ $(D_BIN)/%.dll:			$(GTKINSTALL)/bin/%.dll
 
 .PHONY:
 package:
-	$(ComSpec) /c start mc-inno-setup.iss
+	$(ComSpec) /c start ./releases/mc-inno-setup.iss
 
 .PHONY:		clean
 clean:
