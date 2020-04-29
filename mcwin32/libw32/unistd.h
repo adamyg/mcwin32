@@ -10,7 +10,7 @@ __CPRAGMA_ONCE
  *
  *      unistd.h - standard symbolic constants and types
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2020 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -386,9 +386,14 @@ typedef struct {
     unsigned            junk;
 } sigset_t;
 
+typedef struct {
+    unsigned            junk;
+} siginfo_t;
+
 struct sigaction {
     void              (*sa_handler)(int);
-#define SA_RESTART                      0x01
+    void              (*sa_sigaction)(int, siginfo_t *, void *);
+#define SA_RESTART                  0x01
     unsigned            sa_flags;
     sigset_t            sa_mask;
 };
