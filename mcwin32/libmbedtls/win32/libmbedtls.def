@@ -1,6 +1,6 @@
-;$Id: libmbedtls.def,v 1.2 2019/04/25 00:01:37 cvsuser Exp $
+;$Id: libmbedtls.def,v 1.2 2020/04/29 19:30:43 cvsuser Exp $
 ;
-;  libmbedtls library definition
+;  libmbedtls library definition (4.16.6)
 ;
 DESCRIPTION "libmbedtls"
 EXPORTS

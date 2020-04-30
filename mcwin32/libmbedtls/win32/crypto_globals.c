@@ -1,4 +1,4 @@
-//$Id: crypto_globals.c,v 1.2 2019/04/25 00:01:37 cvsuser Exp $
+//$Id: crypto_globals.c,v 1.1 2018/11/07 01:11:54 cvsuser Exp $
 //
 //  libmbedcrypto support -
 //      retrieve the dynamic fprintf/snprintf/printf implementations (if required)
@@ -18,7 +18,7 @@ get_mbedtls_fprintf(void) {
 #if defined(MBEDTLS_PLATFORM_SNPRINTF_ALT)
 mbedtls_snprintf_t
 get_mbedtls_snprintf(void) {
-#undef mbedtls_snprintf
+#undef mbedtls_snprintf   
     return mbedtls_snprintf;
 }
 #endif

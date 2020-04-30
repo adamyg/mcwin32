@@ -1,6 +1,6 @@
-;$Id: libmbedcrypto.def,v 1.1 2018/11/07 01:31:48 cvsuser Exp $
+;$Id: libmbedcrypto.def,v 1.2 2020/04/29 19:30:42 cvsuser Exp $
 ;
-;  libmbedcrypto library definition
+;  libmbedcrypto library definition (4.16.6)
 ;
 DESCRIPTION "libmbedcrypto"
 EXPORTS
@@ -64,6 +64,7 @@ EXPORTS
     mbedtls_asn1_write_printable_string
     mbedtls_asn1_write_raw_buffer
     mbedtls_asn1_write_tag
+    mbedtls_asn1_write_tagged_string
 
 ; library\base64.c
     mbedtls_base64_decode
@@ -251,6 +252,7 @@ EXPORTS
     mbedtls_ecdh_make_public
     mbedtls_ecdh_read_params
     mbedtls_ecdh_read_public
+    mbedtls_ecdh_setup
 
 ; library\ecdsa.c
     mbedtls_ecdsa_free
@@ -434,6 +436,8 @@ EXPORTS
     mbedtls_pk_sign
     mbedtls_pk_verify
     mbedtls_pk_verify_ext
+    mbedtls_pk_verify_restartable
+    mbedtls_pk_sign_restartable
 
 ; library\pk_wrap.c
 

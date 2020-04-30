@@ -1,4 +1,4 @@
-//$Id: x509_globals.h,v 1.1 2018/11/07 01:31:48 cvsuser Exp $
+//$Id: x509_globals.h,v 1.1 2018/11/07 01:11:54 cvsuser Exp $
 //
 //  libmetlx509 support
 //
