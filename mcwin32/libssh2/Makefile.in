@@ -1,25 +1,25 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.7 2019/04/25 00:01:37 cvsuser Exp $
+# $Id: Makefile.in,v 1.8 2020/04/30 01:01:12 cvsuser Exp $
 # libssh2 makefile.
 #
 #
-# Copyright (c) 2015 - 2018, Adam Young.
+# Copyright (c) 2015 - 2020, Adam Young.
 # All rights reserved.
-# 
+#
 # This file is part of the Midnight Commander.
-# 
+#
 # The Midnight Commander is free software: you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation, either version 3 of the License,
 # or (at your option) any later version.
-# 
+#
 # The Midnight Commander is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 # ==end==
 #
 
@@ -84,9 +84,9 @@ D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
 SSH2LIB=	$(D_LIB)/$(LP)ssh2_static$(A)
 SSH2DLL=	$(D_LIB)/$(LP)ssh2.la
 
-VERSION=	1.8.0
+VERSION=	1.9.0
 VERSIONSPEC=	$(subst .,:,$(VERSION))
-VERPACKED=	libssh2-$(VERSION).tgz
+VERPACKED=	libssh2-$(VERSION).gr.tgz
 
 SSH2BASE=	./libssh2-$(VERSION)
 SSH2SRC=	$(SSH2BASE)/src
@@ -95,9 +95,9 @@ SSH2INCLUDE=	$(SSH2BASE)/include
 CINCLUDE+=	-I$(SSH2BASE)/win32 -I$(SSH2INCLUDE) -I./sdk
 CEXTRA+=	-D_WIN32_WINNT=0x601 -DLIBSSH2_WIN32 -DLIBSSH2_WINCNG -DLIBSSH2_HAVE_ZLIB
 			# Crypto backends (see: crypto.h):
-			#  LIBSSH2_OPENSSL   lib openssl
-			#  LIBSSH2_WINCNG    Windows crypto
-			#  LIBSSH2_MBEDTLS   mbedtls
+			# LIBSSH2_OPENSSL lib openssl
+			# LIBSSH2_WINCNG Windows crypto
+			# LIBSSH2_MBEDTLS mbedtls
 			#
 LDLIBS+=	-llibz_static ./sdk/bcrypt.lib ./sdk/crypt32.lib
 
@@ -108,8 +108,13 @@ CRYPTO_CSOURCES=\
 
 CSOURCES=\
 	channel.c comp.c crypt.c hostkey.c kex.c mac.c misc.c \
-	packet.c publickey.c scp.c session.c sftp.c userauth.c transport.c \
-	version.c knownhost.c agent.c $(CRYPTO_CSOURCES) pem.c keepalive.c global.c
+	packet.c publickey.c scp.c session.c sftp.c transport.c userauth.c \
+	version.c knownhost.c agent.c pem.c keepalive.c global.c \
+	$(CRYPTO_CSOURCES)
+
+#+1.9.0
+CSOURCES+=\
+	blowfish.c bcrypt_pbkdf.c
 
 LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
