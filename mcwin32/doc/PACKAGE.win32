@@ -1,16 +1,19 @@
 
-Package List:   build 201
+Package List: build 216
 
+        mc.exe
         busybox.exe
         file.exe
+        magic.mgc
         man2hlp.pl
-        mc.exe
-        mc.map
         libglib-2.0.2.51.dll
         libgmodule-2.0.2.51.dll
         libintl.1.0.dll
         libmagic.5.29.dll
-        libssh2.1.8.dll
+        libmbedcrypto.2.16.dll
+        libmbedtls.2.16.dll
+        libmbedx509.2.16.dll
+        libssh2.1.9.dll
         libw32.1.1.dll
         libz.1.2.dll
         mt7r19.dll
@@ -77,5 +80,6 @@ share/
         mc.macros
         skins
         syntax
+
 
 
