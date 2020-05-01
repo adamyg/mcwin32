@@ -1,10 +1,10 @@
-;$Id: libmbedtls.def,v 1.2 2020/04/29 19:30:43 cvsuser Exp $
+;$Id: libmbedtls.def,v 1.3 2020/05/01 14:33:00 cvsuser Exp $
 ;
 ;  libmbedtls library definition (4.16.6)
 ;
 DESCRIPTION "libmbedtls"
 EXPORTS
-
+ 
 ; library\debug.c
     mbedtls_debug_print_buf
     mbedtls_debug_print_crt
@@ -13,7 +13,7 @@ EXPORTS
     mbedtls_debug_print_msg
     mbedtls_debug_print_ret
     mbedtls_debug_set_threshold
-
+ 
 ; library\net_sockets.c
     mbedtls_net_accept
     mbedtls_net_bind
@@ -27,7 +27,7 @@ EXPORTS
     mbedtls_net_set_block
     mbedtls_net_set_nonblock
     mbedtls_net_usleep
-
+ 
 ; library\ssl_cache.c
     mbedtls_ssl_cache_free
     mbedtls_ssl_cache_get
@@ -35,7 +35,7 @@ EXPORTS
     mbedtls_ssl_cache_set
     mbedtls_ssl_cache_set_max_entries
     mbedtls_ssl_cache_set_timeout
-
+ 
 ; library\ssl_ciphersuites.c
     mbedtls_ssl_ciphersuite_from_id
     mbedtls_ssl_ciphersuite_from_string
@@ -46,10 +46,10 @@ EXPORTS
     mbedtls_ssl_get_ciphersuite_sig_alg
     mbedtls_ssl_get_ciphersuite_sig_pk_alg
     mbedtls_ssl_list_ciphersuites
-
+ 
 ; library\ssl_cli.c
     mbedtls_ssl_handshake_client_step
-
+ 
 ; library\ssl_cookie.c
     mbedtls_ssl_cookie_check
     mbedtls_ssl_cookie_free
@@ -57,19 +57,19 @@ EXPORTS
     mbedtls_ssl_cookie_set_timeout
     mbedtls_ssl_cookie_setup
     mbedtls_ssl_cookie_write
-
+ 
 ; library\ssl_srv.c
     mbedtls_ssl_conf_dtls_cookies
     mbedtls_ssl_handshake_server_step
     mbedtls_ssl_set_client_transport_id
-
+ 
 ; library\ssl_ticket.c
     mbedtls_ssl_ticket_free
     mbedtls_ssl_ticket_init
     mbedtls_ssl_ticket_parse
     mbedtls_ssl_ticket_setup
     mbedtls_ssl_ticket_write
-
+ 
 ; library\ssl_tls.c
     mbedtls_ssl_check_cert_usage
     mbedtls_ssl_check_curve
@@ -195,6 +195,6 @@ EXPORTS
     mbedtls_ssl_write_handshake_msg
     mbedtls_ssl_write_record
     mbedtls_ssl_write_version
-
+ 
 ;end
 

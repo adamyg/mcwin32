@@ -1,4 +1,4 @@
-//$Id: crypto_globals.c,v 1.1 2018/11/07 01:11:54 cvsuser Exp $
+//$Id: crypto_globals.c,v 1.3 2020/05/01 14:33:00 cvsuser Exp $
 //
 //  libmbedcrypto support -
 //      retrieve the dynamic fprintf/snprintf/printf implementations (if required)
