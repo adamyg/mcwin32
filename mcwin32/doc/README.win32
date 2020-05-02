@@ -97,8 +97,8 @@ Commander, including:
         see 'docs' within the installation directory.
 
 
-Source
-------
+Resources
+---------
 
 Window native port for GNU Midnight Commander, the latest builds can be
 found at the links:
@@ -114,7 +114,12 @@ can be found at the following
    http://en.wikipedia.org/wiki/Midnight_Commander
    
    www.midnight-commander.org
+   
 
+Midnight Commander Skin Editor   
+
+   https://phplego.github.io/mc/
+   
 
 Older information is available at
 
