@@ -542,6 +542,7 @@ CFG_DOC=\
 	$(D_DOC)/HACKING			\
 	$(D_DOC)/MAINTAINERS			\
 	$(D_DOC)/AUTHORS			\
+	$(D_DOC)/ADDITIONALSKINS		\
 	$(D_DOC)/NEWS				\
 	$(D_DOC)/NEWS.4.7			\
 	$(D_DOC)/NEWS.OLD			\
@@ -670,7 +671,7 @@ configuration-win32:				# unconditional export
 		dos2unix $(D_PLUGIN)/$$x; \
 	done;\
 	for x in $(CFG_WIN32_PLUGIN_EXTFS_D); do \
-		@PERL@ ./support/sedin.pl -u $(WIN32_PLUGIN_SRC)/extfs.d/$$x $(D_PLUGIN)/extfs.d/$$x; \
+		@PERL@ ./support/sedin.pl -u -i $(WIN32_PLUGIN_SRC)/extfs.d/$$x $(D_PLUGIN)/extfs.d/$$x; \
 	done;\
 	for x in $(CFG_WIN32_SKINS); do \
 		echo updating share/skins/$$x ...; \
@@ -863,6 +864,10 @@ $(D_SHARE)/macros.d/% :		$(MACROSDATA_SRC)/%
 
 # .. docs
 $(D_DOC)/AUTHORS :		$(MCSOURCE)/AUTHORS
+		@echo importing $@ ..
+		@$(CP) $^ $@
+
+$(D_DOC)/ADDITIONALSKINS :	$(WIN32_SKINS_SRC)/source.txt
 		@echo importing $@ ..
 		@$(CP) $^ $@
 
