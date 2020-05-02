@@ -478,8 +478,10 @@ sub zipquotemeta {
 	my $out = '';
 	for (my $c = 0; $c < length $name; $c++) {
 		my $ch = substr($name, $c, 1);
-		$out .= '\\' if (index('*?[]\\', $ch) != -1);
+##WIN32		$out .= '\\' if (index('*?[]\\', $ch) != -1);
+		$out .= '\\' if (index('*?', $ch) != -1);
 		$out .= $ch;
 	}
-	return quotemeta($out);
+##WIN32	return quotemeta($out);
+	return $out;
 }
