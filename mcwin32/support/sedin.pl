@@ -27,16 +27,20 @@ use strict;
 sub usage {
         my ($msg) = shift;
         print "sedin: ${msg}\n\n" if ($msg);
-        print "Usage: sedin.pl [-uv] in out\n";
+        print "Usage: sedin.pl [-uvi] in out\n";
         exit 1;
 }
 
-my $outenc = "";
+my $outenc  = "";
+my $infile  = 0;
 my $verbose = 0;
 
 while (defined $ARGV[0] && ($ARGV[0] =~ /^--?[a-z]+$/)) {
         if ($ARGV[0] eq '-u' || $ARGV[0] eq '--unix') {
                 $outenc = ":raw :bytes";        # unix mode
+
+        } elsif ($ARGV[0] eq '-i' || $ARGV[0] eq '--in') {
+                ++$infile;
 
         } elsif ($ARGV[0] eq '-v' || $ARGV[0] eq '--verbose') {
                 ++$verbose;
@@ -53,13 +57,16 @@ if (scalar @ARGV < 2) {                         # in/out
         usage("unexpected arguments $ARGV[2] ...");
 }
 
-if ($ARGV[0] !~ /\.in$/) {
-        print "sedin: input file <$ARGV[0]> missing '.in' extension\n";
+my $in  = $ARGV[0];
+my $out = $ARGV[1];
+
+if ($in !~ /\.in$/) {
+        print "sedin: input file <$in> missing '.in' extension\n";
         exit 1;
 }
 
-my $in  = $ARGV[0];
-my $out = $ARGV[1];
+$out =~ s/\.in$//           # remove .in extension
+        if ($infile);
 
 printf "converting ${in} to ${out} ...\n";
 
@@ -94,7 +101,7 @@ my $busybox = '$(MC_BUSYBOX)';
 my $line;
 
 $line = <IN>;
-if ($line) {		    # see: win32_utl.c
+if ($line) {                # see: win32_utl.c
         # line 1, #! @PERL@ || @PYTHON@
         if ($line !~ s/(\@PERL\@)/\/usr\/bin\/perl/ &&
                         $line !~ s/(\@PYTHON\@)/\/usr\/bin\/python/) {
@@ -103,12 +110,12 @@ if ($line) {		    # see: win32_utl.c
                 }
 
         } else {
-		if ($1 eq '@PERL@') {
-		    $busybox = '${ENV{MC_BUSYBOX}}';
-		} else {
-		    $busybox = 'os.environ.get(\'MC_BUSYBOX\')';
-		}
-	}
+                if ($1 eq '@PERL@') {
+                    $busybox = '${ENV{MC_BUSYBOX}}';
+                } else {
+                    $busybox = 'os.environ.get(\'MC_BUSYBOX\')';
+                }
+        }
         chomp $line;
         print OUT "${line}\n";
 }
@@ -133,6 +140,10 @@ while ($line = <IN>) {
         $line =~ s/\@UNZIP\@/${busybox} unzip/g;
         $line =~ s/\@ZIP\@/${busybox} zip/g;
 
+        if ($line =~ /(\@[A-Za-z_]+\@)/) {
+                    printf "WARNING ${in} ($.): unknown variable\n";
+        }
+
         chomp $line;
         print OUT "${line}\n";
 }
@@ -141,3 +152,4 @@ close(IN);
 close(OUT);
 
 exit 0;
+
