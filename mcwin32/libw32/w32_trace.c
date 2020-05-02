@@ -28,10 +28,10 @@ w32InitTrace(void)
     if (! w32x_tracing_started)  {
         if (NULL == (w32x_trace_f = fopen(TRACE_FILE, "wt"))) {
             printf("Midnight Commander[DEBUG]: Can't open trace file '" TRACE_FILE "': %s \n", strerror(errno));
-        }
-        if (! w32x_tracing_init) {
-            ++w32x_tracing_init;
-//          atexit(w32EndTrace);
+
+        } else if (! w32x_tracing_init) {
+            w32x_tracing_init = 0;
+//          atexit(w32EndTrace); 
         }
         w32x_tracing_started = 1;
     }
@@ -84,7 +84,7 @@ w32_tracev (const char *fmt, va_list ap)
 
     len = _vsnprintf(buffer, buflen, fmt, ap);
     if (len < 0 || len > buflen) len = buflen;  /* error/overflow */
-    buffer[buflen] = 0;
+    buffer[len] = 0;
 
     if (w32x_trace_f && len) {
         if (buffer[len-1] != '\n') {
@@ -94,12 +94,12 @@ w32_tracev (const char *fmt, va_list ap)
         }
     }
 
-#ifdef WIN32                                    /* also write Output to Debug monitor */
+#if defined(WIN32) && defined(_DEBUG)           /* also write Output to Debug monitor */
     if (0 == len || buffer[len-1] != '\n') {
         buffer[len++] = '\n', buffer[len] = 0;  /* newline terminate */
     }
     OutputDebugString(buffer);
-#endif  //_MSC_VER
+#endif  //WIN32
 }
 
 
@@ -185,4 +185,3 @@ GetLastErrorText(void)
 }
 
 /*end*/
-

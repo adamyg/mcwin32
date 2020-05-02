@@ -1507,11 +1507,18 @@ tilde_expand(const char *directory)
     if (PATH_SEP == *directory) {               /* / ==> x:/ */
 
         if (PATH_SEP != directory[1] ||         /* preserve URL's (//<server) */
-                    0 == directory[2] || PATH_SEP == directory[2]) {
+                0 == directory[2] || PATH_SEP == directory[2]) {
             const char *cwd = vfs_get_current_dir ();
+            char path[1024];
 
-            if (':' == cwd[1]) {
-                char drive[3] =  "x:";
+            if ('/' == cwd[0] && 0 == cwd[1]) { /* vfs, possible ftp/sftp */
+                if (w32_getcwd (path, sizeof(path))) {
+                    cwd = path;  /* apply underlying cwd */
+                }
+            }
+
+            if (cwd[0] && ':' == cwd[1]) {
+                char drive[3] = "X:";
                 drive[0] = toupper (cwd[0]);
                 return g_strconcat (drive, directory, NULL);
             }
@@ -1867,7 +1874,7 @@ mc_realpath(const char *path, char *resolved_path)
  *  Like to g_build_filename(), but respect VFS_PATH_URL_DELIMITER
  */
 char *
-mc_build_filenamev(const char *first_element, va_list args)
+mc_build_filenamev (const char *first_element, va_list args)
 {
     gboolean absolute;
     const char *element = first_element;
@@ -1878,8 +1885,7 @@ mc_build_filenamev(const char *first_element, va_list args)
         return NULL;
 
     path = g_string_new ("");
-    absolute =
-        (*first_element != '\0' && *first_element == PATH_SEP);
+    absolute = IS_PATH_SEP (*first_element);
 
     do {
         if (*element == '\0') {
@@ -1906,10 +1912,22 @@ mc_build_filenamev(const char *first_element, va_list args)
     }
     while (element != NULL);
 
-    //WIN32
     if (absolute) {
-        if (0 == path->len || ':' != path->str[1]) {
-            g_string_prepend_c(path, PATH_SEP);
+        if (! path->len || ':' != path->str[1] /*not-drive*/) {
+            g_string_prepend_c (path, PATH_SEP);    // reapply leading
+
+            //WIN32, drive
+            if (NULL == strchr (path->str, ':') &&  // Neither special (ftp://)
+                    PATH_SEP != path->str[1]) {     // nor url (//server ..)
+                char cwd[1024];
+
+                // see: vfs_canon() generally when we are returning from a ftp/sftp.
+                if (w32_getcwd (cwd, sizeof(cwd))) {
+                    char drive[3] = "X:";
+                    drive[0] = toupper (cwd[0]);
+                    g_string_prepend (path, drive); // "/" --> "X:/"
+                }
+            }
         }
     }
 

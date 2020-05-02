@@ -140,19 +140,19 @@ static __inline int
 drive_or_unc(const char *path)
 {
     if (*path) {
-		// unc or drive
+        // unc or drive
         if ((PATH_SEP == path[0] && PATH_SEP == path[1]) ||
                 (isalpha((unsigned char)path[0]) && ':' == path[1])) {
             return TRUE;            /* //<server> or X:... */
         }
 
-		// enc
+        // enc
         if (IS_PATH_SEP(*path) &&
                 strncmp(path + 1, VFS_ENCODING_PREFIX, sizeof(VFS_ENCODING_PREFIX)-1) == 0) {
             return TRUE;            /* /#enc:xxxxx */
         }
 
-		// vfs
+        // vfs
         if (IS_PATH_SEP(*path)) {
             const char *cursor = ++path;
             while (*cursor && isalpha(*cursor))
@@ -200,6 +200,7 @@ vfs_canon (const char *path)
             curr_dir = vfs_get_current_dir ();
             local = mc_build_filename (curr_dir, path, (char *) NULL);
         }
+
         result = vfs_canon (local);
         g_free (local);
     }
