@@ -57,7 +57,9 @@
 
 #define _WIN32_WINNT 0x500
 #include <config.h>
+
 #include "libw32.h"
+#include "libw32/termemu_vio.h"                 /* vio driver */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -348,18 +350,6 @@ init_key (void)
     mc_global.tty.console_flag = '\001';        /* console save/restore, toggle available */
     tty_reset_prog_mode ();
 
-//  if (hWindow) {
-//	/* TODO, further work required + seperate DLL */
-//      if (! (hHook = SetWindowsHookEx(WH_MSGFILTER, (HOOKPROC)HookProc, 0, 0))) {
-//          const DWORD err = GetLastError();
-//          char buffer[128];
-//
-//          (void) _snprintf(buffer, sizeof(buffer), "SetWindowsHookEx, rc: %ld", (long)err);
-//          buffer[ sizeof(buffer) - 1] = 0;
-//          MessageBoxA(0, buffer, "Error", MB_OK);
-//      }
-//  }
-
     if (! CancelSynchronousIoFn) {
         HINSTANCE hKernel32;
                                                 /* thread handle; must duplicate as GetCurrentThread() is a pseudo handle */
@@ -375,19 +365,6 @@ init_key (void)
         }
     }
 }
-
-
-//  static LRESULT CALLBACK
-//  HookProc(int nCode, WPARAM wParam, LPARAM lParam)
-//  {
-//      if (nCode >= 0) {
-//          const LPMSG msg = (LPMSG)lParam;
-//          if (msg->message == WM_SIZE) {
-//              mc_global.tty.winch_flag = 1;   /* resize event */
-//          }
-//      }
-//      return CallNextHookEx(hHook, nCode, wParam, lParam);
-//  }
 
 
 static DWORD WINAPI
@@ -828,7 +805,11 @@ check_winch (int check_type)
         win32APICALL_HANDLE(hConsole, GetStdHandle(STD_OUTPUT_HANDLE));
         win32APICALL(GetConsoleScreenBufferInfo(hConsole, &sbinfo));
         rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
-        cols = 1 + sbinfo.srWindow.Right - sbinfo.srWindow.Left;
+        cols = 1 + sbinfo.srWindow.Right  - sbinfo.srWindow.Left;
+
+        if (rows < VIO_MINROWS) rows = VIO_MINROWS;
+        if (cols < VIO_MINCOLS) cols = VIO_MINCOLS;
+
         if (COLS != cols || LINES != rows) {    /* size change */
             resize = 1;
 
@@ -845,7 +826,7 @@ check_winch (int check_type)
         }
 
         if (resize || 1 == nfont) {             /* change; cache current */
-            mc_global.tty.winch_flag = TRUE;
+            ++mc_global.tty.winch_flag;
             if (-1 == nfont) {
                 SLtt_get_font(font, sizeof(font));
                 win32APICALL(GetWindowRect(GetConsoleWindow(), &rect));
@@ -874,12 +855,12 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
         return 0;                               /* not active */
     }
 
-    if (block || (dirty >= 2) || is_idle()) {   /* act on winch_flag, otherwise tty_refresh() */
+//  if (block || (dirty >= 2) || is_idle()) {   /* act on winch_flag, otherwise tty_refresh() */
         mc_refresh();
-        dirty = 1;
-    } else {
-        ++dirty;    /* update every 2nd poll */
-    }
+//      dirty = 1;
+//  } else {
+//      ++dirty;    /* update every 2nd poll */
+//  }
 
 #if defined(ENABLE_VFS)
     vfs_timeout_handler ();
@@ -937,7 +918,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                         /*
                          *  <Shift-Return> - Toggle screen size.
                          */
-                        mc_global.tty.winch_flag = TRUE;
+                        ++mc_global.tty.winch_flag;
                         SLsmg_togglesize();
                         c = -99;                // consume
                     }

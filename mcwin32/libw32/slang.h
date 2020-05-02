@@ -4,7 +4,7 @@
 /*
  * win32 <slang.h> partial implementation
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2020 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -172,28 +172,29 @@ LIBW32_API void             SLsmg_write_nstring (const char *s, unsigned n);
 LIBW32_API void             SLsmg_printf (const char *, ...);
 LIBW32_API void             SLsmg_vprintf (const char *fmt, va_list);
 LIBW32_API void             SLsmg_normal_video (void);
-LIBW32_API void             SLsmg_touch_lines (int, unsigned int);
+LIBW32_API void             SLsmg_touch_lines (int, unsigned);
 LIBW32_API void             SLsmg_touch_screen (void);
 LIBW32_API void             SLsmg_draw_object (int, int, SLwchar_Type);
-LIBW32_API void             SLsmg_draw_box (int, int, unsigned int, unsigned int);
+LIBW32_API void             SLsmg_draw_box (int, int, unsigned, unsigned);
 LIBW32_API void             SLsmg_draw_vline (int cnt);
 LIBW32_API void             SLsmg_draw_hline (int cnt);
 LIBW32_API int              SLsmg_get_row (void);
 LIBW32_API int              SLsmg_get_column (void);
-LIBW32_API void             SLsmg_fill_region (int, int, unsigned int, unsigned int, SLwchar_Type);
+LIBW32_API void             SLsmg_fill_region (int, int, unsigned, unsigned, SLwchar_Type);
+LIBW32_API void             SLsmg_forward (int n);
 
 LIBW32_API int              SLtt_initialize (const char *term);
 LIBW32_API void             SLtt_save (void);
 LIBW32_API void             SLtt_restore (void);
-LIBW32_API int              SLtt_set_font (const char *font);
+//  LIBW32_API int              SLtt_set_font (const char *font);
 LIBW32_API const char *     SLtt_get_font (char *buffer, size_t buflen);
 LIBW32_API void             SLtt_set_color (int, const char *, const char *, const char *);
 LIBW32_API void             SLtt_set_mono (int, char *, SLtt_Char_Type);
 LIBW32_API void             SLtt_add_color_attribute (int, SLtt_Char_Type);
 
-LIBW32_API void             SLtt_write_string (const char *);
+//  LIBW32_API void             SLtt_write_string (const char *);
 LIBW32_API void             SLtt_beep (void);
-LIBW32_API void             SLtt_normal_video (void);
+//  LIBW32_API void             SLtt_normal_video (void);
 
 LIBW32_API int              SLtt_tgetnum (const char *);
 LIBW32_API char *           SLtt_tigetent (const char *);

@@ -77,7 +77,6 @@ static void                         vio_trace(const char *, ...);
 #endif //DO_TRACE_LOG
 #endif //TRACE_LOG
 
-#define MAXROWS                     500
 #define MAXCOLORS                   256
 #define MAXOBJECTS                  256
 #define MASKOBJECTS                 0xff
@@ -361,7 +360,7 @@ static struct {                                 /* Video state */
 #define TOUCHED             0x01
 #define TRASHED             0x02
     unsigned            c_trashed;              /* Trashed signal */
-    struct sline        c_screen[MAXROWS];      /* Screen lines */
+    struct sline        c_screen[VIO_MAXROWS];  /* Screen lines */
 } vio;
 
 static const struct rgb rgb_colors256[256] = {
@@ -570,9 +569,14 @@ vio_init(void)
     //  Screen sizing
     //
     vio_size(&rows, &cols);                     // buffer size.
-    if (rows >= MAXROWS) {
-        rows = (MAXROWS - 1);                   // limit to supported width.
+    if (rows < VIO_MINROWS) {
+        rows = VIO_MINROWS;
+    } else if (rows > VIO_MAXROWS) {
+        rows = VIO_MAXROWS;                     // limit to supported width.
     }
+
+    if (cols < VIO_MINCOLS) cols = VIO_MINCOLS;
+        //Note: shouldnt occur, console limits ~6 to accommodate def buttons.
 
     if (fontprofile || vio.cols != cols || vio.rows != rows) {
         const WCHAR_INFO *oimage;
@@ -596,7 +600,7 @@ vio_init(void)
         assert(vio.chandle);
         assert(vio.whandle);
 
-        vio.size = rows * cols;
+        vio.size = rows * cols;                 // buffer size, in elements
         oimage = vio.image;
         vio.image = (WCHAR_INFO *)calloc(vio.size, sizeof(WCHAR_INFO));
         if (oimage) {                           // screen has resized
@@ -631,6 +635,8 @@ vio_init(void)
         vio.c_trashed = 1;
         vio.rows = rows;
         vio.cols = cols;
+
+        vio_goto(vio.c_row, vio.c_col);         // limit current cursor
 
         for (l = 0; l < rows; ++l) {
             vio.c_screen[l].flags = 0;
@@ -861,7 +867,7 @@ vio_profile(int rebuild)
                 vio.fcfamily  = cfix.FontFamily;
                 vio.fcweight  = cfix.FontWeight;
                 vio.fcfamily  = -1;
-                wcstombs(vio.fcfacename, cfix.FaceName, sizeof(vio.fcfacename));
+                wcstombs(vio.fcfacename, cfix.FaceName, sizeof(vio.fcfacename) /*bytes*/);
             }
 
         } else {
@@ -950,7 +956,7 @@ vio_profile(int rebuild)
                 TRACE_LOG(("Console Facenames (%u)\n", (unsigned)count))
                 TRACE_LOG(("  Idx  W x  H   Fam   Wgt  Facename\n"))
                 for (f = 0; f < count; ++f, ++cursor) {
-                    wcstombs(t_facename, cursor->FaceName, sizeof(t_facename));
+                    wcstombs(t_facename, cursor->FaceName, sizeof(t_facename) /*bytes*/);
                     TRACE_LOG(("  %2d: %2u x %2u, %4u, %4u, <%s>\n", (int)cursor->nFont, \
                         (unsigned)cursor->dwFontSize.X, (unsigned)cursor->dwFontSize.Y, \
                         (unsigned)cursor->FontFamily, (unsigned)cursor->FontWeight, t_facename))
@@ -1022,13 +1028,19 @@ IsVirtualConsole(int *depth)
 {
 #if !defined(ENABLE_VIRTUAL_TERMINAL_PROCESSING)
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+    // When writing with WriteFile or WriteConsole, characters are parsed for VT100 and similar control
+    // character sequences that control cursor movement, color/font mode, and other operations that can
+    // also be performed via the existing Console APIs.
 #endif
 #if !defined(DISABLE_NEWLINE_AUTO_RETURN)
 #define DISABLE_NEWLINE_AUTO_RETURN 0x0008
+    // When writing with WriteFile or WriteConsole, this adds an additional state to end-of-line wrapping
+    // that can delay the cursor move and buffer scroll operations.
 #endif
 #if !defined(ENABLE_INSERT_MODE)
 #define ENABLE_INSERT_MODE 0x0020
-    // When enabled, text entered in a console window will be inserted at the current cursor location and all text following that location will not be overwritten.
+    // When enabled, text entered in a console window will be inserted at the current cursor location and
+    // all text following that location will not be overwritten.
     // When disabled, all following text will be overwritten.
     // To enable this mode, use ENABLE_INSERT_MODE | ENABLE_EXTENDED_FLAGS.
     // To disable this mode, use ENABLE_EXTENDED_FLAGS without this flag.
@@ -1063,7 +1075,7 @@ IsVirtualConsole(int *depth)
                 *depth = t_depth;
                 return TRUE;
             } else if (SetConsoleMode(chandle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING)) {
-                (void)SetConsoleMode(chandle, mode);
+                (void) SetConsoleMode(chandle, mode);
                 *depth = t_depth;
                 return TRUE;
             }
@@ -1164,13 +1176,14 @@ vio_reset(void)
 {
     if (0 == vio.inited) return;                /* uninitialised */
 
-    vio.cols = vio.rows = 0;
     if (vio.image) {
         free(vio.iimage); vio.iimage = NULL;
         free(vio.oshadow); vio.oshadow = NULL;
         free(vio.oimage); vio.oimage = NULL;
         free(vio.image); vio.image = NULL;
     }
+    vio.c_col  = vio.c_row = 0;
+    vio.cols   = vio.rows = 0;
     vio.inited = 0;
 }
 
@@ -2990,12 +3003,9 @@ vio_close(void)
         vio_setsize(vio.maximised_oldrows, vio.maximised_oldcols);
         if (vio.isvirtualconsole) {
             if (3 == vio.isvirtualconsole) {    /* restore? */
-                DWORD mode = vio.oldConsoleMode;
+                const DWORD mode = vio.oldConsoleMode;
 
                 if (mode) {
-//XXX               if (mode & (ENABLE_QUICK_EDIT_MODE | ENABLE_INSERT_MODE)) {
-//                      mode |= ENABLE_EXTENDED_FLAGS;
-//                  }
                     (void) SetConsoleMode(vio.chandle, mode);
                 }
                 if (vio.oldConsoleCP) {
@@ -3161,7 +3171,10 @@ vio_cursor_state(void)
 void
 vio_goto(int row, int col)
 {
+    if (row >= vio.rows) row = vio.rows-1;
     vio.c_row = row;
+
+    if (col >= vio.cols) col = vio.cols-1;
     vio.c_col = col;
 }
 
@@ -3700,8 +3713,10 @@ vio_putc(unsigned ch, unsigned cnt, int move)
     }
     vio.c_screen[ row ].flags |= flags;
     if (move) {
+        assert(row >= 0 && row < vio.rows);
+        assert(col >= 0 && col < vio.cols);
         vio.c_col = col, vio.c_row = row;
     }
 }
-/*end*/
 
+/*end*/

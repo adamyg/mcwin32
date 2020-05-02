@@ -73,11 +73,10 @@ LIBW32_API int SLtt_Screen_Rows         = 0;
 LIBW32_API int SLtt_Screen_Cols         = 0;
 LIBW32_API int SLtt_Ignore_Beep         = 0;
 LIBW32_API int SLtt_Use_Ansi_Colors     = -1;   /* full color support */
+LIBW32_API int SLtt_True_Color          = 0;    /* extension */
 LIBW32_API int SLtt_Term_Cannot_Scroll  = 0;
 LIBW32_API int SLtt_Term_Cannot_Insert  = 0;
 LIBW32_API int SLtt_Try_Termcap         = 0;
-
-static int SLtt_True_Color              = 0;    // TODO
 
 static const uint32_t   acs_oem[128] = {        /* alternative character map to OEM/CP437 */
      /*
@@ -119,6 +118,7 @@ static const uint32_t   acs_oem[128] = {        /* alternative character map to 
         0xb3,   0xf3,   0xf2,   0xe3,   '!',    0x9c,   0xf9,   0x7f,
         };
 
+static void             set_position(int row, int col);
 static int              cliptoarena(int coord, int n, int start, int end, int *coordmin, int *coordmax);
 static void             write_char(SLwchar_Type ch, unsigned cnt);
 static void             write_string(const char *str, unsigned cnt);
@@ -159,6 +159,7 @@ int
 SLsmg_reinit_smg(void)
 {
     SLtt_Use_Ansi_Colors = -1;                  // reimport environment settings.
+    SLtt_True_Color = 0;
     SLsmg_init_smg();
     return 0;
 }
@@ -257,7 +258,7 @@ SLtt_restore(void)
  *      Mark the stated lines as trashed; requiring them to redrawn.
  **/
 void
-SLsmg_touch_lines(int row, unsigned int n)
+SLsmg_touch_lines(int row, unsigned n)
 {
     if (vio.inited) {
         int i, r1, r2;
@@ -300,9 +301,14 @@ SLtt_set_color(int obj, const char *what, const char *fg, const char *bg)
 const char *
 SLtt_get_font(char *buffer, size_t buflen)
 {
-    if (buffer && buflen > 0) {
-        _snprintf(buffer, buflen, "%s %dx%d", vio.fcfacename, vio.fcwidth, vio.fcheight);
-        buffer[buflen-1]=0;
+    if (buffer && buflen) {                     /* user buffer? */
+        int len;
+
+        if ((len = _snprintf(buffer, buflen, "%s %dx%d",
+                        vio.fcfacename, vio.fcwidth, vio.fcheight)) < 0 ||
+                (size_t)len >= buflen) {
+            buffer[buflen-1] = 0;               /* error/overflow */
+        }
         return buffer;
     }
     return vio.fcfacename;
@@ -336,7 +342,7 @@ SLtt_add_color_attribute(int obj, SLtt_Char_Type attr)
 void
 SLtt_set_mono(int obj, char *name, SLtt_Char_Type c)
 {
-    assert(0); //TODO
+    assert(0);                                  // TODO
 }
 
 
@@ -378,6 +384,7 @@ SLtt_tgetnum(const char *key)
 char *
 SLtt_tigetent(const char *key)
 {
+    (void) key;
     return NULL;
 }
 
@@ -389,6 +396,8 @@ SLtt_tigetent(const char *key)
 char *
 SLtt_tigetstr(const char *a, char **b)
 {
+    (void) a;
+    (void) b;
     return NULL;
 }
 
@@ -433,8 +442,7 @@ SLsmg_get_column(void)
 void
 SLsmg_set_color(int obj)
 {
-    assert(obj >= 0);
-    assert(obj < MAXCOLORS);
+    assert(obj >= 0 && obj < MAXCOLORS);
     vio_set_colorattr(obj);
 }
 
@@ -454,8 +462,7 @@ static uint32_t
 acs_lookup(uint32_t ch)
 {
     if (ch <= 127) {                            // OEM or UNICODE selection required
-//      assert(vio.acsmap);
-//      ch = vio.acsmap[ ch ] | ISACS;
+//      ch = (vio.acsmap ? vio.acsmap[ ch ] : acs_characters[ ch ]) | ISACS;
         ch = acs_characters[ ch ] | ISACS;
     }
     return ch;
@@ -554,20 +561,30 @@ unicode_map(uint32_t ch)
 #endif  //XXX
 
 
+static void
+set_position(int row, int col)
+{
+    assert(row >= 0 && row < vio.rows);
+    assert(col >= 0 && col < vio.cols);
+    vio.c_row = (row < 0 ? 0 : (row >= vio.rows ? vio.rows-1 : row));
+    vio.c_col = (col < 0 ? 0 : (col >= vio.cols ? vio.cols-1 : col));
+}
+
+
 static int
 cliptoarena(int coord, int n, int start, int end, int *coordmin, int *coordmax)
 {
     int coord_max;
 
-    if (n < 0) return 0;
-    if (coord >= end) return 0;
+    if (n < 0) return 0;                        /* out-of-bounds */
+    if (coord >= end) return 0;                 /* out-of-bounds */
     coord_max = coord + n;
-    if (coord_max <= start) return 0;
+    if (coord_max <= start) return 0;           /* out-of-bounds */
     if (coord < start) coord = start;
     if (coord_max >= end) coord_max = end;
     *coordmin = coord;
     *coordmax = coord_max;
-    return 1;
+    return 1;   /*success*/
 }
 
 
@@ -578,7 +595,9 @@ write_char(SLwchar_Type ch, unsigned cnt)
     int row = vio.c_row, col = vio.c_col;
     unsigned flags = 0;
 
-    if (0 == vio.inited) return;
+    assert(vio.inited);                         /* not initialised */
+    assert(row >= 0 && row <  vio.rows);
+    assert(col >= 0 && col <= vio.cols);        /* note: allow position off-screen +1 */
 
     cursor  = vio.c_screen[ row ].text;
     cend    = cursor + vio.cols;
@@ -594,6 +613,7 @@ write_char(SLwchar_Type ch, unsigned cnt)
         ++col;
     }
     vio.c_screen[ row ].flags |= flags;
+    assert(col >= 0 && col <= vio.cols);        /* note: allow position off-screen +1 */
     vio.c_col = col;
 }
 
@@ -679,7 +699,7 @@ top:                                            /* get here only on newline */
             /*
              *  ~^[char]
              */
-            if (ch & 0x80) {
+            if ((ch & 0x80) && cursor < cend) {
                 if (WCHAR_UPDATE(cursor, '~', color)) {
                     flags |= TOUCHED;
                 }
@@ -707,6 +727,7 @@ top:                                            /* get here only on newline */
     }
 
     vio.c_screen[vio.c_row].flags |= flags;
+    assert(col >= 0 && col <= vio.cols);        /* note: allow final position off-screen */
     vio.c_col = col;
 
 #if defined(SLSMG_NEWLINE_SCROLLS)
@@ -725,9 +746,8 @@ top:                                            /* get here only on newline */
         }
     }
 
-    ++vio.c_row;
     vio.c_col = 0;
-    if (vio.c_row >= vio.c_rows) {
+    if (++vio.c_row >= vio.c_rows) {
         if (SLsmg_Newline_Behavior == SLSMG_NEWLINE_SCROLLS) {
             scroll_up();
         }
@@ -762,11 +782,13 @@ SLsmg_vprintf(const char *fmt, va_list ap)
     char buf[4*1024];
     int len;
 
-    if (0 == vio.inited) return;
-    len = _vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
-    assert(len >= 0 && len < sizeof(buf));
+    if (0 == vio.inited) return;                /* not initialised */
+
+    if ((len = _vsnprintf(buf, sizeof(buf), fmt, ap)) < 0 || len >= sizeof(buf)) {
+        len = sizeof(buf);                      /* error/overflow */
+    }
     if (len > 0) {
-        buf[len] = 0; write_string(buf, len);
+        write_string(buf, (unsigned)len);       /* export */
     }
 }
 
@@ -778,7 +800,8 @@ SLsmg_vprintf(const char *fmt, va_list ap)
 void
 SLsmg_write_string(const char *s)
 {
-    if (0 == vio.inited) return;
+    if (0 == vio.inited) return;                /* not initialised */
+
     if (s) write_string(s, strlen(s));
 }
 
@@ -790,7 +813,8 @@ SLsmg_write_string(const char *s)
 void
 SLsmg_write_nstring(const char *s, unsigned n)
 {
-    if (0 == vio.inited) return;
+    if (0 == vio.inited) return;                /* not initialised */
+
     if (s && n) write_string(s, n);
 }
 
@@ -802,7 +826,8 @@ SLsmg_write_nstring(const char *s, unsigned n)
 void
 SLsmg_write_char(SLwchar_Type ch)
 {
-    if (0 == vio.inited) return;
+    if (0 == vio.inited) return;                /* not initialised */
+
     if (SLsmg_Display_Alt_Chars) {
         ch = acs_lookup(ch);
     }
@@ -829,11 +854,11 @@ SLsmg_write_char(SLwchar_Type ch)
  *          SLSMG_PLUS_CHAR         Plus or Cross character.
  **/
 void
-SLsmg_draw_object(int r, int c, SLwchar_Type object)
+SLsmg_draw_object(int row, int col, SLwchar_Type object)
 {
-    if (0 == vio.inited) return;
-    vio.c_row = r;
-    vio.c_col = c;
+    if (0 == vio.inited) return;                /* not initialised */
+
+    set_position(row, col);
     write_char(acs_lookup(object), 1);
 }
 
@@ -850,7 +875,8 @@ SLsmg_draw_hline(int cnt)
     const int endcol = vio.c_col + cnt;
     int cmin, cmax;
 
-    if (0 == vio.inited || cnt <= 0) return;
+    if (0 == vio.inited) return;                /* not initialised */
+    if (cnt <= 0) return;                       /* invalid count */
 
     if (vio.c_row < 0 || vio.c_row >= vio.rows ||
             (0 == cliptoarena(vio.c_col, cnt, 0, vio.cols, &cmin, &cmax))) {
@@ -879,7 +905,8 @@ SLsmg_draw_vline(int cnt)
     const int endrow = vio.c_row + cnt, col = vio.c_col;
     int rmin, rmax;
 
-    if (0 == vio.inited || cnt <= 0) return;
+    if (0 == vio.inited) return;                /* not initialised */
+    if (cnt <= 0) return;                       /* invalid count */
 
     if (col < 0 || col >= vio.cols ||
             (0 == cliptoarena(vio.c_row, cnt, 0, vio.rows, &rmin, &rmax))) {
@@ -903,12 +930,16 @@ SLsmg_draw_vline(int cnt)
  *      The width and length of the box is specified by 'dc' and 'dr', respectively.
  **/
 void
-SLsmg_draw_box(int r, int c, unsigned int dr, unsigned int dc)
+SLsmg_draw_box(int r, int c, unsigned dr, unsigned dc)
 {
-    if (0 == vio.inited || !dr || !dc) return;
+    if (0 == vio.inited) return;                /* not initialised */
+
+    if (r > vio.rows || c > vio.cols) return;   /* out-of-bounds */
+    if (0 == dr || 0 == dc) return;             /* zero size */
 
     vio.c_row = r; vio.c_col = c;
-    dr--; dc--;
+
+    --dr; --dc;
     SLsmg_draw_hline(dc);
     SLsmg_draw_vline(dr);
     vio.c_row = r; vio.c_col = c;
@@ -935,12 +966,18 @@ SLsmg_fill_region(int r, int c, unsigned nr, unsigned nc, SLwchar_Type ch)
 {
     int rmin, rmax, cmin, cmax;
 
-    if (0 == vio.inited || !nr || !nc) return;
+    if (0 == vio.inited) return;                /* not initialised */
+    if (0 == nr || 0 == nc) return;             /* zero size */
 
     if (1 == cliptoarena(r, nr, 0, vio.rows, &rmin, &rmax) &&
             1 == cliptoarena(c, nc, 0, vio.cols, &cmin, &cmax)) {
         WCHAR_INFO text = {0};
         int i;
+
+        assert(r >= 0 && r < vio.rows);
+        assert(c >= 0 && c < vio.cols);
+        assert(rmin >= 0 && rmax <= vio.rows);
+        assert(cmin >= 0 && cmax <= vio.cols);
 
         WCHAR_BUILD(ch, &vio.c_color, &text);
         for (i = rmin; i < rmax; ++i) {
@@ -960,6 +997,13 @@ SLsmg_fill_region(int r, int c, unsigned nr, unsigned nc, SLwchar_Type ch)
 
         vio.c_row = r; vio.c_col = c;
     }
+}
+
+
+void
+SLsmg_forward (int n)
+{
+    set_position (vio.c_row + n, vio.c_col);
 }
 
 

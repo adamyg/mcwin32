@@ -25,6 +25,7 @@
  */
 
 #include <config.h>
+
 #include "libw32.h"
 #include "libw32/termemu_vio.h"                 /* vio driver */
 
@@ -76,7 +77,7 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
     key_mouse_mode (mouse_enable);
     SLsmg_init_smg ();
 
-    if ((COLS < 10) || (LINES < 5) || (COLS > 500) || (LINES > 500)) {
+    if ((COLS < 10) || (LINES < 5) || (COLS > VIO_MAXCOLS) || (LINES > VIO_MAXROWS)) {
         fprintf (stderr,
                  _("Screen size %dx%d is not supported; limit 500x500.\n"
                    "Check console properties.\n"), COLS, LINES);
@@ -193,15 +194,15 @@ tty_reset_screen (void)
 void
 tty_touch_screen (void)
 {
-    SLsmg_touch_lines(0, LINES);
-    SLsmg_touch_screen();
+    SLsmg_touch_lines (0, LINES);
+    SLsmg_touch_screen ();
 }
 
 
 void
 tty_gotoyx (int y, int x)
 {
-    SLsmg_gotorc(y, x);
+    SLsmg_gotorc (y, x);
 }
 
 
