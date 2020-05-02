@@ -98,6 +98,8 @@ static void             my_setpathenv (const char *name, const char *value, int 
 static void             unixpath (char *path);
 static void             dospath (char *path);
 
+static const char *     IsScript (const char *cmd);
+
 static int              system_bustargs (char *cmd, const char **argv, int cnt);
 static int              system_SET (int argc, const char **argv);
 
@@ -993,7 +995,7 @@ my_systemv_flags (int flags, const char *command, char *const argv[])
 int
 my_system(int flags, const char *shell, const char *cmd)
 {
-    const char *busybox = getenv("MC_BUSYBOX");
+    const char *busybox = getenv("MC_BUSYBOX"), *exec = NULL;
     int shelllen, ret = -1;
 
     if ((flags & EXECUTE_INTERNAL) && cmd) {
@@ -1021,15 +1023,31 @@ my_system(int flags, const char *shell, const char *cmd)
                              char *t_cmd;
 
                              if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
-//                               key_shell_mode();
                                  ret = w32_shell(NULL, t_cmd, NULL, NULL, NULL);
-//                               key_prog_mode();
                                  g_free(t_cmd);
                              }
                              return ret;
                          }
                      }
                 }
+
+            } else if ((flags & EXECUTE_AS_SHELL) && NULL != (exec = IsScript(cmd))) {
+                /*
+                 *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python | /usr/bin/env python>
+                 *  note: currently limited to extfs usage.
+                 */
+                char *t_cmd;
+
+                if (exec[0] == 'p') {           /* perl/python */
+                    t_cmd = g_strconcat(exec, " ", cmd, NULL);
+                } else {                        /* sh/ash/bash */
+                    t_cmd = g_strconcat("\"", busybox, "\" ", exec, " ", cmd, NULL);
+                }
+                if (t_cmd) {
+                    ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
+                    g_free(t_cmd);
+                }
+                return ret;
 
             } else {
                  /*
@@ -1043,9 +1061,7 @@ my_system(int flags, const char *shell, const char *cmd)
                     char *t_cmd;
 
                     if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" sh", space, NULL))) {
-//                      key_shell_mode();
                         ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
-//                      key_prog_mode();
                         g_free(t_cmd);
                     }
                     return ret;
@@ -1076,9 +1092,7 @@ my_system(int flags, const char *shell, const char *cmd)
                         char *t_cmd;
 
                         if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
-//                          key_shell_mode();
                             ret = w32_shell(NULL, t_cmd, NULL, NULL, NULL);
-//                          key_prog_mode();
                             g_free(t_cmd);
                         }
                         return ret;
@@ -1101,17 +1115,13 @@ my_system(int flags, const char *shell, const char *cmd)
             for (cursor = t_cmd; *cursor && *cursor != ' '; ++cursor) {
                 if ('/' == *cursor) *cursor = '\\';
             }
-//          key_shell_mode();
             ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
-//          key_prog_mode();
             free(t_cmd);
             return ret;
         }
     }
 
-//  key_shell_mode();
     ret = w32_shell(shell, cmd, NULL, NULL, NULL);
-//  key_prog_mode();
     return ret;
 }
 
@@ -1186,7 +1196,24 @@ IsScript(const char *cmd)
                         script = "perl";
                     else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1)))
                         script = "python";
+                    else if (0 == strncmp(exec, "usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
+                        //
+                        //  Example:
+                        //  #! /usr/bin/env python
+                        const char *exec2 = exec + len;
+                        int len2;
+
+                        while (*exec2 && ' ' == *exec2) { ++exec2, ++len; }
+                        if (0 == strncmp(exec2, "python", len2 = (sizeof("python")-1))) {
+                            script = "python";
+                            len += len2;
+                        } else if (0 == strncmp(exec2, "python3", len2 = (sizeof("python3")-1))) {
+                            script = "python3";
+                            len += len2;
+                        }
+                    }
                     //else, ignore others
+
                     if (script && exec[len] != ' ' && exec[len] != '\n' && exec[len] != '\r') {
                         script = NULL;          //bad termination, ignore
                     }
@@ -1224,7 +1251,7 @@ win32_popen(const char *cmd, const char *mode)
         }
     } else if (busybox && *busybox && NULL != (exec = IsScript(cmd))) {
         /*
-         *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python>
+         *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python | /usr/bin/env python>
          *      note: currently limited to extfs usage.
          */
         char *t_cmd = NULL;
@@ -1253,7 +1280,7 @@ win32_popen(const char *cmd, const char *mode)
             if (0 != (hThread = CreateThread(NULL, 0, pipe_thread, NULL, 0, NULL))) {
                 SetThreadPriority(hThread, THREAD_PRIORITY_ABOVE_NORMAL);
                 CloseHandle(hThread);
-                sleep(10);                      /* yield */
+                sleep(3);                       /* yield */
             }
         }
     }
