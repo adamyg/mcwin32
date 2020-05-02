@@ -1,8 +1,26 @@
-Thu Apr 30 00:37:42 2020 adamy
+Sat May  2 00:46:45 2020 adamy
+
+	* Build 216: 4.8.24 beta2
+
+	* Path/drive tweaks
+		- Correctly handle return from a vfs context back to a local directory.
+
+	* Display driver
+		- Better handling of small window sizes, limited internally to 2x12.
+
+	* Drive selection
+		- Select active widget based on cwd.
+		- Handle selection within a vfs context (for example ftp/sftp).
+
+	* libssh 1.9.0
+		- mbedtls engine.
+		- libssh2_helper's
 
 	* libmbedtls 4.16.6
 
 Tue Apr 28 01:16:29 2020 adamy
+
+	* Build 215: 4.8.24 beta1
 
 	* Display driver
 		- Obey console rgb palette, if available, when dealing with legacy attributes.
@@ -13,7 +31,7 @@ Tue Apr 28 01:16:29 2020 adamy
 		- Obey '--nomouse' command line option.
 
 	* use_internal_busybox option,
-		Execute several very-known unix command-line apps via busybox 
+		Execute several very-known unix command-line apps via busybox
 		==> [Configuration/Use internal Busybox (Default FALSE)].
 
 	* 4.8.24 merge
