@@ -64,6 +64,31 @@
 static void             drive_sel (WPanel *panel);
 static cb_ret_t         drive_dlg_callback (Widget * h, Widget * sender, widget_msg_t msg, int parm, void *data);
 
+//  #define DO_NETWORK_DRIVES                   /* test only */
+#if defined(DO_NETWORK_DRIVES)
+
+typedef DWORD (__stdcall *WNetOpenEnumA_t)(DWORD, DWORD, DWORD, NETRESOURCE *, HANDLE*);
+typedef DWORD (__stdcall *WNetEnumResourceA_t)(HANDLE, DWORD *, void *, DWORD *);
+typedef DWORD (__stdcall *WNetCloseEnum_t)(HANDLE);
+
+struct WNetFunctions {
+    int state;
+    HANDLE mpr;
+    WNetOpenEnumA_t fnWNetOpenEnumA;
+    WNetEnumResourceA_t fnWNetEnumResourceA;
+    WNetCloseEnum_t fnWNetCloseEnum;
+};
+
+struct NetworkDrive {
+    const char *local;
+    const char *remote;
+        // [loca/remote storage ]
+};
+
+static int              drive_network_names (int global, GQueue *result);
+static int              enumerate_disks (int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueue *result);
+#endif  //DO_NETWORK_DRIVES
+
 
 void
 drive_cmd(void)
@@ -106,14 +131,21 @@ drive_sel(WPanel *panel)
     int x_pos, y_pos, y_height, x_width;
     char root[4] = "?:\\";
     WDialog *drive_dlg;
-    int totaldrives, d;
+    int totaldrives = 0, groupidx = 0, d;
+    char currentdrive = 0;
     const char *path;
     WGroup *g;
     GQueue *buttons;
 
-    /* Get active drives name and count */
-    GetLogicalDriveStrings(sizeof(t_drives) - 1, t_drives);
-    for (totaldrives = 0, path = t_drives, cursor = drives; *path;) {
+    /* Active local drives */
+    if (NULL != (path = vfs_get_current_dir ())) {
+        if (path[0] && ':' == path[1]) {        /* X:.... */
+            currentdrive = toupper (*path);
+        }
+    }
+
+    GetLogicalDriveStringsA(sizeof(t_drives) - 1, t_drives);
+    for (path = t_drives, cursor = drives; *path;) {
         const int length = strlen(path);
         const char drive = toupper(*path);
         int type;
@@ -122,16 +154,31 @@ drive_sel(WPanel *panel)
         assert(drive >= 'A' && drive <= 'Z');
 
         root[0] = drive;
-        if ((type = GetDriveType(root)) != DRIVE_UNKNOWN && type != DRIVE_NO_ROOT_DIR)
+        if ((type = GetDriveType(root)) != DRIVE_UNKNOWN && type != DRIVE_NO_ROOT_DIR) {
             if (drive < 'C' ||                  /* assume floppies; FIXME, shell32?? */
                     GetDiskFreeSpaceExA(root, NULL, NULL, NULL)) {
                 (void) memcpy(cursor, path, length);
+                if (drive == currentdrive) {
+                    groupidx = totaldrives;     /* initial selection index */
+                }
                 cursor[0] = drive;
                 cursor += length + 1;
                 ++totaldrives;
             }
+        }
         path += length + 1;
     }
+
+
+    /* Network resources */
+#if defined(DO_NETWORK_DRIVES)
+    {                                           /* test only */
+        GQueue *network_drives = g_queue_new();
+        int elements = drive_network_names (TRUE, network_drives);
+        g_queue_free_full (network_drives, free);
+    }
+#endif  //DO_NETWORK_DRIVES
+
 
     /* Create Dialog */
 #define D_PERLINE       12                      /* dynamic, based on screen width?? */
@@ -190,8 +237,12 @@ drive_sel(WPanel *panel)
         }
     }
 
-    while (! g_queue_is_empty (buttons)) {
+    while (! g_queue_is_empty (buttons)) {      /* drive widgets */
         group_add_widget (g, g_queue_pop_tail(buttons));
+    }
+
+    while (groupidx-- > 0) {                    /* select current working drive */
+        group_select_next_widget (g);
     }
 
     g_queue_free (buttons);
@@ -201,18 +252,18 @@ drive_sel(WPanel *panel)
 
     if (drive_dlg->ret_value != B_CANCEL) {
         const int is_right = (panel == right_panel ? 1 : 0);
-        const int drive = (drive_dlg->ret_value - B_USER);
+        const int drive_idx = (drive_dlg->ret_value - B_USER);
 
         for (path = drives, d = 0; d < totaldrives; ++d) {
-            if (d == drive) {
-                char t_cwd[MAX_PATH];
+            if (d == drive_idx) {               /* drive selection */
+                const char *curr_dir = vfs_get_current_dir ();
+                const char drive = *path;
 
-                w32_getcwd(t_cwd, sizeof(t_cwd));
-                if (toupper(*t_cwd) != *path) {
-                    char t_path[MAX_PATH];
+                if (!*curr_dir || toupper(*curr_dir) != drive) {
+                    char t_path[MAX_PATH], t_cwd[MAX_PATH];
 
-                    if (! w32_getcwdd(*path, t_path, sizeof(t_path))) {
-                        t_path[0] = *path;
+                    if (! w32_getcwdd(drive, t_path, sizeof(t_path))) {
+                        t_path[0] = drive;
                         t_path[1] = ':';
                         t_path[2] = 0;
                     }
@@ -221,7 +272,7 @@ drive_sel(WPanel *panel)
                         vfs_path_t *cwd_vdir;
 
                         w32_getcwd (t_cwd, sizeof(t_cwd));
-                        cwd_vdir = vfs_path_from_str(t_cwd);
+                        cwd_vdir = vfs_path_from_str (t_cwd);
                         if (get_panel_type (is_right) != view_listing) {
                             create_panel (is_right, view_listing);
                         }
@@ -233,7 +284,7 @@ drive_sel(WPanel *panel)
                                     unix_error_string (errno));
                     }
                 }
-                break;
+                break;  //done
             }
             path += strlen(path) + 1;
         }
@@ -274,5 +325,117 @@ drive_dlg_callback (Widget * h, Widget * sender, widget_msg_t msg, int parm, voi
     /*NOTREACHED*/
     return 0;
 }
+
+
+#if defined(DO_NETWORK_DRIVES)
+static int
+drive_network_names(int global, GQueue *result)
+{
+    static struct WNetFunctions fns = {0};
+
+    if (0 == fns.state) {                       // initial request
+        fns.state = -1;
+        if (NULL != (fns.mpr = LoadLibraryA ("MPR.DLL"))) {
+            fns.fnWNetOpenEnumA = (WNetOpenEnumA_t) GetProcAddress (fns.mpr, "WNetOpenEnumA");
+            fns.fnWNetEnumResourceA = (WNetEnumResourceA_t) GetProcAddress (fns.mpr, "WNetEnumResourceA");
+            fns.fnWNetCloseEnum = (WNetCloseEnum_t) GetProcAddress (fns.mpr, "WNetCloseEnum");
+            if (fns.fnWNetOpenEnumA && fns.fnWNetEnumResourceA && fns.fnWNetCloseEnum) {
+                fns.state = 1;                  // done
+            } else {
+                FreeLibrary (fns.mpr);
+                fns.mpr = 0;
+            }
+        }
+    }
+
+    if (1 == fns.state) {                       // success
+        return enumerate_disks(global, &fns, NULL, result);
+    }
+    return -1;
+}
+#endif  //DO_NETWORK_DRIVES
+
+
+#if defined(DO_NETWORK_DRIVES)
+static int
+enumerate_disks(int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueue *result)
+{
+    const unsigned scope = (global ? RESOURCE_GLOBALNET : RESOURCE_CONNECTED);
+    int elements = 0;
+    HANDLE hEnum = 0;
+    DWORD dwResult;
+
+    if (NO_ERROR == (dwResult = fns->fnWNetOpenEnumA(scope, RESOURCETYPE_DISK, 0, lpnr, &hEnum))) {
+        DWORD dwSize = 256, dwOrgSize = dwSize;
+        NETRESOURCE *pnr = (NETRESOURCE *)calloc(dwSize, 1);
+        DWORD cEntries = (DWORD)-1, cIndex;
+
+        while (pnr) {
+            if (NO_ERROR == (dwResult = fns->fnWNetEnumResourceA(hEnum, &cEntries, pnr, &dwSize))) { 
+                //
+                //  Iterate result
+                for (cIndex = 0; cIndex < cEntries; ++cIndex) {
+                    NETRESOURCE *nr = pnr + cIndex;
+                    
+                    if (RESOURCEUSAGE_CONTAINER == (nr->dwUsage & RESOURCEUSAGE_CONTAINER)) {
+                        // If the NETRESOURCE structure represents a container resource,
+                        // call the EnumerateFunc function recursively.
+                        int subelements;
+
+                        if ((subelements = enumerate_disks(global, fns, nr, result)) < 0) {
+                            break;              // error
+                        }
+                        elements += subelements;
+
+                    } else {
+                        const size_t localsz = strlen(nr->lpLocalName) + 1,
+                            remotesz = strlen(nr->lpRemoteName) + 1;
+                        struct NetworkDrive *pnd = NULL;
+
+                        assert(RESOURCETYPE_DISK == nr->dwType);
+                        if (NULL != (pnd = (struct NetworkDrive *)
+                                calloc(sizeof(struct NetworkDrive) + localsz + remotesz, 1))) {
+                            char *cursor = (char *)(pnd + 1);
+
+                            pnd->local = cursor, memcpy(cursor, nr->lpLocalName, localsz), cursor += localsz;
+                            pnd->remote = cursor, memcpy(cursor, nr->lpRemoteName, remotesz);
+                            g_queue_push_tail(result, pnd);
+                            ++elements;
+                        }
+                    }
+                }
+                continue;   //next
+
+            } else if (ERROR_MORE_DATA == dwResult) {
+                //
+                //  Extend storage
+                NETRESOURCE *org_pnr = pnr;
+
+                assert(dwSize > dwOrgSize);
+                if (NULL == (pnr = (NETRESOURCE*) realloc(pnr, dwSize))) {
+                    free((void *)org_pnr);      // error, release previous
+                } else {
+                    memset(pnr + dwOrgSize, 0, dwSize - dwOrgSize);
+                    dwOrgSize = dwSize;
+                }
+                continue;   //next
+
+            } else if (ERROR_NO_MORE_ITEMS != dwResult) {
+                //
+                //  Completion or error
+                elements = -1;
+            }
+            break;  //done
+        }
+
+        if (NO_ERROR != fns->fnWNetCloseEnum(hEnum) || NULL == pnr) {
+            elements = -1;                  // WNetCloseEnum failure/or memory.
+        }
+        free((void *)pnr);
+    }
+
+    return elements;
+}
+#endif  //DO_NETWORK_DRIVES
 
 /*end*/
