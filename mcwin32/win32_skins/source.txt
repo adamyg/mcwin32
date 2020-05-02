@@ -1,26 +1,68 @@
 
    Additional skins:
 
-        Ajnasz Skin
-                https://gist.github.com/Ajnasz/8685681
 
-        Jedi Skin
-                http://ooommm.org/sudelwiki/Midnight_Commander
+	o Ajnasz-blue
 
-        bluemoon
-                http://zool.in.ua/software-en-US/bluemoon/
+		Author: Ajnasz Skin
 
-                also http://code.google.com/p/jcoffeehome/source/browse/
-                        trunk/tools/linux/userHome/.mc/skins/bluemoon.ini?spec=svn225&r=225
+                Source: https://gist.github.com/Ajnasz/8685681
 
-        darkened
+
+        o Jedi Skin
+
+		Author: n/a
+
+                Source: http://ooommm.org/sudelwiki/Midnight_Commander (defunct)
+
+
+        o bluemoon
+
+                Author: Artyom Bisyarin
+
+		Source:
+		   http://zool.in.ua/software-en-US/bluemoon/#skin-way
+
+		   https://gist.github.com/kwmiebach/0a88853c00f2c1fa2e6e
+
+
+        o darkened
+
+		Author: Zoltan Puskas
+
                 https://sinustrom.info/2014/03/23/midnight-commander-dark-color-scheme/
 
-        darkone
-                http://blog.miranda.or.at/2010/04/editing-skins-for-midnight-commander
 
-        ovidiu
-                http://blog.mybox.ro/2010/05/10/skins-and-color-themes-for-midnight-commander/
+        o darkone
 
-        elite-commander
-                http://blog.yjl.ie/2010/01/elite-commander-skin-for-midnight.html
+		Author: Zoltan Puskas
+
+                Source: http://blog.miranda.or.at/2010/04/editing-skins-for-midnight-commander
+
+
+        o ovidiu
+
+		Author: n/a
+
+                Source:
+
+                   - http://blog.mybox.ro/2010/05/10/skins-and-color-themes-for-midnight-commander (original)
+
+		   - https://blog.linuxway.cz/2014/12/07/midnight-commander-ovidius-skin (referenced)
+
+
+        o elite-commander
+
+		Author: Yu-Jie Lin
+
+                Source: http://yjlv.blogspot.com/2010/01/elite-commander-skin-for-midnight.html
+
+
+        o electricblue256
+
+		Author: Alexandros Kastanis
+
+                Source: https://github.com/alexk7110/mc-electricblue256-skin
+
+
+                                          --end--
