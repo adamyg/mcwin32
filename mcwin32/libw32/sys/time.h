@@ -123,8 +123,8 @@ __BEGIN_DECLS
 #define ITIMER_VIRTUAL  1               /* Decrements in process virtual time. */
 #define ITIMER_PROF     2               /* Decrements both in process virtual time and when the system is running on behalf of the process. */
 
-LIBW32_API int          getitimer(int which, struct itimerval *);
-LIBW32_API int          setitimer(int which, const struct itimerval *value, struct timeval *ovalue);
+LIBW32_API int          getitimer(int which, struct itimerval *value);
+LIBW32_API int          setitimer(int which, const struct itimerval *value, struct itimerval *ovalue);
 
 #if defined(_WINSOCKAPI_) || defined(_WINSOCK2API_)
 LIBW32_API int          w32_gettimeofday(struct timeval *, /*struct timezone*/ void *);
