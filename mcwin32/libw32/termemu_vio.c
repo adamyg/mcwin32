@@ -23,7 +23,7 @@
 
 /*
  * Notes:
- *   o Extended 256 color mode is experimental/work in progress.
+ *   o 256 color mode available under both Legacy and Win10 enhanced console.
  *   o Use of non-monospaced fonts are not advised unless UNICODE characters are required.
  *   o Neither wide nor combined characters are fully addressed.
  */
@@ -1901,14 +1901,6 @@ CopyOutEx2(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
                     vio.isvirtualconsole = 3;   // update/restore
                 }
             }
-
-            //
-            // extended features -- disable.
-//XXX       if (mode & (ENABLE_QUICK_EDIT_MODE | ENABLE_INSERT_MODE)) {
-//              mode &= ~(ENABLE_QUICK_EDIT_MODE | ENABLE_INSERT_MODE);
-//              mode |= ENABLE_EXTENDED_FLAGS;
-//              vio.isvirtualconsole = 3;       // update/restore
-//          }
 
             if (3 == vio.isvirtualconsole) {
                 (void) SetConsoleMode(chandle, mode);
