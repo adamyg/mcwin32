@@ -656,14 +656,10 @@ top:                                            /* get here only on newline */
                 str = t_str;
 
                 if (SLsmg_Display_Alt_Chars) cooked = acs_lookup(cooked);
-                if (WCHAR_UPDATE(cursor, cooked, color)) {
-                    flags |= TOUCHED;
-                }
+                flags |= WCHAR_UPDATE(cursor, cooked, color);
             } else {
                 if (SLsmg_Display_Alt_Chars) ch = (unsigned char)acs_lookup(ch);
-                if (WCHAR_UPDATE(cursor, ch, color)) {
-                    flags |= TOUCHED;
-                }
+                flags |= WCHAR_UPDATE(cursor, ch, color);
             }
 
             ++cursor;
@@ -700,25 +696,19 @@ top:                                            /* get here only on newline */
              *  ~^[char]
              */
             if ((ch & 0x80) && cursor < cend) {
-                if (WCHAR_UPDATE(cursor, '~', color)) {
-                    flags |= TOUCHED;
-                }
+                flags |= WCHAR_UPDATE(cursor, '~', color);
                 ch &= 0x7F;
                 ++cursor;
                 ++col;
             }
 
             if (cursor < cend) {
-                if (WCHAR_UPDATE(cursor, '^', color)) {
-                    flags |= TOUCHED;
-                }
+                flags |= WCHAR_UPDATE(cursor, '^', color);
                 ++cursor;
                 ++col;
 
                 if (cursor < cend) {
-                    if (WCHAR_UPDATE(cursor, (127 == ch ? '?' : ch + '@'), color)) {
-                        flags |= TOUCHED;
-                    }
+                    flags |= WCHAR_UPDATE(cursor, (127 == ch ? '?' : ch + '@'), color);
                     ++cursor;
                     ++col;
                 }
@@ -726,7 +716,7 @@ top:                                            /* get here only on newline */
         }
     }
 
-    vio.c_screen[vio.c_row].flags |= flags;
+    if (flags) vio.c_screen[vio.c_row].flags |= flags;
     assert(col >= 0 && col <= vio.cols);        /* note: allow final position off-screen */
     vio.c_col = col;
 

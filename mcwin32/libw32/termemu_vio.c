@@ -204,7 +204,7 @@ static uint32_t         unicode_remap(uint32_t ch);
 
 static __inline void    WCHAR_BUILD(const uint32_t ch, const struct WCHAR_COLORINFO *color, WCHAR_INFO *ci);
 static __inline BOOL    WCHAR_COMPARE(const WCHAR_INFO *c1, const WCHAR_INFO *c2);
-static __inline int     WCHAR_UPDATE(WCHAR_INFO *cursor, const uint32_t ch, const struct WCHAR_COLORINFO *color);
+static __inline unsigned WCHAR_UPDATE(WCHAR_INFO *cursor, const uint32_t ch, const struct WCHAR_COLORINFO *color);
 
 static int              parse_color(const char *color, const char *defname, const struct attrmap *map, int *attr);
 static int              parse_true_color(const char *color, COLORREF *rgb, int *attr);
@@ -2562,17 +2562,17 @@ WCHAR_COMPARE(const WCHAR_INFO *c1, const WCHAR_INFO *c2)
 }
 
 
-static __inline int
+static __inline unsigned
 WCHAR_UPDATE(WCHAR_INFO *cursor, const uint32_t ch, const struct WCHAR_COLORINFO *info)
 {
     WCHAR_INFO text;
 
     WCHAR_BUILD(ch, info, &text);
     if (WCHAR_COMPARE(cursor, &text)) {
-        return FALSE;                           // up-to-date
+        return 0;                               // up-to-date
     }
     *cursor = text;
-    return TRUE;
+    return TOUCHED;
 }
 
 
