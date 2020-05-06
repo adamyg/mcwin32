@@ -304,6 +304,7 @@ static HHOOK            hHook;
 
 static int              consoleMouse = 1;
 static DWORD            consoleMode = (DWORD) -1;
+static DWORD            consoleOutMode = (DWORD) -1;
 static DWORD            consoleAttribute = (DWORD) -1;
 
 static int              disabled_channels;
@@ -415,10 +416,11 @@ key_prog_mode (void)
 {
     if (hConsoleIn) {
         if ((DWORD)-1 == consoleMode) {         /* save */
-//          CONSOLE_SCREEN_BUFFER_INFO sbinfo = {sizeof(CONSOLE_SCREEN_BUFFER_INFO)};
-//          if (GetConsoleScreenBufferInfo(hConsoleOut, &sbinfo)) {
-//              consoleAttribute = sbinfo.wAttributes;
-//          }
+            CONSOLE_SCREEN_BUFFER_INFO sbinfo = {sizeof(CONSOLE_SCREEN_BUFFER_INFO)};
+            if (GetConsoleScreenBufferInfo(hConsoleOut, &sbinfo)) {
+                consoleAttribute = sbinfo.wAttributes;
+            }
+            GetConsoleMode(hConsoleOut, &consoleOutMode);
             GetConsoleMode(hConsoleIn, &consoleMode);
         }
 
@@ -440,20 +442,26 @@ key_shell_mode (void)
 {
     if (hConsoleIn) {
         if ((DWORD)-1 != consoleMode) {         /* restore */
+            DWORD dwMode = 0;
+
+            if (GetConsoleMode(hConsoleOut, &dwMode)) {
+                DWORD dwNewMode = dwMode & ~DISABLE_NEWLINE_AUTO_RETURN;
+                    // Filter DISABLE_NEWLINE_AUTO_RETURN; cmd default.
+                    //   cmd seems to explicitly clear when executing in-built commands,
+                    //   whereas apps this may not be the case; clear for consistency.
+
+                if (tty_use_256colors()) {      /* enable VT100/ANSI */
+                    dwNewMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+                }
+                if (dwNewMode != dwMode) {
+                    (void) SetConsoleMode(hConsoleOut, dwNewMode);
+                }
+            }
 
 //          if ((DWORD)-1 != consoleAttribute) {
 //              SetConsoleTextAttribute(hConsoleOut, consoleAttribute);
 //          }
-
-            if (tty_use_256colors()) {
-                DWORD dwMode = 0;               /* VT100/ANSI; should already be enabled */
-                if (GetConsoleMode(hConsoleOut, &dwMode)) {
-                    if (0 == (dwMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING)) {
-                        SetConsoleMode(hConsoleOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-                    }
-                }
-                assert(ENABLE_PROCESSED_OUTPUT & dwMode);
-            }
+//          SetConsoleMode(hConsoleOut, consoleOutMode);
             SetConsoleMode(hConsoleIn, consoleMode);
         }
         SetConsoleCtrlHandler(NULL, TRUE);
@@ -673,7 +681,7 @@ lookup_key (const char *name, char **label)
 
 char *
 lookup_key_by_code (const int keycode)
-{ 
+{
     unsigned int k = keycode & ~KEY_M_MASK;     /* code without modifier */
     unsigned int mod = keycode & KEY_M_MASK;    /* modifier */
 
@@ -699,7 +707,7 @@ lookup_key_by_code (const int keycode)
 
         if (mod & KEY_M_CTRL) {
             /* non printeble chars like a CTRL-[A..Z] */
-            if (k < 32)           
+            if (k < 32)
                 k += 64;
 
             if (lookup_keycode (KEY_M_CTRL, &idx)) {
@@ -840,45 +848,52 @@ check_winch (int check_type)
 
 /*
  *  Returns:
- *      Returns a character read from stdin with appropriate interpretation
- *      EV_MOUSE    if it is a mouse event
- *      EV_NONE     if non-blocking
- *      or interrupt set and nothing was done
+ *      Returns the character-code read from the console, otherwise:
+ *
+ *        o EV_MOUSE - if it is a mouse event
+ *        o 0EV_NONE - if non-blocking or interrupt set and nothing was done.
  */
 int
 tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 {
-    static int dirty = 2, clicks = 0;
-    int c = EV_NONE;
+//  static int dirty = 2, clicks = 0;
+    static int clicks = 0;
 
-    if (0 == hConsoleIn) {
+    assert(hConsoleIn);
+    if (! hConsoleIn) {
         return 0;                               /* not active */
     }
 
-//  if (block || (dirty >= 2) || is_idle()) {   /* act on winch_flag, otherwise tty_refresh() */
+//  if (block || (dirty >= 3) || is_idle()) {   /* act on winch_flag, otherwise tty_refresh() */
+        // There seems to be a display update/key polling issue, whereby some interactive dialogs (copy/move etc)
+        // request input prior to dialog rendering is completion; underlying cause/conditions are unclear.
         mc_refresh();
 //      dirty = 1;
 //  } else {
-//      ++dirty;    /* update every 2nd poll */
+//      ++dirty;    /* update every 3rd poll */
 //  }
-
-#if defined(ENABLE_VFS)
-    vfs_timeout_handler ();
-#endif
 
     if (mc_global.tty.winch_flag) {
         return EV_NONE;
     }
 
     while (1) {
-        DWORD timeoutms = 0;                    /* non-blocking */
+        DWORD timeoutms = 0;                    /* non-blocking; by default */
         INPUT_RECORD k = {0};
         DWORD count = 0, rc;
+        int c = EV_NONE;
 
-        if (block) {                            /* blocking request */
+#if defined(ENABLE_VFS)
+        vfs_timeout_handler ();
+#endif
+
+        if (redo_event) {                       /* mouse repeat event */
+            timeoutms = (mou_auto_repeat > 0 ? mou_auto_repeat : 100);
+
+        } else if (block) {                     /* blocking request */
 #if defined(ENABLE_VFS)
             const int seconds = vfs_timeouts();
-            timeoutms = (seconds > 0 ? seconds * 1000: INFINITE);
+            timeoutms = (seconds > 0 ? seconds * 1000 : INFINITE);
 #else
             timeoutms = INFINITE;
 #endif
@@ -906,6 +921,8 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
             }
         }
 
+#define EV_VOID     -3                          // void event
+
         if (rc == WAIT_OBJECT_0 &&
                 PeekConsoleInput(hConsoleIn, &k, 1, &count) && 1 == count) {
 
@@ -920,19 +937,33 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                          */
                         ++mc_global.tty.winch_flag;
                         SLsmg_togglesize();
-                        c = -99;                // consume
+                        c = EV_VOID;            // consume
                     }
                 } else {
                     (void) ReadConsoleInput(hConsoleIn, &k, 1, &count);
                     check_winch(1);
-                    c = -99;                    // consume
+                    c = EV_VOID;                // consume
                 }
                 break;
 
             case MOUSE_EVENT:
-                ReadConsoleInput(hConsoleIn, &k, 1, &count);
+                (void) ReadConsoleInput(hConsoleIn, &k, 1, &count);
                 if (event && !mc_args__nomouse) {
-
+                    /*
+                     *  General mouse events:
+                     *
+                     *    GPM_MOVE   - A motion event, with all buttons up.
+                     *    GPM_DRAG   - A motion event, but one or more buttons are kept pressed.
+                     *    GPM_DOWN   - A button press event. The `buttons' field will report which buttons are pressed after the event.
+                     *    GPM_UP     - A button release event. The `buttons' field will report which buttons are being released.
+                     *                      Note that this is different from the previous case.
+                     * 
+                     *  Theses bits are set at button-press, drag and button release events:
+                     *
+                     *    GPM_SINGLE - Used to identify a single press.
+                     *    GPM_DOUBLE - Used to identify a double click (press, drag, release).
+                     *    GPM_TRIPLE - Used to identify a triple click (press, drag, release).
+                     */
                     event->x = k.Event.MouseEvent.dwMousePosition.X + 1;
                     event->y = k.Event.MouseEvent.dwMousePosition.Y + 1;
                     event->type = 0;
@@ -957,25 +988,25 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                     case 0:
                     case DOUBLE_CLICK:
                         if (event->buttons) {
-                            event->type = GPM_DOWN;
                             clicks = (k.Event.MouseEvent.dwEventFlags == DOUBLE_CLICK ? 2 : 1);
+                            event->type = GPM_DOWN | (2 == clicks ? GPM_DOUBLE : GPM_SINGLE);
                         } else {
-                            event->type = 0;
-                            event->type = GPM_UP | (2 == clicks ? GPM_DOUBLE : GPM_SINGLE);
+                            event->type = GPM_UP   | (2 == clicks ? GPM_DOUBLE : GPM_SINGLE);
                         }
                         break;
 
                     case MOUSE_MOVED:
                         if (event->buttons) {
-                            event->type = GPM_MOVE;
+                            event->type = GPM_DRAG;
                         } else {
-                            c = EV_NONE;
+                            event->type = GPM_MOVE;
                         }
                         break;
 
 #ifndef MOUSE_WHEELED
 #define MOUSE_WHEELED   4   /*NT and Windows Me/98/95: This value is not supported.*/
 #endif
+
                     case MOUSE_WHEELED:
                         c = (k.Event.MouseEvent.dwButtonState & 0xFF000000 ? KEY_NPAGE : KEY_PPAGE);
                         break;
@@ -1023,17 +1054,20 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
             exit (1);
         }
 
-        if (c != -99) {                         // event consumed; repoll
-            if (!block || c != EV_NONE) {
-                break;                          // non-blocking or an event.
+        if (EV_NONE == c || EV_VOID == c) {
+            if (redo_event)
+                return EV_MOUSE;
+            if (! block || tty_got_winch ()) {
+                return EV_NONE;
             }
-        }
-
-        if (mc_global.tty.winch_flag) {         // winch detected.
-            return EV_NONE;
+        } else {
+            assert(EV_MOUSE == c || c > 0);
+            return c;                           // reportable event
         }
     }
-    return c;
+
+    /*NOTREACHED*/
+    return EV_NONE;
 }
 
 
@@ -1330,3 +1364,4 @@ disable_bracketed_paste (void)
 }
 
 /*end*/
+
