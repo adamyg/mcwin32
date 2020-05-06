@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.14 2020/04/23 00:09:36 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.15 2020/05/06 19:43:25 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.14 2020/04/23 00:09:36 cvsuser Ex
  *
  *      stat, lstat, fstat, readlink, symlink, open
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2020 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -23,7 +23,7 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.14 2020/04/23 00:09:36 cvsuser Ex
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * ==end== 
+ * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
@@ -221,7 +221,16 @@ w32_stat(const char *path, struct stat *sb)
             path = symbuf;
         }
     }
+
     if (ret < 0 || (ret = Stat(path, sb)) < 0) {
+        if (-ENOTDIR == ret) {                  // component error.
+            if (path != symbuf &&               // expand embedded shortcut
+                    w32_shortcut_expand(path, symbuf, sizeof(symbuf), SHORTCUT_COMPONENT)) {
+                if ((ret = Stat(symbuf, sb)) >= 0) {
+                    return ret;
+                }
+            }
+        }
         errno = -ret;
         return -1;
     }
@@ -305,13 +314,24 @@ w32_lstat(const char *path, struct stat *sb)
 
     if (path == NULL || sb == NULL) {
         ret = -EFAULT;
+    } else {
+        (void) memset(sb, 0, sizeof(struct stat));
     }
 
     if (ret < 0 || (ret = Stat(path, sb)) < 0) {
+        if (-ENOTDIR == ret) {                  // component error.
+            char lnkbuf[WIN32_PATH_MAX];
+                                                // expand embedded shortcut
+            if (w32_shortcut_expand(path, lnkbuf, sizeof(lnkbuf), SHORTCUT_COMPONENT)) {
+                if ((ret = Stat(lnkbuf, sb)) >= 0) {
+                    return ret;
+                }
+            }
+        }
         errno = -ret;
-        return (-1);
+        return -1;
     }
-    return (0);
+    return 0;
 }
 
 
@@ -483,7 +503,7 @@ my_GetFinalPathNameByHandle(HANDLE handle, char *path, int length)
 
 
 static DWORD WINAPI
-my_GetFinalPathNameByHandleImp(HANDLE handle, char *path, DWORD length, DWORD flags)
+my_GetFinalPathNameByHandleImp(HANDLE handle, LPSTR path, DWORD length, DWORD flags)
 {                                               // Determine underlying file-name, XP+
     HANDLE map;
     DWORD ret;
@@ -2063,3 +2083,4 @@ my_GetVolumeInformationByHandleImp(HANDLE hFile,
 }
 
 /*end*/
+

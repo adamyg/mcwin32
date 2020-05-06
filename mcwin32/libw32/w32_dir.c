@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.8 2018/10/12 00:52:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.9 2020/05/06 19:44:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.8 2018/10/12 00:52:03 cvsuser E
  *
  *      mkdir, rmdir, chdir
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2020 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -33,16 +33,18 @@ __CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.8 2018/10/12 00:52:03 cvsuser E
  */
 
 #include "win32_internal.h"
+#include "win32_io.h"
+
 #include <sys/stat.h>
 #include <ctype.h>
+#include <assert.h>
+
 #include <unistd.h>
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4244) // conversion from 'xxx' to 'xxx', possible loss of data
 #pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
 #endif
-
-static BOOL             isshortcut(const char *name);
 
 const char *            x_w32_cwdd[26];         /* current working directory, per drive */
 const char *            x_w32_vfscwd = NULL;    /* virtual UNC path, if any */
@@ -202,12 +204,10 @@ w32_chdir(const char *path)
     success = SetCurrentDirectoryA(path);
 
     if (! success) {                            // possible shortcut.
-        if (isshortcut(path)) {
-            char symbuf[1024] = { 0 };
+        char lnkbuf[WIN32_PATH_MAX];
 
-            if (w32_readlink(path, symbuf, sizeof(symbuf)) > 0) {
-                success = SetCurrentDirectoryA(symbuf);
-            }
+        if (w32_shortcut_expand(path, lnkbuf, sizeof(lnkbuf), SHORTCUT_TRAILING|SHORTCUT_COMPONENT)) {
+            success = SetCurrentDirectoryA(lnkbuf);
         }
     }
 
@@ -271,25 +271,6 @@ w32_chdir(const char *path)
     }
     return 0;
 }
-
-
-static BOOL
-isshortcut(const char *name)
-{
-    const size_t len = strlen(name);
-    const char *cursor;
-
-    for (cursor = name + len; --cursor >= name;) {
-        if (*cursor == '.') {                   // extension
-            return (*++cursor && 0 == WIN32_STRICMP(cursor, "lnk"));
-        }
-        if (*cursor == '/' || *cursor == '\\') {
-            break;                              // delimiter
-        }
-    }
-    return FALSE;
-}
-
 
 
 /*
@@ -435,6 +416,63 @@ w32_root_unc(const char *path)
         }
     }
     return 0;
+}
+
+
+/*
+ *  w32_shortcut_expand ---
+ *      expand embedded shortcuts.
+ */
+LIBW32_API BOOL
+w32_shortcut_expand(const char *name, char *buf, size_t buflen, unsigned flags)
+{
+    const size_t length = strlen(name);
+    char *t_name;
+    BOOL ret = 0;
+
+    if (length > 4 && NULL != (t_name = malloc(length + 1 /*nul*/))) {
+        char *cursor, *end;
+        int dots = 0;
+
+        (void) memcpy(t_name, name, length + 1 /*nul*/);
+
+        for (cursor = t_name + length, end = cursor; --cursor >= t_name;) {
+            if ('.' == *cursor) {                   // extension
+                if (1 == ++dots) {                  // last/trailing
+                    if (0 == WIN32_STRNICMP(cursor, ".lnk", 4) && (cursor + 4) == end) {
+                        //
+                        //  <shortcut>.lnk
+                        //      - attempt expansion, allowing one within any given path.
+                        const size_t trailing = length - (end - t_name);
+                        const char term = *end;
+                        int t_ret;
+
+                        assert((0 == trailing && 0 == term) || (trailing && ('/' == term || '\\' == term)));
+
+                        if (flags & (term ? SHORTCUT_COMPONENT : SHORTCUT_TRAILING)) {
+
+                            *end = 0;               // remove trailing component.
+                            if ((t_ret = w32_readlink(t_name, buf, buflen)) > 0) {
+                                if (buflen > (t_ret + trailing)) {
+                                    if (trailing) { // appending trailing component(s).
+                                        *end = term, memcpy(buf + t_ret, end, trailing + 1 /*nul*/);
+                                    }
+                                    ret = 1;        // success.
+                                }
+                            }
+                        }
+                        break;  //done
+                    }
+                }
+
+            } else if ('/' == *cursor || '\\' == *cursor) {
+                end  = cursor;                      // new component.
+                dots = 0;
+            }
+        }
+        free((void *)t_name);
+    }
+    return ret;
 }
 
 /*end*/

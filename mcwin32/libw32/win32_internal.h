@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.7 2018/10/08 21:54:48 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.8 2020/05/06 19:43:41 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -46,6 +46,7 @@ __CPRAGMA_ONCE
 #define WIN32_CHMOD     _chmod
 #define WIN32_LSEEK     _lseek
 #define WIN32_STRICMP   _stricmp
+#define WIN32_STRNICMP  _strnicmp
 #define WIN32_STRDUP    _strdup
 #define WIN32_GETPID    _getpid
 #define WIN32_TZSET     _tzset
@@ -57,6 +58,7 @@ __CPRAGMA_ONCE
 #define WIN32_CHMOD     chmod
 #define WIN32_LSEEK     lseek
 #define WIN32_STRICMP   stricmp
+#define WIN32_STRNICMP  strnicmp
 #define WIN32_STRDUP    strdup
 #define WIN32_GETPID    getpid
 #define WIN32_TZSET     tzset
