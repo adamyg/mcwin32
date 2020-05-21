@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_UTYPES_H_INCLUDED
 #define LIBW32_SYS_UTYPES_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_utypes_h,"$Id: utypes.h,v 1.9 2020/04/23 00:09:36 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_utypes_h,"$Id: utypes.h,v 1.10 2020/05/21 18:33:43 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -143,7 +143,8 @@ typedef int pid_t;                              /* process identifier */
 
 typedef long suseconds_t;                       /* sys/types.h */
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && \
+	!defined(__WATCOMC__)
 #if !defined(uid_t) && !defined(gid_t)
 typedef int uid_t;
 typedef int gid_t;

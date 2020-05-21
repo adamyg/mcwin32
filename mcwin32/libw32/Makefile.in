@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.6 2018/10/10 11:00:45 cvsuser Exp $
+# $Id: Makefile.in,v 1.7 2020/05/21 15:26:05 cvsuser Exp $
 # libwin32 makefile.
 #
 #
-# Copyright (c) 2007, 2012 - 2018 Adam Young.
+# Copyright (c) 2007, 2012 - 2020 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -91,13 +91,16 @@ CSOURCES=\
 	w32_chown.c \
 	w32_close.c \
 	w32_dir.c \
+	w32_domainname.c \
 	w32_dirent.c \
+	w32_err.c \
 	w32_errno.c \
 	w32_fcntl.c \
 	w32_fsync.c \
 	w32_getcwd.c \
 	w32_gethostname.c \
 	w32_getopt.c \
+	w32_getopt_long.c \
 	w32_getsubopt.c \
 	w32_gistrerror.c \
 	w32_grp.c \
@@ -136,6 +139,7 @@ CSOURCES=\
 	w32_strtoull.c \
 	w32_sysdir.c \
 	w32_time.c \
+	w32_timegm.c \
 	w32_trace.c \
 	w32_truncate.c \
 	w32_uname.c \

@@ -1,3 +1,7 @@
+Mon May  4 00:27:40 2020 adamy
+
+	* Remove extfs perl and python external dependencies, replace uzip (and others) with a suitable alternative.
+
 Thu Mar  9 21:35:43 2017 adamy
 
 	* Busybox,

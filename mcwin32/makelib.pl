@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.13 2020/04/28 22:59:43 cvsuser Exp $
+# $Id: makelib.pl,v 1.14 2020/05/21 15:19:17 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -187,6 +187,26 @@ my %x_environment   = (
             MFCLIBS         => '/LIBPATH:$(MFCDIR)\lib\atl\i386 /LIBPATH:$(MFCDIR)\lib\mfc\i386'
             },
 
+       'vc1800'        => {    # 2013, Visual Studio 18
+            TOOLCHAIN       => 'vs120',
+            TOOLCHAINEXT    => '.vs120',
+            CC              => 'cl',
+            COMPILERPATH    => '%VCINSTALLDIR%/bin',
+            VSWITCH         => '',
+            VPATTERN        => undef,
+            OSWITCH         => '-Fo',
+            LSWITCH         => '',
+            XSWITCH         => '-Fe',
+            AR              => 'lib',
+            CINCLUDE        => '-I$(ROOT)/libw32 -I$(ROOT)/libw32/msvc',
+            CFLAGS          => '-nologo -Zi -RTC1 -MDd -fp:precise',
+            CXXFLAGS        => '-nologo -Zi -RTC1 -MDd -EHsc -fp:precise',
+            CWARN           => '-W3',
+            CXXWARN         => '-W3',
+            LDEBUG          => '-nologo -Zi -RTC1 -MDd',
+            LDMAPFILE       => '-MAP:$(MAPFILE)',
+            },
+
        'vc1900'        => {    # 2015, Visual Studio 19
             TOOLCHAIN       => 'vs140',
             TOOLCHAINEXT    => '.vs140',
@@ -204,7 +224,7 @@ my %x_environment   = (
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDEBUG          => '-nologo -Zi -RTC1 -MDd',
-            LDMAPFILE       => '-Fm$(MAPFILE)',
+            LDMAPFILE       => '-MAP:$(MAPFILE)',
             },
 
        # See: VsDevCmd.bat
@@ -263,7 +283,7 @@ my %x_environment   = (
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDEBUG          => '-nologo -Zi -RTC1 -MTd',
-            LDMAPFILE       => '-Fm$(MAPFILE)',
+            LDMAPFILE       => '-MAP:$(MAPFILE)',
             },
 
         'wc1300'        => {    # Watcom 11
@@ -289,6 +309,76 @@ my %x_environment   = (
         'owc1900'       => {    # Open Watcom 1.9
             TOOLCHAIN       => 'owc19',
             TOOLCHAINEXT    => '.owc19',
+            CC              => 'wcl386',
+            COMPILERPATH    => '%WATCOM%/binnt',
+            VSWITCH         => '-c',
+            VPATTERN        => '(Open Watcom .*? Version [0-9\.]+)',
+            ISWITCH         => '-i=',
+            OSWITCH         => '-fo=',
+            LSWITCH         => '',
+            XSWITCH         => '-fe=',
+            AR              => 'lib',
+            CINCLUDE        => '-I$(ROOT)/libw32',
+
+                # -q        Operate quietly.
+                # -6r       Register calling conventions.
+                #               warning: dont not mix module calling conventions.
+                # -j        Signed character (default unsigned).
+                # -ei       Force enum base type to use at least an int;
+                #               otherwise smallest data-type to fit data-range.
+                # -ri       Return chars/shorts as ints; removed
+                # -d2       Full symbolic debugging information
+                #   -d2i        C++ only; d2 and debug inlines.
+                # -hc       Generate Codeview debugging information.
+                #   or -hw  Generate Watcomc debugging information.
+                # -db       Generate browsing information (.mbr).
+                # -o..      Optimization(s)
+                #   f           -> generate traceable stack frames as needed
+                #   f+          -> always generate traceable stack frames
+                #   i           -> expand intrinsic functions inline
+                #   r           -> reorder instructions for best pipeline usage
+                #   u           -> all functions must have unique addresses
+                #
+                # -zlf      Add default library information to objects.
+                # -aa       Allow non-constant initialisation expressions.
+                # -bt=nt    Build target Windows NT (or greater).
+                # -bm       Multi-threaded environment.
+                # -br       Build with dll run-time library.
+                # -sg       Enable stack guard management (for functions with >= 4K of local variables).
+                # -zc       The zc option causes the code generator to place literal strings and const items in the code segment.
+                #
+                # -cc++     Treat source files as C++ code.
+                # -xs       Exception handling: balanced (C++).
+                # -xr       Enable RTTI (C++).
+                #
+                # Others:
+                # -za       Disable extensions, helps to ensure modules match the ANSI C programming language specification; NO_EXT_KEYS is predefined.
+                # -za99     Enable C99 ANSI compliance (1).
+                # -ecc      __cdecl (2).
+                #
+                # see:      wcpp386 -?
+                #
+                #   (1) Use with caution, beta undocumented feature and not 100% stable.
+                #   (2) Avoid changing the call convention from #r/#s, otherwise runtime library issues.
+                #
+            CFLAGS          => '-q -6r -j -ei -d2  -hw -db -of+ -zlf -bt=nt -bm -br -aa -sg',
+            CXXFLAGS        => '-q -6r -j -ei -d2i     -db -of+ -zlf -bt=nt -bm -br -cc++ -xs -xr',	  
+            CWARN           => '-W3',
+            CXXWARN         => '-W3',
+            LDEBUG          => '-q -6r -d2 -hw -db -bt=nt -bm -br',
+            LDMAPFILE       => '-fm=$(MAPFILE)',
+
+            # not-supported
+            MFCDIR          => '/tools/WinDDK/7600.16385.1',
+            MFCCOPT         => '-q -j -ei -6r -d2  -hw -db -ofr -zlf -bt=nt -bm -br -aa',
+            MFCCXXOPT       => '-q -j -ei -6r -d2i     -db -ofr -zlf -bt=nt -bm -br -xs -xr -cc++',
+            MFCCINCLUDE     => '-I$(MFCDIR)/inc/atl71 -I$(MFCDIR)/inc/mfc42',
+            MFCLIBS         => '/LIBPATH:$(MFCDIR)\lib\atl\i386 /LIBPATH:$(MFCDIR)\lib\mfc\i386'
+            },
+	    
+        'owc2000'       => {    # Open Watcom 2.0
+            TOOLCHAIN       => 'owc20',
+            TOOLCHAINEXT    => '.owc20',
             CC              => 'wcl386',
             COMPILERPATH    => '%WATCOM%/binnt',
             VSWITCH         => '-c',
@@ -823,16 +913,19 @@ main()
     #   MSVC++ 14.16 _MSC_VER == 1916 (Visual Studio 2017 version 15.9)
     #   MSVC++ 14.20 _MSC_VER == 1920 (Visual Studio 2019 version 15.7)
     #
-    if ('vc12' eq $cmd)         { $o_version = 1200, $cmd = 'vc' }
-    elsif ('vc14' eq $cmd)      { $o_version = 1400; $cmd = 'vc' } elsif ('vc2005' eq $cmd) { $o_version = 1400; $cmd = 'vc' }
-    elsif ('vc15' eq $cmd)      { $o_version = 1400; $cmd = 'vc' } elsif ('vc2008' eq $cmd) { $o_version = 1500; $cmd = 'vc' }
-    elsif ('vc16' eq $cmd)      { $o_version = 1600; $cmd = 'vc' } elsif ('vc2010' eq $cmd) { $o_version = 1600; $cmd = 'vc' }
-    elsif ('vc19' eq $cmd)      { $o_version = 1900; $cmd = 'vc' } elsif ('vc2015' eq $cmd) { $o_version = 1900; $cmd = 'vc' }
-    elsif ('vc1910' eq $cmd)    { $o_version = 1910; $cmd = 'vc' } elsif ('vc2017' eq $cmd) { $o_version = 1910; $cmd = 'vc' }
-    elsif ('vc1920' eq $cmd)    { $o_version = 1920; $cmd = 'vc' } elsif ('vc2019' eq $cmd) { $o_version = 1920; $cmd = 'vc' }
+    if    ('vc12' eq $cmd)      { $o_version = 1200, $cmd = 'vc'  }
+    elsif ('vc14' eq $cmd)      { $o_version = 1400; $cmd = 'vc'  } elsif ('vc2005' eq $cmd) { $o_version = 1400; $cmd = 'vc' }
+    elsif ('vc15' eq $cmd)      { $o_version = 1400; $cmd = 'vc'  } elsif ('vc2008' eq $cmd) { $o_version = 1500; $cmd = 'vc' }
+    elsif ('vc16' eq $cmd)      { $o_version = 1600; $cmd = 'vc'  } elsif ('vc2010' eq $cmd) { $o_version = 1600; $cmd = 'vc' }
+    elsif ('vc18' eq $cmd)      { $o_version = 1800; $cmd = 'vc'  } elsif ('vc2013' eq $cmd) { $o_version = 1800; $cmd = 'vc' }
+    elsif ('vc19' eq $cmd)      { $o_version = 1900; $cmd = 'vc'  } elsif ('vc2015' eq $cmd) { $o_version = 1900; $cmd = 'vc' }
+    elsif ('vc1910' eq $cmd)    { $o_version = 1910; $cmd = 'vc'  } elsif ('vc2017' eq $cmd) { $o_version = 1910; $cmd = 'vc' }
+    elsif ('vc1920' eq $cmd)    { $o_version = 1920; $cmd = 'vc'  } elsif ('vc2019' eq $cmd) { $o_version = 1920; $cmd = 'vc' }
+    elsif ('owc19' eq $cmd)     { $o_version = 1900; $cmd = 'owc' }
+    elsif ('owc20' eq $cmd)     { $o_version = 2000; $cmd = 'owc' }
 
-    if (! $o_version) {
-        if ($cmd eq 'vc')       { $o_version = 1400; }
+    if (! $o_version) { # default versions
+        if ($cmd eq 'vc')       { $o_version = 1400; } # review???
         elsif ($cmd eq 'wc')    { $o_version = 1300; }
         elsif ($cmd eq 'owc')   { $o_version = 1900; }
         else { $o_version = 0; }
@@ -840,7 +933,7 @@ main()
 
     if ($cmd eq 'vc' ||
             $cmd eq 'owc' || $cmd eq 'wc' ||
-            $cmd eq 'dj' || $cmd eq 'mingw') {
+            $cmd eq 'dj' ||  $cmd eq 'mingw') {
 
         my $cache = "${x_tmpdir}/${cmd}${o_version}.cache";
 

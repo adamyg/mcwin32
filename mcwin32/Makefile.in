@@ -138,6 +138,7 @@ TAR=		@TAR@
 INSTALL=	@INSTALL@
 INSTALL_PROGRAM=@INSTALL_PROGRAM@
 INSTALL_DATA=	@INSTALL_DATA@
+INNO=		"C:/Program Files (x86)/Inno Setup 5/Compil32"
 
 BUSYBOX=	$(shell which busybox)
 CLBR19=		$(shell which clbr19.dll)
@@ -702,7 +703,7 @@ $(D_BIN)/%.dll:			$(GTKINSTALL)/bin/%.dll
 
 .PHONY:
 package:
-	$(ComSpec) /c start ./releases/mc-inno-setup.iss
+	$(ComSpec) /c $(INNO) ./releases/mc-inno-setup.iss
 
 .PHONY:		clean
 clean:

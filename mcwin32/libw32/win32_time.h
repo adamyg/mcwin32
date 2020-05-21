@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_TIME_H_INCLUDED
 #define LIBW32_WIN32_TIME_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_time_h,"$Id: win32_time.h,v 1.7 2018/10/09 16:03:48 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_time_h,"$Id: win32_time.h,v 1.8 2020/05/21 15:22:29 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -49,6 +49,9 @@ struct utimbuf;
 
 LIBW32_API int          w32_utime(const char *path, const struct utimbuf *times);
 
+#if defined(_MSC_VER) || defined(__WATCOMC__)
+LIBW32_API time_t       timegm(struct tm *tm);
+#endif
 __END_DECLS
 
 #endif /*LIBW32_WIN32_TIME_H_INCLUDED*/

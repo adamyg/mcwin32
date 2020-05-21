@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockpair_c,"$Id: w32_sockpair.c,v 1.4 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockpair_c,"$Id: w32_sockpair.c,v 1.5 2020/05/21 15:34:14 cvsuser Exp $")
 
 /*
  * win32 socket file-descriptor support
@@ -213,7 +213,7 @@ w32_socketpair_native(int af, int type, int proto, int sock[2])
         goto error;
 
     memset((void*)&addr1, 0, sizeof(addr1));
-    addr1.sin_family = af;
+    addr1.sin_family = (ADDRESS_FAMILY)af;
     addr1.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     addr1.sin_port = 0;
 

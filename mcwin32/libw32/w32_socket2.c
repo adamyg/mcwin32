@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.4 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.5 2020/05/21 15:34:14 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
@@ -214,6 +214,8 @@ w32_accept_native(int fd, struct sockaddr *addr, int *addrlen)
              *  by child processes by default, so disable.
              */
             SetHandleInformation((HANDLE)s, HANDLE_FLAG_INHERIT, 0);
+            assert((int)s < 0x7fffffff);
+            ret = (int)s;
         }
     }
     return ret;
@@ -401,6 +403,24 @@ w32_sockread_native(int fd, void *buf, unsigned int nbyte)
     return ret;
 }
 
+
+/*
+ *  sockclose() system call
+ */
+LIBW32_API int
+w32_sockclose_native(int fd)
+{
+    SOCKET osf;
+    int ret;
+
+#undef closesocket
+    if ((osf = nativehandle(fd)) == (SOCKET)INVALID_SOCKET) {
+        ret = -1;
+    } else if ((ret = closesocket(osf)) == -1 /*SOCKET_ERROR*/) {
+        w32_sockerror();
+    }
+    return ret;
+}
 
 /*
  *  shutdown() system call

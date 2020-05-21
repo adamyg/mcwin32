@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.4 2020/04/23 00:09:36 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.5 2020/05/21 15:22:54 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -44,13 +44,16 @@ static const char *progname = NULL;
 LIBW32_API void
 setprogname(const char *name)
 {
+    const char *p1 = strrchr(name, '\\'),
+        *p2 = strrchr(name, '/');
     char *p;
-    if ((p = strrchr(name, '/')) || (p = strrchr(name, '\\'))) {
-        name = p + 1; //consume leading path.
+
+    if (p1 || p2) { //last component.
+        name = (p1 > p2 ? p1 : p2) + 1;  //consume leading path.
     }
     free((char *)progname);
     progname = _strdup(name); //clone buffer.
-    if ((p = strrchr(progname, '.')) &&
+    if (NULL != (p = strrchr(progname, '.')) &&
             (0 == stricmp(p, ".exe") || 0 == stricmp(p, ".com"))) {
         *p = 0; //consume trailing exe/com extension.
     }

@@ -7,7 +7,8 @@ Windows XP+/32 bit native port of GNU Midnight Commander, based on
 the current 4.8.x development stream.
 
         Version         Latest Build
-	4.8.24		216 (beta2)
+        4.8.24          217 (enhancements / bug fixes / InnoSetup 5.x - beta3)
+        4.8.24          216 (bug fixes - beta2)
         4.8.24          215 (beta)
 
         4.8.21          214 (bug fixes)
@@ -74,11 +75,11 @@ Once installed place the installation directory into your PATH. As an
 alternative keeping your PATH and dll's namespace clean, create a simple
 batch mc.bat which points to the true installation image.
 
-Alternatively, a choco package is being maintained seperately yet the 
+Alternatively, a choco package is being maintained seperately yet the
 version may lack a little behind.
 
    https://chocolatey.org/packages/mc
-				     
+
 
 Getting Started
 ---------------
@@ -104,7 +105,7 @@ Window native port for GNU Midnight Commander, the latest builds can be
 found at the links:
 
    https://sourceforge.net/projects/mcwin32/
-   
+
    https://github.com/adamyg/mcwin32
 
 
@@ -112,14 +113,14 @@ Specific information regarding the base Midnight Commander 4.8.x engine,
 can be found at the following
 
    http://en.wikipedia.org/wiki/Midnight_Commander
-   
-   www.midnight-commander.org
-   
 
-Midnight Commander Skin Editor   
+   www.midnight-commander.org
+
+
+Midnight Commander Skin Editor
 
    https://phplego.github.io/mc/
-   
+
 
 Older information is available at
 
@@ -177,5 +178,6 @@ A few items are unix specific (e.g. chown), which shall be updated over
 time.
 
 -end-
+
 
 

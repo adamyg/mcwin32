@@ -1,3 +1,29 @@
+Thu May 21 17:56:22 2020 adamy
+
+	* Build 217: 4.8.24 beta3.
+
+	* Down graded to InnoSetup5.6.1 - last version to support Windows XP, release [June 14, 2018].
+		Source: https://jrsoftware.org/
+
+Tue May  5 20:32:41 2020 adamy
+
+	* Interpret directory shortcuts within paths;
+	    allows directory listing only, shall soak test before expanding support.
+
+	* Display driver
+
+		- Possible buffer out-of-bound write when cursor coordinates overflow.
+		- Report mouse drag events; eg. editor text selection.
+		- Filter console output mode DISABLE_NEWLINE_AUTO_RETURN; cmd default.
+			cmd seems to explicitly clear when executing in-built commands,
+			whereas for apps this may not be the case; clear for consistency.
+
+	* ext.f
+		- system() enhanced script execution.
+		- uzip, relaxed meta character mapping.
+
+	* doc/ADDITIONALSKINS packaged.
+
 Sat May  2 00:46:45 2020 adamy
 
 	* Build 216: 4.8.24 beta2
