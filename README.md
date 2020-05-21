@@ -3,9 +3,9 @@
 
 ## Native Midnight Commander 4.8.24 for Windows/Win32
 
-	Windows XP+/32 bit native port of GNU Midnight Commander, based on the current 4.8.21 development stream.
+	Windows XP+/32 bit native port of GNU Midnight Commander, based on the current 4.8.24 development stream.
 
-	Supports recent Windows 10 consoles and legacy consoles, both 16 and 256 colour modes.
+	Supports both recent Windows 10 plus legacy consoles, 16 and 256 colour modes within either.
 
 	Midnight Commander (also known as mc) is a free cross-platform orthodox file manager and a clone of Norton Commander.
 
