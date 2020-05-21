@@ -3,19 +3,24 @@
 
 ## Native Midnight Commander 4.8.24 for Windows/Win32
 
-	Windows XP+/32 bit native port of GNU Midnight Commander, based on the current 4.8.24 development stream.
+	Windows XP+/32 bit native port of GNU Midnight Commander,
+	based on the current 4.8.24 development stream.
 
-	Supports both recent Windows 10 plus legacy consoles, 16 and 256 colour modes within either.
+	Supports both the recent Windows 10 plus the prior legacy console,
+	16 and 256 colour modes are available within either.
 
-	Midnight Commander (also known as mc) is a free cross-platform orthodox file manager and a clone of Norton Commander.
+	Midnight Commander (also known as mc) is a free cross-platform orthodox file manager
+	and a clone of Norton Commander.
 
-	Features include the ability work with common archive formats as if they were simply another directory,
-	and to function as an SFTP/FTP client. Midnight Commander also includes an builtin editor/viewer, features
-	include syntax highlighting for many languages, macros, code snippets, simple integration with external tools,
-	automatic indentation, mouse support, clipboard and the ability to work in both ASCII and hex modes.
+	Features include the ability work with common archive formats as if they were simply another
+	directory, and to function as an SFTP/FTP client. Midnight Commander also includes an builtin
+	editor/viewer, features include syntax highlighting for many languages, macros, code snippets, 
+	simple integration with external tools, automatic indentation, mouse support, clipboard and
+	the ability to work in both ASCII and hex modes.
 
-	Midnight Commander can also rename groups of files, move files to a different directory at the same time
-	as it renames them. It lets the user specify the original and resulting file names using wildcard characters.
+	Midnight Commander can also rename groups of files, move files to a different directory at the 
+	same time as it renames them. It lets the user specify the original and resulting file names
+	using wildcard characters.
 
 
 ## Examples
@@ -28,7 +33,7 @@
 
 ## Distributions
 
-Latest builds can be found at the links:
+Latest builds:
 
    * https://sourceforge.net/projects/mcwin32
 
