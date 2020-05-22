@@ -2765,15 +2765,16 @@ vio_save(void)
     rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
     cols = 1 + sbinfo.srWindow.Right - sbinfo.srWindow.Left;
 
-    if (!vio_state.image || vio_state.rows != rows || vio_state.cols != cols) {
-        CHAR_INFO *newImage;
+    if (!vio_state.image ||                     // initial or size change
+            vio_state.rows != rows || vio_state.cols != cols) {
+        CHAR_INFO *nimage;
 
         if (rows <= 0 || cols <= 0 ||
-                NULL == (newImage = calloc(rows * cols, sizeof(CHAR_INFO)))) {
+                NULL == (nimage = calloc(rows * cols, sizeof(CHAR_INFO)))) {
             return;
         }
         free(vio_state.image);                  // release previous; if any
-        vio_state.image = newImage;
+        vio_state.image = nimage;
         vio_state.rows = rows;
         vio_state.cols = cols;
     }
@@ -2806,8 +2807,8 @@ ImageSave(HANDLE console, unsigned pos, unsigned cnt)
     wr.Top    = (SHORT)(pos / cols);
     wr.Bottom = (SHORT)((pos + (cnt - 1)) / cols);
 
-    is.Y      = (SHORT)(vio.rows - wr.Top);     // size of image.
-    is.X      = (SHORT)(vio.cols);
+    is.Y      = (SHORT)(rows - wr.Top);         // size of image.
+    is.X      = (SHORT)(cols);
 
     ic.X      = 0;                              // top left src cell in image.
     ic.Y      = 0;

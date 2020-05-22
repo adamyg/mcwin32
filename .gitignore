@@ -4,9 +4,12 @@ mcgit/
 mcmerge/
 busybox/
 mcwin32/bin/
+inno/
 directory.txt
 gtk-source.txt
 mcgtk-source.txt
 mcwin32-build*.exe
+GIT_*.txt
+GIT_*.bat
 .#*
 
