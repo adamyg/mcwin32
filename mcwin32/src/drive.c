@@ -168,7 +168,7 @@ drive_sel(WPanel *panel)
         }
         path += length + 1;
     }
-
+    groupidx = totaldrives - groupidx;          /* flip */
 
     /* Network resources */
 #if defined(DO_NETWORK_DRIVES)
@@ -311,16 +311,15 @@ drive_dlg_callback (Widget * h, Widget * sender, widget_msg_t msg, int parm, voi
         case KEY_UP:
             group_select_next_widget (GROUP (h));
             return MSG_HANDLED;
-
         case KEY_RIGHT:
         case KEY_DOWN:
             group_select_prev_widget (GROUP (h));
             return MSG_HANDLED;
         }
-        return MSG_NOT_HANDLED;
+        /*FALLTHRU*/
 
     default:
-        return widget_default_callback (h, sender, msg, parm, data);
+        return group_default_callback(h, sender, msg, parm, data);
     }
     /*NOTREACHED*/
     return 0;
