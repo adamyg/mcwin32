@@ -144,7 +144,7 @@ ifeq ($(INNO),) # Inno5: allowing legacy XP installations
 INNO=		"C:/Program Files (x86)/Inno Setup 5/Compil32"
 endif
 
-BUSYBOX=	$(shell which busybox)
+BUSYBOX=	$(shell which busybox 2>/dev/null)
 ifeq ($(BUSYBOX),)
 BUSYBOX=	@BUSYBOX@
 endif
@@ -715,7 +715,7 @@ $(D_BIN)/%.dll:			$(GTKINSTALL)/bin/%.dll
 
 .PHONY:
 package:
-	$(ComSpec) /c $(INNO) ./releases/mc-inno-setup.iss
+	$(INNO) ./releases/mc-inno-setup.iss
 
 .PHONY:		clean
 clean:
