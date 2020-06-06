@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.4 2020/04/28 22:59:43 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2020/06/06 02:08:35 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -108,8 +108,9 @@ CEXTRA+=	-D_WIN32_WINNT=0x501 -DGLIB_COMPILATION -D_WIN32
 ###	glib
 
 #Note: sourced from glib.vcproj, see $(GLIBSRC)/win32
-CEXTRA_LIBCHARSET = \
-	-DLIBDIR="blah"
+##Replaced by "configmake.h"
+##CEXTRA_LIBCHARSET = \
+##	-DLIBDIR="blah"
 
 CEXTRA_PCRE = \
 	-DHAVE_CONFIG_H \
