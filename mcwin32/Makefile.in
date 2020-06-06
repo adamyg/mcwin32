@@ -141,6 +141,9 @@ INSTALL_DATA=	@INSTALL_DATA@
 INNO=		"C:/Program Files (x86)/Inno Setup 5/Compil32"
 
 BUSYBOX=	$(shell which busybox)
+ifeq ($(BUSYBOX),)
+BUSYBOX=	@BUSYBOX@
+endif
 CLBR19=		$(shell which clbr19.dll)
 MT7R19=		$(shell which mt7r19.dll)
 MCSOURCE=	../mcsrc
