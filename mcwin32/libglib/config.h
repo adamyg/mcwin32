@@ -66,6 +66,7 @@ extern void MemoryBarrier(void);
 #endif  /*WATCOMC || MSC_VER*/
 
 #if defined(GPCRE_COMPILATION)
+#define DG_LOG_DOMAIN	"GLib-GRegex"
 #define NEWLINE         -1              /* issue passing "-1" as command line argument */
 #endif
 

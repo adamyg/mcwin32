@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.5 2020/06/06 02:08:35 cvsuser Exp $
+# $Id: Makefile.in,v 1.6 2020/06/06 02:25:23 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -124,11 +124,12 @@ CEXTRA_PCRE = \
 	-DSUPPORT_UCP \
 	-DSUPPORT_UTF \
 	-DSUPPORT_UTF8 \
-	-DG_LOG_DOMAIN="GLib-GRegex" \
 	-UBSR_ANYCRLF \
 	-UEBCDIC
-##	-DPCRE_STATIC	##global
-##	-DNEWLINE=-1	#see config.h
+
+##	-DPCRE_STATIC			##global
+##	-DG_LOG_DOMAIN="GLib-GRegex"	#see config.h
+##	-DNEWLINE=-1			#see config.h
 
 CEXTRA_GTHREAD = \
 	-DG_LOG_DOMAIN="GThread"
