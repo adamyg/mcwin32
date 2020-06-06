@@ -650,11 +650,14 @@ VPATH	= ./src
 
 build:				directories artifacts targets configuration gettext import
 
-release:			new_buildnumber build package
+release:			build package
+
+new_release:			new_buildnumber
+		$(MAKE) release
 
 directories:			$(DIRECTORIES)
 
-artifacts:			buildinfo.h BUILDNUMBER
+artifacts:			buildinfo BUILDNUMBER
 
 %/.created:
 		-@$(PERL) ./support/mkdir_p.pl $(@D)
@@ -747,17 +750,29 @@ $(D_BIN)/mc$(E):		$(MC_OBJS) $(MC_RES) $(LDLIBRARIES)
 $(MC_RES):			config.h buildinfo.h
 
 BUILD_DATE=			$(shell $(BUSYBOX) date +'%Y%m%d')
+ifneq ($(APPVEYOR_BUILD_NUMBER),)
+BUILD_NUMBER=			$(APPVEYOR_BUILD_NUMBER)
+else
 BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
+endif
 
-buildinfo.h:			Makefile BUILDNUMBER buildinfo.pl
-		-@$(PERL) ./buildinfo.pl -o $@ -p "$(PACKAGE)" -n "$(PKG_NAME)" -v "$(PKG_VERSION)" \
+.PHONY: 			buildinfo new_buildnumber
+buildinfo.h:			buildinfo
+buildinfo:
+		@echo updating buildinfo.h ...
+		-@$(PERL) ./buildinfo.pl -o buildinfo.h -p "$(PACKAGE)" -n "$(PKG_NAME)" -v "$(PKG_VERSION)" \
 			-d "$(BUILD_DATE)" -b "$(BUILD_NUMBER)" -t "@TOOLCHAINEXT@"
 
-.PHONY:				new_buildnumber
+buildinfo.h:			BUILDNUMBER
+
+ifneq ($(APPVEYOR_BUILD_NUMBER),)
+BUILDNUMBER:
+		@echo importing appveyor build number  ...
+		@echo $(APPVEYOR_BUILD_NUMBER)>$@
+endif
+
 new_buildnumber:
 		-@chmod +w BUILDNUMBER >nul 2>&1
-
-BUILDNUMBER:			Makefile
 		@echo incrementing build number ...
 		-@$(BUSYBOX) sh -c "\
 			if [ ! -f BUILDNUMBER ]; then echo 1 >BUILDNUMBER; fi;\

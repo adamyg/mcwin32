@@ -1,6 +1,6 @@
 @echo off
 rem
-rem Microsoft Visual Studio C/C++ 2013+
+rem Microsoft Visual Studio C/C++ 2015
 rem
 if not defined GNUWIN32 (
         set GNUWIN32=\devl\gnuwin32
@@ -8,5 +8,5 @@ if not defined GNUWIN32 (
 if not defined PERL (
         set PERL=perl
 )
-%PERL% makelib.pl --gnuwin32=%GNUWIN32% --icu=auto vc2015 %1 %2 %3 %4
+%PERL% makelib.pl --busybox=./support/busybox "--inno=C:/Program Files (x86)/Inno Setup 5/iscc" vc2015 %1 %2 %3 %4
 
