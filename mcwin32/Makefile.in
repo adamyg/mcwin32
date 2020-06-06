@@ -661,7 +661,7 @@ gettext:			$(MSGDIRS) $(MSGOBJS)
 .PHONY:				configuration-win32
 configuration-win32:				# unconditional export
 		@echo exporting mcwin32 specialised files ...
-		$(BUSYBOX) sh -c "\
+		$(BUSYBOX) sh -c '\
 	for x in $(CFG_WIN32_ETC); do \
 		echo updating etc/$$x ...; \
 		rm -f $(D_ETC)/$$x; \
@@ -683,7 +683,7 @@ configuration-win32:				# unconditional export
 		cp -f $(WIN32_SKINS_SRC)/$$x $(D_SHARE)/skins/$$x; \
 		dos2unix $(D_SHARE)/skins/$$x; \
 	done;\
-	"
+	'
 
 .PHONY:
 import:				$(IMPORT)
