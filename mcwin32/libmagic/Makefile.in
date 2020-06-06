@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.4 2018/09/26 11:45:04 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2020/06/06 01:38:42 cvsuser Exp $
 # libmagic makefile
 #
 #
@@ -47,7 +47,7 @@ CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
 CNFLAGS=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
 YFLAGS=		-d
 LDFLAGS=	$(LDEBUG) @LDFLAGS@
-LDLIBS=		$(D_LIB)/$(LP)regex$(A) -L$(D_LIB) @LIBS@
+LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@
 ifeq ("mingw32","@build_os@")
 LDLIBS+=	-lw32 -lshlwapi -lpsapi -lole32 -luuid -lgdi32 -luserenv -lnetapi32 -ladvapi32 -lWs2_32
 endif
@@ -134,7 +134,7 @@ TSKS=		$(MAGICUTIL)
 # Rules
 
 all:			source unpacked
-unpacked:		$(LIBS) $(TSKS) $(MAGICDB) installheaders
+unpacked:		$(LIBS) $(TSKS) $(MAGICDB) installinc 
 
 $(MAGICLIB):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_STATIC -D_WIN32
 $(MAGICLIB):		$(D_OBJ)/.created $(LIBOBJS)
@@ -144,23 +144,23 @@ $(MAGICLIB):		$(D_OBJ)/.created $(LIBOBJS)
 
 $(MAGICDLL):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_DYNAMIC -D_WIN32
 $(MAGICDLL):		$(DLLOBJS)
-		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) -o $@ $^ $(LDLIBS)
+		$(LIBTOOL) --mode=link $(CC) -o $@ $^ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(LDFLAGS) $(LDLIBS)
 
 $(MAGICUTIL):		$(UTILOBJS)
 		$(CC) $(LDFLAGS) $^ -o $@ $(D_LIB)/libmagic$(A) $(LDLIBS)
 
 $(MAGICDB):		magic.mgc
 		@echo publishing magicdb $(MAGICDB) ...
-		@-cp.exe magic.mgc $(MAGICDB)
+		@cp magic.mgc $(MAGICDB)
 
-MSRC=		$(shell ls $(MAGDIR)/Magdir/*)
+magic.mgc:		MSRC=$(wildcard $(MAGDIR)/Magdir/*)
 magic.mgc:		$(MSRC) Makefile
-		@rm -fr magic
-		@-mkdir magic
-		@cp $(MAGDIR)/Magdir/* magic
+		@$(RM) -fr magic
+		-@mkdir magic
+		@cp $(MSRC) magic
 		$(MAGICUTIL) -C -m magic
-		@rm -fr magic
+		@$(RM) -fr magic
 
 source:			.unpacked.$(VERSION)
 		$(MAKE) unpacked
@@ -170,9 +170,9 @@ source:			.unpacked.$(VERSION)
 		@echo "unpacking source $(MAGICPACKED)"
 		@gzip -c -d $(MAGICPACKED) | tar -xvf -
 
-installheaders:		../include/.created
+installinc:		../include/.created
 		@echo publishing headers 'magic.h' ...
-		@-cp $(MAGICSRC)/magic.h ../include
+		@cp $(MAGICSRC)/magic.h ../include
 
 %/.created:
 		-@mkdir $(@D)
