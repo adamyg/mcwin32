@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.16 2020/06/06 01:37:28 cvsuser Exp $
+# $Id: makelib.pl,v 1.17 2020/06/06 03:05:55 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -159,7 +159,7 @@ my %x_environment   = (
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDEBUG          => '-nologo -Zi -RTC1 -MTd',
-            LDMAPFILE       => '-MAP:$(MAPFILE)'
+            LDMAPFILE       => '-Fm$(MAPFILE)'
             },
 
         'vc1600'        => {    # 2010, Visual Studio 10
@@ -207,7 +207,7 @@ my %x_environment   = (
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDEBUG          => '-nologo -Zi -RTC1 -MDd',
-            LDMAPFILE       => '-MAP:$(MAPFILE)',
+            LDMAPFILE       => '-Fm$(MAPFILE)',
             },
 
        'vc1900'        => {    # 2015, Visual Studio 19
@@ -228,7 +228,7 @@ my %x_environment   = (
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDEBUG          => '-nologo -Zi -RTC1 -MDd',
-            LDMAPFILE       => '-MAP:$(MAPFILE)',
+            LDMAPFILE       => '-Fm$(MAPFILE)',
             },
 
        # See: VsDevCmd.bat
@@ -287,7 +287,7 @@ my %x_environment   = (
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDEBUG          => '-nologo -Zi -RTC1 -MTd',
-            LDMAPFILE       => '-MAP:$(MAPFILE)',
+            LDMAPFILE       => '-Fm$(MAPFILE)',
             },
 
         'wc1300'        => {    # Watcom 11
