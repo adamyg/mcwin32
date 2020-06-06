@@ -26,7 +26,7 @@ AppUpdatesURL=https://www.midnight-commander.org/
 
 DefaultDirName={pf}\Midnight Commander
 DefaultGroupName=Midnight Commander
-LicenseFile=..\bin\doc\COPYING
+LicenseFile=..\{#BinDir}\doc\COPYING
 
 OutputDir=.
 OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
