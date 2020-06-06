@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.17 2020/06/06 03:05:55 cvsuser Exp $
+# $Id: makelib.pl,v 1.18 2020/06/06 17:46:04 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -52,6 +52,7 @@ my $BINPATH                 = '';
 my $PERLPATH                = '';
 my $BUSYBOX                 = 'busybox';
 my $WGET                    = 'wget';
+my $INNO                    = '';
 my $BISON                   = '';
 my $FLEX                    = '';
 my $LIBTOOL                 = '';
@@ -559,6 +560,7 @@ my %x_tokens        = (
         SED                 => 'sed',
        #WGET                => 'wget',          # special
        #BUSYBOX             => 'busybox',       # special
+       #INNO                => '',              # special
         PERL                => 'perl',
         LIBTOOL             => 'libtool',
 
@@ -849,6 +851,7 @@ my $o_libmagic      = undef;
 #       Mainline
 #
 sub Configure($$);
+sub ExeRealpath($);
 sub LoadContrib($$$);
 sub CheckCompiler($$);
 sub CheckDecl($$);
@@ -889,6 +892,7 @@ main()
                 'flex=s'        => \$FLEX,
                 'busybox=s'     => \$BUSYBOX,
                 'wget=s'        => \$WGET,
+                'inno=s'        => \$INNO,
                 'version=i'     => \$o_version,
                 'icu=s'         => \$o_icu,
                 'gnuwin32=s'    => \$o_gnuwin32,
@@ -1030,16 +1034,15 @@ Options:
     --gnuwin32=<path>       gnuwin32 g++ tool installation path.
 
     --busybox=<path>        busybox-w32 installation path.
+    --bison=<path>          bison installation path.
+    --flex=<path>           flex installation path.
+    --inno=<path>           inno-setup installation path.
 
     --contib                enable local contrib libraries (default).
-
-    or --gnulibs            search and enable gnuwin32 libraries, using
-                            gnuwin32 path.
+    or --gnulibs            search and enable gnuwin32 libraries, using gnuwin32 path.
 
     --libarchive=<path>     libarchive installation path.
-
     --libmagic=<path>       libmagic installation path.
-
     --icu=<path>            ICU installation path.
 
     --version=<version      compiler version
@@ -1049,7 +1052,7 @@ Options:
     --keep                  keep temporary file images.
 
 Commands:
-    vc[14|16]           Visual Studio C/C++ Makefiles.
+    vc[20xx]            Visual Studio C/C++ Makefiles.
     wc                  Watcom C/C++, using 'cl' interface.
     owc                 Open Watcom C/C++, using a direct interface.
     dj                  DJGPP.
@@ -1084,69 +1087,31 @@ Configure($$)           # (type, version)
     }
 
     if ($BUSYBOX) {
-        if ($BUSYBOX ne 'busybox') {
-            if (-e $BUSYBOX) {
-                $BUSYBOX = realpath($BUSYBOX);
-
-            } elsif (-e "${BUSYBOX}.exe") {
-                $BUSYBOX = realpath("${BUSYBOX}.exe");
-                $BUSYBOX =~ s/\.exe//;
-
-            } else {
-                print "warning: unable to resolve path <${BUSYBOX}>\n";
-            }
-        }
+        $BUSYBOX = ExeRealpath($BUSYBOX)
+            if ($BUSYBOX ne 'busybox');
         print "busybox:  ${BUSYBOX}\n";
     }
 
     if ($WGET) {
-        if ($WGET ne 'wget') {
-            if (-e $WGET) {
-                $WGET = realpath($WGET);
-
-            } elsif (-e "${WGET}.exe") {
-                $WGET = realpath("${WGET}.exe");
-                $WGET =~ s/\.exe//;
-
-            } else {
-                print "warning: unable to resolve path <${WGET}>\n";
-            }
-        }
+        $WGET = ExeRealpath($WGET)
+            if ($WGET ne 'wget');
         print "wget:     ${WGET}\n";
     }
 
+    if ($INNO) {
+        $INNO = ExeRealpath($INNO)
+            if ($INNO ne 'wget');
+        print "wget:     ${INNO}\n";
+    }
+
     if ($BISON) {                               # override
-        if (-e $BISON) {
-            $BISON = realpath($BISON);
-
-        } elsif (-e "${BISON}.exe") {
-            $BISON = realpath("${BISON}.exe");
-            $BISON =~ s/\.exe//;
-
-        } elsif ($BISON =~ /^\.[\/\\]/) {
-            $BISON =~ s/^\./\$(ROOT)/;
-
-        } else {
-            print "warning: unable to resolve path <${BISON}>\n";
-        }
+        $BISON = ExeRealpath($BISON);
         print "bison:    ${BISON}\n";
         $win_entries{YACC} = "${BISON} -y";
     }
 
     if ($FLEX) {                                # override
-        if (-e $FLEX) {
-            $FLEX = realpath($FLEX);
-
-        } elsif (-e "${FLEX}.exe") {
-            $FLEX = realpath("${FLEX}.exe");
-            $FLEX =~ s/\.exe//;
-
-        } elsif ($FLEX =~ /^\.[\/\\]/) {
-            $FLEX =~ s/^\./\$(ROOT)/;
-
-        } else {
-            print "warning: unable to resolve path <${FLEX}>\n";
-        }
+        $FLEX = ExeRealpath($FLEX);
         print "flex:     ${FLEX}\n";
         $win_entries{LEX} = "${FLEX}";
     }
@@ -1563,6 +1528,31 @@ Configure($$)           # (type, version)
             $x_tokens{LIBS} .= ExportPath($lib);
         }
     }
+}
+
+
+sub
+ExeRealpath($)
+{
+    my ($path) = @_;
+
+    if (-e $path) {
+        $path = realpath($path);
+
+    } elsif (-e "${path}.exe") {            # <xxx.exe
+        $path = realpath("${path}.exe");
+        $path =~ s/\.exe//;
+
+    } elsif ($path =~ /^\.[\/\\]/) {        # ./xxxx; assume a generated artifact
+        $path =~ s/^\./\$(ROOT)/;
+
+    } else {
+        print "warning: unable to resolve path <${path}>\n";
+    }
+
+    $path = "\"${path}\""                   # quote; contains spaces
+        if ($path =~ / /);
+    return $path;
 }
 
 
@@ -2485,7 +2475,7 @@ Makefile($$$)           # (type, dir, file)
     # Note:
     #   By default, busybox and some shells are built with globbing in the C runtime disabled.
     #   Hence when run from the Windows command prompt it can behave in ways that don't conform to expectations,
-    #   as such 
+    #   as such
     #
     #     $(shell ls <pattern>)
     #
@@ -2498,6 +2488,7 @@ Makefile($$$)           # (type, dir, file)
     $text =~ s/\@PERLPATH\@/${PERLPATH}/g;
     $text =~ s/\@BUSYBOX\@/${BUSYBOX}/g;
     $text =~ s/\@WGET\@/${WGET}/g;
+    $text =~ s/\@INNO\@/${INNO}/g;
 
     $text =~ s/(\$\(RM\)) (.*)/$1 \$(subst \/,\\,$2)/g;
     $text =~ s/(\$\(RMDIR\)) (.*)/$1 \$(subst \/,\\,$2)/g;

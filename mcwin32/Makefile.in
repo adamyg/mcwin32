@@ -138,14 +138,22 @@ TAR=		@TAR@
 INSTALL=	@INSTALL@
 INSTALL_PROGRAM=@INSTALL_PROGRAM@
 INSTALL_DATA=	@INSTALL_DATA@
+
+INNO=		@INNO@
+ifeq ($(INNO),) # Inno5: allowing legacy XP installations
 INNO=		"C:/Program Files (x86)/Inno Setup 5/Compil32"
+endif
 
 BUSYBOX=	$(shell which busybox)
 ifeq ($(BUSYBOX),)
 BUSYBOX=	@BUSYBOX@
 endif
+
+ifeq ("wcl386","$(CC)")
 CLBR19=		$(shell which clbr19.dll)
 MT7R19=		$(shell which mt7r19.dll)
+endif
+     
 MCSOURCE=	../mcsrc
 ##MCSOURCE=	../mcmerge
 ##GTKINSTALL=	../gtk
@@ -405,7 +413,7 @@ MC_LIBMC=\
 	$(D_OBJMC)/widget_radio$(O)		\
 	$(D_OBJMC)/widget_widget-common$(O)	\
 	$(D_OBJMC)/widget_wtools$(O)
-       
+
 MC_4_8_24=\
 	$(D_OBJ)/file_history$(O)		\
 	$(D_OBJMC)/mcconfig_history$(O) 	\
@@ -414,7 +422,7 @@ MC_4_8_24=\
 	$(D_OBJMC)/widget_frame$(O)		\
 	$(D_OBJMC)/widget_group$(O)		\
 	$(D_OBJMC)/widget_rect$(O)
-	
+
 MC_LIBMC+=$(MC_4_8_24)
 
 #libvfs
@@ -742,7 +750,8 @@ BUILD_DATE=			$(shell $(BUSYBOX) date +'%Y%m%d')
 BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
 
 buildinfo.h:			Makefile BUILDNUMBER buildinfo.pl
-		-@$(PERL) ./buildinfo.pl -o $@ -p "$(PACKAGE)" -n "$(PKG_NAME)" -v "$(PKG_VERSION)" -d "$(BUILD_DATE)" -b "$(BUILD_NUMBER)"
+		-@$(PERL) ./buildinfo.pl -o $@ -p "$(PACKAGE)" -n "$(PKG_NAME)" -v "$(PKG_VERSION)" \
+			-d "$(BUILD_DATE)" -b "$(BUILD_NUMBER)" -t "@TOOLCHAINEXT@"
 
 .PHONY:				new_buildnumber
 new_buildnumber:
@@ -891,6 +900,7 @@ $(D_LOCALE)/%/LC_MESSAGES/$(PACKAGE).mo: $(PO_SRC)/%.po
 		@echo build $@ ..
 		msgfmt -c -o $@ $(PO_SRC)/$*.po
 
+
 #########################################################################################
 # libraries
 
@@ -933,6 +943,7 @@ $(LW)intl$(A):
 .PHONY:		$(LW)glib-2.0$(A)
 $(LW)glib-2.0$(A):
 		$(MAKE) -C libglib $(MAKEFLAGS)
+
 
 #########################################################################################
 # source rules

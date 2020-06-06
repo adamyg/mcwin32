@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: buildinfo.pl,v 1.2 2020/04/28 22:59:43 cvsuser Exp $
+# $Id: buildinfo.pl,v 1.3 2020/06/06 17:42:33 cvsuser Exp $
 # buildinfo generation
 #
 # Copyright Adam Young 2018-2020
@@ -17,17 +17,19 @@ my $name    = undef;
 my $version = "0.0.1";
 my $date    = undef;
 my $build   = "1";
+my $toolchain = undef;
 my $help    = 0;
 
 Usage() if (0 == GetOptions(
-		'output=s'  => \$output,
-		'package=s' => \$package,
-		'name=s'    => \$name,
-		'version=s' => \$version,
-		'date=i'    => \$date,
-		'build=i'   => \$build,
-		'help'      => \$help)
-                    || $help);
+		'output=s'      => \$output,
+		'package=s'     => \$package,
+		'name=s'        => \$name,
+		'version=s'     => \$version,
+		'date=i'        => \$date,
+		'build=i'       => \$build,
+		'toolchain=s'   => \$toolchain,
+		'help'          => \$help)
+			|| $help);
 
 $package = "MC-WIN32" if (! $package);
 $name    = "Midnight Commander WIN32" if (! $name);
@@ -60,6 +62,9 @@ Generate	#()
 #define BUILD_NUMBER "${build}"
 EOT
 
+print FILE "#define BUILD_TOOLCHAIN \"${toolchain}\"\n"
+	if ($toolchain);
+
 	close(FILE);
 }
 
@@ -79,6 +84,7 @@ Options:
     --version <version>     Package version.
     --date <date>           Build date.
     --build <number>        Build number.
+    --toolchain <desc>      Toolchain.
 
     --help                  Help.
 
