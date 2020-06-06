@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.14 2020/05/21 15:19:17 cvsuser Exp $
+# $Id: makelib.pl,v 1.16 2020/06/06 01:37:28 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -51,6 +51,9 @@ my $CWD                     = getcwd();
 my $BINPATH                 = '';
 my $PERLPATH                = '';
 my $BUSYBOX                 = 'busybox';
+my $WGET                    = 'wget';
+my $BISON                   = '';
+my $FLEX                    = '';
 my $LIBTOOL                 = '';
 my $PROGRAMFILES            = ProgramFiles();
 
@@ -211,7 +214,8 @@ my %x_environment   = (
             TOOLCHAIN       => 'vs140',
             TOOLCHAINEXT    => '.vs140',
             CC              => 'cl',
-            COMPILERPATH    => '%VCINSTALLDIR%/bin',
+            COMPILERPATHS   => '%VS140COMNTOOLS%/../../VC/bin|%VCINSTALLDIR%/bin',
+            COMPILERPATH    => '',
             VSWITCH         => '',
             VPATTERN        => undef,
             OSWITCH         => '-Fo',
@@ -362,7 +366,7 @@ my %x_environment   = (
                 #   (2) Avoid changing the call convention from #r/#s, otherwise runtime library issues.
                 #
             CFLAGS          => '-q -6r -j -ei -d2  -hw -db -of+ -zlf -bt=nt -bm -br -aa -sg',
-            CXXFLAGS        => '-q -6r -j -ei -d2i     -db -of+ -zlf -bt=nt -bm -br -cc++ -xs -xr',	  
+            CXXFLAGS        => '-q -6r -j -ei -d2i     -db -of+ -zlf -bt=nt -bm -br -cc++ -xs -xr',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDEBUG          => '-q -6r -d2 -hw -db -bt=nt -bm -br',
@@ -375,7 +379,7 @@ my %x_environment   = (
             MFCCINCLUDE     => '-I$(MFCDIR)/inc/atl71 -I$(MFCDIR)/inc/mfc42',
             MFCLIBS         => '/LIBPATH:$(MFCDIR)\lib\atl\i386 /LIBPATH:$(MFCDIR)\lib\mfc\i386'
             },
-	    
+
         'owc2000'       => {    # Open Watcom 2.0
             TOOLCHAIN       => 'owc20',
             TOOLCHAINEXT    => '.owc20',
@@ -432,7 +436,7 @@ my %x_environment   = (
                 #   (2) Avoid changing the call convention from #r/#s, otherwise runtime library issues.
                 #
             CFLAGS          => '-q -6r -j -ei -d2  -hw -db -of+ -zlf -bt=nt -bm -br -aa -sg',
-            CXXFLAGS        => '-q -6r -j -ei -d2i     -db -of+ -zlf -bt=nt -bm -br -cc++ -xs -xr',	  
+            CXXFLAGS        => '-q -6r -j -ei -d2i     -db -of+ -zlf -bt=nt -bm -br -cc++ -xs -xr',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDEBUG          => '-q -6r -d2 -hw -db -bt=nt -bm -br',
@@ -553,6 +557,8 @@ my %x_tokens        = (
         GREP                => 'egrep',
         AWK                 => 'awk',
         SED                 => 'sed',
+       #WGET                => 'wget',          # special
+       #BUSYBOX             => 'busybox',       # special
         PERL                => 'perl',
         LIBTOOL             => 'libtool',
 
@@ -639,6 +645,7 @@ my @x_headers       = (
         'wincrypt.h',
         'bcrypt.h',
 
+        'getopt.h',
         'unistd.h',
         'dirent.h',
         'dlfcn.h',                              # dlopen()
@@ -773,9 +780,10 @@ my @x_functions     = (
         'va_copy', '__va_copy',                 # c99/gnu
         'opendir',
         'findfirst', '_findfirst',              # msvc
+        'getopt', 'getopt_long'                 # bsd/compat
         );
 
-my @x_commands      = (
+my @x_commands     = (     # commands explicity converted to <cmd>.exe
         'mkdir',
         'rmdir',
         'tar',
@@ -868,7 +876,7 @@ main()
     my $o_clean         = 0;
     my $o_help          = 0;
 
-    require "makelib.in";
+    require "./makelib.in";
         die "makelib.in: PACKAGE not defined\n"
             if (! $PACKAGE);
         $x_tokens{PACKAGE}      = $PACKAGE;
@@ -877,7 +885,10 @@ main()
         = GetOptions(
                 'binpath=s'     => \$BINPATH,
                 'perlpath=s'    => \$PERLPATH,
+                'bison=s'       => \$BISON,
+                'flex=s'        => \$FLEX,
                 'busybox=s'     => \$BUSYBOX,
+                'wget=s'        => \$WGET,
                 'version=i'     => \$o_version,
                 'icu=s'         => \$o_icu,
                 'gnuwin32=s'    => \$o_gnuwin32,
@@ -1016,7 +1027,9 @@ Options:
 
     --perlpath=<path>       PERL binary path, otherwise assumed in the path.
 
-    --gnuwin32=<path>       gnuwin32 tool installation path.
+    --gnuwin32=<path>       gnuwin32 g++ tool installation path.
+
+    --busybox=<path>        busybox-w32 installation path.
 
     --contib                enable local contrib libraries (default).
 
@@ -1068,6 +1081,74 @@ Configure($$)           # (type, version)
         $PERLPATH = realpath($PERLPATH);
         print "perlpath: ${PERLPATH}\n";
         $PERLPATH .= '/';
+    }
+
+    if ($BUSYBOX) {
+        if ($BUSYBOX ne 'busybox') {
+            if (-e $BUSYBOX) {
+                $BUSYBOX = realpath($BUSYBOX);
+
+            } elsif (-e "${BUSYBOX}.exe") {
+                $BUSYBOX = realpath("${BUSYBOX}.exe");
+                $BUSYBOX =~ s/\.exe//;
+
+            } else {
+                print "warning: unable to resolve path <${BUSYBOX}>\n";
+            }
+        }
+        print "busybox:  ${BUSYBOX}\n";
+    }
+
+    if ($WGET) {
+        if ($WGET ne 'wget') {
+            if (-e $WGET) {
+                $WGET = realpath($WGET);
+
+            } elsif (-e "${WGET}.exe") {
+                $WGET = realpath("${WGET}.exe");
+                $WGET =~ s/\.exe//;
+
+            } else {
+                print "warning: unable to resolve path <${WGET}>\n";
+            }
+        }
+        print "wget:     ${WGET}\n";
+    }
+
+    if ($BISON) {                               # override
+        if (-e $BISON) {
+            $BISON = realpath($BISON);
+
+        } elsif (-e "${BISON}.exe") {
+            $BISON = realpath("${BISON}.exe");
+            $BISON =~ s/\.exe//;
+
+        } elsif ($BISON =~ /^\.[\/\\]/) {
+            $BISON =~ s/^\./\$(ROOT)/;
+
+        } else {
+            print "warning: unable to resolve path <${BISON}>\n";
+        }
+        print "bison:    ${BISON}\n";
+        $win_entries{YACC} = "${BISON} -y";
+    }
+
+    if ($FLEX) {                                # override
+        if (-e $FLEX) {
+            $FLEX = realpath($FLEX);
+
+        } elsif (-e "${FLEX}.exe") {
+            $FLEX = realpath("${FLEX}.exe");
+            $FLEX =~ s/\.exe//;
+
+        } elsif ($FLEX =~ /^\.[\/\\]/) {
+            $FLEX =~ s/^\./\$(ROOT)/;
+
+        } else {
+            print "warning: unable to resolve path <${FLEX}>\n";
+        }
+        print "flex:     ${FLEX}\n";
+        $win_entries{LEX} = "${FLEX}";
     }
 
     if (! $LIBTOOL) {                           # derive libtool location
@@ -1559,6 +1640,24 @@ CheckCompiler($$)       # (type, env)
 {
     my ($type, $env) = @_;
 
+    if ($$env{COMPILERPATH} eq '') {
+        if (exists $$env{COMPILERPATHS}) {
+            my @PATHS = split(/\|/, $$env{COMPILERPATHS});
+            foreach (@PATHS) {
+                my $path = ExpandENV($_);
+                if (-e $path && -d $path) {
+                    $$env{COMPILERPATH} = realpath($path);
+                    last;
+                }
+            }
+        }
+        $x_compiler  = $$env{COMPILERPATH}.'/'
+            if (exists $$env{COMPILERPATH});
+
+    } else {
+        $x_compiler  = ExpandENV($$env{COMPILERPATH}).'/'
+            if (exists $$env{COMPILERPATH});
+    }
     $x_compiler  = ExpandENV($$env{COMPILERPATH}).'/'
         if (exists $$env{COMPILERPATH});
     $x_compiler .= $$env{CC};
@@ -2375,13 +2474,30 @@ Makefile($$$)           # (type, dir, file)
     if ($BUSYBOX) {                             # command interface rework
         $text =~ s/\@sh /\@\@BUSYBOX\@ sh /g;
         $text =~ s/\-sh /-\@BUSYBOX\@ sh /g;
+        $text =~ s/\-\@sh /-\@\@BUSYBOX\@ sh /g;
+        $text =~ s/\@-sh /\@-\@BUSYBOX\@ sh /g;
+
+        $text =~ s/shell sh /shell \@BUSYBOX\@ sh /g;
         $text =~ s/shell date /shell \@BUSYBOX\@ date /g;
         $text =~ s/shell cat /shell \@BUSYBOX\@ cat /g;
     }
 
+    # Note:
+    #   By default, busybox and some shells are built with globbing in the C runtime disabled.
+    #   Hence when run from the Windows command prompt it can behave in ways that don't conform to expectations,
+    #   as such 
+    #
+    #     $(shell ls <pattern>)
+    #
+    #   hence the above cannot be exec'ed via busybox-32 as the pattern wont be expanded,
+    #
+    print "warning: encountered (shell ls), advise using \$(wildcard ..) for portability\n"
+       if ($text =~ /shell ls/);
+
     $text =~ s/\@BINPATH\@/${BINPATH}/g;
     $text =~ s/\@PERLPATH\@/${PERLPATH}/g;
     $text =~ s/\@BUSYBOX\@/${BUSYBOX}/g;
+    $text =~ s/\@WGET\@/${WGET}/g;
 
     $text =~ s/(\$\(RM\)) (.*)/$1 \$(subst \/,\\,$2)/g;
     $text =~ s/(\$\(RMDIR\)) (.*)/$1 \$(subst \/,\\,$2)/g;
@@ -2557,3 +2673,4 @@ systemrcode($)          # (retcode)
 }
 
 #end
+
