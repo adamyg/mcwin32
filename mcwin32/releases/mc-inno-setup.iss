@@ -5,7 +5,11 @@
 #include "../buildinfo.h"
 
 #if defined(BUILD_TOOLCHAIN)
+#if defined(BUILD_TYPE)
+#define BinDir "bin" + BUILD_TOOLCHAIN + "\\" + BUILD_TYPE
+#else
 #define BinDir "bin" + BUILD_TOOLCHAIN
+#endif
 #else
 #define BinDir "bin"
 #endif
