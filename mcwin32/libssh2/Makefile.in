@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.10 2020/06/14 00:47:59 cvsuser Exp $
+# $Id: Makefile.in,v 1.11 2020/06/14 01:16:30 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -68,7 +68,7 @@ D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libssh2
 
 # Common flags
 
-XFLAGS=		
+XFLAGS=
 
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
@@ -89,10 +89,8 @@ endif
 LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@ @LIBM@ @EXTRALIBS@
 
 ARFLAGS=	rcv
-RMFLAGS=	-f
-
-ARFLAGS=	rcv
 YFLAGS=		-d
+RMFLAGS=	-f
 RMFLAGS=	-f
 
 ############################################################
@@ -158,8 +156,9 @@ DLLS=		$(SSH2DLL)
 TSKS=
 
 # Rules
-     
-.PHONY: 	build release debug
+
+.PHONY:		build release debug
+build:		source unpacked
 unpacked:		object $(LIBS) $(DLLS) $(TSKS) installinc
 
 release:
