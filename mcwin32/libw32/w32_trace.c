@@ -94,7 +94,7 @@ w32_tracev (const char *fmt, va_list ap)
         }
     }
 
-#if defined(WIN32) && defined(_DEBUG)           /* also write Output to Debug monitor */
+#if defined(_WIN32) && defined(_DEBUG)          /* also write Output to Debug monitor */
     if (0 == len || buffer[len-1] != '\n') {
         buffer[len++] = '\n', buffer[len] = 0;  /* newline terminate */
     }

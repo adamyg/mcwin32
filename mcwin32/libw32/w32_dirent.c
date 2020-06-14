@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.8 2020/04/23 00:09:35 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.9 2020/06/12 23:13:17 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -406,7 +406,7 @@ dir_populate(DIR *dp, const char *path)
         }
 
         if (! isHPFS) {                         /* not HPFS, convert case */
-#if defined(WIN32) && defined(_MSC_VER)
+#if defined(_WIN32) && defined(_MSC_VER)
             _strlwr(dplist->dl_entry);
 #else
             strlwr(dplist->dl_entry);
@@ -631,7 +631,7 @@ readdir(DIR *dp)
     dpent->d_namlen = (u_short) strlen(dpent->d_name);
     dpent->d_reclen = sizeof(struct dirent);
     if (0 == (dp->dd_flags & DIR_FISHPF)) {     /* not HPFS, convert case */
-#if defined(WIN32) && defined(_MSC_VER)
+#if defined(_WIN32) && defined(_MSC_VER)
         _strlwr(dpent->d_name);
 #else
         strlwr(dpent->d_name);

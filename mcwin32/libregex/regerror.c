@@ -72,15 +72,7 @@
  */
 
 #include <sys/cdefs.h>
-//  #if defined(LIBC_SCCS) && !defined(lint)
-//  #if 0
-//  static char sccsid[] = "@(#)regerror.c	8.4 (Berkeley) 3/20/94";
-//  #else
-//  __RCSID("$NetBSD: regerror.c,v 1.23 2007/02/09 23:44:18 junyoung Exp $");
-//  #endif
-//  #endif /* LIBC_SCCS and not lint */
 
-//#include "namespace.h"
 #include "config.h"
 #include <sys/types.h>
 
@@ -155,17 +147,42 @@ static const struct rerr {
 	{ 0,		"",		"*** unknown regexp error code ***" }
 };
 
+
+#ifndef HAVE_STRLCPY
+static size_t
+strlcpy(char *dst, const char *src, size_t siz)
+{
+	char *d = dst;
+	const char *s = src;
+	size_t n = siz;
+
+	/* Copy as many bytes as will fit */
+	if (n != 0 && --n != 0) {
+		do {
+			if ((*d++ = *s++) == 0)
+				break;
+		} while (--n != 0);
+	}
+
+	/* Not enough room in dst, add NUL and traverse rest of src */
+	if (n == 0) {
+		if (siz != 0)
+			*d = '\0';		/* NUL-terminate dst */
+		while (*s++)
+			;
+	}
+
+	return(s - src - 1);			/* count does not include NUL */
+}
+#endif	/*HAVE_STRLCPY*/
+
 /*
  * regerror - the interface to error numbers
  * extern size_t regerror(int, const regex_t *, char *, size_t);
  */
 /* ARGSUSED */
 size_t
-regerror(
-    int errcode,
-    const regex_t * __restrict preg,
-    char *__restrict errbuf,
-    size_t errbuf_size)
+regerror(int errcode, const regex_t * __restrict preg, char *__restrict errbuf, size_t errbuf_size)
 {
 	const struct rerr *r;
 	size_t len;
@@ -207,10 +224,7 @@ regerror(
  * size_t buflen);
  */
 static const char *
-regatoi(
-    const regex_t *preg,
-    char *localbuf,
-    size_t buflen)
+regatoi(const regex_t *preg, char *localbuf, size_t buflen)
 {
 	const struct rerr *r;
 

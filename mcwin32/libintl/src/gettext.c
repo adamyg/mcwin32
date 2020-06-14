@@ -32,7 +32,7 @@
 __RCSID("$NetBSD: gettext.c,v 1.28 2012/07/30 23:04:42 yamt Exp $");
 
 #include "namespace.h"
-#if defined(WIN32)
+#if defined(_WIN32)
 #ifndef WINDOWS_MEAN_AND_LEAN
 #define WINDOWS_MEAN_AND_LEAN
 #endif
@@ -511,7 +511,7 @@ mapit(const char *path, struct domainbinding *db)
 		goto fail;
 	if ((st.st_mode & S_IFMT) != S_IFREG || st.st_size > GETTEXT_MMAP_MAX)
 		goto fail;
-#if defined(WIN32)
+#if defined(_WIN32)
 	fd = open(path, O_RDONLY | O_BINARY);
 #else
 	fd = open(path, O_RDONLY);
@@ -846,7 +846,7 @@ get_lang_env(const char *category_name)
 	if (!lang)
 		lang = getenv("LANG");
 
-#if defined(WIN32)
+#if defined(_WIN32)
 	if (!lang)
 	{	static char ISO639_LanguageName[32]; //FIXME: tls
 
@@ -921,7 +921,7 @@ dcngettext(const char *domainname, const char *msgid1, const char *msgid2,
 	/* resolve relative path */
 	/* XXX not necessary? */
 	if (db->path[0] != '/') {
-#if defined(WIN32)
+#if defined(_WIN32)
 		if (db->path[0] == 0 || db->path[1] != ':') {
 #endif
 			char buf[PATH_MAX];
@@ -933,7 +933,7 @@ dcngettext(const char *domainname, const char *msgid1, const char *msgid2,
 			if (strlcat(buf, db->path, sizeof(buf)) >= sizeof(buf))
 				goto fail;
 			strlcpy(db->path, buf, sizeof(db->path));
-#if defined(WIN32)
+#if defined(_WIN32)
 		}
 #endif
 	}

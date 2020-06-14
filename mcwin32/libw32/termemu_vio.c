@@ -33,8 +33,14 @@
 #endif
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
+#define _WIN32_WINNT 0x601
+#else
+#if(_WIN32_WINNT < 0x601)
+#undef  _WIN32_WINNT
+#define _WIN32_WINNT 0x601
 #endif
+#endif
+
 #define PSAPI_VERSION               1           // EnumProcessModules and psapi.dll
 #if !defined(WINDOWS_MEAN_AND_LEAN)
 #define  WINDOWS_MEAN_AND_LEAN

@@ -40,7 +40,7 @@
 #if defined(LIBINTL_STATIC)
 #   define LIBINTL_LINKAGE
 #   define LIBINTL_ENTRY
-#elif defined(WIN32)
+#elif defined(_WIN32)
 #   if defined(__LIBINTL_BUILD)
 #       define LIBINTL_LINKAGE __declspec(dllexport)
 #   else

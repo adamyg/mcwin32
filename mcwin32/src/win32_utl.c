@@ -44,6 +44,13 @@
 
 #include <config.h>
 
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT < 0x0600)
+#undef  _WIN32_WINNT
+#endif
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+
 #include "libw32.h"
 
 #include <shlobj.h>                             /* SHxx */

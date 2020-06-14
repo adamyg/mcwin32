@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.5 2020/04/23 00:09:36 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.6 2020/06/12 23:13:29 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -25,7 +25,7 @@ __CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.5 2020/04/23 00:09:36 cvsuse
  * ==end==
  */
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <w32config.h>
 
 #include <stdio.h>

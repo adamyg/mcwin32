@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_CDEFS_H_INCLUDED
 #define LIBW32_SYS_CDEFS_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_cdefs_h,"$Id: cdefs.h,v 1.4 2018/09/29 02:22:55 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_cdefs_h,"$Id: cdefs.h,v 1.5 2020/06/14 00:48:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*-
@@ -39,7 +39,7 @@ __CPRAGMA_ONCE
 #pragma warning(disable:4115)   /* forward reference of struct * */
 #endif
 
-/* 
+/*
  *  Library binding.
  */
 #if !defined(LIBW32_API)
@@ -69,7 +69,7 @@ __CPRAGMA_ONCE
 #endif //!LIBW32_API
 
 
-/* 
+/*
  *  Binding:
  *
  * Usage:

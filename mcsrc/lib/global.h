@@ -35,6 +35,11 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
+/* Enable WIN32 tweaks */
+#if defined(_WIN32) && !defined(WIN32)
+#define WIN32 1
+#endif
+
 /* The O_BINARY definition was taken from gettext */
 #if defined(__WATCOMC__) //WIN32/APY
 #include <fcntl.h>
