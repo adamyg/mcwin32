@@ -26,8 +26,8 @@
 # ==end==
 #
 
-ROOT=		.
-MAKEFLAGS=
+@SET_MAKE@
+ROOT		= @abs_top_builddir@
 
 PACKAGE		= mc
 PKG_BUGREPORT	= @PACKAGE_BUGREPORT@
@@ -111,12 +111,22 @@ E=		.exe
 CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
 XCLEAN=
 
+# Configuration
+
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
+endif
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
+
 # Directories
 
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
 D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)
 LW=		$(D_LIB)/$(LP)
 
 D_ETC=		$(D_BIN)/etc
@@ -128,6 +138,7 @@ D_LOCALE=	$(D_BIN)/locale
 # Compilers, programs
 
 CC=		@CC@
+CXX=		@CXX@
 AR=		@AR@
 RM=		@RM@
 RMDIR=		@RMDIR@
@@ -144,44 +155,40 @@ ifeq ($(INNO),) # Inno5: allowing legacy XP installations
 INNO=		"C:/Program Files (x86)/Inno Setup 5/Compil32"
 endif
 
-BUSYBOX=	$(shell which busybox 2>/dev/null)
-ifeq ($(BUSYBOX),)
 BUSYBOX=	@BUSYBOX@
+ifeq ($(BUSYBOX),busybox)
+BUSYBOX=	$(shell which busybox 2>/dev/null)
 endif
 
-ifeq ("wcl386","$(CC)")
-CLBR19=		$(shell which clbr19.dll)
-MT7R19=		$(shell which mt7r19.dll)
-endif
-     
 MCSOURCE=	../mcsrc
 ##MCSOURCE=	../mcmerge
-##GTKINSTALL=	../gtk
 GTKINSTALL=	.
 
 MAN2HLP=	$(PERL) $(D_BIN)/man2hlp.pl
-RMFLAGS=	-f
-ARFLAGS=	-nologo
 
 # Common flags
 
 XFLAGS=
-COPT=		@CFLAGS@
+CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
 CDEBUG=		@CDEBUG@
-LDEBUG=		@LDEBUG@
-CINCLUDE=	-I. -I$(MCSOURCE) -I$(D_INC) @CINCLUDE@
-ifdef MSVC
-CINCLUDE+=	-I$(ROOT)/libw32/msvc
-endif
-CINCLUDE+=	-I$(GTKINSTALL)/include -I$(GTKINSTALL)/include/glib-2.0
-CEXTRA=		@DEFS@ -D_WIN32 -DLIBW32_DYNAMIC
-CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-CNFLAGS=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-LDFLAGS=	$(LDEBUG) @LDFLAGS@
-##LDLIBS+=	$(GTKINSTALL)/lib/glib-2.0.lib $(GTKINSTALL)/lib/intl.lib
-LXFLAGS=	$(LDLIBS) @LIBS@
+CRELEASE=	@CRELEASE@
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
 
+CINCLUDE=	-I. -I$(MCSOURCE) -I$(D_INC) -I$(D_INC)/glib-2.0 @CINCLUDE@
+
+CEXTRA=		@DEFS@ -DLIBW32_DYNAMIC
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
+
+ARFLAGS=	rcv
 RMFLAGS=	-f
 RMDFLAGS=	-rf
 
@@ -191,6 +198,21 @@ RMDFLAGS=	-rf
 # Note: Objects output paths *must* be specialised as source components are not unique,
 #       for example 'init' and 'common'.
 #
+
+ifeq ("wcl386","$(CC)")
+ifeq ("@TOOLCHAIN@","owc20")
+CLBRNAME=	clbr20
+MT7RNAME=	mt7r20
+PLBRNAME=	plbr20
+else
+CLBRNAME=	clbr19
+MT7RNAME=	mt7r19
+PLBRNAME=	plbr19
+endif
+LIBCLBRPATH=	$(shell which $(CLBRNAME).dll)
+LIBMT7RPATH=	$(shell which $(MT7RNAME).dll)
+LIBPLBRPATH=	$(shell which $(PLBRNAME).dll)
+endif
 
 MC_SRC=	\
 	$(D_OBJ)/args$(O)			\
@@ -239,7 +261,7 @@ MC_FILEMANAGER=\
 	$(D_OBJFM)/treestore$(O)		\
 	\
 	$(D_OBJFM)/drive$(O)
-	
+
 #No longer maintained
 #	$(D_OBJFM)/listmode$(O)
 
@@ -469,7 +491,7 @@ OBJS=		$(MC_OBJS)
 
 
 #########################################################################################
-# configuration
+# Configuration
 
 HINTS_SRC=		$(MCSOURCE)/doc/hints
 HINTS_L10N_SRC=		$(MCSOURCE)/doc/hints/l10n
@@ -597,8 +619,9 @@ IMPORT=\
 	$(D_BIN)/busybox.exe
 ifeq ("wcl386","$(CC)")
 IMPORT+=\
-	$(D_BIN)/clbr19.dll			\
-	$(D_BIN)/mt7r19.dll
+	$(D_BIN)/$(CLBRNAME).dll		\
+	$(D_BIN)/$(MT7RNAME).dll		\
+	$(D_BIN)/$(PLBRNAME).dll
 endif
 
 LIBRARIES=\
@@ -641,19 +664,20 @@ DIRECTORIES:=\
 
 
 #########################################################################################
-# rules
+# Rules
 
 VPATH	= ./src
 
-.DEFAULT:
-.PHONY:				all directories artifacts targets configuration gettext
-
+.PHONY:				build directories artifacts targets configuration gettext
 build:				directories artifacts targets configuration gettext import
 
-release:			build package
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
 new_release:			new_buildnumber
-		$(MAKE) release
+		$(MAKE) build
 
 directories:			$(DIRECTORIES)
 
@@ -696,7 +720,7 @@ configuration-win32:				# unconditional export
 	done;\
 	'
 
-.PHONY:
+.PHONY:		import
 import:				$(IMPORT)
 
 BUSYBOXEXE=	$(addsuffix .exe, $(basename $(BUSYBOX)))
@@ -704,24 +728,27 @@ $(D_BIN)/busybox.exe:		$(BUSYBOXEXE)
 		@echo importing $(BUSYBOXEXE)
 		@$(CP) -f $^ $@
 
-$(D_BIN)/clbr19.dll:		$(CLBR19)
-		@echo importing $(CLBR19)
+ifeq ("wcl386","$(CC)")
+$(D_BIN)/$(CLBRNAME).dll:	$(LIBCLBRPATH)
+		@echo importing $(LIBCLBRPATH)
 		@$(CP) -f $(subst /,\,$^) $@
 
-$(D_BIN)/mt7r19.dll:		$(MT7R19)
-		@echo importing $(MT7R19)
+$(D_BIN)/$(MT7RNAME).dll:	$(LIBMT7RPATH)
+		@echo importing $(LIBMT7RPATH)
 		@$(CP) -f $^ $@
 
-$(D_BIN)/%.dll:			$(GTKINSTALL)/bin/%.dll
-		@echo importing $^
-		@$(CP) -f $^ $@
+$(D_BIN)/$(PLBRNAME).dll:	$(LIBPLBRPATH)
+		@echo importing $(LIBPLBRPATH)
+		@$(CP) -f $(subst /,\,$^) $@
+endif
 
-.PHONY:
+.PHONY: 	package
 package:
 	$(INNO) ./releases/mc-inno-setup.iss
 
 .PHONY:		clean
 clean:
+		@echo $(BUILD_TYPE) clean
 		-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN) >nul 2>&1
 		-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES)) >nul 2>&1
 		-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A) >nul 2>&1
@@ -745,7 +772,7 @@ clean:
 
 $(D_BIN)/mc$(E):	MAPFILE=$(basename $@).map
 $(D_BIN)/mc$(E):		$(MC_OBJS) $(MC_RES) $(LDLIBRARIES)
-		$(CC) $(LDFLAGS) -o $@ $^ $(LXFLAGS) @LDMAPFILE@
+		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS) @LDMAPFILE@
 
 $(MC_RES):			config.h buildinfo.h
 
@@ -760,10 +787,10 @@ endif
 buildinfo.h:			buildinfo
 buildinfo:
 		@echo updating buildinfo.h ...
-		-@$(PERL) ./buildinfo.pl -o buildinfo.h -p "$(PACKAGE)" -n "$(PKG_NAME)" -v "$(PKG_VERSION)" \
-			-d "$(BUILD_DATE)" -b "$(BUILD_NUMBER)" -t "@TOOLCHAINEXT@"
+		-@$(PERL) ./buildinfo.pl -o buildinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
+			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@" --type="$(BUILD_TYPE)"
 
-buildinfo.h:			BUILDNUMBER
+buildinfo.h:			BUILDNUMBER buildinfo.pl
 
 ifneq ($(APPVEYOR_BUILD_NUMBER),)
 BUILDNUMBER:
@@ -778,7 +805,7 @@ new_buildnumber:
 			if [ ! -f BUILDNUMBER ]; then echo 1 >BUILDNUMBER; fi;\
 			echo $$(($$(cat BUILDNUMBER) + 1)) >BUILDNUMBER;\
 			"
-		-@chmod -w BUILDNUMBER >nul 2>&1
+		-@chmod -w BUILDNUMBER >/dev/null 2>&1
 
 $(D_OBJ)/%.res: %.rc
 		$(RC) -nologo -Fo$@ $<
@@ -929,35 +956,35 @@ $(LW)mcvfs$(A):			$(D_OBJVFS)/.created $(MC_LIBVFS)
 
 .PHONY:		$(LW)w32$(A)
 $(LW)w32$(A):
-		$(MAKE) -C libw32 $(MAKEFLAGS)
+		$(MAKE) -C libw32
 
 .PHONY:		$(LW)z$(A)
 $(LW)z$(A):
-		$(MAKE) -C libz $(MAKEFLAGS)
+		$(MAKE) -C libz
 
 .PHONY:		$(LW)regex$(A)
 $(LW)regex$(A):
-		$(MAKE) -C libregex $(MAKEFLAGS)
+		$(MAKE) -C libregex
 
 .PHONY:		$(LW)magic$(A)
 $(LW)magic$(A):
-		$(MAKE) -C libmagic $(MAKEFLAGS)
+		$(MAKE) -C libmagic
 
 .PHONY:		$(LW)mbedtls$(A)
 $(LW)mbedtls$(A):
-		$(MAKE) -C libmbedtls $(MAKEFLAGS)
+		$(MAKE) -C libmbedtls
 
 .PHONY:		$(LW)ssh2$(A)
 $(LW)ssh2$(A):
-		$(MAKE) -C libssh2 $(MAKEFLAGS)
+		$(MAKE) -C libssh2
 
 .PHONY:		$(LW)intl$(A)
 $(LW)intl$(A):
-		$(MAKE) -C libintl $(MAKEFLAGS)
+		$(MAKE) -C libintl
 
 .PHONY:		$(LW)glib-2.0$(A)
 $(LW)glib-2.0$(A):
-		$(MAKE) -C libglib $(MAKEFLAGS)
+		$(MAKE) -C libglib
 
 
 #########################################################################################

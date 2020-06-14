@@ -1,0 +1,107 @@
+#!/usr/bin/perl
+# $Id: makeconfig.in,v 1.3 2020/06/14 00:47:59 cvsuser Exp $
+# -*- mode: perl; tabs: 8; indent-width: 4; -*-
+# makelib configuration profiles
+#
+# This file is part of the Midnight Commander.
+#
+# The Midnight Commander is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# The Midnight Commander is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Notice: Portions of this text are reprinted and reproduced in electronic form. from
+# IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
+# 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
+# Group. Copyright remains with the authors and the original Standard can be obtained
+# online at http://www.opengroup.org/unix/online.html.
+# ==end==
+#
+
+# Standard usage
+#
+#   #Configuration
+#   ifeq ("$(BUILD_TYPE)","")   #default
+#   BUILD_TYPE= debug
+#   MAKEFLAGS+= BUILD_TYPE=debug
+#   endif
+#   ifneq ("$(BUILD_TYPE)","release")
+#   # MSVC Run-time suffix
+#   RTSUFFIX=d
+#   endif
+#
+#   # Common flags
+#   XFLAGS=
+#   CFLAGS=         @CFLAGS@
+#   CWARN=          @CWARN@
+#   CDEBUG=         @CDEBUG@
+#   CRELEASE=       @CRELEASE@
+#   CXXFLAGS=       @CXXFLAGS@
+#   CXXDEBUG=       @CXXDEBUG@
+#   ifeq ("$(CXXDEBUG)","")
+#   CXXDEBUG=       $(CDEBUG)
+#   endif
+#   CXXRELEASE=     @CXXRELEASE@
+#   ifeq ("$(CXXRELEASE)","")
+#   CXXRELEASE=     $(CRELEASE)
+#   endif
+#   LDDEBUG=        @LDDEBUG@
+#   LDRELEASE=      @LDRELEASE@
+#
+#   CINCLUDE=       <additional> @CINCLUDE@
+#   CEXTRA=         @DEFS@ <additional>
+#
+#   ifeq ("$(BUILD_TYPE)","release")
+#   CFLAGS+=        $(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+#   CXXFLAGS+=      $(CXXRELEASE) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+#   LDFLAGS=        $(LDRELEASE) @LDFLAGS@
+#   else
+#   CFLAGS+=        $(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+#   CXXFLAGS+=      $(CXXDEBUG) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+#   LDFLAGS=        $(LDDEBUG) @LDFLAGS@
+#   endif
+#   LDLIBS=         -L$(D_LIB) @LDLIBS@ @LIBS@ @EXTRALIBS@
+#
+
+################################################################################
+# Visual studio
+
+if ($TOOLCHAIN =~ /^vs/) {
+
+        set_msvc_runtime('dynamic', '$(RTSUFFIX)');
+
+        remove_define('WIN32');
+        add_define('HAVE_CONFIG_H');
+        add_define('WIN32_WINNT=0x501');
+
+        add_xinclude('$(ROOT)/libw32');         # Extra includes; C and compiler tests.
+        add_xinclude('$(ROOT)/libw32/msvc');    # MSVC specials
+
+        add_application_library('libw32.lib');
+}
+
+
+################################################################################
+# OpenWatcom
+
+if ($TOOLCHAIN =~ /^owc/) {
+
+        remove_define('WIN32');
+        add_define('HAVE_CONFIG_H');
+        add_define('WIN32_WINNT=0x501');
+
+        add_xinclude('$(ROOT)/libw32');         # Extra includes; C and compiler tests.
+
+        add_application_library('libw32.lib');
+}
+
+1;
+

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.3 2020/04/28 22:59:43 cvsuser Exp $
+# $Id: Makefile.in,v 1.4 2020/06/14 00:47:59 cvsuser Exp $
 # libintl makefile
 #
 #
@@ -29,31 +29,49 @@ RM=		@RM@
 PERL=		@PERL@
 LIBTOOL=	@LIBTOOL@
 
-# Common flags
+# Configuration
 
-ARFLAGS=	rcv
-XFLAGS=		
-COPT=		@CFLAGS@
-CWARN=		@CWARN@
-CDEBUG=		@CDEBUG@
-LDEBUG=		@LDEBUG@
-CINCLUDE=	-I. -I../libcitrus/src -I$(D_INC) @CINCLUDE@
-CEXTRA=		@DEFS@
-CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-CNFLAGS=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-YFLAGS=		-d
-LDFLAGS=	$(LDEBUG) @LDFLAGS@
-LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
-
-RMFLAGS=	-f
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
+endif
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
 
 # Directories
 
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
 D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/libintl
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libintl
 
+# Common flags
+
+XFLAGS=		
+
+CFLAGS=		@CFLAGS@
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+CRELEASE=	@CRELEASE@
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
+
+CINCLUDE=	-I. -I../libcitrus/src -I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@ @LIBM@ @EXTRALIBS@
+
+ARFLAGS=	rcv
+YFLAGS=		-d
+RMFLAGS=	-f
+ 
 ############################################################
 
 # Targets

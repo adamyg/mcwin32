@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.5 2020/06/06 01:38:42 cvsuser Exp $
+# $Id: Makefile.in,v 1.6 2020/06/14 00:47:59 cvsuser Exp $
 # libmagic makefile
 #
 #
@@ -30,37 +30,47 @@ RM=		@RM@
 PERL=		@PERL@
 LIBTOOL=	@LIBTOOL@
 
+# Configuration
+
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
+endif
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
+
 # Common flags
 
-ARFLAGS=	rcv
 XFLAGS=		
-COPT=		@CFLAGS@
+
+CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
 CDEBUG=		@CDEBUG@
-LDEBUG=		@LDEBUG@
-CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
-ifeq ("mingw32","@build_os@")
-CINCLUDE+=	-I../include -I../libw32
-endif
-CEXTRA=		@DEFS@
-CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-CNFLAGS=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-YFLAGS=		-d
-LDFLAGS=	$(LDEBUG) @LDFLAGS@
-LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@
-ifeq ("mingw32","@build_os@")
-LDLIBS+=	-lw32 -lshlwapi -lpsapi -lole32 -luuid -lgdi32 -luserenv -lnetapi32 -ladvapi32 -lWs2_32
-endif
-LDLIBS+=	@LIBM@ @EXTRALIBS@
+CRELEASE=	@CRELEASE@
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
 
+CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@ -DWIN32=1
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@ @LIBM@ @EXTRALIBS@
+
+ARFLAGS=	rcv
 RMFLAGS=	-f
 
 # Directories
 
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
 D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/libmagic
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libmagic
 
 ############################################################
 
@@ -133,16 +143,22 @@ TSKS=		$(MAGICUTIL)
 
 # Rules
 
-all:			source unpacked
-unpacked:		$(LIBS) $(TSKS) $(MAGICDB) installinc 
+.PHONY: 	build release debug
+build:			source unpacked
+unpacked:		$(LIBS) $(TSKS) $(MAGICDB) installinc
 
-$(MAGICLIB):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_STATIC -D_WIN32
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+$(MAGICLIB):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_STATIC
 $(MAGICLIB):		$(D_OBJ)/.created $(LIBOBJS)
 		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
 		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
 		$(RANLIB) $@
 
-$(MAGICDLL):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_DYNAMIC -D_WIN32
+$(MAGICDLL):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_DYNAMIC
 $(MAGICDLL):		$(DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) -o $@ $^ -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) $(LDFLAGS) $(LDLIBS)
@@ -179,6 +195,7 @@ installinc:		../include/.created
 		@echo "do not delete, managed directory" > $@
 
 clean:
+		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(MAGICDLL) $(DLLOBJS) >nul 2>&1
 		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1
 		-@$(RM) $(LIBOBJS) $(UTILOBJS) >nul 2>&1

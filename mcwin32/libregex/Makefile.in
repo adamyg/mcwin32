@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.2 2018/09/26 11:45:04 cvsuser Exp $
+# $Id: Makefile.in,v 1.3 2020/06/14 00:47:59 cvsuser Exp $
 # libregex makefile
 #
 #
@@ -27,33 +27,49 @@ AR=		@AR@
 RANLIB=		@RANLIB@
 RM=		@RM@
 
-# Common flags
+# Configuration
 
-ARFLAGS=	rcv
-XFLAGS=		
-COPT=		@CFLAGS@
-CWARN=		@CWARN@
-CDEBUG=		@CDEBUG@
-LDEBUG=		@LDEBUG@
-CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
-ifeq ("mingw32","@build_os@")
-CINCLUDE+=	-I../include -I../../libw32
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
 endif
-CEXTRA=		@DEFS@
-CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-CNFLAGS=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-YFLAGS=		-d
-LDFLAGS=	$(LDEBUG) @LDFLAGS@
-LDLIBS=		@LIBS@ @LIBM@ @EXTRALIBS@
-
-RMFLAGS=	-f
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
 
 # Directories
 
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
 D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/libregex
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libregex
+
+# Common flags
+
+XFLAGS=		
+
+CFLAGS=		@CFLAGS@
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+CRELEASE=	@CRELEASE@
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
+
+CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
+
+CEXTRA=		@DEFS@
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
+
+YFLAGS=		-d
+ARFLAGS=	rcv
+RMFLAGS=	-f
 
 ############################################################
 
@@ -71,7 +87,13 @@ TSKS=
 
 # Rules
 
-all:			$(LIBS) $(TSKS) installinc
+.PHONY: 	build release debug
+build:			$(LIBS) $(TSKS) installinc
+
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
 $(REGEXLIB):		$(D_OBJ)/.created $(LIBOBJS)
 		$(RM) $(RMFLAGS) $@
@@ -87,6 +109,7 @@ installinc:		../include/.created
 		@echo "do not delete, managed directory" >$@
 
 clean:
+		@echo $(BUILD_TYPE) clean
 		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%$(C)

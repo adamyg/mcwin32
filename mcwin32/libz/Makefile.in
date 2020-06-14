@@ -1,9 +1,10 @@
+
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.4 2018/09/26 11:45:07 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2020/06/14 00:48:00 cvsuser Exp $
 # libz makefile
 #
 #
-# Copyright (c) 2016 - 2017 Adam Young.
+# Copyright (c) 2016 - 2020 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -53,34 +54,59 @@ PERL=		@PERL@
 LIBTOOL=	@LIBTOOL@
 RC=		@RC@
 
-# Common flags
+# Configuration
 
-ARFLAGS=	rcv
-XFLAGS=		
-COPT=		@CFLAGS@
-CXXOPT=		@CXXFLAGS@
-ifeq "" "$(CXXOPT)"
-CXXOPT=		$(COPT)
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
 endif
-CWARN=		@CWARN@
-CDEBUG=		@CDEBUG@
-LDEBUG=		@LDEBUG@
-CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
-CEXTRA=		@DEFS@
-CFLAGS=		$(CPPFLAGS) $(CDEBUG) $(COPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
-CXXFLAGS=	$(CPPFLAGS) $(CDEBUG) $(CXXOPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
-YFLAGS=		-d
-LDFLAGS=	$(LDEBUG) @LDFLAGS@
-LDLIBS=		-L$(D_LIB) @LIBS@ @LIBM@ @EXTRALIBS@
-
-RMFLAGS=	-f
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
 
 # Directories
 
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
 D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/libz
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libz
+
+# Common flags
+
+XFLAGS=
+CFLAGS=		@CFLAGS@
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+CRELEASE=	@CRELEASE@
+CXXFLAGS=	@CXXFLAGS@
+CXXDEBUG=	@CXXDEBUG@
+ifeq ("$(CXXDEBUG)","")
+CXXDEBUG=	$(CDEBUG)
+endif
+CXXRELEASE=	@CXXRELEASE@
+ifeq ("$(CXXRELEASE)","")
+CXXRELEASE=	$(CRELEASE)
+endif
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
+
+CINCLUDE=	-I. @CINCLUDE@
+CEXTRA= 	@DEFS@
+
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXRELEASE) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXDEBUG) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
+
+ARFLAGS=	rcv
+YFLAGS=		-d
+RMFLAGS=	-f
 
 ############################################################
 
@@ -131,18 +157,24 @@ TSKS=
 
 # Rules
 
-all:			source unpacked
+.PHONY: 	build release debug
+build:			source unpacked
 unpacked:		object $(LIBS) $(TSKS) installinc
+
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
 CEXTRA	+=	-I$(ZSRC) -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 
-$(ZLIB):		CEXTRA += -DZLIB_STATIC -D_WIN32
+$(ZLIB):		CEXTRA += -DZLIB_STATIC
 $(ZLIB):		$(LIBOBJS)
 		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
-$(ZDLL):		CEXTRA += -DZLIB_DLL -D_WIN32
+$(ZDLL):		CEXTRA += -DZLIB_DLL
 ifeq ("yes","@ISWIN32@")
 $(ZDLL):		ZDEF = -export-symbols $(ZSRC)/win32/zlib.def
 endif
@@ -172,6 +204,7 @@ installinc:		../include/.created
 		@echo "do not delete, managed directory" > $@
 
 clean:
+		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(ZDLL) $(DLLOBJS) >/dev/null 2>&1
 		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(LIBOBJS) >/dev/null 2>&1

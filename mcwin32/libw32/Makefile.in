@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.7 2020/05/21 15:26:05 cvsuser Exp $
+# $Id: Makefile.in,v 1.8 2020/06/14 00:48:00 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -46,34 +46,61 @@ PERL=		@PERL@
 LIBTOOL=	@LIBTOOL@
 RC=		@RC@
 
+# Configuration
+
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
+endif
+ifneq ("$(BUILD_TYPE)","release")
+# MSVC Run-time suffix
+RTSUFFIX=d
+endif
+
 # Common flags
 
-ARFLAGS=	rcv
-XFLAGS=		
-COPT=		@CFLAGS@
-CXXOPT=		@CXXFLAGS@
-ifeq "" "$(CXXOPT)"
-CXXOPT=		$(COPT)
-endif
+XFLAGS=
+CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
 CDEBUG=		@CDEBUG@
-LDEBUG=		@LDEBUG@
+CRELEASE=	@CRELEASE@
+CXXFLAGS=	@CXXFLAGS@
+CXXDEBUG=	@CXXDEBUG@
+ifeq ("$(CXXDEBUG)","")
+CXXDEBUG=	$(CDEBUG)
+endif
+CXXRELEASE=	@CXXRELEASE@
+ifeq ("$(CXXRELEASE)","")
+CXXRELEASE=	$(CRELEASE)
+endif
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
+
 CINCLUDE=	-I$(D_INC) @CINCLUDE@ -I.
-CEXTRA=		@DEFS@ -D_WIN32_WINNT=0x601
-CFLAGS=		$(CDEBUG) $(COPT) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-CXXFLAGS=	$(CPPFLAGS) $(CDEBUG) $(CXXOPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
-YFLAGS=		-d
-LDFLAGS=	$(LDEBUG) @LDFLAGS@
-LXFLAGS=	$(LDLIBS) @LIBS@ @LIBMALLOC@
+CEXTRA=		@DEFS@
+
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXRELEASE) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXDEBUG) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+
+LDLIBS=		-L$(D_LIB) @EXTRALIBS@
 
 RMFLAGS=	-f
+ARFLAGS=	rcv
+YFLAGS=		-d
 
 # Directories
 
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
 D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/libw32
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libw32
 
 ############################################################
 
@@ -165,7 +192,13 @@ TSKS=
 
 # Rules
 
-all:			$(LIBS) $(TSKS)
+.PHONY:		build debug release
+build:			$(LIBS) $(TSKS)
+
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
 $(W32LIB):		CEXTRA += -DLIBW32_STATIC -DLIBW32_LIBRARY
 $(W32LIB):		$(D_OBJ)/.created $(LIBOBJS)
@@ -184,9 +217,10 @@ $(D_OBJ)/.created:
 		@echo "do not create" > $@
 
 clean:
+		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(W32DLL) $(DLLOBJS) >/dev/null 2>&1
 		-@$(RM) $(RMFLAGS) $(BAK) $(W32LIB) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
-		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(LIBOBJS) >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

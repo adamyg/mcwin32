@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.6 2020/06/06 02:25:23 cvsuser Exp $
+# $Id: Makefile.in,v 1.7 2020/06/14 00:47:59 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -43,13 +43,6 @@ LP=		lib
 CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
 XCLEAN=
 
-# Directories
-
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@
-D_INC=		$(ROOT)/include
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/libglib
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@
-
 # Compilers, programs
 
 CC=		@CC@
@@ -61,26 +54,47 @@ PERL=		@PERL@
 LIBTOOL=	@LIBTOOL@
 RC=		@RC@
 
+# Configuration
+
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
+endif
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
+
+# Directories
+
+D_INC=		$(ROOT)/include
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libglib
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+
 # Common flags
 
-ARFLAGS=	rcv
 XFLAGS=		
-COPT=		@CFLAGS@
-CXXOPT=		@CXXFLAGS@
-ifeq "" "$(CXXOPT)"
-CXXOPT=		$(COPT)
-endif
+
+CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
 CDEBUG=		@CDEBUG@
-LDEBUG=		@LDEBUG@
-CINCLUDE=	-I. -I$(D_INC)
-CEXTRA=		@DEFS@
-CFLAGS=		$(CPPFLAGS) $(CDEBUG) $(COPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
-CXXFLAGS=	$(CPPFLAGS) $(CDEBUG) $(CXXOPT) $(CWARN) $(CEXTRA) $(CINCLUDE) $(XFLAGS)
-YFLAGS=		-d
-LDFLAGS=	$(LDEBUG) @LDFLAGS@
-LDLIBS=		$(D_LIB)/$(LP)intl$(A) winmm.lib @EXTRALIBS@
+CRELEASE=	@CRELEASE@
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
 
+CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)intl$(A) @LIBS@ winmm.lib @EXTRALIBS@
+
+YFLAGS=		-d
+ARFLAGS=	rcv
 RMFLAGS=	-f
 
 ############################################################
@@ -313,11 +327,18 @@ LIBS=		$(GLIBLIB) $(GLIBDLL) \
 		$(GMODULELIB) $(GMODULEDLL)
 TSKS=
 
+
 ############################################################
 # Rules
 
-all:			source unpacked
+.PHONY: 	build release debug
+build:			source unpacked
 unpacked:		object $(LIBS) $(TSKS) installheaders
+
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
 $(GLIBLIB):		CEXTRA += -DGLIB_STATIC_COMPILATION
 $(GLIBLIB):		$(GLIBLIBOBJS)
@@ -446,11 +467,13 @@ installheaders:		Makefile ../include/.created \
 		@echo "do not delete, managed directory" > $@
 
 clean:
+		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GLIBDLL) $(GLIBDLLOBJS) >nul 2>&1)
 		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GMODULEDLL) $(GMODULEDLLOBJS) >nul 2>&1)
 		-@$(RM) $(subst /,\,$(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1)
 		-@$(RM) $(subst /,\,$(GLIBLIBOBJS) >nul 2>&1)
 		-@$(RM) $(subst /,\,$(GMODULELIBOBJS) >nul 2>&1)
+
 
 ############################################################
 # Build recipes

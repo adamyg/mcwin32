@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.12 2020/04/28 22:59:43 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.13 2020/06/12 23:16:03 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -325,6 +325,9 @@ Link() {
     my $version_number = '';
     my $wc_fastcall = -1;                       # fastcall (Watcom) convention.
     my $wc_debugger = '';
+    my $cl_ltcg = 0;
+    my $cl_debug = undef;
+    my $f_mappath = undef;
     my @OBJECTS;
     my @RESOURCES;
     my @EXPORTS;
@@ -445,7 +448,7 @@ Link() {
                 $rpath = $val;
             }
 
-        } elsif (/^-RTC1$/ && ('cl' eq $cc)) {
+        } elsif (/^-RTC[1csu]+$/ && ('cl' eq $cc)) {
             push @STUFF, $_;
 
         } elsif (/^-R(.*)$/) {
@@ -489,26 +492,54 @@ Link() {
             Error("link: $_ not supported\n");
 
         } else {
-            if ('wcl386' eq $cc) {              # process
-                #   Calling convention:
-                #       [3-6]r      register calling convention
-                #       [3-6]s      stack based calling convention
+            # toolchain specific
+            if ('cl' eq $cc) {
+
+                # Optimisation
+                if (/^[-\/]GL$/i) {             # /GL (Whole Program Optimization)
+                    $cl_ltcg = 1;               # imply /LTCG
+                    next;
+
+                } elsif (/^[-\/]LTCG$/i) {
+                    $cl_ltcg = 1;               # explicit /LTCG
+                    next;
+
+                # Debugger
+                } elsif (/^[-\/]DEBUG$/ || /^[-\/]DEBUG:(.+_)$/) {
+                    $cl_debug = $_;             # explicit /DEBUG:NONE, /DEBUG:FULL and /DEBUG:FASTLINK
+                    $cl_debug =~ s/^-/\//;
+                    next;
+
+                # Mapfile
+                } elsif (/^[-\/]Fm(.+)$/i) {    # Compiler /Fm<filename>
+                    $f_mappath = $1;
+                    next;
+
+                } elsif (/^[-\/]MAP:(.+)$/) {   # Linker -MAP[:filename]
+                    $f_mappath = $1;
+                    next;
+                }
+
+            } elsif ('wcl386' eq $cc) {         # process
+                # Calling convention:
+                #   [3-6]r      register calling convention
+                #   [3-6]s      stack based calling convention
                 #
-                #       ecc         set default calling convention to __cdecl
-                #       ecd         set default calling convention to __stdcall
-                #       ecf         set default calling convention to __fastcall
-                #       ecp         set default calling convention to __pascal
-                #       ecr         set default calling convention to __fortran
-                #       ecs         set default calling convention to __syscall
-                #       ecw         set default calling convention to __watcall (default)
+                #   ecc         set default calling convention to __cdecl
+                #   ecd         set default calling convention to __stdcall
+                #   ecf         set default calling convention to __fastcall
+                #   ecp         set default calling convention to __pascal
+                #   ecr         set default calling convention to __fortran
+                #   ecs         set default calling convention to __syscall
+                #   ecw         set default calling convention to __watcall (default)
                 #
-                #   Warning:
-                #       The OpenWatcom run-time library utilise either register or stack based (by default register) calls,
-                #       hence use of the alternative convention via a '-ecx' option may create major compatiblity issues.
+                # Warning:
+                #   The OpenWatcom run-time library utilise either register or stack based (by default register) calls,
+                #   hence use of the alternative convention via a '-ecx' option may create major compatiblity issues.
                 #
-                #       For example atexit() and qsort() shall assume register/stack yet as the default is applied the
-                #       function argument, the caller can siliently pass an alternatively coded function; that shall be
-                #       fatal at run-time.
+                #   For example atexit() and qsort() shall assume register/stack yet as the default is applied the
+                #   function argument, the caller can siliently pass an alternatively coded function; that shall be
+                #   fatal at run-time.
                 #
                 if (/^-[3456]r$/ or /^-ecw$/) {
                     if ($wc_fastcall eq -1) {
@@ -522,13 +553,24 @@ Link() {
                         Error("link: -export-fastcall and compiler switches are incompatible\n");
                     }
 
-                #   Debugger support:
-                #       -h[wcd]     Watcom,Codeview,Dwarf
+                # Debugger support:
+                #   -h[wcd]     Watcom,Codeview,Dwarf
                 #
                 } elsif (/^-h([wc])$/) {
                     $wc_debugger = $1;
+
+                # Mapfile
+                } elsif (/^[-\/]fm(.+)$/i) {    # Compiler -fm=<filename>
+                    $f_mappath = $1;
+                    $f_mappath =~ s/^[=]//;
+                    next;
+
+                } elsif (/^[-\/]MAP:(.+)$/) {   # Linker -MAP[:filename] (MSVC style)
+                    $f_mappath = $1;
+                    next;
                 }
             }
+
             push @STUFF, $_;
         }
     }
@@ -585,7 +627,7 @@ Link() {
     my $dllname  = "${basename}${version_number}.dll";
     my $dllpath  = "${basepath}${version_number}.dll";
     my $pdbpath  = "${basepath}${version_number}.pdb";
-    my $mappath  = "${basepath}${version_number}.map";
+    my $mappath  = $f_mappath || "${basepath}${version_number}.map";
     my $exppath  = "${basepath}${version_number}.exp";
     my $libpath  = "${basepath}.lib";
     my $sympath  = undef;
@@ -619,9 +661,11 @@ Link() {
             if ($dll_version);
         print CMD "/NOLOGO\n"
             if ($o_quiet || $o_silent);
-        print CMD "/INCREMENTAL:NO\n";
         print CMD "/OPT:REF\n";
-        print CMD "/DEBUG\n";
+        print CMD "/INCREMENTAL:NO\n";          # review, implied with ! /DEBUG:NONE
+        print CMD (defined $cl_debug ? $cl_debug : "/DEBUG") . "\n";
+        print CMD "/LTCG\n"
+            if ($cl_ltcg);
       foreach(@OBJECTS) {
         print CMD true_object($_)."\n";
       }
@@ -1555,4 +1599,7 @@ Error {
 }
 
 #end
+
+
+
 
