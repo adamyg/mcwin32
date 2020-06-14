@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.15 2020/05/01 14:45:32 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.17 2020/06/12 23:12:49 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -37,8 +37,8 @@ __CPRAGMA_ONCE
 #if (_MSC_VER != 1600)                          /* MSVC 10/2010 */
 #if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
 #if (_MSC_VER <  1910 || _MSC_VER > 1916)       /* MSVC 19.10 .. 16/2017 */
-#if (_MSC_VER > 1920)                           /* MSVC 19.20 /2019 */
-#error unistd.h: untested MSVC Version (2005 -- 2019) only ...
+#if (_MSC_VER > 1926)                           /* MSVC 19.20 /2019.06 */
+#error unistd.h: untested MSVC Version (2005 -- 2019.06) only ...
 	//see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 #endif //2019
 #endif //2017
@@ -78,13 +78,13 @@ __CPRAGMA_ONCE
 #error unistd.h: unsupported compiler
 #endif
 
+#if !defined(_WIN32)                            /* _WIN32 requirement */
+#error _WIN32 not defined; correct toolchain?
+#endif
+
 #if !defined(_WIN32_WINCE)                      /* require winsock2.h */
 #if !defined(_WIN32_WINNT)
-#if defined(WIN32) && (WIN32 > 0x100)
-#define _WIN32_WINNT WIN32
-#else
 #define _WIN32_WINNT 0x400                      /* entry level */
-#endif
 #elif (_WIN32_WINNT) < 0x400
 //  Minimum system required Minimum value for _WIN32_WINNT and WINVER
 //  Windows 7                                           (0x0601)
@@ -96,10 +96,6 @@ __CPRAGMA_ONCE
 #pragma message("unistd: _WIN32_WINNT < 0400")
 #endif
 #endif   /*_WIN32_WINCE*/
-#ifndef _WIN32
-#define _WIN32 WIN32                           /* WIN32 and _WIN32 generally required */
-#endif
-
 
 /*
  *  avoid importing <win32_include.h>
