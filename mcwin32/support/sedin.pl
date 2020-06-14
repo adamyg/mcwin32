@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: sedin.pl,v 1.4 2020/05/02 22:33:19 cvsuser Exp $
+# $Id: sedin.pl,v 1.5 2020/06/10 10:55:08 cvsuser Exp $
 # sed in processing tool, processing embedded @PERL@ @PYTHON@ etc
 #
 # Copyright Adam Young 2017 - 2020
@@ -141,7 +141,10 @@ while ($line = <IN>) {
         $line =~ s/\@ZIP\@/${busybox} zip/g;
 
         if ($line =~ /(\@[A-Za-z_]+\@)/) {
-                    printf "WARNING ${in} ($.): unknown variable\n";
+		    my $var = $1;
+		    if ($var ne '@EXTHELPERSDIR@') {
+			    printf "WARNING ${in} ($.): unknown variable (${var})\n";
+		    }
         }
 
         chomp $line;
