@@ -715,6 +715,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_readv.c" />
     <ClCompile Include="..\..\libw32\w32_reparse.c" />
     <ClCompile Include="..\..\libw32\w32_select.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
@@ -804,6 +805,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_writev.c" />
     <ClCompile Include="..\..\src\drive.c" />
     <ClCompile Include="..\..\src\win32_glib.c" />
     <ClCompile Include="..\..\src\win32_key.c" />
