@@ -156,7 +156,7 @@ w32_sleep (unsigned int secs)
 //
 */
 
-int
+LIBW32_API int
 w32_gettimeofday(
     struct timeval *tv, /*struct timezone*/ void *tz)
 {
@@ -188,6 +188,16 @@ w32_gettimeofday(
     errno = EINVAL;
     return -1;
 }
+
+
+#if !defined(__MINGW32__)
+LIBW32_API int
+gettimeofday(
+    struct timeval *tv, struct timezone *tz)
+{
+    return w32_gettimeofday(tv, tz);
+}
+#endif
 
 
 /*
@@ -281,7 +291,7 @@ w32_gettimeofday(
 //          pathname string exceeded {PATH_MAX}.
 //
 */
-int
+LIBW32_API int
 w32_utime(const char *path, const struct utimbuf *times)
 {
 #if defined(__MINGW32__)
