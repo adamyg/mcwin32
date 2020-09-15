@@ -41,6 +41,7 @@ LIBW32_API int      opterr = 1,                 /* if error message should be pr
                     optind = 1,                 /* index into parent argv vector */
                     optopt = '?',               /* character checked for validity */
                     optreset = 0;               /* reset getopt */
+
 LIBW32_API char *   optarg = NULL;              /* argument associated with option */
 
 static const char *__progname = "";
@@ -48,6 +49,7 @@ static const char *__progname = "";
 #define	BADCH	(int)'?'
 #define	BADARG	(int)':'
 #define	EMSG	""
+
 
 /*
  *  getopt --
@@ -60,7 +62,7 @@ getopt(int nargc, char * const *nargv, const char *ostr)
 	char *oli;				/* option letter list index */
 	int ret;
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32)
 	if (optind == 1 && (__progname == NULL || __progname[0] == '\0'))
 		__progname = nargv[0];		/* MSVC special */
 #endif

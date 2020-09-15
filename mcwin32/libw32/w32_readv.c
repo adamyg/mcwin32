@@ -1,14 +1,14 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getdomainname_c,"$Id: w32_domainname.c,v 1.1 2020/05/21 15:26:50 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_readv_c,"$Id: w32_readv.c,v 1.3 2020/07/02 16:25:18 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * win32 getdomainname()
+ * win32 readv() implementation
  *
- * Copyright (c) 2017, Adam Young.
+ * Copyright (c) 2018 - 2020, Adam Young.
  * All rights reserved.
  *
- * This file is part of the Midnight Commander.
+ * This file is part of memcached-win32.
  *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
@@ -41,59 +41,60 @@ __CIDENT_RCSID(gr_w32_getdomainname_c,"$Id: w32_domainname.c,v 1.1 2020/05/21 15
 #endif
 
 #include "win32_internal.h"
-#include <DSRole.h>
+#include "win32_misc.h"
+
+#include <sys/uio.h>
 #include <unistd.h>
 
-#pragma comment(lib, "netapi32.lib")
+#pragma comment(lib, "Ws2_32.lib")
 
-/*
-//  NAME
-//      getdomainname, setdomainname - get/set domain name
-//
-//  SYNOPSIS
-//      #include <unistd.h>
-//
-//      int getdomainname(char *name, size_t len);
-//      int setdomainname(const char *name, size_t len);
-//
-//  DESCRIPTION
-//      These functions are used to access or to change the domain name of the current
-//      processor.
-//
-//  RETURN VALUE
-//      On success, zero is returned. On error, -1 is returned, and errno is set
-//      appropriately.
-//
-//  ERRORS
-//      EINVAL  For getdomainname, name points to NULL or name is longer than len.
-//      EPERM   For setdomainname, the caller was not the superuser.
-//      EINVAL  For setdomainname, len was too long.
-*/
-LIBW32_API int
-w32_getdomainname(char *name, size_t namelen)
+LIBW32_API int /*ssize_t*/ 
+readv(int fildes, const struct iovec *iov, int iovcnt)
 {
-#undef getdomainname
-    int ret = -1;
+    SOCKET s = (SOCKET)-1;
+    int i, ret = -1;
 
-    if (name == NULL || namelen < 2) {
+    if (fildes < 0) {
+        errno = EBADF;
+
+    } else if (NULL == iov || iovcnt <= 0){
         errno = EINVAL;
 
-    } else {
-        char t_name[256] = "";
-        DWORD dwSize = sizeof(t_name);
+    } else if (w32_issockfd(fildes, &s)) {
+        ret = 0;
+        for (i = 0; i < iovcnt; ++i) {
+#undef recvfrom
+            const int cnt = recvfrom(s, iov[i].iov_base, iov[i].iov_len, 0, NULL, 0);
+            if (cnt > 0) {
+                ret += cnt;
+            } else if (0 == cnt) {
+                break;
+            } else {
+                if (0 == ret) {
+                    w32_neterrno_set();
+                    ret = -1;
+                }
+                break;
+            }
+        }
 
-        if (! GetComputerNameExA(ComputerNameDnsDomain, t_name, &dwSize)) {
-            errno = EINVAL;
-        } else {
-            size_t t_namelen = strlen(t_name);
-            if (t_namelen < namelen) t_namelen = namelen - 1;
-            memcpy(name, t_name, t_namelen);
-            name[t_namelen]=0;
-            ret = 0;
+    } else {
+        ret = 0;
+        for (i = 0; i < iovcnt; ++i) {
+            const int cnt = _read(fildes, iov[i].iov_base, iov[i].iov_len);
+            if (cnt > 0) {
+                ret += cnt;
+            } else if (0 == cnt) {
+                break;
+            } else if (errno == EINTR) {
+                continue;
+            } else {
+                if (ret == 0) ret = -1;
+                break;
+            }
         }
     }
     return ret;
 }
 
 /*end*/
-

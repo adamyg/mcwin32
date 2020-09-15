@@ -4,29 +4,34 @@ __CIDENT_RCSID(gr_w32_sockpair_c,"$Id: w32_sockpair.c,v 1.5 2020/05/21 15:34:14 
 /*
  * win32 socket file-descriptor support
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2020 Adam Young.
  *
- * This file is part of the Midnight Commander.
+ * This file is part of memcached-win32.
  *
- * The Midnight Commander is free software: you can redistribute it
+ * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
- * The Midnight Commander is distributed in the hope that it will be useful,
+ * Redistributions of source code must retain the above copyright
+ * notice, and must be distributed with the license document above.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, and must include the license document above in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * This project is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * license for more details.
+ * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
  * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
- * ==end==
+ * ==notice==
  */
 
 #ifndef _WIN32_WINNT
@@ -167,23 +172,25 @@ w32_socketpair_fd(int af, int type, int proto, int sock[2])
     int ret;
 
     if (0 == (ret = w32_socketpair_native(af, type, proto, sock))) {
-        int s1, s2;
+        int s0 = -1, s1 = -1;
 
-        if ((s1 = (int)sock[0]) < WIN32_FILDES_MAX &&
-                (s2 = _open_osfhandle((long)sock[0], 0)) == -1 ||
-            (s2 = (int)sock[1]) < WIN32_FILDES_MAX &&
-                (s2 = _open_osfhandle((long)sock[1], 0)) == -1) {
+        if (sock[0] < WIN32_FILDES_MAX ||
+                (s0 = _open_osfhandle((long)sock[0], 0)) == -1 ||
+            sock[1] < WIN32_FILDES_MAX ||
+                (s1 = _open_osfhandle((long)sock[1], 0)) == -1) {
+
             closesocket((SOCKET)sock[1]);
-            closesocket((SOCKET)sock[0]);
+            if (s0 >= 0) _close(s0);
+            else closesocket((SOCKET)sock[0]);
             errno = EMFILE;
             ret = -1;
 
         } else {
-            w32_sockfd_open(s1, sock[0]);       /* associate file-descriptor */
-            sock[0] = s1;
+            w32_sockfd_open(s0, sock[0]);       /* associate file-descriptor */
+            sock[0] = s0;
 
-            w32_sockfd_open(s2, sock[1]);       /* associate file-descriptor */
-            sock[1] = s2;
+            w32_sockfd_open(s0, sock[1]);       /* associate file-descriptor */
+            sock[1] = s1;
         }
     }
     return ret;
@@ -203,12 +210,13 @@ w32_socketpair_native(int af, int type, int proto, int sock[2])
     int addr2_len = sizeof (addr2);
     int nerr;
 
+    sock[0] = INVALID_SOCKET;
     sock[1] = INVALID_SOCKET;
-    sock[2] = INVALID_SOCKET;
 
-    assert(af == AF_INET && type == SOCK_STREAM && (proto == IPPROTO_IP || proto == IPPROTO_TCP));
+    assert(af == AF_INET && type == SOCK_STREAM && (0 == proto || IPPROTO_IP == proto || IPPROTO_TCP == proto));
 
 #undef socket
+    if (0 == proto) proto = IPPROTO_IP;
     if ((listen_sock = socket(af, type, proto)) == INVALID_SOCKET)
         goto error;
 

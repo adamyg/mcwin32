@@ -5,22 +5,27 @@ __CIDENT_RCSID(gr_w32_errno_c,"$Id: w32_errno.c,v 1.8 2018/10/18 22:38:35 cvsuse
 /*
  * win32 errno mapping support
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
- * The Midnight Commander is free software: you can redistribute it
+ * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
- * The Midnight Commander is distributed in the hope that it will be useful,
+ * Redistributions of source code must retain the above copyright
+ * notice, and must be distributed with the license document above.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, and must include the license document above in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * This project is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * license for more details.
  * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from

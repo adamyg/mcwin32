@@ -9,27 +9,26 @@ __CPRAGMA_ONCE
  * internal definitions
  *
  * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
- * The Midnight Commander is free software: you can redistribute it
+ * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
- * The Midnight Commander is distributed in the hope that it will be useful,
+ * Redistributions of source code must retain the above copyright
+ * notice, and must be distributed with the license document above.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, and must include the license document above in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * This project is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Notice: Portions of this text are reprinted and reproduced in electronic form. from
- * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
- * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained
- * online at http://www.opengroup.org/unix/online.html.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * license for more details.
  * ==end==
  */
 
@@ -74,7 +73,8 @@ __CPRAGMA_ONCE
 
 __BEGIN_DECLS
 
-#define WIN32_FILDES_MAX    1024
+#define WIN32_FILDES_DEF    (512)
+#define WIN32_FILDES_MAX    (8*1024)    /* was 2048, now 8192/2019 */
 
 extern const char *     x_w32_vfscwd;
 

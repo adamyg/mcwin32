@@ -8,24 +8,28 @@ __CPRAGMA_ONCE
 /*
  *  win32 sys/uio.h
  *
- * Copyright (c) 2012 - 2018, Adam Young.
+ * Copyright (c) 1998 - 2020, Adam Young.
  * All rights reserved.
- *
  *
  * This file is part of the Midnight Commander.
  *
- * The Midnight Commander is free software: you can redistribute it
+ * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
- * The Midnight Commander is distributed in the hope that it will be useful,
+ * Redistributions of source code must retain the above copyright
+ * notice, and must be distributed with the license document above.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, and must include the license document above in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * This project is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * license for more details.
+ * ==end==
  */
 
 #include <sys/cdefs.h>
@@ -38,14 +42,18 @@ __CPRAGMA_ONCE
 
 __BEGIN_DECLS
 
-typedef struct iovec {
+struct iovec {
     void *     iov_base;
     int        iov_len;
-} iovec_t;
+};
 
-LIBW32_API size_t           readv(int, const struct iovec *, int);
-LIBW32_API size_t           writev(int, const struct iovec *, int);
+LIBW32_API int /*ssize_t*/  readv(int, const struct iovec *, int);
+LIBW32_API int /*ssize_t*/  writev(int, const struct iovec *, int);
 
+//  LIBW32_API ssize_t      preadv(int fd, const struct iovec *iov, int iovcnt, off_t offset);
+//  LIBW32_API ssize_t      pwritev(int fd, const struct iovec *iov, int iovcnt, off_t offset);
+//  LIBW32_API ssize_t      preadv2(int fd, const struct iovec *iov, int iovcnt, off_t offset, int flags);
+//  LIBW32_API ssize_t      pwritev2(int fd, const struct iovec *iov, int iovcnt, off_t offset, int flags);
 __END_DECLS
 
 #endif /*LIBW32_SYS_UIO_H_INCLUDED */

@@ -7,28 +7,26 @@ __CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.9 2020/06/12 23:13:17 cvsu
  *
  *      opendir, closedir, readdir, seekdir, rewindir, telldir
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2020 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
- * The Midnight Commander is free software: you can redistribute it
+ * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
- * The Midnight Commander is distributed in the hope that it will be useful,
+ * Redistributions of source code must retain the above copyright
+ * notice, and must be distributed with the license document above.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, and must include the license document above in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * This project is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Notice: Portions of this text are reprinted and reproduced in electronic form. from
- * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
- * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained
- * online at http://www.opengroup.org/unix/online.html.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * license for more details.
  * ==end==
  */
 
@@ -53,6 +51,8 @@ __CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.9 2020/06/12 23:13:17 cvsu
 #include <assert.h>
 #include <errno.h>
 
+//#define UTF8FILENAMES         1               /* enable wide/utf8 filenames */
+
 #define DIR_FISHPF              0x0001
 #define DIR_MAGIC               0x57333264      /* W32d */
 
@@ -63,6 +63,8 @@ static BOOL                     isshortcut(const char *path);
 static DIR *                    unc_populate(const char *path);
 
 static int                      dir_populate(DIR *dp, const char *path);
+static HANDLE                   dir_find_firstw(const char *path, WIN32_FIND_DATAW *finddata);
+static struct _dirlist *        dir_list_pushw(DIR *dp, const WCHAR *filenamew);
 static struct _dirlist *        dir_list_push(DIR *dp, const char *filename);
 static void                     dir_list_free(struct _dirlist *);
 static int                      dir_ishpf(const char *directory);
@@ -322,18 +324,16 @@ unc_populate(const char *path)
                     //
                     //  build directory ..
                     //
-                    char filename[MAX_PATH+1];
+                    const WCHAR *filenamew = ent->shi502_netname;
 
-                    WideCharToMultiByte(CP_ACP, 0,
-                        (void *)ent->shi502_netname, -1, filename, sizeof(filename)-1, NULL, NULL);
-                    filename[sizeof(filename) - 1] = 0;
-
-                    if (0 == strcmp(filename, "prnproc$") ||
-                            0 == strcmp(filename, "print$")) {
-                        continue;
+                    if ('p' == filenamew[0]) {  /* prnproc$ or print$ */
+                        if (0 == wcscmp(filenamew, L"prnproc$") ||
+                                0 == wcscmp(filenamew, L"print$")) {
+                            continue;
+                        }
                     }
 
-                    if (NULL == dir_list_push(dp, filename)) {
+                    if (NULL == dir_list_pushw(dp, filenamew)) {
                         break;
                     }
                 }
@@ -354,15 +354,23 @@ unc_populate(const char *path)
 static int
 dir_populate(DIR *dp, const char *path)
 {
+#if defined(UTF8FILENAMES)
+    WIN32_FIND_DATAW finddata;
+#else
+    WIN32_FIND_DATAA finddata;
+#endif
     struct _dirlist *dplist;
-    WIN32_FIND_DATA finddata;
     HANDLE hSearch;
     UINT errormode;
     BOOL isHPFS = FALSE;
     int rc, ret = 0;
 
     errormode = SetErrorMode(0);                // disable hard errors
+#if defined(UTF8FILENAMES)
+    hSearch = dir_find_firstw(path, &finddata);
+#else
     hSearch = FindFirstFileA(path, &finddata);
+#endif
     (void) SetErrorMode(errormode);             // restore errors
 
     if (INVALID_HANDLE_VALUE == hSearch) {
@@ -396,27 +404,39 @@ dir_populate(DIR *dp, const char *path)
         }
 #endif
                                                 /* skip '.' */
-        if (0 == strcmp(finddata.cFileName, ".")) {
+        if ('.' == finddata.cFileName[0] && 0 == finddata.cFileName[1]) {
             continue;
         }
-                                                /* create new entry */
+                                               
+#if defined(UTF8FILENAMES)                      /* create new entry */
+        if (NULL == (dplist = dir_list_pushw(dp, finddata.cFileName))) {
+            FindClose(hSearch);
+            return ENOMEM;
+        }
+#else
         if (NULL == (dplist = dir_list_push(dp, finddata.cFileName))) {
             FindClose(hSearch);
             return ENOMEM;
         }
+#endif
 
         if (! isHPFS) {                         /* not HPFS, convert case */
 #if defined(_WIN32) && defined(_MSC_VER)
-            _strlwr(dplist->dl_entry);
+            _strlwr(dplist->dl_name);
 #else
-            strlwr(dplist->dl_entry);
+            strlwr(dplist->dl_name);
 #endif
         }
+
         dplist->dl_size2 = finddata.nFileSizeHigh;
         dplist->dl_size  = finddata.nFileSizeLow;
         dplist->dl_attr  = finddata.dwFileAttributes;
 
+#if defined(UTF8FILENAMES)
+    } while (FindNextFileW(hSearch, &finddata));
+#else
     } while (FindNextFileA(hSearch, &finddata));
+#endif
 
     if ((rc = GetLastError()) == ERROR_NO_MORE_FILES) {
         dp->dd_current = dp->dd_contents;       /* seed cursor */
@@ -439,26 +459,72 @@ dir_populate(DIR *dp, const char *path)
 }
 
 
+static HANDLE
+dir_find_firstw(const char *path, WIN32_FIND_DATAW *finddata)
+{
+    WCHAR pathw[MAX_PATH+1];
+
+    MultiByteToWideChar(CP_ACP, 0, path, -1, pathw, _countof(pathw)-1);
+    pathw[_countof(pathw) - 1] = 0;
+    return FindFirstFileW(pathw, finddata);
+}
+
+
+static struct _dirlist *
+dir_list_pushw(DIR *dp, const WCHAR *filenamew)
+{
+    char filename[MAX_PATH+1];
+
+    WideCharToMultiByte(CP_ACP, 0,
+        (void *)filenamew, -1, filename, _countof(filename)-1, NULL, NULL);
+    filename[_countof(filename) - 1] = 0;
+    return dir_list_push(dp, filename);
+}
+
+
+/*
+ *  dir_list_push ---
+ *      Create a directory list element.
+ */
 static struct _dirlist *
 dir_list_push(DIR *dp, const char *filename)
 {
-    const size_t namelen = strlen(filename) + 1;
+    const size_t namlen = strlen(filename);
     struct _dirlist *dplist;
 
-    if (NULL == (dplist = (struct _dirlist *)calloc(1, sizeof(struct _dirlist))) ||
-            NULL == (dplist->dl_entry = (char *)malloc(namelen))) {
-        free(dplist);
+    if (NULL == (dplist =
+            (struct _dirlist *)malloc(sizeof(struct _dirlist) + namlen + 1 /*nul*/))) {
         return NULL;
     }
+
+    memset(dplist, 0, sizeof(*dplist));
     if (dp->dd_contents) {
         dp->dd_current  =
             dp->dd_current->dl_next = dplist;
     } else {
         dp->dd_contents = dp->dd_current = dplist;
     }
-    memcpy(dplist->dl_entry, filename, namelen);
+
+    dplist->dl_namlen = (unsigned short)namlen;
+    memcpy(dplist->dl_name, filename, namlen + 1);
     dplist->dl_next = NULL;
     return dplist;
+}
+
+
+/*
+ *  dir_list_free ---
+ *      Dispose of the directory list.
+ */
+static void
+dir_list_free(struct _dirlist *dplist)
+{
+    struct _dirlist *odplist;
+
+    while (dplist) {
+        dplist = (odplist = dplist)->dl_next;
+        free(odplist);
+    }
 }
 
 
@@ -627,8 +693,8 @@ readdir(DIR *dp)
     dpent = (struct dirent *)dp->dd_buf;
 
     /* Standard fields */
-    strcpy(dpent->d_name, pEntry->dl_entry);
-    dpent->d_namlen = (u_short) strlen(dpent->d_name);
+    memcpy(dpent->d_name, pEntry->dl_name, pEntry->dl_namlen + 1 /*nul*/);
+    dpent->d_namlen = pEntry->dl_namlen;
     dpent->d_reclen = sizeof(struct dirent);
     if (0 == (dp->dd_flags & DIR_FISHPF)) {     /* not HPFS, convert case */
 #if defined(_WIN32) && defined(_MSC_VER)
@@ -773,24 +839,6 @@ telldir(DIR *dp)
     assert(DIR_MAGIC == dp->dd_magic);
     return (dp->dd_loc);
 }
-
-
-/*
- *  dir_list_free ---
- *      Dispose of the directory list.
- */
-static void
-dir_list_free(struct _dirlist *dplist)
-{
-    struct _dirlist *odplist;
-
-    while (dplist) {
-        free(dplist->dl_entry);
-        dplist = (odplist = dplist)->dl_next;
-        free(odplist);
-    }
-}
-
 
 
 /*

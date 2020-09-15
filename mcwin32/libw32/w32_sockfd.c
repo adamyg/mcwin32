@@ -4,30 +4,35 @@ __CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.6 2018/10/12 00:52:04 cvsu
 /*
  * win32 socket file-descriptor support
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2020 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
- * The Midnight Commander is free software: you can redistribute it
+ * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
- * The Midnight Commander is distributed in the hope that it will be useful,
+ * Redistributions of source code must retain the above copyright
+ * notice, and must be distributed with the license document above.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, and must include the license document above in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * This project is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * license for more details.
+ * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
  * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
- * ==end==
-*/
+ * ==extra==
+ */
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT        0x0601              /* enable vista+ features (WSAPoll) */
@@ -161,6 +166,13 @@ w32_sockfd_close(int fd, SOCKET s)
 //	return 0;
 //  }
 
+static int
+IsSocket(HANDLE h)
+{
+    return (GetFileType(h) == FILE_TYPE_PIPE &&
+                0 == GetNamedPipeInfo(h, NULL, NULL, NULL, NULL));
+}
+
 LIBW32_API int
 w32_issockfd(int fd, SOCKET *s)
 {
@@ -178,15 +190,21 @@ w32_issockfd(int fd, SOCKET *s)
 
         } else if (fd >= x_fdinit ||            /* local socket mapping */
                     (t_s = x_fdsockets[fd]) == INVALID_SOCKET) {
+
             /*
-             *  MSVC 2015+ no longer suitable without fdlimit; asserts when out-of-range
+             *  MSVC 2015+ no longer suitable; asserts when out-of-range.
+             *  Unfortunately socket handles can be small numeric values yet so are file descriptors.
              */
-            if (fd >= x_fdlimit ||
+            if (fd >= 0x80 && 0 == (fd & 0x3) && IsSocket((HANDLE)fd)) {
+                t_s = (SOCKET)fd;
+
+            } else if (fd >= x_fdlimit ||
                     _get_osfhandle(fd) == (SOCKET)INVALID_HANDLE_VALUE) {
                 t_s = (SOCKET)fd;               /* invalid assume socket; otherwise file */
             }
         }
     }
+
     if (s) *s = t_s;
     return (t_s != INVALID_SOCKET);
 }

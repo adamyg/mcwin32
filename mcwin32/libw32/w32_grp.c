@@ -6,28 +6,34 @@ __CIDENT_RCSID(gr_w32_grp_c,"$Id: w32_grp.c,v 1.7 2020/04/28 22:59:44 cvsuser Ex
  * win32 pwd() implementation
  *
  * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
- * The Midnight Commander is free software: you can redistribute it
+ * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
- * The Midnight Commander is distributed in the hope that it will be useful,
+ * Redistributions of source code must retain the above copyright
+ * notice, and must be distributed with the license document above.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, and must include the license document above in
+ * the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * This project is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * license for more details.
+ * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
- * ==end==
+ * ==extra==
  */ 
 
 #include "win32_internal.h"
@@ -271,6 +277,48 @@ getgroups(int gidsetsize, gid_t grouplist[])
             return 1;
         }
     }
+    errno = EINVAL;
+    return -1;
+}
+
+
+
+/*
+//  NAME
+//      setgroups -- set group access list
+//  
+//  SYNOPSIS
+//       #include <sys/param.h>
+//       #include <unistd.h>
+//  
+//      int setgroups(int ngroups, const gid_t *gidset);
+//  
+//  DESCRIPTION
+//       The setgroups() system call sets the group access list of the current user process according 
+//       to the array gidset.  The ngroups argument indicates the number of entries in the array and 
+//       must be no more than {NGROUPS_MAX}+1.
+//  
+//  RETURN VALUES
+//      The setgroups() function returns the value 0 if successful; otherwise the value -1 is returned
+//      and the global variable errno is set to indicate the error.
+//  
+//  ERRORS
+//      The setgroups() system call will fail if:
+//
+//      [EPERM] 
+//          The caller is not the super-user.
+//
+//      [EINVAL]
+//          The number specified in the ngroups argument is larger than the {NGROUPS_MAX}+1 limit.
+//
+//      [EFAULT]
+//          The address specified for gidset is outside the process address space.
+*/
+LIBW32_API int
+setgroups(size_t size, const gid_t *gidset)
+{
+    (void) size;
+    (void) gidset;
     errno = EINVAL;
     return -1;
 }

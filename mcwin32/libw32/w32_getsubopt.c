@@ -45,7 +45,7 @@ __CIDENT_RCSID(gr_w32_getsubopt_c,"$Id: w32_getsubopt.c,v 1.5 2020/04/28 22:59:4
  *  tricky...  The extern variable suboptarg is a pointer to the token
  *  which didn't match.
  */
-char *suboptarg = NULL;
+LIBW32_API char *suboptarg = NULL;
 
 LIBW32_API int
 getsubopt(char **optionp, char * const *tokens, char **valuep)

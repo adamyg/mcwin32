@@ -299,7 +299,7 @@ start:
 }
 
 
-//	#ifdef REPLACE_GETOPT
+#if defined(REPLACE_GETOPT)
 //	/*
 //	 * getopt --
 //	 *	Parse argc/argv argument vector.
@@ -333,7 +333,14 @@ start:
 //		}
 //		return retval;
 //	}
-//	#endif
+#endif  //REPLACE_GETOPT
+
+
+int
+__import_getopt(int nargc, char * const *nargv, const char *ostr)
+{
+	return getopt(nargc, nargv, ostr);
+}
 
 
 /*
