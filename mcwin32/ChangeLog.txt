@@ -1,3 +1,17 @@
+	* Build 218: 4.8.24 beta4.
+
+Sun Jun 13 18:58:34 2020 adamy
+
+	* ci: release/debug builds
+
+Sat Jun  6 15:07:16 2020 adamy
+
+	* ci: appveyor tweaks.
+
+Fri May 22 17:37:35 2020 adamy
+
+	* Corrected restore geometry, possible corruption.
+
 Thu May 21 17:56:22 2020 adamy
 
 	* Build 217: 4.8.24 beta3.
