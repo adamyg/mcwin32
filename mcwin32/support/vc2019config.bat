@@ -8,5 +8,5 @@ if not defined GNUWIN32 (
 if not defined PERL (
         set PERL=perl
 )
-%PERL% makelib.pl --gnuwin32=%GNUWIN32% --icu=auto vc2019 %1 %2 %3 %4
+%PERL% makelib.pl --gnuwin32=%GNUWIN32% --icu=auto %1 %2 %3 %4 vc2019
 
