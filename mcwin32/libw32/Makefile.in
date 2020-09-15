@@ -57,6 +57,13 @@ ifneq ("$(BUILD_TYPE)","release")
 RTSUFFIX=d
 endif
 
+# Directories
+
+D_INC=		$(ROOT)/include
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libw32
+
 # Common flags
 
 XFLAGS=
@@ -95,13 +102,6 @@ RMFLAGS=	-f
 ARFLAGS=	rcv
 YFLAGS=		-d
 
-# Directories
-
-D_INC=		$(ROOT)/include
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libw32
-
 ############################################################
 
 W32LIB=		$(D_LIB)/$(LP)w32_static$(A)
@@ -118,10 +118,11 @@ CSOURCES=\
 	w32_chown.c \
 	w32_close.c \
 	w32_dir.c \
-	w32_domainname.c \
 	w32_dirent.c \
+	w32_domainname.c \	
 	w32_err.c \
 	w32_errno.c \
+	w32_flock.c \
 	w32_fcntl.c \
 	w32_fsync.c \
 	w32_getcwd.c \
@@ -146,6 +147,7 @@ CSOURCES=\
 	w32_progname.c \
 	w32_pwd.c \
 	w32_read.c \
+	w32_readv.c \
 	w32_realpath.c \
 	w32_reparse.c \
 	w32_select.c \
@@ -173,7 +175,8 @@ CSOURCES=\
 	w32_unlink.c \
 	w32_user.c \
 	w32_util.c \
-	w32_write.c
+	w32_write.c \
+	w32_writev.c
 
 LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))

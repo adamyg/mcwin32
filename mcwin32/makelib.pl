@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # $Id: makelib.pl,v 1.20 2020/06/14 00:47:59 cvsuser Exp $
-# Makefile generation under Win32 (MSVC/WATCOMC/MINGW) and DJGPP.
+# Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
 #
@@ -10,12 +10,19 @@
 #
 # This file is part of the Midnight Commander.
 #
-# The Midnight Commander is free software: you can redistribute it
+# The applications are free software: you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation, either version 3 of the License,
-# or (at your option) any later version.
+# published by the Free Software Foundation, version 3.
 #
-# The Midnight Commander is distributed in the hope that it will be useful,
+# Redistributions of source code must retain the above copyright
+# notice, and must be distributed with the license document above.
+#
+# Redistributions in binary form must reproduce the above copyright
+# notice, and must include the license document above in
+# the documentation and/or other materials provided with the
+# distribution.
+#
+# The applications are distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -115,7 +122,7 @@ my %x_environment   = (
             CFLAGS          => '-nologo -Yd -GZ @RTLIBRARY@',
             CXXFLAGS        => '-nologo -Yd -GZ @RTLIBRARY@',
             CDEBUG          => '-Zi -Od',
-            CRELEASE        => '-O2 -GL -Gy',
+            CRELEASE        => '-O2 -GL -Gy -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-nologo -GZ @RTLIBRARY@',
@@ -140,7 +147,7 @@ my %x_environment   = (
             CFLAGS          => '-nologo @RTLIBRARY@',
             CXXFLAGS        => '-nologo @RTLIBRARY@ -EHsc',
             CDEBUG          => '-Zi -RTC1 -Od',
-            CRELEASE        => '-O2',
+            CRELEASE        => '-O2 -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-nologo @RTLIBRARY@',
@@ -156,7 +163,7 @@ my %x_environment   = (
             MFCLIBS         => ''
             },
 
-        'vc1500'        => {    # 2008, Visual Studio 9
+        'vc1500'        => {   # 2008, Visual Studio 9
             TOOLCHAIN       => 'vs90',
             TOOLCHAINEXT    => '.vs90',
             CC              => 'cl',
@@ -172,7 +179,7 @@ my %x_environment   = (
             CFLAGS          => '-nologo @RTLIBRARY@',
             CXXFLAGS        => '-nologo @RTLIBRARY@ -EHsc',
             CDEBUG          => '-Zi -RTC1 -Od',
-            CRELEASE        => '-O2',
+            CRELEASE        => '-O2 -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-nologo @RTLIBRARY@',
@@ -198,7 +205,7 @@ my %x_environment   = (
             CFLAGS          => '-nologo @RTLIBRARY@',
             CXXFLAGS        => '-nologo @RTLIBRARY@ -EHsc',
             CDEBUG          => '-Zi -RTC1 -Od',
-            CRELEASE        => '-O2 -GL -Gy',
+            CRELEASE        => '-O2 -GL -Gy -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-nologo @RTLIBRARY@',
@@ -233,7 +240,7 @@ my %x_environment   = (
             CFLAGS          => '-nologo @RTLIBRARY@ -fp:precise',
             CXXFLAGS        => '-nologo @RTLIBRARY@ -EHsc -fp:precise',
             CDEBUG          => '-Zi -RTC1 -Od',
-            CRELEASE        => '-O2 -GL -Gy',
+            CRELEASE        => '-O2 -GL -Gy -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-nologo @RTLIBRARY@',
@@ -261,7 +268,7 @@ my %x_environment   = (
             CFLAGS          => '-nologo @RTLIBRARY@ -fp:precise',
             CXXFLAGS        => '-nologo @RTLIBRARY@ -EHsc -fp:precise',
             CDEBUG          => '-Zi -RTC1 -Od',
-            CRELEASE        => '-O2 -GL -Gy',
+            CRELEASE        => '-O2 -GL -Gy -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-nologo @RTLIBRARY@',
@@ -300,7 +307,7 @@ my %x_environment   = (
             CFLAGS          => '-nologo @RTLIBRARY@ -fp:precise',
             CXXFLAGS        => '-nologo @RTLIBRARY@ -EHsc -fp:precise',
             CDEBUG          => '-Zi -RTC1 -Od',
-            CRELEASE        => '-O2 -GL -Gy',
+            CRELEASE        => '-O2 -GL -Gy -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-nologo @RTLIBRARY@',
@@ -336,7 +343,7 @@ my %x_environment   = (
             CFLAGS          => '-nologo @RTLIBRARY@ -fp:precise',
             CXXFLAGS        => '-nologo @RTLIBRARY@ -EHsc -fp:precise',
             CDEBUG          => '-Zi -RTC1 -Od',
-            CRELEASE        => '-O2 -GL -Gy',
+            CRELEASE        => '-O2 -GL -Gy -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-nologo @RTLIBRARY@',
@@ -428,8 +435,7 @@ my %x_environment   = (
             CXXFLAGS        => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -cc++ -xs -xr',
             CDEBUG          => '-d2 -hw -of+ ',
             CXXDEBUG        => '-d1 -hw -od',   #d2/d3 under hw generates invalid symbols
-            CRELEASE        => '-ox',
-            CXXRELEASE      => '-ox',
+            CRELEASE        => '-ox -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-q -6r -db -bt=nt -bm -br',
@@ -440,6 +446,58 @@ my %x_environment   = (
             MFCDIR          => '/tools/WinDDK/7600.16385.1',
             MFCCOPT         => '-q -j -ei -6r -d2  -hw -db -ofr -zlf -bt=nt -bm -br -aa',
             MFCCXXOPT       => '-q -j -ei -6r -d2i     -db -ofr -zlf -bt=nt -bm -br -xs -xr -cc++',
+            MFCCINCLUDE     => '-I$(MFCDIR)/inc/atl71 -I$(MFCDIR)/inc/mfc42',
+            MFCLIBS         => '/LIBPATH:$(MFCDIR)\lib\atl\i386 /LIBPATH:$(MFCDIR)\lib\mfc\i386'
+            },
+
+        'owc1900_posix' => {    # Open Watcom 1.9 (using owcc)
+            TOOLCHAIN       => 'owc19',
+            TOOLCHAINEXT    => '.owc19',
+            CC              => 'owcc',
+            COMPILERPATH    => '%WATCOM%/binnt',
+            VSWITCH         => '-v',            # version
+            VPATTERN        => '(Open Watcom .*? Version [0-9\.]+)',
+            OSWITCH         => '-o',
+            LSWITCH         => '-l',
+            XSWITCH         => '-o',
+            AR              => 'lib',
+            CINCLUDE        => '',
+
+                # -zq                           Operate quietly.
+                # -mregparm=1                   Register calling conventions; warning: dont not mix module calling conventions.
+                # -mtune=686                    Target CPU optimisation.
+                # -fsigned-char                 Signed character (default unsigned).
+                # -fno-short-enum               Force enum base type to use at least an int;
+                #                               otherwise smallest data-type to fit data-range.
+                # -g2                           Full symbolic debugging information.
+                # -gwatcom                      Generate Codeview debugging information.
+                # -fbrowser                     Generate browsing information (.mbr).
+                # -O#                           Optimization(s).
+                # -Wc,-aa                       Allow non-constant initialisation expressions (-fnonconst-initializers, owc 2.0)
+                # -bt=NT                        Build target Windows NT (or greater).
+                # -mthreads                     Multi-threaded environment.
+                # -mrtdll                       Build with dll run-time library.
+                # -fgrow-stack                  Enable stack guard management (for functions with >= 4K of local variables).
+                # -zc                           The zc option causes the code generator to place literal strings and const items in the code segment.
+                # -xc++                         Treat source files as C++ code.
+                # -feh                          Exception handling.
+                # -frtti                        Enable RTTI (C++).
+                #
+            CFLAGS          => '-zq -mconsole -mrtdll -mthreads -mregparm=1 -mtune=686 -fbrowser -fsigned-char -fno-short-enum -Wc,-aa -fgrow-stack',
+            CXXFLAGS        => '-zq -mconsole -mrtdll -mthreads -mregparm=1 -mtune=686 -fbrowser -fsigned-char -fno-short-enum -xc++ -feh -frtti',
+            CDEBUG          => '-gw -g2 -O0',
+            CXXDEBUG        => '-gw -g2 -O0',
+            CRELEASE        => '-O2 -DNDEBUG',
+            CWARN           => '-W3',
+            CXXWARN         => '-W3',
+            LDFLAGS         => '-zq -b NT -mconsole -mrtdll -mthreads -mregparm=1 -mtune=686 -fbrowser',
+            LDDEBUG         => '-gw -g2',
+            LDRELEASE       => '',
+            LDMAPFILE       => '-fm=$(MAPFILE)',
+
+            MFCDIR          => '/tools/WinDDK/7600.16385.1',
+            MFCCOPT         => '-q -j -ei -6r -d2  -hw -db -ofr -zlf -bt=nt -bm -br -aa',               #TODO
+            MFCCXXOPT       => '-q -j -ei -6r -d2i     -db -ofr -zlf -bt=nt -bm -br -xs -xr -cc++',     #TODO
             MFCCINCLUDE     => '-I$(MFCDIR)/inc/atl71 -I$(MFCDIR)/inc/mfc42',
             MFCLIBS         => '/LIBPATH:$(MFCDIR)\lib\atl\i386 /LIBPATH:$(MFCDIR)\lib\mfc\i386'
             },
@@ -503,8 +561,7 @@ my %x_environment   = (
             CXXFLAGS        => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -cc++ -xs -xr',
             CDEBUG          => '-d2 -hw -of+ ',
             CXXDEBUG        => '-d2i -hw -od',
-            CRELEASE        => '-ox',
-            CXXRELEASE      => '-ox',
+            CRELEASE        => '-ox -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-q -6r -db -bt=nt -bm -br',
@@ -531,6 +588,7 @@ my %win_entries     = (
         RMDIR               => '@BINPATH@rmdir.exe',
 
         ISWIN32             => 'yes',
+        PATHSEP             => ';',
         DEFS                => '-DHAVE_CONFIG_H -DWIN32=0x501',
 
         INSTALL             => '@PERLPATH@perl '."${CWD}/win32/install.pl",
@@ -545,6 +603,7 @@ my %win_entries     = (
         SED                 => '@BINPATH@sed',
         PERL                => '@PERLPATH@perl',
         LIBTOOL             => '@PERLPATH@perl '.'$<LIBTOOL>',
+        CPPDEP              => '',
         LT_OBJDIR           => '.libs/',
         RC                  => 'rc',
 
@@ -605,12 +664,13 @@ my %x_tokens        = (
         VSWITCH             => '-v',            # e.g. gcc version 4.5.3 (GCC)
         VPATTERN            => 'version ([0-9\.]+)',
         ISWITCH             => '-I',
-        OSWITCH             => '',              # object specification
-        LSWITCH             => '',              # library
+        OSWITCH             => '-o',            # object specification
+        LSWITCH             => '-l',            # library
         XSWITCH             => '-o',            # exec specification
 
         #makefile
         SET_MAKE            => 'MAKEFLAGS=',
+        LD                  => 'link',
         CP                  => 'cp',
         RM                  => 'rm',
         MV                  => 'mv',
@@ -632,6 +692,13 @@ my %x_tokens        = (
         INNO                => 'C:/Program Files (x86)/Inno Setup 5/Compil32',
         PERL                => 'perl',
         LIBTOOL             => 'libtool',
+        LIBTOOL_DEPS        => '',
+            # used to automaticlly update the libtool script if it becames out-of-date.
+
+    #   CC                  => '',
+    #   CXX                 => '',
+    #   CLD                 => '',
+    #   CXXLD               => '',
 
         CFLAGS              => '',
         CXXFLAGS            => '',
@@ -648,7 +715,15 @@ my %x_tokens        = (
         CINCLUDE            => '',
         CXXINCLUDE          => '',
 
+    #   EXTRA_CFLAGS        => '',
+    #   EXTRA_CXXFLAGS      => '',
+
         LIBCURL_CPPFLAGS    => '',
+
+        LIBICU_CFLAGS       => '',
+        LIBICU_CXXFLAGS     => '',
+        LIBICU_VERSION      => '',
+        ICU_CONFIG          => '',
 
         LDFLAGS             => '',
         LDDEBUG             => '',
@@ -662,6 +737,8 @@ my %x_tokens        = (
         LIBICU              => '',
         LIBICONV            => '',
         LIBCURL             => '',
+        LIBCLANG            => '',
+        LIBEXPLAIN          => '',
         LIBMAGIC            => '',
         LIBARCHIVE          => '',
         LIBZ                => '',
@@ -677,7 +754,11 @@ my %x_tokens        = (
 
 my %x_tokendefs     = (
         CXX                 => 'CC',
-        CXXFLAGS            => 'CFLAGS'
+        CXXFLAGS            => 'CFLAGS',
+        CXXDEBUG            => 'CDEBUG',
+        CXXRELEASE          => 'CRELEASE'
+    #   CLD                 => 'CC',
+    #   CXXLD               => 'CXX',
         );
 
 my @x_headers       = (     #headers
@@ -886,21 +967,6 @@ my @x_commands     = (     # commands explicity converted to <cmd>.exe
         'cp'
         );
 
-our $PACKAGE        = undef;
-our $PACKAGE_PATH   = $x_libw32;
-our $PACKAGE_H      = undef;                    # defunct, use PACKAGE_FILE
-our $PACKAGE_FILE   = 'package.h';
-
-our $CONFIG_PATH    = $x_libw32;
-our $CONFIG_FILE    = 'w32config.h';
-
-our $TOOLCHAIN      = undef;
-
-our @x_libraries    = ();   # local libraries -l<xxx> lib<xxx>.lib
-our @x_libraries2   = ();   # local libraries -l<xxx> xxx.lib
-our @x_optlibraries = ();   # optional libraries
-our @x_makefiles    = ();   # local makefiles; build order
-
 my %CONFIG_O        = (     # optional config.h values
         HAVE_EIGHTBIT           => '1'
         );
@@ -912,6 +978,8 @@ my %CONFIG_H        = (     # predefined config.h values
         HAVE_ENVIRON            => '1',
         HAVE_SYSERRLIST         => '1'
         );
+
+my $config          = undef;                    # Loaded configuration
 
 our @HEADERS        = ();
 our @EXTHEADERS     = ();
@@ -932,12 +1000,14 @@ my @x_include       = ();
 my $x_command       = '';
 my $x_signature     = undef;
 
+my $o_makelib       = './makelib.in';
 my $o_keep          = 0;
 my $o_version       = undef;
 my $o_verbose       = 0;
 my $o_gnuwin32      = 'auto';
 my $o_contrib       = 1;
 my $o_gnulibs       = 0;
+my $o_owcposix      = 0;
 
 my $o_icu           = 'auto';
 my $o_libhunspell   = undef;
@@ -950,7 +1020,7 @@ my $o_libmagic      = undef;
 #
 sub Configure($$);
 sub ExeRealpath($);
-sub LoadContrib($$$);
+sub LoadContrib($$$$$);
 sub CheckCompiler($$);
 sub CheckDecl($$);
 sub CheckType($$);
@@ -974,14 +1044,8 @@ exit &main();
 sub
 main()
 {
-    my $o_clean         = 0;
-    my $o_help          = 0;
-
-    require "./makelib.in";
-        die "makelib.in: PACKAGE not defined\n"
-            if (! $PACKAGE);
-        $x_tokens{PACKAGE}      = $PACKAGE;
-
+    my $o_clean  = 0;
+    my $o_help   = 0;
     my $ret
         = GetOptions(
                 'binpath=s'     => \$BINPATH,
@@ -996,10 +1060,12 @@ main()
                 'gnuwin32=s'    => \$o_gnuwin32,
                 'gnulibs'       => \$o_gnulibs,
                 'contrib'       => \$o_contrib,
+                'makelib'       => \$o_makelib,
                 'libtool'       => \$LIBTOOL,
                 'libhunspell=s' => \$o_libhunspell,
                 'libarchive=s'  => \$o_libarchive,
                 'libmagic=s'    => \$o_libmagic,
+                'owcposix'      => \$o_owcposix,
                 'clean'         => \$o_clean,
                 'verbose'       => sub {++$o_verbose;},
                 'keep'          => \$o_keep,
@@ -1011,6 +1077,9 @@ main()
     Usage("unexpected arguments $ARGV[1] ...") if (scalar @ARGV > 1);
 
     my $cmd = $ARGV[0];
+
+    (-f $o_makelib) or
+        Usage("missing makelib.in");
 
     # see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
     #
@@ -1049,27 +1118,23 @@ main()
             $cmd eq 'owc' || $cmd eq 'wc' ||
             $cmd eq 'dj' ||  $cmd eq 'mingw') {
 
-        my $cache = "${x_tmpdir}/${cmd}${o_version}.cache";
+        my $cache = "./${x_tmpdir}/${cmd}${o_version}.cache";
 
-        eval {
-            do "$cache" if (! $o_clean && -f $cache);
+        if (! $o_clean && -f $cache) {
+            eval {
+                print "loading <${cache}> ...\n";
+                do "$cache";
+            };
         };
 
         #build
         Configure($cmd, $o_version);
 
-        foreach (@x_makefiles) {
+        foreach (@{$config->{MAKEFILES}}) {
             Makefile($cmd, $_, 'Makefile');
         }
-
-        if (defined $PACKAGE_H) {
-            print "\n";
-            print "WARNING: importing legacy PACKAGE_H from <makelib.in>, replace with PACKAGE_FILE\n";
-            print "\n";
-            $PACKAGE_FILE = $PACKAGE_H;
-        }
-        Makefile($cmd, $PACKAGE_PATH, $PACKAGE_FILE);
-        Config($cmd, $CONFIG_PATH, $CONFIG_FILE);
+        Makefile($cmd, $config->{PACKAGE_PATH}, $config->{PACKAGE_FILE});
+        Config($cmd, $config->{CONFIG_PATH}, $config->{CONFIG_FILE});
 
         #cache
         open(CACHE, ">${cache}") or
@@ -1094,7 +1159,10 @@ main()
         DumpList('DLLS',     \@DLLS);
 
     } elsif ($cmd eq 'clean') {
-        foreach (@x_makefiles) {
+        my %env;
+
+        MakelibProfile();
+        foreach (@{$config->{MAKEFILES}}) {
             my $dir = MakefileDir($_);
             unlink "$dir/Makefile";
         }
@@ -1103,6 +1171,7 @@ main()
         Usage("unknown command '$cmd'");
         return 1;
     }
+
     return 0;
 }
 
@@ -1130,9 +1199,10 @@ Usage                   # (message)
 Usage: perl makelib.pl [options] <command>
 
 Options:
-    --help                  command line help.
 
-    --libtool=<path>        path to libtool_win32.pl.
+    --help                  Command line help.
+
+    --libtool=<path>        Path to libtool_win32.pl.
 
     --binpath=<path>        path of support binaries (gmake etc), otherwise these are assumed to be in the path.
 
@@ -1140,30 +1210,37 @@ Options:
 
     --gnuwin32=<path>       gnuwin32 g++ tool installation path.
 
-    --busybox=<path>        busybox-w32 installation path.
-    --bison=<path>          bison installation path.
-    --flex=<path>           flex installation path.
-    --inno=<path>           inno-setup installation path.
+    --contib                Enable local contrib libraries (default).
+    or --gnulibs            Search and enable gnuwin32 libraries, using gnuwin32 path.
 
-    --contib                enable local contrib libraries (default).
-    or --gnulibs            search and enable gnuwin32 libraries, using gnuwin32 path.
-
-    --libarchive=<path>     libarchive installation path.
-    --libmagic=<path>       libmagic installation path.
-    --icu=<path>            ICU installation path.
-
-    --version=<version      compiler version
+    --version=<version>     compiler version
 
     --clean                 clean build, ignoring cache.
 
     --keep                  keep temporary file images.
 
-Commands:
-    vc[20xx]            Visual Studio C/C++ Makefiles.
-    wc                  Watcom C/C++, using 'cl' interface.
-    owc                 Open Watcom C/C++, using a direct interface.
-    dj                  DJGPP.
-    clean               clean.
+
+Configuration:
+
+    --libarchive=<path>     libarchive installation path.
+    --libmagic=<path>       libmagic installation path.
+    --icu=<path>            ICU installation path.
+
+    --busybox=<path>        busybox-w32 installation path.
+    --bison=<path>          bison installation path.
+    --flex=<path>           flex installation path.
+    --inno=<path>           inno-setup installation path.
+
+    --owcposix              Utilise alternative OpenWatcom posix driver (owcc).
+
+
+Toolchain / command:
+
+    vc[20xx]               Visual Studio C/C++ Makefiles.
+    wc                     Watcom C/C++, using 'cl' interface.
+    owc                    Open Watcom C/C++, using a direct interface.
+    dj                     DJGPP.
+    clean                  Clean.
 
 EOU
     exit(42);
@@ -1243,6 +1320,9 @@ Configure($$)           # (type, version)
     my $signature =                             # ie. vc1600
             ($version ? sprintf("%s%d", $type, $version) : $type);
 
+    $signature .= "_posix"
+        if ($type eq 'owc' && $o_owcposix);
+
     (exists $x_environment{$signature}) or
         die "makelib: unknown environment $type, version $version\n";
 
@@ -1258,18 +1338,19 @@ Configure($$)           # (type, version)
         }
     }
 
-    # toolchain
-    $TOOLCHAIN = $$env{TOOLCHAIN};
+    # makelib configuration
     $x_tokens{"INCLUDE"} = $ENV{"INCLUDE"};
 
     foreach my $entry (keys %$env) {            # target profile
         $x_tokens{$entry} = $$env{$entry};
     }
 
+    MakelibConfigure($type, $env);
+
+    # toolchain dynamic configuration
     (-d $x_tmpdir || mkdir($x_tmpdir)) or
         die "makelib: unable to access/create tmpdir <$x_tmpdir> : $!\n";
 
-    ImportConfig($type, $env);
     CheckCompiler($type, $env);
 
     # modules
@@ -1460,7 +1541,7 @@ Configure($$)           # (type, version)
                 push @EXTERNINCS, $gnuwin32inc;
             }
 
-            foreach my $lib (@x_optlibraries) {
+            foreach my $lib (@{$config->{OPTLIBRARIES}}) {
                 my $LIBNAME = uc($lib);
 
                 if (-f "${gnuwin32lib}/lib${lib}.lib" ||
@@ -1479,13 +1560,14 @@ Configure($$)           # (type, version)
         my %contribs;
 
         if ($o_contrib) {
-            foreach (@x_makefiles) {
+            foreach (@{$config->{MAKEFILES}}) {
                 my $dir = MakefileDir($_);
 
                 if (-f "${dir}/makelib.def") {
                     my $name = basename($dir);
-                    LoadContrib($name, $dir, \@CONTRIBINCS);
-                    $contribs{$name} = 1;
+                    if (LoadContrib($type, $version, $name, $dir, \@CONTRIBINCS)) {
+                        $contribs{$name} = 1;
+                    }
                 }
             }
         }
@@ -1589,8 +1671,9 @@ Configure($$)           # (type, version)
 
             if (-f "${o_icu}/makelib.def") {
                 my $name = basename($o_icu);
-                LoadContrib($name, $o_icu, \@CONTRIBINCS);
-                $contribs{'icu'} = 1;
+                if (LoadContrib($type, $version, $name, $o_icu, \@CONTRIBINCS)) {
+                    $contribs{'icu'} = 1;
+                }
 
             } else {
                 my $iculibpath = "${o_icu}/lib";
@@ -1685,16 +1768,19 @@ ExeRealpath($)
 
 
 sub
-LoadContrib($$$)        # (name, dir, refIncludes)
+LoadContrib($$$$$)      # (type, version, name, dir, refIncludes)
 {
-    my ($name, $dir, $refIncludes) = @_;
+    my ($type, $version, $name, $dir, $refIncludes) = @_;
+
     my $basepath = ($dir ? $dir : "contrib/${name}");
     my $def = "${basepath}/makelib.def";
     my $lbl = "HAVE_".uc($name);
     my $lib = '';
     my $ext = '';
+    my $cnt = 0;
 
-    return 0 if (-f $basepath);
+    return 0
+        if (-f $basepath);
 
     print "contrib:  $basepath\n";
 
@@ -1708,7 +1794,21 @@ LoadContrib($$$)        # (name, dir, refIncludes)
         if (2 == scalar @parts) {
             my ($key, $val) = @parts;
 
-            if ('inc' eq $parts[0]) {
+            if ('toolchain' eq $parts[0]) {
+                (0 == $cnt++) or
+                    die "$def: toolchain must be first element\n";
+
+                if ($val !~ /(^${type}|,${type})(\d*)/) {
+                    print "$def: $val [no], toolchain ${type} not supported\n";
+                    return 0;
+                }
+                if ($2 && int($version) < int($2)) {
+                    print "$def: $val [no], toolchain version ${version} not supported\n";
+                    return 0;
+                }
+                print "\ttoolchain: $val [yes]\n";
+
+            } elsif ('inc' eq $parts[0]) {
                 $val = "${basepath}/".$parts[1]
                     if ($val !~ /^\//);
                 push @$refIncludes, '$(ROOT)/'.$val;
@@ -1750,21 +1850,44 @@ LoadContrib($$$)        # (name, dir, refIncludes)
 }
 
 
-#   Function: ImportConfigurations
+#   Function: MakelibConfigure
 #       Import the optional toolchain configuration.
 #
 sub
-ImportConfig($$)        # (type)
+MakelibConfigure($$)    # (type)
 {
     my ($type, $env) = @_;
-
-    return
-        if (! -f './makeconfig.in');
 
     require './makeconfig.pm' or
         die "makeconfig.pm: couldn't load $@\n";
 
-    MakeConfig::Import($type, $env, \%x_tokens, $o_verbose);
+    $config = MakeConfig->New();
+
+    $x_libw32 = './' if (! -d $x_libw32);
+    $config->{PACKAGE_PATH} = $x_libw32;
+    $config->{CONFIG_PATH} = $x_libw32;
+
+    $config->LoadConfigure($o_makelib, $type, $env, \%x_tokens, $o_verbose);
+
+    $x_tokens{PACKAGE} = $config->{PACKAGE};
+    $x_tokens{PACKAGE_NAME} = $config->{PACKAGE_NAME}
+        if ($config->{PACKAGE_NAME});
+}
+
+
+sub
+MakelibProfile()        # ()
+{
+    require './makeconfig.pm' or
+        die "makeconfig.pm: couldn't load $@\n";
+
+    $config = MakeConfig->New();
+
+    $config->LoadProfile($o_makelib);
+
+    $x_tokens{PACKAGE} = $config->{PACKAGE};
+    $x_tokens{PACKAGE_NAME} = $config->{PACKAGE_NAME}
+        if ($config->{PACKAGE_NAME});
 }
 
 
@@ -2535,8 +2658,59 @@ Makefile($$$)           # (type, dir, file)
             die "cannot open ${dir}/${file}[.]in : $!";
         }
     }
+
+    my $continuation = 0;
     while (<MAKEFILE>) {
         $_ =~ s/\s*(\n|$)//;                    # kill trailing whitespace & nl
+
+        if ($continuation) {                    # continuation
+            $continuation = (/[\\]$/ ? 1 : 0);
+
+        } else {
+            if ($type eq 'vc' || $type eq 'wc') {
+                if (! /LIBTOOL/) {              # not LIBTOOL command lines
+                    s/(\$\(CFLAGS\).*) -o \$\@/$1 -Fo\$@ -Fd\$(\@D)\//;
+                    s/(\$\(CXXFLAGS\).*) -o \$\@/$1 -Fo\$@ -Fd\$(\@D)\//;
+
+                    s/(\$\(LDFLAGS\).*) -o \$\@/$1 -Fe\$@ -Fd\$(\@D)\//;
+
+                    if ($type eq 'vc') {
+                        s/-L/\/link \/LIBPATH:/;
+                    } else {
+                        s/-L([^\s]+)/-"LIBPATH $1"/;
+                    }
+
+                } elsif (/[\\]$/) {
+                    $continuation = 1;          # LIBTOOL, continuation?
+                }
+
+            } elsif ($type eq 'owc') {
+                if (! /LIBTOOL/) {              # not LIBTOOL command lines
+                    if ('-o' ne $x_tokens{OSWITCH}) {
+                        s/(\$\(CFLAGS\).*) -o \$\@/$1 -Fo=\$(subst \/,\\,\$@)/;
+                        s/(\$\(CXXFLAGS\).*) -o \$\@/$1 -Fo=\$(subst \/,\\,\$@)/;
+                        s/(\$\(LDFLAGS\).*) -o \$@/$1 -Fe=\$(subst \/,\\,\$@)/;
+
+                        s/-Fe(.*) \$\(([A-Z_]*OBJS)\)/-Fe$1 \$(subst \/,\\,\$($2))/;
+                        s/-Fe(.*) \$\^/-Fe$1 \$(subst \/,\\,\$^)/;
+
+                        s/-L([^\s]+)/-"LIBPATH \$(subst \/,\\,$1)"/;
+                            # -"<linker directive>"
+
+                    } else {
+                        s/\$\(LDFLAGS\) (.*) \$\(([A-Z_]*OBJS)\)/\$(LDFLAGS) $1 \$(subst \/,\\,\$($2))/;
+                        s/\$\(LDFLAGS\) (.*) \$</\$(LDFLAGS) $1 \$(subst \/,\\,\$<)/;
+
+                        s/-L([^\s]+)/-"Wl,LIBPATH \$(subst \/,\\,$1)"/;
+                            # -Wl,<linker directive>
+                    }
+
+                } elsif (/[\\]$/) {
+                    $continuation = 1;          # LIBTOOL, continuation?
+                }
+            }
+        }
+
         $text .= "$_\n";
     }
     close MAKEFILE;
@@ -2580,46 +2754,35 @@ Makefile($$$)           # (type, dir, file)
         my $clean = '';
         my $xclean = '*.pdb *.ilk';
 
-        if ($type ne 'owc') {
-            $text =~ s/(\$\(CFLAGS\).*) -o \$\@/$1 -Fo\$@ -Fd\$(\@D)\//g;
-            $text =~ s/(\$\(CXXFLAGS\).*) -o \$\@/$1 -Fo\$@ -Fd\$(\@D)\//g;
-            $text =~ s/(\$\(LDFLAGS\).*) -o \$\@/$1 -Fe\$@ -Fd\$(\@D)\//g;
-        }
+        if ($type eq 'wc') {                    # Watcom
+            $clean .= ' *.err';
+            $xclean .= ' $(D_OBJ)/*.mbr';
 
-        if ($type eq 'vc') {                    # LIBPATH usage
-            $text =~ s/-L/\/link \/LIBPATH:/g;
+        } elsif ($type eq 'owc') {              # OpenWatcom
+            # directory slash conversion
 
-        } else {
-            $text =~ s/-L([^\s]+)/-"LIBPATH $1"/g;
-
-            if ($type eq 'owc') {               # OpenWatcom
-                # options
-                $text =~ s/(\$\(CFLAGS\).*) -o \$\@/$1 -Fo=\$(subst \/,\\,\$@)/g;
-                $text =~ s/(\$\(CXXFLAGS\).*) -o \$\@/$1 -Fo=\$(subst \/,\\,\$@)/g;
-                $text =~ s/(\$\(LDFLAGS\).*) -o \$@/$1 -Fe=\$(subst \/,\\,\$@)/g;
-                $text =~ s/-Fe(.*) \$\(([A-Z_]*OBJS)\)/-Fe$1 \$(subst \/,\\,\$($2))/g;
-
-                # directory slash conversion
-              # $text =~ s/-I([^\s]+)/-i="$1"/g;
-              # $text =~ s/-I ([^\s]+)/-i="$1"/g;
-                    #gnuwin32 make quotes would be retained; this can not be guaranteed under an alt instance.
+            if ('-i=' eq $x_tokens{ISWITCH}) {
+            # $text =~ s/-I([^\s]+)/-i="$1"/g;
+            # $text =~ s/-I ([^\s]+)/-i="$1"/g;
+                    #gnuwin32 (gmake 3.x) make quotes would be retained;
+                    #this can not be guaranteed under an alt instance, for example gmake (4.x).
                 $text =~ s/-I([^\s]+)/-i=\$(subst \/,\\,$1)/g;
                 $text =~ s/-I ([^\s]+)/-i=\$(subst \/,\\,$1)/g;
-
-                $text =~ s/\$</\$(subst \/,\\,\$<)/g;
-                $text =~ s/\$\^/\$(subst \/,\\,\$^)/g;
             }
+
+            $text =~ s/\$</\$(subst \/,\\,\$<)/g;
+            $text =~ s/\$\^/\$(subst \/,\\,\$^)/g;
 
             $clean .= ' *.err';
             $xclean .= ' $(D_OBJ)/*.mbr';
         }
 
         # libraries
-        foreach my $library (@x_libraries) {
+        foreach my $library (@{$config->{LIBRARIES}}) {
             $text =~ s/-l${library}([\n\t \\])/lib${library}.lib$1/g;
         }
 
-        foreach my $library (@x_libraries2) {
+        foreach my $library (@{$config->{LIBRARIES2}}) {
             $text =~ s/-l${library}([\n\t \\])/${library}.lib$1/g;
         }
 
@@ -2637,8 +2800,6 @@ Makefile($$$)           # (type, dir, file)
     $x_tokens{top_srcdir} = ($dir eq '.' ? '.' : '..');
     if ($type eq 'owc') {                      # OpenWatcom
        if ('-i=' eq $x_tokens{ISWITCH}) {
-         #  $x_tokens{CINCLUDE} =~ s/-I([^\s]+)/-i="$1"/g;
-                #gnuwin32 make quotes would be retained; this can not be guaranteed under an alt instance.
             $x_tokens{CINCLUDE} =~ s/-I([^\s]+)/-i=\$(subst \/,\\,$1)/g;
             $x_tokens{CINCLUDE} =~ s/-I ([^\s]+)/-i=\$(subst \/,\\,$1)/g;
         }
@@ -2676,6 +2837,7 @@ Makefile($$$)           # (type, dir, file)
         $text =~ s/shell sh /shell ${BUSYBOX} sh /g;
         $text =~ s/shell date /shell ${BUSYBOX} date /g;
         $text =~ s/shell cat /shell ${BUSYBOX} cat /g;
+        $text =~ s/shell test /shell ${BUSYBOX} test /g;
     }
 
     # Note:
@@ -2695,6 +2857,16 @@ Makefile($$$)           # (type, dir, file)
 
     $text =~ s/(\$\(RM\)) (.*)/$1 \$(subst \/,\\,$2)/g;
     $text =~ s/(\$\(RMDIR\)) (.*)/$1 \$(subst \/,\\,$2)/g;
+
+    if ($file ne $config->{PACKAGE_FILE}) {
+        my %missing = ();
+        while ($text =~ /\@([A-Z0-9_]+)\@/g) {  # report unhandled elements
+            if (! exists $missing{$1}) {
+                print "warning: unknown element \@$1\@ encountered\n";
+                $missing{$1} = 1;
+            }
+        }
+    }
 
     # export
     my $asctime = asctime(localtime());

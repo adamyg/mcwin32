@@ -19,15 +19,24 @@
 #               $(LIBTOOL) --mode=compile $(CXX) $(CXXFLAGS) -o $(D_OBJ)/$@ -c $<
 #
 # Copyright Adam Young 2012-2020
+# All rights reserved.
 #
 # This file is part of the Midnight Commander.
 #
-# The Midnight Commander is free software: you can redistribute it
+# The applications are free software: you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation, either version 3 of the License,
 # or (at your option) any later version.
 #
-# The Midnight Commander is distributed in the hope that it will be useful,
+# Redistributions of source code must retain the above copyright
+# notice, and must be distributed with the license document above.
+#
+# Redistributions in binary form must reproduce the above copyright
+# notice, and must include the license document above in
+# the documentation and/or other materials provided with the
+# distribution.
+#
+# The applications are distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -36,6 +45,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ==end==
 #
+
 use strict;
 use warnings 'all';
 
@@ -55,6 +65,7 @@ my $o_preserve_dup_deps;
 my $o_quiet = 1;
 my $o_silent = 0;
 my $o_verbose = 0;
+my $o_keeptmp = 0;
 my $o_debug;
 my $o_version;
 my $o_extra = '';
@@ -62,6 +73,7 @@ my $o_extra = '';
 sub Compile();
 sub Link();
 sub true_object($);
+sub true_library($);
 sub unix2dos($);
 sub dos2unix($);
 sub Help;
@@ -103,6 +115,7 @@ Main
             'silent'            => \$o_silent,
             'no-silent'         => sub {$o_silent=0;},
             'v|verbose'         => \$o_verbose,
+            'keeptmp'           => \$o_keeptmp,
             'no-verbose'        => sub {$o_verbose=0;},
             'debug'             => \$o_debug,
             'version'           => \$o_version);
@@ -173,16 +186,13 @@ Compile() {
             next;
         }
 
-        if (/^-o(.*)$/) {                       # -o <object>
-            my $val = ($1 ? $1 : shift @ARGV);
-            if ($val && $val !~ /\./) {
-                push @STUFF, "-o${val}";        # i.e. optimisation flags
-            } else {
-                $val = shift @ARGV if (! $val);
-                Error("compile: multiple objects specified <$object> and <$val>")
-                    if ($object);
-                $object = $val;
-            }
+        if (/^-o$/) {                           # -o <object>
+            my $val = shift @ARGV;
+            Error("compile: missing output")
+                if (! $val);
+            Error("compile: multiple objects specified <$object> and <$val>")
+                if ($object);
+            $object = $val;
 
         } elsif (/^[-\/]Fo[=]?(.*)/) {          # -Fo[=]<object>
             my $val = ($1 ? $1 : shift @ARGV);
@@ -199,6 +209,9 @@ Compile() {
         } elsif (/^[-\/]I[=]?(.+)$/) {          # -I[=]<path>
             push @INCLUDES, $1;
 
+        } elsif (/^-I$/) {                      # -I <path>
+            push @INCLUDES, shift @ARGV;
+
         } elsif (/^-d(.*)$/) {                  # -d <define[=value]>
             if ('wcl386' eq $cc && (/^-d[1-3][ist]$/ || /^-db$/)) {
                 push @STUFF, $_;
@@ -209,7 +222,7 @@ Compile() {
         } elsif (/^[-\/]D[=]?(.+)/) {           # -D[=]<define[=value]>
             push @DEFINES, $1;
 
-        } elsif (/^[-\/]c/) {                   # -c
+        } elsif (/^[-\/]c$/) {                  # -c
             $compile = 1;
 
         } elsif (/^-prefer-pic$/) {
@@ -230,10 +243,16 @@ Compile() {
         } elsif (/^-Wc,(.*)$/) {
             # Pass a flag directly to the compiler. With -Wc,, multiple flags may be separated by
             # commas, whereas -Xcompiler passes through commas unchanged.
+            if ('owcc' eq $cc || 'gcc' eq $cc) {
+                push @STUFF, $_;
+            } else {
+                Error("compile: unexpected option <$_>");
+            }
 
-        } elsif (/^-Xcompiler(.*)/) {
+        } elsif (/^-Xcompiler$/) {
             # Pass a flag directly to the compiler. With -Wc,, multiple flags may be separated by
             # commas, whereas -Xcompiler passes through commas unchanged.
+            push @STUFF, shift @ARGV;
 
         } else {
             push @STUFF, $_;
@@ -242,7 +261,7 @@ Compile() {
     $source = shift @ARGV;
 
     Error("compile: unsupported compiler <$cc>")
-        if (!('cl' eq $cc || 'wcl386' eq $cc || 'gcc' eq $cc));
+        if (!('cl' eq $cc || 'wcl386' eq $cc || 'owcc' eq $cc || 'gcc' eq $cc));
     Error("compile: unable to determine object")
         if (!$object);
     Error("compile: object file suffix not <.lo>")
@@ -275,13 +294,21 @@ Compile() {
         $cmd .= " /Fd".${true_path}.'\\';       # VCx0.pdb
         $cmd .= " /c $source";
 
-    } elsif ('wcl386' eq $cc) {
+    } elsif ('wcl386' eq $cc) {     # OpenWatcom, legacy interface.
         # http://www.openwatcom.org/index.php/Writing_DLLs
         $cmd  = "$cc @STUFF -dDLL=1";
         $cmd .= " -bd";                         # DLL builds
         foreach (@DEFINES) { $cmd .= " -d$_"; }
         foreach (@INCLUDES) { $cmd .= " -I=\"$_\""; }
         $cmd .= " -Fo=\"$true_object\"";
+        $cmd .= " -c $source";
+
+    } elsif ('owcc' eq $cc) {       # OpenWatcom, posix driver.
+        $cmd  = "$cc @STUFF -DDLL=1";
+        $cmd .= " -shared";                     # DLL builds
+        foreach (@DEFINES) { $cmd .= " -D$_"; }
+        foreach (@INCLUDES) { $cmd .= " -I \"$_\""; }
+        $cmd .= " -o \"$true_object\"";
         $cmd .= " -c $source";
 
     } elsif ('gcc' eq $cc) {
@@ -296,6 +323,7 @@ Compile() {
     mkdir $true_path;
     unlink $object;
 
+    Verbose "cc:       $cmd";
     exit($ret)
         if (0 != ($ret = System($cmd)));
 
@@ -321,13 +349,13 @@ sub
 Link() {
     my $cc = shift @ARGV;
 
-    my ($output, $rpath, $bindir, $module);
+    my ($output, $rpath, $bindir, $module, $mapfile);
     my $version_number = '';
     my $wc_fastcall = -1;                       # fastcall (Watcom) convention.
     my $wc_debugger = '';
+    my $linktype = 'dll';
     my $cl_ltcg = 0;
     my $cl_debug = undef;
-    my $f_mappath = undef;
     my @OBJECTS;
     my @RESOURCES;
     my @EXPORTS;
@@ -344,19 +372,48 @@ Link() {
             next;
         }
 
-        if (/^-o(.*)$/) {                       # -o <output>
+        if (/^-o$/) {                           # -o <output>
+            my $val = shift @ARGV;
+            Error("link: missing output")
+                if (! $val);
+            Error("link: multiple outputs specified <$output> and <$val>")
+                if ($output);
+            if ($val =~ /\.exe$/i) {
+                $linktype = 'exe';
+            } elsif ($val =~ /\.(la|dll)$/i) {
+                $linktype = 'dll';
+            } else {
+                Error("link: unexpected output type <${val}>");
+            }
+            $output = $val;
+
+        } elsif (/^[-\/]Fo[=]?(.*)/) {          # -Fo[=]<output>
             my $val = ($1 ? $1 : shift @ARGV);
             Error("link: multiple outputs specified <$output> and <$val>")
                 if ($output);
             $output = $val;
 
-        } elsif (/^[-\/]Fo[=]?(.*)/) {          # -Fe[=]<output>
+        } elsif (/^[-\/]Fe[=]?(.*)/) {          # -Fe[=]<output>
             my $val = ($1 ? $1 : shift @ARGV);
             Error("link: multiple outputs specified <$output> and <$val>")
                 if ($output);
+            $linktype = 'exe';
             $output = $val;
 
-        } elsif (/^(.*)\.lo$/ || /^(.*)\.o$/ || /^(.*)\.obj$/) {
+        } elsif (('wcl386' eq $cc || 'owcc' eq $cc) and /^[-\/]Fm[=]?(.*)/i) {
+                                                # -Fm[=]<output>
+            my $val = ($1 ? $1 : shift @ARGV);
+            Error("link: multiple mapfile specified <$mapfile> and <$val>")
+                if ($mapfile);
+            $mapfile = $val;
+
+        } elsif (/^[-\/]Map[:=]?(.*)/i) {       # -Map[:=]<output>
+            my $val = ($1 ? $1 : shift @ARGV);
+            Error("link: multiple mapfile specified <$mapfile> and <$val>")
+                if ($mapfile);
+            $mapfile = $val;
+
+        } elsif (/^(.*)\.lo$/ || /^(.*)\.o$/ || /^(.*)\.obj$/i) {
             push @OBJECTS, $_;
 
         } elsif (/^(.*)\.res$/) {
@@ -365,7 +422,7 @@ Link() {
         } elsif (/^(.*)\.rc$/) {
             Error("link: $_ not supported\n");
 
-        } elsif (/^(.*)\.la$/ || /^(.*)\.a$/ || /^(.*)\.lib$/) {
+        } elsif (/^(.*)\.la$/ || /^(.*)\.a$/ || /^(.*)\.lib$/i) {
             push @LIBRARIES, $_;
 
         } elsif (/^-l(.*)$/) {
@@ -483,6 +540,13 @@ Link() {
             Error("link: $_ not supported\n");
 
         } elsif (/^-Wl,(.*)$/) {
+            if ('owcc' eq $cc) {
+                my $wl = $1;
+                if ($wl =~ /^LIBPATH[:= ]?\s*(.+)/) {
+                    push @LIBPATHS, $1;         # -LIBPATH[:= ]<path>
+                    next;
+                }
+            }
             Error("link: $_ not supported\n");
 
         } elsif (/^-Xlinker(.*)$/) {
@@ -508,15 +572,6 @@ Link() {
                 } elsif (/^[-\/]DEBUG$/ || /^[-\/]DEBUG:(.+_)$/) {
                     $cl_debug = $_;             # explicit /DEBUG:NONE, /DEBUG:FULL and /DEBUG:FASTLINK
                     $cl_debug =~ s/^-/\//;
-                    next;
-
-                # Mapfile
-                } elsif (/^[-\/]Fm(.+)$/i) {    # Compiler /Fm<filename>
-                    $f_mappath = $1;
-                    next;
-
-                } elsif (/^[-\/]MAP:(.+)$/) {   # Linker -MAP[:filename]
-                    $f_mappath = $1;
                     next;
                 }
 
@@ -553,21 +608,47 @@ Link() {
                         Error("link: -export-fastcall and compiler switches are incompatible\n");
                     }
 
+                # Target
+                } elsif (/^-bt=(.*)$/) {
+                    my $target = uc($1);
+                    Error("link: <$_> unexpected target\n")
+                        if ($target ne 'NT');
+
                 # Debugger support:
                 #   -h[wcd]     Watcom,Codeview,Dwarf
                 #
                 } elsif (/^-h([wc])$/) {
                     $wc_debugger = $1;
+                }
 
-                # Mapfile
-                } elsif (/^[-\/]fm(.+)$/i) {    # Compiler -fm=<filename>
-                    $f_mappath = $1;
-                    $f_mappath =~ s/^[=]//;
-                    next;
+            } elsif ('owcc' eq $cc) {
+                # Call convention
+                if (/^mregparm=1$/) {
+                    if ($wc_fastcall eq -1) {
+                        $wc_fastcall = 1;       # auto-selection
+                    } elsif ($wc_fastcall eq 0) {
+                        Error("link: -export-fastcall and compiler switches are incompatible\n");
+                    }
 
-                } elsif (/^[-\/]MAP:(.+)$/) {   # Linker -MAP[:filename] (MSVC style)
-                    $f_mappath = $1;
-                    next;
+                } elsif (/^mregparm=0$/) {
+                    if ($wc_fastcall eq 1) {
+                        Error("link: -export-fastcall and compiler switches are incompatible\n");
+                    }
+
+                # Target
+                } elsif (/^-b$/) {
+                    my $target = uc(shift @ARGV);
+                    Error("link: <$_> unexpected target\n")
+                        if ($target ne 'NT');
+
+                } elsif (/^-m(console|windows)$/) {
+                    my $target = $1;
+                    Error("link: <$_> unexpected target\n")
+                        if ($target ne 'console');
+
+                # Debugger
+                } elsif (/^-g([wcd])$/) {       # -g[wcd] Watcom,Codeview,Dwarf
+                    $wc_debugger = $1;
                 }
             }
 
@@ -576,11 +657,13 @@ Link() {
     }
 
     Error("link: unsupported compiler <$cc>")
-        if (!('cl' eq $cc || 'wcl386' eq $cc || 'gcc' eq $cc));
+        if (!('cl' eq $cc || 'wcl386' eq $cc || 'owcc' eq $cc || 'gcc' eq $cc));
     Error("link: unable to determine output")
         if (!$output);
-    Error("link: output file suffix not <.la>")
-        if ($output !~ /.la$/);
+    if ($linktype eq 'dll') {
+      Error("link: output file suffix not <.la>")
+          if ($output !~ /.la$/);
+    }
 
     Verbose "cc:       $cc";
     Verbose "output:   $output";
@@ -627,10 +710,47 @@ Link() {
     my $dllname  = "${basename}${version_number}.dll";
     my $dllpath  = "${basepath}${version_number}.dll";
     my $pdbpath  = "${basepath}${version_number}.pdb";
-    my $mappath  = $f_mappath || "${basepath}${version_number}.map";
-    my $exppath  = "${basepath}${version_number}.exp";
-    my $libpath  = "${basepath}.lib";
-    my $sympath  = undef;
+    my $mappath  = ($mapfile ? $mapfile : "${basepath}${version_number}.map");
+    my $manifestpath = "${basepath}${version_number}.dll.manifest";
+    my $libpath  = "${basepath}.lib";           # import library
+    my $exppath  = "${basepath}.exp";           # export library
+        # Notes:
+        #   Export (.exp) files contain information about exported functions and data items. When LIB creates an import library, it also creates an .exp file.
+        #   You use the .exp file when you link a program that both exports to and imports from another program, either directly or indirectly.
+        #   If you link with an .exp file, LINK does not produce an import library, because it assumes that LIB already created one.
+        #   For details about .exp files and import libraries, see "Working with Import Libraries and Export Files" (MSDN).
+        #
+    my $sympath = undef;
+
+    if ($linktype eq 'dll') {
+        my @BAD_OBJECTS = ();
+
+        for my $obj (@OBJECTS) {                # usage warning
+            push @BAD_OBJECTS, $obj
+                if ($obj !~ /\.lo$/i);
+        }
+
+        if (scalar @BAD_OBJECTS) {
+print "*** Warning: Linking the shared library ${output} against the\n";
+print "*** non-libtool objects @BAD_OBJECTS is not portable!\n";
+        }
+
+    } elsif ($linktype eq 'exe') {
+        my @BAD_OBJECTS = ();
+
+        for my $obj (@OBJECTS) {                # usage warning
+            push @BAD_OBJECTS, $obj
+                if ($obj =~ /\.lo$/i);
+        }
+
+        if (scalar @BAD_OBJECTS) {
+print "*** Warning: Linking the executable ${output} against the\n";
+print "*** non-libtool objects @BAD_OBJECTS is not portable!\n";
+        }
+
+        $output .= '.exe'
+            if ($output !~ /\.exe$/i);
+    }
 
     if ('cl' eq $cc) {
         #
@@ -650,11 +770,18 @@ Link() {
 
         open(CMD, ">${cmdfile}") or
             die "cannot create <${$cmdfile}>: $!\n";
-        print CMD "/DLL\n";
-        print CMD "/SUBSYSTEM:WINDOWS\n";
-        print CMD "/ENTRY:_DllMainCRTStartup\@12"."\n";
-        print CMD "/OUT:${dllpath}\n";
-        print CMD "/IMPLIB:${libpath}\n";
+
+        if ($linktype eq 'dll') {
+            print CMD "/DLL\n";
+            print CMD "/SUBSYSTEM:WINDOWS\n";
+            print CMD "/ENTRY:_DllMainCRTStartup\@12"."\n";
+            print CMD "/OUT:${dllpath}\n";
+            print CMD "/IMPLIB:${libpath}\n";
+        } else {
+            print CMD "/SUBSYSTEM:CONSOLE\n";
+            print CMD "/OUT:${output}\n";
+
+        }
         print CMD "/MAP:${mappath}\n";
         print CMD "/MAPINFO:EXPORTS\n";
         print CMD "/VERSION:${dll_version}\n"
@@ -662,8 +789,8 @@ Link() {
         print CMD "/NOLOGO\n"
             if ($o_quiet || $o_silent);
         print CMD "/OPT:REF\n";
-        print CMD "/INCREMENTAL:NO\n";          # review, implied with ! /DEBUG:NONE
         print CMD (defined $cl_debug ? $cl_debug : "/DEBUG") . "\n";
+        print CMD "/INCREMENTAL:NO\n";           # after /DEBUG
         print CMD "/LTCG\n"
             if ($cl_ltcg);
       foreach(@OBJECTS) {
@@ -672,18 +799,20 @@ Link() {
       foreach(@RESOURCES) {
         print CMD true_object($_)."\n";
       }
-      foreach(@EXPORTS) {
-        print CMD "/EXPORT:".MSVCExportDef($_)."\n";
+      if ($linktype eq 'dll') {
+        foreach(@EXPORTS) {
+          print CMD "/EXPORT:".MSVCExportDef($_)."\n";
+        }
       }
       foreach(@LIBPATHS) {
         print CMD "/LIBPATH:$_\n";
       }
       foreach(@LIBRARIES) {
-         print CMD "$_\n";
+        print CMD unix2dos(true_library($_))."\n";
       }
         close(CMD);
 
-    } elsif ('wcl386' eq $cc) {
+    } elsif ('wcl386' eq $cc || 'owcc' eq $cc) {
         #
         #   OpenWatcom
         #
@@ -691,32 +820,46 @@ Link() {
 
         open(CMD, ">${cmdfile}") or
             die "cannot create <${$cmdfile}>: $!\n";
-        print CMD "system   nt_dll initinstance terminstance\n";
-            #
-            #   When a dynamic link library uses the Watcom C/C++ run-time libraries, an automatic data
-            #   segment is created each time a new process accesses the dynamic link library.  For this reason,
-            #   initialization code must be executed when a process accesses the dynamic link library for the
-            #   first time.  To achieve this, "INITINSTANCE" must be specified in the "SYSTEM" directive.
-            #   Similarly, "TERMINSTANCE" must be specified so that the termination code is executed when
-            #   a process has completed its access to the dynamic link library.  If the Watcom C/C++ run-time
-            #   libraries are not used, these options are not required.
-            #
-        print CMD "name     ${dllpath}\n";
-     #
+        if ($linktype eq 'dll') {
+            print CMD "system   nt_dll initinstance terminstance\n";
+                #
+                #   nt_dll: Windows NT Dynamic Link Libraries.
+                #
+                #   When a dynamic link library uses the Watcom C/C++ run-time libraries, an automatic data
+                #   segment is created each time a new process accesses the dynamic link library.  For this reason,
+                #   initialization code must be executed when a process accesses the dynamic link library for the
+                #   first time.  To achieve this, "INITINSTANCE" must be specified in the "SYSTEM" directive.
+                #   Similarly, "TERMINSTANCE" must be specified so that the termination code is executed when
+                #   a process has completed its access to the dynamic link library.  If the Watcom C/C++ run-time
+                #   libraries are not used, these options are not required.
+                #
+            print CMD "name     ${dllpath}\n";
+            print CMD "option   implib=${libpath}\n";
+            print CMD "option   checksum\n";   # create an MS-CRC32 checksum for image.
+        } else {
+            print CMD "system   nt\n";
+                #
+                #   nt: Windows NT Character-Mode Executable.
+                #   nt_win: Windows NT Windowed Executable.
+                #
+            print CMD "name     ${output}\n";
+        }
+
      #  print CMD "option   modname='${modulepath}'\n";
      #  print CMD "option   copyright=''\n";
-        print CMD "option   description ${DESCRIPTION}\n"
-            if ($DESCRIPTION);
-        print CMD "option   implib=${libpath}\n";
+     #  print CMD "option   description=${DESCRIPTION}\n"
+     #      if ($DESCRIPTION);
+
         print CMD "option   version=${dll_version}\n"
             if ($dll_version);
         print CMD "option   map=${mappath}\n";
         print CMD "option   static\n";          # export statics within the map file.
         print CMD "option   artificial\n";      # export internal symbols.
         print CMD "sort\n";                     # sort symbol by address.
-        print CMD "option   checksum\n";
+
         print CMD "option   quiet\n"
             if ($o_quiet || $o_silent);
+
       if (! $wc_debugger) {                     # options are exclusive; plus before objects.
         $sympath = "${basepath}${version_number}.sym";
         print CMD "option   symfile=${sympath}\n";
@@ -742,7 +885,7 @@ Link() {
         print CMD "libpath  ".unix2dos($_)."\n";
       }
       foreach(@LIBRARIES) {
-        print CMD "library  $_\n";
+        print CMD "library  ".unix2dos(true_library($_))."\n";
       }
         close(CMD);
 
@@ -755,6 +898,7 @@ Link() {
         $libpath = "${basepath}.a";
         $pdbpath = undef;
         $exppath = undef;
+        $manifestpath = undef;
 
         open(CMD, ">${cmdfile}") or
             die "cannot create <${cmdfile}>: $!\n";
@@ -807,35 +951,36 @@ Link() {
             "#  can be result of an incorrect version of cvtres.exe due to dual VC10/VC2012 installations,\n".
             "#  rename 'C:/Program Files (x86)/Microsoft Visual Studio 10/VC/Bin/cvtres.exe' => cvtres_org.exe\n".
             "#\n";
-            $o_verbose = 0;
-            System("which cvtres");
+#           $o_verbose = 0;
+#           System("which cvtres");
         }
         exit ($ret);
     }
 
     # generate la artifact
-    unlink $cmdfile, $deffile;
-    open(LA, ">${output}") or
-        die "cannot create <$output> : $!\n";
-    print LA "#libtool win32 generated, do not modify\n";
-    print LA "mode=link\n";
-    print LA "cc=$cc\n";
-    print LA "lib=${libpath}\n";
-    print LA "map=${mappath}\n" if ($mappath);
-    print LA "sym=${sympath}\n" if ($sympath);
-    print LA "exp=${exppath}\n" if ($exppath);
-    print LA "dll=${dllpath}\n";
-    print LA unix2dos("bin=${bindir}/${dllname}\n") if ($bindir);
-    print LA "pdb=${pdbpath}\n" if ($pdbpath);
-    print LA "[objects]\n";
-    foreach(@OBJECTS) {
-        print LA true_object($_)."\n";
+    if ($linktype eq 'dll') {
+        open(LA, ">${output}") or
+            die "cannot create <$output> : $!\n";
+        print LA "#libtool win32 generated, do not modify\n";
+        print LA "mode=link\n";
+        print LA "cc=$cc\n";
+        print LA "lib=${libpath}\n";
+        print LA "exp=${exppath}\n" if ($exppath);
+        print LA "map=${mappath}\n" if ($mappath);
+        print LA "sym=${sympath}\n" if ($sympath);
+        print LA "dll=${dllpath}\n";
+        print LA "pdb=${pdbpath}\n" if ($pdbpath);
+        print LA "manifest=${manifestpath}\n" if ($manifestpath);
+        print LA "[objects]\n";
+        foreach(@OBJECTS) {
+            print LA true_object($_)."\n";
+        }
+        print LA "[libraries]\n";
+        foreach(@LIBRARIES) {
+            print LA "$_\n";
+        }
+        close(LA);
     }
-    print LA "[libraries]\n";
-    foreach(@LIBRARIES) {
-        print LA "$_\n";
-    }
-    close(LA);
 
     if ('gcc' eq $cc) {
         copy("${basepath}.a", $libpath) or
@@ -847,6 +992,10 @@ Link() {
         copy($dllpath, "${bindir}/${dllname}") or
             die "link: unable to copy <$dllname> to <${bindir}/${dllname}> : $!\n";
     }
+
+    unlink $cmdfile, $deffile                   # remove temporary
+        if (! $o_keeptmp);
+
     return 0;
 }
 
@@ -1028,10 +1177,9 @@ WatcomExportDef($$) {
 
 
 
-
 sub
 ParseSymFile($$) {
-    my ($file, $EXPORTSRef);
+    my ($file, $EXPORTSRef) = @_;
     my $mode = 0;
 
     open(SYM, "<${file}") or
@@ -1082,7 +1230,7 @@ Clean() {
                 die "cannot open library artifact <${lib}> : $!\n";
             while (<LA>) {
                 s/\s*([\n\r]+|$)//;
-                if (/^(lib|dll|map|sym|pdb|bin|exp)=(.*)$/) {
+                if (/^(lib|dll|map|sym|pdb|exp|manifest)=(.*)$/) {
                     Verbose "rm: $2";
                     unlink($2);
                 }
@@ -1143,6 +1291,31 @@ true_object($)          #(lo)
 }
 
 
+#   Function:       true_library
+#       Retrieve the true object name for the specified 'la' image.
+#
+sub
+true_library($)         #(la)
+{
+    my ($la) = @_;
+    my $true_library;
+
+    return $la
+        if ($la !~ /.la$/);
+    open(LA, "<${la}") or
+        die "cannot open library image <$la> : $!\n";
+    while (<LA>) {
+        s/\s*([\n\r]+|$)//;
+        next if (!$_ || /^\s#/);
+        if (/^lib=(.*)$/) {
+            $true_library = $1;
+            last;
+        }
+    }
+    close(LA);
+    die "internal: la truename missing <$la>" if (!$true_library);
+    return $true_library;
+}
 #   Function:       unix2dos
 #       Forward slash conversion.
 #
@@ -1253,6 +1426,9 @@ Options:
    -v, --verbose
        Print out progress and informational messages (enabled by default), as
        well as additional messages not ordinary seen by default.
+
+   --keeptmp
+       Keep temporary working files.
 
    --no-quiet, --no-silent
        Print out the progress and informational messages that are seen by default.

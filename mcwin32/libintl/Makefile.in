@@ -48,7 +48,7 @@ D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libintl
 
 # Common flags
 
-XFLAGS=		
+XFLAGS=
 
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
@@ -71,9 +71,8 @@ LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@ @LIBM@ @EXTRALIBS@
 ARFLAGS=	rcv
 YFLAGS=		-d
 RMFLAGS=	-f
- 
-############################################################
 
+############################################################
 # Targets
 
 INTLLIB=	$(D_LIB)/$(LP)intl_static$(A)
@@ -107,9 +106,17 @@ OBJS=		$(LIBOBJS) $(DLLOBJS)
 LIBS=		$(INTLLIB) $(INTLDLL)
 TSKS=
 
+
+############################################################
 # Rules
 
-all:			object $(LIBS) $(TSKS) installinc
+.PHONY: 	build release debug
+build:			object $(LIBS) $(TSKS) installinc
+
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
 $(INTLLIB):		CEXTRA += -I$(INTLSRC) -DLIBINTL_STATIC -D__LIBINTL_BUILD -D_WIN32 -D_WIN32_WINNT=0X601
 $(INTLLIB):		$(LIBOBJS)
@@ -135,6 +142,7 @@ installinc:		../include/.created
 		@echo "do not delete, managed directory" > $@
 
 clean:
+		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(INTLDLL) $(DLLOBJS) >/dev/null 2>&1
 		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(LIBOBJS) >/dev/null 2>&1

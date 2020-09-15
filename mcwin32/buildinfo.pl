@@ -4,6 +4,28 @@
 # buildinfo generation
 #
 # Copyright Adam Young 2018-2020
+# All rights reserved.
+#
+# The applications are free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, version 3.
+#
+# Redistributions of source code must retain the above copyright
+# notice, and must be distributed with the license document above.
+#
+# Redistributions in binary form must reproduce the above copyright
+# notice, and must include the license document above in
+# the documentation and/or other materials provided with the
+# distribution.
+#
+# The applications are distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# ==end==
 #
 
 use strict;
@@ -11,6 +33,7 @@ use warnings 'all';
 use Getopt::Long;
 use POSIX qw(strftime asctime);
 
+my $makelib = './makelib.in';
 my $output  = "buildinfo.h";
 my $prefix  = "";
 
@@ -32,6 +55,7 @@ my $datadir = undef;
 my $help    = 0;
 
 Usage() if (0 == GetOptions(
+		'makelib'       => \$makelib,
 		'output=s'      => \$output,
 		'prefix=s'      => \$prefix,
 		'package:s'     => \$package,
@@ -49,19 +73,21 @@ Usage() if (0 == GetOptions(
 		'help'          => \$help)
 			|| $help);
 
-if (-f './makelib.in') {
-	our $PACKAGE = undef;
-	our $PACKAGE_NAME = undef;
+if (-f $makelib) {
+	my (%env, %tokens);
 
-	require "./makelib.in";
-		die "makelib.in: PACKAGE not defined\n"
-			if (! $PACKAGE);
+	require './makeconfig.pm' or
+		die "makeconfig.pm: couldn't load $@\n";
 
-	$package = $PACKAGE
-		if (! $package);
+	my $config = MakeConfig->New();
 
-	$packagename = $PACKAGE_NAME
-		if (! $packagename && $PACKAGE_NAME);
+	$config->LoadProfile($makelib);
+
+	$package = $config->{PACKAGE}
+		if (! $package && defined $config->{PACKAGE});
+
+	$packagename = $config->{PACKAGE_NAME}
+		if (! $packagename && defined $config->{PACKAGE_NAME});
 }
 
 die "buildinfo: PACKAGE not defined\n"
@@ -73,7 +99,7 @@ die "buildinfo: PACKAGE_NAME not defined\n"
 $version = "0.0.1"
 	if (! $version);
 
-$builddate = strftime('%Y%m%d', localtime) 
+$builddate = strftime('%Y%m%d', localtime)
 	if (! $builddate);
 
 Generate();
@@ -107,8 +133,20 @@ EOT
 	print FILE "#define BUILD_TOOLCHAIN \"${buildtoolchain}\"\n"
 		if ($buildtoolchain);
 
-	print FILE "#define BUILD_TYPE \"${buildtype}\"\n"
-		if ($buildtype);
+	if ($buildtype) {
+		print FILE "#define BUILD_TYPE \"${buildtype}\"\n";
+
+		die "makeconfig.pm: build type verb 'release' or 'debug' expected.\n"
+			if ($buildtype !~ /release/ && $buildtype !~ /debug/);
+			
+		die "makeconfig.pm: build type verbs 'release' and 'debug' are mutually exclusive.\n"
+			if ($buildtype =~ /release/ && $buildtype =~ /debug/);
+
+		print FILE "#define BUILD_TYPE_RELEASE 1\n"
+			if ($buildtype =~ /release/);
+		print FILE "#define BUILD_TYPE_DEBUG 1\n"
+			if ($buildtype =~ /debug/);
+	}
 
 	print FILE "#define ${prefix}BUILD_BINDIR \"${bindir}\"\n"
 		if ($bindir);
@@ -136,7 +174,7 @@ Usage: perl buildinfo.pl [options]
 
 Options:
     --output <file>         Output file.
-    --suffix <suffix>       Identifier suffix (optional).
+    --prefix <prefix>       Identifier prefix (optional).
     --package <package>     Package label.
     --name <name>           Package name.
     --version <version>     Package version.

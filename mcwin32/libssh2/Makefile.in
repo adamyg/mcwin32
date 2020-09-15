@@ -86,11 +86,10 @@ else
 CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDDEBUG) @LDFLAGS@
 endif
-LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@ @LIBM@ @EXTRALIBS@
+LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
 
 ARFLAGS=	rcv
 YFLAGS=		-d
-RMFLAGS=	-f
 RMFLAGS=	-f
 
 ############################################################

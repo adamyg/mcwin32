@@ -9,12 +9,19 @@
 #
 # This file is part of the Midnight Commander.
 #
-# The Midnight Commander is free software: you can redistribute it
+# The applications are free software: you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation, either version 3 of the License,
-# or (at your option) any later version.
+# published by the Free Software Foundation, version 3.
 #
-# The Midnight Commander is distributed in the hope that it will be useful,
+# Redistributions of source code must retain the above copyright
+# notice, and must be distributed with the license document above.
+#
+# Redistributions in binary form must reproduce the above copyright
+# notice, and must include the license document above in
+# the documentation and/or other materials provided with the
+# distribution.
+#
+# The applications are distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -33,6 +40,29 @@ package MakeConfig;
 my  $x_env = undef;
 my  $x_tokens = undef;
 my  $o_verbose = undef;
+
+our $PACKAGE        = undef;
+our $PACKAGE_NAME   = '';
+our $PACKAGE_VERSION = '';
+
+our $PACKAGE_BUGREPORT = '';
+our $PACKAGE_TARNAME = '';
+our $PACKAGE_URL    = '';
+
+our $PACKAGE_PATH   = undef;
+our $PACKAGE_H      = undef;                    # defunct, use PACKAGE_FILE
+our $PACKAGE_FILE   = 'package.h';
+
+our $CONFIG_PATH    = undef;
+our $CONFIG_FILE    = 'w32config.h';
+
+our $TOOLCHAIN      = undef;
+
+our @MAKEFILES      = ();                       # local makefiles; build order
+
+our @LIBRARIES      = ();                       # local libraries -l<xxx> lib<xxx>.lib
+our @LIBRARIES2     = ();                       # local libraries -l<xxx> xxx.lib
+our @OPTLIBRARIES   = ();                       # optional libraries
 
 my  $CC = '';
 my  $CXX = '';
@@ -67,36 +97,74 @@ use constant {
 
 my  @__target_configurations = (ALL, RELEASE, DEBUG);
 
-our $TOOLCHAIN = undef;
+
+# Function:
+#   Constructor
+sub New() {
+    my ($class) = shift;
+    my $self = {};
+    bless $self, $class;
+    return $self;
+}
 
 
 # Function:
-#   Import the user defined configuration profile.
+#   Import the build profile.
 #
 # Returns:
 #   nothing
 #
-sub Import($$$$) {
-    my ($type_, $env_, $tokens_, $verbose_) = @_;
+sub LoadProfile($$) {
+    my ($self, $makelib) = @_;
 
-    # Import default profile
+    print "loading:  ${makelib}\n";
+    require $makelib or
+        die "${makelib}: error processsing\n";
+    die "${makelib}: PACKAGE not defined\n"
+        if (! $PACKAGE);
+}
+
+
+# Function:
+#   Import the full configuration profile.
+#
+# Returns:
+#   nothing
+#
+sub LoadConfigure($$$$$) {
+    my ($self, $makelib, $type_, $env_, $tokens_, $verbose_) = @_;
 
     $x_env = $env_;
     $x_tokens = $tokens_;
     $o_verbose = $verbose_;
+    $self->__ImportConfigurations($makelib);
 
-    __ReadTokens();
+    print "loading:  ${makelib}, <${TOOLCHAIN}>\n";
+    require $makelib or
+        die "${makelib}: error processsing\n";
 
-    print "loading <makeconfig.in> ...\n";
-    require './makeconfig.in' or
-        die "makeconfig.in: error processsing\n";
+    Configure();
+    die "${makelib}: PACKAGE not defined\n"
+        if (! $PACKAGE);
 
-    __WriteTokens();
+    if (defined $PACKAGE_H) {
+        print "\n";
+        print "WARNING: importing legacy PACKAGE_H from <${makelib}>, replace with PACKAGE_FILE\n";
+        print "\n";
+        $PACKAGE_FILE = $PACKAGE_H;
+    }
+
+    $self->__ExportConfigurations();
+    $x_tokens = undef;
+    $x_env = undef;
 }
 
 
-sub __ReadTokens {
+sub __ImportConfigurations {
+    my ($self, $makelib) = @_;
+
     $TOOLCHAIN = $$x_tokens{TOOLCHAIN};
+    $TOOLCHAIN = '' if (!$TOOLCHAIN);
 
     $CC = $$x_tokens{CC}                                            # Program for compiling C programs.
         if (defined $$x_tokens{CC});
@@ -150,7 +218,7 @@ sub __ReadTokens {
                 push @CINCLUDE, $incs[$i];
 
             } else {
-                die "makeconfig.in: illformed CINCLUDE <${inc}>\n";
+                die "${makelib}: illformed CINCLUDE <${inc}>\n";
             }
         }
     }
@@ -171,7 +239,7 @@ sub __ReadTokens {
                 push @CXXINCLUDE, $incs[$i];
 
             } else {
-                die "makeconfig.in: illformed CXXINCLUDE <${inc}>\n";
+                die "${makelib}: illformed CXXINCLUDE <${inc}>\n";
             }
         }
     }
@@ -199,7 +267,9 @@ sub __ReadTokens {
 }
 
 
-sub __WriteTokens {
+sub __ExportConfigurations {
+    my ($self) = shift;
+
     if ($o_verbose >= 3) {
             print "Raw configuration:\n";
 
@@ -217,6 +287,26 @@ sub __WriteTokens {
             print "       LDFLAGS   ".__PrintArray($LDFLAGS{$type})."\n";
         }
     }
+
+    $self->{PACKAGE}        = $PACKAGE if (defined $PACKAGE);
+    $self->{PACKAGE_NAME}   = $PACKAGE_NAME;
+    $self->{PACKAGE_PATH}   = $PACKAGE_PATH if ($PACKAGE_PATH);
+    $self->{PACKAGE_H}      = $PACKAGE_H    if ($PACKAGE_H);
+    $self->{PACKAGE_FILE}   = $PACKAGE_FILE if ($PACKAGE_FILE);
+
+    $self->{CONFIG_PATH}    = $CONFIG_PATH  if ($CONFIG_PATH);
+    $self->{CONFIG_FILE}    = $CONFIG_FILE  if ($CONFIG_FILE);
+
+    $self->{MAKEFILES}      = \@MAKEFILES;
+    $self->{LIBRARIES}      = \@LIBRARIES;
+    $self->{LIBRARIES2}     = \@LIBRARIES2;
+    $self->{OPTLIBRARIES}   = \@OPTLIBRARIES;
+
+    $$x_tokens{PACKAGE_VERSION} = $PACKAGE_VERSION;
+    $$x_tokens{PACKAGE_STRING} = $PACKAGE_NAME . ' ' . $PACKAGE_VERSION;
+    $$x_tokens{PACKAGE_URL} = $ PACKAGE_URL;
+    $$x_tokens{PACKAGE_BUGREPORT} = $PACKAGE_BUGREPORT;
+    $$x_tokens{PACKAGE_TARNAME} = $PACKAGE_TARNAME;
 
     $$x_tokens{CC}          = $CC;
     $$x_tokens{CXX}         = $CXX;
@@ -240,7 +330,7 @@ sub __WriteTokens {
     $$x_tokens{LDRELEASE}   = __PrintArray($LDFLAGS{RELEASE});
     $$x_tokens{LDDEBUG}     = __PrintArray($LDFLAGS{DEBUG});
     $$x_tokens{LDMAPFILE}   = $LDMAPFILE;
-    
+
     $$x_tokens{LDLIBS}      = __PrintArray(\@LDLIBS);
     $$x_tokens{LIBS}        = __PrintArray(\@LIBS);
     $$x_tokens{EXTRALIBS}   = __PrintArray(\@EXTRALIBS);
@@ -635,6 +725,23 @@ add_system_library($) {
     push @EXTRALIBS, $lib;
 }
 
+
+#TODO
+#
+#   AC_INIT
+#   AC_ARG_ENABLE
+#   AC_COPYRIGHT
+#   AC_REVISION
+#   AC_DEFINE
+#   AC_SUBST
+#   AC_CHECK_SIZEOF
+#   AC_CHECK_HEADERS
+#   AC_CHECK_FUNCTION
+#   AC_CHECK_MEMBERS
+#   AC_CHECK_LIB
+#   AC_ERROR
+#   AC_CONFIG_FILES
+#
 
 sub
 verbose {
