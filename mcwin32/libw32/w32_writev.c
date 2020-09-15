@@ -8,24 +8,20 @@ __CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.3 2020/07/02 16:25:19 cvsu
  * Copyright (c) 2018 - 2020, Adam Young.
  * All rights reserved.
  *
- * This file is part of memcached-win32.
+ * This file is part of the Midnight Commander.
  *
- * The applications are free software: you can redistribute it
+ * The Midnight Commander is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, version 3.
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
  *
- * Redistributions of source code must retain the above copyright
- * notice, and must be distributed with the license document above.
- *
- * Redistributions in binary form must reproduce the above copyright
- * notice, and must include the license document above in
- * the documentation and/or other materials provided with the
- * distribution.
- *
- * This project is distributed in the hope that it will be useful,
+ * The Midnight Commander is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * license for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * ==end==
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
