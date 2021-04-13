@@ -1,7 +1,7 @@
 #ifndef LIBW32_DIRENT_H_INCLUDED
 #define LIBW32_DIRENT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.6 2018/10/12 00:52:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.7 2021/04/13 15:49:33 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */

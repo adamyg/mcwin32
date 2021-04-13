@@ -1,7 +1,7 @@
 #ifndef LIBW32_GETOPT_H_INCLUDED
 #define LIBW32_GETOPT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.6 2020/05/21 15:20:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.7 2021/04/13 15:49:34 cvsuser Exp $")
 __CPRAGMA_ONCE
 /* -*- mode: c; indent-width: 4; -*- */
 /*

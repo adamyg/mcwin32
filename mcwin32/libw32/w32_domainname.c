@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getdomainname_c,"$Id: w32_domainname.c,v 1.1 2020/05/21 15:26:50 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getdomainname_c,"$Id: w32_domainname.c,v 1.2 2021/04/13 15:49:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*

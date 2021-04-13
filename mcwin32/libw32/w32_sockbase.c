@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.4 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.5 2021/04/13 15:49:34 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
