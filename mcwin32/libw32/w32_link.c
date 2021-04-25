@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.7 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.8 2021/04/25 14:47:18 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 link() system calls.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -209,7 +209,7 @@ my_CreateHardLinkImp(LPCSTR lpFileName, LPCSTR lpExistingFileName, LPSECURITY_AT
         DWORD cnt;
 
         if (INVALID_HANDLE_VALUE ==             /* source image */
-                    (handle = CreateFile(lpExistingFileName, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+                    (handle = CreateFileA(lpExistingFileName, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
                             FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_POSIX_SEMANTICS, NULL))) {
             w32_errno_set();
             CloseHandle(handle);

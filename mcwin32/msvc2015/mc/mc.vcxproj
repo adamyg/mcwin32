@@ -632,6 +632,7 @@
     <ClCompile Include="..\..\libw32\w32_dirent.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/DUTF8FILENAMES %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ClCompile Include="..\..\libw32\w32_errno.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
@@ -675,6 +676,7 @@
     <ClCompile Include="..\..\libw32\w32_io.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/DUTF8FILENAMES=1 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ClCompile Include="..\..\libw32\w32_lang.c" />
     <ClCompile Include="..\..\libw32\w32_langinfo.c">
@@ -744,6 +746,7 @@
     <ClCompile Include="..\..\libw32\w32_statfs.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libw32/</ObjectFileName>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/DUTF8FILENAMES %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ClCompile Include="..\..\libw32\w32_strftime.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libw32/</ObjectFileName>
@@ -1073,14 +1076,14 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>../../lib.vs140/libglib-2.0.lib;../../lib.vs140/libintl.lib;../../lib.vs140/libssh2.lib;../../lib.vs140/libmagic.lib;../../lib.vs140/libz.lib;../../lib.vs140/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../lib.vs140/debug/libglib-2.0.lib;../../lib.vs140/debug/libintl.lib;../../lib.vs140/debug/libssh2.lib;../../lib.vs140/debug/libmagic.lib;../../lib.vs140/debug/libz.lib;../../lib.vs140/debug/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\etc"                 "$(OutDir)\etc\"
-xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\plugin"           "$(OutDir)\plugin\"
-xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\share"             "$(OutDir)\share\"
-xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\*.dll"               "$(OutDir)"
-xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\busybox.exe" "$(OutDir)"</Command>
+      <Command>xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\debug\etc"                  "$(OutDir)\etc\"
+xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\debug\plugin"            "$(OutDir)\plugin\"
+xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\debug\share"              "$(OutDir)\share\"
+xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\debug\*.dll"                "$(OutDir)"
+xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\debug\busybox.exe" "$(OutDir)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Import external artifacts</Message>

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.9 2021/04/13 15:49:35 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.10 2021/04/25 14:47:18 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 util unix functionality.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -172,7 +172,7 @@ w32_gethome(int ignore_env)
 //  }
 
 
-char *
+LIBW32_API char *
 w32_dos2unix(char *path)
 {
     if (path) {
@@ -185,7 +185,20 @@ w32_dos2unix(char *path)
 }
 
 
-char *
+LIBW32_API wchar_t *
+w32_wdos2unix(wchar_t *path)
+{
+    if (path) {
+        wchar_t *p;
+        for (p = path; *p; ++p) {
+             if ('\\' == *p) *p = '/';               /* DOS<>Unix */
+        }
+    }
+    return path;
+}
+
+
+LIBW32_API char *
 w32_unix2dos(char *path)
 {
     if (path) {
@@ -198,8 +211,35 @@ w32_unix2dos(char *path)
 }
 
 
-const char *
+LIBW32_API wchar_t *
+w32_wunix2dos(wchar_t *path)
+{
+    if (path) {
+        wchar_t *p;
+        for (p = path; *p; ++p) {
+            if ('/' == *p) *p = '\\';               /* Unix<>DOS */
+        }
+    }
+    return path;
+}
+
+
+LIBW32_API const char *
 w32_strslash(const char *path)
+{
+    if (path) {
+        for (;*path; ++path) {
+            if (ISSLASH(*path)) {
+                return path;
+            }
+        }
+    }
+    return NULL;
+}
+
+
+LIBW32_API const wchar_t *
+w32_wstrslash(const wchar_t *path)
 {
     if (path) {
         for (;*path; ++path) {

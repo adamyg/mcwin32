@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.18 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.19 2021/04/25 14:47:18 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -491,8 +491,14 @@ LIBW32_API size_t       w32_strftime (char *buf, size_t buflen, const char *fmt,
 
 /* i/o */
 LIBW32_API int          w32_open (const char *path, int, ...);
+LIBW32_API int          w32_openA (const char *path, int, int);
+LIBW32_API int          w32_openW (const wchar_t *path, int, int);
 LIBW32_API int          w32_stat (const char *path, struct stat *sb);
+LIBW32_API int          w32_statA (const char *path, struct stat *sb);
+LIBW32_API int          w32_statW (const wchar_t *path, struct stat *sb);
 LIBW32_API int          w32_lstat (const char *path, struct stat *sb);
+LIBW32_API int          w32_lstatA (const char *path, struct stat *sb);
+LIBW32_API int          w32_lstatW (const wchar_t *path, struct stat *sb);
 LIBW32_API int          w32_fstat (int fd, struct stat *sb);
 LIBW32_API int          w32_read (int fd, void *buffer, size_t cnt);
 LIBW32_API int          w32_write (int fd, const void *buffer, size_t cnt);
@@ -555,6 +561,8 @@ LIBW32_API int          ftruncate (int fildes, off_t size);
 LIBW32_API int          truncate (const char *path, off_t length);
 
 LIBW32_API int          w32_readlink (const char *path, char *name, int sz);
+LIBW32_API int          w32_readlinkW (const wchar_t *path, wchar_t *name, int sz);
+LIBW32_API int          w32_readlinkA (const char *path, char *name, int sz);
 LIBW32_API int          w32_symlink (const char *from, const char *to);
 
 LIBW32_API char *       w32_realpath (const char *path, char *resolved_path /*PATH_MAX*/);

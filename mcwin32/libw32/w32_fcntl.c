@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_fcntl_c,"$Id: w32_fcntl.c,v 1.6 2018/10/15 08:46:48 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_fcntl_c,"$Id: w32_fcntl.c,v 1.7 2021/04/25 14:47:18 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 fcntl() system calls
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -316,4 +316,3 @@ w32_fcntl(int fd, int ctrl, int value)
 }
 
 /*end*/
-

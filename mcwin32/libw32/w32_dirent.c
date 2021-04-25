@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.10 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.11 2021/04/25 14:47:18 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.10 2021/04/13 15:49:34 cvs
  *
  *      opendir, closedir, readdir, seekdir, rewindir, telldir
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -51,8 +51,6 @@ __CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.10 2021/04/13 15:49:34 cvs
 #include <assert.h>
 #include <errno.h>
 
-//#define UTF8FILENAMES         1               /* enable wide/utf8 filenames */
-
 #define DIR_FISHPF              0x0001
 #define DIR_MAGIC               0x57333264      /* W32d */
 
@@ -63,8 +61,10 @@ static BOOL                     isshortcut(const char *path);
 static DIR *                    unc_populate(const char *path);
 
 static int                      dir_populate(DIR *dp, const char *path);
+#if defined(UTF8FILENAMES)
 static HANDLE                   dir_find_firstw(const char *path, WIN32_FIND_DATAW *finddata);
 static struct _dirlist *        dir_list_pushw(DIR *dp, const WCHAR *filenamew);
+#endif
 static struct _dirlist *        dir_list_push(DIR *dp, const char *filename);
 static void                     dir_list_free(struct _dirlist *);
 static int                      dir_ishpf(const char *directory);
@@ -285,7 +285,7 @@ isshortcut(const char *name)
 
     for (cursor = name + len; --cursor >= name;) {
         if (*cursor == '.') {                   // extension
-            return (*++cursor && 0 == WIN32_STRICMP(cursor, "lnk"));
+            return (*++cursor && 0 == IO_STRICMP(cursor, "lnk"));
         }
         if (*cursor == '/' || *cursor == '\\') {
             break;                              // delimiter
@@ -459,12 +459,13 @@ dir_populate(DIR *dp, const char *path)
 }
 
 
+#if defined(UTF8FILENAMES)
 static HANDLE
 dir_find_firstw(const char *path, WIN32_FIND_DATAW *finddata)
 {
     WCHAR pathw[MAX_PATH+1];
 
-    MultiByteToWideChar(CP_ACP, 0, path, -1, pathw, _countof(pathw)-1);
+    MultiByteToWideChar(CP_UTF8, 0, path, -1, pathw, _countof(pathw)-1);
     pathw[_countof(pathw) - 1] = 0;
     return FindFirstFileW(pathw, finddata);
 }
@@ -475,11 +476,12 @@ dir_list_pushw(DIR *dp, const WCHAR *filenamew)
 {
     char filename[MAX_PATH+1];
 
-    WideCharToMultiByte(CP_ACP, 0,
+    WideCharToMultiByte(CP_UTF8, 0,
         (void *)filenamew, -1, filename, _countof(filename)-1, NULL, NULL);
     filename[_countof(filename) - 1] = 0;
     return dir_list_push(dp, filename);
 }
+#endif  //UTF8FILENAMES
 
 
 /*

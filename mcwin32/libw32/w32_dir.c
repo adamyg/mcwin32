@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.10 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.11 2021/04/25 14:47:18 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.10 2021/04/13 15:49:34 cvsuser 
  *
  *      mkdir, rmdir, chdir
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -42,6 +42,9 @@ __CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.10 2021/04/13 15:49:34 cvsuser 
 #include "win32_io.h"
 #include <sys/stat.h>
 #include <ctype.h>
+#ifdef HAVE_WCHAR_H
+#include <wchar.h>
+#endif
 #include <assert.h>
 #include <unistd.h>
 
@@ -49,7 +52,6 @@ __CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.10 2021/04/13 15:49:34 cvsuser 
 #pragma warning(disable : 4244) // conversion from 'xxx' to 'xxx', possible loss of data
 #pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
 #endif
-
 
 const char *            x_w32_cwdd[26];         /* current working directory, per drive */
 const char *            x_w32_vfscwd = NULL;    /* virtual UNC path, if any */
@@ -435,16 +437,16 @@ w32_shortcut_expand(const char *name, char *buf, size_t buflen, unsigned flags)
     char *t_name;
     BOOL ret = 0;
 
-    if (length > 4 && NULL != (t_name = malloc(length + 1 /*nul*/))) {
+    if (length > 4 && NULL != (t_name = calloc(sizeof(char), length + 1 /*nul*/))) {
         char *cursor, *end;
         int dots = 0;
 
-        (void) memcpy(t_name, name, length + 1 /*nul*/);
+        memcpy(t_name, name, length + 1 /*nul*/);
 
         for (cursor = t_name + length, end = cursor; --cursor >= t_name;) {
             if ('.' == *cursor) {                   // extension
                 if (1 == ++dots) {                  // last/trailing
-                    if (0 == WIN32_STRNICMP(cursor, ".lnk", 4) && (cursor + 4) == end) {
+                    if (0 == IO_STRNICMP(cursor, ".lnk", 4) && (cursor + 4) == end) {
                         //
                         //  <shortcut>.lnk
                         //      - attempt expansion, allowing one within any given path.
@@ -461,6 +463,63 @@ w32_shortcut_expand(const char *name, char *buf, size_t buflen, unsigned flags)
                                 if (buflen > (t_ret + trailing)) {
                                     if (trailing) { // appending trailing component(s).
                                         *end = term, memcpy(buf + t_ret, end, trailing + 1 /*nul*/);
+                                    }
+                                    ret = 1;        // success.
+                                }
+                            }
+                        }
+                        break;  //done
+                    }
+                }
+
+            } else if ('/' == *cursor || '\\' == *cursor) {
+                end  = cursor;                      // new component.
+                dots = 0;
+            }
+        }
+        free((void *)t_name);
+    }
+    return ret;
+}
+
+
+/*
+ *  w32_shortcut_expand ---
+ *      expand embedded shortcuts.
+ */
+LIBW32_API BOOL
+w32_shortcut_wexpand(const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags)
+{
+    const size_t length = wcslen(name);
+    wchar_t *t_name;
+    BOOL ret = 0;
+
+    if (length > 4 && NULL != (t_name = calloc(sizeof(wchar_t), length + 1 /*nul*/))) {
+        wchar_t *cursor, *end;
+        int dots = 0;
+
+        wmemcpy(t_name, name, length + 1 /*nul*/);
+
+        for (cursor = t_name + length, end = cursor; --cursor >= t_name;) {
+            if ('.' == *cursor) {                   // extension
+                if (1 == ++dots) {                  // last/trailing
+                    if (0 == IO_WSTRNICMP(cursor, ".lnk", 4) && (cursor + 4) == end) {
+                        //
+                        //  <shortcut>.lnk
+                        //      - attempt expansion, allowing one within any given path.
+                        const size_t trailing = length - (end - t_name);
+                        const char term = *end;
+                        int t_ret;
+
+                        assert((0 == trailing && 0 == term) || (trailing && ('/' == term || '\\' == term)));
+
+                        if (flags & (term ? SHORTCUT_COMPONENT : SHORTCUT_TRAILING)) {
+
+                            *end = 0;               // remove trailing component.
+                            if ((t_ret = w32_readlinkW(t_name, buf, buflen)) > 0) {
+                                if (buflen > (t_ret + trailing)) {
+                                    if (trailing) { // appending trailing component(s).
+                                        *end = term, wmemcpy(buf + t_ret, end, trailing + 1 /*nul*/);
                                     }
                                     ret = 1;        // success.
                                 }

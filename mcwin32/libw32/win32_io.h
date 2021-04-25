@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.12 2021/04/13 15:49:35 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.13 2021/04/25 14:47:18 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 io functionality.
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -87,8 +87,17 @@ LIBW32_API int          w32_fsync (int fildes);
 /*io.h*/
 struct stat;
 
-LIBW32_API int          w32_open (const char *name, int, ...);
-LIBW32_API int          w32_stat (const char *name, struct stat *sb);
+LIBW32_API int          w32_open (const char *path, int, ...);
+LIBW32_API int          w32_openA (const char *path, int, int);
+LIBW32_API int          w32_openW (const wchar_t *path, int, int);
+
+LIBW32_API int          w32_stat (const char *path, struct stat *sb);
+LIBW32_API int          w32_statA (const char *path, struct stat *sb);
+LIBW32_API int          w32_statW (const wchar_t *path, struct stat *sb);
+LIBW32_API int          w32_lstat (const char *path, struct stat *sb);
+LIBW32_API int          w32_lstatA (const char *path, struct stat *sb);
+LIBW32_API int          w32_lstatW (const wchar_t *path, struct stat *sb);
+
 LIBW32_API int          w32_read (int fildes, void *buf, size_t nbyte);
 LIBW32_API int          w32_write (int fildes, const void *buf, size_t nbyte);
 
@@ -116,8 +125,10 @@ LIBW32_API int          w32_root_unc (const char *path);
 #define SHORTCUT_COMPONENT  0x02
 
 LIBW32_API int          w32_shortcut_expand(const char *name, char *buf, size_t buflen, unsigned flags);
+LIBW32_API int          w32_shortcut_wexpand(const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags);
 
 LIBW32_API const char * w32_strslash (const char *path);
+LIBW32_API const wchar_t *w32_wstrslash(const wchar_t *path);
 
 LIBW32_API int          w32_errno_set (void);
 LIBW32_API int          w32_errno_setas (unsigned nerrno);

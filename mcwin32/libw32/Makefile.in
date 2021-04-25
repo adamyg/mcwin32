@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.9 2021/04/13 15:49:33 cvsuser Exp $
+# $Id: Makefile.in,v 1.10 2021/04/25 14:47:18 cvsuser Exp $
 # libwin32 makefile.
 #
 #
-# Copyright (c) 2007, 2012 - 2020 Adam Young.
+# Copyright (c) 2007, 2012 - 2021 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -84,7 +84,7 @@ LDDEBUG=	@LDDEBUG@
 LDRELEASE=	@LDRELEASE@
 
 CINCLUDE=	-I$(D_INC) @CINCLUDE@ -I.
-CEXTRA=		@DEFS@
+CEXTRA=		-DUTF8FILENAMES=1 @DEFS@
 
 ifeq ("$(BUILD_TYPE)","release")
 CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
@@ -107,7 +107,7 @@ YFLAGS=		-d
 W32LIB=		$(D_LIB)/$(LP)w32_static$(A)
 W32DLL=		$(D_LIB)/$(LP)w32.la
 
-VERSION=	1.1.0
+VERSION=	1.2.0
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 
 CSOURCES=\
@@ -119,7 +119,7 @@ CSOURCES=\
 	w32_close.c \
 	w32_dir.c \
 	w32_dirent.c \
-	w32_domainname.c \	
+	w32_domainname.c \
 	w32_err.c \
 	w32_errno.c \
 	w32_flock.c \
