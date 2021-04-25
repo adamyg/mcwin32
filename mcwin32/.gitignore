@@ -6,6 +6,7 @@ bin/
 bin.*/
 lib.*/
 objects*/
+msvc*/
 CVS/
 Makefile
 buildinfo.h

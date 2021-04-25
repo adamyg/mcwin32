@@ -1,4 +1,30 @@
+Sun Apr 25 22:34:49 2021 adamy
+
+	* UTF8/wide-character i/o operations.
+
+Sun Jun 13 18:58:34 2020 adamy
+
 	* Build 218: 4.8.24 beta4.
+
+Sat May  2 00:46:45 2020 adamy
+
+	* Build 216: 4.8.24 beta2
+
+	* Path/drive tweaks
+		- Correctly handle return from a vfs context back to a local directory.
+
+	* Display driver
+		- Better handling of small window sizes, limited internally to 2x12.
+
+	* Drive selection
+		- Select active widget based on cwd.
+		- Handle selection within a vfs context (for example ftp/sftp).
+
+	* libssh 1.9.0
+		- mbedtls engine.
+		- libssh2_helper's
+
+	* libmbedtls 4.16.6
 
 Sun Jun 13 18:58:34 2020 adamy
 
