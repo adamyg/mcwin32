@@ -1,4 +1,4 @@
-# $Id: makeconfig.pm,v 1.3 2020/06/14 00:47:59 cvsuser Exp $
+# $Id: makeconfig.pm,v 1.4 2021/04/13 16:00:16 cvsuser Exp $
 # Makefile generation under Win32.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.

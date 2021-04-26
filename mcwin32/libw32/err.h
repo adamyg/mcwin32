@@ -1,7 +1,7 @@
 #ifndef LIBW32_ERR_H_INCLUDED
 #define LIBW32_ERR_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_err_h,"$Id: err.h,v 1.1 2020/05/21 15:27:02 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_err_h,"$Id: err.h,v 1.2 2021/04/13 15:49:34 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
