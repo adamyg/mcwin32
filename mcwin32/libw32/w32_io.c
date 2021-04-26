@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.16 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.17 2021/04/26 15:39:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -229,8 +229,10 @@ w32_stat(const char *path, struct stat *sb)
         errno = EFAULT;
         return -1;
     }
+
     MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, _countof(wpath) - 1);
     wpath[_countof(wpath) - 1] = 0;
+
     return w32_statW(wpath, sb);
 
 #else
@@ -380,8 +382,10 @@ w32_lstat(const char *path, struct stat *sb)
         errno = EFAULT;
         return -1;
     }
+
     MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, _countof(wpath) - 1);
     wpath[_countof(wpath) - 1] = 0;
+
     return w32_lstatW(wpath, sb);
 
 #else
@@ -767,9 +771,11 @@ w32_readlink(const char *path, char *buf, int maxlen)
 
     MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, _countof(wpath) - 1);
     wpath[_countof(wpath) - 1] = 0;
+
     if (w32_readlinkW(wpath, wpath, _countof(wpath)) > 0) {
         int ret = WideCharToMultiByte(CP_UTF8, 0, wpath, -1, buf, maxlen-1, NULL, NULL);
         buf[maxlen - 1] = 0;
+
         return ret;
     }
     return -1;
@@ -1287,6 +1293,7 @@ w32_open(const char *path, int oflag, ...)
 
     MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, _countof(wpath) - 1);
     wpath[_countof(wpath) - 1] = 0;
+
     return w32_openW(wpath, oflag, mode);
 
 #else

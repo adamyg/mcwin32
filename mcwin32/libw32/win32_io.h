@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.13 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.14 2021/04/26 15:39:19 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -103,13 +103,17 @@ LIBW32_API int          w32_write (int fildes, const void *buf, size_t nbyte);
 
 LIBW32_API int          w32_close (int fildes);
 LIBW32_API const char * w32_strerror (int errnum);
-LIBW32_API int          w32_unlink (const char *fname);
 
 LIBW32_API int          w32_mkstemp (char *path);
 LIBW32_API int          w32_mkstempx (char *path);
 
 LIBW32_API int          w32_link (const char *, const char *);
+LIBW32_API int          w32_unlink (const char *fname);
 LIBW32_API int          w32_lstat (const char *, struct stat *);
+
+LIBW32_API int          w32_rename (const char *ofile, const char *nfile);
+LIBW32_API int          w32_renameA (const char *ofile, const char *nfile);
+LIBW32_API int          w32_renameW (const wchar_t *ofile, const wchar_t *nfile);
 
 LIBW32_API char *       w32_getcwd (char *buffer, int size);
 LIBW32_API char *       w32_getcwdd (char drive, char *buffer, int size);

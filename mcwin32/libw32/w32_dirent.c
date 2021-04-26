@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.11 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.12 2021/04/26 15:39:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -61,10 +61,8 @@ static BOOL                     isshortcut(const char *path);
 static DIR *                    unc_populate(const char *path);
 
 static int                      dir_populate(DIR *dp, const char *path);
-#if defined(UTF8FILENAMES)
 static HANDLE                   dir_find_firstw(const char *path, WIN32_FIND_DATAW *finddata);
-static struct _dirlist *        dir_list_pushw(DIR *dp, const WCHAR *filenamew);
-#endif
+static struct _dirlist *        dir_list_pushw(DIR *dp, const wchar_t *filenamew);
 static struct _dirlist *        dir_list_push(DIR *dp, const char *filename);
 static void                     dir_list_free(struct _dirlist *);
 static int                      dir_ishpf(const char *directory);
@@ -459,7 +457,6 @@ dir_populate(DIR *dp, const char *path)
 }
 
 
-#if defined(UTF8FILENAMES)
 static HANDLE
 dir_find_firstw(const char *path, WIN32_FIND_DATAW *finddata)
 {
@@ -472,7 +469,7 @@ dir_find_firstw(const char *path, WIN32_FIND_DATAW *finddata)
 
 
 static struct _dirlist *
-dir_list_pushw(DIR *dp, const WCHAR *filenamew)
+dir_list_pushw(DIR *dp, const wchar_t *filenamew)
 {
     char filename[MAX_PATH+1];
 
@@ -481,7 +478,6 @@ dir_list_pushw(DIR *dp, const WCHAR *filenamew)
     filename[_countof(filename) - 1] = 0;
     return dir_list_push(dp, filename);
 }
-#endif  //UTF8FILENAMES
 
 
 /*

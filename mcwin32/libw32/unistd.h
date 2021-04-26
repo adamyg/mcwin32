@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.19 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.20 2021/04/26 15:39:19 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -10,7 +10,7 @@ __CPRAGMA_ONCE
  *
  *      unistd.h - standard symbolic constants and types
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -504,8 +504,13 @@ LIBW32_API int          w32_read (int fd, void *buffer, size_t cnt);
 LIBW32_API int          w32_write (int fd, const void *buffer, size_t cnt);
 LIBW32_API int          w32_close (int fd);
 LIBW32_API const char * w32_strerror (int errnum);
+
 LIBW32_API int          w32_link (const char *from, const char *to);
 LIBW32_API int          w32_unlink (const char *fname);
+
+LIBW32_API int          w32_rename (const char *ofile, const char *nfile);
+LIBW32_API int          w32_renameA (const char *ofile, const char *nfile);
+LIBW32_API int          w32_renameW (const wchar_t *ofile, const wchar_t *nfile);
 
 LIBW32_API ssize_t      pread (int fildes, void *buf, size_t nbyte, off_t offset);
 LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t offset);
@@ -520,6 +525,7 @@ LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t
 #define close(a)        w32_close(a)
 #define link(f,t)       w32_link(f,t)
 #define unlink(p)       w32_unlink(p)
+#define rename(a,b)     w32_rename(a,b)
 #endif /*WIN32_UNISTD_MAP*/
 
 #if defined(WIN32_UNISTD_MAP) || \
@@ -561,8 +567,8 @@ LIBW32_API int          ftruncate (int fildes, off_t size);
 LIBW32_API int          truncate (const char *path, off_t length);
 
 LIBW32_API int          w32_readlink (const char *path, char *name, int sz);
-LIBW32_API int          w32_readlinkW (const wchar_t *path, wchar_t *name, int sz);
 LIBW32_API int          w32_readlinkA (const char *path, char *name, int sz);
+LIBW32_API int          w32_readlinkW (const wchar_t *path, wchar_t *name, int sz);
 LIBW32_API int          w32_symlink (const char *from, const char *to);
 
 LIBW32_API char *       w32_realpath (const char *path, char *resolved_path /*PATH_MAX*/);
@@ -573,6 +579,15 @@ LIBW32_API char *       w32_realpath2 (const char *path, char *resolved_path, in
                 w32_readlink (__path, __name, __sz)
 #define symlink(__from,__to) \
                 w32_symlink (__from, __to)
+#endif
+
+LIBW32_API int          w32_chmod (const char *, mode_t);
+LIBW32_API int          w32_chmodA (const char *, mode_t);
+LIBW32_API int          w32_chmodW (const wchar_t *, mode_t);
+
+#if defined(WIN32_UNISTD_MAP)
+#define chmod(__path,__mode) \
+                w32_chmod (__path, __mode)
 #endif
 
 LIBW32_API int          chown (const char *, uid_t, gid_t);

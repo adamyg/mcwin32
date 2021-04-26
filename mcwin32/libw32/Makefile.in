@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.10 2021/04/25 14:47:18 cvsuser Exp $
+# $Id: Makefile.in,v 1.11 2021/04/26 14:37:14 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -115,6 +115,7 @@ CSOURCES=\
 	bsd_qsort.c \
 	w32_check.c \
 	w32_child.c \
+	w32_chmod.c \
 	w32_chown.c \
 	w32_close.c \
 	w32_dir.c \
@@ -149,6 +150,7 @@ CSOURCES=\
 	w32_read.c \
 	w32_readv.c \
 	w32_realpath.c \
+	w32_rename.c \
 	w32_reparse.c \
 	w32_select.c \
 	w32_shell.c \

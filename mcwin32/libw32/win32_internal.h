@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.10 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.11 2021/04/26 15:39:19 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -83,10 +83,10 @@ __BEGIN_DECLS
 extern const char *     x_w32_vfscwd;
 extern const char *     x_w32_cwdd[26];
 
-int                     IO_STRICMP(const char *s1, const char *s2);
-int                     IO_STRNICMP(const char *s1, const char *s2, int slen);
-int                     IO_WSTRICMP(const wchar_t *s1, const char *s2);
-int                     IO_WSTRNICMP(const wchar_t *s1, const char *s2, int slen);
+int                     IO_STRICMP (const char *s1, const char *s2);
+int                     IO_STRNICMP (const char *s1, const char *s2, int slen);
+int                     IO_WSTRICMP (const wchar_t *s1, const char *s2);
+int                     IO_WSTRNICMP (const wchar_t *s1, const char *s2, int slen);
 
 LIBW32_API ino_t        w32_ino_hash (const char *name);
 LIBW32_API ino_t        w32_ino_whash (const wchar_t *name);
@@ -121,8 +121,8 @@ LIBW32_API SOCKET       w32_sockfd_get (int fd);
 LIBW32_API void         w32_sockfd_close (int fd, SOCKET s);
 LIBW32_API int          w32_issockfd (int fd, SOCKET *s);
 
-LIBW32_API int          w32_reparse_read(const char *name, char *buf, int maxlen);
-LIBW32_API int          w32_reparse_wread(const wchar_t *name, wchar_t *buf, int maxlen);
+LIBW32_API int          w32_reparse_read (const char *name, char *buf, int maxlen);
+LIBW32_API int          w32_reparse_wread (const wchar_t *name, wchar_t *buf, int maxlen);
 
 __END_DECLS
 
