@@ -22,6 +22,7 @@ jobs:
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
+       cd mcwin32
         .\support\gmake-42
         .\support\gmake-42 package
     - name: package
