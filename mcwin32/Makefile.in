@@ -779,6 +779,8 @@ $(MC_RES):			config.h buildinfo.h
 BUILD_DATE=			$(shell $(BUSYBOX) date +'%Y%m%d')
 ifneq ($(APPVEYOR_BUILD_NUMBER),)
 BUILD_NUMBER=			$(APPVEYOR_BUILD_NUMBER)
+else ifneq ($(GITHUB_RUN_NUMBER),)
+BUILD_NUMBER=			$(GITHUB_RUN_NUMBER)
 else
 BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
 endif
