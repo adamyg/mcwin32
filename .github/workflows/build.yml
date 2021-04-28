@@ -19,7 +19,7 @@ jobs:
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose vc2019
-        choco install innosetup --version=5.5.9
+        choco install innosetup --version=5.6.1 --force
         set
         dir "%programfiles(x86)%"
     - name: compiling
