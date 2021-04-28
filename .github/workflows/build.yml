@@ -1,0 +1,34 @@
+name: build
+on: [push]
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'
+      with:
+        arch: x86
+    - name: generating Makefiles
+      shell: cmd
+      run: |
+        @set PERL=c:/Strawberry/perl/bin/perl
+        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose vc2019
+    - name: compiling
+      shell: cmd
+      run: |
+        @set PERL=c:/Strawberry/perl/bin/perl
+        .\support\gmake-42
+        .\support\gmake-42 package
+    - name: package
+      uses: actions/upload-artifact@v2
+      with:
+        name: mcwin32-package
+        path: ./releases/mcwin32-build*-setup.exe
+
+
+
