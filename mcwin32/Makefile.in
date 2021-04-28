@@ -1,7 +1,7 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
 # Midnight command WIN32 builds 4.8.24, as at 20/04/20
 #
-# Copyright (c) 2007, 2012 - 2020 Adam Young.
+# Copyright (c) 2007, 2012 - 2021 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -794,8 +794,14 @@ buildinfo.h:			BUILDNUMBER buildinfo.pl
 
 ifneq ($(APPVEYOR_BUILD_NUMBER),)
 BUILDNUMBER:
-		@echo importing appveyor build number  ...
+		@echo importing appveyor build number ...
 		@echo $(APPVEYOR_BUILD_NUMBER)>$@
+endif
+
+ifneq ($(GITHUB_RUN_NUMBER),)
+BUILDNUMBER:
+		@echo importing github build number ...
+		@echo $(GITHUB_RUN_NUMBER)>$@
 endif
 
 new_buildnumber:
