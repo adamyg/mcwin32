@@ -10,7 +10,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: ilammy/msvc-dev-cmd@v1
-      if: runner.os == 'Windows'
       with:
         arch: x86
     - name: generating Makefiles
@@ -26,7 +25,6 @@ jobs:
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
-        @set SHELL=cmd
         cd mcwin32
         .\support\gmake-42
         @rem .\support\gmake-42 package
@@ -35,7 +33,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: mcwin32-package
-        path: ./releases/mcwin32-build*-setup.exe
-
-
-
+        path: ./mcwin32/releases/mcwin32-build*-setup.exe
