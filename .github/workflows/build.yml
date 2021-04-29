@@ -29,8 +29,8 @@ jobs:
         @set SHELL=cmd
         cd mcwin32
         .\support\gmake-42
-        .\support\gmake-42 package
-        rem "%programfiles(x86)%\Inno Setup 5\Compil32" ".\releases\mc-inno-setup.iss"
+        @rem .\support\gmake-42 package
+        "%programfiles(x86)%\Inno Setup 5\ISCC" ".\releases\mc-inno-setup.iss"
     - name: package
       uses: actions/upload-artifact@v2
       with:
