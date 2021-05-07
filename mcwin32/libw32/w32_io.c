@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.17 2021/04/26 15:39:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.18 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -225,15 +225,17 @@ w32_stat(const char *path, struct stat *sb)
 {
 #if defined(UTF8FILENAMES)
     wchar_t wpath[WIN32_PATH_MAX];
+
     if (NULL == path || NULL == sb) {
         errno = EFAULT;
         return -1;
     }
 
-    MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, _countof(wpath) - 1);
-    wpath[_countof(wpath) - 1] = 0;
+    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+        return w32_statW(wpath, sb);
+    }
 
-    return w32_statW(wpath, sb);
+    return -1;
 
 #else
     return w32_statA(path, sb);
@@ -260,7 +262,7 @@ w32_statA(const char *path, struct stat *sb)
     if (ret < 0 || (ret = StatA(path, sb)) < 0) {
         if (-ENOTDIR == ret) {                  // component error.
             if (path != symbuf &&               // expand embedded shortcut
-                    w32_shortcut_expand(path, symbuf, sizeof(symbuf), SHORTCUT_COMPONENT)) {
+                    w32_lnkexpandA(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = StatA(symbuf, sb)) >= 0) {
                     return ret;
                 }
@@ -291,7 +293,7 @@ w32_statW(const wchar_t *path, struct stat *sb)
     if (ret < 0 || (ret = StatW(path, sb)) < 0) {
         if (-ENOTDIR == ret) {                  // component error.
             if (path != symbuf &&               // expand embedded shortcut
-                    w32_shortcut_wexpand(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
+                    w32_lnkexpandW(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = StatW(symbuf, sb)) >= 0) {
                     return ret;
                 }
@@ -378,15 +380,17 @@ w32_lstat(const char *path, struct stat *sb)
 {
 #if defined(UTF8FILENAMES)
     wchar_t wpath[WIN32_PATH_MAX];
+
     if (NULL == path || NULL == sb) {
         errno = EFAULT;
         return -1;
     }
 
-    MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, _countof(wpath) - 1);
-    wpath[_countof(wpath) - 1] = 0;
+    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+        return w32_lstatW(wpath, sb);
+    }
 
-    return w32_lstatW(wpath, sb);
+    return -1;
 
 #else
     return w32_lstatA(path, sb);
@@ -410,7 +414,7 @@ w32_lstatA(const char *path, struct stat *sb)
         if (-ENOTDIR == ret) {                  // component error.
             char lnkbuf[WIN32_PATH_MAX];
                                                 // expand embedded shortcut
-            if (w32_shortcut_expand(path, lnkbuf, sizeof(lnkbuf), SHORTCUT_COMPONENT)) {
+            if (w32_lnkexpandA(path, lnkbuf, _countof(lnkbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = StatA(lnkbuf, sb)) >= 0) {
                     return ret;
                 }
@@ -435,10 +439,10 @@ w32_lstatW(const wchar_t *path, struct stat *sb)
     }
 
     if (ret < 0 || (ret = StatW(path, sb)) < 0) {
-       if (-ENOTDIR == ret) {                  // component error.
+       if (-ENOTDIR == ret) {                   // component error.
             wchar_t lnkbuf[WIN32_PATH_MAX];
                                                 // expand embedded shortcut
-            if (w32_shortcut_wexpand(path, lnkbuf, _countof(lnkbuf), SHORTCUT_COMPONENT)) {
+            if (w32_lnkexpandW(path, lnkbuf, _countof(lnkbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = StatW(lnkbuf, sb)) >= 0) {
                     return ret;
                 }
@@ -769,14 +773,10 @@ w32_readlink(const char *path, char *buf, int maxlen)
 #if defined(UTF8FILENAMES)
     wchar_t wpath[WIN32_PATH_MAX];
 
-    MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, _countof(wpath) - 1);
-    wpath[_countof(wpath) - 1] = 0;
-
-    if (w32_readlinkW(wpath, wpath, _countof(wpath)) > 0) {
-        int ret = WideCharToMultiByte(CP_UTF8, 0, wpath, -1, buf, maxlen-1, NULL, NULL);
-        buf[maxlen - 1] = 0;
-
-        return ret;
+    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+        if (w32_readlinkW(wpath, wpath, _countof(wpath)) > 0) {
+            return w32_wc2utf(wpath, buf, maxlen);
+        }
     }
     return -1;
 
@@ -1291,10 +1291,11 @@ w32_open(const char *path, int oflag, ...)
         va_end(ap);
     }
 
-    MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, _countof(wpath) - 1);
-    wpath[_countof(wpath) - 1] = 0;
+    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+        return w32_openW(wpath, oflag, mode);
+    }
 
-    return w32_openW(wpath, oflag, mode);
+    return -1;
 
 #else
     int mode = 0;
@@ -1931,14 +1932,14 @@ ReadlinkA(const char *path, const char **suffixes, char *buf, int maxlen)
             if ((attrs & FILE_ATTRIBUTE_DIRECTORY) &&
                     (attrs & FILE_ATTRIBUTE_REPARSE_POINT)) {
                                                 // possible mount-point.
-                if (0 == w32_reparse_read(path, buf, maxlen)) {
+                if (0 == w32_reparse_readA(path, buf, maxlen)) {
                     ret = (int)strlen(buf);
                 }
             }
 
         /* readparse point - symlink/mount-point */
         } else if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-            if ((ret = w32_reparse_read(path, buf, maxlen)) >= 0) {
+            if ((ret = w32_reparse_readA(path, buf, maxlen)) >= 0) {
                 ret = (int)strlen(buf);
             } else {
                 ret = -EIO;
@@ -2083,14 +2084,14 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, int maxlen)
             if ((attrs & FILE_ATTRIBUTE_DIRECTORY) &&
                     (attrs & FILE_ATTRIBUTE_REPARSE_POINT)) {
                                                 // possible mount-point.
-                if (0 == w32_reparse_wread(path, buf, maxlen)) {
+                if (0 == w32_reparse_readW(path, buf, maxlen)) {
                     ret = (int)wcslen(buf);
                 }
             }
 
         /* readparse point - symlink/mount-point */
         } else if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-            if ((ret = w32_reparse_wread(path, buf, maxlen)) >= 0) {
+            if ((ret = w32_reparse_readW(path, buf, maxlen)) >= 0) {
                 ret = (int)wcslen(buf);
             } else {
                 ret = -EIO;
@@ -2136,7 +2137,6 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, int maxlen)
                 // cygwin symlink (old style)
                 } else if ((attrs & CYGWIN_ATTRS) && got == sizeof(cookie) &&
                                 0 == memcmp(cookie, CYGWIN_COOKIE, sizeof(cookie))) {
-
 
                     if (! ReadFile(fh, buf, maxlen, &got, 0)) {
                         ret = -EIO;
@@ -2224,9 +2224,7 @@ ReadShortcutA(const char *name, char *buf, int maxlen)
         if (SUCCEEDED(hres)) {
             wchar_t wname[WIN32_PATH_MAX];
 
-            MultiByteToWideChar(CP_UTF8, 0, name, -1, wname, _countof(wname)-1);
-            wname[_countof(wname) - 1] = 0;
-
+            w32_utf2wc(name, wname, _countof(wname));
             hres = ppf->lpVtbl->Load(ppf, wname, STGM_READ);
             if (SUCCEEDED(hres)) {
                 /*  
@@ -2293,7 +2291,7 @@ ReadShortcutW(const wchar_t *name, wchar_t *buf, int maxlen)
                 }
 
                 if (SUCCEEDED(hres) && t_buf[0]) {
-                    MultiByteToWideChar(CP_UTF8, 0, t_buf, -1, buf, maxlen);
+                    w32_utf2wc(t_buf, buf, maxlen);
                 }
 
                 ppf->lpVtbl->Release(ppf);
@@ -2321,7 +2319,6 @@ CreateShortcutA(const char *link, const char *name, const char *working, const c
 
     if (SUCCEEDED(hres)) {
         IPersistFile* ppf;
-        WORD wsz[ MAX_PATH ];
 
         // Set the path to the shortcut target and add the
         // description.
@@ -2341,11 +2338,13 @@ CreateShortcutA(const char *link, const char *name, const char *working, const c
         hres = pShLink->lpVtbl->QueryInterface(pShLink, &x_IID_IPersistFile, (PVOID *) &ppf);
 
         if (SUCCEEDED(hres)) {
+            wchar_t wlink[ MAX_PATH ];
+
             // Ensure that the string is ANSI.
-            MultiByteToWideChar(CP_ACP, 0, (LPCSTR) link, -1, wsz, MAX_PATH);
+            w32_utf2wc(link, wlink, _countof(wlink));
 
             // Save the link by calling IPersistFile::Save.
-            hres = ppf->lpVtbl->Save(ppf, wsz, TRUE);
+            hres = ppf->lpVtbl->Save(ppf, wlink, TRUE);
             ppf->lpVtbl->Release(ppf);
         }
 
@@ -2418,7 +2417,7 @@ StatA(const char *name, struct stat *sb)
                  *  root UNC (//servername/xxx)
                  */
                 const char *slash = w32_strslash(fullname + 2);
-                const char *nextslash = w32_strslash(slash ? slash+1 : NULL);
+                const char *nextslash = w32_strslash(slash ? slash + 1 : NULL);
 
                 ret = -ENOENT;
                 if (NULL != slash &&
@@ -2445,11 +2444,13 @@ StatA(const char *name, struct stat *sb)
                     } else {
                         ret = -EIO;
                     }
+
                 } else if (rc == ERROR_ACCESS_DENIED) {
                     // Junction encountered (e.g C:/Users/Default User --> Default),
                     //  FindFirstFile() behaviour is by design to stop applications recursively accessing symlinks.
                     fb.dwFileAttributes = attrs;
                     ret = 0;
+
                 } else {
                     // Other conditions.
                     ret = -EIO;
@@ -2687,8 +2688,8 @@ StatW(const wchar_t *name, struct stat *sb)
                 /*
                  *  root UNC (//servername/xxx)
                  */
-                const wchar_t *slash = w32_wstrslash(fullname + 2);
-                const wchar_t *nextslash = w32_wstrslash(slash ? slash+1 : NULL);
+                const wchar_t *slash = w32_wcsslash(fullname + 2);
+                const wchar_t *nextslash = w32_wcsslash(slash ? slash+1 : NULL);
 
                 ret = -ENOENT;
                 if (NULL != slash &&
@@ -2715,11 +2716,13 @@ StatW(const wchar_t *name, struct stat *sb)
                     } else {
                         ret = -EIO;
                     }
+
                 } else if (rc == ERROR_ACCESS_DENIED) {
                     // Junction encountered (e.g C:/Users/Default User --> Default),
                     //  FindFirstFile() behaviour is by design to stop applications recursively accessing symlinks.
                     fb.dwFileAttributes = attrs;
                     ret = 0;
+
                 } else {
                     // Other conditions.
                     ret = -EIO;

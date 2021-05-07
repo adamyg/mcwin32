@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_chmod_c,"$Id: w32_chmod.c,v 1.2 2021/04/26 15:39:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_chmod_c,"$Id: w32_chmod.c,v 1.3 2021/05/07 17:52:55 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -96,11 +96,11 @@ w32_chmod(const char *pathname, mode_t mode)
         return -1;
     }
 
-    wpathname[0] = 0;
-    MultiByteToWideChar(CP_UTF8, 0, pathname, -1, wpathname, _countof(wpathname) - 1);
-    wpathname[_countof(wpathname) - 1] = 0;
+    if (w32_utf2wc(pathname, wpathname, _countof(wpathname)) > 0) {
+        return w32_chmodW(wpathname, mode);
+    }
 
-    return w32_chmodW(wpathname, mode);
+    return -1;
 
 #else
 

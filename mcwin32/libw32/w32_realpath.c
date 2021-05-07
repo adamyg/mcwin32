@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.3 2019/04/24 23:54:07 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.4 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.3 2019/04/24 23:54:07
  *
  *      realpath
  *
- * Copyright (c) 2018 Adam Young.
+ * Copyright (c) 2018 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -38,6 +38,7 @@ __CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.3 2019/04/24 23:54:07
 
 #define _DIRENT_SOURCE
 #include "win32_internal.h"
+
 #include <unistd.h>
 
 #include <sys/types.h>
@@ -50,12 +51,14 @@ __CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.3 2019/04/24 23:54:07
 #include <assert.h>
 #include <errno.h>
 
+#include "win32_io.h"
+
 
 //  NAME
 //	realpath - resolve a pathname
 //
 //  SYNOPSIS
-//	#include <stdlib.h> [optional]
+//	#include <stdlib.h>
 //	char *realpath(const char *restrict file_name, char *restrict resolved_name);
 //
 //  DESCRIPTION
@@ -105,10 +108,42 @@ w32_realpath(const char *path, char *resolved_path /*[PATH_MAX]*/)
     return w32_realpath2(path, resolved_path, PATH_MAX);
 }
 
+
 LIBW32_API char *
 w32_realpath2(const char *path, char *resolved_path, int maxlen)
 {
-    char *result = NULL;
+#if defined(UTF8FILENAMES)
+    wchar_t *wresolved_path, wpath[WIN32_PATH_MAX];
+
+    w32_utf2wc(path, wpath, _countof(wpath));
+
+    if (NULL != (wresolved_path = alloca(sizeof(wchar_t *) * WIN32_PATH_MAX))) {  
+        if (w32_realpathW(wpath, wresolved_path, WIN32_PATH_MAX) > 0) {
+            if (NULL == resolved_path) {        // dynamic; implementation specific.
+                maxlen = WIN32_PATH_MAX;
+                if (NULL == (resolved_path = (char *)malloc(sizeof(char) * maxlen))) {
+                    return NULL;
+                }
+            }
+
+            if (resolved_path) {
+                w32_wc2utf(wresolved_path, resolved_path, maxlen);
+                return resolved_path;
+            }
+        }
+    }
+    return NULL;
+
+#else
+    return w32_realpathA(path, resolved_path, maxlen);
+#endif
+}
+
+
+LIBW32_API char *
+w32_realpathA(const char *path, char *resolved_path, int maxlen)
+{
+    char *result = NULL, symlink[WIN32_PATH_MAX];
 
     if (path && *path) {
         if (NULL != (result = resolved_path)) { // user buffer.
@@ -117,8 +152,15 @@ w32_realpath2(const char *path, char *resolved_path, int maxlen)
                 result = NULL;
             }
         } else {                                // glibc style extension.
-            result = (char *)malloc(maxlen = 1024 /*PATH_MAX*/);
+            maxlen = WIN32_PATH_MAX;
+            result = (char *)malloc(sizeof(char) * maxlen);
                 // malloc() shall set errno on error.
+        }
+
+        if (result) {                           // resolve symlink component    
+            if (w32_lnkexpandA(path, symlink, _countof(symlink), SHORTCUT_COMPONENT)) {
+                path = symlink;
+            }
         }
 
         if (result) {
@@ -130,7 +172,9 @@ w32_realpath2(const char *path, char *resolved_path, int maxlen)
             if (size >= (size_t)maxlen) {
                 if (result != resolved_path) {
                     free((void *)result);
-                    result = (char *)malloc(maxlen = (size + 1 /*plus null*/));
+
+                    maxlen = size + 1 /*plus null*/;
+                    result = (char *)malloc(sizeof(char) * maxlen);
                         // malloc() shall set errno on error.
 
                     if (result) {
@@ -177,7 +221,7 @@ w32_realpath2(const char *path, char *resolved_path, int maxlen)
             //  Success, verify the result.
             if (result) {
                 struct stat sb = { 0 };
-                if (w32_stat(result, &sb)) {
+                if (w32_statA(result, &sb)) {
                     if (result != resolved_path) {
                         free(result);
                     }
@@ -193,6 +237,112 @@ w32_realpath2(const char *path, char *resolved_path, int maxlen)
     if (result) {
         if (result[0] && result[1] == ':') {    // normalize directory slashes.
             char *cursor;
+            for (cursor = result; *cursor; ++cursor) {
+                if ('\\' == *cursor) *cursor = '/';
+            }
+        }
+    }
+    return result;
+}
+
+
+LIBW32_API wchar_t *
+w32_realpathW(const wchar_t *path, wchar_t *resolved_path, int maxlen)
+{
+    wchar_t *result = NULL, symlink[WIN32_PATH_MAX];
+
+    if (path && *path) {
+        if (NULL != (result = resolved_path)) { // user buffer.
+            if (maxlen < 4) {                   // "X:/\0"
+                errno = EINVAL;                 // invalid length.
+                result = NULL;
+            }
+        } else {                                // glibc style extension.
+            maxlen = WIN32_PATH_MAX;
+            result = (wchar_t *)malloc(sizeof(wchar_t) * maxlen);
+                // malloc() shall set errno on error.
+        }
+
+        if (result) {                           // resolve symlink component    
+            if (w32_lnkexpandW(path, symlink, _countof(symlink), SHORTCUT_COMPONENT)) {
+                path = symlink;
+            }
+        }
+
+        if (result) {
+            const size_t size =                 // resolve, including .. and . components
+                GetFullPathNameW(path, maxlen, result, 0);
+
+            //
+            //  GetFullPathNameA() returns a size larger than buffer if buffer is too small
+            if (size >= (size_t)maxlen) {
+                if (result != resolved_path) {
+                    free((void *)result);
+
+                    maxlen = size + 1 /*plus null*/;
+                    result = (wchar_t *)malloc(sizeof(wchar_t) * maxlen);
+                        // malloc() shall set errno on error.
+
+                    if (result) {
+                        const size_t new_size =
+                            GetFullPathNameW(path, maxlen, result, 0);
+                        if (new_size >= (size_t)maxlen) {
+                            free((void *)result);
+                            errno = ENAMETOOLONG;
+                            result = NULL;
+                            return NULL;
+                        }
+                    }
+                } else {                        // resolved_path buffer isn't big enough
+                    errno = ENAMETOOLONG;
+                    result = NULL;
+                }
+            }
+
+            //
+            //  GetFullPathNameA() returns 0 if some path resolve problem occured
+            if (0 == size) {
+                switch (GetLastError()) {
+                case ERROR_ACCESS_DENIED:
+                case ERROR_SHARING_VIOLATION:
+                case ERROR_PRIVILEGE_NOT_HELD:
+                    errno = EACCES;  break;
+                case ERROR_FILE_NOT_FOUND:
+                    errno = ENOENT;  break;
+                case ERROR_PATH_NOT_FOUND:
+                case ERROR_INVALID_DRIVE:
+                    errno = ENOTDIR; break;
+                default:
+                    errno = EIO;
+                    break;
+                }
+
+                if (result != resolved_path) {
+                    free((void *)result);
+                }
+                result = NULL;
+            }
+
+            //
+            //  Success, verify the result.
+            if (result) {
+                struct stat sb = { 0 };
+                if (w32_statW(result, &sb)) {
+                    if (result != resolved_path) {
+                        free(result);
+                    }
+                    result = NULL;
+                        // stat() shall set errno on error.
+                }
+            }
+        }
+    } else {
+        errno = EINVAL;                         // invalid source.
+    }
+
+    if (result) {
+        if (result[0] && result[1] == ':') {    // normalize directory slashes.
+            wchar_t *cursor;
             for (cursor = result; *cursor; ++cursor) {
                 if ('\\' == *cursor) *cursor = '/';
             }

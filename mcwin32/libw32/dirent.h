@@ -1,7 +1,7 @@
 #ifndef LIBW32_DIRENT_H_INCLUDED
 #define LIBW32_DIRENT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.7 2021/04/13 15:49:33 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.8 2021/05/07 17:52:55 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -116,6 +116,7 @@ typedef struct _dirdesc {
     unsigned long       dd_flags;
     struct _dirlist *   dd_contents;
     struct _dirlist *   dd_current;
+    void *              dd_handle;
 /* End of extensions */
 } DIR;
 #endif  /*_POSIX_SOURCE*/
@@ -125,6 +126,8 @@ typedef struct _dirdesc {
 __BEGIN_DECLS
 
 LIBW32_API DIR *        opendir __P((const char *));
+LIBW32_API DIR *        opendirA __P((const char *));
+LIBW32_API DIR *        opendirW __P((const wchar_t *));
 LIBW32_API int          closedir __P((DIR *));
 LIBW32_API struct dirent * readdir __P((DIR *));
 LIBW32_API void         rewinddir __P((DIR *));

@@ -142,6 +142,9 @@
     <Filter Include="Header Files\mcsrc\libmc\widget\filemanager">
       <UniqueIdentifier>{7f19a6d2-651c-4a3b-aedf-57a19bd7522f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\mcsrc\libvfs\fish">
+      <UniqueIdentifier>{7de8c171-2956-448d-987a-a88879abbce4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\libw32\w32_check.c">
@@ -840,6 +843,18 @@
     <ClCompile Include="..\..\libw32\w32_writev.c">
       <Filter>Source Files\libw32</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_rename.c">
+      <Filter>Source Files\libw32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_chmod.c">
+      <Filter>Source Files\libw32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_direntunc.c">
+      <Filter>Source Files\libw32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_realpath.c">
+      <Filter>Source Files\libw32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\buildinfo.h">
@@ -1378,6 +1393,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\win32_key.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libw32\win32_direct.h">
+      <Filter>Header Files\libw32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\fish\fish.h">
+      <Filter>Header Files\mcsrc\libvfs\fish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\fish\fishdef.h">
+      <Filter>Header Files\mcsrc\libvfs\fish</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@ Makefile
 buildinfo.h
 BUILDNUMBER
 owcsetup.dbg
+testaccounts.txt
 .created
 mc.aps
 .#*

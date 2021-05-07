@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.10 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.11 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -40,6 +40,7 @@ __CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.10 2021/04/25 14:47:18 cvsuser
 #include "win32_child.h"
 #include "win32_misc.h"
 #include <unistd.h>
+#include <assert.h>
 
 #pragma comment(lib, "shell32.lib")
 #pragma comment(lib, "shfolder.lib")
@@ -149,6 +150,77 @@ w32_gethome(int ignore_env)
 }
 
 
+
+int
+w32_utf2wc(const char *src, wchar_t *dest, size_t maxlen)
+{
+    int ret;
+
+    assert(src), assert(dest), assert(maxlen);
+
+    dest[0] = 0;
+    if ((ret = MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, maxlen - 1)) > 0) {
+        assert(ret < (int)maxlen);
+        dest[ret] = 0;
+
+    } else {
+        const DWORD rc = GetLastError();
+
+        if (dest) dest[0] = 0;
+        switch (rc) {
+        case ERROR_INVALID_FLAGS:
+        case ERROR_INVALID_PARAMETER:
+            errno = EINVAL;
+            break;
+        case ERROR_INSUFFICIENT_BUFFER:
+            errno = ENAMETOOLONG;
+            break;
+        case ERROR_NO_UNICODE_TRANSLATION:
+        default:
+            errno = ENOENT;
+            break;
+        }
+        return -1;
+    }
+    return ret;
+}
+
+
+int
+w32_wc2utf(const wchar_t *src, char *dest, size_t maxlen)
+{
+    int ret;
+
+    assert(src), assert(dest), assert(maxlen);
+
+    dest[0] = 0;
+    if ((ret = WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, maxlen - 1, NULL, NULL)) > 0) {
+        assert(ret < (int)maxlen);
+        dest[ret] = 0;
+
+    } else {
+        const DWORD rc = GetLastError();
+
+        if (dest) dest[0] = 0;
+        switch (rc) {
+        case ERROR_INVALID_FLAGS:
+        case ERROR_INVALID_PARAMETER:
+            errno = EINVAL;
+            break;
+        case ERROR_INSUFFICIENT_BUFFER:
+            errno = ENAMETOOLONG;
+            break;
+        case ERROR_NO_UNICODE_TRANSLATION:
+        default:
+            errno = ENOENT;
+            break;
+        }
+        return -1;
+    }
+    return ret;
+}
+
+
 //  int
 //  w32_is64bit(void)
 //  {
@@ -178,7 +250,7 @@ w32_dos2unix(char *path)
     if (path) {
         char *p;
         for (p = path; *p; ++p) {
-             if ('\\' == *p) *p = '/';               /* DOS<>Unix */
+             if ('\\' == *p) *p = '/';          /* DOS<>Unix */
         }
     }
     return path;
@@ -191,7 +263,7 @@ w32_wdos2unix(wchar_t *path)
     if (path) {
         wchar_t *p;
         for (p = path; *p; ++p) {
-             if ('\\' == *p) *p = '/';               /* DOS<>Unix */
+             if ('\\' == *p) *p = '/';          /* DOS<>Unix */
         }
     }
     return path;
@@ -204,7 +276,7 @@ w32_unix2dos(char *path)
     if (path) {
         char *p;
         for (p = path; *p; ++p) {
-            if ('/' == *p) *p = '\\';               /* Unix<>DOS */
+            if ('/' == *p) *p = '\\';           /* Unix<>DOS */
         }
     }
     return path;
@@ -217,7 +289,7 @@ w32_wunix2dos(wchar_t *path)
     if (path) {
         wchar_t *p;
         for (p = path; *p; ++p) {
-            if ('/' == *p) *p = '\\';               /* Unix<>DOS */
+            if ('/' == *p) *p = '\\';           /* Unix<>DOS */
         }
     }
     return path;
@@ -239,7 +311,7 @@ w32_strslash(const char *path)
 
 
 LIBW32_API const wchar_t *
-w32_wstrslash(const wchar_t *path)
+w32_wcsslash(const wchar_t *path)
 {
     if (path) {
         for (;*path; ++path) {
@@ -298,18 +370,18 @@ w32_ostype(void)
             //      for Windows 8.1 or Windows 10 will return the Windows 8 OS version value (6.2). To manifest your applications
             //      for Windows 8.1 or Windows 10, refer to Targeting your application for Windows.
             //
-            platform = OSTYPE_WIN_NT;               // or 2000
+            platform = OSTYPE_WIN_NT;           // or 2000
 
             if (ovi.dwMajorVersion >= 10) {
-                platform = OSTYPE_WIN_10;           // Windows 10+
+                platform = OSTYPE_WIN_10;       // Windows 10+
 
             } else if (6 == ovi.dwMajorVersion) {
                 platform = OSTYPE_WIN_VISTA;
                 if (ovi.dwMajorVersion >= 2) {
-                    platform = OSTYPE_WIN_8;        // or Server 2012
+                    platform = OSTYPE_WIN_8;    // or Server 2012
 
                 } else if (1 == ovi.dwMajorVersion) {
-                    platform = OSTYPE_WIN_7;        // or Server 2008 R2
+                    platform = OSTYPE_WIN_7;    // or Server 2008 R2
                 }
             }
             break;

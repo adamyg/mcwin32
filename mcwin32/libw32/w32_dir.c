@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.11 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.12 2021/05/07 17:52:55 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -40,6 +40,7 @@ __CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.11 2021/04/25 14:47:18 cvsuser 
 
 #include "win32_internal.h"
 #include "win32_io.h"
+
 #include <sys/stat.h>
 #include <ctype.h>
 #ifdef HAVE_WCHAR_H
@@ -53,8 +54,12 @@ __CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.11 2021/04/25 14:47:18 cvsuser 
 #pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
 #endif
 
+#include "win32_direct.h"
+
 const char *            x_w32_cwdd[26];         /* current working directory, per drive */
 const char *            x_w32_vfscwd = NULL;    /* virtual UNC path, if any */
+
+static void             cache_directory(void);
 
 
 /*
@@ -136,8 +141,44 @@ const char *            x_w32_vfscwd = NULL;    /* virtual UNC path, if any */
 LIBW32_API int
 w32_mkdir(const char *path, int mode)
 {
+#if defined(UTF8FILENAMES)
+    wchar_t wpath[WIN32_PATH_MAX];
+
+    if (NULL == path) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+        return w32_mkdirW(wpath, mode);
+    }
+
+    return -1;
+
+#else
+
+    return w32_mkdirA(path, mode);
+
+#endif  //UTF8FILENAMES
+}
+
+
+LIBW32_API int
+w32_mkdirA(const char *path, int mode)
+{
     (void) mode;
     if (! CreateDirectoryA(path, NULL)) {
+        return w32_errno_set();
+    }
+    return 0;
+}
+
+
+LIBW32_API int
+w32_mkdirW(const wchar_t *path, int mode)
+{
+    (void) mode;
+    if (! CreateDirectoryW(path, NULL)) {
         return w32_errno_set();
     }
     return 0;
@@ -198,9 +239,36 @@ w32_mkdir(const char *path, int mode)
 //          As a result of encountering a symbolic link in resolution of the path argument,
 //          the length of the substituted pathname string exceeded { PATH_MAX}.
 */
+
 LIBW32_API int
 w32_chdir(const char *path)
 {
+#if defined(UTF8FILENAMES)
+    wchar_t wpath[WIN32_PATH_MAX];
+
+    if (NULL == path) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+        return w32_chdirW(wpath);
+    }
+
+    return -1;
+
+#else
+
+    return w32_chdirA(path);
+
+#endif  //UTF8FILENAMES
+}
+
+
+LIBW32_API int
+w32_chdirA(const char *path)
+{
+    BOOL isunc = FALSE;
     BOOL success;
 
     if (NULL == path || !*path) {
@@ -209,26 +277,33 @@ w32_chdir(const char *path)
     }
 
     success = SetCurrentDirectoryA(path);
-
     if (! success) {                            // possible shortcut.
         char lnkbuf[WIN32_PATH_MAX];
 
-        if (w32_shortcut_expand(path, lnkbuf, sizeof(lnkbuf), SHORTCUT_TRAILING|SHORTCUT_COMPONENT)) {
+        w32_errno_set();
+        if (w32_lnkexpandA(path, lnkbuf, _countof(lnkbuf), SHORTCUT_TRAILING|SHORTCUT_COMPONENT)) {
             success = SetCurrentDirectoryA(lnkbuf);
+            if (! success) {
+                w32_errno_set();
+            } else {
+                isunc = w32_unc_validA(lnkbuf, NULL);
+            }
         }
+    } else {
+        isunc = w32_unc_validA(path, NULL);
     }
 
     if (! success) {
-        int serverlen = w32_root_unc(path);
+        int serverlen = 0;
 
-        if (serverlen > 0) {                    // UNC root path (//servername/)
+        if (w32_unc_rootA(path, &serverlen) > 0) {
+
             free((void *)x_w32_vfscwd);
             if (NULL != (x_w32_vfscwd = malloc(serverlen + 4))) {
                 char *cursor = (char *)x_w32_vfscwd;
 
-                path += 2;
-                *cursor++ = '/';
-                *cursor++ = '/';
+                path += 2;                      // "//" or "\\"
+                *cursor++ = '/'; *cursor++ = '/';
                 while (serverlen-- > 0) {
                     *cursor++ = toupper((unsigned char)*path++);
                 }
@@ -237,46 +312,107 @@ w32_chdir(const char *path)
                 return 0;
             }
         }
-        return w32_errno_set();
+        return -1;
     }
 
     free((void *)x_w32_vfscwd), x_w32_vfscwd = NULL;
+    if (! isunc) cache_directory();
 
-    if (!(('/' == path[0] && '/' == path[1]) || // UNC paths
-                ('\\' == path[0] && '\\' == path[1]))) {
-        char t_cwd[1024] = {0};
+    return 0;
+}
 
-        if (w32_getcwd(t_cwd, sizeof(t_cwd))) {
-            if (isalpha((unsigned char)t_cwd[0]) && ':' == t_cwd[1]) {
-                const unsigned nDrive = toupper(t_cwd[0]) - 'A';
-                char env_var[4] = { "=X:" };
 
-                /*
-                 *  Cache drive specific directory
-                 */
-                free((char *)x_w32_cwdd[nDrive]);
-                x_w32_cwdd[nDrive] = WIN32_STRDUP(t_cwd);
+LIBW32_API int
+w32_chdirW(const wchar_t *path)
+{
+    BOOL isunc = FALSE;
+    BOOL success;
 
-                /*
-                 *  Update the environment (=)
-                 *      This is required to support the MSVCRT runtime logic based on the current-directory-on-drive
-                 *      environment variables. Function like (fullpath, spawn, etc) *may* need them to be set.
-                 *
-                 *  If associated with a 'drive', the current directory should have the form of the example below:
-                 *       
-                 *       C:\Program and Settings\users\
-                 *
-                 *  so that the environment variable should be of the form:
-                 *
-                 *      =C:=C:\Program and Settings\users\
-                 */
-                env_var[1] = toupper(t_cwd[0]);
-                w32_unix2dos(t_cwd);
-                (void) SetEnvironmentVariableA(env_var, t_cwd);
+    if (NULL == path || !*path) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    success = SetCurrentDirectoryW(path);
+    if (! success) {                            // possible shortcut.
+        wchar_t lnkbuf[WIN32_PATH_MAX];
+
+        w32_errno_set();
+        if (w32_lnkexpandW(path, lnkbuf, _countof(lnkbuf), SHORTCUT_TRAILING|SHORTCUT_COMPONENT)) {
+            success = SetCurrentDirectoryW(lnkbuf);
+            if (! success) {
+                w32_errno_set();
+            } else {
+                isunc = w32_unc_validW(lnkbuf, NULL);
             }
         }
+    } else {
+        isunc = w32_unc_validW(path, NULL);
     }
+
+    if (! success) {
+        int serverlen = 0;
+
+        if (w32_unc_rootW(path, &serverlen) > 0) {
+
+            free((void *)x_w32_vfscwd);
+            if (NULL != (x_w32_vfscwd = malloc(serverlen + 4))) {
+                char *cursor = (char *)x_w32_vfscwd;
+
+                path += 2;                      // "//" or "\\"
+                *cursor++ = '/'; *cursor++ = '/';
+                while (serverlen-- > 0) {
+                    *cursor++ = toupper((unsigned char)*path++);
+                }
+                *cursor++ = '/';
+                *cursor = 0;
+                return 0;
+            }
+        }
+        return -1;
+    }
+
+    free((void *)x_w32_vfscwd), x_w32_vfscwd = NULL;
+    if (! isunc) cache_directory();
+
     return 0;
+}
+
+
+static void
+cache_directory()
+{
+    char t_cwd[WIN32_PATH_MAX] = {0};
+
+    if (w32_getcwd(t_cwd, sizeof(t_cwd))) {
+        if (isalpha((unsigned char)t_cwd[0]) && ':' == t_cwd[1]) {
+            const unsigned nDrive = toupper(t_cwd[0]) - 'A';
+            char env_var[4] = { "=X:" };
+
+            /*
+             *  Cache drive specific directory
+             */
+            free((char *)x_w32_cwdd[nDrive]);
+            x_w32_cwdd[nDrive] = WIN32_STRDUP(t_cwd);
+
+            /*
+             *  Update the environment (=)
+             *      This is required to support the MSVCRT runtime logic based on the current-directory-on-drive
+             *      environment variables. Function like (fullpath, spawn, etc) *may* need them to be set.
+             *
+             *  If associated with a 'drive', the current directory should have the form of the example below:
+             *       
+             *       C:\Program and Settings\users\
+             *
+             *  so that the environment variable should be of the form:
+             *
+             *      =C:=C:\Program and Settings\users\
+             */
+            env_var[1] = toupper(t_cwd[0]);
+            w32_unix2dos(t_cwd);
+            (void) SetEnvironmentVariableA(env_var, t_cwd);
+        }
+    }
 }
 
 
@@ -383,6 +519,31 @@ w32_chdir(const char *path)
 LIBW32_API int
 w32_rmdir(const char *path)
 {
+#if defined(UTF8FILENAMES)
+    wchar_t wpath[WIN32_PATH_MAX];
+
+    if (NULL == path) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+        return w32_rmdirW(wpath);
+    }
+
+    return -1;
+
+#else
+
+    return w32_rmdirA(path);
+
+#endif  //UTF8FILENAMES
+}
+
+
+LIBW32_API int
+w32_rmdirA(const char *path)
+{
     if (! RemoveDirectoryA(path)) {
         return w32_errno_set();
     }
@@ -390,48 +551,22 @@ w32_rmdir(const char *path)
 }
 
 
-/*
- *  w32_root_unc ---
- *      determine if the specific path is a UNC root (i.e. //servername[/])
- */
 LIBW32_API int
-w32_root_unc(const char *path)
+w32_rmdirW(const wchar_t *path)
 {
-    if (('/' == path[0] && '/' == path[1]) ||   // UNC prefix?
-            ('\\' == path[0] && '\\' == path[1])) {
-
-        const char *slash = w32_strslash(path + 2);
-
-        if (NULL == slash || 0 == slash[1]) {
-
-            const size_t serverlen =            // servername length
-                    (slash ? (slash - (path + 2)) : strlen(path + 2));
-
-            if (serverlen > 0) {
-
-                char computerName[MAX_COMPUTERNAME_LENGTH + 1] = {0};
-                DWORD computerSz = sizeof(computerName);
-
-                                                // local server ?
-                if (GetComputerNameA(computerName, &computerSz)) {
-                    if (serverlen == computerSz &&
-                            0 == _strnicmp(path + 2, computerName, serverlen)) {
-                        return (int)serverlen;
-                    }
-                }
-            }
-        }
+    if (! RemoveDirectoryW(path)) {
+        return w32_errno_set();
     }
     return 0;
 }
 
 
 /*
- *  w32_shortcut_expand ---
+ *  w32_lnkexpandA ---
  *      expand embedded shortcuts.
  */
 LIBW32_API BOOL
-w32_shortcut_expand(const char *name, char *buf, size_t buflen, unsigned flags)
+w32_lnkexpandA(const char *name, char *buf, size_t buflen, unsigned flags)
 {
     const size_t length = strlen(name);
     char *t_name;
@@ -459,7 +594,7 @@ w32_shortcut_expand(const char *name, char *buf, size_t buflen, unsigned flags)
                         if (flags & (term ? SHORTCUT_COMPONENT : SHORTCUT_TRAILING)) {
 
                             *end = 0;               // remove trailing component.
-                            if ((t_ret = w32_readlink(t_name, buf, buflen)) > 0) {
+                            if ((t_ret = w32_readlinkA(t_name, buf, buflen)) > 0) {
                                 if (buflen > (t_ret + trailing)) {
                                     if (trailing) { // appending trailing component(s).
                                         *end = term, memcpy(buf + t_ret, end, trailing + 1 /*nul*/);
@@ -484,11 +619,11 @@ w32_shortcut_expand(const char *name, char *buf, size_t buflen, unsigned flags)
 
 
 /*
- *  w32_shortcut_expand ---
+ *  w32_lnkexpandW ---
  *      expand embedded shortcuts.
  */
 LIBW32_API BOOL
-w32_shortcut_wexpand(const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags)
+w32_lnkexpandW(const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags)
 {
     const size_t length = wcslen(name);
     wchar_t *t_name;

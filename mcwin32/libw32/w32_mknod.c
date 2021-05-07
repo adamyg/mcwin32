@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mknod_c,"$Id: w32_mknod.c,v 1.7 2021/04/26 15:39:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mknod_c,"$Id: w32_mknod.c,v 1.8 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -185,6 +185,28 @@ __CIDENT_RCSID(gr_w32_mknod_c,"$Id: w32_mknod.c,v 1.7 2021/04/26 15:39:19 cvsuse
 */
 LIBW32_API int
 mknod(const char *path, int mode, int dev)
+{
+    __CUNUSED(path)
+    __CUNUSED(mode)
+    __CUNUSED(dev)
+    errno = EIO;
+    return -1;
+}
+
+
+LIBW32_API int
+mknodA(const char *path, int mode, int dev)
+{
+    __CUNUSED(path)
+    __CUNUSED(mode)
+    __CUNUSED(dev)
+    errno = EIO;
+    return -1;
+}
+
+
+LIBW32_API int
+mknodW(const wchar_t *path, int mode, int dev)
 {
     __CUNUSED(path)
     __CUNUSED(mode)

@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.11 2021/04/26 15:39:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.12 2021/05/07 17:52:56 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -41,8 +41,10 @@ __CPRAGMA_ONCE
 #include <win32_include.h>
 #include <unistd.h>
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+#if defined(_MSC_VER) && (_MSC_VER >= 1400) || \
+    defined(__WATCOMC__)
 #define WIN32_OPEN      _open
+#define WIN32_WOPEN     _wopen
 #define WIN32_CLOSE     _close
 #define WIN32_READ      _read
 #define WIN32_WRITE     _write
@@ -55,6 +57,7 @@ __CPRAGMA_ONCE
 #define WIN32_TZSET     _tzset
 #else
 #define WIN32_OPEN      open
+#define WIN32_WOPEN     wopen
 #define WIN32_CLOSE     close
 #define WIN32_READ      read
 #define WIN32_WRITE     write
@@ -96,15 +99,16 @@ LIBW32_API ino_t        w32_ino_fildes (int fildes);
 LIBW32_API ino_t        w32_ino_file (const char *name);
 LIBW32_API ino_t        w32_ino_wfile(const wchar_t *name);
 
+LIBW32_API int          w32_utf2wc(const char *src, wchar_t *dest, size_t max);
+LIBW32_API int          w32_wc2utf(const wchar_t *src, char *dest, size_t max);
+
 LIBW32_API char *       w32_dos2unix (char *path);
 LIBW32_API wchar_t *    w32_wdos2unix (wchar_t *path);
 LIBW32_API char *       w32_unix2dos (char *path);
 LIBW32_API wchar_t *    w32_wunix2dos (wchar_t *path);
 
-LIBW32_API int          w32_root_unc (const char *path);
-
 LIBW32_API const char * w32_strslash (const char *path);
-LIBW32_API const wchar_t * w32_wstrslash (const wchar_t *path);
+LIBW32_API const wchar_t * w32_wcsslash (const wchar_t *path);
 
 LIBW32_API int          w32_neterrno_map (int nerrno);
 LIBW32_API int          w32_neterrno_set (void);
@@ -121,8 +125,8 @@ LIBW32_API SOCKET       w32_sockfd_get (int fd);
 LIBW32_API void         w32_sockfd_close (int fd, SOCKET s);
 LIBW32_API int          w32_issockfd (int fd, SOCKET *s);
 
-LIBW32_API int          w32_reparse_read (const char *name, char *buf, int maxlen);
-LIBW32_API int          w32_reparse_wread (const wchar_t *name, wchar_t *buf, int maxlen);
+LIBW32_API int          w32_reparse_readA (const char *name, char *buf, int maxlen);
+LIBW32_API int          w32_reparse_readW (const wchar_t *name, wchar_t *buf, int maxlen);
 
 __END_DECLS
 

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_reparse_c,"$Id: w32_reparse.c,v 1.8 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_reparse_c,"$Id: w32_reparse.c,v 1.9 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -114,7 +114,7 @@ memxcpy(char *dst, const char *src, int len, int maxlen)
 
 
 LIBW32_API int
-w32_reparse_read(const char *name, char *buf, int maxlen)
+w32_reparse_readA(const char *name, char *buf, int maxlen)
 {
     BYTE reparseBuffer[MAX_REPARSE_SIZE];       /* XXX: warning: owc crash if = {0} under full optimisation */
     PREPARSE_DATA_BUFFER rdb = (PREPARSE_DATA_BUFFER)reparseBuffer;
@@ -218,7 +218,7 @@ w32_reparse_read(const char *name, char *buf, int maxlen)
 
 
 LIBW32_API int
-w32_reparse_wread(const wchar_t *name, wchar_t *buf, int maxlen)
+w32_reparse_readW(const wchar_t *name, wchar_t *buf, int maxlen)
 {
     BYTE reparseBuffer[MAX_REPARSE_SIZE];       /* XXX: warning: owc crash if = {0} under full optimisation */
     PREPARSE_DATA_BUFFER rdb = (PREPARSE_DATA_BUFFER)reparseBuffer;

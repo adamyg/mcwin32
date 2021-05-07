@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.6 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.7 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -98,13 +98,17 @@ statfs(const char *path, struct statfs *buf)
 {
 #if defined(UTF8FILENAMES)
     wchar_t wpath[WIN32_PATH_MAX];
+
     if (NULL == path || NULL == buf) {
         errno = EFAULT;
         return -1;
     }
-    MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, _countof(wpath) - 1);
-    wpath[_countof(wpath) - 1] = 0;
-    return statfsW(wpath, buf);
+
+    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+        return statfsW(wpath, buf);
+    }
+
+    return -1;
 
 #else
     return statfsA(path, buf);
@@ -219,7 +223,7 @@ statfsW(const wchar_t *path, struct statfs *sb)
         sb->f_files = Clusters/10;
     }
 
-    WideCharToMultiByte(CP_UTF8, 0, path, -1, sb->f_mntonname, sizeof(sb->f_mntonname)-1, NULL, NULL);
+    w32_wc2utf(path, sb->f_mntonname, sizeof(sb->f_mntonname));
     w32_dos2unix(sb->f_mntonname);
     if ((mnamelen = strlen(sb->f_mntonname)) > 3) {
         if (sb->f_mntonname[mnamelen - 1] == '/') {
@@ -256,7 +260,7 @@ statfsW(const wchar_t *path, struct statfs *sb)
             NULL, &MaximumComponentLength, &FileSystemFlags, fsName, MNAMELEN)) /* filesystem type */
     {                                           /* FileSystem type/NTFS, FAT etc */
         if (fsName[0]) {
-            WideCharToMultiByte(CP_UTF8, 0, fsName, -1, sb->f_fstypename, sizeof(sb->f_fstypename)-1, NULL, NULL);
+            w32_wc2utf(fsName, sb->f_fstypename, sizeof(sb->f_fstypename));
         }
     }
     return 0;

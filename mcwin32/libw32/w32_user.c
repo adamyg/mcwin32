@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.7 2021/04/13 15:49:35 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.8 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 user identification functionality
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -347,5 +347,5 @@ w32_IsAdministrator(void)
     }
     return b;
 }
-/*end*/
 
+/*end*/

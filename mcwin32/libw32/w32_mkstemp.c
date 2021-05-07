@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mkstemp_c,"$Id: w32_mkstemp.c,v 1.5 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mkstemp_c,"$Id: w32_mkstemp.c,v 1.6 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mkstemp() implementation
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -85,36 +85,101 @@ __CIDENT_RCSID(gr_w32_mkstemp_c,"$Id: w32_mkstemp.c,v 1.5 2018/10/12 00:52:04 cv
 #define GETTEMP_SUCCESS     1
 #define GETTEMP_ERROR       0
 
-static int                  gettemp(char *path, register int *fd, int temporary);
+static int                  gettempA(char *path, int *fd, int temporary);
+static int                  gettempW(wchar_t *path, int *fd, int temporary);
 
 
 LIBW32_API int
 w32_mkstemp(char *path)
 {
+#if defined(UTF8FILENAMES)
+    wchar_t wpath[MAX_PATH];
     int fildes = -1;
-    return (GETTEMP_SUCCESS == gettemp(path, &fildes, FALSE) ? fildes : -1);
+
+    w32_utf2wc(path, wpath, _countof(wpath));
+    if (GETTEMP_SUCCESS == gettempW(wpath, &fildes, FALSE)) {
+        w32_wc2utf(wpath, path, strlen(path) + 1);
+        return fildes;
+    }
+    return -1;
+
+#else
+    int fildes = -1;
+    return (GETTEMP_SUCCESS == gettempA(path, &fildes, FALSE) ? fildes : -1);
+
+#endif
 }
 
 
 LIBW32_API int
-w32_mkstempx(char *path)
+w32_mkstempA(char *path)
 {
     int fildes = -1;
-    return (GETTEMP_SUCCESS == gettemp(path, &fildes, TRUE) ? fildes : -1);
+    return (GETTEMP_SUCCESS == gettempA(path, &fildes, FALSE) ? fildes : -1);
 }
 
 
-static int
-gettemp(char *path, register int *fildes, int temporary)
+LIBW32_API int
+w32_mkstempW(wchar_t *path)
 {
-    register char *start, *trv;
+    int fildes = -1;
+    return (GETTEMP_SUCCESS == gettempW(path, &fildes, FALSE) ? fildes : -1);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+LIBW32_API int
+w32_mkstempx(char *path)
+{
+#if defined(UTF8FILENAMES)
+    wchar_t wpath[MAX_PATH];
+    int fildes = -1;
+
+    w32_utf2wc(path, wpath, _countof(wpath));
+    if (GETTEMP_SUCCESS == gettempW(wpath, &fildes, TRUE)) {
+        w32_wc2utf(wpath, path, strlen(path) + 1);
+        return fildes;
+    }
+    return -1;
+
+#else
+    int fildes = -1;
+    return (GETTEMP_SUCCESS == gettempA(path, &fildes, TRUE) ? fildes : -1);
+
+#endif
+}
+
+
+LIBW32_API int
+w32_mkstempxA(char *path)
+{
+    int fildes = -1;
+    return (GETTEMP_SUCCESS == gettempA(path, &fildes, TRUE) ? fildes : -1);
+}
+
+
+LIBW32_API int
+w32_mkstempxW(wchar_t *path)
+{
+    int fildes = -1;
+    return (GETTEMP_SUCCESS == gettempW(path, &fildes, TRUE) ? fildes : -1);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//  Implementation
+
+static int
+gettempA(char *path, register int *fildes, int temporary)
+{
+    register char *start, *trv, c;
     struct stat sbuf;
     unsigned pid;
     int rc;
-    char c;
 
     pid = (unsigned) WIN32_GETPID();
-    for (trv = path; *trv; ++trv)           /* extra X's get set to 0's */
+    for (trv = path; *trv; ++trv)               /* extra X's get set to 0's */
         /*continue*/;
     while (*--trv == 'X' && trv >= path) {
         *trv = (char)((pid % 10) + '0');
@@ -137,7 +202,7 @@ gettemp(char *path, register int *fildes, int temporary)
                 break;
             }
             DISABLE_HARD_ERRORS
-            rc = stat(path, &sbuf);
+            rc = w32_statA(path, &sbuf);
             ENABLE_HARD_ERRORS
             if (rc) {
                 return GETTEMP_ERROR;
@@ -176,7 +241,7 @@ gettemp(char *path, register int *fildes, int temporary)
                 }
         } else {
                 DISABLE_HARD_ERRORS
-                rc = stat(path, &sbuf);
+                rc = w32_statA(path, &sbuf);
                 ENABLE_HARD_ERRORS
                 if (rc) {
 #ifndef ENMFILE
@@ -208,5 +273,107 @@ gettemp(char *path, register int *fildes, int temporary)
     /*NOTREACHED*/
 }
 
-/*end*/
 
+static int
+gettempW(wchar_t *path, register int *fildes, int temporary)
+{
+    register wchar_t *start, *trv, c;
+    struct stat sbuf;
+    unsigned pid;
+    int rc;
+
+    pid = (unsigned) WIN32_GETPID();
+    for (trv = path; *trv; ++trv)               /* extra X's get set to 0's */
+        /*continue*/;
+    while (*--trv == 'X' && trv >= path) {
+        *trv = (char)((pid % 10) + '0');
+        pid /= 10;
+    }
+
+    /*
+     *  check the target directory; if you have six X's and it
+     *  doesn't exist this runs for a *very* long time.
+     */
+    for (start = trv + 1;; --trv) {
+        if (trv <= path) {
+            break;
+        }
+
+        if ((c = *trv) == '/' || c == '\\') {
+            *trv = '\0';
+            if (trv[-1] == ':') {
+                *trv = c;
+                break;
+            }
+            DISABLE_HARD_ERRORS
+            rc = w32_statW(path, &sbuf);
+            ENABLE_HARD_ERRORS
+            if (rc) {
+                return GETTEMP_ERROR;
+            }
+            if (!(sbuf.st_mode & S_IFDIR)) {
+                errno = ENOTDIR;
+                return GETTEMP_ERROR;
+            }
+            *trv = c;
+            break;
+        }
+    }
+
+    /*
+     *  Create file as temporary; file is deleted when last file descriptor is closed.
+     */
+#if defined(_O_TEMPORARY)
+#define O_MODEX     (O_CREAT|O_EXCL|O_RDWR|O_BINARY|_O_TEMPORARY)
+#elif defined(O_TEMPORARY)
+#define O_MODEX	    (O_CREAT|O_EXCL|O_RDWR|O_BINARY|O_TEMPORARY)
+#else
+#define O_MODEX	    (O_CREAT|O_EXCL|O_RDWR|O_BINARY)
+#endif
+
+#define O_MODE	    (O_CREAT|O_EXCL|O_RDWR|O_BINARY)
+
+    for (;;) {
+        errno = 0;
+        if (fildes) {
+                if ((*fildes = WIN32_WOPEN(path, (temporary ? O_MODEX : O_MODE), 0600)) >= 0) {
+                    return GETTEMP_SUCCESS;
+                }
+                if (EEXIST != errno) {
+                    return GETTEMP_ERROR;
+                }
+        } else {
+                DISABLE_HARD_ERRORS
+                rc = w32_statW(path, &sbuf);
+                ENABLE_HARD_ERRORS
+                if (rc) {
+#ifndef ENMFILE
+                    return (((ENOENT == errno)) ? GETTEMP_SUCCESS : GETTEMP_ERROR);
+#else
+                    return (((ENOENT == errno) || (ENMFILE == errno)) ? GETTEMP_ERROR);
+#endif
+                }
+        }
+
+        /* next is sequence */
+        for (trv = start;;) {
+            if (*trv == '\0') {                 /* EOS */
+                return GETTEMP_ERROR;
+            }
+
+            if ('z' == *trv) {
+                *trv++ = 'a';
+            } else {
+                if (iswdigit(*trv)) {
+                    *trv = 'a';
+                } else {
+                    ++*trv;
+                }
+                break;
+            }
+        }
+    }
+    /*NOTREACHED*/
+}
+
+/*end*/

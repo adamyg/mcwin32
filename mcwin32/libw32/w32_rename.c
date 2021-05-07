@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.2 2021/04/26 15:39:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.3 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -121,15 +121,13 @@ w32_rename(const char *ofile, const char *nfile)
         return -1;
     }
 
-    wofile[0] = 0;
-    MultiByteToWideChar(CP_UTF8, 0, ofile, -1, wofile, _countof(wofile) - 1);
-    wofile[_countof(wofile) - 1] = 0;
+    if (w32_utf2wc(ofile, wofile, _countof(wofile)) > 0) {
+        if (w32_utf2wc(nfile, wnfile, _countof(wnfile)) > 0) {
+            return w32_renameW(wofile, wnfile);
+        }
+    }
 
-    wnfile[0] = 0;
-    MultiByteToWideChar(CP_UTF8, 0, nfile, -1, wnfile, _countof(wnfile) - 1);
-    wnfile[_countof(wnfile) - 1] = 0;
-
-    return w32_renameW(wofile, wnfile);
+    return -1;
 
 #else
 

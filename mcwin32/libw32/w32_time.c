@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.6 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.7 2021/05/07 17:52:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 time system calls.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -294,6 +294,30 @@ gettimeofday(
 LIBW32_API int
 w32_utime(const char *path, const struct utimbuf *times)
 {
+#if defined(UTF8FILENAMES)
+    wchar_t wpath[WIN32_PATH_MAX];
+
+    if (NULL == path || NULL == times) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+        return w32_utimeW(wpath, times);
+    }
+
+    return -1;
+
+#else
+    return w32_utimeA(path, times);
+
+#endif  //UTF8FILENAMES
+}
+
+
+LIBW32_API int
+w32_utimeA(const char *path, const struct utimbuf *times)
+{
 #if defined(__MINGW32__)
 #undef utime
     return utime(path, (struct utimbuf *)times);
@@ -302,5 +326,16 @@ w32_utime(const char *path, const struct utimbuf *times)
 #endif
 }
 
-/*end*/
 
+LIBW32_API int
+w32_utimeW(const wchar_t *path, const struct utimbuf *times)
+{
+#if defined(__MINGW32__)
+#undef utime
+    return wutime(path, (struct utimbuf *)times);
+#else
+    return _wutime(path, (struct _utimbuf *)times);
+#endif
+}
+
+/*end*/

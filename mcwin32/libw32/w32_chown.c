@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_chown_c,"$Id: w32_chown.c,v 1.6 2020/04/28 22:59:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_chown_c,"$Id: w32_chown.c,v 1.7 2021/05/07 17:52:55 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 chown() system calls.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -140,6 +140,26 @@ __CIDENT_RCSID(gr_w32_chown_c,"$Id: w32_chown.c,v 1.6 2020/04/28 22:59:43 cvsuse
 */
 LIBW32_API int
 chown(const char *fname, uid_t uid, gid_t gid)
+{
+    __PUNUSED(fname);
+    __PUNUSED(uid);
+    __PUNUSED(gid);
+    return 0;
+}
+
+
+LIBW32_API int
+chownA(const char *fname, uid_t uid, gid_t gid)
+{
+    __PUNUSED(fname);
+    __PUNUSED(uid);
+    __PUNUSED(gid);
+    return 0;
+}
+
+
+LIBW32_API int
+chownW(const wchar_t *fname, uid_t uid, gid_t gid)
 {
     __PUNUSED(fname);
     __PUNUSED(uid);
