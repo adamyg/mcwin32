@@ -1645,7 +1645,8 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
 
         if (p[0] == PATH_SEP && p > (orgpath + 2)) {
             if (0 == strcmp(p + 1, "..")) {     /* "//servername/.." --> "X:/" */
-                const int driveno = w32_getdrive();
+                int driveno = w32_getdrive();
+                if (driveno <= 0) driveno = w32_getlastdrive();
                 if (driveno > 0) {
                     lpath[0] = driveno + ('A' - 1);
                     lpath[1] = ':';
@@ -1964,12 +1965,14 @@ mc_build_filenamev(const char *first_element, va_list args)
             //WIN32, drive
             if (NULL == strchr (path->str, ':') &&  // Neither special (ftp://)
                     PATH_SEP != path->str[1]) {     // nor url (//server ..)
-                const int driveno = w32_getdrive();
+                int driveno = w32_getdrive();
+                if (driveno <= 0) driveno = w32_getlastdrive();
 
-                // see: vfs_canon() generally when we are returning from a ftp/sftp.
+                // see: vfs_canon() generally when we are returning 
+                // from a ftp/sftp or UNC reference.
                 if (driveno > 0) {
                     char drive[3] = "X:";
-                    drive[1] = driveno + ('A' - 1);
+                    drive[0] = driveno + ('A' - 1);
                     g_string_prepend (path, drive); // "/" --> "X:/"
                 }
             }

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.13 2021/05/09 11:02:23 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.14 2021/05/09 11:45:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -360,10 +360,11 @@ set_vfs_directoryA(const char *path)
             serverlen += 4;                     // delimiters
             if (NULL != (x_w32_vfscwd = malloc(serverlen))) {
                 char *cursor = (char *)x_w32_vfscwd;
+                int i;
 
                 path += 2;                      // "//" or "\\"
                 *cursor++ = '/'; *cursor++ = '/';
-                for (int i = serverlen - 4; i > 0; --i) {
+                for (i = serverlen - 4; i > 0; --i) {
                     *cursor++ = toupper((unsigned char)*path++);
                 }
                 *cursor++ = '/';
@@ -391,12 +392,13 @@ set_vfs_directoryW(const wchar_t *path)
             serverlen += 4;                     // delimiters
             if (NULL != (x_w32_vfscwd = malloc(serverlen))) {
                 char *cursor = (char *)x_w32_vfscwd;
+                int i;
 
                 path += 2;                      // "//" or "\\"
                 // Valid characters for hostnames are ASCII(7), letters from a to z,
                 // the digits from 0 to 9, and the hyphen (-).
                 *cursor++ = '/'; *cursor++ = '/';
-                for (int i = serverlen - 4; i > 0; --i) {
+                for (i = serverlen - 4; i > 0; --i) {
                     *cursor++ = toupper((unsigned char)*path++);
                 }
                 *cursor++ = '/';
@@ -433,7 +435,7 @@ cache_directory()
              *      environment variables. Function like (fullpath, spawn, etc) *may* need them to be set.
              *
              *  If associated with a 'drive', the current directory should have the form of the example below:
-             *       
+             *
              *       C:\Program and Settings\users\
              *
              *  so that the environment variable should be of the form:

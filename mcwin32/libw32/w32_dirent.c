@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.14 2021/05/09 11:02:23 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.15 2021/05/09 11:45:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -1103,15 +1103,17 @@ dir_ishpfA(const char *directory)
     if ((namelen = w32_unc_validA(directory)) > 0) {
         char rootdir[MAXHOSTNAMELEN + MAX_PATH], 
            *cursor = rootdir, *end = cursor + (_countof(rootdir) - 4);
+        int i;
 
         directory += 2;                         // "//" or "\\"
         *cursor++ = '\\'; *cursor++ = '\\';
-        for (int i = namelen; i > 0; --i) {
+        for (i = namelen; i > 0; --i) {
             *cursor++ = *directory++;
         }
         *cursor++ = '\\';
         if (*directory++) {                     // component
-            for (char ch; cursor < end && (ch = *directory++) != 0;) {
+            char ch;
+            while (cursor < end && (ch = *directory++) != 0) {
                 if (IS_PATH_SEP(ch)) break;
                 *cursor++ = ch;
             }
@@ -1161,15 +1163,17 @@ dir_ishpfW(const wchar_t *directory)
     if ((namelen = w32_unc_validW(directory)) > 0) {
         wchar_t rootdir[MAXHOSTNAMELEN + MAX_PATH], 
            *cursor = rootdir, *end = cursor + (_countof(rootdir) - 4);
+        int i;
 
         directory += 2;                         // "//" or "\\"
         *cursor++ = '\\'; *cursor++ = '\\';
-        for (int i = namelen; i > 0; --i) {
+        for (i = namelen; i > 0; --i) {
             *cursor++ = *directory++;
         }
         *cursor++ = '\\';
         if (*directory++) {                     // component
-            for (wchar_t ch; cursor < end && (ch = *directory++) != 0;) {
+            wchar_t ch;
+            while (cursor < end && (ch = *directory++) != 0) {
                 if (IS_PATH_SEP(ch)) break;
                 *cursor++ = ch;
             }
