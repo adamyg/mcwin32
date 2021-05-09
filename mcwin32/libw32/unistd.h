@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.21 2021/05/07 17:52:55 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.23 2021/05/09 11:33:43 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -525,7 +525,10 @@ LIBW32_API int          w32_close (int fd);
 LIBW32_API const char * w32_strerror (int errnum);
 
 LIBW32_API int          w32_link (const char *from, const char *to);
+
 LIBW32_API int          w32_unlink (const char *fname);
+LIBW32_API int          w32_unlinkA (const char *fname);
+LIBW32_API int          w32_unlinkW (const wchar_t *fname);
 
 LIBW32_API int          w32_rename (const char *ofile, const char *nfile);
 LIBW32_API int          w32_renameA (const char *ofile, const char *nfile);
@@ -570,6 +573,8 @@ LIBW32_API char *       w32_getcwdA (char *path, int size);
 LIBW32_API wchar_t *    w32_getcwdW (wchar_t *path, int size);
 
 LIBW32_API char *       w32_getcwdd (char drive, char *path, int size);
+LIBW32_API char *       w32_getcwddA (char drive, char *path, int size);
+LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, int size);
 
 #if defined(WIN32_UNISTD_MAP)
 #define mkdir(d,m)      w32_mkdir(d, m)
@@ -589,10 +594,15 @@ LIBW32_API char *       w32_getcwdd (char drive, char *path, int size);
 #endif /*WIN32_UNISTD_MAP*/
 
 LIBW32_API int          w32_mkstemp (char *path);
+LIBW32_API int          w32_mkstempA (char *path);
+LIBW32_API int          w32_mkstempW (wchar_t *path);
 #if defined(_MSC_VER)
 LIBW32_API int          mkstemp (char *path);
 #endif
+
 LIBW32_API int          w32_mkstempx (char *path);
+LIBW32_API int          w32_mkstempxA (char *path);
+LIBW32_API int          w32_mkstempxW (wchar_t *path);
 
 LIBW32_API int          ftruncate (int fildes, off_t size);
 LIBW32_API int          truncate (const char *path, off_t length);

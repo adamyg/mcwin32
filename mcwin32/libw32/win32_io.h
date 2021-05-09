@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.15 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.16 2021/05/09 11:02:24 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -123,8 +123,12 @@ LIBW32_API char *       w32_getcwd (char *buffer, int size);
 LIBW32_API char *       w32_getcwdA (char *buffer, int size);
 LIBW32_API wchar_t *    w32_getcwdW (wchar_t *buffer, int size);
 
-LIBW32_API char *       w32_getcwdd (char drive, char *buffer, int size);
+LIBW32_API char *       w32_getcwdd (char drive, char *path, int size);
+LIBW32_API char *       w32_getcwddA (char drive, char *path, int size);
+LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, int size);
+
 LIBW32_API int          w32_getdrive (void);
+LIBW32_API int          w32_getlastdrive (void);
 
 LIBW32_API int          w32_mkdir (const char *path, int mode);
 LIBW32_API int          w32_mkdirA (const char *path, int mode);

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.1 2021/05/07 17:52:55 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.2 2021/05/09 11:02:23 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -141,7 +141,7 @@ w32_unc_opendirA(const char *dirname)
     DWORD result;
     DIR *dp;
 
-//   if (! w32_unc_validA(dirname, NULL)) {
+//  if (! w32_unc_validA(dirname)) {
 //      errno = ENOTDIR;
 //      return NULL;
 //  }
@@ -175,7 +175,7 @@ w32_unc_opendirW(const wchar_t *dirname)
     DWORD result;
     DIR *dp;
 
-//  if (! w32_unc_validW(dirname, NULL)) {
+//  if (! w32_unc_validW(dirname)) {
 //      errno = ENOTDIR;
 //      return NULL;
 //  }
@@ -314,21 +314,19 @@ w32_unc_closedir(DIR *dp)
  */
 
 int
-w32_unc_validA(const char *path, int *length)
+w32_unc_validA(const char *path)
 {
-    if (('/' == path[0] && '/' == path[1]) ||   // UNC prefix?
-                ('\\' == path[0] && '\\' == path[1])) {
-        const char *scan;
+    if (IS_PATH_SEP(path[0]) && (path[0] == path[1])) {
+        const char *scan;                       // UNC prefix
 
-        path += 2;
+        path += 2;                              // "//" or "\\"
         if (NULL == (scan = strpbrk(path, "*?|<>\"\\/"))
                 || IS_PATH_SEP(scan[0])) {
             const size_t namelen =              // servername length
                     (scan ? (scan - path) : strlen(path));
 
-            if (namelen > 0) {
-                if (length) *length = namelen;                                              
-                return 1;   
+            if (namelen > 0) {                                           
+                return namelen;   
             }
         }
     }
@@ -337,27 +335,24 @@ w32_unc_validA(const char *path, int *length)
 
 
 int
-w32_unc_validW(const wchar_t *path, int *length)
+w32_unc_validW(const wchar_t *path)
 {
-    if (('/' == path[0] && '/' == path[1]) ||   // UNC prefix?
-                ('\\' == path[0] && '\\' == path[1])) {
-        const wchar_t *scan;
+    if (IS_PATH_SEP(path[0]) && (path[0] == path[1])) {
+        const wchar_t *scan;                    // UNC prefix
 
-        path += 2;
+        path += 2;                              // "//" or "\\"
         if (NULL == (scan = wcspbrk(path, L"*?|<>\"\\/"))
                 || IS_PATH_SEP(scan[0])) {
             const size_t namelen =              // servername length
                     (scan ? (scan - path) : wcslen(path));
 
             if (namelen > 0) {
-                if (length) *length = namelen;                                              
-                return 1;   
+                return namelen; 
             }
         }
     }
     return 0;
 }
-
 
 
 /*
@@ -367,9 +362,9 @@ w32_unc_validW(const wchar_t *path, int *length)
 int
 w32_unc_rootA(const char *path, int *length)
 {
-    int namelen = 0;
+    int namelen;
 
-    if (w32_unc_validA(path, &namelen) > 0) {
+    if ((namelen = w32_unc_validA(path)) > 0) {
         const char *end = path + 2 + namelen;
 
         if (0 == end[0] ||                      // "//servername[/]"
@@ -395,9 +390,9 @@ w32_unc_rootA(const char *path, int *length)
 int
 w32_unc_rootW(const wchar_t *path, int *length)
 {
-    int namelen = 0;
+    int namelen;
 
-    if (w32_unc_validW(path, &namelen) > 0) {
+    if ((namelen = w32_unc_validW(path)) > 0) {
         const wchar_t *end = path + 2 + namelen;
 
         if (0 == end[0] ||                      // "//servername[/]"

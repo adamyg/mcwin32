@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.13 2021/05/08 14:31:21 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.15 2021/05/09 11:33:43 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -49,6 +49,7 @@ __CPRAGMA_ONCE
 #define WIN32_READ      _read
 #define WIN32_WRITE     _write
 #define WIN32_CHMOD     _chmod
+#define WIN32_WCHMOD    _wchmod
 #define WIN32_LSEEK     _lseek
 #define WIN32_STRICMP   _stricmp
 #define WIN32_STRNICMP  _strnicmp
@@ -61,6 +62,7 @@ __CPRAGMA_ONCE
 #define WIN32_READ      read
 #define WIN32_WRITE     write
 #define WIN32_CHMOD     chmod
+#define WIN32_WCHMOD    wchmod
 #define WIN32_LSEEK     lseek
 #define WIN32_STRICMP   stricmp
 #define WIN32_STRNICMP  strnicmp
@@ -85,10 +87,11 @@ __CPRAGMA_ONCE
 __BEGIN_DECLS
 
 #define WIN32_FILDES_DEF    (512)
-#define WIN32_FILDES_MAX    (8*1024)    /* was 2048, now 8192/2019 */
+#define WIN32_FILDES_MAX    (8*1024)            /* was 2048, now 8192/2019 */
 
-extern const char *     x_w32_vfscwd;
-extern const char *     x_w32_cwdd[26];
+extern int              x_w32_cwdn;             /* current/last working drive number, A=1 etc */
+extern const char *     x_w32_cwdd[26];         /* last directory, prr drive */
+extern const char *     x_w32_vfscwd;           /* current UNC path, if any */
 
 int                     IO_STRICMP (const char *s1, const char *s2);
 int                     IO_STRNICMP (const char *s1, const char *s2, int slen);

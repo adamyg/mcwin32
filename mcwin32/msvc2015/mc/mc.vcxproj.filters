@@ -855,6 +855,9 @@
     <ClCompile Include="..\..\libw32\w32_realpath.c">
       <Filter>Source Files\libw32</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\libw32\w32_getcwdd.c">
+      <Filter>Source Files\libw32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\buildinfo.h">

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.13 2021/05/07 17:52:55 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.14 2021/05/09 11:02:23 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -53,6 +53,10 @@ __CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.13 2021/05/07 17:52:55 cvs
 
 #include "win32_io.h"
 #include "win32_direct.h"
+
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN 64
+#endif
 
 typedef BOOL (WINAPI *Wow64DisableWow64FsRedirection_t)(PVOID *OldValue);
 typedef BOOL (WINAPI *Wow64RevertWow64FsRedirection_t)(PVOID OldValue);
@@ -152,7 +156,7 @@ opendir(const char *dirname)
 
 #else
 
-    return opendirA(path);
+    return opendirA(dirname);
 
 #endif  //UTF8FILENAMES
 }
@@ -1091,26 +1095,55 @@ d_Wow64RevertWow64FsRedirection(PVOID OldValue)
 static int
 dir_ishpfA(const char *directory)
 {
+    int namelen;
     UINT errormode;
-    int driveno;
-    char bName[4] = "x:\\";
-    DWORD flags, maxname;
-    BOOL rc;
+    DWORD flags = 0, maxname;
+    BOOL rc = 0;
 
-    if (directory &&
-            isalpha((unsigned char)directory[0]) && directory[1] == ':') {
-        driveno = toupper(directory[0]) - 'A';
+    if ((namelen = w32_unc_validA(directory)) > 0) {
+        char rootdir[MAXHOSTNAMELEN + MAX_PATH], 
+           *cursor = rootdir, *end = cursor + (_countof(rootdir) - 4);
+
+        directory += 2;                         // "//" or "\\"
+        *cursor++ = '\\'; *cursor++ = '\\';
+        for (int i = namelen; i > 0; --i) {
+            *cursor++ = *directory++;
+        }
+        *cursor++ = '\\';
+        if (*directory++) {                     // component
+            for (char ch; cursor < end && (ch = *directory++) != 0;) {
+                if (IS_PATH_SEP(ch)) break;
+                *cursor++ = ch;
+            }
+            *cursor++ = '\\';
+        }
+        *cursor = 0;
+
+        errormode = SetErrorMode(0);            // disable hard errors
+        rc = GetVolumeInformationA(rootdir, (LPSTR)NULL, 0,
+                    (LPDWORD)NULL, &maxname, &flags, (LPSTR)NULL, 0);
+        (void) SetErrorMode(errormode);         // restore errors
+
     } else {
-        if ((driveno = w32_getdrive()) == 0)
-            return 0;
-        --driveno;
-    }
-    bName[0] = (char)(driveno + 'A');
+        char rootdir[4] = "x:\\";
+        int driveno;
 
-    errormode = SetErrorMode(0);                // disable hard errors
-    rc = GetVolumeInformationA(bName, (LPSTR)NULL, 0,
-                (LPDWORD)NULL, &maxname, &flags, (LPSTR)NULL, 0);
-    (void) SetErrorMode(errormode);             // restore errors
+        if (directory &&
+                isalpha((unsigned char)directory[0]) && directory[1] == ':') {
+            driveno = toupper(directory[0]) - 'A';
+        } else {
+            if (0 == (driveno = w32_getdrive())) {
+                return 0;
+            }
+            --driveno;
+        }
+
+        rootdir[0] = (char)(driveno + 'A');
+        errormode = SetErrorMode(0);            // disable hard errors
+        rc = GetVolumeInformationA(rootdir, (LPSTR)NULL, 0,
+                    (LPDWORD)NULL, &maxname, &flags, (LPSTR)NULL, 0);
+        (void) SetErrorMode(errormode);         // restore errors
+    }
 
     return ((rc) &&
         (flags & (FS_CASE_SENSITIVE | FS_CASE_IS_PRESERVED))) ? TRUE : FALSE;
@@ -1120,26 +1153,55 @@ dir_ishpfA(const char *directory)
 static int
 dir_ishpfW(const wchar_t *directory)
 {
+    int namelen;
     UINT errormode;
-    int driveno;
-    wchar_t bName[4] = L"x:\\";
-    DWORD flags, maxname;
-    BOOL rc;
+    DWORD flags = 0, maxname;
+    BOOL rc = 0;
 
-    if (directory &&
-            isalpha((unsigned char)directory[0]) && directory[1] == ':') {
-        driveno = toupper(directory[0]) - 'A';
+    if ((namelen = w32_unc_validW(directory)) > 0) {
+        wchar_t rootdir[MAXHOSTNAMELEN + MAX_PATH], 
+           *cursor = rootdir, *end = cursor + (_countof(rootdir) - 4);
+
+        directory += 2;                         // "//" or "\\"
+        *cursor++ = '\\'; *cursor++ = '\\';
+        for (int i = namelen; i > 0; --i) {
+            *cursor++ = *directory++;
+        }
+        *cursor++ = '\\';
+        if (*directory++) {                     // component
+            for (wchar_t ch; cursor < end && (ch = *directory++) != 0;) {
+                if (IS_PATH_SEP(ch)) break;
+                *cursor++ = ch;
+            }
+            *cursor++ = '\\';
+        }
+        *cursor = 0;
+
+        errormode = SetErrorMode(0);            // disable hard errors
+        rc = GetVolumeInformationW(rootdir, (LPWSTR)NULL, 0,
+                    (LPDWORD)NULL, &maxname, &flags, (LPWSTR)NULL, 0);
+        (void) SetErrorMode(errormode);         // restore errors
+
     } else {
-        if ((driveno = w32_getdrive()) == 0)
-            return 0;
-        --driveno;
-    }
-    bName[0] = (char)(driveno + 'A');
+        wchar_t rootdir[4] = L"x:\\";
+        int driveno;
 
-    errormode = SetErrorMode(0);                // disable hard errors
-    rc = GetVolumeInformationW(bName, (LPWSTR)NULL, 0,
-                (LPDWORD)NULL, &maxname, &flags, (LPWSTR)NULL, 0);
-    (void) SetErrorMode(errormode);             // restore errors
+        if (directory &&
+                isalpha((unsigned char)directory[0]) && directory[1] == ':') {
+            driveno = toupper(directory[0]) - 'A';
+        } else {
+            if (0 == (driveno = w32_getdrive())) {
+                return 0;
+            }
+            --driveno;
+        }
+
+        rootdir[0] = (char)(driveno + 'A');
+        errormode = SetErrorMode(0);            // disable hard errors
+        rc = GetVolumeInformationW(rootdir, (LPWSTR)NULL, 0,
+                    (LPDWORD)NULL, &maxname, &flags, (LPWSTR)NULL, 0);
+        (void) SetErrorMode(errormode);         // restore errors
+    }
 
     return ((rc) &&
         (flags & (FS_CASE_SENSITIVE | FS_CASE_IS_PRESERVED))) ? TRUE : FALSE;

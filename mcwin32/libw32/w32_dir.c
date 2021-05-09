@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.12 2021/05/07 17:52:55 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.13 2021/05/09 11:02:23 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -33,7 +33,7 @@ __CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.12 2021/05/07 17:52:55 cvsuser 
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
  */
@@ -56,9 +56,12 @@ __CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.12 2021/05/07 17:52:55 cvsuser 
 
 #include "win32_direct.h"
 
-const char *            x_w32_cwdd[26];         /* current working directory, per drive */
+int                     x_w32_cwdn = 0;         /* current/last working drive number, A=1 etc */
+const char *            x_w32_cwdd[26] = {0};   /* current working directory, per drive */
 const char *            x_w32_vfscwd = NULL;    /* virtual UNC path, if any */
 
+static int              set_vfs_directoryA(const char *path);
+static int              set_vfs_directoryW(const wchar_t *path);
 static void             cache_directory(void);
 
 
@@ -286,36 +289,18 @@ w32_chdirA(const char *path)
             if (! success) {
                 w32_errno_set();
             } else {
-                isunc = w32_unc_validA(lnkbuf, NULL);
+                isunc = w32_unc_validA(lnkbuf);
             }
         }
     } else {
-        isunc = w32_unc_validA(path, NULL);
+        isunc = w32_unc_validA(path);
     }
 
     if (! success) {
-        int serverlen = 0;
-
-        if (w32_unc_rootA(path, &serverlen) > 0) {
-
-            free((void *)x_w32_vfscwd);
-            if (NULL != (x_w32_vfscwd = malloc(serverlen + 4))) {
-                char *cursor = (char *)x_w32_vfscwd;
-
-                path += 2;                      // "//" or "\\"
-                *cursor++ = '/'; *cursor++ = '/';
-                while (serverlen-- > 0) {
-                    *cursor++ = toupper((unsigned char)*path++);
-                }
-                *cursor++ = '/';
-                *cursor = 0;
-                return 0;
-            }
-        }
-        return -1;
+        return set_vfs_directoryA(path);
     }
 
-    free((void *)x_w32_vfscwd), x_w32_vfscwd = NULL;
+    set_vfs_directoryA(NULL);
     if (! isunc) cache_directory();
 
     return 0;
@@ -343,39 +328,85 @@ w32_chdirW(const wchar_t *path)
             if (! success) {
                 w32_errno_set();
             } else {
-                isunc = w32_unc_validW(lnkbuf, NULL);
+                isunc = w32_unc_validW(lnkbuf);
             }
         }
     } else {
-        isunc = w32_unc_validW(path, NULL);
+        isunc = w32_unc_validW(path);
     }
 
     if (! success) {
-        int serverlen = 0;
+        return set_vfs_directoryW(path);
+    }
 
-        if (w32_unc_rootW(path, &serverlen) > 0) {
+    set_vfs_directoryW(NULL);
+    if (! isunc) cache_directory();
 
-            free((void *)x_w32_vfscwd);
-            if (NULL != (x_w32_vfscwd = malloc(serverlen + 4))) {
+    return 0;
+}
+
+
+static int
+set_vfs_directoryA(const char *path)
+{
+    free((void *)x_w32_vfscwd);
+    x_w32_vfscwd = NULL;
+
+    if (path) {
+        int serverlen;
+
+        if ((serverlen = w32_unc_validA(path)) > 0) {
+
+            serverlen += 4;                     // delimiters
+            if (NULL != (x_w32_vfscwd = malloc(serverlen))) {
                 char *cursor = (char *)x_w32_vfscwd;
 
                 path += 2;                      // "//" or "\\"
                 *cursor++ = '/'; *cursor++ = '/';
-                while (serverlen-- > 0) {
+                for (int i = serverlen - 4; i > 0; --i) {
                     *cursor++ = toupper((unsigned char)*path++);
                 }
                 *cursor++ = '/';
                 *cursor = 0;
+                assert(cursor <= (x_w32_vfscwd + serverlen));
                 return 0;
             }
         }
-        return -1;
     }
+    return -1;
+}
 
-    free((void *)x_w32_vfscwd), x_w32_vfscwd = NULL;
-    if (! isunc) cache_directory();
 
-    return 0;
+static int
+set_vfs_directoryW(const wchar_t *path)
+{
+    free((void *)x_w32_vfscwd);
+    x_w32_vfscwd = NULL;
+
+    if (path) {
+        int serverlen;
+
+        if ((serverlen = w32_unc_validW(path)) > 0) {
+
+            serverlen += 4;                     // delimiters
+            if (NULL != (x_w32_vfscwd = malloc(serverlen))) {
+                char *cursor = (char *)x_w32_vfscwd;
+
+                path += 2;                      // "//" or "\\"
+                // Valid characters for hostnames are ASCII(7), letters from a to z,
+                // the digits from 0 to 9, and the hyphen (-).
+                *cursor++ = '/'; *cursor++ = '/';
+                for (int i = serverlen - 4; i > 0; --i) {
+                    *cursor++ = toupper((unsigned char)*path++);
+                }
+                *cursor++ = '/';
+                *cursor = 0;
+                assert(cursor <= (x_w32_vfscwd + serverlen));
+                return 1;
+            }
+        }
+    }
+    return -1;
 }
 
 
@@ -386,14 +417,15 @@ cache_directory()
 
     if (w32_getcwd(t_cwd, sizeof(t_cwd))) {
         if (isalpha((unsigned char)t_cwd[0]) && ':' == t_cwd[1]) {
-            const unsigned nDrive = toupper(t_cwd[0]) - 'A';
+            const unsigned driveno = toupper(t_cwd[0]) - 'A';
             char env_var[4] = { "=X:" };
 
             /*
              *  Cache drive specific directory
              */
-            free((char *)x_w32_cwdd[nDrive]);
-            x_w32_cwdd[nDrive] = WIN32_STRDUP(t_cwd);
+            free((char *)x_w32_cwdd[driveno]);
+            x_w32_cwdd[driveno] = WIN32_STRDUP(t_cwd);
+            x_w32_cwdn = driveno + 1;
 
             /*
              *  Update the environment (=)

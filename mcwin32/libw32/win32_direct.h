@@ -33,8 +33,8 @@ struct dirent *         w32_unc_readdirA(DIR *dp);
 struct dirent *         w32_unc_readdirW(DIR *dp);
 int                     w32_unc_closedir(DIR *dp);
 
-int                     w32_unc_validA(const char *path, int *length);
-int                     w32_unc_validW(const wchar_t *path, int *length);
+int                     w32_unc_validA(const char *path);
+int                     w32_unc_validW(const wchar_t *path);
 
 int                     w32_unc_rootA(const char *path, int *length);
 int                     w32_unc_rootW(const wchar_t *path, int *length);
