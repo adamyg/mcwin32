@@ -526,7 +526,8 @@ write_char(SLwchar_Type ch, unsigned cnt)
         ++col;
 
         if (width > 1) {                        /* NULL padding */
-            WCHAR_INFO null = {vio.c_color};
+            WCHAR_INFO null = {0};
+            null.Info = vio.c_color;
             *cursor++ = null;
             ++col;
         }
