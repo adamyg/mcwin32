@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.8 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.9 2021/05/11 13:00:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -244,43 +244,44 @@ issetugid (void)
 LIBW32_API const char *
 getlogin (void)
 {
-    static char buffer[100];                    /* one-shot */
-    DWORD size = sizeof(buffer);
-    const char *p = buffer;
-
-    if (!*p) {
-        p = getenv("USER");
-
-        if (p == NULL) p = getenv("USERNAME");  /* NT */
-
-        if (GetUserNameA(buffer, &size))        /* requires: advapi32.lib */
-            p = buffer;
-
-        if (p == NULL)
-            p = "dosuser";                      /* default */
-
-        if (p != buffer) {
-            strncpy(buffer, p, sizeof(buffer));
-            buffer[ sizeof(buffer)-1 ] = '\0';
-            p = buffer;
-        }
+    static char buffer[MAX_PATH];
+    if (getlogin_r(buffer, sizeof(buffer)) > 0) {
+        return buffer;
     }
-    return p;
+    return NULL;
 }
 
 
 LIBW32_API int
 getlogin_r (char *name, size_t namesize)
 {
-    const char *login = getlogin();
-    size_t length = strlen(login);
+    DWORD size = namesize;
+    const char *p = NULL;
+    int length;
 
-    if (namesize >= length) {
-        errno = ERANGE;
+    if (name == NULL || namesize == 0) {
+        errno = EINVAL;
         return -1;
     }
-    memcpy(name, login, length + 1);
-    return (int)length;
+
+    if (GetUserNameA(name, &size))              /* requires: advapi32.lib */
+        p = name;
+       
+    if (NULL == p) p = getenv("USER");
+    if (NULL == p) p = getenv("USERNAME");      /* NT */
+    if (NULL == p) p = "dosuser";               /* default */
+
+    length = strlen(p);
+    if (p != name) {
+        if (namesize >= (size_t)length) {
+            errno = ERANGE;
+            return -1;
+        }
+        memcpy(name, p, length + 1);
+        p = name;
+    }
+
+    return length;
 }
 
 
