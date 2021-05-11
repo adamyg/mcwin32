@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.15 2021/05/09 11:45:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.16 2021/05/11 12:54:16 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -178,7 +178,7 @@ opendirA(const char *name)
     }
 
     /* Convert path (note, UNC safe) */
-    if (NULL == _fullpath(fullpath, name, sizeof(fullpath))) {
+    if (NULL == w32_realpathA(name, fullpath, _countof(fullpath))) {
         char *last;                             /* unknown, assume DOS */
 
         strncpy(fullpath, name, sizeof(fullpath));
