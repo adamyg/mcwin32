@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.15 2021/05/12 12:29:28 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.16 2021/05/12 15:37:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -495,7 +495,7 @@ cache_directory()
 {
     char t_cwd[WIN32_PATH_MAX] = {0};
 
-    if (w32_getcwd(t_cwd, sizeof(t_cwd))) {
+    if (w32_getcwd(t_cwd, _countof(t_cwd))) {
         if (isalpha((unsigned char)t_cwd[0]) && ':' == t_cwd[1]) {
             const unsigned driveno = toupper(t_cwd[0]) - 'A';
             char env_var[4] = { "=X:" };

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwdd_c,"$Id: w32_getcwdd.c,v 1.2 2021/05/09 11:02:23 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwdd_c,"$Id: w32_getcwdd.c,v 1.3 2021/05/12 15:37:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -146,10 +146,10 @@ w32_getcwddA(char drive, char *path, int size)
         rel[0] = (char)('A' + nDrive);      /* A ... Z */
 
         t_path[0] = 0;
-        if ((ret = GetFullPathNameA(rel, sizeof(t_path), t_path, &file)) == 0) {
+        if ((ret = GetFullPathNameA(rel, _countof(t_path), t_path, &file)) == 0) {
             w32_errno_set();
 
-        } else if (ret >= (DWORD)size || ret >= sizeof(t_path)) {
+        } else if (ret >= (DWORD)size || ret >= _countof(t_path)) {
             errno = ENOMEM;
             
         } else {
@@ -158,7 +158,7 @@ w32_getcwddA(char drive, char *path, int size)
             
             for (in = t_path, out = path; *in; ++in) {
                 if ('~' == *in) {           /* shortname expand */
-                    (void) GetLongPathNameA(t_path, t_path, sizeof(t_path));
+                    (void) GetLongPathNameA(t_path, t_path, _countof(t_path));
                     for (in = t_path, out = path; *in; ++in) {
                         *out++ = ('\\' == *in ? '/' : *in);
                     }
@@ -208,10 +208,10 @@ w32_getcwddW(char drive, wchar_t *path, int size)
         rel[0] = (wchar_t)('A' + nDrive);       /* A ... Z */
 
         t_path[0] = 0;
-        if ((ret = GetFullPathNameW(rel, sizeof(t_path), t_path, &file)) == 0) {
+        if ((ret = GetFullPathNameW(rel, _countof(t_path), t_path, &file)) == 0) {
             w32_errno_set();
 
-        } else if (ret >= (DWORD)size || ret >= sizeof(t_path)) {
+        } else if (ret >= (DWORD)size || ret >= _countof(t_path)) {
             errno = ENOMEM;
             
         } else {
@@ -220,7 +220,7 @@ w32_getcwddW(char drive, wchar_t *path, int size)
             
             for (in = t_path, out = path; *in; ++in) {
                 if ('~' == *in) {               /* shortname expand */
-                    (void) GetLongPathNameW(t_path, t_path, sizeof(t_path));
+                    (void) GetLongPathNameW(t_path, t_path, _countof(t_path));
                     for (in = t_path, out = path; *in; ++in) {
                         *out++ = ('\\' == *in ? '/' : *in);
                     }

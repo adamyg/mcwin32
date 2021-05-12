@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.16 2021/05/11 12:54:16 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.17 2021/05/12 15:37:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -181,8 +181,8 @@ opendirA(const char *name)
     if (NULL == w32_realpathA(name, fullpath, _countof(fullpath))) {
         char *last;                             /* unknown, assume DOS */
 
-        strncpy(fullpath, name, sizeof(fullpath));
-        fullpath[sizeof(fullpath)-1] = 0;
+        strncpy(fullpath, name, _countof(fullpath));
+        fullpath[_countof(fullpath)-1] = 0;
         for (i = 0; fullpath[i]; ++i) {
             if (fullpath[i] == '/') {
                 fullpath[i] = '\\';             /* convert */
@@ -227,7 +227,7 @@ opendirA(const char *name)
         } else if (0 == (FILE_ATTRIBUTE_DIRECTORY & attr)) {
             rc = ENOTDIR;
             if (isshortcutA(path)) {            // possible shortcut
-                if (w32_readlink(path, symlink, sizeof(symlink)) > 0) {
+                if (w32_readlinkA(path, symlink, _countof(symlink)) > 0) {
                     if ((attr = GetFileAttributesA(symlink)) != INVALID_FILE_ATTRIBUTES &&
                             (FILE_ATTRIBUTE_DIRECTORY & attr)) {
                         path = symlink;         // redirect
@@ -247,7 +247,7 @@ opendirA(const char *name)
         }
 
         if (attr & FILE_ATTRIBUTE_REPARSE_POINT) {
-            if (-1 == w32_reparse_readA(path, reparse, sizeof(reparse))) {
+            if (-1 == w32_reparse_readA(path, reparse, _countof(reparse))) {
                 errno = EACCES;
                 return (DIR *)NULL;
             }

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.15 2021/05/12 14:24:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.16 2021/05/12 15:37:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -155,10 +155,10 @@ w32_getcwdA(char *path, int size)
         DWORD ret;
 
         t_path[0] = 0;
-        if ((ret = GetCurrentDirectoryA(sizeof(t_path), t_path)) == 0) {
+        if ((ret = GetCurrentDirectoryA(_countof(t_path), t_path)) == 0) {
             w32_errno_set();
             
-        } else if (ret >= (DWORD)size || ret >= sizeof(t_path)) {
+        } else if (ret >= (DWORD)size || ret >= _countof(t_path)) {
             errno = ENOMEM;
 
         } else {                                /* standardise to the system seperator */
@@ -167,7 +167,7 @@ w32_getcwdA(char *path, int size)
 
             for (in = t_path, out = path; *in; ++in) {
                 if ('~' == *in) {               /* shortname expand */
-                    (void) GetLongPathNameA(t_path, t_path, sizeof(t_path));
+                    (void) GetLongPathNameA(t_path, t_path, _countof(t_path));
                     for (in = t_path, out = path; *in; ++in) {
                         *out++ = ('\\' == *in ? '/' : *in);
                     }
