@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.13 2021/05/09 11:02:23 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.15 2021/05/12 14:24:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -257,6 +257,30 @@ w32_getdrive(void)
         }
     }
     return 0;   // UNC
+}
+
+
+LIBW32_API int
+w32_getsystemdrive(void)
+{
+    wchar_t t_path[WIN32_PATH_MAX];
+    DWORD ret;
+
+    t_path[0] = 0, t_path[1] = 0;
+    if ((ret = GetSystemDirectoryW(t_path, _countof(t_path))) >= 2) {
+        if (t_path[1] == ':') {                 /* X: */
+            const wchar_t ch = t_path[0];
+
+            if (ch >= L'A' && ch <= L'Z') {
+                return (ch - L'A') + 1;
+            }
+
+            if (ch >= L'a' && ch <= L'z') {
+                return (ch - L'a') + 1;
+            }
+        }
+    }
+    return 0;
 }
 
 

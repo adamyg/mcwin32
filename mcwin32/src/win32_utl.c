@@ -1606,7 +1606,8 @@ tilde_expand(const char *directory)
 
 
 /**
- *  Canonicalize path, and return a new path.  Do everything in place.
+ *  Canonicalize path, and return a new path.
+ *  Everything done in-place, hence the result cannot extend the buffer.
  *
  *  The new path differs from path in:
  *      Multiple `/'s are collapsed to a single `/'.
@@ -1629,6 +1630,9 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
     size_t len;
 
     /* Standardise to the system seperator */
+    if (0 == lpath[0]) {
+        return;                                 /* empty */
+    }
     for (s = lpath; *s; ++s) {
         if ('\\' == *s || '/' == *s) {
             *s = PATH_SEP;
@@ -1647,6 +1651,7 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
             if (0 == strcmp(p + 1, "..")) {     /* "//servername/.." --> "X:/" */
                 int driveno = w32_getdrive();
                 if (driveno <= 0) driveno = w32_getlastdrive();
+                if (driveno <= 0) driveno = w32_getsystemdrive();
                 if (driveno > 0) {
                     lpath[0] = driveno + ('A' - 1);
                     lpath[1] = ':';
@@ -1660,8 +1665,9 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
         }
     }
 
-    if (!lpath[0] || !lpath[1])
+    if (0 == lpath[0] || 0 == lpath[1]) {
         return;
+    }
 
     /* DOS'ish
      *  o standardize seperator
@@ -1910,6 +1916,7 @@ mc_realpath(const char *path, char *resolved_path)
     if (NULL == w32_realpath(path, resolved_path /*MAX_PATH*/)) {
         strcpy(resolved_path, path);
     }
+
     unixpath(resolved_path);
     return resolved_path;
 }
