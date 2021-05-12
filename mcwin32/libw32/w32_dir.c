@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.14 2021/05/09 11:45:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.15 2021/05/12 12:29:28 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -60,6 +60,8 @@ int                     x_w32_cwdn = 0;         /* current/last working drive nu
 const char *            x_w32_cwdd[26] = {0};   /* current working directory, per drive */
 const char *            x_w32_vfscwd = NULL;    /* virtual UNC path, if any */
 
+static int              set_root_directoryA(const char *path);
+static int              set_root_directoryW(const wchar_t *path);
 static int              set_vfs_directoryA(const char *path);
 static int              set_vfs_directoryW(const wchar_t *path);
 static void             cache_directory(void);
@@ -271,12 +273,16 @@ w32_chdir(const char *path)
 LIBW32_API int
 w32_chdirA(const char *path)
 {
-    BOOL isunc = FALSE;
-    BOOL success;
+    BOOL success, isunc = FALSE;
+    int root;
 
     if (NULL == path || !*path) {
         errno = EINVAL;
         return -1;
+    }
+
+    if ((root = set_root_directoryA(path)) >= -1) {
+        return root;
     }
 
     success = SetCurrentDirectoryA(path);
@@ -310,12 +316,16 @@ w32_chdirA(const char *path)
 LIBW32_API int
 w32_chdirW(const wchar_t *path)
 {
-    BOOL isunc = FALSE;
-    BOOL success;
+    BOOL success, isunc = FALSE;
+    int root;
 
     if (NULL == path || !*path) {
         errno = EINVAL;
         return -1;
+    }
+
+    if ((root = set_root_directoryW(path)) >= -1) {
+        return root;
     }
 
     success = SetCurrentDirectoryW(path);
@@ -343,6 +353,74 @@ w32_chdirW(const wchar_t *path)
     if (! isunc) cache_directory();
 
     return 0;
+}
+
+
+static int
+set_root_directoryA(const char *path)
+{
+    while (*path) {
+        if (! IS_PATH_SEP(*path)) {
+            return -2;                          // not root
+        }    
+        ++path;
+    }
+
+    /*
+     *  chdir("/") behaviour is context specific, meaning goto root of current drive, 
+     *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
+     *  Also see realpath() and related opendir() usage.
+     */
+    {   char path[4];
+        int driveno = w32_getdrive();
+
+        if (driveno <= 0) driveno = w32_getlastdrive();
+        if (driveno <= 0) driveno = w32_getsystemdrive();
+        if (driveno > 0) {
+            path[0] = driveno + ('A' - 1);
+            path[1] = ':';
+            path[2] = PATH_SEP;
+            path[3] = 0;
+            return w32_chdirA(path);
+        }
+    }
+
+    errno = ENOTDIR;
+    return -1;
+}
+
+
+static int
+set_root_directoryW(const wchar_t *path)
+{
+    while (*path) {
+        if (! IS_PATH_SEP(*path)) {
+            return -2;                          // not root
+        }    
+        ++path;
+    }
+
+    /*
+     *  Generic chdir("/") behaviour is context specific, meaning goto root of current drive, 
+     *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
+     *  Also see realpath() and related opendir() usage.
+     */
+    {   wchar_t path[4];
+        int driveno = w32_getdrive();
+
+        if (driveno <= 0) driveno = w32_getlastdrive();
+        if (driveno <= 0) driveno = w32_getsystemdrive();
+        if (driveno > 0) {
+            path[0] = driveno + ('A' - 1);
+            path[1] = ':';
+            path[2] = PATH_SEP;
+            path[3] = 0;
+            return w32_chdirW(path);
+        }
+    }
+
+    errno = ENOTDIR;
+    return -1;
 }
 
 

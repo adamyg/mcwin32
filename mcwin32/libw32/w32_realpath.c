@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.4 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.5 2021/05/12 12:29:29 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -157,6 +157,25 @@ w32_realpathA(const char *path, char *resolved_path, int maxlen)
                 // malloc() shall set errno on error.
         }
 
+        if (result) {                           // root
+            /*
+             *  Generic chdir("/") behaviour is context specific, meaning goto root of current drive, 
+             *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
+             */
+            if (('/' == path[0] || '\\' == path[0]) && 0 == path[1]) {
+                int driveno = w32_getdrive();   // also see chdir()
+                if (driveno <= 0) driveno = w32_getlastdrive();
+                if (driveno <= 0) driveno = w32_getsystemdrive();
+                if (driveno > 0) {
+                    result[0] = driveno + ('A' - 1);
+                    result[1] = ':';
+                    result[2] = '/';
+                    result[3] = 0;
+                    return result;
+                }
+            }
+        }
+
         if (result) {                           // resolve symlink component    
             if (w32_lnkexpandA(path, symlink, _countof(symlink), SHORTCUT_COMPONENT)) {
                 path = symlink;
@@ -261,6 +280,25 @@ w32_realpathW(const wchar_t *path, wchar_t *resolved_path, int maxlen)
             maxlen = WIN32_PATH_MAX;
             result = (wchar_t *)malloc(sizeof(wchar_t) * maxlen);
                 // malloc() shall set errno on error.
+        }
+
+        if (result) {                           // root
+            /*
+             *  Generic chdir("/") behaviour is context specific, meaning goto root of current drive, 
+             *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
+             */
+            if (('/' == path[0] || '\\' == path[0]) && 0 == path[1]) {
+                int driveno = w32_getdrive();
+                if (driveno <= 0) driveno = w32_getlastdrive();
+                if (driveno <= 0) driveno = w32_getsystemdrive();
+                if (driveno > 0) {
+                    result[0] = driveno + ('A' - 1);
+                    result[1] = ':';
+                    result[2] = '/';
+                    result[3] = 0;
+                    return result;
+                }
+            }
         }
 
         if (result) {                           // resolve symlink component    
