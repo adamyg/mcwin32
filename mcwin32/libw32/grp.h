@@ -1,14 +1,14 @@
 #ifndef LIBW32_GRP_H_INCLUDED
 #define LIBW32_GRP_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_grp_h,"$Id: grp.h,v 1.5 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_grp_h,"$Id: grp.h,v 1.6 2021/05/16 14:40:44 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <grp.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -32,7 +32,8 @@ __CPRAGMA_ONCE
  * ==end==
  */
 
-#include <sys/cdefs.h>
+#include <sys/cdefs.h>                          /* __BEGIN_DECLS, __PDECL */
+#include <sys/utypes.h>                         /* uid_t */
 
 __BEGIN_DECLS
 

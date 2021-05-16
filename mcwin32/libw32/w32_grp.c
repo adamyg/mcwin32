@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_grp_c,"$Id: w32_grp.c,v 1.8 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.9 2021/05/16 14:42:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 pwd() implementation
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -34,17 +34,31 @@ __CIDENT_RCSID(gr_w32_grp_c,"$Id: w32_grp.c,v 1.8 2021/04/13 15:49:34 cvsuser Ex
  * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
- */ 
+ */
+
+#if !defined(_WIN32_WINNT)
+#define _WIN32_WINNT 0x0500
+#endif
 
 #include "win32_internal.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <grp.h>
+#include <assert.h>
 
-static void                 fillin(void);
+#include <sddl.h>                               /* ConvertSidToStringSid */
+#include <Lm.h>
 
-static struct group         grp;
-static int                  counter;
+#pragma comment(lib, "Netapi32.lib")
+
+static void                 fill_groups(void);
+static void                 fill_group(void);
+
+static unsigned             x_groups_count;
+static unsigned             x_cursor;           /* getgrent cursor */
+static struct group         x_group;
+static struct group        *x_groups;
+
 
 /*
 //  NAME
@@ -87,11 +101,11 @@ static int                  counter;
 LIBW32_API struct group *
 getgrgid(int gid)
 {
-    fillin();
-    if (gid != grp.gr_gid) {
-        return NULL;
+    fill_group();
+    if (gid == x_group.gr_gid) { 
+        return &x_group;
     }
-    return &grp;
+    return NULL;
 }
 
 
@@ -102,6 +116,8 @@ getgrgid(int gid)
 //  SYNOPSIS
 //      #include <grp.h>
 //      struct group *getgrnam(const char *name);
+//      int getgrnam_r(const char *name, struct group *grp, char *buffer,
+//              size_t bufsize, struct group **result);
 //
 //  DESCRIPTION
 //      The getgrnam() function shall search the group database for an entry with a
@@ -109,6 +125,14 @@ getgrgid(int gid)
 //
 //      The getgrnam() function need not be reentrant. A function that is not required to
 //      be reentrant is not required to be thread-safe.
+//
+//      The getgrnam_r() function shall update the group structure pointed to by grp and store 
+//      a pointer to that structure at the location pointed to by result. The structure shall
+//      contain an entry from the group database with a matching gid or name. Storage referenced
+//      by the group structure is allocated from the memory provided with the buffer parameter,
+//      which is bufsize bytes in size. The maximum size needed for this buffer can be determined
+//      with the {_SC_GETGR_R_SIZE_MAX} sysconf() parameter. A NULL pointer is returned at the 
+//      location pointed to by result on error or if the requested entry is not found.
 //
 //  RETURN VALUE
 //      The getgrnam() function shall return a pointer to a struct group with the structure
@@ -130,15 +154,23 @@ getgrgid(int gid)
 //          {OPEN_MAX} file descriptors are currently open in the calling process.
 //      [ENFILE]
 //          The maximum allowable number of files is currently open in the system.
+//
+//      The getgrnam_r() function may fail if:
+//
+//      [ERANGE]
+//          Insufficient storage was supplied via buffer and bufsize to contain the data to
+//          be referenced by the resulting group structure.
 */
 LIBW32_API struct group *
-getgrnam(const char * n)
+getgrnam(const char *name)
 {
-    fillin();
-    if (strcmp(n, grp.gr_name) != 0) {
-        return NULL;
+    if (name) {
+        fill_group();
+        if (0 == _stricmp(name, x_group.gr_name)) {
+            return &x_group;
+        }
     }
-    return &grp;
+    return NULL;
 }
 
 
@@ -151,7 +183,7 @@ getgrnam(const char * n)
 //
 //      void endgrent(void);
 //      struct group *getgrent(void);
-//      void setgrent(void); [Option End]
+//      void setgrent(void);
 //
 //  DESCRIPTION
 //      The getgrent() function shall return a pointer to a structure containing the
@@ -200,16 +232,16 @@ getgrnam(const char * n)
 LIBW32_API void
 setgrent(void)
 {
-    counter = 0;
+    x_cursor = 0;
 }
 
 
 LIBW32_API struct group *
 getgrent(void)
 {
-    if (counter++ == 0) {
-        fillin();
-        return &grp;
+    if (0 == x_cursor++) {
+        fill_groups();
+        return &x_group;
     }
     return NULL;
 }
@@ -218,16 +250,7 @@ getgrent(void)
 LIBW32_API void
 endgrent(void)
 {
-    counter = 1;
-}
-
-
-static void
-fillin(void)
-{
-    grp.gr_name     = "user";
-    grp.gr_passwd   = "*";
-    grp.gr_gid      = w32_getgid();
+    x_cursor = 1;
 }
 
 
@@ -273,14 +296,13 @@ getgroups(int gidsetsize, gid_t grouplist[])
 {
     if (gidsetsize >= 1) {
         if (grouplist) {
-            grouplist[0] = 42;
+            grouplist[0] = w32_getgid();
             return 1;
         }
     }
     errno = EINVAL;
     return -1;
 }
-
 
 
 /*
@@ -321,6 +343,84 @@ setgroups(size_t size, const gid_t *gidset)
     (void) gidset;
     errno = EINVAL;
     return -1;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//  group's database implementation
+
+static void
+fill_groups(void)
+{
+    DWORD i, dwEntriesRead = 0, dwTotalEntries = 0;
+    PGROUP_INFO_2 groups = NULL;
+    NET_API_STATUS nStatus;
+//  wchar_t t_buffer[1024];
+
+    fill_group();
+    if (NULL != x_groups)
+        return;
+
+    nStatus = NetGroupEnum(NULL, 2 /*GROUP_INFO_2*/, (LPBYTE*) &groups, 
+                MAX_PREFERRED_LENGTH, &dwEntriesRead, &dwTotalEntries, NULL);
+
+    if (NERR_Success == nStatus) {
+        unsigned bufsize = 0, total = 0;
+        char name[MAX_PATH];
+        int nlen;
+
+        for (i = 0; i < dwEntriesRead; ++i) {
+            const PGROUP_INFO_2 group = groups + i;
+
+//          swprintf_s(t_buffer, _countof(t_buffer), L"Group:%s,FullName:%s,RID:%u\n",
+//              group->grpi2_name, group->grpi2_comment, (unsigned)group->grpi2_group_id);
+//          OutputDebugStringW(t_buffer);
+
+            if (group->grpi2_group_id == x_group.gr_gid ||
+                    (nlen = w32_wc2utf(group->grpi2_name, name, sizeof(name))) <= 0) {
+                continue;
+            }
+            bufsize += (nlen + 1);
+            ++total;
+        }
+
+        x_groups = (struct group *)malloc((sizeof(struct group) * total) + bufsize + 1 /*non-zero*/);
+        if (NULL != x_groups) {
+            struct group *grp = x_groups;
+            char *cursor = (char *)(grp + total);
+
+            for (i = 0; i < dwEntriesRead; ++i) {
+                const PGROUP_INFO_2 group = groups + i;
+
+                if (group->grpi2_group_id == x_group.gr_gid ||
+                        (nlen = w32_wc2utf(group->grpi2_name, cursor, bufsize)) <= 0) {
+                    continue;
+                }
+
+                memset(grp, 0, sizeof(*grp));
+                grp->gr_name = cursor;
+                grp->gr_gid  = (int)group->grpi2_group_id;
+                cursor  += (nlen + 1);
+                bufsize -= (nlen + 1);
+                ++x_groups_count;
+                ++grp;
+            }
+
+            assert(total == x_groups_count);
+            assert(0 == bufsize);
+        }
+    }
+    if (groups) NetApiBufferFree(groups);
+}
+
+
+static void
+fill_group(void)
+{   
+    x_group.gr_name     = w32_group_user();
+    x_group.gr_passwd   = "*";
+    x_group.gr_gid      = w32_getgid();
+    x_group.gr_mem      = NULL;
 }
 
 /*end*/
