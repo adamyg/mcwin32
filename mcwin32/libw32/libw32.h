@@ -33,7 +33,7 @@
 #include <win32_time.h>
 #include <win32_child.h>
 #include <win32_io.h>
-#include <win32_dirent.h>
+#include <win32_direct.h>
 #include <win32_misc.h>
 
 #endif /*LIBW32_WIN32_H_INCLUDED*/
