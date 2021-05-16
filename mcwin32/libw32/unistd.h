@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.23 2021/05/09 11:33:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.24 2021/05/16 12:27:31 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -519,6 +519,8 @@ LIBW32_API int          w32_lstat (const char *path, struct stat *sb);
 LIBW32_API int          w32_lstatA (const char *path, struct stat *sb);
 LIBW32_API int          w32_lstatW (const wchar_t *path, struct stat *sb);
 LIBW32_API int          w32_fstat (int fd, struct stat *sb);
+LIBW32_API int          w32_fstatA (int fd, struct stat *sb);
+LIBW32_API int          w32_fstatW (int fd, struct stat *sb);
 LIBW32_API int          w32_read (int fd, void *buffer, size_t cnt);
 LIBW32_API int          w32_write (int fd, const void *buffer, size_t cnt);
 LIBW32_API int          w32_close (int fd);

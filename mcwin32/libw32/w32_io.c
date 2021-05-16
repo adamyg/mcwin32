@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.18 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.19 2021/05/16 14:45:24 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -50,6 +50,9 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.18 2021/05/07 17:52:56 cvsuser Ex
 #endif
 #include <shlobj.h>                             /* shell interface */
 #include <shlwapi.h>                            /* wide-char support */
+#include <accctrl.h>
+#include <aclapi.h>
+#include <sddl.h>
 #define PSAPI_VERSION       1                   /* GetMappedFileName and psapi.dll */
 #include <psapi.h>
 
@@ -86,27 +89,43 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.18 2021/05/07 17:52:56 cvsuser Ex
 #pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
 #endif
 
+typedef DWORD (WINAPI *GetFinalPathNameByHandleW_t)(
+                        HANDLE hFile, LPWSTR lpszFilePath, DWORD length, DWORD dwFlags);
+
 typedef DWORD (WINAPI *GetFinalPathNameByHandleA_t)(
                         HANDLE hFile, LPSTR lpszFilePath, DWORD length, DWORD dwFlags);
 
+typedef BOOL  (WINAPI *CreateSymbolicLinkW_t)(
+                        LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
+
 typedef BOOL  (WINAPI *CreateSymbolicLinkA_t)(
-                        LPCSTR lpSymlinkFileName, LPCSTR lpTargetFileName, DWORD  dwFlags);
+                        LPCSTR lpSymlinkFileName, LPCSTR lpTargetFileName, DWORD dwFlags);
 
 typedef BOOL  (WINAPI *GetVolumeInformationByHandleW_t)(
                         HANDLE hFile, LPWSTR lpVolumeNameBuffer, DWORD nVolumeNameSize, LPDWORD lpVolumeSerialNumber,
                             LPDWORD lpMaximumComponentLength, LPDWORD lpFileSystemFlags, LPWSTR lpFileSystemNameBuffer, DWORD nFileSystemNameSize);
 
-static DWORD                my_GetFinalPathNameByHandle(HANDLE handle, char *name, int length);
-static DWORD WINAPI         my_GetFinalPathNameByHandleImp(HANDLE handle, LPSTR name, DWORD length, DWORD dwFlags);
+static DWORD                my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR name, int length);
+static DWORD WINAPI         my_GetFinalPathNameByHandleWImp(HANDLE handle, LPWSTR name, DWORD length, DWORD dwFlags);
 
-static BOOL                 my_CreateSymbolicLink(const char *lpSymlinkFileName, const char *lpTargetFileName, DWORD dwFlags);
-static BOOL WINAPI          my_CreateSymbolicLinkImp(LPCSTR lpSymlinkFileName, LPCSTR lpTargetFileName, DWORD dwFlags);
+static DWORD                my_GetFinalPathNameByHandleA(HANDLE handle, LPSTR name, int length);
+static DWORD WINAPI         my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR name, DWORD length, DWORD dwFlags);
+
+static DWORD                my_GetFinalPathNameByHandleA(HANDLE handle, LPSTR name, int length);
+static DWORD WINAPI         my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR name, DWORD length, DWORD dwFlags);
+
+static BOOL                 my_CreateSymbolicLinkW(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
+static BOOL WINAPI          my_CreateSymbolicLinkWImp(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
+
+static BOOL                 my_CreateSymbolicLinkA(const char *lpSymlinkFileName, const char *lpTargetFileName, DWORD dwFlags);
+static BOOL WINAPI          my_CreateSymbolicLinkAImp(const char *lpSymlinkFileName, const char *lpTargetFileName, DWORD dwFlags);
 static BOOL                 isshortcut(const char *name);
 
 static void                 ApplyAttributesA(struct stat *sb, const DWORD dwAttr, const char *name, const char *magic);
 static void                 ApplyAttributesW(struct stat *sb, const DWORD dwAttr, const wchar_t *name, const char *magic);
+static void                 ApplyOwner(struct stat *sb,  const DWORD dwAttributes, HANDLE handle);
 static void                 ApplyTimes(struct stat *sb, const FILETIME *ftCreationTime,
-                                            const FILETIME *ftLastAccessTime, const FILETIME *ftLastWriteTime);
+                                    const FILETIME *ftLastAccessTime, const FILETIME *ftLastWriteTime);
 static void                 ApplySize(struct stat *sb, const DWORD nFileSizeLow, const DWORD nFileSizeHigh);
 static time_t               ConvertTime(const FILETIME *ft);
 
@@ -522,6 +541,21 @@ w32_lstatW(const wchar_t *path, struct stat *sb)
 LIBW32_API int
 w32_fstat(int fd, struct stat *sb)
 {
+#if defined(UTF8FILENAMES)
+    return w32_fstatW(fd, sb);
+    
+#else
+    return w32_fstatA(fd, sb);
+
+#endif  //UTF8FILENAMES
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+LIBW32_API int
+w32_fstatW(int fd, struct stat *sb)
+{
     HANDLE handle;
     int ret = 0;
 
@@ -553,12 +587,13 @@ w32_fstat(int fd, struct stat *sb)
                     BY_HANDLE_FILE_INFORMATION fi = {0};
 
                     if (GetFileInformationByHandle(handle, &fi)) {
-                        char t_name[MAX_PATH], *name = NULL;
+                        wchar_t t_name[MAX_PATH], *name = NULL;
 
-                        if (my_GetFinalPathNameByHandle(handle, t_name, sizeof(t_name))) {
+                        if (my_GetFinalPathNameByHandleW(handle, t_name, _countof(t_name))) {
                             name = t_name;      // resolved filename.
                         }
-                        ApplyAttributesA(sb, fi.dwFileAttributes, name, NULL);
+                        ApplyAttributesW(sb, fi.dwFileAttributes, name, NULL);
+                        ApplyOwner(sb, fi.dwFileAttributes, handle);
                         ApplyTimes(sb, &fi.ftCreationTime, &fi.ftLastAccessTime, &fi.ftLastWriteTime);
                         ApplySize(sb, fi.nFileSizeLow, fi.nFileSizeHigh);
                         if (fi.nNumberOfLinks > 0) {
@@ -597,7 +632,180 @@ w32_fstat(int fd, struct stat *sb)
 
 
 static DWORD
-my_GetFinalPathNameByHandle(HANDLE handle, char *path, int length)
+my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR path, int length)
+{
+    static GetFinalPathNameByHandleW_t x_GetFinalPathNameByHandleW = NULL;
+
+    if (NULL == x_GetFinalPathNameByHandleW) {
+        HINSTANCE hinst;                        // Vista+
+
+        if (0 == (hinst = LoadLibraryA("Kernel32")) ||
+                0 == (x_GetFinalPathNameByHandleW =
+                            (GetFinalPathNameByHandleW_t)GetProcAddress(hinst, "GetFinalPathNameByHandleW"))) {
+                                                // XP+
+            x_GetFinalPathNameByHandleW = my_GetFinalPathNameByHandleWImp;
+            (void)FreeLibrary(hinst);
+        }
+    }
+
+#ifndef FILE_NAME_NORMALIZED
+#define FILE_NAME_NORMALIZED 0
+#define VOLUME_NAME_DOS 0
+#endif
+
+    return x_GetFinalPathNameByHandleW(handle, path, length, FILE_NAME_NORMALIZED | VOLUME_NAME_DOS);
+}
+
+
+static DWORD WINAPI
+my_GetFinalPathNameByHandleWImp(HANDLE handle, LPWSTR path, DWORD length, DWORD flags)
+{                                               // Determine underlying file-name, XP+
+    HANDLE map;
+    DWORD ret;
+
+    __CUNUSED(flags)
+
+    if (0 == GetFileSize(handle, &ret) && 0 == ret) {
+        return 0;                               // Cannot map a file with a length of zero
+    }
+
+    ret = 0;
+
+    if (0 != (map = CreateFileMappingW(handle, NULL, PAGE_READONLY, 0, 1, NULL))) {
+        LPVOID pmem = MapViewOfFile(map, FILE_MAP_READ, 0, 0, 1);
+
+        if (pmem) {                             // XP+
+            if (GetMappedFileNameW(GetCurrentProcess(), pmem, path, length)) {
+                //
+                //  Translate path with device name to drive letters, for example:
+                //
+                //      \Device\Volume4\<path>
+                //      => F:\<path>
+                //
+                wchar_t t_drives[512] = {0};    // 27*4 ...
+
+                if (GetLogicalDriveStringsW(sizeof(t_drives) - 1, t_drives)) {
+
+                    BOOL found = FALSE;
+                    const wchar_t *p = t_drives;
+                    wchar_t t_name[MAX_PATH];
+                    wchar_t t_drive[3] = L" :";
+
+                    do {                        // Look up each device name
+                        t_drive[0] = *p;
+
+                        if (QueryDosDeviceW(t_drive, t_name, _countof(t_name) - 1)) {
+                            const size_t namelen = wcslen(t_name);
+
+                            if (namelen < MAX_PATH) {
+                                found = (0 == _wcsnicmp(path, t_name, namelen) && path[namelen] == '\\');
+
+                                if (found) {    // Reconstruct path, replacing device with drive
+                                    wmemmove(path + 3, path + namelen, wcslen(path + namelen) + 1);
+                                    path[0] = *p;
+                                    path[1] = ':';
+                                    path[2] = '\\';
+                                    ret = 1;
+                                    break;
+                                }
+                            }
+                        }
+
+                        while (*p++);           // Go to the next NULL character.
+
+                    } while (!found && *p);     // end of string
+                }
+            }
+            (void) UnmapViewOfFile(pmem);
+        }
+        (void) CloseHandle(map);
+    }
+    return ret;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+LIBW32_API int
+w32_fstatA(int fd, struct stat *sb)
+{
+    HANDLE handle;
+    int ret = 0;
+
+    if (NULL == sb) {
+        ret = -EFAULT;
+
+    } else {
+        memset(sb, 0, sizeof(struct stat));
+
+        if (fd < 0) {
+            ret = -EBADF;
+
+        } else if ((handle = ((HANDLE) _get_osfhandle(fd))) == INVALID_HANDLE_VALUE) {
+                                                // socket, a named pipe, or an anonymous pipe.
+            if (fd > WIN32_FILDES_MAX && FILE_TYPE_PIPE == GetFileType((HANDLE) fd)) {
+                sb->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
+                sb->st_mode |= S_IFIFO;
+                sb->st_dev = sb->st_rdev = 1;
+
+            } else {
+                ret = -EBADF;
+            }
+
+        } else {
+            const DWORD ftype = GetFileType(handle);
+
+            switch (ftype) {
+            case FILE_TYPE_DISK: {              // disk file.
+                    BY_HANDLE_FILE_INFORMATION fi = {0};
+
+                    if (GetFileInformationByHandle(handle, &fi)) {
+                        char t_name[MAX_PATH], *name = NULL;
+
+                        if (my_GetFinalPathNameByHandleA(handle, t_name, sizeof(t_name))) {
+                            name = t_name;      // resolved filename.
+                        }
+                        ApplyAttributesA(sb, fi.dwFileAttributes, name, NULL);
+                        ApplyOwner(sb, fi.dwFileAttributes, handle);
+                        ApplyTimes(sb, &fi.ftCreationTime, &fi.ftLastAccessTime, &fi.ftLastWriteTime);
+                        ApplySize(sb, fi.nFileSizeLow, fi.nFileSizeHigh);
+                        if (fi.nNumberOfLinks > 0) {
+                            sb->st_nlink = (int)fi.nNumberOfLinks;
+                        }
+                    }
+                }
+                break;
+
+            case FILE_TYPE_CHAR:                // character file, typically an LPT device or a console.
+            case FILE_TYPE_PIPE:                // socket, a named pipe, or an anonymous pipe.
+                sb->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
+                if (FILE_TYPE_PIPE == ftype) {
+                    sb->st_mode |= S_IFIFO;
+                } else {
+                    sb->st_mode |= S_IFCHR;
+                }
+                sb->st_dev = sb->st_rdev = 1;
+                break;
+
+            case FILE_TYPE_REMOTE:
+            case FILE_TYPE_UNKNOWN:             // others
+            default:
+                ret = -EBADF;
+                break;
+            }
+        }
+    }
+
+    if (ret < 0) {
+        errno = -ret;
+        return -1;
+    }
+    return 0;
+}
+
+
+static DWORD
+my_GetFinalPathNameByHandleA(HANDLE handle, char *path, int length)
 {
     static GetFinalPathNameByHandleA_t x_GetFinalPathNameByHandleA = NULL;
 
@@ -606,9 +814,9 @@ my_GetFinalPathNameByHandle(HANDLE handle, char *path, int length)
 
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_GetFinalPathNameByHandleA =
-                            (GetFinalPathNameByHandleA_t)GetProcAddress(hinst, "GetFinalPathNameByHandleA"))) {
+                          (GetFinalPathNameByHandleA_t)GetProcAddress(hinst, "GetFinalPathNameByHandleA"))) {
                                                 // XP+
-            x_GetFinalPathNameByHandleA = my_GetFinalPathNameByHandleImp;
+            x_GetFinalPathNameByHandleA = my_GetFinalPathNameByHandleAImp;
             (void)FreeLibrary(hinst);
         }
     }
@@ -623,7 +831,7 @@ my_GetFinalPathNameByHandle(HANDLE handle, char *path, int length)
 
 
 static DWORD WINAPI
-my_GetFinalPathNameByHandleImp(HANDLE handle, LPSTR path, DWORD length, DWORD flags)
+my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR path, DWORD length, DWORD flags)
 {                                               // Determine underlying file-name, XP+
     HANDLE map;
     DWORD ret;
@@ -636,7 +844,7 @@ my_GetFinalPathNameByHandleImp(HANDLE handle, LPSTR path, DWORD length, DWORD fl
 
     ret = 0;
 
-    if (0 != (map = CreateFileMapping(handle, NULL, PAGE_READONLY, 0, 1, NULL))) {
+    if (0 != (map = CreateFileMappingA(handle, NULL, PAGE_READONLY, 0, 1, NULL))) {
         LPVOID pmem = MapViewOfFile(map, FILE_MAP_READ, 0, 0, 1);
 
         if (pmem) {                             // XP+
@@ -645,7 +853,6 @@ my_GetFinalPathNameByHandleImp(HANDLE handle, LPSTR path, DWORD length, DWORD fl
                 //  Translate path with device name to drive letters, for example:
                 //
                 //      \Device\Volume4\<path>
-                //
                 //      => F:\<path>
                 //
                 char t_drives[512] = {0};       // 27*4 ...
@@ -664,21 +871,15 @@ my_GetFinalPathNameByHandleImp(HANDLE handle, LPSTR path, DWORD length, DWORD fl
                             const size_t namelen = strlen(t_name);
 
                             if (namelen < MAX_PATH) {
-                                found = (0 == _strnicmp(path, t_name, namelen) &&
-                                                path[namelen] == '\\');
+                                found = (0 == _strnicmp(path, t_name, namelen) && path[namelen] == '\\');
 
-                                if (found) {
-                                    //
-                                    //  Reconstruct path, replacing device path with DOS path
-                                    //
-                                    char t_path[MAX_PATH];
-                                    size_t len;
-
-                                    len = _snprintf(t_path, sizeof(t_path), "%s%s", t_drive, path + namelen);
-                                    t_path[sizeof(t_path) - 1] = 0;
-                                    memcpy(path, (const char *)t_path, (len < length ? len + 1 : length));
-                                    path[length - 1] = 0;
+                                if (found) {    // Reconstruct path, replacing device with drive
+                                    memmove(path + 2, path + namelen, strlen(path + namelen) + 1);
+                                    path[0] = *p;
+                                    path[1] = ':';
+                                    path[2] = '\\';
                                     ret = 1;
+                                    break;
                                 }
                             }
                         }
@@ -687,7 +888,6 @@ my_GetFinalPathNameByHandleImp(HANDLE handle, LPSTR path, DWORD length, DWORD fl
 
                     } while (!found && *p);     // end of string
                 }
-                ret = 1;
             }
             (void) UnmapViewOfFile(pmem);
         }
@@ -936,7 +1136,7 @@ w32_symlink(const char *name1, const char *name2)
             DWORD attrs1, flag =                // Note: Generally only available under an Admin account
                     (((attrs1 = GetFileAttributesA(name1)) != INVALID_FILE_ATTRIBUTES &&
                             (attrs1 & FILE_ATTRIBUTE_DIRECTORY)) ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0);
-            if (! my_CreateSymbolicLink(/*target-link*/name2, /*existing*/name1, flag)) {
+            if (! my_CreateSymbolicLinkA(/*target-link*/name2, /*existing*/name1, flag)) {
                 switch (GetLastError()) {
                 case ERROR_ACCESS_DENIED:
                 case ERROR_SHARING_VIOLATION:
@@ -963,7 +1163,39 @@ w32_symlink(const char *name1, const char *name2)
 
 
 static BOOL
-my_CreateSymbolicLink(const char *lpSymlinkFileName, const char *lpTargetFileName, DWORD dwFlags)
+my_CreateSymbolicLinkW(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags)
+{
+    static CreateSymbolicLinkW_t x_CreateSymbolicLinkW = NULL;
+
+    if (NULL == x_CreateSymbolicLinkW) {
+        HINSTANCE hinst;                        // Vista+
+
+        if (0 == (hinst = LoadLibraryA("Kernel32")) ||
+                0 == (x_CreateSymbolicLinkW =
+                        (CreateSymbolicLinkW_t)GetProcAddress(hinst, "CreateSymbolicLinkW"))) {
+                                                // XP+
+            x_CreateSymbolicLinkW = my_CreateSymbolicLinkWImp;
+            (void) FreeLibrary(hinst);
+        }
+    }
+    return x_CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
+}
+
+
+static BOOL WINAPI
+my_CreateSymbolicLinkWImp(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags)
+{
+    __CUNUSED(lpSymlinkFileName)
+    __CUNUSED(lpTargetFileName)
+    __CUNUSED(dwFlags)
+
+    SetLastError(ERROR_NOT_SUPPORTED);          // not implemented
+    return FALSE;
+}
+
+
+static BOOL
+my_CreateSymbolicLinkA(const char *lpSymlinkFileName, const char *lpTargetFileName, DWORD dwFlags)
 {
     static CreateSymbolicLinkA_t x_CreateSymbolicLinkA = NULL;
 
@@ -974,7 +1206,7 @@ my_CreateSymbolicLink(const char *lpSymlinkFileName, const char *lpTargetFileNam
                 0 == (x_CreateSymbolicLinkA =
                         (CreateSymbolicLinkA_t)GetProcAddress(hinst, "CreateSymbolicLinkA"))) {
                                                 // XP+
-            x_CreateSymbolicLinkA = my_CreateSymbolicLinkImp;
+            x_CreateSymbolicLinkA = my_CreateSymbolicLinkAImp;
             (void) FreeLibrary(hinst);
         }
     }
@@ -983,7 +1215,7 @@ my_CreateSymbolicLink(const char *lpSymlinkFileName, const char *lpTargetFileNam
 
 
 static BOOL WINAPI
-my_CreateSymbolicLinkImp(LPCSTR lpSymlinkFileName, LPCSTR lpTargetFileName, DWORD dwFlags)
+my_CreateSymbolicLinkAImp(const char *lpSymlinkFileName, const char *lpTargetFileName, DWORD dwFlags)
 {
     __CUNUSED(lpSymlinkFileName)
     __CUNUSED(lpTargetFileName)
@@ -1489,13 +1721,6 @@ ApplyAttributesA(struct stat *sb,
     if (sb->st_nlink <= 0) {                    /* assigned by caller? */
         sb->st_nlink = 1;
     }
-
-    if (dwAttributes & FILE_ATTRIBUTE_SYSTEM) {
-        sb->st_uid = sb->st_gid = 0;            /* root */
-    } else {                                    /* current user */
-        sb->st_uid = w32_getuid();
-        sb->st_gid = w32_getgid();
-    }
 }
 
 
@@ -1559,12 +1784,53 @@ ApplyAttributesW(struct stat *sb,
     if (sb->st_nlink <= 0) {                    /* assigned by caller? */
         sb->st_nlink = 1;
     }
+}
 
-    if (dwAttributes & FILE_ATTRIBUTE_SYSTEM) {
-        sb->st_uid = sb->st_gid = 0;            /* root */
-    } else {                                    /* current user */
+
+static unsigned
+RID(PSID sid)
+{
+    // Example: S-1-5-32-544
+    // Returns the last component, 544.
+    const int subAuthorities = *GetSidSubAuthorityCount(sid);
+    if (subAuthorities >= 1) {                  // last sub-authority value.
+        return *GetSidSubAuthority(sid, subAuthorities - 1);
+            // Last component should be the user's relative identifier (RID).
+            // It uniquely defines this user account to SAM within the domain.
+    }
+    return 0;
+}
+
+
+static void
+ApplyOwner(struct stat *sb, const DWORD dwAttributes, HANDLE handle)
+{
+    // Default uid/gid
+    if ((FILE_ATTRIBUTE_SYSTEM & dwAttributes) || 0 == handle) {
+        sb->st_uid = 0;                         // root/system
+        sb->st_gid = 0;     
+    } else {                                    // current user (default)
         sb->st_uid = w32_getuid();
         sb->st_gid = w32_getgid();
+    }
+
+    // Inquire
+    if (handle && INVALID_HANDLE_VALUE != handle) {
+        PSID owner = NULL, group = NULL;
+        int uid = -1, gid = -1;      
+
+        if (GetSecurityInfo(handle, SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION, 
+                &owner, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
+            sb->st_uid = (short) RID(owner);
+                // Note: Unfortunately st_uid/st_gid are short's resulting in RID truncation.
+
+            if (GetSecurityInfo(handle, SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION, 
+                    NULL, &group, NULL, NULL, NULL) == ERROR_SUCCESS) {
+                sb->st_gid = (short) RID(group);
+            } else {
+                sb->st_gid = sb->st_uid;
+            }
+        }
     }
 }
 
@@ -2386,7 +2652,8 @@ StatA(const char *name, struct stat *sb)
     } else {
         HANDLE h = INVALID_HANDLE_VALUE;
         WIN32_FIND_DATAA fb = {0};
-        int root = FALSE, drive = 0;
+        DWORD dwRootAttributes = 0;
+        int drive = 0;
 
         /*
          *  determine the drive .. used as st_dev
@@ -2409,7 +2676,7 @@ StatA(const char *name, struct stat *sb)
                 /*
                  *  root directories
                  */
-                root = 1;
+                dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
                 ret = 0;
 
             } else if (ISSLASH(fullname[0]) && ISSLASH(fullname[1])) {
@@ -2422,7 +2689,7 @@ StatA(const char *name, struct stat *sb)
                 ret = -ENOENT;
                 if (NULL != slash &&
                         (NULL == nextslash || 0 == nextslash[1])) {
-                    root = 2;
+                    dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
                     ret = 0;
                 }
 
@@ -2573,6 +2840,7 @@ StatA(const char *name, struct stat *sb)
                 if (0 == sb->st_ino) {
                     sb->st_ino = w32_ino_hash(fullname);
                 }
+                ApplyOwner(sb, fb.dwFileAttributes, handle);
 
                 CloseHandle(handle);
 
@@ -2584,17 +2852,15 @@ StatA(const char *name, struct stat *sb)
                 }
 #endif //DO_MAGIC
 
-                if (root) {
+                if (dwRootAttributes) {
                     ret = -ENOENT;
                 } else if (0 == (sb->st_ino = w32_ino_file(fullname))) {
                     sb->st_ino = w32_ino_hash(fullname);
+                    ApplyOwner(sb, fb.dwFileAttributes, NULL);
                 }
             }
 
-            if (root) {
-                fb.dwFileAttributes |= FILE_ATTRIBUTE_DIRECTORY;
-            }
-            ApplyAttributesA(sb, fb.dwFileAttributes, fullname, magic);
+            ApplyAttributesA(sb, fb.dwFileAttributes|dwRootAttributes, fullname, magic);
             if (dirsymlink) {
                 // NOTE: Directory reparse-points are hidden, as these are closer to hard-links
                 //          other link types are reclassed as symlinks.
@@ -2658,7 +2924,8 @@ StatW(const wchar_t *name, struct stat *sb)
     } else {
         HANDLE h = INVALID_HANDLE_VALUE;
         WIN32_FIND_DATAW fb = {0};
-        int root = FALSE, drive = 0;
+        DWORD dwRootAttributes = 0;
+        int drive = 0;
 
         /*
          *  determine the drive .. used as st_dev
@@ -2681,7 +2948,7 @@ StatW(const wchar_t *name, struct stat *sb)
                 /*
                  *  root directories
                  */
-                root = 1;
+                dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
                 ret = 0;
 
             } else if (ISSLASH(fullname[0]) && ISSLASH(fullname[1])) {
@@ -2694,7 +2961,7 @@ StatW(const wchar_t *name, struct stat *sb)
                 ret = -ENOENT;
                 if (NULL != slash &&
                         (NULL == nextslash || 0 == nextslash[1])) {
-                    root = 2;
+                    dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
                     ret = 0;
                 }
 
@@ -2747,9 +3014,14 @@ StatW(const wchar_t *name, struct stat *sb)
             DWORD count = 0;
             HANDLE handle;
 
-            if (INVALID_HANDLE_VALUE != (handle =
-                    CreateFileW(fullname, (domagic ? GENERIC_READ : 0), 0, NULL, OPEN_EXISTING,
-                        FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL))) {
+            handle = CreateFileW(fullname, READ_CONTROL, 0, NULL, OPEN_EXISTING,
+                            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL);
+            if (INVALID_HANDLE_VALUE == handle) {
+                handle = CreateFileW(fullname, 0, 0, NULL, OPEN_EXISTING,
+                            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL);
+            }
+
+            if (INVALID_HANDLE_VALUE != handle) {
                 //
                 //  file information
                 //      FILE_FLAG_BACKUP_SEMANTICS      permit directories to be open'ed
@@ -2846,6 +3118,7 @@ StatW(const wchar_t *name, struct stat *sb)
                     sb->st_ino = w32_ino_whash(fullname);
                 }
 
+                ApplyOwner(sb, fb.dwFileAttributes, handle);
                 CloseHandle(handle);
 
             } else {
@@ -2856,17 +3129,15 @@ StatW(const wchar_t *name, struct stat *sb)
                 }
 #endif //DO_MAGIC
 
-                if (root) {
+                if (dwRootAttributes) {
                     ret = -ENOENT;
                 } else if (0 == (sb->st_ino = w32_ino_wfile(fullname))) {
                     sb->st_ino = w32_ino_whash(fullname);
+                    ApplyOwner(sb, fb.dwFileAttributes, NULL);
                 }
             }
 
-            if (root) {
-                fb.dwFileAttributes |= FILE_ATTRIBUTE_DIRECTORY;
-            }
-            ApplyAttributesW(sb, fb.dwFileAttributes, fullname, magic);
+            ApplyAttributesW(sb, fb.dwFileAttributes|dwRootAttributes, fullname, magic);
             if (dirsymlink) {
                 // NOTE: Directory reparse-points are hidden, as these are closer to hard-links
                 //          other link types are reclassed as symlinks.
