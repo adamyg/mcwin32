@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mkstemp_c,"$Id: w32_mkstemp.c,v 1.6 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.7 2021/05/23 10:22:13 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -32,12 +32,16 @@ __CIDENT_RCSID(gr_w32_mkstemp_c,"$Id: w32_mkstemp.c,v 1.6 2021/05/07 17:52:56 cv
  */
 
 #include "win32_internal.h"
+#include "win32_io.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <ctype.h>
+#ifdef HAVE_WCHAR_H
+#include <wchar.h>
+#endif
 #include <unistd.h>
 
 #define DISABLE_HARD_ERRORS     (void)SetErrorMode (0);
@@ -45,48 +49,51 @@ __CIDENT_RCSID(gr_w32_mkstemp_c,"$Id: w32_mkstemp.c,v 1.6 2021/05/07 17:52:56 cv
                                         SEM_NOOPENFILEERRORBOX);
 
 
-/*
-//  NAME
-//      mkstemp - make a unique filename
-//
-//  SYNOPSIS
-//      #include <stdlib.h>
-//
-//      int mkstemp(char *template);
-//
-//  DESCRIPTION
-//
-//      The mkstemp() function shall replace the contents of the string pointed to by
-//      template by a unique filename, and return a file descriptor for the file open for
-//      reading and writing. The function thus prevents any possible race condition between
-//      testing whether the file exists and opening it for use.
-//
-//      The string in template should look like a filename with six trailing 'X' s;
-//      mkstemp() replaces each 'X' with a character from the portable filename character
-//      set. The characters are chosen such that the resulting name does not duplicate the
-//      name of an existing file at the time of a call to mkstemp().
-//
-//      Each successful call to mkstemp modifies template. In each subsequent call from the same
-//      process or thread with the same template argument, mkstemp checks for filenames that
-//      match names returned by mkstemp in previous calls. If no file exists for a given name,
-//      mkstemp returns that name. If files exist for all previously returned names, mkstemp
-//      creates a new name by replacing the alphabetic character it used in the previously
-//      returned name with the next available lowercase letter, in order, from 'a' through 'z'.
-//
-//  RETURN VALUE
-//
-//      Upon successful completion, mkstemp() shall return an open file descriptor.
-//      Otherwise, -1 shall be returned if no suitable file could be created.
-//
-//  ERRORS
-//      No errors are defined.
-*/
+ /*
+ //  NAME
+ //      mkstemp - make a unique filename
+ //
+ //  SYNOPSIS
+ //      #include <stdlib.h>
+ //
+ //      int mkstemp(char *template);
+ //      int mkstemps(char *template, int suffixlen);
+ //
+ //  DESCRIPTION
+ //
+ //      The mkstemp() function shall replace the contents of the string pointed to by
+ //      template by a unique filename, and return a file descriptor for the file open for
+ //      reading and writing. The function thus prevents any possible race condition between
+ //      testing whether the file exists and opening it for use.
+ //
+ //      The string in template should look like a filename with six trailing 'X' s;
+ //      mkstemp() replaces each 'X' with a character from the portable filename character
+ //      set. The characters are chosen such that the resulting name does not duplicate the
+ //      name of an existing file at the time of a call to mkstemp().
+ //
+ //      Each successful call to mkstemp modifies template. In each subsequent call from the same
+ //      process or thread with the same template argument, mkstemp checks for filenames that
+ //      match names returned by mkstemp in previous calls. If no file exists for a given name,
+ //      mkstemp returns that name. If files exist for all previously returned names, mkstemp
+ //      creates a new name by replacing the alphabetic character it used in the previously
+ //      returned name with the next available lowercase letter, in order, from 'a' through 'z'.
+ //
+ //  RETURN VALUE
+ //
+ //      Upon successful completion, mkstemp() shall return an open file descriptor.
+ //      Otherwise, -1 shall be returned if no suitable file could be created.
+ //
+ //  ERRORS
+ //      No errors are defined.
+ */
 
 #define GETTEMP_SUCCESS     1
 #define GETTEMP_ERROR       0
 
-static int                  gettempA(char *path, int *fd, int temporary);
-static int                  gettempW(wchar_t *path, int *fd, int temporary);
+static int                  gettempA_tmp(char *result, const char *path,  int suffixlen, int *fildes, int temporary);
+static int                  gettempA(char *path,  int suffixlen, int *fildes, int temporary, char *save);
+static int                  gettempW_tmp(wchar_t *result, const wchar_t *path,  int suffixlen, int *fildes, int temporary);
+static int                  gettempW(wchar_t *path, int suffixlen, int *fildes, int temporary, wchar_t *save);
 
 
 LIBW32_API int
@@ -94,18 +101,17 @@ w32_mkstemp(char *path)
 {
 #if defined(UTF8FILENAMES)
     wchar_t wpath[MAX_PATH];
-    int fildes = -1;
+    int fildes;
 
     w32_utf2wc(path, wpath, _countof(wpath));
-    if (GETTEMP_SUCCESS == gettempW(wpath, &fildes, FALSE)) {
+    if ((fildes = w32_mkstempW(wpath)) >= 0) {
         w32_wc2utf(wpath, path, strlen(path) + 1);
         return fildes;
     }
     return -1;
 
 #else
-    int fildes = -1;
-    return (GETTEMP_SUCCESS == gettempA(path, &fildes, FALSE) ? fildes : -1);
+    return w32_mkstempA(path);
 
 #endif
 }
@@ -114,16 +120,75 @@ w32_mkstemp(char *path)
 LIBW32_API int
 w32_mkstempA(char *path)
 {
+    char t_path[MAX_PATH];
     int fildes = -1;
-    return (GETTEMP_SUCCESS == gettempA(path, &fildes, FALSE) ? fildes : -1);
+    if (GETTEMP_SUCCESS == gettempA(path, 0, &fildes, FALSE, t_path) ||
+            GETTEMP_SUCCESS == gettempA_tmp(path, t_path, 0, &fildes, FALSE)) {
+        return fildes;
+    }
+    return -1;
 }
 
 
 LIBW32_API int
 w32_mkstempW(wchar_t *path)
 {
+    wchar_t t_path[MAX_PATH];
     int fildes = -1;
-    return (GETTEMP_SUCCESS == gettempW(path, &fildes, FALSE) ? fildes : -1);
+    if (GETTEMP_SUCCESS == gettempW(path, 0, &fildes, FALSE, t_path) ||
+            GETTEMP_SUCCESS == gettempW_tmp(path, t_path, 0, &fildes, FALSE)) {
+        return fildes;
+    }
+    return -1;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+LIBW32_API int
+w32_mkstemps(char *path, int suffixlen)
+{
+#if defined(UTF8FILENAMES)
+    wchar_t wpath[MAX_PATH];
+    int fildes;
+
+    w32_utf2wc(path, wpath, _countof(wpath));
+    if ((fildes = w32_mkstempsW(wpath, suffixlen)) >= 0) {
+        w32_wc2utf(wpath, path, strlen(path) + 1);
+        return fildes;
+    }
+    return -1;
+
+#else
+    return w32_mkstempsA(path);
+
+#endif
+}
+
+
+LIBW32_API int
+w32_mkstempsA(char *path, int suffixlen)
+{
+    char t_path[MAX_PATH];
+    int fildes = -1;
+    if (GETTEMP_SUCCESS == gettempA(path, suffixlen, &fildes, FALSE, t_path) ||
+            GETTEMP_SUCCESS == gettempA_tmp(path, t_path, suffixlen, &fildes, FALSE)) {
+        return fildes;
+    }
+    return -1;
+}
+
+
+LIBW32_API int
+w32_mkstempsW(wchar_t *path, int suffixlen)
+{
+    wchar_t t_path[MAX_PATH];
+    int fildes = -1;
+    if (GETTEMP_SUCCESS == gettempW(path, suffixlen, &fildes, FALSE, t_path) ||
+            GETTEMP_SUCCESS == gettempW_tmp(path, t_path, suffixlen, &fildes, FALSE)) {
+        return fildes;
+    }
+    return -1;
 }
 
 
@@ -134,18 +199,17 @@ w32_mkstempx(char *path)
 {
 #if defined(UTF8FILENAMES)
     wchar_t wpath[MAX_PATH];
-    int fildes = -1;
+    int fildes;
 
     w32_utf2wc(path, wpath, _countof(wpath));
-    if (GETTEMP_SUCCESS == gettempW(wpath, &fildes, TRUE)) {
+    if ((fildes = w32_mkstempxW(wpath)) >= 0) {
         w32_wc2utf(wpath, path, strlen(path) + 1);
         return fildes;
     }
     return -1;
 
 #else
-    int fildes = -1;
-    return (GETTEMP_SUCCESS == gettempA(path, &fildes, TRUE) ? fildes : -1);
+    return w32_mkstempxA(path);
 
 #endif
 }
@@ -154,36 +218,114 @@ w32_mkstempx(char *path)
 LIBW32_API int
 w32_mkstempxA(char *path)
 {
+    char t_path[MAX_PATH];
     int fildes = -1;
-    return (GETTEMP_SUCCESS == gettempA(path, &fildes, TRUE) ? fildes : -1);
+    if (GETTEMP_SUCCESS == gettempA(path, 0, &fildes, TRUE, t_path) ||
+            GETTEMP_SUCCESS == gettempA_tmp(path, t_path, 0, &fildes, TRUE)) {
+        return fildes;
+    }
+    return -1;
 }
 
 
 LIBW32_API int
 w32_mkstempxW(wchar_t *path)
 {
+    wchar_t t_path[MAX_PATH];
     int fildes = -1;
-    return (GETTEMP_SUCCESS == gettempW(path, &fildes, TRUE) ? fildes : -1);
+    if (GETTEMP_SUCCESS == gettempW(path, 0, &fildes, TRUE, t_path) ||
+            GETTEMP_SUCCESS == gettempW_tmp(path, t_path, 0, &fildes, TRUE)) {
+        return fildes;
+    }
+    return -1;
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //  Implementation
 
-static int
-gettempA(char *path, register int *fildes, int temporary)
+static unsigned
+generate_seed(void)
 {
-    register char *start, *trv, c;
+    static unsigned seed;
+    if (0 == seed) seed = (WIN32_GETPID() * GetTickCount());
+    seed = (1103515245 * seed + 12345);
+    return seed;
+}
+
+
+static int
+gettempA_tmp(char *result, const char *path, int suffixlen, int *fildes, int temporary)
+{
+    /* 
+     *  "/tmp/", reference system temporary path 
+     */
+    if (path && 0 == memcmp(path, "/tmp/", 5)) {
+        char t_path[MAX_PATH], *p;
+        int pathlen = strlen(path + 5),
+            tmplen = (int)GetTempPathA(_countof(t_path), t_path);
+                // TMP, TEMP, USERPROFILE environment variables, default windows directory.
+
+        if (pathlen && tmplen) {
+            if ((pathlen + tmplen) >= _countof(t_path)) {
+                errno = ENAMETOOLONG;
+
+            } else {
+                if (t_path[tmplen-1] != '\\') {
+                    t_path[tmplen-1] = '\\', ++tmplen;
+                }
+                memcpy(t_path + tmplen, path + 5, pathlen + 1 /*nul*/);
+                for (p = t_path; NULL != (p = strchr(p, '/'));) {
+                    *p++ = '\\';                /* convert */
+                }
+
+                if (GETTEMP_SUCCESS == gettempA(t_path, suffixlen, fildes, temporary, NULL)) {
+                    strcpy(result, "/tmp/");
+                    strcpy(result + 5, t_path + tmplen);
+                    return GETTEMP_SUCCESS;
+                }
+            }
+        }
+    }
+    return GETTEMP_ERROR;
+}
+
+
+static int
+gettempA(char *path, int suffixlen, register int *fildes, int temporary, char *save)
+{
+    register char *start, *trv, *end, c;
     struct stat sbuf;
-    unsigned pid;
+    unsigned seed;
     int rc;
 
-    pid = (unsigned) WIN32_GETPID();
-    for (trv = path; *trv; ++trv)               /* extra X's get set to 0's */
-        /*continue*/;
-    while (*--trv == 'X' && trv >= path) {
-        *trv = (char)((pid % 10) + '0');
-        pid /= 10;
+    if (save) {
+        for (trv = path; (*save = *trv) != 0; ++save) {
+            if ((++trv - path) >= MAX_PATH) {
+                errno = ENAMETOOLONG;
+                return GETTEMP_ERROR;
+            }
+        }
+    } else {
+        for (trv = path; *trv; ++trv);          /* extra X's get set to 0's */
+        if ((trv - path) >= MAX_PATH) {
+            errno = ENAMETOOLONG;
+            return GETTEMP_ERROR;
+        }
+    }
+
+    trv -= suffixlen;
+    end = trv;
+    if (suffixlen < 0 || trv <= path ||         /* out-of-bounds? */
+            NULL != strchr(end, '/') || NULL != strchr(end, '\\')) {
+	errno = EINVAL;
+        return GETTEMP_ERROR;
+    }
+
+    seed = generate_seed();
+    while (--trv >= path && *trv == 'X') {
+        *trv = (char)((seed % 10) + '0');
+        seed /= 10;
     }
 
     /*
@@ -196,14 +338,14 @@ gettempA(char *path, register int *fildes, int temporary)
         }
 
         if ((c = *trv) == '/' || c == '\\') {
-            *trv = '\0';
             if (trv[-1] == ':') {
-                *trv = c;
                 break;
             }
+            *trv = '\0';
             DISABLE_HARD_ERRORS
             rc = w32_statA(path, &sbuf);
             ENABLE_HARD_ERRORS
+            *trv = c;
             if (rc) {
                 return GETTEMP_ERROR;
             }
@@ -211,7 +353,6 @@ gettempA(char *path, register int *fildes, int temporary)
                 errno = ENOTDIR;
                 return GETTEMP_ERROR;
             }
-            *trv = c;
             break;
         }
     }
@@ -254,11 +395,11 @@ gettempA(char *path, register int *fildes, int temporary)
 
         /* next is sequence */
         for (trv = start;;) {
-            if (*trv == '\0') {                 /* EOS */
-                return GETTEMP_ERROR;
+            if (trv == end) {
+                return GETTEMP_ERROR;           /* EOS */
             }
 
-            if ('z' == *trv) {
+            if ('z' == *trv) {                  /* 0..9a..z */
                 *trv++ = 'a';
             } else {
                 if (isdigit(*trv)) {
@@ -275,19 +416,77 @@ gettempA(char *path, register int *fildes, int temporary)
 
 
 static int
-gettempW(wchar_t *path, register int *fildes, int temporary)
+gettempW_tmp(wchar_t *result, const wchar_t *path, int suffixlen, int *fildes, int temporary)
 {
-    register wchar_t *start, *trv, c;
+    /* 
+     *  "/tmp/", reference system temporary path 
+     */
+    if (path && 0 == wmemcmp(path, L"/tmp/", 5)) {
+        wchar_t t_path[MAX_PATH], *p;
+        int pathlen = wcslen(path + 5),
+            tmplen = (int)GetTempPathW(_countof(t_path), t_path);
+                // TMP, TEMP, USERPROFILE environment variables, default windows directory.
+
+        if (pathlen && tmplen) {
+            if ((pathlen + tmplen) >= (_countof(t_path) + 1)) {
+                errno = ENAMETOOLONG;
+
+            } else {
+                if (t_path[tmplen-1] != '\\') {
+                    t_path[tmplen-1] = '\\', ++tmplen;
+                }
+                wmemcpy(t_path + tmplen, path + 5, pathlen + 1 /*nul*/);
+                for (p = t_path; NULL != (p = wcschr(p, '/'));) {
+                    *p++ = '\\';                /* convert */
+                }
+
+                if (GETTEMP_SUCCESS == gettempW(t_path, suffixlen, fildes, temporary, NULL)) {
+                    wcscpy(result, L"/tmp/");
+                    wcscpy(result + 5, t_path + tmplen);
+                    return GETTEMP_SUCCESS;
+                }
+            }
+        }
+    }
+    return GETTEMP_ERROR;
+}
+
+
+static int
+gettempW(wchar_t *path, int suffixlen, register int *fildes, int temporary, wchar_t *save)
+{
+    register wchar_t *start, *trv, *end, c;
     struct stat sbuf;
-    unsigned pid;
+    unsigned seed;
     int rc;
 
-    pid = (unsigned) WIN32_GETPID();
-    for (trv = path; *trv; ++trv)               /* extra X's get set to 0's */
-        /*continue*/;
-    while (*--trv == 'X' && trv >= path) {
-        *trv = (char)((pid % 10) + '0');
-        pid /= 10;
+    if (save) {
+        for (trv = path; (*save = *trv) != 0; ++save) {
+            if ((++trv - path) >= MAX_PATH) {
+                errno = ENAMETOOLONG;
+                return GETTEMP_ERROR;
+            }
+        }
+    } else {
+        for (trv = path; *trv; ++trv);          /* extra X's get set to 0's */
+        if ((trv - path) >= MAX_PATH) {
+            errno = ENAMETOOLONG;
+            return GETTEMP_ERROR;
+        }
+    }
+
+    trv -= suffixlen;
+    end = trv;
+    if (suffixlen < 0 || trv <= path ||         /* out-of-bounds? */
+            NULL != wcschr(end, '/') || NULL != wcschr(end, '\\')) {
+	errno = EINVAL;
+        return GETTEMP_ERROR;
+    }
+
+    seed = generate_seed();
+    while (--trv >= path && *trv == 'X') {
+        *trv = (char)((seed % 10) + '0');
+        seed /= 10;
     }
 
     /*
@@ -300,14 +499,14 @@ gettempW(wchar_t *path, register int *fildes, int temporary)
         }
 
         if ((c = *trv) == '/' || c == '\\') {
-            *trv = '\0';
             if (trv[-1] == ':') {
-                *trv = c;
                 break;
             }
+            *trv = '\0';
             DISABLE_HARD_ERRORS
             rc = w32_statW(path, &sbuf);
             ENABLE_HARD_ERRORS
+            *trv = c;
             if (rc) {
                 return GETTEMP_ERROR;
             }
@@ -315,7 +514,6 @@ gettempW(wchar_t *path, register int *fildes, int temporary)
                 errno = ENOTDIR;
                 return GETTEMP_ERROR;
             }
-            *trv = c;
             break;
         }
     }
@@ -357,14 +555,14 @@ gettempW(wchar_t *path, register int *fildes, int temporary)
 
         /* next is sequence */
         for (trv = start;;) {
-            if (*trv == '\0') {                 /* EOS */
-                return GETTEMP_ERROR;
+            if (trv == end) {
+                return GETTEMP_ERROR;           /* EOS */
             }
 
-            if ('z' == *trv) {
+            if ('z' == *trv) {                  /* 0..9a..z */
                 *trv++ = 'a';
             } else {
-                if (iswdigit(*trv)) {
+                if (isdigit(*trv)) {
                     *trv = 'a';
                 } else {
                     ++*trv;

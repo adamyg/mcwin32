@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.24 2021/05/16 12:27:31 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.25 2021/05/23 10:19:41 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -601,6 +601,10 @@ LIBW32_API int          w32_mkstempW (wchar_t *path);
 #if defined(_MSC_VER)
 LIBW32_API int          mkstemp (char *path);
 #endif
+
+LIBW32_API int          w32_mkstemps (char *path, int suffixlen);
+LIBW32_API int          w32_mkstempsA (char *path, int suffixlen);
+LIBW32_API int          w32_mkstempsW (wchar_t *path, int suffixlen);
 
 LIBW32_API int          w32_mkstempx (char *path);
 LIBW32_API int          w32_mkstempxA (char *path);

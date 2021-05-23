@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.17 2021/05/12 12:29:29 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.18 2021/05/23 10:20:13 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -107,6 +107,10 @@ LIBW32_API const char * w32_strerror (int errnum);
 LIBW32_API int          w32_mkstemp (char *path);
 LIBW32_API int          w32_mkstempA (char *path);
 LIBW32_API int          w32_mkstempW (wchar_t *path);
+
+LIBW32_API int          w32_mkstemps (char *path, int suffixlen);
+LIBW32_API int          w32_mkstempsA (char *path, int suffixlen);
+LIBW32_API int          w32_mkstempsW (wchar_t *path, int suffixlen);
 
 LIBW32_API int          w32_mkstempx (char *path);
 LIBW32_API int          w32_mkstempxA (char *path);
