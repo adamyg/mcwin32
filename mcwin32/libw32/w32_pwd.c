@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.8 2021/05/16 14:42:36 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.10 2021/05/23 10:23:12 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -136,13 +136,48 @@ LIBW32_API struct passwd *
 getpwent(void)
 {
     const unsigned cursor = x_cursor++;
+
     if (0 == cursor) {
         fill_passwds();
         return &x_passwd;
+
     } else if (cursor <= x_passwds_count) {
         return x_passwds + (cursor - 1);
     }
     return NULL;
+}
+
+
+LIBW32_API int
+getpwent_r(struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
+{
+    struct passwd *it = NULL;
+    unsigned cursor;
+
+    if (NULL == pwd || NULL == buffer || NULL == result) {
+        if (result) *result = NULL;
+        errno = EINVAL;
+        return EINVAL;                          // invalid arguments
+    }
+
+    cursor = x_cursor++;
+    if (0 == cursor) {
+        fill_passwds();
+        it = &x_passwd;
+
+    } else if (cursor <= x_passwds_count) {
+        it = x_passwds + (cursor - 1);
+    }
+
+    *result = NULL;
+    if (it) {
+        const int rc = copy_passwd(it, pwd, buffer, bufsize);
+        if (0 == rc) *result = pwd;             // success
+        return rc;
+    }
+
+    errno = EINVAL;
+    return ENOENT;                              // no-match
 }
 
 
@@ -230,17 +265,18 @@ endpwent(void)
 LIBW32_API struct passwd *
 getpwuid(int uid)
 {
-    if (uid == w32_getuid()) {
+    const struct passwd *current = w32_passwd_user();
+
+    if (uid == current->pw_uid) {
         fill_passwd();
         return &x_passwd;
 
-    } else if (uid) {
-        struct passwd *pwd, *end;
+    } else {
+        struct passwd *it, *end;
         fill_passwds();
-        for (pwd = x_passwds, end = pwd + x_passwds_count; pwd != end; ++pwd) {
-
-            if (uid == pwd->pw_uid) {
-                return pwd;
+        for (it = x_passwds, end = it + x_passwds_count; it != end; ++it) {
+            if (uid == it->pw_uid) {
+                return it;
             }
         }
     }
@@ -251,30 +287,32 @@ getpwuid(int uid)
 LIBW32_API int
 getpwuid_r(uid_t uid, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
 {
+    const struct passwd *current = w32_passwd_user();
+
     if (NULL == pwd || NULL == buffer || NULL == result) {
         if (result) *result = NULL;
         errno = EINVAL;
-        return EINVAL; //invalid arguments
+        return EINVAL;                          // invalid arguments
     }
 
     *result = NULL;
-    if (uid == w32_getuid()) {
-        const int rc = copy_passwd(w32_passwd_user(), pwd, buffer, bufsize);
-        if (0 == rc) *result = pwd; //success
+    if (uid == current->pw_uid) {
+        const int rc = copy_passwd(current, pwd, buffer, bufsize);
+        if (0 == rc) *result = pwd;             // success
         return rc;
 
-    } else if (uid) {
-        struct passwd *pwd, *end;
+    } else {
+        const struct passwd *it, *end;
         fill_passwds();
-        for (pwd = x_passwds, end = pwd + x_passwds_count; pwd != end; ++pwd) {
-            if (uid == pwd->pw_uid) {
-                const int rc = copy_passwd(w32_passwd_user(), pwd, buffer, bufsize);
-                if (0 == rc) *result = pwd; //success
+        for (it = x_passwds, end = it + x_passwds_count; it != end; ++it) {
+            if (uid == it->pw_uid) {
+                const int rc = copy_passwd(it, pwd, buffer, bufsize);
+                if (0 == rc) *result = pwd;     // success
                 return rc;
             }
         }
     }
-    return 0; //no-match
+    return 0;                                   // no-match
 }
 
 
@@ -351,9 +389,20 @@ LIBW32_API struct passwd *
 getpwnam(const char *name)
 {
     if (name) {
-        fill_passwds();
-        if (0 == _stricmp(x_passwd.pw_name, name)) {
+        const struct passwd *current = w32_passwd_user();
+
+        if (0 == _stricmp(name, current->pw_name)) {
+            fill_passwd();
             return &x_passwd;
+
+        }  else {
+            struct passwd *it, *end;
+            fill_passwds();
+            for (it = x_passwds, end = it + x_passwds_count; it != end; ++it) {
+                if (0 == _stricmp(name, it->pw_name)) {
+                    return it;
+                }
+            }
         }
     }
     return NULL;
@@ -363,19 +412,32 @@ getpwnam(const char *name)
 LIBW32_API int
 getpwnam_r(const char *name, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
 {
-    if (NULL == name || NULL == buffer || NULL == result) {
+    const struct passwd *current = w32_passwd_user();
+
+    if (NULL == name || NULL == pwd || NULL == buffer || NULL == result) {
         if (result) *result = NULL;
         errno = EINVAL;
-        return EINVAL; //invalid arguments
+        return EINVAL;                          // invalid arguments
     }
 
     *result = NULL;
-    if (0 == strcmp(name, getlogin())) {
-        const int rc = copy_passwd(w32_passwd_user(), pwd, buffer, bufsize);
-        if (0 == rc) *result = pwd; //success
+    if (0 == _stricmp(name, current->pw_name)) {
+        const int rc = copy_passwd(current, pwd, buffer, bufsize);
+        if (0 == rc) *result = pwd;             // success
         return rc;
+
+    } else {
+        const struct passwd *it, *end;
+        fill_passwds();
+        for (it = x_passwds, end = it + x_passwds_count; it != end; ++it) {
+            if (0 == _stricmp(name, it->pw_name)) {
+                const int rc = copy_passwd(it, pwd, buffer, bufsize);
+                if (0 == rc) *result = pwd;     // success
+                return rc;
+            }
+        }
     }
-    return 0; //no-match
+    return 0;                                   // no-match
 }
 
 
@@ -400,11 +462,18 @@ static struct WellKnownSID {
     {"S-1-5-18", SECURITY_NT_AUTHORITY, 1, {SECURITY_LOCAL_SYSTEM_RID}},
     {"S-1-5-19", SECURITY_NT_AUTHORITY, 1, {SECURITY_LOCAL_SERVICE_RID}},
     {"S-1-5-20", SECURITY_NT_AUTHORITY, 1, {SECURITY_NETWORK_SERVICE_RID}},
+    {"S-1-5-32", SECURITY_NT_AUTHORITY, 1, {SECURITY_BUILTIN_DOMAIN_RID}},
     {"S-1-5-32-544", SECURITY_NT_AUTHORITY, 2, {SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS}},
-    {"S-1-5-32-545", SECURITY_NT_AUTHORITY, 2, {SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_USERS}},
-    {"S-1-5-32-546", SECURITY_NT_AUTHORITY, 2, {SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_GUESTS}},
-    {"S-1-5-32-547", SECURITY_NT_AUTHORITY, 2, {SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_POWER_USERS}},
     {"S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464"}
+        // TrustedInstaller, RID:704 (short)
+
+    // groups!
+//  {"S-1-5-113", SECURITY_NT_AUTHORITY, 1, {SECURITY_LOCAL_ACCOUNT_RID}},
+//  {"S-1-5-114", SECURITY_NT_AUTHORITY, 1, {SECURITY_LOCAL_ACCOUNT_AND_ADMIN_RID}},
+//  {"S-1-5-32-545", SECURITY_NT_AUTHORITY, 2, {SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_USERS}},
+//  {"S-1-5-32-546", SECURITY_NT_AUTHORITY, 2, {SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_GUESTS}},
+//  {"S-1-5-32-547", SECURITY_NT_AUTHORITY, 2, {SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_POWER_USERS}},
+//  {"S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464"}
         // TrustedInstaller, RID:704 (short)
 };
 
@@ -412,84 +481,142 @@ static struct WellKnownSID {
 static void
 fill_passwds(void)
 {
-    DWORD i, dwEntriesRead = 0, dwTotalEntries = 0;
-    PUSER_INFO_20 users = NULL;
+    DWORD resume_handle = 0;
     NET_API_STATUS nStatus;
+    unsigned cbufsz = 0;
+    char name[MAX_PATH];
+    int nlen;
 
     fill_passwd();
     if (NULL != x_passwds)
         return;
 
-    nStatus = NetUserEnum(NULL, 20 /*USER_INFO_20*/, 0, (LPBYTE *) &users,
-                    MAX_PREFERRED_LENGTH, &dwEntriesRead, &dwTotalEntries, NULL);
+    assert(0 == x_passwds_count);
+    do {
+        DWORD i, dwEntriesRead = 0, dwTotalEntries = 0;
+        const unsigned ototal = x_passwds_count;
+        unsigned bufsz = 0, count = 0;
+        PUSER_INFO_20 users = NULL;
 
-    if (NERR_Success == nStatus) {
-        unsigned bufsize = 0, total = 0;
-        char name[MAX_PATH];
-        int nlen;
+        // see: wmic useraccount get name,sid
+        nStatus = NetUserEnum(NULL, 20 /*USER_INFO_20*/, 0, (LPBYTE *) &users,
+                        MAX_PREFERRED_LENGTH, &dwEntriesRead, &dwTotalEntries, &resume_handle);
 
+        switch (nStatus) {
+        case NERR_Success:
+        case ERROR_MORE_DATA:
+            break;
+        default:
+            return;
+        }
+
+        // size storage
         for (i = 0; i < dwEntriesRead; ++i) {
             const PUSER_INFO_20 user = users + i;
             if (user->usri20_user_id == x_passwd.pw_uid ||
                     (nlen = w32_wc2utf(user->usri20_name, name, sizeof(name))) <= 0) {
                 continue;
             }
-            bufsize += (nlen + 1);
-            ++total;
+            bufsz += (nlen + 1);
+            ++count;
         }
 
-        for (i = 0; i < _countof(well_known_sids); ++i) {
-            const int nlen = fill_builtin(well_known_sids + i, NULL, NULL, 0);
-            if (nlen > 0) {
-                bufsize += (nlen + 1);
-                ++total;
+        if (NERR_Success == nStatus)            // last iteration.
+            for (i = 0; i < _countof(well_known_sids); ++i) {
+                const int nlen = fill_builtin(well_known_sids + i, NULL, NULL, 0);
+                if (nlen > 0) {
+                    bufsz += (nlen + 1);
+                    ++count;
+                }
             }
-        }
 
-        x_passwds = (struct passwd *)malloc((sizeof(struct passwd) * total) + bufsize + 1 /*non-zero*/);
-        if (NULL != x_passwds) {
-            struct passwd *pwd = x_passwds;
-            char *cursor = (char *)(pwd + total);
-//          wchar_t t_buffer[1024];
+        // new elements
+        if (count && bufsz) {
+            const unsigned ntotal =
+                    ototal + count;             // resulting total pwd's
 
-            for (i = 0; i < dwEntriesRead; ++i) {
-                const PUSER_INFO_20 user = users + i;
+            // allocate/expand
+            if (x_passwds) {
+                struct passwd *t_passwds = (struct passwd *)realloc(x_passwds,
+                                            (sizeof(struct passwd) * ntotal) + cbufsz + bufsz);
+                const int addrdiff = ((char *)t_passwds - (char *)x_passwds) +
+                                        (sizeof(struct passwd) * count);
 
-//              swprintf_s(t_buffer, _countof(t_buffer), L"User:%s,FullName:%s,Comment:%s,RID:%u\n",
-//                  user->usri20_name, user->usri20_full_name, user->usri20_comment, (unsigned)user->usri20_user_id);
-//              OutputDebugStringW(t_buffer);
-
-                if (user->usri20_user_id == x_passwd.pw_uid ||
-                        (nlen = w32_wc2utf(user->usri20_name, cursor, bufsize)) <= 0) {
-                    continue;
+                if (NULL == t_passwds) {        // realloc failure
+                    NetApiBufferFree(users);
+                    break;
                 }
 
-                memset(pwd, 0, sizeof(*pwd));
-                pwd->pw_name = cursor;
-                _strlwr(cursor);
-                pwd->pw_uid  = (int)user->usri20_user_id;
-                pwd->pw_gid  = (int)user->usri20_user_id;
-                cursor  += (nlen + 1);
-                bufsize -= (nlen + 1);
-                ++x_passwds_count;
-                ++pwd;
+                // reorg storage, insert 'count' pwd elements and adjust buffer addr's.
+                memmove(t_passwds + ntotal, (const void *)(t_passwds + ototal), cbufsz);
+                for (i = 0; i < ototal; ++i) {
+                    t_passwds[i].pw_name += addrdiff;
+                }
+                x_passwds = t_passwds;
+
+            } else {
+                x_passwds = (struct passwd *)malloc((sizeof(struct passwd) * count) + bufsz /*non-zero*/);
             }
 
-            for (i = 0; i < _countof(well_known_sids); ++i) {
-                const int nlen = fill_builtin(well_known_sids + i, pwd, cursor, bufsize);
-                if (nlen > 0) {
-                    cursor  += (nlen + 1);
-                    bufsize -= (nlen + 1);
+            // publish
+            if (NULL != x_passwds) {
+                struct passwd *pwd = x_passwds + ototal;
+                char *cursor = ((char *)(x_passwds + ntotal)) + cbufsz;
+#if defined(_DEBUG)
+                wchar_t t_buffer[1024];
+#endif
+
+                cbufsz += bufsz;                // resulting name storage (inc nul)
+
+                for (i = 0; i < dwEntriesRead; ++i) {
+                    const PUSER_INFO_20 user = users + i;
+
+#if defined(_DEBUG)
+                    swprintf_s(t_buffer, _countof(t_buffer), L"User:%s,FullName:%s,Comment:%s,RID:%u\n",
+                        user->usri20_name, user->usri20_full_name, user->usri20_comment, (unsigned)user->usri20_user_id);
+                    OutputDebugStringW(t_buffer);
+#endif
+
+                    if (user->usri20_user_id == x_passwd.pw_uid ||
+                            (nlen = w32_wc2utf(user->usri20_name, cursor, bufsz)) <= 0) {
+                        continue;
+                    }
+
+                    memset(pwd, 0, sizeof(*pwd));
+                    pwd->pw_name = cursor;
+                    _strlwr(cursor);
+                    pwd->pw_uid = (short) user->usri20_user_id;
+                    pwd->pw_gid = pwd->pw_uid;
+                    cursor += (nlen + 1);
+                    bufsz -= (nlen + 1);
                     ++x_passwds_count;
+                    --count;
                     ++pwd;
                 }
-            }
 
-            assert(total == x_passwds_count);
-            assert(0 == bufsize);
+                if (NERR_Success == nStatus)    // last iteration.
+                    for (i = 0; i < _countof(well_known_sids); ++i) {
+                        const int nlen = fill_builtin(well_known_sids + i, pwd, cursor, bufsz);
+                        if (nlen > 0) {
+                            cursor += (nlen + 1);
+                            bufsz -= (nlen + 1);
+                            ++x_passwds_count;
+                            --count;
+                            ++pwd;
+                        }
+                    }
+
+                assert(0 == count);
+                assert(0 == bufsz);
+
+            } else {
+                nStatus = ERROR_NOT_ENOUGH_MEMORY;
+            }
         }
-    }
-    if (users) NetApiBufferFree(users);
+
+        NetApiBufferFree(users);
+
+    } while (ERROR_MORE_DATA == nStatus);
 }
 
 
@@ -515,22 +642,41 @@ fill_builtin(const struct WellKnownSID *wksid,
         char t_name[WIN32_LOGIN_LEN], t_domain[1024];
         DWORD nlen = sizeof(t_name), dlen = sizeof(t_domain);
         SID_NAME_USE user_type = {0};
+#if defined(_DEBUG)
+        char t_buffer[1024];
+#endif
 
         if (LookupAccountSidA(NULL, pSID, t_name, &nlen, t_domain, &dlen, &user_type)) {
-            if (name) strcpy_s(name, namelen, t_name);
+
+            if (name) {                         // "[domain\\]name"
+                if (SidTypeDomain == user_type && strcmp(t_name, t_domain)) {
+                    sprintf_s(name, namelen, "%s\\%s", t_name, t_domain);
+                } else {
+                    strcpy_s(name, namelen, t_name);
+                }
+            }
+
             if (pwd) {
                 memset(pwd, 0, sizeof(*pwd));
                 pwd->pw_name = name;
                 _strlwr(name);
                 pwd->pw_uid = (short) RID(pSID);
                 pwd->pw_gid = pwd->pw_uid;      // TODO
+
+#if defined(_DEBUG)
+                sprintf_s(t_buffer, _countof(t_buffer), "User:%s,uid:%u\n",
+                    pwd->pw_name, (unsigned)pwd->pw_uid);
+                OutputDebugStringA(t_buffer);
+#endif
             }
-            ret = nlen;
+
+            ret = (SidTypeDomain == user_type ? nlen + 1 + dlen : nlen);
+
         } else {
             if (name) name[0] = 0;
         }
 
-        assert(SidTypeWellKnownGroup == user_type || SidTypeAlias == user_type);
+        assert(SidTypeWellKnownGroup == user_type || SidTypeAlias == user_type || SidTypeDomain == user_type);
         FreeSid(pSID);
     }
     return ret;
@@ -555,8 +701,8 @@ RID(PSID sid)
 static void
 fill_passwd(void)
 {
-    const struct passwd *passwd = w32_passwd_user();
-    copy_passwd(passwd, &x_passwd, x_buffer, sizeof(x_buffer));
+    const struct passwd *current = w32_passwd_user();
+    copy_passwd(current, &x_passwd, x_buffer, sizeof(x_buffer));
 }
 
 
@@ -600,8 +746,9 @@ copy_passwd(const struct passwd *pwd, struct passwd *dst, char *buffer, size_t b
         shelllen    = pw_strlen(pwd->pw_shell, &total);
 
     if (total > bufsize) {
-        errno = ERANGE;
-        return ERANGE;
+        return (errno = ERANGE);
+    } else if (NULL == dst) {
+        return (errno = EINVAL);
     }
 
     dst->pw_name    = pw_strcpy(pwd->pw_name,   namelen,      &buffer);

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.6 2021/05/16 12:28:20 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.7 2021/05/23 10:23:12 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -117,7 +117,7 @@ w32_realpath2(const char *path, char *resolved_path, int maxlen)
 
     w32_utf2wc(path, wpath, _countof(wpath));
 
-    if (NULL != (wresolved_path = alloca(sizeof(wchar_t *) * WIN32_PATH_MAX))) {  
+    if (NULL != (wresolved_path = alloca(sizeof(wchar_t *) * WIN32_PATH_MAX))) {
         if (w32_realpathW(wpath, wresolved_path, WIN32_PATH_MAX)) {
             if (NULL == resolved_path) {        // dynamic; implementation specific.
                 maxlen = WIN32_PATH_MAX;
@@ -159,7 +159,7 @@ w32_realpathA(const char *path, char *resolved_path, int maxlen)
 
         if (result) {                           // root
             /*
-             *  Generic chdir("/") behaviour is context specific, meaning goto root of current drive, 
+             *  Generic chdir("/") behaviour is context specific, meaning goto root of current drive,
              *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
              */
             if (('/' == path[0] || '\\' == path[0]) && 0 == path[1]) {
@@ -176,7 +176,7 @@ w32_realpathA(const char *path, char *resolved_path, int maxlen)
             }
         }
 
-        if (result) {                           // resolve symlink component    
+        if (result) {                           // resolve symlink component
             if (w32_lnkexpandA(path, symlink, _countof(symlink), SHORTCUT_COMPONENT)) {
                 path = symlink;
             }
@@ -284,7 +284,7 @@ w32_realpathW(const wchar_t *path, wchar_t *resolved_path, int maxlen)
 
         if (result) {                           // root
             /*
-             *  Generic chdir("/") behaviour is context specific, meaning goto root of current drive, 
+             *  Generic chdir("/") behaviour is context specific, meaning goto root of current drive,
              *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
              */
             if (('/' == path[0] || '\\' == path[0]) && 0 == path[1]) {
@@ -301,7 +301,7 @@ w32_realpathW(const wchar_t *path, wchar_t *resolved_path, int maxlen)
             }
         }
 
-        if (result) {                           // resolve symlink component    
+        if (result) {                           // resolve symlink component
             if (w32_lnkexpandW(path, symlink, _countof(symlink), SHORTCUT_COMPONENT)) {
                 path = symlink;
             }

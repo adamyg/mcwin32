@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.16 2021/05/12 15:37:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.17 2021/05/23 10:23:11 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -30,7 +30,7 @@ __CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.16 2021/05/12 15:37:04 cvs
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
  */
@@ -111,18 +111,18 @@ w32_getcwd(char *path, int size)
             *out = 0;
             return path;
         }
-    }
 
 #if defined(UTF8FILENAMES)
-    {   wchar_t *wpath;
+        {   wchar_t *wpath;
 
-        if (NULL != (wpath = alloca(sizeof(wchar_t) * (size + 1))) &&
-                w32_getcwdW(wpath, size)) {
-            w32_wc2utf(wpath, path, size);
-            return path;
+            if (NULL != (wpath = alloca(sizeof(wchar_t) * (size + 1))) &&
+                    w32_getcwdW(wpath, size)) {
+                w32_wc2utf(wpath, path, size);
+                return path;
+            }
         }
-        return NULL;
     }
+    return NULL;
 
 #else
 
@@ -145,11 +145,11 @@ w32_getcwdA(char *path, int size)
 
     } else {
         //  If the function succeeds, the return value is the length, in characters,
-        //  of the string copied to lpszLongPath, not including the terminating 
+        //  of the string copied to lpszLongPath, not including the terminating
         //  null character.
         //
-        //  If the lpBuffer buffer is too small to contain the path, the return value 
-        //  is the size, in characters, of the buffer that is required to hold 
+        //  If the lpBuffer buffer is too small to contain the path, the return value
+        //  is the size, in characters, of the buffer that is required to hold
         //  the path and the terminating null character.
         //
         DWORD ret;
@@ -157,7 +157,7 @@ w32_getcwdA(char *path, int size)
         t_path[0] = 0;
         if ((ret = GetCurrentDirectoryA(_countof(t_path), t_path)) == 0) {
             w32_errno_set();
-            
+
         } else if (ret >= (DWORD)size || ret >= _countof(t_path)) {
             errno = ENOMEM;
 
@@ -197,11 +197,11 @@ w32_getcwdW(wchar_t *path, int size)
 
     } else {
         //  If the function succeeds, the return value is the length, in characters,
-        //  of the string copied to lpszLongPath, not including the terminating 
+        //  of the string copied to lpszLongPath, not including the terminating
         //  null character.
         //
-        //  If the lpBuffer buffer is too small to contain the path, the return value 
-        //  is the size, in characters, of the buffer that is required to hold 
+        //  If the lpBuffer buffer is too small to contain the path, the return value
+        //  is the size, in characters, of the buffer that is required to hold
         //  the path and the terminating null character.
         //
         DWORD ret;
@@ -209,7 +209,7 @@ w32_getcwdW(wchar_t *path, int size)
         t_path[0] = 0;
         if ((ret = GetCurrentDirectoryW(_countof(t_path), t_path)) == 0) {
             w32_errno_set();
-            
+
         } else if (ret >= (DWORD)size || ret >= _countof(t_path)) {
             errno = ENOMEM;
 

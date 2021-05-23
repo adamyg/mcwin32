@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.16 2021/05/16 12:29:16 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.17 2021/05/19 16:20:22 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -114,7 +114,7 @@ LIBW32_API int          w32_wc2utf(const wchar_t *src, char *dest, size_t max);
 #define WIN32_LOGIN_LEN     (32)
 
 LIBW32_API const struct passwd *w32_passwd_user (void);
-LIBW32_API const char * w32_group_user (void);
+LIBW32_API const struct group *w32_group_user (void);
 
 LIBW32_API char *       w32_dos2unix (char *path);
 LIBW32_API wchar_t *    w32_wdos2unix (wchar_t *path);

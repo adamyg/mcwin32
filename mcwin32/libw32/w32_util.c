@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.11 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.12 2021/05/23 10:20:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -159,9 +159,10 @@ w32_utf2wc(const char *src, wchar_t *dest, size_t maxlen)
     assert(src), assert(dest), assert(maxlen);
 
     dest[0] = 0;
-    if ((ret = MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, maxlen - 1)) > 0) {
-        assert(ret < (int)maxlen);
-        dest[ret] = 0;
+    if ((ret = MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, maxlen)) > 0) {
+        assert(ret <= (int)maxlen);
+        if (ret == maxlen) 
+            dest[maxlen - 1] = 0;
 
     } else {
         const DWORD rc = GetLastError();
@@ -194,9 +195,10 @@ w32_wc2utf(const wchar_t *src, char *dest, size_t maxlen)
     assert(src), assert(dest), assert(maxlen);
 
     dest[0] = 0;
-    if ((ret = WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, maxlen - 1, NULL, NULL)) > 0) {
-        assert(ret < (int)maxlen);
-        dest[ret] = 0;
+    if ((ret = WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, maxlen, NULL, NULL)) > 0) {
+        assert(ret <= (int)maxlen);
+        if (ret == maxlen) 
+            dest[maxlen - 1] = 0;
 
     } else {
         const DWORD rc = GetLastError();

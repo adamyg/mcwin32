@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_reparse_c,"$Id: w32_reparse.c,v 1.9 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_reparse_c,"$Id: w32_reparse.c,v 1.10 2021/05/23 10:23:12 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -52,7 +52,7 @@ __CIDENT_RCSID(gr_w32_reparse_c,"$Id: w32_reparse.c,v 1.9 2021/05/07 17:52:56 cv
 #if !defined(SYMLINK_FLAG_RELATIVE)
 #define SYMLINK_FLAG_RELATIVE   1
 #endif
-    
+
 
 static void
 replace_dir(char *buf, int maxlen, const char *original, const char *replacement)
@@ -147,7 +147,7 @@ w32_reparse_readA(const char *name, char *buf, int maxlen)
                 //
                 if ((length = rdb->SymbolicLinkReparseBuffer.SubstituteNameLength) >= 4) {
                     const size_t offset = rdb->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
-                    const wchar_t* symlink = rdb->SymbolicLinkReparseBuffer.PathBuffer + offset;                 
+                    const wchar_t* symlink = rdb->SymbolicLinkReparseBuffer.PathBuffer + offset;
                     size_t len = wcstombs(resolved, symlink, sizeof(resolved) - 1);
 
                     if (len != (size_t)-1) {
@@ -250,7 +250,7 @@ w32_reparse_readW(const wchar_t *name, wchar_t *buf, int maxlen)
                 //
                 if ((length = rdb->SymbolicLinkReparseBuffer.SubstituteNameLength) >= 4) {
                     const size_t offset = rdb->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
-                    const wchar_t* symlink = rdb->SymbolicLinkReparseBuffer.PathBuffer + offset;                 
+                    const wchar_t* symlink = rdb->SymbolicLinkReparseBuffer.PathBuffer + offset;
 
                     if (SYMLINK_FLAG_RELATIVE & rdb->SymbolicLinkReparseBuffer.Flags) {
                         replace_wdir(buf, maxlen, name, symlink);

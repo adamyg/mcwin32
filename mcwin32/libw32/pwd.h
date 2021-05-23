@@ -1,7 +1,7 @@
 #ifndef LIBW32_PWD_H_INCLUDED
 #define LIBW32_PWD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_pwd_h,"$Id: pwd.h,v 1.7 2021/05/16 14:41:21 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_pwd_h,"$Id: pwd.h,v 1.8 2021/05/19 16:14:53 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -59,11 +59,13 @@ struct passwd {
     int                 pw_audflg;
 };
 
-LIBW32_API struct passwd *getpwent(void);
 LIBW32_API struct passwd *getpwuid(int);
 LIBW32_API struct passwd *getpwnam(const char *);
+
 LIBW32_API void         setpwent(void);
+LIBW32_API struct passwd *getpwent(void);
 LIBW32_API void         endpwent(void);
+LIBW32_API int          getpwent_r(struct passwd *, char *, size_t, struct passwd **);
 
 LIBW32_API int          getpwnam_r(const char *, struct passwd *, char *, size_t, struct passwd **);
 LIBW32_API int          getpwuid_r(uid_t, struct passwd *, char *, size_t, struct passwd **);

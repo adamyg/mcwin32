@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.16 2021/05/12 15:37:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.17 2021/05/23 10:23:11 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -362,12 +362,12 @@ set_root_directoryA(const char *path)
     while (*path) {
         if (! IS_PATH_SEP(*path)) {
             return -2;                          // not root
-        }    
+        }
         ++path;
     }
 
     /*
-     *  chdir("/") behaviour is context specific, meaning goto root of current drive, 
+     *  chdir("/") behaviour is context specific, meaning goto root of current drive,
      *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
      *  Also see realpath() and related opendir() usage.
      */
@@ -396,12 +396,12 @@ set_root_directoryW(const wchar_t *path)
     while (*path) {
         if (! IS_PATH_SEP(*path)) {
             return -2;                          // not root
-        }    
+        }
         ++path;
     }
 
     /*
-     *  Generic chdir("/") behaviour is context specific, meaning goto root of current drive, 
+     *  Generic chdir("/") behaviour is context specific, meaning goto root of current drive,
      *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
      *  Also see realpath() and related opendir() usage.
      */

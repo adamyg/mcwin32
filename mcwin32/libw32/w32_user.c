@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.10 2021/05/16 14:43:06 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.12 2021/05/23 10:23:12 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -43,6 +43,7 @@ __CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.10 2021/05/16 14:43:06 cvsuser
 #include "win32_internal.h"
 #include "win32_child.h"
 #include <pwd.h>
+#include <grp.h>
 #include <unistd.h>
 
 #include <sddl.h>                               /* ConvertSidToStringSid */
@@ -52,11 +53,10 @@ __CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.10 2021/05/16 14:43:06 cvsuser
 #pragma comment(lib, "Netapi32.lib")
 
 static char x_passwd_name[WIN32_LOGIN_LEN];
-static char x_passwd_passwd[MAX_PATH];
-static char x_passwd_gecos[MAX_PATH];
+static char x_passwd_passwd[32];
+static char x_passwd_gecos[32];
 static char x_passwd_dir[MAX_PATH];
 static char x_passwd_shell[MAX_PATH];
-static char x_group[WIN32_GROUP_LEN];
 
 static struct passwd x_passwd = {
     x_passwd_name,          /* pw_name */
@@ -72,7 +72,17 @@ static struct passwd x_passwd = {
     0                       /* pw_audflg */
 };
 
-static void         initialise_passwd(void);
+static char x_group_name[WIN32_LOGIN_LEN];
+static char x_group_passwd[32];
+
+static struct group x_group = {
+    x_group_name,           /* gr_name */
+    x_group_passwd,         /* gr_passwd */
+    -1,                     /* gr_gid */
+    NULL
+};
+
+static void         initialise_user(void);
 static unsigned     RID(PSID sid);
 
 
@@ -98,7 +108,7 @@ static unsigned     RID(PSID sid);
 LIBW32_API int
 w32_getuid (void)
 {
-    initialise_passwd();
+    initialise_user();
     return x_passwd.pw_uid;
 }
 
@@ -125,7 +135,7 @@ w32_getuid (void)
 int
 w32_geteuid (void)
 {
-    initialise_passwd();
+    initialise_user();
     return x_passwd.pw_uid;
 }
 
@@ -152,7 +162,7 @@ w32_geteuid (void)
 LIBW32_API int
 w32_getgid (void)
 {
-    initialise_passwd();
+    initialise_user();
     return x_passwd.pw_gid;
 }
 
@@ -179,7 +189,7 @@ w32_getgid (void)
 int
 w32_getegid (void)
 {
-    initialise_passwd();
+    initialise_user();
     return x_passwd.pw_gid;
 }
 
@@ -298,9 +308,9 @@ getlogin_r (char *name, size_t namesize)
         return -1;
     }
 
-    initialise_passwd();
+    initialise_user();
     length = strlen(x_passwd_name);
-    if (namesize >= (size_t)length) {
+    if (namesize <= (size_t)length) {
         errno = ERANGE;
         return -1;
     }
@@ -312,21 +322,21 @@ getlogin_r (char *name, size_t namesize)
 LIBW32_API const struct passwd *
 w32_passwd_user (void)
 {
-    initialise_passwd();
+    initialise_user();
     return &x_passwd;
 }
 
 
-LIBW32_API const char *
+LIBW32_API const struct group *
 w32_group_user (void)
 {
-    initialise_passwd();
-    return x_group;
+    initialise_user();
+    return &x_group;
 }
 
 
 static void
-initialise_passwd()
+initialise_user()
 {
     char login[WIN32_LOGIN_LEN], group[WIN32_GROUP_LEN];
     char domain[1024 + 1];
@@ -342,17 +352,17 @@ initialise_passwd()
         return;
     }
 
+    // defaults
     x_passwd.pw_uid = 42;
     x_passwd.pw_gid = 42;
 
     strncpy(x_passwd_name, "user", sizeof(x_passwd_name) - 1);
     strncpy(x_passwd_passwd, "*", sizeof(x_passwd_passwd) - 1);
     strncpy(x_passwd_gecos, "pcuser", sizeof(x_passwd_gecos) - 1);
-    strncpy(x_group, "user", sizeof(x_group) - 1);
+    strncpy(x_group_name, "user", sizeof(x_group_name) - 1);
 
+    // process identify
     if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
-
-        TOKEN_PRIMARY_GROUP group_token = {0};
         SID_NAME_USE user_type = {0};
         DWORD cbSize, cbSize2;
 
@@ -374,6 +384,7 @@ initialise_passwd()
         if (! GetTokenInformation(hToken, TokenPrimaryGroup, NULL, 0, &cbSize) &&
                 GetLastError () == ERROR_INSUFFICIENT_BUFFER && cbSize &&
                     NULL != (pg = alloca(sizeof(char) + (cbSize + 1)))) {
+            TOKEN_PRIMARY_GROUP group_token = {0};
 
             if (GetTokenInformation(hToken, TokenPrimaryGroup, pg, cbSize, &cbSize2)) {
                 DWORD glen = sizeof(group), dlen = sizeof(domain);
@@ -390,6 +401,7 @@ initialise_passwd()
         CloseHandle(hToken);
     }
 
+    // apply
     if (login[0]) {
         char *sid = NULL;
 
@@ -397,7 +409,14 @@ initialise_passwd()
 
         if (0 == _stricmp("Administrator", login)) {
             x_passwd.pw_uid = 500;              // Built-in admin account.
-            x_passwd.pw_gid = 513;              // Original user.
+            x_passwd.pw_gid = 513;              // PrimaryGroupID.
+                //
+                // By default, all Active Directory users have a PrimaryGroupID of 513, 
+                // which is associated with the Domain Users group.
+                // However, if the user needed to be seen as a Domain Admin for POSIX,
+                // the PrimaryGroupID needed to be 512, the RID for that group. 
+                // The Enterprise Admins group, 519, is also used to grant this level in POSIX.
+                //
 
         } else {
             x_passwd.pw_uid = (short) RID(tu->User.Sid);
@@ -413,6 +432,7 @@ initialise_passwd()
             LocalFree(sid);
         }
 
+    // old-school
     } else {
         DWORD cbBuffer = sizeof(x_passwd_name) - 1;
 
@@ -432,14 +452,18 @@ initialise_passwd()
         x_passwd.pw_gid = x_passwd.pw_uid;
     }
 
+    // additional account attributes
     _strlwr(x_passwd_name);
-    x_passwd.pw_dir   = w32_gethome(FALSE);
-    x_passwd.pw_shell = w32_getshell();
+    strncpy(x_passwd_dir, w32_gethome(FALSE), sizeof(x_passwd_dir) - 1);
+    strncpy(x_passwd_shell, w32_getshell(), sizeof(x_passwd_shell) - 1);
 
+    // group
     if (group[0]) {
-        strncpy(x_group, group, sizeof(x_passwd_gecos) - 1);
-        _strlwr(x_group);
+        strncpy(x_group_name, group, sizeof(x_group_name) - 1);
+        _strlwr(x_group_name);
     }
+    x_group.gr_gid = x_passwd.pw_gid;
+    x_group.gr_mem = NULL;
 }
 
 
@@ -523,4 +547,3 @@ w32_IsAdministrator(void)
 }
 
 /*end*/
-

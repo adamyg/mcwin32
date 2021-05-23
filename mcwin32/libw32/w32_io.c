@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.19 2021/05/16 14:45:24 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.20 2021/05/23 10:23:11 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -543,7 +543,7 @@ w32_fstat(int fd, struct stat *sb)
 {
 #if defined(UTF8FILENAMES)
     return w32_fstatW(fd, sb);
-    
+
 #else
     return w32_fstatA(fd, sb);
 
@@ -1808,7 +1808,7 @@ ApplyOwner(struct stat *sb, const DWORD dwAttributes, HANDLE handle)
     // Default uid/gid
     if ((FILE_ATTRIBUTE_SYSTEM & dwAttributes) || 0 == handle) {
         sb->st_uid = 0;                         // root/system
-        sb->st_gid = 0;     
+        sb->st_gid = 0;
     } else {                                    // current user (default)
         sb->st_uid = w32_getuid();
         sb->st_gid = w32_getgid();
@@ -1817,14 +1817,14 @@ ApplyOwner(struct stat *sb, const DWORD dwAttributes, HANDLE handle)
     // Inquire
     if (handle && INVALID_HANDLE_VALUE != handle) {
         PSID owner = NULL, group = NULL;
-        int uid = -1, gid = -1;      
+        int uid = -1, gid = -1;
 
-        if (GetSecurityInfo(handle, SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION, 
+        if (GetSecurityInfo(handle, SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION,
                 &owner, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
             sb->st_uid = (short) RID(owner);
                 // Note: Unfortunately st_uid/st_gid are short's resulting in RID truncation.
 
-            if (GetSecurityInfo(handle, SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION, 
+            if (GetSecurityInfo(handle, SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION,
                     NULL, &group, NULL, NULL, NULL) == ERROR_SUCCESS) {
                 sb->st_gid = (short) RID(group);
             } else {
@@ -1926,7 +1926,7 @@ ApplySize(struct stat *sb, const DWORD nFileSizeLow, const DWORD nFileSizeHigh)
 
 
 /*
- *  Well-known script magics'     
+ *  Well-known script magics'
  */
 
 static int
@@ -2493,7 +2493,7 @@ ReadShortcutA(const char *name, char *buf, int maxlen)
             w32_utf2wc(name, wname, _countof(wname));
             hres = ppf->lpVtbl->Load(ppf, wname, STGM_READ);
             if (SUCCEEDED(hres)) {
-                /*  
+                /*
                  -  if (SUCCEEDED(hres)) {
                  -      hres = pShLink->lpVtbl->Resolve(
                  -                  pShLink, 0, SLR_NOUPDATE | SLR_ANY_MATCH | SLR_NO_UI);

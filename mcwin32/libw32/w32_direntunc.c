@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.2 2021/05/09 11:02:23 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.3 2021/05/23 10:23:11 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -59,8 +59,8 @@ static void unc_errno(void);
 /////////////////////////////////////////////////////////////////////////////////////////
 //  SMB shares
 //
-//  Theses functions applies only to Server Message Block (SMB) shares. 
-//  For other types of shares, such as Distributed File System (DFS) or WebDAV shares, 
+//  Theses functions applies only to Server Message Block (SMB) shares.
+//  For other types of shares, such as Distributed File System (DFS) or WebDAV shares,
 //  use Windows Networking (WNet) functions, which support all types of shares.
 
 DIR *
@@ -85,7 +85,7 @@ w32_unc_populateW(const wchar_t *servername)
     NET_API_STATUS res = 0;
     DIR *dp;
 
-    if (NULL == (dp = w32_dir_alloc())) { 
+    if (NULL == (dp = w32_dir_alloc())) {
         return (DIR *)NULL;
     }
 
@@ -145,13 +145,13 @@ w32_unc_opendirA(const char *dirname)
 //      errno = ENOTDIR;
 //      return NULL;
 //  }
-    
+
     nrw.dwScope = RESOURCE_GLOBALNET;
     nrw.dwType  = RESOURCETYPE_DISK;
     nrw.dwDisplayType = RESOURCEDISPLAYTYPE_SERVER;
     nrw.dwUsage = RESOURCEUSAGE_CONTAINER;
     nrw.lpRemoteName = (char *)dirname;
-    
+
     result = WNetOpenEnumA(RESOURCE_GLOBALNET, RESOURCETYPE_DISK, RESOURCEUSAGE_CONNECTABLE, &nrw, &handle);
     if (NO_ERROR != result) {
         return (DIR *)NULL;
@@ -179,19 +179,19 @@ w32_unc_opendirW(const wchar_t *dirname)
 //      errno = ENOTDIR;
 //      return NULL;
 //  }
-    
+
     nrw.dwScope = RESOURCE_GLOBALNET;
     nrw.dwType = RESOURCETYPE_DISK;
     nrw.dwDisplayType = RESOURCEDISPLAYTYPE_SERVER;
     nrw.dwUsage = RESOURCEUSAGE_CONTAINER;
     nrw.lpRemoteName = (wchar_t *)dirname;
-    
+
     result = WNetOpenEnumW(RESOURCE_GLOBALNET, RESOURCETYPE_DISK, RESOURCEUSAGE_CONNECTABLE, &nrw, &handle);
     if (NO_ERROR != result) {
         return (DIR *)NULL;
     }
 
-    if (NULL == (dp = w32_dir_alloc())) { 
+    if (NULL == (dp = w32_dir_alloc())) {
         WNetCloseEnum(handle);
         return (DIR *)NULL;
     }
@@ -325,8 +325,8 @@ w32_unc_validA(const char *path)
             const size_t namelen =              // servername length
                     (scan ? (scan - path) : strlen(path));
 
-            if (namelen > 0) {                                           
-                return namelen;   
+            if (namelen > 0) {
+                return namelen;
             }
         }
     }
@@ -347,7 +347,7 @@ w32_unc_validW(const wchar_t *path)
                     (scan ? (scan - path) : wcslen(path));
 
             if (namelen > 0) {
-                return namelen; 
+                return namelen;
             }
         }
     }
@@ -369,11 +369,11 @@ w32_unc_rootA(const char *path, int *length)
 
         if (0 == end[0] ||                      // "//servername[/]"
                 (0 == end[1] && IS_PATH_SEP(end[0]))) {
-              
-            char computerName[MAX_COMPUTERNAME_LENGTH + 1] = {0};
-            DWORD computerSz = sizeof(computerName);
 
-            if (length) *length = namelen;                                              
+            char computerName[MAX_COMPUTERNAME_LENGTH + 1] = {0};
+            DWORD computerSz = _countof(computerName);
+
+            if (length) *length = namelen;
             if (GetComputerNameA(computerName, &computerSz)) {
                 if (namelen == computerSz &&
                         0 == _strnicmp(path + 2, computerName, namelen)) {
@@ -399,9 +399,9 @@ w32_unc_rootW(const wchar_t *path, int *length)
                 (0 == end[1] && IS_PATH_SEP(end[0]))) {
 
             wchar_t computerName[MAX_COMPUTERNAME_LENGTH + 1] = {0};
-            DWORD computerSz = sizeof(computerName);
+            DWORD computerSz = _countof(computerName);
 
-            if (length) *length = namelen;                                              
+            if (length) *length = namelen;
             if (GetComputerNameW(computerName, &computerSz)) {
                 if (namelen == computerSz &&
                         0 == _wcsnicmp(path + 2, computerName, namelen)) {

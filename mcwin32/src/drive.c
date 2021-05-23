@@ -12,7 +12,7 @@
    The Free Software Foundation, Inc.
 
    Written by:
-   Adam Young 2012 - 2020
+   Adam Young 2012 - 2021
 
    This file is part of the Midnight Commander.
 
@@ -64,7 +64,6 @@
 static void             drive_sel (WPanel *panel);
 static cb_ret_t         drive_dlg_callback (Widget * h, Widget * sender, widget_msg_t msg, int parm, void *data);
 
-//  #define DO_NETWORK_DRIVES                   /* test only */
 #if defined(DO_NETWORK_DRIVES)
 
 typedef DWORD (__stdcall *WNetOpenEnumA_t)(DWORD, DWORD, DWORD, NETRESOURCE *, HANDLE*);

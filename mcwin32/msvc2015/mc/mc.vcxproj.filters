@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\libw32">
-      <UniqueIdentifier>{63955527-224f-4bf9-b9be-f625f890901d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\libw32">
-      <UniqueIdentifier>{42bd22d9-cdba-4bad-8198-4ebf4e99a02d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\mcsrc">
       <UniqueIdentifier>{6f2ce1ba-f42d-401e-8339-20eff317021e}</UniqueIdentifier>
     </Filter>
@@ -136,9 +130,6 @@
     <Filter Include="Source Files\mcsrc\libvfs\sftpfs">
       <UniqueIdentifier>{960c1c61-1cec-44f0-bcce-7a19a8108c44}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\libw32\sys">
-      <UniqueIdentifier>{8225a4a0-ceb1-4c39-ba0c-ec8240199db5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\mcsrc\libmc\widget\filemanager">
       <UniqueIdentifier>{7f19a6d2-651c-4a3b-aedf-57a19bd7522f}</UniqueIdentifier>
     </Filter>
@@ -147,144 +138,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\libw32\w32_check.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_child.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_chown.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_close.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_dir.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_dirent.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_errno.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_fcntl.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_fsync.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_getcwd.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_gethostname.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_getopt.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_gistrerror.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_grp.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_ino.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_io.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_langinfo.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_link.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_mknod.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_mkstemp.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_mmap.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_neterr.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_popen.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_pwd.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_read.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_select.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_shell.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_signal.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_slang.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_socket.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_statfs.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_strftime.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_string.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_strlcat.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_strlcpy.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_strtoll.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_strtoull.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_sysdir.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_time.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_trace.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_truncate.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_uname.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_unlink.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_user.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_util.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_write.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\args.c">
       <Filter>Source Files\mcsrc</Filter>
     </ClCompile>
@@ -747,53 +600,14 @@
     <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\vfs_subclass.c">
       <Filter>Source Files\mcsrc\libvfs\sftpfs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_sockfd.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\lib\shell.c">
       <Filter>Source Files\mcsrc\libmc</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\lib\widget\mouse.c">
       <Filter>Source Files\mcsrc\libmc\widget</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_getsubopt.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_iconv.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_iconv_native.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_poll.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_progname.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_sockbase.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_socket2.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_sockpair.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\usermenu.c">
       <Filter>Source Files\mcsrc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\bsd_bsearch.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\bsd_qsort.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_lang.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_reparse.c">
-      <Filter>Source Files\libw32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\lib\widget\background.c">
       <Filter>Source Files\mcsrc\libmc\widget</Filter>
@@ -837,27 +651,6 @@
     <ClCompile Include="..\..\src\drive.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_readv.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_writev.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_rename.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_chmod.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_direntunc.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_realpath.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\libw32\w32_getcwdd.c">
-      <Filter>Source Files\libw32</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\buildinfo.h">
@@ -865,75 +658,6 @@
     </ClInclude>
     <ClInclude Include="..\..\config.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\alloca.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\dirent.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\edidentifier.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\getopt.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\grp.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\langinfo.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\netdb.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\package.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\poll.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\pwd.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\slang.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\unicode_cp437.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\unicode_table.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\unistd.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\w32_colors256.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\w32_trace.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_child.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_include.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_internal.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_io.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_misc.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_time.h">
-      <Filter>Header Files\libw32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\achown.h">
       <Filter>Header Files\mcsrc\libmc\widget\filemanager</Filter>
@@ -1298,83 +1022,8 @@
     <ClInclude Include="..\..\..\mcsrc\src\vfs\plugins_init.h">
       <Filter>Header Files\mcsrc\libvfs</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\cdefs.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\ioctl.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\mman.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\mount.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\param.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\select.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\socket.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\statfs.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\statvfs.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\time.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\uio.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\utsname.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\utypes.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\vfs.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\sys\wait.h">
-      <Filter>Header Files\libw32\sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\w32config.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\usermenu.h">
       <Filter>Header Files\mcsrc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\libgen.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\libw32.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\libw32_version.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\semaphore.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\termemu_vio.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_cdef.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_errno.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_iconv.h">
-      <Filter>Header Files\libw32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_ioctl.h">
-      <Filter>Header Files\libw32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\lib\widget\background.h">
       <Filter>Header Files\mcsrc\libmc\widget</Filter>
@@ -1396,9 +1045,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\win32_key.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libw32\win32_direct.h">
-      <Filter>Header Files\libw32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\vfs\fish\fish.h">
       <Filter>Header Files\mcsrc\libvfs\fish</Filter>

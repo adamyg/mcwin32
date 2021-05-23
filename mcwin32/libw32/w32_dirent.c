@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.17 2021/05/12 15:37:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.18 2021/05/23 10:23:11 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -275,7 +275,7 @@ opendirA(const char *name)
 
     /* Open directory
      *
-     *    If you are writing a 32-bit application to list all the files in a directory and the 
+     *    If you are writing a 32-bit application to list all the files in a directory and the
      *    application may be running on a 64-bit computer, you should call Wow64DisableWow64FsRedirection
      *    before calling FindFirstFileEx and call Wow64RevertWow64FsRedirection after the last call to FindNextFile.
      *
@@ -411,7 +411,7 @@ opendirW(const wchar_t *name)
 
     /* Open directory
      *
-     *    If you are writing a 32-bit application to list all the files in a directory and the 
+     *    If you are writing a 32-bit application to list all the files in a directory and the
      *    application may be running on a 64-bit computer, you should call Wow64DisableWow64FsRedirection
      *    before calling FindFirstFileEx and call Wow64RevertWow64FsRedirection after the last call to FindNextFile.
      *
@@ -506,7 +506,7 @@ dir_populateA(DIR *dp, const char *path)
         if ('.' == finddata.cFileName[0] && 0 == finddata.cFileName[1]) {
             continue;
         }
-                                               
+
         if (NULL == (dplist = w32_dir_pushA(dp, finddata.cFileName))) {
             FindClose(hSearch);
             return ENOMEM;
@@ -564,7 +564,7 @@ dir_populateW(DIR *dp, const wchar_t *path)
         if ('.' == finddata.cFileName[0] && 0 == finddata.cFileName[1]) {
             continue;
         }
-                                               
+
         if (NULL == (dplist = w32_dir_pushW(dp, finddata.cFileName))) {
             FindClose(hSearch);
             return ENOMEM;
@@ -605,7 +605,7 @@ w32_dir_alloc(void)
 }
 
 
-void                    
+void
 w32_dir_free(DIR *dp)
 {
     if (dp) {
@@ -1101,7 +1101,7 @@ dir_ishpfA(const char *directory)
     BOOL rc = 0;
 
     if ((namelen = w32_unc_validA(directory)) > 0) {
-        char rootdir[MAXHOSTNAMELEN + MAX_PATH], 
+        char rootdir[MAXHOSTNAMELEN + MAX_PATH],
            *cursor = rootdir, *end = cursor + (_countof(rootdir) - 4);
         int i;
 
@@ -1161,7 +1161,7 @@ dir_ishpfW(const wchar_t *directory)
     BOOL rc = 0;
 
     if ((namelen = w32_unc_validW(directory)) > 0) {
-        wchar_t rootdir[MAXHOSTNAMELEN + MAX_PATH], 
+        wchar_t rootdir[MAXHOSTNAMELEN + MAX_PATH],
            *cursor = rootdir, *end = cursor + (_countof(rootdir) - 4);
         int i;
 
