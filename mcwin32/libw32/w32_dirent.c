@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.18 2021/05/23 10:23:11 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.19 2021/05/24 15:10:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -141,24 +141,23 @@ LIBW32_API DIR *
 opendir(const char *dirname)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wdirname[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wdirname[WIN32_PATH_MAX];
 
-    if (NULL == dirname) {
-        errno = EFAULT;
-        return (DIR *)NULL;
+        if (NULL == dirname) {
+            errno = EFAULT;
+            return (DIR *)NULL;
+        }
+
+        if (w32_utf2wc(dirname, wdirname, _countof(wdirname)) > 0) {
+            return opendirW(wdirname);
+        }
+
+        return NULL;
     }
-
-    if (w32_utf2wc(dirname, wdirname, _countof(wdirname)) > 0) {
-        return opendirW(wdirname);
-    }
-
-    return NULL;
-
-#else
+#endif  //UTF8FILENAMES
 
     return opendirA(dirname);
-
-#endif  //UTF8FILENAMES
 }
 
 

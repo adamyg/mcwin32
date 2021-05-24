@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.3 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.4 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -113,27 +113,26 @@ LIBW32_API int
 w32_rename(const char *ofile, const char *nfile)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wofile[WIN32_PATH_MAX], wnfile[WIN32_PATH_MAX];
-    int mode = 0;
+    if (w32_utf8filenames_state()) {
+        wchar_t wofile[WIN32_PATH_MAX], wnfile[WIN32_PATH_MAX];
+        int mode = 0;
 
-    if (NULL == ofile || NULL == nfile) {
-        errno = EFAULT;
+        if (NULL == ofile || NULL == nfile) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(ofile, wofile, _countof(wofile)) > 0) {
+            if (w32_utf2wc(nfile, wnfile, _countof(wnfile)) > 0) {
+                return w32_renameW(wofile, wnfile);
+            }
+        }
+
         return -1;
     }
-
-    if (w32_utf2wc(ofile, wofile, _countof(wofile)) > 0) {
-        if (w32_utf2wc(nfile, wnfile, _countof(wnfile)) > 0) {
-            return w32_renameW(wofile, wnfile);
-        }
-    }
-
-    return -1;
-
-#else
+#endif  //UTF8FILENAMES
 
     return w32_renameA(ofile, nfile);
-
-#endif  //UTF8FILENAMES
 }
 
 

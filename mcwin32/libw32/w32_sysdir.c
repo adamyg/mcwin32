@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.6 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.7 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -42,18 +42,17 @@ LIBW32_API int
 w32_getsysdir(int id, char *buf, int maxlen)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
 
-    if (w32_getsysdirW(id, wpath, _countof(wpath)) > 0) {
-        return w32_wc2utf(wpath, buf, maxlen);
+        if (w32_getsysdirW(id, wpath, _countof(wpath)) > 0) {
+            return w32_wc2utf(wpath, buf, maxlen);
+        }
+        return -1;
     }
-    return -1;
-
-#else
+#endif
 
     return w32_getsysdirA(id, buf, maxlen);
-
-#endif  //UTF8FILENAMES
 }
 
 

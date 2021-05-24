@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.25 2021/05/23 10:19:41 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.26 2021/05/24 15:10:33 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -509,6 +509,8 @@ LIBW32_API size_t       w32_strftime (char *buf, size_t buflen, const char *fmt,
 #endif /*WIN32_UNISTD_MAP*/
 
 /* i/o */
+LIBW32_API int          w32_utf8filenames_enable (void);
+
 LIBW32_API int          w32_open (const char *path, int, ...);
 LIBW32_API int          w32_openA (const char *path, int, int);
 LIBW32_API int          w32_openW (const wchar_t *path, int, int);

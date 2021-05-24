@@ -1,6 +1,10 @@
-Sun Apr 25 22:34:49 2021 adamy
+Tue May 18 19:45:12 2021 adamy
 
-	* UTF8/wide-character i/o operations.
+	* passwd/group extensions.
+
+	* UNC navigation tweaks.
+
+	* UTF8/wide-character file operations.
 
 Sun Jun 13 18:58:34 2020 adamy
 
@@ -19,12 +23,6 @@ Sat May  2 00:46:45 2020 adamy
 	* Drive selection
 		- Select active widget based on cwd.
 		- Handle selection within a vfs context (for example ftp/sftp).
-
-	* libssh 1.9.0
-		- mbedtls engine.
-		- libssh2_helper's
-
-	* libmbedtls 4.16.6
 
 Sun Jun 13 18:58:34 2020 adamy
 
@@ -80,7 +78,7 @@ Sat May  2 00:46:45 2020 adamy
 
 	* libssh 1.9.0
 		- mbedtls engine.
-		- libssh2_helper's
+		- libssh2_helper
 
 	* libmbedtls 4.16.6
 

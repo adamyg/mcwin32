@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.20 2021/05/23 10:23:11 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.21 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -150,12 +150,44 @@ static int                  StatW(const wchar_t *name, struct stat *sb);
 static BOOL                 my_GetVolumeInformationByHandle(HANDLE handle, DWORD *serialno, DWORD *flags);
 static BOOL WINAPI          my_GetVolumeInformationByHandleImp(HANDLE, LPWSTR, DWORD, LPDWORD, LPDWORD, LPDWORD, LPWSTR, DWORD);
 
+static int                  x_utf8filenames = 0;
+
 static const char *         suffixes_null[] = {
     "", NULL
     };
 static const char *         suffixes_default[] = {
     "", ".lnk", NULL
     };
+
+
+/*
+//  NAME
+//      w32_utf8filenames_enable - enable UTF8 flenames
+//
+//  SYNOPSIS
+//      #include <unistd.h>
+//
+//      int w32_utf8filenames_enable(void);
+//      int w32_utf8filenames_state(void);
+//
+//  RETURN VALUE
+//      w32_utf8filenames_enable() returns the previous state, whereas w32_utf8filenames_state()
+//      returns the current UTF8 filename handling status.
+*/
+LIBW32_API int
+w32_utf8filenames_enable (void)
+{
+    const int previous = x_utf8filenames;
+    x_utf8filenames = 1;
+    return previous;
+}
+
+
+int
+w32_utf8filenames_state (void)
+{
+    return x_utf8filenames;
+}
 
 
 /*
@@ -243,23 +275,23 @@ LIBW32_API int
 w32_stat(const char *path, struct stat *sb)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
 
-    if (NULL == path || NULL == sb) {
-        errno = EFAULT;
+        if (NULL == path || NULL == sb) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return w32_statW(wpath, sb);
+        }
+
         return -1;
     }
-
-    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-        return w32_statW(wpath, sb);
-    }
-
-    return -1;
-
-#else
-    return w32_statA(path, sb);
-
 #endif  //UTF8FILENAMES
+
+    return w32_statA(path, sb);
 }
 
 
@@ -398,23 +430,23 @@ LIBW32_API int
 w32_lstat(const char *path, struct stat *sb)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
 
-    if (NULL == path || NULL == sb) {
-        errno = EFAULT;
+        if (NULL == path || NULL == sb) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return w32_lstatW(wpath, sb);
+        }
+
         return -1;
     }
-
-    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-        return w32_lstatW(wpath, sb);
-    }
-
-    return -1;
-
-#else
-    return w32_lstatA(path, sb);
-
 #endif  //UTF8FILENAMES
+
+    return w32_lstatA(path, sb);
 }
 
 
@@ -542,12 +574,12 @@ LIBW32_API int
 w32_fstat(int fd, struct stat *sb)
 {
 #if defined(UTF8FILENAMES)
-    return w32_fstatW(fd, sb);
-
-#else
-    return w32_fstatA(fd, sb);
-
+    if (w32_utf8filenames_state()) {
+        return w32_fstatW(fd, sb);
+    }
 #endif  //UTF8FILENAMES
+
+    return w32_fstatA(fd, sb);
 }
 
 
@@ -971,19 +1003,19 @@ LIBW32_API int
 w32_readlink(const char *path, char *buf, int maxlen)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
 
-    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-        if (w32_readlinkW(wpath, wpath, _countof(wpath)) > 0) {
-            return w32_wc2utf(wpath, buf, maxlen);
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            if (w32_readlinkW(wpath, wpath, _countof(wpath)) > 0) {
+                return w32_wc2utf(wpath, buf, maxlen);
+            }
         }
+        return -1;
     }
-    return -1;
-
-#else
-    return w32_readlinkA(path, buf, maxlen);
-
 #endif  //UTF8FILENAMES
+
+    return w32_readlinkA(path, buf, maxlen);
 }
 
 
@@ -1507,41 +1539,33 @@ isshortcut(const char *name)
 LIBW32_API int
 w32_open(const char *path, int oflag, ...)
 {
-#if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
     int mode = 0;
 
-    if (NULL == path) {
-        errno = EFAULT;
+    if (O_CREAT & oflag) {
+        va_list ap;
+        va_start(ap, oflag);
+        mode = va_arg(ap, int);
+        va_end(ap);
+    }
+
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
+
+        if (NULL == path) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return w32_openW(wpath, oflag, mode);
+        }
+
         return -1;
     }
-
-    if (O_CREAT & oflag) {
-        va_list ap;
-        va_start(ap, oflag);
-        mode = va_arg(ap, int);
-        va_end(ap);
-    }
-
-    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-        return w32_openW(wpath, oflag, mode);
-    }
-
-    return -1;
-
-#else
-    int mode = 0;
-
-    if (O_CREAT & oflag) {
-        va_list ap;
-        va_start(ap, oflag);
-        mode = va_arg(ap, int);
-        va_end(ap);
-    }
+#endif  //UTF8FILENAMES
 
     return w32_openA(path, oflag, mode);
-
-#endif  //UTF8FILENAMES
 }
 
 

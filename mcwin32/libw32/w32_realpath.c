@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.7 2021/05/23 10:23:12 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.8 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -113,30 +113,31 @@ LIBW32_API char *
 w32_realpath2(const char *path, char *resolved_path, int maxlen)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t *wresolved_path, wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t *wresolved_path, wpath[WIN32_PATH_MAX];
 
-    w32_utf2wc(path, wpath, _countof(wpath));
+        w32_utf2wc(path, wpath, _countof(wpath));
 
-    if (NULL != (wresolved_path = alloca(sizeof(wchar_t *) * WIN32_PATH_MAX))) {
-        if (w32_realpathW(wpath, wresolved_path, WIN32_PATH_MAX)) {
-            if (NULL == resolved_path) {        // dynamic; implementation specific.
-                maxlen = WIN32_PATH_MAX;
-                if (NULL == (resolved_path = (char *)malloc(sizeof(char) * maxlen))) {
-                    return NULL;
+        if (NULL != (wresolved_path = alloca(sizeof(wchar_t *) * WIN32_PATH_MAX))) {
+            if (w32_realpathW(wpath, wresolved_path, WIN32_PATH_MAX)) {
+                if (NULL == resolved_path) {    // dynamic; implementation specific.
+                    maxlen = WIN32_PATH_MAX;
+                    if (NULL == (resolved_path = (char *)malloc(sizeof(char) * maxlen))) {
+                        return NULL;
+                    }
+                }
+
+                if (resolved_path) {
+                    w32_wc2utf(wresolved_path, resolved_path, maxlen);
+                    return resolved_path;
                 }
             }
-
-            if (resolved_path) {
-                w32_wc2utf(wresolved_path, resolved_path, maxlen);
-                return resolved_path;
-            }
         }
+        return NULL;
     }
-    return NULL;
+#endif  //UTF8FILENAMES
 
-#else
     return w32_realpathA(path, resolved_path, maxlen);
-#endif
 }
 
 

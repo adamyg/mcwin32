@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.7 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.8 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -193,24 +193,23 @@ int
 truncate(const char *path, off_t length)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
 
-    if (NULL == path) {
-        errno = EFAULT;
+        if (NULL == path) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return truncateW(wpath, length);
+        }
+
         return -1;
     }
-
-    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-        return truncateW(wpath, length);
-    }
-
-    return -1;
-
-#else
+#endif  //UTF8FILENAMES
 
     return truncateA(path, length);
-
-#endif  //UTF8FILENAMES
 }
 
 

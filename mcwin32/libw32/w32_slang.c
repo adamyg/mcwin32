@@ -342,13 +342,16 @@ SLtt_add_color_attribute(int obj, SLtt_Char_Type attr)
 void
 SLtt_set_mono(int obj, char *name, SLtt_Char_Type c)
 {
-    assert(0);                                  // TODO
+    (void) obj;
+    (void) name;
+    (void) c;
+    assert(0);
 }
 
 
 /*
  *  SLtt_beep ---
- *      xxx
+ *      Audible bell.
  **/
 void
 SLtt_beep(void)

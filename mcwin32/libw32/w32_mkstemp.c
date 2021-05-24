@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.7 2021/05/23 10:22:13 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.8 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -100,20 +100,20 @@ LIBW32_API int
 w32_mkstemp(char *path)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[MAX_PATH];
-    int fildes;
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[MAX_PATH];
+        int fildes;
 
-    w32_utf2wc(path, wpath, _countof(wpath));
-    if ((fildes = w32_mkstempW(wpath)) >= 0) {
-        w32_wc2utf(wpath, path, strlen(path) + 1);
-        return fildes;
+        w32_utf2wc(path, wpath, _countof(wpath));
+        if ((fildes = w32_mkstempW(wpath)) >= 0) {
+            w32_wc2utf(wpath, path, strlen(path) + 1);
+            return fildes;
+        }
+        return -1;
     }
-    return -1;
+#endif  //UTF8FILENAMES
 
-#else
     return w32_mkstempA(path);
-
-#endif
 }
 
 
@@ -149,20 +149,20 @@ LIBW32_API int
 w32_mkstemps(char *path, int suffixlen)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[MAX_PATH];
-    int fildes;
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[MAX_PATH];
+        int fildes;
 
-    w32_utf2wc(path, wpath, _countof(wpath));
-    if ((fildes = w32_mkstempsW(wpath, suffixlen)) >= 0) {
-        w32_wc2utf(wpath, path, strlen(path) + 1);
-        return fildes;
+        w32_utf2wc(path, wpath, _countof(wpath));
+        if ((fildes = w32_mkstempsW(wpath, suffixlen)) >= 0) {
+            w32_wc2utf(wpath, path, strlen(path) + 1);
+            return fildes;
+        }
+        return -1;
     }
-    return -1;
+#endif  //UTF8FILENAMES
 
-#else
-    return w32_mkstempsA(path);
-
-#endif
+    return w32_mkstempsA(path, suffixlen);
 }
 
 
@@ -198,20 +198,20 @@ LIBW32_API int
 w32_mkstempx(char *path)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[MAX_PATH];
-    int fildes;
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[MAX_PATH];
+        int fildes;
 
-    w32_utf2wc(path, wpath, _countof(wpath));
-    if ((fildes = w32_mkstempxW(wpath)) >= 0) {
-        w32_wc2utf(wpath, path, strlen(path) + 1);
-        return fildes;
+        w32_utf2wc(path, wpath, _countof(wpath));
+        if ((fildes = w32_mkstempxW(wpath)) >= 0) {
+            w32_wc2utf(wpath, path, strlen(path) + 1);
+            return fildes;
+        }
+        return -1;
     }
-    return -1;
+#endif  //UTF8FILENAMES
 
-#else
     return w32_mkstempxA(path);
-
-#endif
 }
 
 
@@ -257,8 +257,8 @@ generate_seed(void)
 static int
 gettempA_tmp(char *result, const char *path, int suffixlen, int *fildes, int temporary)
 {
-    /* 
-     *  "/tmp/", reference system temporary path 
+    /*
+     *  "/tmp/", reference system temporary path
      */
     if (path && 0 == memcmp(path, "/tmp/", 5)) {
         char t_path[MAX_PATH], *p;
@@ -418,8 +418,8 @@ gettempA(char *path, int suffixlen, register int *fildes, int temporary, char *s
 static int
 gettempW_tmp(wchar_t *result, const wchar_t *path, int suffixlen, int *fildes, int temporary)
 {
-    /* 
-     *  "/tmp/", reference system temporary path 
+    /*
+     *  "/tmp/", reference system temporary path
      */
     if (path && 0 == wmemcmp(path, L"/tmp/", 5)) {
         wchar_t t_path[MAX_PATH], *p;

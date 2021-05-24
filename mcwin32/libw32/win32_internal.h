@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.17 2021/05/19 16:20:22 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.18 2021/05/24 15:10:34 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -97,6 +97,9 @@ int                     IO_STRICMP (const char *s1, const char *s2);
 int                     IO_STRNICMP (const char *s1, const char *s2, int slen);
 int                     IO_WSTRICMP (const wchar_t *s1, const char *s2);
 int                     IO_WSTRNICMP (const wchar_t *s1, const char *s2, int slen);
+
+LIBW32_API int          w32_utf8filenames(int state);
+int                     w32_utf8filenames_state();
 
 LIBW32_API ino_t        w32_ino_hash (const char *name);
 LIBW32_API ino_t        w32_ino_whash (const wchar_t *name);

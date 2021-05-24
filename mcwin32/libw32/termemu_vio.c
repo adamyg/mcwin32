@@ -62,6 +62,10 @@
 #define WIN32_CONSOLEEXT                        /* extended console */
 #define WIN32_CONSOLE256                        /* enable 256 color console support */
 
+#if defined(__WATCOMC__)
+#pragma disable_message(124)                    /* Comparison result always 0 / 1 */
+#endif
+
 #pragma comment(lib, "Gdi32.lib")
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "Kernel32.lib")
@@ -535,6 +539,8 @@ vio_trace(const char *fmt, ...)
     if (debug[len-1] != '\n') debug[len] = '\n', debug[len+1] = 0;
     OutputDebugStringA(debug);
     va_end(ap);
+#else   //_DEBUG
+    (void)fmt;
 #endif  //_DEBUG
 }
 
@@ -1058,7 +1064,7 @@ IsVirtualConsole(int *depth)
     // To disable this mode, use ENABLE_EXTENDED_FLAGS without this flag.
 #endif
 #if !defined(ENABLE_EXTENDED_FLAGS)
-#define ENABLE_EXTENDED_FLAGS 0x0080    
+#define ENABLE_EXTENDED_FLAGS 0x0080
     // Required to enable or disable extended flags. See ENABLE_INSERT_MODE and ENABLE_QUICK_EDIT_MODE.
 #endif
 
@@ -1493,7 +1499,7 @@ CopyOut(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
         if (-1 == ctx->cursormode) {            // hide cursor, if visible
             GetConsoleCursorInfo(chandle, &ctx->cursorinfo);
             if (0 != (ctx->cursormode = ctx->cursorinfo.bVisible)) {
-                ctx->cursorinfo.bVisible = FALSE; 
+                ctx->cursorinfo.bVisible = FALSE;
                 (void) SetConsoleCursorInfo(chandle, &ctx->cursorinfo);
             }
         }

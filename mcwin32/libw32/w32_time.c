@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.7 2021/05/07 17:52:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.8 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -295,23 +295,23 @@ LIBW32_API int
 w32_utime(const char *path, const struct utimbuf *times)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
 
-    if (NULL == path || NULL == times) {
-        errno = EFAULT;
+        if (NULL == path || NULL == times) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return w32_utimeW(wpath, times);
+        }
+
         return -1;
     }
-
-    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-        return w32_utimeW(wpath, times);
-    }
-
-    return -1;
-
-#else
-    return w32_utimeA(path, times);
-
 #endif  //UTF8FILENAMES
+
+    return w32_utimeA(path, times);
 }
 
 

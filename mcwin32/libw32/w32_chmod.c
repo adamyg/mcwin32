@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_chmod_c,"$Id: w32_chmod.c,v 1.3 2021/05/07 17:52:55 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_chmod_c,"$Id: w32_chmod.c,v 1.4 2021/05/24 15:10:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -53,7 +53,7 @@ __CIDENT_RCSID(gr_w32_chmod_c,"$Id: w32_chmod.c,v 1.3 2021/05/07 17:52:55 cvsuse
 //      in pathname, which is dereferenced if it is a symbolic link.
 //
 //      The file mode consists of the file permission bits plus the set-user-ID,
-//      set-group-ID, and sticky bits)  These system calls differ only in how the 
+//      set-group-ID, and sticky bits)  These system calls differ only in how the
 //      file is specified.
 //
 //  ERRORS
@@ -61,26 +61,26 @@ __CIDENT_RCSID(gr_w32_chmod_c,"$Id: w32_chmod.c,v 1.3 2021/05/07 17:52:55 cvsuse
 //      The chmod() function will fail if:
 //
 //      [EACCES]
-//          Search permission is denied on a component of the path prefix. 
+//          Search permission is denied on a component of the path prefix.
 //      [ELOOP]
-//          Too many symbolic links were encountered in resolving path. 
+//          Too many symbolic links were encountered in resolving path.
 //      [ENAMETOOLONG]
-//          The length of the path argument exceeds {PATH_MAX} or a pathname component is longer than {NAME_MAX}. 
+//          The length of the path argument exceeds {PATH_MAX} or a pathname component is longer than {NAME_MAX}.
 //      [ENOTDIR]
-//          A component of the path prefix is not a directory. 
+//          A component of the path prefix is not a directory.
 //      [ENOENT]
-//          A component of path does not name an existing file or path is an empty string. 
+//          A component of path does not name an existing file or path is an empty string.
 //      [EPERM]
-//          The effective user ID does not match the owner of the file and the process does not have appropriate privileges. 
+//          The effective user ID does not match the owner of the file and the process does not have appropriate privileges.
 //      [EROFS]
-//          The named file resides on a read-only file system. 
+//          The named file resides on a read-only file system.
 //
 //      The chmod() function may fail if:
 //
 //      [EINTR]
-//          A signal was caught during execution of the function. 
+//          A signal was caught during execution of the function.
 //      [EINVAL]
-//          The value of the mode argument is invalid. 
+//          The value of the mode argument is invalid.
 //      [ENAMETOOLONG]
 //          Pathname resolution of a symbolic link produced an intermediate result whose length exceeds {PATH_MAX}.
 */
@@ -89,24 +89,23 @@ LIBW32_API int
 w32_chmod(const char *pathname, mode_t mode)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpathname[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpathname[WIN32_PATH_MAX];
 
-    if (NULL == pathname) {
-        errno = EFAULT;
+        if (NULL == pathname) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(pathname, wpathname, _countof(wpathname)) > 0) {
+            return w32_chmodW(wpathname, mode);
+        }
+
         return -1;
     }
-
-    if (w32_utf2wc(pathname, wpathname, _countof(wpathname)) > 0) {
-        return w32_chmodW(wpathname, mode);
-    }
-
-    return -1;
-
-#else
+#endif  //UTF8FILENAMES
 
     return w32_chmodA(pathname, mode);
-
-#endif  //UTF8FILENAMES
 }
 
 

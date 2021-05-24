@@ -148,6 +148,7 @@ WIN32_Setup(void)
 {
     static int init = 0;
 
+    w32_utf8filenames_enable();
     if (init) return;
     ++init;
 

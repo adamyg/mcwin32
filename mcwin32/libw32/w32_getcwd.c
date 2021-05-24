@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.17 2021/05/23 10:23:11 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.18 2021/05/24 15:10:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -113,22 +113,20 @@ w32_getcwd(char *path, int size)
         }
 
 #if defined(UTF8FILENAMES)
-        {   wchar_t *wpath;
+        if (w32_utf8filenames_state()) {
+            wchar_t *wpath;
 
             if (NULL != (wpath = alloca(sizeof(wchar_t) * (size + 1))) &&
                     w32_getcwdW(wpath, size)) {
                 w32_wc2utf(wpath, path, size);
                 return path;
             }
+            return NULL;
         }
+#endif  //UTF8FILENAMES
     }
-    return NULL;
-
-#else
 
     return w32_getcwdA(path, size);
-
-#endif  //UTF8FILENAMES
 }
 
 

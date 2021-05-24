@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.17 2021/05/23 10:23:11 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.18 2021/05/24 15:10:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -147,24 +147,24 @@ LIBW32_API int
 w32_mkdir(const char *path, int mode)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
 
-    if (NULL == path) {
-        errno = EFAULT;
+        if (NULL == path) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return w32_mkdirW(wpath, mode);
+        }
+
         return -1;
     }
-
-    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-        return w32_mkdirW(wpath, mode);
-    }
-
-    return -1;
-
-#else
+#endif  //UTF8FILENAMES
 
     return w32_mkdirA(path, mode);
 
-#endif  //UTF8FILENAMES
 }
 
 
@@ -249,24 +249,23 @@ LIBW32_API int
 w32_chdir(const char *path)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
 
-    if (NULL == path) {
-        errno = EFAULT;
+        if (NULL == path) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return w32_chdirW(wpath);
+        }
+
         return -1;
     }
-
-    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-        return w32_chdirW(wpath);
-    }
-
-    return -1;
-
-#else
+#endif  //UTF8FILENAMES
 
     return w32_chdirA(path);
-
-#endif  //UTF8FILENAMES
 }
 
 
@@ -632,24 +631,23 @@ LIBW32_API int
 w32_rmdir(const char *path)
 {
 #if defined(UTF8FILENAMES)
-    wchar_t wpath[WIN32_PATH_MAX];
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
 
-    if (NULL == path) {
-        errno = EFAULT;
+        if (NULL == path) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return w32_rmdirW(wpath);
+        }
+
         return -1;
     }
-
-    if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-        return w32_rmdirW(wpath);
-    }
-
-    return -1;
-
-#else
+#endif  //UTF8FILENAMES
 
     return w32_rmdirA(path);
-
-#endif  //UTF8FILENAMES
 }
 
 
