@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.21 2021/05/24 15:10:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.22 2021/05/26 01:34:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -74,6 +74,9 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.21 2021/05/24 15:10:34 cvsuser Ex
 #endif
 #ifdef HAVE_WCHAR_H
 #include <wchar.h>
+#endif
+#if defined(_DEBUG)
+#include <grp.h>
 #endif
 #include <time.h>
 #include <ctype.h>
@@ -1266,7 +1269,7 @@ isshortcut(const char *name)
 
     for (cursor = name + len; --cursor >= name;) {
         if (*cursor == '.') {                   // extension
-            return (*++cursor && 0 == IO_STRICMP(cursor, "lnk"));
+            return (*++cursor && 0 == w32_io_stricmp(cursor, "lnk"));
         }
         if (*cursor == '/' || *cursor == '\\') {
             break;                              // delimiter
@@ -1580,7 +1583,7 @@ w32_openW(const wchar_t *path, int oflag, int mode)
         return -1;
     }
 
-    if (0 == IO_WSTRICMP(path, "/dev/null")) {
+    if (0 == w32_io_wstricmp(path, "/dev/null")) {
         /*
          *  Redirect ..
          */
@@ -1638,7 +1641,7 @@ w32_openA(const char *path, int oflag, int mode)
         return -1;
     }
 
-    if (0 == IO_STRICMP(path, "/dev/null")) {
+    if (0 == w32_io_stricmp(path, "/dev/null")) {
         /*
          *  Redirect ..
          */
@@ -1851,6 +1854,14 @@ ApplyOwner(struct stat *sb, const DWORD dwAttributes, HANDLE handle)
             if (GetSecurityInfo(handle, SE_FILE_OBJECT, GROUP_SECURITY_INFORMATION,
                     NULL, &group, NULL, NULL, NULL) == ERROR_SUCCESS) {
                 sb->st_gid = (short) RID(group);
+#if defined(_DEBUG) && (0)
+                if (sb->st_gid != sb->st_uid) {
+                    char t_buffer[1024];
+                    struct group t_grp, *result = NULL;
+                    getgrgid_r(sb->st_gid, &t_grp, t_buffer, _countof(t_buffer), &result);
+                    assert(result);             // verify returned group.
+                }
+#endif  //_DEBUG
             } else {
                 sb->st_gid = sb->st_uid;
             }
@@ -2038,12 +2049,12 @@ IsExecA(const char *name, const char *magic)
 
     if ((dot = HasExtensionA(name)) != NULL) {  /* check well-known extensions */
         for (idx = EXEC_ASSUME-1; idx >= 0; idx--)
-            if (IO_STRICMP(dot, exec_assume[idx]) == 0) {
+            if (w32_io_stricmp(dot, exec_assume[idx]) == 0) {
                 return TRUE;
             }
 
         for (idx = EXEC_EXCLUDE-1; idx >= 0; idx--)
-            if (IO_STRICMP(dot, exec_exclude[idx]) == 0) {
+            if (w32_io_stricmp(dot, exec_exclude[idx]) == 0) {
                 break;
             }
     }
@@ -2076,12 +2087,12 @@ IsExecW(const wchar_t *name, const char *magic)
 
     if ((dot = HasExtensionW(name)) != NULL) {  /* check well-known extensions */
         for (idx = EXEC_ASSUME-1; idx >= 0; idx--)
-            if (IO_WSTRICMP(dot, exec_assume[idx]) == 0) {
+            if (w32_io_wstricmp(dot, exec_assume[idx]) == 0) {
                 return TRUE;
             }
 
         for (idx = EXEC_EXCLUDE-1; idx >= 0; idx--)
-            if (IO_WSTRICMP(dot, exec_exclude[idx]) == 0) {
+            if (w32_io_wstricmp(dot, exec_exclude[idx]) == 0) {
                 break;
             }
     }
@@ -2143,7 +2154,7 @@ IsExtensionA(const char *name, const char *ext)
     const char *dot;
 
     if (ext && (dot = HasExtensionA(name)) != NULL &&
-            IO_STRICMP(dot, ext) == 0) {
+            w32_io_stricmp(dot, ext) == 0) {
         return TRUE;
     }
     return FALSE;
@@ -2156,7 +2167,7 @@ IsExtensionW(const wchar_t *name, const char *ext)
     const wchar_t *dot;
 
     if (ext && (dot = HasExtensionW(name)) != NULL &&
-            IO_WSTRICMP(dot, ext) == 0) {
+            w32_io_wstricmp(dot, ext) == 0) {
         return TRUE;
     }
     return FALSE;
@@ -3101,8 +3112,8 @@ StatW(const wchar_t *name, struct stat *sb)
                                         const size_t offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
                                         const wchar_t* mount = rdb->MountPointReparseBuffer.PathBuffer + offset;
 
-                                        if (0 == memcmp(mount, L"\\??\\", 4 * sizeof(wchar_t)) &&
-                                                0 != memcmp(mount, L"\\??\\Volume{", 11 * sizeof(wchar_t))) {
+                                        if (0 == wmemcmp(mount, L"\\??\\", 4) &&
+                                                0 != wmemcmp(mount, L"\\??\\Volume{", 11)) {
                                             dirsymlink = TRUE;
                                                 /* not a volume mount point -- hard-link */
                                         }
@@ -3133,6 +3144,8 @@ StatW(const wchar_t *name, struct stat *sb)
                 {   DWORD serialno = 0, flags = 0;
                     if (my_GetVolumeInformationByHandle(handle, &serialno, &flags)) {
                         sb->st_dev = serialno;
+                            // volume serial number that the operating system assigns
+                            // when a hard disk is formatted.
                     }
                 }
 
@@ -3250,7 +3263,7 @@ my_GetVolumeInformationByHandleImp(HANDLE hFile,
 
 
 int
-IO_STRICMP(const char *s1, const char *s2)
+w32_io_stricmp(const char *s1, const char *s2)
 {
     char a = 0, b = 0;
 
@@ -3266,7 +3279,7 @@ IO_STRICMP(const char *s1, const char *s2)
 
 
 int
-IO_STRNICMP(const char *s1, const char *s2, int slen)
+w32_io_strnicmp(const char *s1, const char *s2, int slen)
 {
     char a = 0, b = 0;
 
@@ -3287,7 +3300,7 @@ IO_STRNICMP(const char *s1, const char *s2, int slen)
 
 
 int
-IO_WSTRICMP(const wchar_t *s1, const char *s2)
+w32_io_wstricmp(const wchar_t *s1, const char *s2)
 {
     wchar_t a = 0, b = 0;
 
@@ -3303,7 +3316,7 @@ IO_WSTRICMP(const wchar_t *s1, const char *s2)
 
 
 int
-IO_WSTRNICMP(const wchar_t *s1, const char *s2, int slen)
+w32_io_wstrnicmp(const wchar_t *s1, const char *s2, int slen)
 {
     wchar_t a = 0, b = 0;
 

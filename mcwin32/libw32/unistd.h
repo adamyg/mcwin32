@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.26 2021/05/24 15:10:33 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.27 2021/05/26 01:34:15 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -611,6 +611,14 @@ LIBW32_API int          w32_mkstempsW (wchar_t *path, int suffixlen);
 LIBW32_API int          w32_mkstempx (char *path);
 LIBW32_API int          w32_mkstempxA (char *path);
 LIBW32_API int          w32_mkstempxW (wchar_t *path);
+
+LIBW32_API char *       w32_mkdtemp (char *path);
+LIBW32_API char *       w32_mkdtempA (char *path);
+LIBW32_API wchar_t *    w32_mkdtempW (wchar_t *path);
+
+LIBW32_API char *       w32_mkdtemps (char *path, int suffixlen);
+LIBW32_API char *       w32_mkdtempsA (char *path, int suffixlen);
+LIBW32_API wchar_t *    w32_mkdtempsW (wchar_t *path, int suffixlen);
 
 LIBW32_API int          ftruncate (int fildes, off_t size);
 LIBW32_API int          truncate (const char *path, off_t length);

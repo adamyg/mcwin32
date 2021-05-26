@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.8 2021/05/24 15:10:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.9 2021/05/26 01:34:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -90,10 +90,14 @@ __CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.8 2021/05/24 15:10:34 c
 #define GETTEMP_SUCCESS     1
 #define GETTEMP_ERROR       0
 
-static int                  gettempA_tmp(char *result, const char *path,  int suffixlen, int *fildes, int temporary);
-static int                  gettempA(char *path,  int suffixlen, int *fildes, int temporary, char *save);
-static int                  gettempW_tmp(wchar_t *result, const wchar_t *path,  int suffixlen, int *fildes, int temporary);
-static int                  gettempW(wchar_t *path, int suffixlen, int *fildes, int temporary, wchar_t *save);
+#define DO_DEFAULT          0
+#define DO_TEMPORARY        1
+#define DO_MKDIR            2
+
+static int                  gettempA_tmp(char *result, const char *path, int suffixlen, int *fildes, unsigned flags);
+static int                  gettempA(char *path,  int suffixlen, int *fildes, unsigned flags, char *save);
+static int                  gettempW_tmp(wchar_t *result, const wchar_t *path, int suffixlen, int *fildes, unsigned flags);
+static int                  gettempW(wchar_t *path, int suffixlen, int *fildes, unsigned flags, wchar_t *save);
 
 
 LIBW32_API int
@@ -122,8 +126,8 @@ w32_mkstempA(char *path)
 {
     char t_path[MAX_PATH];
     int fildes = -1;
-    if (GETTEMP_SUCCESS == gettempA(path, 0, &fildes, FALSE, t_path) ||
-            GETTEMP_SUCCESS == gettempA_tmp(path, t_path, 0, &fildes, FALSE)) {
+    if (GETTEMP_SUCCESS == gettempA(path, 0, &fildes, DO_DEFAULT, t_path) ||
+            GETTEMP_SUCCESS == gettempA_tmp(path, t_path, 0, &fildes, DO_DEFAULT)) {
         return fildes;
     }
     return -1;
@@ -135,8 +139,8 @@ w32_mkstempW(wchar_t *path)
 {
     wchar_t t_path[MAX_PATH];
     int fildes = -1;
-    if (GETTEMP_SUCCESS == gettempW(path, 0, &fildes, FALSE, t_path) ||
-            GETTEMP_SUCCESS == gettempW_tmp(path, t_path, 0, &fildes, FALSE)) {
+    if (GETTEMP_SUCCESS == gettempW(path, 0, &fildes, DO_DEFAULT, t_path) ||
+            GETTEMP_SUCCESS == gettempW_tmp(path, t_path, 0, &fildes, DO_DEFAULT)) {
         return fildes;
     }
     return -1;
@@ -171,8 +175,8 @@ w32_mkstempsA(char *path, int suffixlen)
 {
     char t_path[MAX_PATH];
     int fildes = -1;
-    if (GETTEMP_SUCCESS == gettempA(path, suffixlen, &fildes, FALSE, t_path) ||
-            GETTEMP_SUCCESS == gettempA_tmp(path, t_path, suffixlen, &fildes, FALSE)) {
+    if (GETTEMP_SUCCESS == gettempA(path, suffixlen, &fildes, DO_DEFAULT, t_path) ||
+            GETTEMP_SUCCESS == gettempA_tmp(path, t_path, suffixlen, &fildes, DO_DEFAULT)) {
         return fildes;
     }
     return -1;
@@ -184,8 +188,8 @@ w32_mkstempsW(wchar_t *path, int suffixlen)
 {
     wchar_t t_path[MAX_PATH];
     int fildes = -1;
-    if (GETTEMP_SUCCESS == gettempW(path, suffixlen, &fildes, FALSE, t_path) ||
-            GETTEMP_SUCCESS == gettempW_tmp(path, t_path, suffixlen, &fildes, FALSE)) {
+    if (GETTEMP_SUCCESS == gettempW(path, suffixlen, &fildes, DO_DEFAULT, t_path) ||
+            GETTEMP_SUCCESS == gettempW_tmp(path, t_path, suffixlen, &fildes, DO_DEFAULT)) {
         return fildes;
     }
     return -1;
@@ -220,8 +224,8 @@ w32_mkstempxA(char *path)
 {
     char t_path[MAX_PATH];
     int fildes = -1;
-    if (GETTEMP_SUCCESS == gettempA(path, 0, &fildes, TRUE, t_path) ||
-            GETTEMP_SUCCESS == gettempA_tmp(path, t_path, 0, &fildes, TRUE)) {
+    if (GETTEMP_SUCCESS == gettempA(path, 0, &fildes, DO_TEMPORARY, t_path) ||
+            GETTEMP_SUCCESS == gettempA_tmp(path, t_path, 0, &fildes, DO_TEMPORARY)) {
         return fildes;
     }
     return -1;
@@ -233,11 +237,123 @@ w32_mkstempxW(wchar_t *path)
 {
     wchar_t t_path[MAX_PATH];
     int fildes = -1;
-    if (GETTEMP_SUCCESS == gettempW(path, 0, &fildes, TRUE, t_path) ||
-            GETTEMP_SUCCESS == gettempW_tmp(path, t_path, 0, &fildes, TRUE)) {
+    if (GETTEMP_SUCCESS == gettempW(path, 0, &fildes, DO_TEMPORARY, t_path) ||
+            GETTEMP_SUCCESS == gettempW_tmp(path, t_path, 0, &fildes, DO_TEMPORARY)) {
         return fildes;
     }
     return -1;
+}
+
+
+/*
+//  NAME
+//      mkdtemp - create a unique temporary directory.
+//
+//  SYNOPSIS
+//      #include <stdlib.h>
+//
+//      char *mkdtemp(char *template);
+//
+//  DESCRIPTION
+//      The mkdtemp() function shall create a directory with a unique name derived from
+//      template. The application shall ensure that the string provided in template is a
+//      pathname ending with at least six trailing 'X' characters. The mkdtemp() function
+//      shall modify the contents of template by replacing six or more 'X' characters at
+//      the end of the pathname with the same number of characters from the portable
+//      filename character set. The characters shall be chosen such that the resulting
+//      pathname does not duplicate the name of an existing file at the time of the call
+//      to mkdtemp(). The mkdtemp() function shall use the resulting pathname to create
+//      the new directory as if by a call to:
+//
+//          mkdir(pathname, S_IRWXU)
+//
+//      The mkstemp() function shall create a regular file with a unique name derived from
+//      template and return a file descriptor for the file open for reading and writing.
+//      The application shall ensure that the string provided in template is a pathname
+//      ending with at least six trailing 'X' characters. The mkstemp() function shall
+//      modify the contents of template by replacing six or more 'X' characters at the
+//      end of the pathname with the same number of characters from the portable filename
+//      character set. The characters shall be chosen such that the resulting pathname
+//      does not duplicate the name of an existing file at the time of the call to mkstemp().
+//      The mkstemp() function shall use the resulting pathname to create the file, and
+//      obtain a file descriptor for it, as if by a call to:
+//
+//          open(pathname, O_RDWR|O_CREAT|O_EXCL, S_IRUSR|S_IWUSR)
+//
+//      By behaving as if the O_EXCL flag for open() is set, the function prevents any possible
+//      race condition between testing whether the file exists and opening it for use.
+//
+//  RETURN VALUE
+//      Upon successful completion, the mkdtemp() function shall return the value of template.
+//      Otherwise, it shall return a null pointer and shall set errno to indicate the error.
+*/
+
+
+LIBW32_API char *
+w32_mkdtemp(char *path)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[MAX_PATH];
+
+        w32_utf2wc(path, wpath, _countof(wpath));
+        if (w32_mkdtempW(wpath)) {
+            w32_wc2utf(wpath, path, strlen(path) + 1);
+            return path;
+        }
+        return NULL;
+    }
+#endif  //UTF8FILENAMES
+
+    return w32_mkdtempA(path);
+}
+
+
+LIBW32_API char *
+w32_mkdtempA(char *path)
+{
+    return (GETTEMP_SUCCESS == gettempA(path, 0, NULL, DO_MKDIR, NULL) ? path : NULL);
+}
+
+
+LIBW32_API wchar_t *
+w32_mkdtempW(wchar_t *path)
+{
+    return (GETTEMP_SUCCESS == gettempW(path, 0, NULL, DO_MKDIR, NULL) ? path : NULL);
+}
+
+
+LIBW32_API char *
+w32_mkdtemps(char *path, int suffixlen)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[MAX_PATH];
+
+        w32_utf2wc(path, wpath, _countof(wpath));
+        if (w32_mkdtempsW(wpath, suffixlen)) {
+            w32_wc2utf(wpath, path, strlen(path) + 1);
+            return path;
+        }
+        return NULL;
+    }
+#endif  //UTF8FILENAMES
+
+    return w32_mkdtempA(path);
+}
+
+
+LIBW32_API char *
+w32_mkdtempsA(char *path, int suffixlen)
+{
+    return (GETTEMP_SUCCESS == gettempA(path, suffixlen, NULL, DO_MKDIR, NULL) ? path : NULL);
+}
+
+
+LIBW32_API wchar_t *
+w32_mkdtempsW(wchar_t *path, int suffixlen)
+{
+    return (GETTEMP_SUCCESS == gettempW(path, suffixlen, NULL, DO_MKDIR, NULL) ? path : NULL);
 }
 
 
@@ -255,7 +371,7 @@ generate_seed(void)
 
 
 static int
-gettempA_tmp(char *result, const char *path, int suffixlen, int *fildes, int temporary)
+gettempA_tmp(char *result, const char *path, int suffixlen, int *fildes, unsigned flags)
 {
     /*
      *  "/tmp/", reference system temporary path
@@ -279,7 +395,7 @@ gettempA_tmp(char *result, const char *path, int suffixlen, int *fildes, int tem
                     *p++ = '\\';                /* convert */
                 }
 
-                if (GETTEMP_SUCCESS == gettempA(t_path, suffixlen, fildes, temporary, NULL)) {
+                if (GETTEMP_SUCCESS == gettempA(t_path, suffixlen, fildes, flags, NULL)) {
                     strcpy(result, "/tmp/");
                     strcpy(result + 5, t_path + tmplen);
                     return GETTEMP_SUCCESS;
@@ -292,7 +408,7 @@ gettempA_tmp(char *result, const char *path, int suffixlen, int *fildes, int tem
 
 
 static int
-gettempA(char *path, int suffixlen, register int *fildes, int temporary, char *save)
+gettempA(char *path, int suffixlen, int *fildes, unsigned flags, char *save)
 {
     register char *start, *trv, *end, c;
     struct stat sbuf;
@@ -307,7 +423,7 @@ gettempA(char *path, int suffixlen, register int *fildes, int temporary, char *s
             }
         }
     } else {
-        for (trv = path; *trv; ++trv);          /* extra X's get set to 0's */
+        for (trv = path; *trv; ++trv);
         if ((trv - path) >= MAX_PATH) {
             errno = ENAMETOOLONG;
             return GETTEMP_ERROR;
@@ -325,7 +441,12 @@ gettempA(char *path, int suffixlen, register int *fildes, int temporary, char *s
     seed = generate_seed();
     while (--trv >= path && *trv == 'X') {
         *trv = (char)((seed % 10) + '0');
-        seed /= 10;
+        seed /= 10;                             /* extra X's get set to 0's */
+    }
+
+    if ((trv + 1) == end) {                     /* missing template? */
+	errno = EINVAL;
+        return GETTEMP_ERROR;
     }
 
     /*
@@ -373,24 +494,33 @@ gettempA(char *path, int suffixlen, register int *fildes, int temporary, char *s
 
     for (;;) {
         errno = 0;
-        if (fildes) {
-                if ((*fildes = WIN32_OPEN(path, (temporary ? O_MODEX : O_MODE), 0600)) >= 0) {
-                    return GETTEMP_SUCCESS;
-                }
-                if (EEXIST != errno) {
-                    return GETTEMP_ERROR;
-                }
+        if (DO_MKDIR & flags) {
+            if (0 == w32_mkdirA(path, 0700)) {
+                return GETTEMP_SUCCESS;
+            }
+            if (EEXIST != errno) {
+                return GETTEMP_ERROR;
+            }
+
+        } else if (fildes) {
+            if ((*fildes = WIN32_OPEN(path, ((DO_TEMPORARY & flags) ? O_MODEX : O_MODE), 0600)) >= 0) {
+                return GETTEMP_SUCCESS;
+            }
+            if (EEXIST != errno) {
+                return GETTEMP_ERROR;
+            }
+
         } else {
-                DISABLE_HARD_ERRORS
-                rc = w32_statA(path, &sbuf);
-                ENABLE_HARD_ERRORS
-                if (rc) {
+            DISABLE_HARD_ERRORS
+            rc = w32_statA(path, &sbuf);
+            ENABLE_HARD_ERRORS
+            if (rc) {
 #ifndef ENMFILE
-                    return (((ENOENT == errno)) ? GETTEMP_SUCCESS : GETTEMP_ERROR);
+                return (((ENOENT == errno)) ? GETTEMP_SUCCESS : GETTEMP_ERROR);
 #else
-                    return (((ENOENT == errno) || (ENMFILE == errno)) ? GETTEMP_ERROR);
+                return (((ENOENT == errno) || (ENMFILE == errno)) ? GETTEMP_ERROR);
 #endif
-                }
+            }
         }
 
         /* next is sequence */
@@ -416,7 +546,7 @@ gettempA(char *path, int suffixlen, register int *fildes, int temporary, char *s
 
 
 static int
-gettempW_tmp(wchar_t *result, const wchar_t *path, int suffixlen, int *fildes, int temporary)
+gettempW_tmp(wchar_t *result, const wchar_t *path, int suffixlen, int *fildes, unsigned flags)
 {
     /*
      *  "/tmp/", reference system temporary path
@@ -440,7 +570,7 @@ gettempW_tmp(wchar_t *result, const wchar_t *path, int suffixlen, int *fildes, i
                     *p++ = '\\';                /* convert */
                 }
 
-                if (GETTEMP_SUCCESS == gettempW(t_path, suffixlen, fildes, temporary, NULL)) {
+                if (GETTEMP_SUCCESS == gettempW(t_path, suffixlen, fildes, flags, NULL)) {
                     wcscpy(result, L"/tmp/");
                     wcscpy(result + 5, t_path + tmplen);
                     return GETTEMP_SUCCESS;
@@ -453,7 +583,7 @@ gettempW_tmp(wchar_t *result, const wchar_t *path, int suffixlen, int *fildes, i
 
 
 static int
-gettempW(wchar_t *path, int suffixlen, register int *fildes, int temporary, wchar_t *save)
+gettempW(wchar_t *path, int suffixlen, int *fildes, unsigned flags, wchar_t *save)
 {
     register wchar_t *start, *trv, *end, c;
     struct stat sbuf;
@@ -468,7 +598,7 @@ gettempW(wchar_t *path, int suffixlen, register int *fildes, int temporary, wcha
             }
         }
     } else {
-        for (trv = path; *trv; ++trv);          /* extra X's get set to 0's */
+        for (trv = path; *trv; ++trv);
         if ((trv - path) >= MAX_PATH) {
             errno = ENAMETOOLONG;
             return GETTEMP_ERROR;
@@ -486,7 +616,12 @@ gettempW(wchar_t *path, int suffixlen, register int *fildes, int temporary, wcha
     seed = generate_seed();
     while (--trv >= path && *trv == 'X') {
         *trv = (char)((seed % 10) + '0');
-        seed /= 10;
+        seed /= 10;                             /* extra X's get set to 0's */
+    }
+
+    if ((trv + 1) == end) {                     /* missing template? */
+	errno = EINVAL;
+        return GETTEMP_ERROR;
     }
 
     /*
@@ -533,24 +668,33 @@ gettempW(wchar_t *path, int suffixlen, register int *fildes, int temporary, wcha
 
     for (;;) {
         errno = 0;
-        if (fildes) {
-                if ((*fildes = WIN32_WOPEN(path, (temporary ? O_MODEX : O_MODE), 0600)) >= 0) {
-                    return GETTEMP_SUCCESS;
-                }
-                if (EEXIST != errno) {
-                    return GETTEMP_ERROR;
-                }
+        if (DO_MKDIR & flags) {
+            if (0 == w32_mkdirW(path, 0700)) {
+                return GETTEMP_SUCCESS;
+            }
+            if (EEXIST != errno) {
+                return GETTEMP_ERROR;
+            }
+
+        } else if (fildes) {
+            if ((*fildes = WIN32_WOPEN(path, ((DO_TEMPORARY & flags) ? O_MODEX : O_MODE), 0600)) >= 0) {
+                return GETTEMP_SUCCESS;
+            }
+            if (EEXIST != errno) {
+                return GETTEMP_ERROR;
+            }
+
         } else {
-                DISABLE_HARD_ERRORS
-                rc = w32_statW(path, &sbuf);
-                ENABLE_HARD_ERRORS
-                if (rc) {
+            DISABLE_HARD_ERRORS
+            rc = w32_statW(path, &sbuf);
+            ENABLE_HARD_ERRORS
+            if (rc) {
 #ifndef ENMFILE
-                    return (((ENOENT == errno)) ? GETTEMP_SUCCESS : GETTEMP_ERROR);
+                return (((ENOENT == errno)) ? GETTEMP_SUCCESS : GETTEMP_ERROR);
 #else
-                    return (((ENOENT == errno) || (ENMFILE == errno)) ? GETTEMP_ERROR);
+                return (((ENOENT == errno) || (ENMFILE == errno)) ? GETTEMP_ERROR);
 #endif
-                }
+            }
         }
 
         /* next is sequence */

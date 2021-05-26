@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.18 2021/05/24 15:10:33 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.19 2021/05/26 01:34:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -691,7 +691,7 @@ w32_lnkexpandA(const char *name, char *buf, size_t buflen, unsigned flags)
         for (cursor = t_name + length, end = cursor; --cursor >= t_name;) {
             if ('.' == *cursor) {                   // extension
                 if (1 == ++dots) {                  // last/trailing
-                    if (0 == IO_STRNICMP(cursor, ".lnk", 4) && (cursor + 4) == end) {
+                    if (0 == w32_io_strnicmp(cursor, ".lnk", 4) && (cursor + 4) == end) {
                         //
                         //  <shortcut>.lnk
                         //      - attempt expansion, allowing one within any given path.
@@ -748,7 +748,7 @@ w32_lnkexpandW(const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags)
         for (cursor = t_name + length, end = cursor; --cursor >= t_name;) {
             if ('.' == *cursor) {                   // extension
                 if (1 == ++dots) {                  // last/trailing
-                    if (0 == IO_WSTRNICMP(cursor, ".lnk", 4) && (cursor + 4) == end) {
+                    if (0 == w32_io_wstrnicmp(cursor, ".lnk", 4) && (cursor + 4) == end) {
                         //
                         //  <shortcut>.lnk
                         //      - attempt expansion, allowing one within any given path.

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.19 2021/05/24 15:10:33 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.20 2021/05/26 01:34:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -442,7 +442,7 @@ isshortcutA(const char *name)
 
     for (cursor = name + len; --cursor >= name;) {
         if (*cursor == '.') {                   // extension
-            return (*++cursor && 0 == IO_STRICMP(cursor, "lnk"));
+            return (*++cursor && 0 == w32_io_stricmp(cursor, "lnk"));
         }
         if (*cursor == '/' || *cursor == '\\') {
             break;                              // delimiter
@@ -460,7 +460,7 @@ isshortcutW(const wchar_t *name)
 
     for (cursor = name + len; --cursor >= name;) {
         if (*cursor == '.') {                   // extension
-            return (*++cursor && 0 == IO_WSTRICMP(cursor, "lnk"));
+            return (*++cursor && 0 == w32_io_wstricmp(cursor, "lnk"));
         }
         if (*cursor == '/' || *cursor == '\\') {
             break;                              // delimiter

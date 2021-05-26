@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.18 2021/05/24 15:10:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.19 2021/05/26 01:34:15 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -93,10 +93,10 @@ extern int              x_w32_cwdn;             /* current/last working drive nu
 extern const char *     x_w32_cwdd[26];         /* last directory, prr drive */
 extern const char *     x_w32_vfscwd;           /* current UNC path, if any */
 
-int                     IO_STRICMP (const char *s1, const char *s2);
-int                     IO_STRNICMP (const char *s1, const char *s2, int slen);
-int                     IO_WSTRICMP (const wchar_t *s1, const char *s2);
-int                     IO_WSTRNICMP (const wchar_t *s1, const char *s2, int slen);
+int                     w32_io_stricmp (const char *s1, const char *s2);
+int                     w32_io_strnicmp (const char *s1, const char *s2, int slen);
+int                     w32_io_wstricmp (const wchar_t *s1, const char *s2);
+int                     w32_io_wstrnicmp (const wchar_t *s1, const char *s2, int slen);
 
 LIBW32_API int          w32_utf8filenames(int state);
 int                     w32_utf8filenames_state();
