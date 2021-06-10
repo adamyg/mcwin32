@@ -1,14 +1,12 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.27 2021/05/26 01:34:15 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.28 2021/06/10 12:42:33 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * win32 <unistd.h> compat header file -
- *
- *      unistd.h - standard symbolic constants and types
+ * win32 <unistd.h> header (_MSC_VER, __WATCOMC__ and __MINGW32__)
  *
  * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
@@ -534,6 +532,10 @@ LIBW32_API int          w32_unlink (const char *fname);
 LIBW32_API int          w32_unlinkA (const char *fname);
 LIBW32_API int          w32_unlinkW (const wchar_t *fname);
 
+LIBW32_API int          w32_access (const char *fname, int mode);
+LIBW32_API int          w32_accessA (const char *fname, int mode);
+LIBW32_API int          w32_accessW (const wchar_t *fname, int mode);
+
 LIBW32_API int          w32_rename (const char *ofile, const char *nfile);
 LIBW32_API int          w32_renameA (const char *ofile, const char *nfile);
 LIBW32_API int          w32_renameW (const wchar_t *ofile, const wchar_t *nfile);
@@ -551,6 +553,7 @@ LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t
 #define close(a)        w32_close(a)
 #define link(f,t)       w32_link(f,t)
 #define unlink(p)       w32_unlink(p)
+#define access(p,m)     w32_access(p, m)
 #define rename(a,b)     w32_rename(a,b)
 #endif /*WIN32_UNISTD_MAP*/
 
