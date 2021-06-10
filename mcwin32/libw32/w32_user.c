@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.12 2021/05/23 10:23:12 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.13 2021/06/10 12:42:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -299,8 +299,6 @@ getlogin (void)
 LIBW32_API int
 getlogin_r (char *name, size_t namesize)
 {
-    DWORD size = namesize;
-    const char *p = NULL;
     int length;
 
     if (name == NULL || namesize == 0) {
@@ -344,7 +342,6 @@ initialise_user()
     TOKEN_USER *tu = NULL;
     TOKEN_PRIMARY_GROUP *pg = NULL;
     HANDLE hToken = NULL;
-    BOOL fRet = FALSE;
 
     login[0] = 0, group[0] = 0, domain[0] = 0;
 
@@ -384,7 +381,6 @@ initialise_user()
         if (! GetTokenInformation(hToken, TokenPrimaryGroup, NULL, 0, &cbSize) &&
                 GetLastError () == ERROR_INSUFFICIENT_BUFFER && cbSize &&
                     NULL != (pg = alloca(sizeof(char) + (cbSize + 1)))) {
-            TOKEN_PRIMARY_GROUP group_token = {0};
 
             if (GetTokenInformation(hToken, TokenPrimaryGroup, pg, cbSize, &cbSize2)) {
                 DWORD glen = sizeof(group), dlen = sizeof(domain);

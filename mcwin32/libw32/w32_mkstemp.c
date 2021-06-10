@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.9 2021/05/26 01:34:15 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.10 2021/06/10 12:42:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -339,7 +339,7 @@ w32_mkdtemps(char *path, int suffixlen)
     }
 #endif  //UTF8FILENAMES
 
-    return w32_mkdtempA(path);
+    return w32_mkdtempsA(path, suffixlen);
 }
 
 

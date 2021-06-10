@@ -1387,6 +1387,7 @@ pipe_thread(void *data)
     FILE *file;
     char buffer[ PE_BUFFER_SIZE ];
 
+    (void) data;
     EnterCriticalSection(&pe_guard);
     if (pe_open >= 0 && NULL != (file = pe_stream)) {
         while (1) {

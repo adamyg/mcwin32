@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_ino_c,"$Id: w32_ino.c,v 1.9 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_ino_c,"$Id: w32_ino.c,v 1.10 2021/06/10 12:42:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -82,7 +82,7 @@ w32_ino_whash(const wchar_t *name)
 {
     const wchar_t *p = name;
     short hash = 0;
-    char c;
+    wchar_t c;
 
     if (name[0] && name[1] == ':') {
         p += 2;                                 /* remove drive */
@@ -92,8 +92,8 @@ w32_ino_whash(const wchar_t *name)
         if (ISSLASH(*p)) {                      /* convert slashes */
             c = '/';
         } else {
-            wchar_t c = *p;
-            if (c < 0x7f) c = tolower((char)c);
+            c = *p;
+            if (c < 0x7f) c = (wchar_t)tolower((char)c);
         }
         hash = (hash << 7) + hash + (ino_t)c;
     }

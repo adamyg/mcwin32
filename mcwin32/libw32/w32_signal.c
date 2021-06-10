@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.4 2018/09/29 02:22:54 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.5 2021/06/10 12:42:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -32,21 +32,55 @@ __CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.4 2018/09/29 02:22:54 cvsu
 
 #include "win32_internal.h"
 #include <unistd.h>
-
+#include <signal.h>
 
 #if !defined(__MINGW32__)
-int
+/*
+//  NAME
+//      sigemptyset - initialize and empty a signal set
+//  
+//  SYNOPSIS
+//      #include <signal.h>
+//  
+//      int sigemptyset(sigset_t *set); [Option End]
+//  
+//  DESCRIPTION
+//      The sigemptyset() function initializes the signal set pointed to by set, such that all signals defined in POSIX.1-2017 are excluded.
+//  
+//  RETURN VALUE
+//      Upon successful completion, sigemptyset() shall return 0; otherwise, it shall return -1 and set errno to indicate the error.
+//  
+//  ERRORS
+//      No errors are defined.
+//
+*/
+LIBW32_API int
 sigemptyset(sigset_t *ss)
 {
-    return 0;
-}
-
-
-int
-sigaction(int sig, struct sigaction *a, struct sigaction *b)
-{
+//  if (ss) {
+//      memset(ss, 0, sizeof(*ss));
+//  }
+    errno = EINVAL;
     return -1;
 }
+
+
+LIBW32_API int
+sigaction(int sig, struct sigaction *sa, struct sigaction *osa)
+{
+//  if (sa) {
+//      if (osa) {
+//          osa->sa_handler = signal(sig, (void (__cdecl *)(int))sa->sa_handler);
+//
+//      } else {
+//          signal(sig, (void (__cdecl *)(int))sa->sa_handler);
+//      }
+//  }
+
+    errno = EINVAL;
+    return -1;
+}
+
 #endif /*__MINGW32__*/
 
 /*end*/

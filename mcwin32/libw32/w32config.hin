@@ -1,13 +1,13 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.14 2021/05/07 17:52:56 cvsuser Exp $
+/* $Id: w32config.hin,v 1.15 2021/06/10 12:42:34 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
  * Windows targets (see makelib.pl for details).
  *
- * Copyright (c) 1998 - 2020, Adam Young.
+ * Copyright (c) 1998 - 2021, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -117,7 +117,6 @@
 #undef HAVE_STDLIB_H
 #undef HAVE_STDIO_H
 #undef HAVE_LIMITS_H
-#undef HAVE_MATH_H
 
 /* AC_HEADER_DIRENT */
 #undef HAVE_DIRENT_H
@@ -199,6 +198,7 @@
 #undef HAVE_STRINGS_H
 #undef HAVE_STRING_H
 #undef HAVE_UNISTD_H
+#undef HAVE_MATH_H
 
 #undef HAVE_ARGZ_H
 #undef HAVE_LIBGEN_H
@@ -392,8 +392,6 @@
 #undef HAVE_INTTYPES_H
 #undef HAVE_STDINT_H
 #undef HAVE_STDBOOL_H
-#undef HAVE_STDATOMIC_H
-#undef HAVE_THREADS_H
 
 #undef HAVE_WCTYPE_H
 #undef HAVE_WCHAR_H

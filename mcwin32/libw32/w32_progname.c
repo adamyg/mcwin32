@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.5 2020/05/21 15:22:54 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.6 2021/06/10 12:42:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 set/getprogname
  *
- * Copyright (c) 2016 - 2018, Adam Young.
+ * Copyright (c) 2016 - 2020, Adam Young.
  * All rights reserved.
  *
  * This file is part of the GRIEF Editor.
@@ -51,12 +51,15 @@ setprogname(const char *name)
     if (p1 || p2) { //last component.
         name = (p1 > p2 ? p1 : p2) + 1;  //consume leading path.
     }
+
     free((char *)progname);
     progname = _strdup(name); //clone buffer.
+
     if (NULL != (p = strrchr(progname, '.')) &&
             (0 == stricmp(p, ".exe") || 0 == stricmp(p, ".com"))) {
         *p = 0; //consume trailing exe/com extension.
     }
+
     for (p = (char *)progname; *p; ++p) { //hide case issues.
         *p = (char)tolower(*p);
     }

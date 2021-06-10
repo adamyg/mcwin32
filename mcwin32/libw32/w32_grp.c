@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.11 2021/05/23 10:23:11 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.12 2021/06/10 12:42:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -509,7 +509,7 @@ fill_groups(void)
         // size storage
         for (i = 0; i < dwEntriesRead; ++i) {
             const PGROUP_INFO_2 group = groups + i;
-            if (group->grpi2_group_id == x_group.gr_gid ||
+            if ((int)group->grpi2_group_id == x_group.gr_gid ||
                     (nlen = w32_wc2utf(group->grpi2_name, name, sizeof(name))) <= 0) {
                 continue;
             }
@@ -569,7 +569,7 @@ fill_groups(void)
                 for (i = 0; i < dwEntriesRead; ++i) {
                     const PGROUP_INFO_2 group = groups + i;
 
-                    if (group->grpi2_group_id == x_group.gr_gid ||
+                    if ((int)group->grpi2_group_id == x_group.gr_gid ||
                             (nlen = w32_wc2utf(group->grpi2_name, name, sizeof(name))) <= 0) {
                         continue;
                     }
@@ -646,7 +646,7 @@ static int
 gr_strlen(const char *s, size_t *total)
 {
     if (s && *s) {
-        const slen = strlen(s);
+        const int slen = strlen(s);
         *total += (slen + 1);
         return slen;
     }

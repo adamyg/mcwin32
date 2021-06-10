@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.7 2020/06/12 23:13:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.8 2021/06/10 12:42:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -41,6 +41,9 @@ __CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.7 2020/06/12 23:13:00 cvsuse
 
 #include "w32config.h"
 #include <win32_internal.h>
+
+#include <sys/endian.h>
+#include <sys/rwlock.h>
 
 #if defined(HAVE_SYS_SOCKET_H) || defined(__MINGW32__)
 #include <sys/socket.h>

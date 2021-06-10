@@ -1,11 +1,13 @@
-#ifndef LIBW32_SYS_POLL_H_INCLUDED
-#define LIBW32_SYS_POLL_H_INCLUDED
+#ifndef GR_SYS_RWLOCK_H_INCLUDED
+#define GR_SYS_RWLOCK_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_poll_h,"$Id: poll.h,v 1.2 2021/06/10 12:42:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_rwlock_h,"$Id: rwlock.h,v 1.1 2021/06/10 15:45:04 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
+ * win32 <rwlock.h> implementation
+ *
  * Copyright (c) 1998 - 2018, Adam Young.
  * All rights reserved.
  *
@@ -26,6 +28,25 @@ __CPRAGMA_ONCE
  * ==end==
  */
 
-#include <poll.h>
+#include <sys/cdefs.h>
 
-#endif /*LIBW32_SYS_POLL_H_INCLUDED*/
+typedef struct rwlock {
+    unsigned int        opaque[16];
+} rwlock_t;
+
+#define RWLOCK_INITIALIZER      {0xffff}
+
+__BEGIN_DECLS
+
+LIBW32_API void         rwlock_init(struct rwlock *rw);
+LIBW32_API void         rwlock_destroy(struct rwlock *rw);
+LIBW32_API void         rwlock_rdlock(struct rwlock *rw);
+LIBW32_API void         rwlock_wrlock(struct rwlock *rw);
+LIBW32_API void         rwlock_rdunlock(struct rwlock *rw);
+LIBW32_API void         rwlock_wrunlock(struct rwlock *rw);
+
+__END_DECLS
+
+#endif /*GR_SYS_RWLOCK_H_INCLUDED*/
+
+

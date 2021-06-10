@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.19 2021/05/26 01:34:15 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.20 2021/06/10 12:42:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -370,17 +370,17 @@ set_root_directoryA(const char *path)
      *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
      *  Also see realpath() and related opendir() usage.
      */
-    {   char path[4];
+    {   char npath[4];
         int driveno = w32_getdrive();
 
         if (driveno <= 0) driveno = w32_getlastdrive();
         if (driveno <= 0) driveno = w32_getsystemdrive();
         if (driveno > 0) {
-            path[0] = driveno + ('A' - 1);
-            path[1] = ':';
-            path[2] = PATH_SEP;
-            path[3] = 0;
-            return w32_chdirA(path);
+            npath[0] = driveno + ('A' - 1);
+            npath[1] = ':';
+            npath[2] = PATH_SEP;
+            npath[3] = 0;
+            return w32_chdirA(npath);
         }
     }
 
@@ -404,17 +404,17 @@ set_root_directoryW(const wchar_t *path)
      *  mount point or current UNC. Normalisze this behaviour to root of current/last drive.
      *  Also see realpath() and related opendir() usage.
      */
-    {   wchar_t path[4];
+    {   wchar_t npath[4];
         int driveno = w32_getdrive();
 
         if (driveno <= 0) driveno = w32_getlastdrive();
         if (driveno <= 0) driveno = w32_getsystemdrive();
         if (driveno > 0) {
-            path[0] = driveno + ('A' - 1);
-            path[1] = ':';
-            path[2] = PATH_SEP;
-            path[3] = 0;
-            return w32_chdirW(path);
+            npath[0] = driveno + ('A' - 1);
+            npath[1] = ':';
+            npath[2] = PATH_SEP;
+            npath[3] = 0;
+            return w32_chdirW(npath);
         }
     }
 

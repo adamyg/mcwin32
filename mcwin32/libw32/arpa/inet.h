@@ -1,7 +1,7 @@
-#ifndef LIBW32_SYS_POLL_H_INCLUDED
-#define LIBW32_SYS_POLL_H_INCLUDED
+#ifndef GR_INET_H_INCLUDED
+#define GR_INET_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_poll_h,"$Id: poll.h,v 1.2 2021/06/10 12:42:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_arpa_inet_h,"$Id: inet.h,v 1.1 2021/06/10 15:45:04 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -23,9 +23,26 @@ __CPRAGMA_ONCE
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Notice: Portions of this text are reprinted and reproduced in electronic form. from
+ * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
+ * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
+ * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  */
 
-#include <poll.h>
+#include <sys/cdefs.h>
+#include <sys/types.h>
+#include <sys/utypes.h>
+#include <sys/socket.h>
+#include <inttypes.h>
 
-#endif /*LIBW32_SYS_POLL_H_INCLUDED*/
+/*
+ *  uint32_t    htonl(uint32_t);
+ *  uint16_t    htons(uint16_t);
+ *  uint32_t    ntohl(uint32_t);
+ *  uint16_t    ntohs(uint16_t);
+ */
+
+#endif /*GR_INET_H_INCLUDED*/

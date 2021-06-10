@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.10 2021/05/23 10:23:12 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.11 2021/06/10 12:42:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -513,7 +513,7 @@ fill_passwds(void)
         // size storage
         for (i = 0; i < dwEntriesRead; ++i) {
             const PUSER_INFO_20 user = users + i;
-            if (user->usri20_user_id == x_passwd.pw_uid ||
+            if ((int)user->usri20_user_id == x_passwd.pw_uid ||
                     (nlen = w32_wc2utf(user->usri20_name, name, sizeof(name))) <= 0) {
                 continue;
             }
@@ -523,9 +523,9 @@ fill_passwds(void)
 
         if (NERR_Success == nStatus)            // last iteration.
             for (i = 0; i < _countof(well_known_sids); ++i) {
-                const int nlen = fill_builtin(well_known_sids + i, NULL, NULL, 0);
-                if (nlen > 0) {
-                    bufsz += (nlen + 1);
+                const int xlen = fill_builtin(well_known_sids + i, NULL, NULL, 0);
+                if (xlen > 0) {
+                    bufsz += (xlen + 1);
                     ++count;
                 }
             }
@@ -577,7 +577,7 @@ fill_passwds(void)
                     OutputDebugStringW(t_buffer);
 #endif
 
-                    if (user->usri20_user_id == x_passwd.pw_uid ||
+                    if ((int)user->usri20_user_id == x_passwd.pw_uid ||
                             (nlen = w32_wc2utf(user->usri20_name, cursor, bufsz)) <= 0) {
                         continue;
                     }
@@ -596,10 +596,10 @@ fill_passwds(void)
 
                 if (NERR_Success == nStatus)    // last iteration.
                     for (i = 0; i < _countof(well_known_sids); ++i) {
-                        const int nlen = fill_builtin(well_known_sids + i, pwd, cursor, bufsz);
-                        if (nlen > 0) {
-                            cursor += (nlen + 1);
-                            bufsz -= (nlen + 1);
+                        const int xlen = fill_builtin(well_known_sids + i, pwd, cursor, bufsz);
+                        if (xlen > 0) {
+                            cursor += (xlen + 1);
+                            bufsz -= (xlen + 1);
                             ++x_passwds_count;
                             --count;
                             ++pwd;
@@ -710,7 +710,7 @@ static int
 pw_strlen(const char *s, size_t *total)
 {
     if (s && *s) {
-        const slen = strlen(s);
+        const int slen = strlen(s);
         *total += (slen + 1);
         return slen;
     }
