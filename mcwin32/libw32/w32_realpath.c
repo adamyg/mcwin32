@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.8 2021/05/24 15:10:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.9 2021/06/20 06:42:02 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -168,7 +168,7 @@ w32_realpathA(const char *path, char *resolved_path, int maxlen)
                 if (driveno <= 0) driveno = w32_getlastdrive();
                 if (driveno <= 0) driveno = w32_getsystemdrive();
                 if (driveno > 0) {
-                    result[0] = driveno + ('A' - 1);
+                    result[0] = (char)(driveno + ('A' - 1));
                     result[1] = ':';
                     result[2] = '/';
                     result[3] = 0;
@@ -293,7 +293,7 @@ w32_realpathW(const wchar_t *path, wchar_t *resolved_path, int maxlen)
                 if (driveno <= 0) driveno = w32_getlastdrive();
                 if (driveno <= 0) driveno = w32_getsystemdrive();
                 if (driveno > 0) {
-                    result[0] = driveno + ('A' - 1);
+                    result[0] = (wchar_t)(driveno + ('A' - 1));
                     result[1] = ':';
                     result[2] = '/';
                     result[3] = 0;

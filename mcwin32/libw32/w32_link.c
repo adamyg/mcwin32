@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.8 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.9 2021/06/20 06:42:02 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -37,13 +37,20 @@ __CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.8 2021/04/25 14:47:18 cvsuser
  */
 
 #include "win32_internal.h"
+#include "win32_io.h"
 #include <unistd.h>
+
+typedef BOOL(WINAPI *CreateHardLinkW_t)(
+        LPCWSTR lpFileName, LPCWSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
 typedef BOOL(WINAPI *CreateHardLinkA_t)(
         LPCSTR lpFileName, LPCSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
-static BOOL                 my_CreateHardLink(const char *lpLinkFileName, const char *lpTargetFileName);
-static BOOL WINAPI          my_CreateHardLinkImp(LPCSTR lpFileName, LPCSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+static BOOL                 my_CreateHardLinkW(const wchar_t *lpLinkFileName, const wchar_t *lpTargetFileName);
+static BOOL WINAPI          my_CreateHardLinkImpW(LPCWSTR lpFileName, LPCWSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+
+static BOOL                 my_CreateHardLinkA(const char *lpLinkFileName, const char *lpTargetFileName);
+static BOOL WINAPI          my_CreateHardLinkImpA(LPCSTR lpFileName, LPCSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
 int                         __w32_link_backup = FALSE;
 
@@ -128,8 +135,77 @@ int                         __w32_link_backup = FALSE;
 //          As a result of encountering a symbolic link in resolution of the path1 or path2
 //          argument, the length of the substituted pathname string exceeded { PATH_MAX}.
 */
+
 LIBW32_API int
 w32_link(const char *path1, const char *path2)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath1[WIN32_PATH_MAX], wpath2[WIN32_PATH_MAX];
+
+        if (NULL == path1 || NULL == path2) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path1, wpath1, _countof(wpath1)) > 0 &&
+                w32_utf2wc(path2, wpath2, _countof(wpath2)) > 0) {
+            return w32_linkW(wpath1, wpath2);
+        }
+
+        return -1;
+    }
+#endif  //UTF8FILENAMES
+
+    return w32_linkA(path1, path2);
+}
+
+
+LIBW32_API int
+w32_linkW(const wchar_t *path1, const wchar_t *path2)
+{
+    int ret = -1;
+
+    if (!path1 || !path2) {
+        errno = EFAULT;
+
+    } else if (!*path1 || !*path2) {
+        errno = ENOENT;
+
+    } else if (wcslen(path1) > MAX_PATH || wcslen(path2) > MAX_PATH) {
+        errno = ENAMETOOLONG;
+
+    } else if (GetFileAttributesW(path2) != INVALID_FILE_ATTRIBUTES /*0xffffffff*/) {
+        errno = EEXIST;
+
+    } else {    // Note: Generally only available under an Admin account
+        ret = 0;
+        if (! my_CreateHardLinkW(/*target-link*/ path2, /*existing*/ path1)) {
+            switch (GetLastError()) {
+            case ERROR_ACCESS_DENIED:
+            case ERROR_SHARING_VIOLATION:
+            case ERROR_PRIVILEGE_NOT_HELD:
+                errno = EACCES;  break;
+            case ERROR_FILE_NOT_FOUND:
+                errno = ENOENT;  break;
+            case ERROR_PATH_NOT_FOUND:
+            case ERROR_INVALID_DRIVE:
+                errno = ENOTDIR; break;
+            case ERROR_WRITE_PROTECT:
+                errno = EROFS;   break;
+            default:
+                w32_errno_set();
+                break;
+            }
+            ret = -1;
+        }
+    }
+    return ret;
+}
+
+
+LIBW32_API int
+w32_linkA(const char *path1, const char *path2)
 {
     int ret = -1;
 
@@ -147,7 +223,7 @@ w32_link(const char *path1, const char *path2)
 
     } else {    // Note: Generally only available under an Admin account
         ret = 0;
-        if (! my_CreateHardLink(/*target-link*/ path2, /*existing*/ path1)) {
+        if (! my_CreateHardLinkA(/*target-link*/ path2, /*existing*/ path1)) {
             switch (GetLastError()) {
             case ERROR_ACCESS_DENIED:
             case ERROR_SHARING_VIOLATION:
@@ -172,7 +248,73 @@ w32_link(const char *path1, const char *path2)
 
 
 static BOOL
-my_CreateHardLink(LPCSTR lpFileName, LPCSTR lpExistingFileName)
+my_CreateHardLinkW(LPCWSTR lpFileName, LPCWSTR lpExistingFileName)
+{
+    static CreateHardLinkW_t x_CreateHardLinkW = NULL;
+
+    if (NULL == x_CreateHardLinkW) {
+        HINSTANCE hinst;                        // Vista+
+
+        if (0 == (hinst = LoadLibraryA("Kernel32")) ||
+                0 == (x_CreateHardLinkW =
+                        (CreateHardLinkW_t)GetProcAddress(hinst, "CreateHardLinkW"))) {
+                                                // XP+
+            x_CreateHardLinkW = my_CreateHardLinkImpW;
+            (void)FreeLibrary(hinst);
+        }
+    }
+    return x_CreateHardLinkW(lpFileName, lpExistingFileName, NULL);
+}
+
+
+static BOOL WINAPI
+my_CreateHardLinkImpW(LPCWSTR lpFileName, LPCWSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes)
+{
+    __PUNUSED(lpSecurityAttributes)
+
+    if (!__w32_link_backup) {                   /* backup fallback option */
+        SetLastError(ERROR_NOT_SUPPORTED);      // not implemented
+        return FALSE;
+
+    } else {
+        WIN32_STREAM_ID wsi = { 0 };
+        void *ctx = NULL;
+        HANDLE handle;
+        int wlen;
+        DWORD cnt;
+
+        if (INVALID_HANDLE_VALUE ==             /* source image */
+                    (handle = CreateFileW(lpExistingFileName, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+                            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_POSIX_SEMANTICS, NULL))) {
+            w32_errno_set();
+            CloseHandle(handle);
+            return FALSE;
+        }
+
+        wlen = wcslen(lpFileName);
+        wsi.dwStreamId = BACKUP_LINK;
+        wsi.dwStreamAttributes = 0;
+        wsi.dwStreamNameSize = 0;
+        wsi.Size.QuadPart = wlen;
+
+        if (!BackupWrite(handle, (LPBYTE)&wsi, offsetof(WIN32_STREAM_ID, cStreamName), &cnt, FALSE, FALSE, &ctx) ||
+                offsetof(WIN32_STREAM_ID, cStreamName) != cnt ||
+                !BackupWrite(handle, (LPBYTE)lpFileName, wlen, &cnt, FALSE, FALSE, &ctx)) {
+            w32_errno_set();
+            CloseHandle(handle);
+            return FALSE;
+        }
+
+        BackupWrite(handle, NULL, 0, &cnt, TRUE, FALSE, &ctx);
+        CloseHandle(handle);
+
+        return TRUE;
+    }
+}
+
+
+static BOOL
+my_CreateHardLinkA(LPCSTR lpFileName, LPCSTR lpExistingFileName)
 {
     static CreateHardLinkA_t x_CreateHardLinkA = NULL;
 
@@ -183,7 +325,7 @@ my_CreateHardLink(LPCSTR lpFileName, LPCSTR lpExistingFileName)
                 0 == (x_CreateHardLinkA =
                         (CreateHardLinkA_t)GetProcAddress(hinst, "CreateHardLinkA"))) {
                                                 // XP+
-            x_CreateHardLinkA = my_CreateHardLinkImp;
+            x_CreateHardLinkA = my_CreateHardLinkImpA;
             (void)FreeLibrary(hinst);
         }
     }
@@ -192,7 +334,7 @@ my_CreateHardLink(LPCSTR lpFileName, LPCSTR lpExistingFileName)
 
 
 static BOOL WINAPI
-my_CreateHardLinkImp(LPCSTR lpFileName, LPCSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes)
+my_CreateHardLinkImpA(LPCSTR lpFileName, LPCSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes)
 {
     __PUNUSED(lpSecurityAttributes)
 

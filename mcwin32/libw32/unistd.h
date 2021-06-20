@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.29 2021/06/10 15:54:28 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.30 2021/06/20 06:42:02 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -527,6 +527,8 @@ LIBW32_API int          w32_close (int fd);
 LIBW32_API const char * w32_strerror (int errnum);
 
 LIBW32_API int          w32_link (const char *from, const char *to);
+LIBW32_API int          w32_linkA (const char *from, const char *to);
+LIBW32_API int          w32_linkW (const wchar_t *from, const wchar_t *to);
 
 LIBW32_API int          w32_unlink (const char *fname);
 LIBW32_API int          w32_unlinkA (const char *fname);
