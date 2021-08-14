@@ -116,6 +116,7 @@
 #undef HAVE_STDARG_H
 #undef HAVE_STDLIB_H
 #undef HAVE_STDIO_H
+#undef HAVE_STDDEF_H
 #undef HAVE_LIMITS_H
 
 /* AC_HEADER_DIRENT */
@@ -337,6 +338,8 @@
 #undef HAVE_UINTMAX_T
 #undef HAVE_INTPTR_T
 #undef HAVE_UINTPTR_T
+#undef HAVE_PTRDIFF_T
+#undef HAVE_LONG_DOUBLE
 #undef HAVE_LONG_LONG_INT
 #undef HAVE_UNSIGNED_LONG_LONG_INT
 #undef HAVE_INT8_T
@@ -473,6 +476,7 @@
 #undef HAVE_GETLOGIN_R
 #undef HAVE_GETPWNAM_R
 #undef HAVE_GETPWUID_R
+#undef HAVE__TZSET
 
 #undef HAVE_INDEX
 #undef HAVE_RINDEX
@@ -558,6 +562,7 @@
 #undef HAVE_STRSIGNAL
 #undef HAVE_PRCTL
 
+#undef HAVE_WCWIDTH
 #undef HAVE_MBRTOWC
 #undef HAVE_WCRTOMB
 #undef HAVE_WCSCMP
@@ -727,9 +732,9 @@
 #undef HAVE_LIBCHARSET_H
 #undef HAVE_LOCALCHARSET_H
 
-#undef HAVE_ICONVL_H
-#undef HAVE_LIBICONVL_DLL
 #undef HAVE_LIBCITRUS
+#undef HAVE_ICONV_CITRUS_H
+#undef HAVE_LIBICONV_CITRUS_DLL
 
         /* compression */
 #undef HAVE_ZLIB_H
