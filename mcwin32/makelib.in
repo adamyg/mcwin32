@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.5 2021/04/13 16:00:16 cvsuser Exp $
+# $Id: makelib.in,v 1.6 2021/08/14 09:30:32 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -77,7 +77,8 @@ $PACKAGE_FILE	= 'package.h';
 	'libssh2',
 	'libmagic',
 	'libintl',
-	'libglib'
+	'libglib',
+	'autoupdater'
 	);
 
 ## Toolchain

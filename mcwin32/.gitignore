@@ -1,5 +1,4 @@
 .makelib/
-WinSparkle-0.3/
 include/
 patch/
 bin/
@@ -30,5 +29,4 @@ wd*.bat
 *.sav
 *.bak
 *.orig
-
 

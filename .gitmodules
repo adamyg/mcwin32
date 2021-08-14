@@ -1,0 +1,3 @@
+[submodule "mcwin32/autoupdater/libappupdater"]
+	path = mcwin32/autoupdater/libappupdater
+	url = https://github.com/adamyg/libappupdater

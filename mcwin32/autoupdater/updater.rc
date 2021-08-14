@@ -1,0 +1,99 @@
+/*
+ * windows resource file; this file is part of the GRIEF.
+ */
+
+#ifndef  WINDRES
+#include "windows.h"
+#include "winver.h"
+#endif
+
+/*
+ * English (U.S.) resources
+ */
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+
+#ifdef _WIN32
+#ifndef WINDRES
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#endif
+#pragma code_page(1252)
+#endif /* _WIN32 */
+
+/*
+ * Manifest
+ */
+#ifndef RT_MANIFEST
+#define RT_MANIFEST 24
+#endif
+#ifndef CREATEPROCESS_MANIFEST_RESOURCE_ID
+#define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
+#endif
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "./libappupdater/manifest.xml"
+
+/*
+ * Updater Meta Data
+ *  nameID      typeID  {  raw data  }
+ */
+
+UPDATER HostURL		{ "\0" }
+UPDATER Channel		{ "release\0" }
+
+
+/*
+ * Version Information
+ */
+
+VS_VERSION_INFO VERSIONINFO
+#if defined(RC_FILEVERSION)
+	FILEVERSION	RC_FILEVERSION
+	PRODUCTVERSION	RC_PRODUCTVERSION
+#endif
+	FILEFLAGSMASK	VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS	(VS_FF_SPECIALBUILD|VS_FF_DEBUG)
+#else
+	FILEFLAGS	(VS_FF_SPECIALBUILD)
+#endif
+	FILEOS		VOS_NT_WINDOWS32
+	FILETYPE	VFT_APP
+	FILESUBTYPE	VFT2_UNKNOWN
+	BEGIN
+		BLOCK	"StringFileInfo"
+		BEGIN
+			BLOCK	"040904E4"
+			BEGIN
+				VALUE "CompanyName",		""
+				VALUE "FileDescription",	"GRIEF Editor, Auto Updater"
+#if defined(VERSION) && defined(BUILD_DATE)
+				VALUE "FileVersion",		VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER
+#endif
+				VALUE "InternalName",		"GRIEF"
+				VALUE "Copyright",
+					"Copyright (C) 2012 - 2021, Adam Young. All rights reserved. "
+					"Licensed under the Grief License. "
+					"This is free software; see the source for copying conditions. "
+					"There is NO warranty; not even for MERCHANTABILITY "
+					"or FITNESS FOR A PARTICULAR PURPOSE. "
+				VALUE "Maintainers",		"griefedit@gmail.com"
+				VALUE "LegalTrademarks",	"see GRIEF License"
+				VALUE "OriginalFilename",	"grupdater.exe"
+				VALUE "ProductName",		"GRIEF"
+			END
+		END
+
+		/* The following line should only be modified for localized versions.     */
+		/* It consists of any number of WORD,WORD pairs, with each pair           */
+		/* describing a language,codepage combination supported by the file.      */
+		/*                                                                        */
+		/* For example, a file might have values "0x409,1252" indicating that it  */
+		/* supports English language (0x409) in the Windows ANSI codepage (1252). */
+
+		BLOCK	"VarFileInfo"
+		BEGIN
+			VALUE "Translation", 0x409, 1252
+		END
+	END
+
+#endif	/* English (U.S.) resources */
+
