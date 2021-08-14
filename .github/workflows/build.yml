@@ -9,6 +9,8 @@ jobs:
         os: [windows-latest]
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x86
