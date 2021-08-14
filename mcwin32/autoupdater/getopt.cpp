@@ -1,4 +1,4 @@
-// $Id: getopt.cpp,v 1.1 2021/08/14 09:31:30 cvsuser Exp $
+// $Id: getopt.cpp,v 1.2 2021/08/14 12:32:25 cvsuser Exp $
 //
 //  getopt() implementation
 //
@@ -8,6 +8,10 @@
 #include <string.h>
 
 #include "getopt.h"
+
+#if defined(__WATCOMC__)
+#pragma disable_message(391)                    /* assignment found in boolean expression */
+#endif
 
 namespace Updater {
 

@@ -1,11 +1,31 @@
 /*
- * windows resource file; this file is part of the GRIEF.
+ * windows resource file
+ *
+ * This file is part of the Midnight Commander.
+ *
+ * The Midnight Commander is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * The Midnight Commander is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef  WINDRES
 #include "windows.h"
 #include "winver.h"
 #endif
+
+#include "../buildinfo.h"
+
+#define RC_PRODUCTVERSION       VERSION_1 , VERSION_2 , VERSION_3 , 0
+#define RC_FILEVERSION          VERSION_1 , VERSION_2 , VERSION_3 , 1
 
 /*
  * English (U.S.) resources
@@ -64,21 +84,27 @@ VS_VERSION_INFO VERSIONINFO
 			BLOCK	"040904E4"
 			BEGIN
 				VALUE "CompanyName",		""
-				VALUE "FileDescription",	"GRIEF Editor, Auto Updater"
-#if defined(VERSION) && defined(BUILD_DATE)
-				VALUE "FileVersion",		VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER
-#endif
-				VALUE "InternalName",		"GRIEF"
+
+				VALUE "FileDescription",	"GNU Midnight Commander, Auto Updater"
+
+				VALUE "FileVersion",		VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER /* match mc.rc */
+
+                                VALUE "InternalName",           "WIN32 Midnight Commander"
+
 				VALUE "Copyright",
-					"Copyright (C) 2012 - 2021, Adam Young. All rights reserved. "
-					"Licensed under the Grief License. "
-					"This is free software; see the source for copying conditions. "
-					"There is NO warranty; not even for MERCHANTABILITY "
-					"or FITNESS FOR A PARTICULAR PURPOSE. "
-				VALUE "Maintainers",		"griefedit@gmail.com"
+                                        "Copyright (C) 2012 - 2021, Adam Young. All rights reserved. \n"
+                                        "Copyright (c) 1998-2000 Thai Open Source Software Center Ltd and Clark Cooper. \n"
+                                        "Copyright (c) 2001-2019 Expat maintainers. \n"
+                                        "This is free software; see the source for copying conditions. \n"
+                                        "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \n"
+
+                                VALUE "Maintainers",            "https://github.com/adamyg/mcwin32"
+
 				VALUE "LegalTrademarks",	"see GRIEF License"
+
 				VALUE "OriginalFilename",	"grupdater.exe"
-				VALUE "ProductName",		"GRIEF"
+
+                                VALUE "ProductName",            "GNU Midnight Commander" /* match mc.rc */
 			END
 		END
 

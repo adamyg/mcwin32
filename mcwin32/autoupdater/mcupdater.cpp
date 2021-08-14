@@ -1,4 +1,4 @@
-//  $Id: mcupdater.cpp,v 1.1 2021/08/14 09:31:31 cvsuser Exp $
+//  $Id: mcupdater.cpp,v 1.2 2021/08/14 12:32:25 cvsuser Exp $
 //
 //  Midnight Commander AutoUpdater command line.
 //
@@ -37,7 +37,7 @@ main(int argc, char *argv[])
     int ch;
 
     x_progname = Basename(argv[0]);
-    while (-1 != (ch = Updater::Getopt(argc, argv, "V:H:ivh"))) {
+    while (-1 != (ch = Updater::Getopt(argc, argv, "V:H:ivch"))) {
         switch (ch) {
         case 'V':   /* application version */
             version= Updater::optarg;
@@ -47,6 +47,9 @@ main(int argc, char *argv[])
             break;
         case 'i':   /* interactive */
             ++interactive;
+            break;
+        case 'c':   /* console */
+            autoupdate_set_console_mode(1);
             break;
         case 'v':   /* verbose */
             autoupdate_logger_stdout(1);
@@ -87,6 +90,13 @@ main(int argc, char *argv[])
         mode = -1;
     } else if (0 == _stricmp("dump", arg)) {
         mode = -2;
+    } else if (0 == _stricmp("config", arg)) {
+        std::cout
+            << PACKAGE_NAME << "\n"
+            << "Built:   " << BUILD_DATE << "\n"
+            << "Version: " << version << "\n"
+            << "Host:    " << hosturl << "\n";
+        return 0;
     } else {
         std::cerr << "\n" <<
             x_progname << ": unknown mode '" << arg << "'" << std::endl;
@@ -129,10 +139,13 @@ Usage()
         "   disable -           Disable automatic periodic checks.\n"\
         "   reset -             Reset the updater status.\n"\
         "\n"\
+        "   config -            Configuration.\n"\
+        "\n"\
         "Options:\n"\
         "   -V <version>        Version label.\n"\
-        "   -H <host>           Host URL.\n"\
+        "   -H <host>           Host URL override.\n"\
         "   -i                  Interactive ('auto' only).\n"\
+        "   -c                  Console mode.\n"\
         "   -v                  Verbose diagnostice.\n"\
         "\n" << std::endl;
     std::exit(99);
