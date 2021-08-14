@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.1 2021/08/14 09:31:30 cvsuser Exp $
+# $Id: Makefile.in,v 1.2 2021/08/14 10:21:08 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -115,7 +115,7 @@ DLLOBJS=\
 	$(D_OBJ)/AutoConfig.lo		\
 	$(D_OBJ)/AutoConsole.lo		\
 	$(D_OBJ)/AutoDialog.lo		\
-	$(D_OBJ)/AutoDownload.lo	\
+	$(D_OBJ)/AutoDownLoad.lo	\
 	$(D_OBJ)/AutoError.lo		\
 	$(D_OBJ)/AutoLogger.lo		\
 	$(D_OBJ)/AutoManifest.lo	\
