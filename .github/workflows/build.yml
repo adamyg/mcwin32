@@ -8,9 +8,11 @@ jobs:
       matrix:
         os: [windows-latest]
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
+    - name: Checkout repository
+      uses: actions/checkout@v2   
+    - name: Checkout submodules
+      run: |
+        git submodule update --init --recursive
     - uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x86
