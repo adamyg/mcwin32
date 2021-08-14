@@ -997,7 +997,7 @@ $(LW)glib-2.0$(A):
 		$(MAKE) -C libglib
 
 .PHONY:		$(LW)autoupdater$(A)
-$(LW)glib-2.0$(A):
+$(LW)autoupdate$(A):
 		$(MAKE) -C autoupdater
 
 
