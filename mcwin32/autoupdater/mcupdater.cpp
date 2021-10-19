@@ -1,4 +1,4 @@
-//  $Id: mcupdater.cpp,v 1.4 2021/08/17 06:51:16 cvsuser Exp $
+//  $Id: mcupdater.cpp,v 1.5 2021/08/17 07:17:38 cvsuser Exp $
 //
 //  Midnight Commander AutoUpdater command line.
 //
@@ -131,7 +131,7 @@ Usage()
         "\n"\
         "Midnight Commander updater                                         version 1.01\n"\
         "\n"\
-        "   grupdater [options] mode\n"\
+        "   mcupdater [options] mode\n"\
         "\n"\
         "Modes:\n"\
         "   auto -              Periodically check for updates.\n"\

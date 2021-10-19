@@ -100,9 +100,9 @@ VS_VERSION_INFO VERSIONINFO
 
                                 VALUE "Maintainers",            "https://github.com/adamyg/mcwin32"
 
-				VALUE "LegalTrademarks",	"see GRIEF License"
+				VALUE "LegalTrademarks",	"see MC License"
 
-				VALUE "OriginalFilename",	"grupdater.exe"
+				VALUE "OriginalFilename",	"mcupdater.exe"
 
                                 VALUE "ProductName",            "GNU Midnight Commander" /* match mc.rc */
 			END
