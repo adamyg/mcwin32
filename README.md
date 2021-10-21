@@ -1,4 +1,4 @@
-[![Website](https://img.shields.io/badge/View-Website-blue)](https://sourceforge.net/projects/mcwin32/) [![Build status](https://ci.appveyor.com/api/projects/status/3tx1vwwclydfp1t6?svg=true&passingText=MSVC%20Passing&failingText=MSVC%20Failing&pendingText=MSVC%20Pending)](https://ci.appveyor.com/project/adamyg/mcwin32-msvc)
+[![Website](https://img.shields.io/badge/View-Website-blue)](https://sourceforge.net/projects/mcwin32/) [![Build status](https://ci.appveyor.com/api/projects/status/4ckxapbwc3mt66x6?svg=true&passingText=MSVC%20Passing&failingText=MSVC%20Failing&pendingText=MSVC%20Pending)](https://ci.appveyor.com/project/adamyg/mcwin32-msvc)
 
 # Midnight Commander for Windows
 
