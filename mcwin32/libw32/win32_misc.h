@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_MISC_H_INCLUDED
 #define LIBW32_WIN32_MISC_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.6 2021/04/13 15:49:35 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.7 2021/05/07 17:52:56 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -51,15 +51,20 @@ enum w32ostype {            /* generalised machine types, ignoring server */
 #define WIN32_PATH_MAX      1024                /* 255, unless UNC names are used */
 #define WIN32_LINK_DEPTH    8
 
-LIBW32_API enum w32ostype   w32_ostype (void);
-LIBW32_API int              w32_getexedir (char *buf, int maxlen);
-LIBW32_API int              w32_getsysdir (int id, char *buf, int maxlen);
+LIBW32_API enum w32ostype   w32_ostype(void);
+LIBW32_API int              w32_getexedir(char *buf, int maxlen);
+
+LIBW32_API int              w32_getsysdir(int id, char *buf, int maxlen);
+LIBW32_API int              w32_getsysdirA(int id, char *buf, int maxlen);
+LIBW32_API int              w32_getsysdirW(int id, wchar_t *buf, int maxlen);
 
 LIBW32_API int              w32_regstrget(const char *subkey, const char *valuename, char *buf, int len);
 LIBW32_API int              w32_regstrgetx(HKEY hkey, const char *subkey, const char *valuename, char *buf, int len);
 LIBW32_API const char *     w32_getlanguage(char *buffer, int len);
 
-LIBW32_API const char *     w32_selectfolder(const char *strMessage, char *szBuffer);
+LIBW32_API const char *     w32_selectfolder(const char *message, char *path /*MAX_PATH*/);
+LIBW32_API const char *     w32_selectfolderA(const char *message, char *path);
+LIBW32_API const wchar_t *  w32_selectfolderW(const char *message, wchar_t *path);
 
 LIBW32_API int              w32_IsElevated(void);
 LIBW32_API int              w32_IsAdministrator(void);

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.5 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.7 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 interface support
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -39,12 +39,33 @@ __CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.5 2018/10/12 00:52:04 cvsu
 
 
 LIBW32_API int
-w32_getsysdir(
-    int id, char *buf, int maxlen)
+w32_getsysdir(int id, char *buf, int maxlen)
 {
-    char szPath[ MAX_PATH ];
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
+
+        if (w32_getsysdirW(id, wpath, _countof(wpath)) > 0) {
+            return w32_wc2utf(wpath, buf, maxlen);
+        }
+        return -1;
+    }
+#endif
+
+    return w32_getsysdirA(id, buf, maxlen);
+}
+
+
+LIBW32_API int
+w32_getsysdirA(int id, char *buf, int maxlen)
+{
+    char t_path[ MAX_PATH ], *path = buf;
     HRESULT hres;
     int len;
+
+    if (NULL == buf || maxlen < 4) {
+        return -1;
+    }
 
     switch (id) {
     case SYSDIR_TEMP:
@@ -54,19 +75,57 @@ w32_getsysdir(
         return -1;
     }
 
-    hres = SHGetSpecialFolderPath(NULL, szPath, id, FALSE);
-    if (SUCCEEDED(hres) &&
-            (len = (int)strlen(szPath)) <= maxlen) {
-        (void) strcpy(buf, (const char *)szPath);
-        return len;
+    if (maxlen < MAX_PATH) path = t_path;
+    hres = SHGetSpecialFolderPathA(NULL, path, id, FALSE);
+    if (SUCCEEDED(hres)) {
+        len = (int)strlen(path);
+        if (path == buf) {                      // direct
+            return len;                        
+        } else if (len < maxlen) {              // indirect
+            (void) strcpy(buf, (const char *)t_path);
+            return len;
+        }
     }
-    return (-1);
+    return -1;
+}
+
+
+LIBW32_API int
+w32_getsysdirW(int id, wchar_t *buf, int maxlen)
+{
+    wchar_t t_path[ MAX_PATH ], *path = buf;
+    HRESULT hres;
+    int len;
+
+    if (NULL == buf || maxlen < 4) {
+        return -1;
+    }
+
+    switch (id) {
+    case SYSDIR_TEMP:
+        id = CSIDL_INTERNET_CACHE;
+        break;
+    default:
+        return -1;
+    }
+
+    if (maxlen < MAX_PATH) path = t_path;
+    hres = SHGetSpecialFolderPathW(NULL, path, id, FALSE);
+    if (SUCCEEDED(hres)) {
+        len = (int)wcslen(path);
+        if (path == buf) {                      // direct
+            return len;                        
+        } else if (len < maxlen) {              // indirect
+            (void) wcscpy(buf, (const wchar_t *)t_path);
+            return len;
+        }
+    }
+    return -1;
 }
 
 
 LIBW32_API const char *
-w32_selectfolder(
-    const char *strMessage, char *szBuffer)
+w32_selectfolder(const char *message, char *szBuffer)
 {
     char const * Result = NULL;
     BROWSEINFO BrowseInfo;
@@ -76,7 +135,7 @@ w32_selectfolder(
     memset(&BrowseInfo, 0, sizeof(BrowseInfo));
     BrowseInfo.hwndOwner = NULL;                /* XXX */
     BrowseInfo.pszDisplayName = szBuffer;
-    BrowseInfo.lpszTitle = strMessage;
+    BrowseInfo.lpszTitle = message;
     BrowseInfo.ulFlags = BIF_RETURNONLYFSDIRS;
     pList = SHBrowseForFolder(&BrowseInfo);
 
@@ -90,4 +149,3 @@ w32_selectfolder(
 }
 
 /*end*/
-

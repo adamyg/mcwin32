@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.9 2021/04/13 15:49:33 cvsuser Exp $
+# $Id: Makefile.in,v 1.14 2021/06/10 12:42:33 cvsuser Exp $
 # libwin32 makefile.
 #
 #
-# Copyright (c) 2007, 2012 - 2020 Adam Young.
+# Copyright (c) 2007, 2012 - 2021 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -84,7 +84,7 @@ LDDEBUG=	@LDDEBUG@
 LDRELEASE=	@LDRELEASE@
 
 CINCLUDE=	-I$(D_INC) @CINCLUDE@ -I.
-CEXTRA=		@DEFS@
+CEXTRA=		-DUTF8FILENAMES=1 @DEFS@
 
 ifeq ("$(BUILD_TYPE)","release")
 CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
@@ -102,34 +102,43 @@ RMFLAGS=	-f
 ARFLAGS=	rcv
 YFLAGS=		-d
 
-############################################################
+
+#########################################################################################
+# Targets
 
 W32LIB=		$(D_LIB)/$(LP)w32_static$(A)
 W32DLL=		$(D_LIB)/$(LP)w32.la
 
-VERSION=	1.1.0
+VERSION=	1.2.0
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 
 CSOURCES=\
 	bsd_bsearch.c \
 	bsd_qsort.c \
+	w32_access.c \
 	w32_check.c \
 	w32_child.c \
+	w32_chmod.c \
 	w32_chown.c \
 	w32_close.c \
 	w32_dir.c \
 	w32_dirent.c \
-	w32_domainname.c \	
+	w32_dlfcn.c \
+	w32_direntunc.c \
+	w32_domainname.c \
 	w32_err.c \
 	w32_errno.c \
 	w32_flock.c \
 	w32_fcntl.c \
 	w32_fsync.c \
 	w32_getcwd.c \
+	w32_getcwdd.c \
 	w32_gethostname.c \
 	w32_getopt.c \
 	w32_getopt_long.c \
+	w32_getrusage.c \
 	w32_getsubopt.c \
+	w32_getlocale.c \
 	w32_gistrerror.c \
 	w32_grp.c \
 	w32_iconv.c \
@@ -149,7 +158,9 @@ CSOURCES=\
 	w32_read.c \
 	w32_readv.c \
 	w32_realpath.c \
+	w32_rename.c \
 	w32_reparse.c \
+	w32_rwlock.c \
 	w32_select.c \
 	w32_shell.c \
 	w32_signal.c \
@@ -193,6 +204,8 @@ OBJS=		$(LIBOBJS) $(DLLOBJS)
 LIBS=		$(W32LIB) $(W32DLL)
 TSKS=
 
+
+#########################################################################################
 # Rules
 
 .PHONY:		build debug release
@@ -212,8 +225,8 @@ $(W32LIB):		$(D_OBJ)/.created $(LIBOBJS)
 $(W32DLL):		CEXTRA += -DLIBW32_DYNAMIC -DLIBW32_LIBRARY
 $(W32DLL):		DLLDEF = -export-symbols libw32.def
 $(W32DLL):		$(DLLOBJS)
-		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) $(DLLDEF) -o $@ $^ $(LDLIBS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(DLLDEF) $^ $(LDLIBS)
 
 $(D_OBJ)/.created:
 		-@mkdir $(D_OBJ)

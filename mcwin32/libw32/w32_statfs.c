@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.5 2018/10/10 11:03:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.9 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 statfs()/statvfs() and getmntinfo() system calls.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -26,7 +26,7 @@ __CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.5 2018/10/10 11:03:52 cvsu
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
  */
@@ -49,14 +49,15 @@ __CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.5 2018/10/10 11:03:52 cvsu
 //      #include <sys/statvfs.h>
 //
 //      int fstatvfs(int fildes, struct statvfs *buf);
-//      int statvfs(const char *restrict path, struct statvfs *restrict buf); [Option End]
+//      int statvfs(const char *restrict path, struct statvfs *restrict buf);
 //
 //  DESCRIPTION
 //      The fstatvfs() function shall obtain information about the file system containing the file referenced by fildes.
 //
 //      The statvfs() function shall obtain information about the file system containing the file named by path.
 //
-//      For both functions, the buf argument is a pointer to a statvfs structure that shall be filled.Read, write, or execute permission of the named file is not required.
+//      For both functions, the buf argument is a pointer to a statvfs structure that shall be filled.
+//      Read, write, or execute permission of the named file is not required.
 //
 //      The following flags can be returned in the f_flag member :
 //
@@ -93,12 +94,41 @@ __CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.5 2018/10/10 11:03:52 cvsu
 //          [ENAMETOOLONG]  Pathname resolution of a symbolic link produced an intermediate result whose length exceeds{ PATH_MAX }.
 */
 int
-statfs(const char *path, struct statfs *sb)
+statfs(const char *path, struct statfs *buf)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
+
+        if (NULL == path || NULL == buf) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return statfsW(wpath, buf);
+        }
+
+        return -1;
+    }
+#endif  //UTF8FILENAMES
+
+    return statfsA(path, buf);
+}
+
+
+int
+statfsA(const char *path, struct statfs *sb)
 {
     char    volName[MNAMELEN], fsName[MFSNAMELEN];
     DWORD   SectorsPerCluster, BytesPerSector, FreeClusters, Clusters;
     DWORD   MaximumComponentLength, FileSystemFlags;
     int     mnamelen;
+
+    if (NULL == path || NULL == sb) {
+        errno = EFAULT;
+        return -1;
+    }
 
     (void) memset(sb, 0, sizeof(*sb));
 
@@ -156,6 +186,81 @@ statfs(const char *path, struct statfs *sb)
     {                                           /* FileSystem type/NTFS, FAT etc */
         if (fsName[0]) {
             strncpy(sb->f_fstypename, fsName, MFSNAMELEN);
+        }
+    }
+    return 0;
+}
+
+
+int
+statfsW(const wchar_t *path, struct statfs *sb)
+{
+    wchar_t volName[MNAMELEN], fsName[MFSNAMELEN];
+    DWORD   SectorsPerCluster, BytesPerSector, FreeClusters, Clusters;
+    DWORD   MaximumComponentLength, FileSystemFlags;
+    int     mnamelen;
+
+    if (NULL == path || NULL == sb) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    (void) memset(sb, 0, sizeof(*sb));
+
+    sb->f_bsize = 1024;                         /* block size */
+
+    if (GetDiskFreeSpaceW(path, &SectorsPerCluster, &BytesPerSector, &FreeClusters, &Clusters)) {
+        /* KBytes available */
+        sb->f_bavail = (unsigned int)
+            (((__int64)SectorsPerCluster * BytesPerSector * FreeClusters) / 1024);
+
+        /* KBytes total */
+        sb->f_blocks = (unsigned int)
+            (((__int64)SectorsPerCluster * BytesPerSector * Clusters) / 1024);
+
+        /* inodes */
+        sb->f_ffree = FreeClusters/10;
+        sb->f_files = Clusters/10;
+    }
+
+    w32_wc2utf(path, sb->f_mntonname, sizeof(sb->f_mntonname));
+    w32_dos2unix(sb->f_mntonname);
+    if ((mnamelen = strlen(sb->f_mntonname)) > 3) {
+        if (sb->f_mntonname[mnamelen - 1] == '/') {
+            sb->f_mntonname[mnamelen - 1] = 0;
+                //remove trailing delimiter on mount-points.
+        }
+    }
+
+    switch (GetDriveTypeW(path)) {              /* device */
+    case DRIVE_REMOVABLE:
+        strncpy(sb->f_mntfromname, "Removable", MNAMELEN);
+        break;
+    case DRIVE_FIXED:
+        strncpy(sb->f_mntfromname, "Hard Disk", MNAMELEN);
+        break;
+    case DRIVE_REMOTE:
+        strncpy(sb->f_mntfromname, "Networked", MNAMELEN);
+        break;
+    case DRIVE_CDROM:
+        strncpy(sb->f_mntfromname, "CD-ROM", MNAMELEN);
+        break;
+    case DRIVE_RAMDISK:
+        strncpy(sb->f_mntfromname, "RAM disk", MNAMELEN);
+        break;
+    default:
+        strncpy(sb->f_mntfromname, "Unknown", MNAMELEN);
+        break;
+    }
+
+    sb->f_type = MOUNT_PC;
+    strncat(sb->f_fstypename, "unknown", MFSNAMELEN);
+    if (GetVolumeInformationW(path,
+            volName, MNAMELEN,                  /* VolumeName and size */
+            NULL, &MaximumComponentLength, &FileSystemFlags, fsName, MNAMELEN)) /* filesystem type */
+    {                                           /* FileSystem type/NTFS, FAT etc */
+        if (fsName[0]) {
+            w32_wc2utf(fsName, sb->f_fstypename, sizeof(sb->f_fstypename));
         }
     }
     return 0;
@@ -221,8 +326,8 @@ statvfs(const char *path, struct statvfs *vfs)
 //
 //          The memory allocated by getmntinfo() cannot be free'd by the application.
 */
-static struct statfs *enum_volumes(struct statfs *result, long resultsize, int *mnts);
 
+static struct statfs *enum_volumes(struct statfs *result, long resultsize, int *mnts);
 
 int
 getfsstat(struct statfs *buf, long bufsize, int mode)
@@ -316,7 +421,6 @@ enum_volumes(struct statfs *result, long resultsize, int *mnts)
     struct statfs *sb = result;
 
     WCHAR   volume[1024] = {0};
-    char    path[1024];
     HANDLE  handle;
     BOOL    ret;
 
@@ -346,28 +450,27 @@ enum_volumes(struct statfs *result, long resultsize, int *mnts)
                     PWCHAR cursor, end;
                     for (cursor = names, end = cursor + count; cursor < end && *cursor; ++cursor) {
                         const unsigned len = wcslen(cursor);
-                        size_t cnt = wcstombs(path, cursor, sizeof(path) - 1);
-                        if (cnt && cnt < sizeof(path)) {
-                            if (sbcnt >= sballoc) {
-                                struct statfs *t_sb =
-                                        (NULL == result ? realloc(sb, (sballoc += 32) * sizeof(*sb)) : NULL);
-                                if (NULL == t_sb) {
-                                    sballoc = -1;
-                                    break;      // nomem/overflow.
-                                }
-                                sb = t_sb;
+                        if (sbcnt >= sballoc) {
+                            struct statfs *t_sb =
+                                    (NULL == result ? realloc(sb, (sballoc += 32) * sizeof(*sb)) : NULL);
+                            if (NULL == t_sb) {
+                                sballoc = -1;
+                                break;          // nomem/overflow.
                             }
-
-                            if (0 == statfs(path, sb + sbcnt)) {
-                                ++sbcnt;
-                            }
+                            sb = t_sb;
                         }
+
+                        if (0 == statfsW(cursor, sb + sbcnt)) {
+                            ++sbcnt;
+                        }
+
                         cursor += len;
                     }
                     free((void *)names);
                 }
 
-                if (-1 == sballoc) break;       // allocation error.
+                if (-1 == sballoc)              // allocation error.
+                    break;
             }
 
             //

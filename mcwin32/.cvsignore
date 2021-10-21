@@ -1,5 +1,4 @@
 .makelib
-WinSparkle-0.3
 include
 patch
 bin
@@ -27,4 +26,3 @@ mc.aps
 *.sav
 *.bak
 *.orig
-

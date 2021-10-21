@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.7 2021/04/13 15:49:35 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.13 2021/06/10 12:42:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 user identification functionality
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -41,9 +41,49 @@ __CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.7 2021/04/13 15:49:35 cvsuser 
 #endif
 
 #include "win32_internal.h"
+#include "win32_child.h"
+#include <pwd.h>
+#include <grp.h>
 #include <unistd.h>
 
+#include <sddl.h>                               /* ConvertSidToStringSid */
+#include <Lm.h>
+
 #pragma comment(lib, "Advapi32.lib")
+#pragma comment(lib, "Netapi32.lib")
+
+static char x_passwd_name[WIN32_LOGIN_LEN];
+static char x_passwd_passwd[32];
+static char x_passwd_gecos[32];
+static char x_passwd_dir[MAX_PATH];
+static char x_passwd_shell[MAX_PATH];
+
+static struct passwd x_passwd = {
+    x_passwd_name,          /* pw_name */
+    x_passwd_passwd,        /* pw_passwd */
+    -1,                     /* pw_uid */
+    -1,                     /* pw_gid */
+    NULL,                   /* pw_age */
+    NULL,                   /* pw_comment */
+    x_passwd_gecos,         /* pw_gecos */
+    x_passwd_dir,           /* pw_dir */
+    x_passwd_shell,         /* pw_shell */
+    0,                      /* pw_audid */
+    0                       /* pw_audflg */
+};
+
+static char x_group_name[WIN32_LOGIN_LEN];
+static char x_group_passwd[32];
+
+static struct group x_group = {
+    x_group_name,           /* gr_name */
+    x_group_passwd,         /* gr_passwd */
+    -1,                     /* gr_gid */
+    NULL
+};
+
+static void         initialise_user(void);
+static unsigned     RID(PSID sid);
 
 
 /*
@@ -68,7 +108,8 @@ __CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.7 2021/04/13 15:49:35 cvsuser 
 LIBW32_API int
 w32_getuid (void)
 {
-    return 42;
+    initialise_user();
+    return x_passwd.pw_uid;
 }
 
 
@@ -94,7 +135,8 @@ w32_getuid (void)
 int
 w32_geteuid (void)
 {
-    return 42;
+    initialise_user();
+    return x_passwd.pw_uid;
 }
 
 
@@ -120,7 +162,8 @@ w32_geteuid (void)
 LIBW32_API int
 w32_getgid (void)
 {
-    return 42;
+    initialise_user();
+    return x_passwd.pw_gid;
 }
 
 
@@ -146,7 +189,8 @@ w32_getgid (void)
 int
 w32_getegid (void)
 {
-    return 42;
+    initialise_user();
+    return x_passwd.pw_gid;
 }
 
 
@@ -160,13 +204,13 @@ w32_getegid (void)
 //      int issetugid(void);
 //
 //  DESCRIPTION
-//      The issetugid() function should be used to  determine if a path name returned
+//      The issetugid() function should be used to determine if a path name returned
 //      from a getenv(3C) call can be used safely to open the specified file. It is
-//      often  not safe to open such a file because the status of the effective uid
+//      often not safe to open such a file because the status of the effective uid
 //      is not known.
 //
 //  RETURN VALUE
-//      The issetugid() function returns 1 if the process  was  made setuid or setgid
+//      The issetugid() function returns 1 if the process was made setuid or setgid
 //      as  the result of the last or a previous call to execve(). Otherwise it returns 0.
 //
 //  ERRORS
@@ -244,48 +288,198 @@ issetugid (void)
 LIBW32_API const char *
 getlogin (void)
 {
-    static char buffer[100];                    /* one-shot */
-    DWORD size = sizeof(buffer);
-    const char *p = buffer;
-
-    if (!*p) {
-        p = getenv("USER");
-
-        if (p == NULL) p = getenv("USERNAME");  /* NT */
-
-        if (GetUserNameA(buffer, &size))        /* requires: advapi32.lib */
-            p = buffer;
-
-        if (p == NULL)
-            p = "dosuser";                      /* default */
-
-        if (p != buffer) {
-            strncpy(buffer, p, sizeof(buffer));
-            buffer[ sizeof(buffer)-1 ] = '\0';
-            p = buffer;
-        }
+    static char buffer[WIN32_LOGIN_LEN];
+    if (getlogin_r(buffer, sizeof(buffer)) > 0) {
+        return buffer;
     }
-    return p;
+    return NULL;
 }
 
 
 LIBW32_API int
 getlogin_r (char *name, size_t namesize)
 {
-    const char *login = getlogin();
-    size_t length = strlen(login);
+    int length;
 
-    if (namesize >= length) {
+    if (name == NULL || namesize == 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    initialise_user();
+    length = strlen(x_passwd_name);
+    if (namesize <= (size_t)length) {
         errno = ERANGE;
         return -1;
     }
-    memcpy(name, login, length + 1);
-    return (int)length;
+    memcpy(name, x_passwd_name, length + 1);
+    return length;
+}
+
+
+LIBW32_API const struct passwd *
+w32_passwd_user (void)
+{
+    initialise_user();
+    return &x_passwd;
+}
+
+
+LIBW32_API const struct group *
+w32_group_user (void)
+{
+    initialise_user();
+    return &x_group;
+}
+
+
+static void
+initialise_user()
+{
+    char login[WIN32_LOGIN_LEN], group[WIN32_GROUP_LEN];
+    char domain[1024 + 1];
+
+    TOKEN_USER *tu = NULL;
+    TOKEN_PRIMARY_GROUP *pg = NULL;
+    HANDLE hToken = NULL;
+
+    login[0] = 0, group[0] = 0, domain[0] = 0;
+
+    if (x_passwd.pw_uid >= 0) {
+        return;
+    }
+
+    // defaults
+    x_passwd.pw_uid = 42;
+    x_passwd.pw_gid = 42;
+
+    strncpy(x_passwd_name, "user", sizeof(x_passwd_name) - 1);
+    strncpy(x_passwd_passwd, "*", sizeof(x_passwd_passwd) - 1);
+    strncpy(x_passwd_gecos, "pcuser", sizeof(x_passwd_gecos) - 1);
+    strncpy(x_group_name, "user", sizeof(x_group_name) - 1);
+
+    // process identify
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+        SID_NAME_USE user_type = {0};
+        DWORD cbSize, cbSize2;
+
+        cbSize = 0;
+        if (! GetTokenInformation(hToken, TokenUser, NULL, 0, &cbSize) &&
+                GetLastError () == ERROR_INSUFFICIENT_BUFFER && cbSize &&
+                    NULL != (tu = alloca(sizeof(char) + (cbSize + 1)))) {
+
+            if (GetTokenInformation(hToken, TokenUser, tu, cbSize, &cbSize2)) {
+                DWORD ulen = sizeof(login), dlen = sizeof(domain);
+
+                if (! LookupAccountSidA(NULL, tu->User.Sid, login, &ulen, domain, &dlen, &user_type)) {
+                    login[0] = 0;
+                }
+            }
+        }
+
+        cbSize = 0;
+        if (! GetTokenInformation(hToken, TokenPrimaryGroup, NULL, 0, &cbSize) &&
+                GetLastError () == ERROR_INSUFFICIENT_BUFFER && cbSize &&
+                    NULL != (pg = alloca(sizeof(char) + (cbSize + 1)))) {
+
+            if (GetTokenInformation(hToken, TokenPrimaryGroup, pg, cbSize, &cbSize2)) {
+                DWORD glen = sizeof(group), dlen = sizeof(domain);
+
+                if (! LookupAccountSidA(NULL, pg->PrimaryGroup, group, &glen, NULL, &dlen, &user_type)) {
+                    group[0] = 0;
+                }
+
+            } else {
+                pg = NULL;
+            }
+        }
+
+        CloseHandle(hToken);
+    }
+
+    // apply
+    if (login[0]) {
+        char *sid = NULL;
+
+        strncpy(x_passwd_name, login, sizeof(x_passwd_name)-1);
+
+        if (0 == _stricmp("Administrator", login)) {
+            x_passwd.pw_uid = 500;              // Built-in admin account.
+            x_passwd.pw_gid = 513;              // PrimaryGroupID.
+                //
+                // By default, all Active Directory users have a PrimaryGroupID of 513, 
+                // which is associated with the Domain Users group.
+                // However, if the user needed to be seen as a Domain Admin for POSIX,
+                // the PrimaryGroupID needed to be 512, the RID for that group. 
+                // The Enterprise Admins group, 519, is also used to grant this level in POSIX.
+                //
+
+        } else {
+            x_passwd.pw_uid = (short) RID(tu->User.Sid);
+                // Note: Unfortunately st_uid/st_gid are short's resulting in RID truncation.
+            x_passwd.pw_gid = x_passwd.pw_uid;
+            if (pg) {
+                x_passwd.pw_gid = (short) RID(pg->PrimaryGroup);
+            }
+        }
+
+        if (ConvertSidToStringSidA(tu->User.Sid, &sid)) {
+            strncpy(x_passwd_gecos, sid, sizeof(x_passwd_gecos) - 1);
+            LocalFree(sid);
+        }
+
+    // old-school
+    } else {
+        DWORD cbBuffer = sizeof(x_passwd_name) - 1;
+
+        if (! GetUserNameA(x_passwd_name, &cbBuffer)) {
+            const char *name = NULL;
+
+            if (NULL == name) name = getenv("USER");
+            if (NULL == name) name = getenv("USERNAME");
+            if (NULL == name) name = "dosuser";
+            strncpy(x_passwd_name, name, sizeof(x_passwd_name) - 1);
+        }
+
+        if (0 == _stricmp("Administrator", x_passwd_name)) {
+            x_passwd.pw_uid = 0;
+        }
+
+        x_passwd.pw_gid = x_passwd.pw_uid;
+    }
+
+    // additional account attributes
+    _strlwr(x_passwd_name);
+    strncpy(x_passwd_dir, w32_gethome(FALSE), sizeof(x_passwd_dir) - 1);
+    strncpy(x_passwd_shell, w32_getshell(), sizeof(x_passwd_shell) - 1);
+
+    // group
+    if (group[0]) {
+        strncpy(x_group_name, group, sizeof(x_group_name) - 1);
+        _strlwr(x_group_name);
+    }
+    x_group.gr_gid = x_passwd.pw_gid;
+    x_group.gr_mem = NULL;
+}
+
+
+static unsigned
+RID(PSID sid)
+{
+    // Example: S-1-5-32-544
+    // Returns the last component, 544.
+    const int subAuthorities = *GetSidSubAuthorityCount(sid);
+    if (subAuthorities >= 1) {                  // last sub-authority value.
+        return *GetSidSubAuthority(sid, subAuthorities - 1);
+            // Last component should be the user's relative identifier (RID).
+            // It uniquely defines this user account to SAM within the domain.
+    }
+    return 0;
 }
 
 
 #if defined(_MSC_VER) && (_MSC_VER < 1500)
-#define TokenElevation          20
+#define TokenElevation  20
 typedef struct _TOKEN_ELEVATION {
     DWORD TokenIsElevated;
 } TOKEN_ELEVATION;
@@ -347,5 +541,5 @@ w32_IsAdministrator(void)
     }
     return b;
 }
-/*end*/
 
+/*end*/

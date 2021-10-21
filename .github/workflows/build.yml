@@ -1,0 +1,40 @@
+name: build
+on: [push]
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2   
+    - name: Checkout submodules
+      run: |
+        git submodule update --init --recursive
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86
+    - name: generating Makefiles
+      shell: cmd
+      run: |
+        @set PERL=c:/Strawberry/perl/bin/perl
+        cd mcwin32
+        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose vc2019
+        choco install innosetup --version=5.6.1 --force
+        set
+        dir "%programfiles(x86)%"
+    - name: compiling
+      shell: cmd
+      run: |
+        @set PERL=c:/Strawberry/perl/bin/perl
+        cd mcwin32
+        .\support\gmake-42
+        @rem .\support\gmake-42 package
+        "%programfiles(x86)%\Inno Setup 5\ISCC" ".\releases\mc-inno-setup.iss"
+    - name: package
+      uses: actions/upload-artifact@v2
+      with:
+        name: mcwin32-package
+        path: ./mcwin32/releases/mcwin32-build*-setup.exe

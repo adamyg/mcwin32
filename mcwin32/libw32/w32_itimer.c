@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_itimer_c,"$Id: w32_itimer.c,v 1.1 2020/05/21 15:26:24 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_itimer_c,"$Id: w32_itimer.c,v 1.2 2021/06/10 12:42:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -160,7 +160,9 @@ timer_thread(LPVOID param)
             LeaveCriticalSection(&itimer.lock);
 
         } else if (WAIT_TIMEOUT == rc) {        /* trigger */
+#if defined(SIGALRM)
             w32_raise(SIGALRM);
+#endif
             waitms = INFINITE;
 
         } else {

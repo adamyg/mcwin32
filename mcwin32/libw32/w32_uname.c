@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.5 2018/09/29 02:22:55 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.6 2021/06/10 12:42:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 uname() system calls.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 1998 - 2020, Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -70,7 +70,7 @@ __CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.5 2018/09/29 02:22:55 cvsuse
 //
 //      No errors are defined.
 */
-int
+LIBW32_API int
 uname(struct utsname *u)
 {
     static char u_sysname[32], u_version[16], u_release[32], u_machine[32];

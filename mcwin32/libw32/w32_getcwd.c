@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.10 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.18 2021/05/24 15:10:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getcwd() implementation
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -30,7 +30,7 @@ __CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.10 2021/04/13 15:49:34 cvs
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
  */
@@ -86,11 +86,10 @@ __CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.10 2021/04/13 15:49:34 cvs
 //      [ENOMEM]
 //          Insufficient storage space is available.
 */
+
 LIBW32_API char *
 w32_getcwd(char *path, int size)
 {
-    char t_path[1024];
-
     if (NULL == path || size <= 0) {
         errno = EINVAL;
 
@@ -98,8 +97,6 @@ w32_getcwd(char *path, int size)
         errno = ERANGE;
 
     } else {
-        DWORD ret;
-
         if (x_w32_vfscwd) {                     /* vfs chdir() */
             const char *in;
             char *out;
@@ -115,18 +112,51 @@ w32_getcwd(char *path, int size)
             return path;
         }
 
+#if defined(UTF8FILENAMES)
+        if (w32_utf8filenames_state()) {
+            wchar_t *wpath;
+
+            if (NULL != (wpath = alloca(sizeof(wchar_t) * (size + 1))) &&
+                    w32_getcwdW(wpath, size)) {
+                w32_wc2utf(wpath, path, size);
+                return path;
+            }
+            return NULL;
+        }
+#endif  //UTF8FILENAMES
+    }
+
+    return w32_getcwdA(path, size);
+}
+
+
+LIBW32_API char *
+w32_getcwdA(char *path, int size)
+{
+    char t_path[WIN32_PATH_MAX];
+
+    if (NULL == path || size <= 0) {
+        errno = EINVAL;
+
+    } else if (size < 64) {
+        errno = ERANGE;
+
+    } else {
         //  If the function succeeds, the return value is the length, in characters,
-        //  of the string copied to lpszLongPath, not including the terminating 
+        //  of the string copied to lpszLongPath, not including the terminating
         //  null character.
         //
-        //  If the lpBuffer buffer is too small to contain the path, the return value 
-        //  is the size, in characters, of the buffer that is required to hold 
+        //  If the lpBuffer buffer is too small to contain the path, the return value
+        //  is the size, in characters, of the buffer that is required to hold
         //  the path and the terminating null character.
         //
-        if ((ret = GetCurrentDirectoryA(sizeof(t_path), t_path)) == 0) {
+        DWORD ret;
+
+        t_path[0] = 0;
+        if ((ret = GetCurrentDirectoryA(_countof(t_path), t_path)) == 0) {
             w32_errno_set();
-            
-        } else if (ret >= (DWORD)size || ret >= sizeof(t_path)) {
+
+        } else if (ret >= (DWORD)size || ret >= _countof(t_path)) {
             errno = ENOMEM;
 
         } else {                                /* standardise to the system seperator */
@@ -135,7 +165,7 @@ w32_getcwd(char *path, int size)
 
             for (in = t_path, out = path; *in; ++in) {
                 if ('~' == *in) {               /* shortname expand */
-                    (void) GetLongPathNameA(t_path, t_path, sizeof(t_path));
+                    (void) GetLongPathNameA(t_path, t_path, _countof(t_path));
                     for (in = t_path, out = path; *in; ++in) {
                         *out++ = ('\\' == *in ? '/' : *in);
                     }
@@ -152,11 +182,10 @@ w32_getcwd(char *path, int size)
 }
 
 
-LIBW32_API char *
-w32_getcwdd(char drive, char *path, int size)
+LIBW32_API wchar_t *
+w32_getcwdW(wchar_t *path, int size)
 {
-    const unsigned nDrive = 
-            (isalpha((unsigned char)drive) ? (toupper(drive) - 'A') : 0xff);
+    wchar_t t_path[WIN32_PATH_MAX];
 
     if (NULL == path || size <= 0) {
         errno = EINVAL;
@@ -164,52 +193,31 @@ w32_getcwdd(char drive, char *path, int size)
     } else if (size < 64) {
         errno = ERANGE;
 
-    } else if (nDrive >= 26) {
-        errno = EINVAL;
-
     } else {
-        char t_path[1024];
-        char pathrel[4] = {"X:."}, *file = NULL;
-        DWORD ret;
-
-        if (x_w32_cwdd[nDrive]) {               /* chdir() cache */
-            const char *in;
-            char *out;
-
-            for (in = x_w32_cwdd[nDrive], out = path; *in; ++in) {
-                if (--size <= 0) {
-                    errno = ENOMEM;
-                    break;
-                }
-                *out++ = *in;
-            }
-            *out = 0;
-            return path;
-        }
-
         //  If the function succeeds, the return value is the length, in characters,
-        //  of the string copied to lpszLongPath, not including the terminating 
+        //  of the string copied to lpszLongPath, not including the terminating
         //  null character.
         //
-        //  If the lpBuffer buffer is too small to contain the path, the return value 
-        //  is the size, in characters, of the buffer that is required to hold 
+        //  If the lpBuffer buffer is too small to contain the path, the return value
+        //  is the size, in characters, of the buffer that is required to hold
         //  the path and the terminating null character.
         //
-        pathrel[0] = (char)('A' + nDrive);      /* A ... Z */
+        DWORD ret;
 
-        if ((ret = GetFullPathNameA(pathrel, sizeof(t_path), t_path, &file)) == 0) {
+        t_path[0] = 0;
+        if ((ret = GetCurrentDirectoryW(_countof(t_path), t_path)) == 0) {
             w32_errno_set();
 
-        } else if (ret >= (DWORD)size || ret >= sizeof(t_path)) {
+        } else if (ret >= (DWORD)size || ret >= _countof(t_path)) {
             errno = ENOMEM;
-            
-        } else {
-            const char *in;
-            char *out;
-            
+
+        } else {                                /* standardise to the system seperator */
+            const wchar_t *in;
+            wchar_t *out;
+
             for (in = t_path, out = path; *in; ++in) {
                 if ('~' == *in) {               /* shortname expand */
-                    (void) GetLongPathNameA(t_path, t_path, sizeof(t_path));
+                    (void) GetLongPathNameW(t_path, t_path, _countof(t_path));
                     for (in = t_path, out = path; *in; ++in) {
                         *out++ = ('\\' == *in ? '/' : *in);
                     }
@@ -221,9 +229,63 @@ w32_getcwdd(char drive, char *path, int size)
             return path;
         }
     }
-
     if (path && size > 0) path[0] = 0;
     return NULL;
+}
+
+
+LIBW32_API int
+w32_getdrive(void)
+{
+    wchar_t t_path[WIN32_PATH_MAX];
+    DWORD ret;
+
+    t_path[0] = 0, t_path[1] = 0;
+    if ((ret = GetCurrentDirectoryW(_countof(t_path), t_path)) >= 2) {
+        if (t_path[1] == ':') {                 /* X: */
+            const wchar_t ch = t_path[0];
+
+            if (ch >= L'A' && ch <= L'Z') {
+                return (ch - L'A') + 1;
+            }
+
+            if (ch >= L'a' && ch <= L'z') {
+                return (ch - L'a') + 1;
+            }
+        }
+    }
+    return 0;   // UNC
+}
+
+
+LIBW32_API int
+w32_getsystemdrive(void)
+{
+    wchar_t t_path[WIN32_PATH_MAX];
+    DWORD ret;
+
+    t_path[0] = 0, t_path[1] = 0;
+    if ((ret = GetSystemDirectoryW(t_path, _countof(t_path))) >= 2) {
+        if (t_path[1] == ':') {                 /* X: */
+            const wchar_t ch = t_path[0];
+
+            if (ch >= L'A' && ch <= L'Z') {
+                return (ch - L'A') + 1;
+            }
+
+            if (ch >= L'a' && ch <= L'z') {
+                return (ch - L'a') + 1;
+            }
+        }
+    }
+    return 0;
+}
+
+
+LIBW32_API int
+w32_getlastdrive(void)
+{
+    return x_w32_cwdn;
 }
 
 /*end*/

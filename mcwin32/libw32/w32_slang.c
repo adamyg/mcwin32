@@ -2,7 +2,7 @@
 /*
  * win32 Slang Screen Management (SLsmg) function emulation.
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -342,13 +342,16 @@ SLtt_add_color_attribute(int obj, SLtt_Char_Type attr)
 void
 SLtt_set_mono(int obj, char *name, SLtt_Char_Type c)
 {
-    assert(0);                                  // TODO
+    (void) obj;
+    (void) name;
+    (void) c;
+    assert(0);
 }
 
 
 /*
  *  SLtt_beep ---
- *      xxx
+ *      Audible bell.
  **/
 void
 SLtt_beep(void)
@@ -469,98 +472,6 @@ acs_lookup(uint32_t ch)
 }
 
 
-#if (XXX)
-static uint32_t
-unicode_lookup(const struct unicode_table *table, const size_t count, const uint32_t ch)
-{
-    if (table && count) {
-        size_t first = 0, last = count - 1;
-
-        while (first <= last) {
-            const size_t middle = (first + last) / 2;
-            const struct unicode_table *elm = table + middle;
-            const uint32_t unicode = elm->unicode;
-
-            if (ch == unicode) {
-                return elm->ch;
-
-            } else if (ch > unicode) {
-                first = middle + 1;
-            } else {
-                last  = middle - 1;
-            }
-        }
-    }
-    return ch;
-}
-#endif  //XXX
-
-
-#if (XXX)
-static uint32_t
-unicode_map(uint32_t ch)
-{
-    if (ch > 0x7f) {
-        //
-        //  OEM mapping
-        //
-        if (ISACS & ch) {
-            ch &= ~ISACS;                       // already mapped
-
-        } else if (acs_oem == vio.acsmap) {
-            //
-            //  Terminal font,
-            //      limited character support, re-map to cp437.
-            //
-            //  TODO:
-            //      terminal is generally based on the code-page 437, yet an alternative code-page (like 850)
-            //      might be in use; determine best method to discover, related to SystemLocale.
-            //
-            //      The following are related:
-            //          HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Console\RasterFont
-            //              woafont         app850.fon
-            //
-            //          HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\GRE_Initialize\SmallFont
-            //              OEMFONT.FONT    [vga850.fon | vgaoem.fon etc]
-            //
-            ch = unicode_lookup(unicode_cp437, (sizeof(unicode_cp437)/sizeof(unicode_cp437[0])), ch);
-        }
-
-        //
-        //  Remap characters not available on standard console fonts.
-        //    o Small box characters.
-        //    o Misc
-        //
-        if (ch > 0xff) {
-            switch (ch) {
-            case 0x22C5:        // DOT OPERATOR
-                ch = 0xB7;
-                break;
-            case 0x2715:        // MULTIPLICATION X
-                ch = 0x2573;    // 'x'
-                break;
-            case 0x25B4:        // BLACK UP-POINTING SMALL TRIANGLE
-                ch = 0x25B2;    // BLACK UP-POINTING TRIANGLE
-                break;
-            case 0x25B8:        // BLACK RIGHT-POINTING SMALL TRIANGLE
-                ch = 0x25BA;    // BLACK RIGHT-POINTING POINTER
-                break;
-            case 0x25BE:        // BLACK DOWN-POINTING SMALL TRIANGLE
-                ch = 0x25BC;    // BLACK DOWN-POINTING TRIANGLE
-                break;
-            case 0x25C2:        // BLACK LEFT-POINTING SMALL TRIANGLE
-                ch = 0x25C4;    // BLACK LEFT-POINTING POINTER
-                break;
-            default:
-                break;
-            }
-        }
-    }
-    return ch;
-}
-#endif  //XXX
-
-
 static void
 set_position(int row, int col)
 {
@@ -591,13 +502,17 @@ cliptoarena(int coord, int n, int start, int end, int *coordmin, int *coordmax)
 static void
 write_char(SLwchar_Type ch, unsigned cnt)
 {
-    WCHAR_INFO *cursor, *cend, text = {0};
+    const int width = vio_wcwidth(ch);
+    WCHAR_INFO *cursor, *cend, text = { 0 };
     int row = vio.c_row, col = vio.c_col;
     unsigned flags = 0;
 
     assert(vio.inited);                         /* not initialised */
     assert(row >= 0 && row <  vio.rows);
     assert(col >= 0 && col <= vio.cols);        /* note: allow position off-screen +1 */
+
+    if (0 == width)                             /* zero width character; ignore/todo */
+        return;
 
     cursor  = vio.c_screen[ row ].text;
     cend    = cursor + vio.cols;
@@ -609,9 +524,18 @@ write_char(SLwchar_Type ch, unsigned cnt)
             *cursor = text;
             flags |= TOUCHED;
         }
+
         ++cursor;
         ++col;
+
+        if (width > 1) {                        /* NULL padding */
+            WCHAR_INFO null = {0};
+            null.Info = vio.c_color;
+            *cursor++ = null;
+            ++col;
+        }
     }
+
     vio.c_screen[ row ].flags |= flags;
     assert(col >= 0 && col <= vio.cols);        /* note: allow position off-screen +1 */
     vio.c_col = col;
@@ -653,10 +577,20 @@ top:                                            /* get here only on newline */
             int32_t cooked;
 
             if ((t_str = utf8_decode_safe(str - 1, send, &cooked)) > str) {
+                const int width = vio_wcwidth(cooked);
+
                 str = t_str;
+
+                if (0 == width)                 /* zero width character; ignore/todo */
+                    continue;
 
                 if (SLsmg_Display_Alt_Chars) cooked = acs_lookup(cooked);
                 flags |= WCHAR_UPDATE(cursor, cooked, color);
+                if (width > 1) {                /* wide-character, NULL padding */
+                    flags |= WCHAR_UPDATE(++cursor, 0, color);
+                    ++col;
+                }
+
             } else {
                 if (SLsmg_Display_Alt_Chars) ch = (unsigned char)acs_lookup(ch);
                 flags |= WCHAR_UPDATE(cursor, ch, color);

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.6 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.7 2021/05/24 15:10:34 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
@@ -55,6 +55,10 @@ __CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.6 2021/04/13 15:49:34 cv
 #include <stdarg.h>
 #include <memory.h>
 #include <assert.h>
+
+#if defined(__WATCOMC__)
+#pragma disable_message(124)                    /* Comparison result always 0 */
+#endif
 
 
 /*

@@ -1,7 +1,7 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
 # Midnight command WIN32 builds 4.8.24, as at 20/04/20
 #
-# Copyright (c) 2007, 2012 - 2020 Adam Young.
+# Copyright (c) 2007, 2012 - 2021 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -634,7 +634,8 @@ LIBRARIES=\
 	$(LW)intl$(A)				\
 	$(LW)glib-2.0$(A)			\
 	$(LW)mcutil$(A)				\
-	$(LW)mcvfs$(A)
+	$(LW)mcvfs$(A)				\
+	$(LW)autoupdater$(A)
 
 reverse = $(if $1,$(call reverse,$(wordlist 2,999999,$1)) $(firstword $1))
 LDLIBRARIES = $(call reverse, $(LIBRARIES))
@@ -761,6 +762,7 @@ clean:
 		$(MAKE) -C libregex clean
 		$(MAKE) -C libz clean
 		$(MAKE) -C libw32 clean
+		$(MAKE) -C autoupdater clean
 		-$(RM) $(MSGOBJS) $(MSGDIRS) >nul 2>&1
 		-$(RM) $(DIRECTORIES) >nul 2>&1
 		-$(RMDIR) $(dir $(DIRECTORIES) $(MSGDIRS)) >nul 2>&1
@@ -779,6 +781,8 @@ $(MC_RES):			config.h buildinfo.h
 BUILD_DATE=			$(shell $(BUSYBOX) date +'%Y%m%d')
 ifneq ($(APPVEYOR_BUILD_NUMBER),)
 BUILD_NUMBER=			$(APPVEYOR_BUILD_NUMBER)
+else ifneq ($(GITHUB_RUN_NUMBER),)
+BUILD_NUMBER=			$(GITHUB_RUN_NUMBER)
 else
 BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
 endif
@@ -794,8 +798,14 @@ buildinfo.h:			BUILDNUMBER buildinfo.pl
 
 ifneq ($(APPVEYOR_BUILD_NUMBER),)
 BUILDNUMBER:
-		@echo importing appveyor build number  ...
+		@echo importing appveyor build number ...
 		@echo $(APPVEYOR_BUILD_NUMBER)>$@
+endif
+
+ifneq ($(GITHUB_RUN_NUMBER),)
+BUILDNUMBER:
+		@echo importing github build number ...
+		@echo $(GITHUB_RUN_NUMBER)>$@
 endif
 
 new_buildnumber:
@@ -985,6 +995,10 @@ $(LW)intl$(A):
 .PHONY:		$(LW)glib-2.0$(A)
 $(LW)glib-2.0$(A):
 		$(MAKE) -C libglib
+
+.PHONY:		$(LW)autoupdater$(A)
+$(LW)autoupdater$(A):
+		$(MAKE) -C autoupdater
 
 
 #########################################################################################

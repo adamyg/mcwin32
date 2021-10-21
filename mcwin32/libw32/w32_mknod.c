@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mknod_c,"$Id: w32_mknod.c,v 1.6 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mknod_c,"$Id: w32_mknod.c,v 1.9 2021/05/23 10:23:12 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * win32 mknod() system calls. 
+ * win32 mknod() system calls.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -25,7 +25,7 @@ __CIDENT_RCSID(gr_w32_mknod_c,"$Id: w32_mknod.c,v 1.6 2018/10/12 00:52:04 cvsuse
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  */
@@ -193,5 +193,26 @@ mknod(const char *path, int mode, int dev)
     return -1;
 }
 
-/*end*/
 
+LIBW32_API int
+mknodA(const char *path, int mode, int dev)
+{
+    __CUNUSED(path)
+    __CUNUSED(mode)
+    __CUNUSED(dev)
+    errno = EIO;
+    return -1;
+}
+
+
+LIBW32_API int
+mknodW(const wchar_t *path, int mode, int dev)
+{
+    __CUNUSED(path)
+    __CUNUSED(mode)
+    __CUNUSED(dev)
+    errno = EIO;
+    return -1;
+}
+
+/*end*/

@@ -140,20 +140,22 @@ static __inline int
 drive_or_unc(const char *path)
 {
     if (*path) {
+        const int issep = IS_PATH_SEP(*path);
+
         // unc or drive
-        if ((PATH_SEP == path[0] && PATH_SEP == path[1]) ||
+        if ((issep && path[0] == path[1]) ||
                 (isalpha((unsigned char)path[0]) && ':' == path[1])) {
             return TRUE;            /* //<server> or X:... */
         }
 
         // enc
-        if (IS_PATH_SEP(*path) &&
+        if (issep &&
                 strncmp(path + 1, VFS_ENCODING_PREFIX, sizeof(VFS_ENCODING_PREFIX)-1) == 0) {
             return TRUE;            /* /#enc:xxxxx */
         }
 
         // vfs
-        if (IS_PATH_SEP(*path)) {
+        if (issep) {
             const char *cursor = ++path;
             while (*cursor && isalpha(*cursor))
                 ++cursor;
@@ -199,6 +201,14 @@ vfs_canon (const char *path)
 
             curr_dir = vfs_get_current_dir ();
             local = mc_build_filename (curr_dir, path, (char *) NULL);
+
+#if defined(WIN32) //WIN32, drive/unc
+            if (IS_PATH_SEP (*local))
+            {   /* root, with UNC working directory */
+                canonicalize_pathname (local);
+                return local;
+            }
+#endif
         }
 
         result = vfs_canon (local);

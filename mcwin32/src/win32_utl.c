@@ -21,7 +21,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2020
+   Written by: Adam Young 2012 - 2021
 
    Portions sourced from lib/utilunix.c, see for additional information.
 
@@ -56,6 +56,7 @@
 #include <shlobj.h>                             /* SHxx */
 
 #include <stdio.h>
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>                             /* struct sigaction */
@@ -147,6 +148,7 @@ WIN32_Setup(void)
 {
     static int init = 0;
 
+    w32_utf8filenames_enable();
     if (init) return;
     ++init;
 
@@ -1385,6 +1387,7 @@ pipe_thread(void *data)
     FILE *file;
     char buffer[ PE_BUFFER_SIZE ];
 
+    (void) data;
     EnterCriticalSection(&pe_guard);
     if (pe_open >= 0 && NULL != (file = pe_stream)) {
         while (1) {
@@ -1605,7 +1608,8 @@ tilde_expand(const char *directory)
 
 
 /**
- *  Canonicalize path, and return a new path.  Do everything in place.
+ *  Canonicalize path, and return a new path.
+ *  Everything done in-place, hence the result cannot extend the buffer.
  *
  *  The new path differs from path in:
  *      Multiple `/'s are collapsed to a single `/'.
@@ -1628,27 +1632,44 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
     size_t len;
 
     /* Standardise to the system seperator */
+    if (0 == lpath[0]) {
+        return;                                 /* empty */
+    }
     for (s = lpath; *s; ++s) {
         if ('\\' == *s || '/' == *s) {
             *s = PATH_SEP;
         }
     }
 
-    /* Detect and preserve UNC paths: //server/... */
+    /* Detect and preserve UNC paths: "//server/" */
     if ((flags & CANON_PATH_GUARDUNC) &&
                 lpath[0] == PATH_SEP && lpath[1] == PATH_SEP && lpath[2]) {
         p = lpath + 2;
-        while (p[0] && p[0] != '/') {
+        while (p[0] && p[0] != PATH_SEP) {
             ++p;
         }
-        if (p[0] == '/' && p > orgpath + 2) {
+
+        if (p[0] == PATH_SEP && p > (orgpath + 2)) {
+            if (0 == strcmp(p + 1, "..")) {     /* "//servername/.." --> "X:/" */
+                int driveno = w32_getdrive();
+                if (driveno <= 0) driveno = w32_getlastdrive();
+                if (driveno <= 0) driveno = w32_getsystemdrive();
+                if (driveno > 0) {
+                    lpath[0] = driveno + ('A' - 1);
+                    lpath[1] = ':';
+                    lpath[2] = PATH_SEP;
+                    lpath[3] = 0;
+                    return;
+                }
+            }
             lpath = p;
             unc = TRUE;
         }
     }
 
-    if (!lpath[0] || !lpath[1])
+    if (0 == lpath[0] || 0 == lpath[1]) {
         return;
+    }
 
     /* DOS'ish
      *  o standardize seperator
@@ -1894,13 +1915,13 @@ canonicalize_pathname(char *path)
 char *
 mc_realpath(const char *path, char *resolved_path)
 {
-    if (NULL == _fullpath(resolved_path, path, MAX_PATH)) {
+    if (NULL == w32_realpath(path, resolved_path /*MAX_PATH*/)) {
         strcpy(resolved_path, path);
     }
+
     unixpath(resolved_path);
     return resolved_path;
 }
-
 
 
 /**
@@ -1908,7 +1929,7 @@ mc_realpath(const char *path, char *resolved_path)
  *  Like to g_build_filename(), but respect VFS_PATH_URL_DELIMITER
  */
 char *
-mc_build_filenamev (const char *first_element, va_list args)
+mc_build_filenamev(const char *first_element, va_list args)
 {
     gboolean absolute;
     const char *element = first_element;
@@ -1953,12 +1974,14 @@ mc_build_filenamev (const char *first_element, va_list args)
             //WIN32, drive
             if (NULL == strchr (path->str, ':') &&  // Neither special (ftp://)
                     PATH_SEP != path->str[1]) {     // nor url (//server ..)
-                char cwd[1024];
+                int driveno = w32_getdrive();
+                if (driveno <= 0) driveno = w32_getlastdrive();
 
-                // see: vfs_canon() generally when we are returning from a ftp/sftp.
-                if (w32_getcwd (cwd, sizeof(cwd))) {
+                // see: vfs_canon() generally when we are returning 
+                // from a ftp/sftp or UNC reference.
+                if (driveno > 0) {
                     char drive[3] = "X:";
-                    drive[0] = toupper (cwd[0]);
+                    drive[0] = driveno + ('A' - 1);
                     g_string_prepend (path, drive); // "/" --> "X:/"
                 }
             }
@@ -1966,6 +1989,7 @@ mc_build_filenamev (const char *first_element, va_list args)
     }
 
     ret = g_string_free (path, FALSE);
+
     canonicalize_pathname (ret);
 
     return ret;

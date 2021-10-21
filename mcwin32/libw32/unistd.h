@@ -1,16 +1,14 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.18 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.30 2021/06/20 06:42:02 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * win32 <unistd.h> compat header file -
+ * win32 <unistd.h> header (_MSC_VER, __WATCOMC__ and __MINGW32__)
  *
- *      unistd.h - standard symbolic constants and types
- *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -37,7 +35,7 @@ __CPRAGMA_ONCE
 #if (_MSC_VER != 1600)                          /* MSVC 10/2010 */
 #if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
 #if (_MSC_VER <  1910 || _MSC_VER > 1916)       /* MSVC 19.10 .. 16/2017 */
-#if (_MSC_VER > 1928)                           /* MSVC 19.20 / 2019.08 */
+#if (_MSC_VER > 1929)                           /* MSVC 19.20 / 2019.09 */
 #error unistd.h: untested MSVC Version (2005 -- 2019.08) only ...
 	//see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 #endif //2019
@@ -136,6 +134,22 @@ __CPRAGMA_ONCE
 __BEGIN_DECLS
 
 /*limits*/
+//  Starting in Windows 10, version 1607, MAX_PATH(255) limitations have been removed from 
+//  common Win32 file and directory functions. However, you must opt-in to the new behavior.
+//
+//  To enable the new long path behavior, both of the following conditions must be met:
+//
+//       Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled
+//
+//  The (Type: REG_DWORD) registry key (above) must exist and be set to 1. The key's value 
+//  will be cached by the system (per process) after the first call to an affected Win32 file
+//  or directory function (see below for the list of functions). The registry key will not be 
+//  reloaded during the lifetime of the process. In order for all apps on the system to recognize
+//  the value of the key, a reboot might be required because some processes may have started 
+//  before the key was set.
+//
+//  Note: The application manifest must also include the longPathAware element.
+//
 #define WIN32_PATH_MAX  1024
 #define WIN32_LINK_DEPTH 8
 
@@ -439,7 +453,10 @@ LIBW32_API size_t       strnlen(const char *s, size_t maxlen);
 
 /* <unistd.h> */
 LIBW32_API int          gettimeofday (struct timeval *tv, struct timezone *tz);
+
 LIBW32_API int          w32_utime (const char *path, const struct utimbuf *times);
+LIBW32_API int          w32_utimeA (const char *path, const struct utimbuf *times);
+LIBW32_API int          w32_utimeW (const wchar_t *path, const struct utimbuf *times);
 
 #if defined(WIN32_UNISTD_MAP)
 /*
@@ -490,16 +507,40 @@ LIBW32_API size_t       w32_strftime (char *buf, size_t buflen, const char *fmt,
 #endif /*WIN32_UNISTD_MAP*/
 
 /* i/o */
+LIBW32_API int          w32_utf8filenames_enable (void);
+
 LIBW32_API int          w32_open (const char *path, int, ...);
+LIBW32_API int          w32_openA (const char *path, int, int);
+LIBW32_API int          w32_openW (const wchar_t *path, int, int);
 LIBW32_API int          w32_stat (const char *path, struct stat *sb);
+LIBW32_API int          w32_statA (const char *path, struct stat *sb);
+LIBW32_API int          w32_statW (const wchar_t *path, struct stat *sb);
 LIBW32_API int          w32_lstat (const char *path, struct stat *sb);
+LIBW32_API int          w32_lstatA (const char *path, struct stat *sb);
+LIBW32_API int          w32_lstatW (const wchar_t *path, struct stat *sb);
 LIBW32_API int          w32_fstat (int fd, struct stat *sb);
+LIBW32_API int          w32_fstatA (int fd, struct stat *sb);
+LIBW32_API int          w32_fstatW (int fd, struct stat *sb);
 LIBW32_API int          w32_read (int fd, void *buffer, size_t cnt);
 LIBW32_API int          w32_write (int fd, const void *buffer, size_t cnt);
 LIBW32_API int          w32_close (int fd);
 LIBW32_API const char * w32_strerror (int errnum);
+
 LIBW32_API int          w32_link (const char *from, const char *to);
+LIBW32_API int          w32_linkA (const char *from, const char *to);
+LIBW32_API int          w32_linkW (const wchar_t *from, const wchar_t *to);
+
 LIBW32_API int          w32_unlink (const char *fname);
+LIBW32_API int          w32_unlinkA (const char *fname);
+LIBW32_API int          w32_unlinkW (const wchar_t *fname);
+
+LIBW32_API int          w32_access (const char *fname, int mode);
+LIBW32_API int          w32_accessA (const char *fname, int mode);
+LIBW32_API int          w32_accessW (const wchar_t *fname, int mode);
+
+LIBW32_API int          w32_rename (const char *ofile, const char *nfile);
+LIBW32_API int          w32_renameA (const char *ofile, const char *nfile);
+LIBW32_API int          w32_renameW (const wchar_t *ofile, const wchar_t *nfile);
 
 LIBW32_API ssize_t      pread (int fildes, void *buf, size_t nbyte, off_t offset);
 LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t offset);
@@ -514,6 +555,8 @@ LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t
 #define close(a)        w32_close(a)
 #define link(f,t)       w32_link(f,t)
 #define unlink(p)       w32_unlink(p)
+#define access(p,m)     w32_access(p, m)
+#define rename(a,b)     w32_rename(a,b)
 #endif /*WIN32_UNISTD_MAP*/
 
 #if defined(WIN32_UNISTD_MAP) || \
@@ -522,11 +565,25 @@ LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t
 	//#define g_strerror(a)   w32_strerror(a)         /* must also replace libglib version */
 #endif
 
-LIBW32_API int          w32_mkdir (const char *fname, int mode);
-LIBW32_API int          w32_chdir (const char *fname);
-LIBW32_API int          w32_rmdir (const char *fname);
+LIBW32_API int          w32_mkdir (const char *path, int mode);
+LIBW32_API int          w32_mkdirA (const char *path, int mode);
+LIBW32_API int          w32_mkdirW (const wchar_t *path, int mode);
+
+LIBW32_API int          w32_chdir (const char *path);
+LIBW32_API int          w32_chdirA (const char *path);
+LIBW32_API int          w32_chdirW (const wchar_t *path);
+
+LIBW32_API int          w32_rmdir (const char *path);
+LIBW32_API int          w32_rmdirA (const char *path);
+LIBW32_API int          w32_rmdirW (const wchar_t *path);
+
 LIBW32_API char *       w32_getcwd (char *path, int size);
+LIBW32_API char *       w32_getcwdA (char *path, int size);
+LIBW32_API wchar_t *    w32_getcwdW (wchar_t *path, int size);
+
 LIBW32_API char *       w32_getcwdd (char drive, char *path, int size);
+LIBW32_API char *       w32_getcwddA (char drive, char *path, int size);
+LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, int size);
 
 #if defined(WIN32_UNISTD_MAP)
 #define mkdir(d,m)      w32_mkdir(d, m)
@@ -545,20 +602,43 @@ LIBW32_API char *       w32_getcwdd (char drive, char *path, int size);
 #endif /*_MSC_VER*/
 #endif /*WIN32_UNISTD_MAP*/
 
-LIBW32_API int          w32_mkstemp(char *path);
+LIBW32_API int          w32_mkstemp (char *path);
+LIBW32_API int          w32_mkstempA (char *path);
+LIBW32_API int          w32_mkstempW (wchar_t *path);
 #if defined(_MSC_VER)
 LIBW32_API int          mkstemp (char *path);
 #endif
+
+LIBW32_API int          w32_mkstemps (char *path, int suffixlen);
+LIBW32_API int          w32_mkstempsA (char *path, int suffixlen);
+LIBW32_API int          w32_mkstempsW (wchar_t *path, int suffixlen);
+
 LIBW32_API int          w32_mkstempx (char *path);
+LIBW32_API int          w32_mkstempxA (char *path);
+LIBW32_API int          w32_mkstempxW (wchar_t *path);
+
+LIBW32_API char *       w32_mkdtemp (char *path);
+LIBW32_API char *       w32_mkdtempA (char *path);
+LIBW32_API wchar_t *    w32_mkdtempW (wchar_t *path);
+
+LIBW32_API char *       w32_mkdtemps (char *path, int suffixlen);
+LIBW32_API char *       w32_mkdtempsA (char *path, int suffixlen);
+LIBW32_API wchar_t *    w32_mkdtempsW (wchar_t *path, int suffixlen);
 
 LIBW32_API int          ftruncate (int fildes, off_t size);
 LIBW32_API int          truncate (const char *path, off_t length);
+LIBW32_API int          truncateA (const char *path, off_t length);
+LIBW32_API int          truncateW (const wchar_t *path, off_t length);
 
 LIBW32_API int          w32_readlink (const char *path, char *name, int sz);
+LIBW32_API int          w32_readlinkA (const char *path, char *name, int sz);
+LIBW32_API int          w32_readlinkW (const wchar_t *path, wchar_t *name, int sz);
 LIBW32_API int          w32_symlink (const char *from, const char *to);
 
 LIBW32_API char *       w32_realpath (const char *path, char *resolved_path /*PATH_MAX*/);
 LIBW32_API char *       w32_realpath2 (const char *path, char *resolved_path, int maxlen);
+LIBW32_API char *       w32_realpathA (const char *path, char *resolved_path, int maxlen);
+LIBW32_API wchar_t *    w32_realpathW (const wchar_t *path, wchar_t *resolved_path, int maxlen);
 
 #if defined(WIN32_UNISTD_MAP)
 #define readlink(__path,__name, __sz) \
@@ -567,8 +647,22 @@ LIBW32_API char *       w32_realpath2 (const char *path, char *resolved_path, in
                 w32_symlink (__from, __to)
 #endif
 
-LIBW32_API int          chown (const char *, uid_t, gid_t);
+LIBW32_API int          w32_chmod (const char *, mode_t);
+LIBW32_API int          w32_chmodA (const char *, mode_t);
+LIBW32_API int          w32_chmodW (const wchar_t *, mode_t);
+
+#if defined(WIN32_UNISTD_MAP)
+#define chmod(__path,__mode) \
+                w32_chmod (__path, __mode)
+#endif
+
+LIBW32_API int          chown (const char *path, uid_t uid, gid_t gid);
+LIBW32_API int          chownA (const char *path, uid_t uid, gid_t gid);
+LIBW32_API int          chownW (const wchar_t *path, uid_t uid, gid_t gid);
+
 LIBW32_API int          mknod (const char *path, int mode, int dev);
+LIBW32_API int          mknodA (const char *path, int mode, int dev);
+LIBW32_API int          mknodW (const wchar_t *path, int mode, int dev);
 
 #if !defined(F_GETFL)
 #define F_GETFL                         1

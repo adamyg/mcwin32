@@ -80,34 +80,37 @@ struct dirent *mc_readdir_result = NULL;
 #if defined(WIN32) //WIN32, drive
 #undef  mkdir
 #undef  rmdir
+#undef  chdir
+
 #undef  read
-#undef  link
-#undef  unlink
-#undef  readlink
-#undef  symlink
-#undef  utime
 #undef  write
 #undef  close
+
+#undef  link
+#undef  unlink
+#undef  rename
+
+#undef  utime
+#undef  chmod
+
+#undef  readlink
+#undef  symlink
 #undef  stat
 #undef  lstat
 #undef  fstat
-#undef  chdir
 
 #define MKDIR           w32_mkdir
 #define LINK            w32_link
 #define UNLINK          w32_unlink
+#define LSTAT           w32_lstat
 #define WRITE           w32_write
 #define READ            w32_read
-#define CLOSE           w32_close
-#define STAT            w32_stat
-#define LSTAT           w32_lstat
-#define FSTAT           w32_fstat
-#define CHDIR           w32_chdir
 
 #else
 #define MKDIR           mkdir
 #define LINK            link
 #define UNLINK          unlink
+#define LSTAT           lstat
 #define WRITE           write
 #define READ            read
 #endif

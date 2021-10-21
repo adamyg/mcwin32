@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.8 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.9 2021/06/10 12:42:33 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 gethostname
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 1998 - 2021, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -43,6 +43,27 @@ __CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.8 2021/04/13 15:
 
 #include <unistd.h>
 
+#if !defined(WINDOWS_MEAN_AND_LEAN)
+#define WINDOWS_MEAN_AND_LEAN
+#endif
+#include <windows.h>
+
+#if defined(__WATCOMC__) && (__WATCOMC__ <= 1900)
+typedef enum _COMPUTER_NAME_FORMAT {
+    ComputerNameNetBIOS,
+    ComputerNameDnsHostname,
+    ComputerNameDnsDomain,
+    ComputerNameDnsFullyQualified,
+    ComputerNamePhysicalNetBIOS,
+    ComputerNamePhysicalDnsHostname,
+    ComputerNamePhysicalDnsDomain,
+    ComputerNamePhysicalDnsFullyQualified,
+    ComputerNameMax
+} COMPUTER_NAME_FORMAT;
+BOOL WINAPI
+GetComputerNameExA(COMPUTER_NAME_FORMAT NameType, LPSTR lpBuffer, LPDWORD nSize);
+#endif
+
 
 /*
 //  NAME
@@ -54,7 +75,7 @@ __CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.8 2021/04/13 15:
 //      int gethostname(char *name, size_t namelen);
 //
 //  DESCRIPTION
-//      The  gethostname() function shall return the standard host name for the
+//      The gethostname() function shall return the standard host name for the
 //      current machine. The namelen argument shall specify  the  size  of  the
 //      array  pointed  to  by  the  name argument.  The returned name shall be
 //      null-terminated, except that if namelen is an  insufficient  length  to
@@ -78,11 +99,18 @@ w32_gethostname(char *name, size_t namelen)
     int done = 0, ret;
     const char *host;
 
+    if (NULL == name || 0 == namelen) {
+        errno = EINVAL;
+        return -1;
+    }
+
 #undef gethostname
 retry:;
     if (0 == (ret = gethostname(name, namelen))) {
         return 0;
     } else {
+        DWORD dwSize = namelen;
+
         if (0 == done++) {                      /* WSAStartup call must occur before using this function. */
             if ((SOCKET_ERROR == ret && WSANOTINITIALISED == WSAGetLastError()) &&
                     0 == w32_sockinit()) {
@@ -90,19 +118,19 @@ retry:;
             }
         }
         w32_sockerror();
-    }
 
-#if (TODO)
-    char buffer[MAX_COMPUTERNAME_LENGTH+1] = {0};
-    DWORD dwSize = sizeof(buffer);
-
-    if (GetComputerNameEx((COMPUTER_NAME_FORMAT)cnf, buffer, &dwSize)) {
+        if (GetComputerNameExA(ComputerNameDnsHostname, name, &dwSize) && dwSize) {
+            // The DNS host name of the local computer.
+            // If the local computer is a node in a cluster, lpBuffer receives the DNS host name of the cluster virtual server.
+            return 0;
+        }
     }
-#endif
 
     host = getenv("COMPUTERNAME");
     if (NULL == host) host = "pccomputer";
     strncpy(name, (const char *)host, namelen);
+    name[namelen - 1] = 0;
+
     return 0;
 }
 

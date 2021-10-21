@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.6 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.8 2021/05/24 15:10:34 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 ftruncate()/truncate() system calls.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -37,6 +37,11 @@ __CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.6 2021/04/13 15:49:34 
  */
 
 #include "win32_internal.h"
+
+#include <stdio.h>
+#ifdef HAVE_WCHAR_H
+#include <wchar.h>
+#endif
 #include <unistd.h>
 
 /*
@@ -165,8 +170,6 @@ ftruncate(int fildes, off_t length)
         return -1;
     }
 
-//  _chsize(fildes, length);
-
     if (0xFFFFFFFF == SetFilePointer (handle, 0, NULL, FILE_CURRENT) ||
                 0xFFFFFFFF == SetFilePointer (handle, length, NULL, FILE_BEGIN) ||
             !SetEndOfFile (handle)) {
@@ -189,6 +192,30 @@ ftruncate(int fildes, off_t length)
 int
 truncate(const char *path, off_t length)
 {
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t wpath[WIN32_PATH_MAX];
+
+        if (NULL == path) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+            return truncateW(wpath, length);
+        }
+
+        return -1;
+    }
+#endif  //UTF8FILENAMES
+
+    return truncateA(path, length);
+}
+
+
+int
+truncateA(const char *path, off_t length)
+{
     HANDLE handle;
 
     if (length < 0) {
@@ -201,7 +228,39 @@ truncate(const char *path, off_t length)
     }
 
     if (INVALID_HANDLE_VALUE == (handle =
-            CreateFile(path, GENERIC_WRITE, 0,
+            CreateFileA(path, GENERIC_WRITE, 0,
+                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) ||
+
+            0xFFFFFFFF == SetFilePointer (handle, 0, NULL, FILE_CURRENT) ||
+                    0xFFFFFFFF == SetFilePointer (handle, length, NULL, FILE_BEGIN) ||
+            !SetEndOfFile (handle)) {
+        w32_errno_set();
+        if (INVALID_HANDLE_VALUE != handle) {
+            CloseHandle(handle);
+        }
+        return -1;
+    }
+    CloseHandle(handle);
+    return 0;
+}
+
+
+int
+truncateW(const wchar_t *path, off_t length)
+{
+    HANDLE handle;
+
+    if (length < 0) {
+        errno = EINVAL;
+        return -1;
+
+    } else if (NULL == path || 0 == *path) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (INVALID_HANDLE_VALUE == (handle =
+            CreateFileW(path, GENERIC_WRITE, 0,
                     NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) ||
 
             0xFFFFFFFF == SetFilePointer (handle, 0, NULL, FILE_CURRENT) ||
@@ -226,4 +285,3 @@ truncate(const char *path, off_t length)
 //  }
 
 /*end*/
-

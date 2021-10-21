@@ -9,11 +9,10 @@
 	call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86 8.1
 
 	cd C:\projects\mcwin32_msvc\mcwin32
-	perl makelib.pl --busybox=./support/busybox vc2015
+	perl makelib.pl --busybox=./support/busybox "--inno=C:/Program Files (x86)/Inno Setup 5/iscc" vc2015
 
 	support\gmake-42
 	support\gmake-42 package
-
 
 # win32
 

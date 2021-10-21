@@ -55,6 +55,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <sys/time.h>           /* gettimeofday() */
+#include <sys/socket.h>
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>           /* uintmax_t */
@@ -101,6 +102,9 @@ int fish_directory_timeout = 900;
 #define COMPLETE        2       /* positive completion */
 #define CONTINUE        3       /* positive intermediate */
 #define TRANSIENT       4       /* transient negative completion */
+#if defined(_WIN32) && defined(ERROR)
+#undef ERROR
+#endif
 #define ERROR           5       /* permanent negative completion */
 
 /* command wait_flag: */

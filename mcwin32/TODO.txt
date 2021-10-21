@@ -1,3 +1,26 @@
+Tue Jun  9 13:22:00 2020 adamy
+
+	* Mirror MC configuration during builds, example
+
+		https://travis-ci.org/github/MidnightCommander/mc
+
+		Compiler:                       gcc
+		Compiler flags:                  -fxxx
+		Assertions:                     yes
+		Unit tests:                     yes
+		File system:                    Midnight Commander Virtual Filesystem
+		cpio, extfs, fish, ftp, sfs, sftp, tar
+		Screen library:                 S-Lang
+		Mouse support:                  gpm and xterm
+		X11 events support:             yes
+		With subshell support:          yes
+		With background operations:     yes
+		With ext2fs attributes support: yes
+		Internal editor:                yes
+		Diff viewer:                    yes
+		Support for charset:            yes
+		Search type:                    glib-regexp
+
 Mon May  4 00:27:40 2020 adamy
 
 	* Remove extfs perl and python external dependencies, replace uzip (and others) with a suitable alternative.

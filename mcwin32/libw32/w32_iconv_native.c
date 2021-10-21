@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.4 2018/10/12 00:52:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.5 2021/05/24 15:10:34 cvsuser Exp $")
 
 /*
  * iconv implementation using Win32 API to convert.
@@ -10,7 +10,7 @@ __CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.4 2018/10/12 0
 	validation purpose.
  *
  * This file was placed in the public domain.
- * Source: github::win-iconv/win_iconv.c 
+ * Source: github::win-iconv/win_iconv.c
  * ==nonotice==
  */
 
