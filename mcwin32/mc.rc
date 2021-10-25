@@ -1,26 +1,26 @@
 /*
  * windows resource file
- * 
+ *
  * This file is part of the Midnight Commander.
- * 
+ *
  * The Midnight Commander is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the License,
  * or (at your option) any later version.
- * 
+ *
  * The Midnight Commander is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "buildinfo.h"
 
-#define RC_PRODUCTVERSION       VERSION_1 , VERSION_2 , VERSION_3 , 0
-#define RC_FILEVERSION          VERSION_1 , VERSION_2 , VERSION_3 , 1
+#define RC_PRODUCTVERSION       VERSION_1 , VERSION_2 , VERSION_3 , VERSION_4
+#define RC_FILEVERSION          VERSION_1 , VERSION_2 , VERSION_3 , VERSION_4
 
 #ifndef  WINDRES
 #include "windows.h"
@@ -42,6 +42,14 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 /*
  *      Version Information
+
+        o FILEVERSION versionBinary     version number for the file. The version consists of two 32-bit integers, defined by four 16-bit integers.
+                                        For example, "FILEVERSION 3,10,0,61" is translated into two doublewords: 0x0003000a and 0x0000003d, in that order.
+                                        Therefore, if version is defined by the DWORD values dw1 and dw2, they need to appear in the FILEVERSION
+                                        statement as follows: HIWORD(dw1), LOWORD(dw1), HIWORD(dw2), LOWORD(dw2).
+
+        o PRODUCTVERSION versionBinary  version number for the product with which the file is distributed. The version parameter is two 32-bit integers,
+                                        defined by four 16-bit integers. For more information about version, see the FILEVERSION description.
  */
 
 VS_VERSION_INFO VERSIONINFO

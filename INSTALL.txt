@@ -51,11 +51,15 @@
         e. Prime the tree; generate makefiles
 
              cd mcwin32
-             vc2015config.bat or owcconfig.bat
+             
+             support\vc2015config.bat 
+          or support\vc2017config.bat 
+          or support\vc2019config.bat 
+          or support\owcconfig.bat
 
         f. Build,
 
-             [g]make
+             [g]make [release]
 
         g. To create the installer and/or copy the bin tree your install location.
 

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.3 2021/10/19 16:11:30 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2021/10/25 14:25:41 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -101,11 +101,7 @@ UPDATERTSK=	$(D_BIN)/mcupdater$(E)
 SIGNATURETSK=	$(D_BIN)/mcsignature$(E)
 
 UPDATERSRC=		./libappupdater
-ifeq ("wcl386","@CC@")
-EXPATSRC=		./libappupdater/compat
-else
 EXPATSRC=		./libappupdater/expat
-endif
 SIGNSRC=		./libappupdater/sign
 
 VPATH=		$(UPDATERSRC) $(UPDATERSRC)/src $(UPDATERSRC)/localisation $(UPDATERSRC)/localisation/test $(EXPATSRC) $(SIGNSRC) ./sign
@@ -140,6 +136,7 @@ DLLOBJS=\
 	$(D_OBJ)/xmlparse.lo		\
 	$(D_OBJ)/xmlrole.lo		\
 	$(D_OBJ)/xmltok.lo
+
 
 UPDATEROBJS=\
 	$(D_OBJ)/mcupdater$(O)		\

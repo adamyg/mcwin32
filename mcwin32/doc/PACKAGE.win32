@@ -1,11 +1,14 @@
 
-Package List: build 216
+Package List: build 220
 
         mc.exe
+        mcupdater.exe
         busybox.exe
         file.exe
         magic.mgc
         man2hlp.pl
+
+        libautoupdater.1.0.dll
         libglib-2.0.2.51.dll
         libgmodule-2.0.2.51.dll
         libintl.1.0.dll
@@ -16,7 +19,9 @@ Package List: build 216
         libssh2.1.9.dll
         libw32.1.1.dll
         libz.1.2.dll
+
         mt7r19.dll
+        plbr19.dll
         clbr19.dll
 
 doc/
@@ -85,7 +90,4 @@ share/
         mc.macros
         skins
         syntax
-
-
-
 

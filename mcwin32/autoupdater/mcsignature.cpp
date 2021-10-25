@@ -1,4 +1,4 @@
-//  $Id: mcsignature.cpp,v 1.1 2021/08/14 09:31:31 cvsuser Exp $
+//  $Id: mcsignature.cpp,v 1.2 2021/10/21 16:19:58 cvsuser Exp $
 //
 //  AutoUpdater: Manifest generation tool.
 //
@@ -99,7 +99,7 @@ Usage()
         "\n"\
         "Autoupdater manifest signature generator               version 1.01\n"\
         "\n"\
-        "   grsignature [options] <input> [<output>]\n"\
+        "   mcsignature [options] <input> [<output>]\n"\
         "\n"\
         "Options:\n"\
         "   -H <manifest>       HostURL template.\n"\
