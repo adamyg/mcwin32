@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: buildinfo.pl,v 1.6 2021/04/13 16:00:16 cvsuser Exp $
+# $Id: buildinfo.pl,v 1.7 2021/10/25 14:10:55 cvsuser Exp $
 # buildinfo generation
 #
-# Copyright Adam Young 2018-2020
+# Copyright Adam Young 2018-2021
 # All rights reserved.
 #
 # The applications are free software: you can redistribute it
@@ -126,6 +126,7 @@ Generate	#()
 #define ${prefix}VERSION_1 ${version1}
 #define ${prefix}VERSION_2 ${version2}
 #define ${prefix}VERSION_3 ${version3}
+#define ${prefix}VERSION_4 ${buildnumber}
 #define ${prefix}BUILD_DATE "${builddate}"
 #define ${prefix}BUILD_NUMBER "${buildnumber}"
 EOT
@@ -138,7 +139,7 @@ EOT
 
 		die "makeconfig.pm: build type verb 'release' or 'debug' expected.\n"
 			if ($buildtype !~ /release/ && $buildtype !~ /debug/);
-			
+
 		die "makeconfig.pm: build type verbs 'release' and 'debug' are mutually exclusive.\n"
 			if ($buildtype =~ /release/ && $buildtype =~ /debug/);
 

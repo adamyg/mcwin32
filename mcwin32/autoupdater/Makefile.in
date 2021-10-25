@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.4 2021/10/21 16:36:27 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2021/10/25 14:25:41 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -136,6 +136,7 @@ DLLOBJS=\
 	$(D_OBJ)/xmlparse.lo		\
 	$(D_OBJ)/xmlrole.lo		\
 	$(D_OBJ)/xmltok.lo
+
 
 UPDATEROBJS=\
 	$(D_OBJ)/mcupdater$(O)		\
