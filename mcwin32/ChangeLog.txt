@@ -1,3 +1,10 @@
+Wed Oct 27 00:32:42 2021 adamy
+
+	* updates
+
+		- libssh2-1.10 
+		- libappupdater
+
 Fri Oct 22 00:20:44 2021 adamy
 
 	* Build 220: 4.8.24 beta5.
