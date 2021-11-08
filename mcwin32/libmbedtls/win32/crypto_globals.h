@@ -1,7 +1,7 @@
 #ifndef CRYPTO_GLOBALS_H_INCLUDED
 #define CRYPTO_GLOBALS_H_INCLUDED
 #pragma once
-//$Id: crypto_globals.h,v 1.2 2020/05/01 14:33:00 cvsuser Exp $
+//$Id: crypto_globals.h,v 1.3 2021/11/08 13:13:02 cvsuser Exp $
 //
 //  libmbedcrypto support
 //
@@ -27,19 +27,24 @@
 #endif
 
 #include "mbedtls/platform.h"
+#include <stdarg.h>
 
 typedef int (*mbedtls_fprintf_t)(FILE *stream, const char *format, ...);
-typedef int (*mbedtls_snprintf_t)(char * s, size_t n, const char * format, ...);
 typedef int (*mbedtls_printf_t)(const char *format, ...);
+typedef int (*mbedtls_snprintf_t)(char * s, size_t n, const char * format, ...);
+typedef int (*mbedtls_vsnprintf_t)(char * s, size_t n, const char * format, va_list arg);
 
 #if defined(MBEDTLS_PLATFORM_FPRINTF_ALT)
 CRYPTO_MBEDAPI mbedtls_fprintf_t get_mbedtls_fprintf(void);
 #endif
+#if defined(MBEDTLS_PLATFORM_PRINTF_ALT)
+CRYPTO_MBEDAPI mbedtls_printf_t get_mbedtls_printf(void);
+#endif
 #if defined(MBEDTLS_PLATFORM_SNPRINTF_ALT)
 CRYPTO_MBEDAPI mbedtls_snprintf_t get_mbedtls_snprintf(void);
 #endif
-#if defined(MBEDTLS_PLATFORM_PRINTF_ALT)
-CRYPTO_MBEDAPI mbedtls_printf_t get_mbedtls_printf(void);
+#if defined(MBEDTLS_PLATFORM_VSNPRINTF_ALT)
+CRYPTO_MBEDAPI mbedtls_vsnprintf_t get_mbedtls_vsnprintf(void);
 #endif
 
 #endif //CRYPTO_GLOBALS_H_INCLUDED
