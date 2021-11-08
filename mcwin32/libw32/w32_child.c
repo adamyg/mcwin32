@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.11 2020/05/06 19:45:42 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.12 2021/11/08 13:20:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -570,7 +570,7 @@ w32_child_exec(
      */
     (void) memset(&si, 0, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
-    si.wShowWindow = SW_HIDE;                   //SW_NORMAL, SW_SHOWMINIMIZED
+    si.wShowWindow = ((args->flags & W32_SWHIDE) ? SW_HIDE : SW_SHOW);
     si.hStdInput  = hStdIn;
     si.hStdOutput = hStdOut;
     si.hStdError  = hStdErr;
@@ -715,7 +715,7 @@ WASNOT_ENOENT(void)
 LIBW32_API BOOL
 w32_child_wait(HANDLE hProc, int *status, int nowait)
 {
-    DWORD dwStatus, rc;
+    DWORD dwStatus = 0, rc;
     BOOL ret = FALSE;
 
     /*
@@ -728,7 +728,13 @@ w32_child_wait(HANDLE hProc, int *status, int nowait)
         errno = ECHILD;
 
     /*
-     *  Wait for child process, then fetch its exit code
+     *  Verify handle.
+     */
+    } else if (0 == GetExitCodeProcess(hProc, (LPDWORD)&dwStatus)) {
+        errno = ECHILD;
+
+    /*
+     *  Wait for child process, then fetch its exit code.
      */
     } else if ((rc = WaitForSingleObject(hProc, (nowait ? 0 : INFINITE))) == WAIT_OBJECT_0 &&
                         GetExitCodeProcess(hProc, (LPDWORD)&dwStatus)) {

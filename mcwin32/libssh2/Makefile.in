@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.12 2021/04/13 16:00:16 cvsuser Exp $
+# $Id: Makefile.in,v 1.14 2021/11/08 13:14:15 cvsuser Exp $
 # libssh2 makefile.
 #
 #
-# Copyright (c) 2015 - 2020, Adam Young.
+# Copyright (c) 2015 - 2021, Adam Young.
 # All rights reserved.
 #
 #
@@ -99,7 +99,7 @@ RMFLAGS=	-f
 SSH2LIB=	$(D_LIB)/$(LP)ssh2_static$(A)
 SSH2DLL=	$(D_LIB)/$(LP)ssh2.la
 
-VERSION=	1.9.0
+VERSION=	1.10.0
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 VERPACKED=	libssh2-$(VERSION).gr.tgz
 
@@ -138,6 +138,10 @@ CSOURCES=\
 #+1.9.0
 CSOURCES+=\
 	blowfish.c bcrypt_pbkdf.c
+
+#+1.10.0
+CSOURCES+=\
+	agent_win.c
 
 LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
@@ -208,7 +212,7 @@ clean:
 		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) >/dev/null 2>&1
 		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
-		-@$(RM) ../include/libssh2*.h >/dev/null 2>&1
+		-@$(RM) ../include/libssh2/*.h >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

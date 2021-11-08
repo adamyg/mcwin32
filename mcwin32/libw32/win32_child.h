@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_CHILD_H_INCLUDED
 #define LIBW32_WIN32_CHILD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.8 2021/04/13 15:49:35 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.9 2021/11/08 13:20:58 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -44,6 +44,7 @@ typedef struct win32_spawn {
     const char **       envp;
     const char *        dir;
 #define W32_SPAWNDETACHED               0x01
+#define W32_SWHIDE                      0x02    /* hide otherwise show child window */
     int                 flags;
     unsigned long       _dwFlags;               /* reserved */
     unsigned long       _dwProcessId;           /* reserved */

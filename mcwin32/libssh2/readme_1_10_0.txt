@@ -1,13 +1,18 @@
 
-    Source: libssh2 1.9.0, code changes
+    Source: libssh2 1.10.0, code changes
 
-        src\libssh2_priv.h
+        Makefile.in:
+
+                + agent_win$(O)
+
+
+        src\libssh2_priv.h:
 
                   #include <time.h>
                 + #include <limits.h>   //UINT_MAX
 
 
-        src\misc.c
+        src\misc.c:
 
                   #ifdef WIN32
                 + #if defined(__WATCOMC__)

@@ -1,3 +1,18 @@
+Mon Nov  8 21:14:55 2021 adamy
+
+	* exec non-shell tweaks
+
+	* submodule updates
+
+		o mbedtls - 2.27.0
+
+Wed Oct 27 00:32:42 2021 adamy
+
+	* submodule updates
+
+		o libssh2 - 1.10,0
+		o libappupdater
+
 Fri Oct 22 00:20:44 2021 adamy
 
 	* Build 220: 4.8.24 beta5.
