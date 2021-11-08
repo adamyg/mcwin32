@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.8 2020/04/28 22:59:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.9 2021/11/08 13:20:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -86,6 +86,7 @@ w32_shell(const char *shell, const char *cmd,
             "/C",       // command
             "/k"        // interactive
             };
+    const int interactive = ((NULL == cmd || !*cmd) ? 1 : 0);
     char *slash, *shname = WIN32_STRDUP(shell ? shell : w32_getshell());
     int xstdout = FALSE, xstderr = FALSE;       // mode (TRUE == append)
     SECURITY_ATTRIBUTES sa;
@@ -94,7 +95,6 @@ w32_shell(const char *shell, const char *cmd,
     win32_spawn_t args = {0};
     const char *argv[4] = {0};
     HANDLE hProc = 0;
-    int interactive = 0;
     int status = 0;
 
     // sync or async
@@ -176,23 +176,26 @@ w32_shell(const char *shell, const char *cmd,
     }
 
     // command or interactive
+    (void)memset(&args, 0, sizeof(args));
+
     if (w32_iscommand(shname)) {
         slash = shname - 1;
         while ((slash = strchr(slash + 1, XSLASHCHAR)) != NULL) {
             *slash = SLASHCHAR;                 // convert slashes
         }
-    }
 
-    if (NULL == cmd || !*cmd) {
-        ++interactive;                          // interactive if no cmd
+        argv[0] = shname;
+        argv[1] = sharg[ interactive ];         // /C or /K
+        argv[2] = cmd;
+        argv[3] = NULL;
+
+    } else {
+        argv[0] = shname;
+        argv[1] = cmd;
+        argv[2] = NULL;
     }
 
     // create child process
-    (void)memset(&args, 0, sizeof(args));
-    argv[0] = shname;
-    argv[1] = sharg[ interactive ];
-    argv[2] = cmd;
-    argv[3] = NULL;
     args.argv = argv;
     args._dwFlags = 0;
 
