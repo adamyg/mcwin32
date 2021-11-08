@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.13 2021/10/28 15:15:51 cvsuser Exp $
+# $Id: Makefile.in,v 1.14 2021/11/08 13:14:15 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -212,7 +212,7 @@ clean:
 		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) >/dev/null 2>&1
 		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
-		-@$(RM) ../include/libssh2*.h >/dev/null 2>&1
+		-@$(RM) ../include/libssh2/*.h >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
