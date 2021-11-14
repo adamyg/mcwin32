@@ -780,7 +780,7 @@ mc_USERCONFIGDIR(const char *subdir)
         char *dir = g_malloc(dirlen);
 
         if (dir) {
-            (void) _snprintf(dir, dirlen, "%s%s/", x_buffer, subdir);            
+            (void) _snprintf(dir, dirlen, "%s%s/", x_buffer, subdir);
             if (-1 == _access(dir, 0)) {
                 w32_mkdir(dir, 0666);
             }
@@ -960,7 +960,7 @@ save_stop_handler(void)
 int
 my_systemv_flags (int flags, const char *command, char *const argv[])
 {
-    char *cmd = 0;
+    char *cmd = NULL;
     int status = 0;
 
     if (argv) {
@@ -968,25 +968,45 @@ my_systemv_flags (int flags, const char *command, char *const argv[])
         unsigned idx, slen = 0;
         char *cursor;
 
-        for (idx = 0; NULL != (str = argv[idx]); ++idx)
+//      if (0 != (flags & EXECUTE_AS_SHELL)) slen += 3; /*/C */
+
+        for (idx = 0; NULL != (str = argv[idx]); ++idx) {
             if (*str) {
-                slen += strlen(str) + 1;
+                const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+
+                slen += strlen(str) + 1 /*nul or space*/;
+                if (quote) slen += 2; /*quotes*/
             }
+        }
 
-        cursor = cmd = g_malloc(slen);
+        cmd = cursor = g_malloc(slen);
 
-        for (idx = 0; NULL != (str = argv[idx]); ++idx)
+//      if (argv[0]) {
+//          if (0 != (flags & EXECUTE_AS_SHELL)) {
+//              memcpy(cursor, "/C ", 3);
+//              cursor += 3;
+//          }
+//      }
+
+        for (idx = 0; NULL != (str = argv[idx]); ++idx) {
             if (*str) {
+                const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+
                 slen = strlen(str);
                 if (cursor != cmd) *cursor++ = ' ';
-                memcpy(cursor, argv[idx], slen);
+                if (quote) *cursor++ = '"';
+                memcpy(cursor, str, slen);
                 cursor += slen;
+                if (quote) *cursor++ = '"';
             }
+        }
 
         *cursor = '\0';
     }
+
     status = my_system (flags, command, (cmd ? cmd : ""));
     g_free (cmd);
+
     return status;
 }
 
@@ -1977,7 +1997,7 @@ mc_build_filenamev(const char *first_element, va_list args)
                 int driveno = w32_getdrive();
                 if (driveno <= 0) driveno = w32_getlastdrive();
 
-                // see: vfs_canon() generally when we are returning 
+                // see: vfs_canon() generally when we are returning
                 // from a ftp/sftp or UNC reference.
                 if (driveno > 0) {
                     char drive[3] = "X:";

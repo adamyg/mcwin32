@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.9 2021/11/08 13:20:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.10 2021/11/14 13:08:18 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -184,10 +184,18 @@ w32_shell(const char *shell, const char *cmd,
             *slash = SLASHCHAR;                 // convert slashes
         }
 
-        argv[0] = shname;
-        argv[1] = sharg[ interactive ];         // /C or /K
-        argv[2] = cmd;
-        argv[3] = NULL;
+        if (!interactive &&                     // /C embedded
+                cmd[0] == sharg[0][0] && cmd[1] == sharg[0][1]) {
+            argv[0] = shname;
+            argv[1] = cmd;
+            argv[2] = NULL;
+
+        } else {
+            argv[0] = shname;
+            argv[1] = sharg[ interactive ];     // /C or /K
+            argv[2] = cmd;
+            argv[3] = NULL;
+        }
 
     } else {
         argv[0] = shname;
