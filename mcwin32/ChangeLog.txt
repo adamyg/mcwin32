@@ -1,4 +1,20 @@
+Pending
+
+	* build-222
+
+	* submodule updates
+
+		o libmagic - 2.41
+
+Tue Nov  9 21:37:13 2021 adamy
+
+	* UTF8 title support.
+
+	* further exec non-shell tweaks; argument quoting.
+
 Mon Nov  8 21:14:55 2021 adamy
+
+	* build-221
 
 	* exec non-shell tweaks
 
