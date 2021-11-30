@@ -6,7 +6,7 @@
         mc_pread
         mc_pclose
 
-   Written by: Adam Young 2015 - 2020
+   Written by: Adam Young 2015 - 2021
 
    The Midnight Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -90,8 +90,7 @@ mc_popen (const char *command, GError ** error)
     }
 
     if ((NULL == cmd && (NULL == (cmd = g_strdup(command)))) ||
-            NULL == (p =
-                calloc(sizeof(mc_pipe_t) + sizeof(win32_exec_t), 1))) {
+            NULL == (p = (mc_pipe_t *)calloc(sizeof(mc_pipe_t) + sizeof(win32_exec_t), 1))) {
         x_errno = ENOMEM;
         goto error;
     }

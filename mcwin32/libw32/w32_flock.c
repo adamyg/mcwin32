@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_flock_c,"$Id: w32_flock.c,v 1.1 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_flock_c,"$Id: w32_flock.c,v 1.2 2021/11/30 13:06:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -77,7 +77,7 @@ __CIDENT_RCSID(gr_w32_flock_c,"$Id: w32_flock.c,v 1.1 2021/04/25 14:47:18 cvsuse
 //      treated independently by flock(). An attempt to lock the file using one of these file descriptors may be denied by
 //      a lock that the calling process has already placed via another descriptor.
 //
-//      A process may only hold one type of lock (shared or exclusive) on a file. Subsequent flock() calls on an already 
+//      A process may only hold one type of lock (shared or exclusive) on a file. Subsequent flock() calls on an already
 //      locked file will convert an existing lock to the new lock mode.
 //
 //      Locks created by flock() are preserved across an execve(2).

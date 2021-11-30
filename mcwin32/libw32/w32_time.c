@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.8 2021/05/24 15:10:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.9 2021/11/30 13:06:20 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -173,11 +173,11 @@ w32_gettimeofday(
 #elif defined(__MINGW32__)
 #undef gettimeofday
         return gettimeofday(tv, tz)
- 
+
 #else //DEFAULT
         FILETIME ft;
         long long hnsec;
- 
+
         (void) GetSystemTimeAsFileTime(&ft);
         hnsec = filetime_to_hnsec(&ft);
         tv->tv_sec = hnsec / 10000000;

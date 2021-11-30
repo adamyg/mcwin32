@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.7 2021/05/24 15:10:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.8 2021/11/30 13:06:20 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
@@ -429,7 +429,7 @@ w32_recvfrom_native(int fd, char *buf, int len, int flags,
 /*
  *  sockblockingmode
  */
-LIBW32_API int         
+LIBW32_API int
 w32_sockblockingmode_native(int fd, int enabled)
 {
     SOCKET osf;

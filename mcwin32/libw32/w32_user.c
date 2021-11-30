@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.13 2021/06/10 12:42:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.14 2021/11/30 13:06:20 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -407,10 +407,10 @@ initialise_user()
             x_passwd.pw_uid = 500;              // Built-in admin account.
             x_passwd.pw_gid = 513;              // PrimaryGroupID.
                 //
-                // By default, all Active Directory users have a PrimaryGroupID of 513, 
+                // By default, all Active Directory users have a PrimaryGroupID of 513,
                 // which is associated with the Domain Users group.
                 // However, if the user needed to be seen as a Domain Admin for POSIX,
-                // the PrimaryGroupID needed to be 512, the RID for that group. 
+                // the PrimaryGroupID needed to be 512, the RID for that group.
                 // The Enterprise Admins group, 519, is also used to grant this level in POSIX.
                 //
 

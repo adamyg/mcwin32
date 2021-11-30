@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.12 2021/11/08 13:20:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.13 2021/11/30 13:06:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 sub-process support
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -25,7 +25,7 @@ __CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.12 2021/11/08 13:20:58 cvsus
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  *
@@ -33,6 +33,7 @@ __CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.12 2021/11/08 13:20:58 cvsus
 
 #include "win32_internal.h"
 #include "win32_child.h"
+#include "win32_misc.h"
 
 #include <sys/cdefs.h>
 #include <stdlib.h>
@@ -63,16 +64,32 @@ typedef struct {
 } Redirect_t;
 
 static int              cmdis(const char *shell, int slen, const char *cmd);
+static int              cmdisW(const wchar_t *shell, int slen, const wchar_t *cmd);
+static int              TOLOWER(wchar_t ch);
 
 static BOOL             SendCloseMessage(HANDLE hProc);
 static BOOL             WASNOT_ENOENT(void);
 
-static int              BuildVectors(win32_spawn_t *args, char **argblk, char **envblk);
-static char *           Getpath(const char *src, char *dst, unsigned maxlen);
-static const char *     Getenv(const char *const *envp, const char *val);
-static HANDLE           ExecChild(win32_spawn_t *args,
+static int              BuildVectorsA(win32_spawn_t *args, char **argblk, char **envblk);
+static char *           BuildArgA(const char *cmd, const char **argv);
+static char *           BuildEnvA(const char **envv);
+static int              BuildVectorsW(win32_spawnw_t *args, wchar_t **argblk, wchar_t **envblk);
+static wchar_t *        BuildArgW(const wchar_t *cmd, const wchar_t **argv);
+static wchar_t *        BuildEnvW(const wchar_t **envv);
+
+static const char *     GetpathA(const char *src, char *dst, unsigned maxlen);
+static const wchar_t *  GetpathW(const wchar_t *src, wchar_t *dst, unsigned maxlen);
+
+static const char *     GetenvA(const char *const *envp, const char *val);
+static const wchar_t *  GetenvW(const wchar_t *const *envp, const wchar_t *val);
+
+static HANDLE           ExecChildA(win32_spawn_t *args,
                             const char *arg0, char *argv, char *envp, STARTUPINFOA *si, PROCESS_INFORMATION *pi);
-static void             DisplayError(HANDLE hOutput, const char *pszAPI, const char *args);
+static HANDLE           ExecChildW(win32_spawnw_t *args,
+                            const wchar_t *arg0, wchar_t *argv, wchar_t *envp, STARTUPINFOW *si, PROCESS_INFORMATION *pi);
+
+static void             DisplayErrorA(HANDLE hOutput, const char *pszAPI, const char *args);
+static void             DisplayErrorW(HANDLE hOutput, const wchar_t *pszAPI, const wchar_t *args);
 static void             InternalError(const char *pszAPI);
 
 
@@ -514,6 +531,25 @@ SendCloseMessage(HANDLE hProc)
 LIBW32_API int
 w32_iscommand(const char *shell)
 {
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t wshell[WIN32_PATH_MAX];
+        int ret = -1;
+
+        if (w32_utf2wc(shell, wshell, _countof(wshell)) > 0) {
+            return w32_iscommandW(wshell);
+        }
+        return -1;
+    }
+#endif  //UTF8FILENAMES
+
+    return w32_iscommandA(shell);
+}
+
+
+LIBW32_API int
+w32_iscommandA(const char *shell)
+{
     const int slen = (int)strlen(shell);
 
     if (cmdis(shell, slen, "cmd") ||
@@ -527,6 +563,23 @@ w32_iscommand(const char *shell)
 }
 
 
+
+LIBW32_API int
+w32_iscommandW(const wchar_t *shell)
+{
+    const int slen = (int)wcslen(shell);
+
+    if (cmdisW(shell, slen, L"cmd") ||
+            cmdisW(shell, slen, L"cmd.exe") ||
+            cmdisW(shell, slen, L"command") ||
+            cmdisW(shell, slen, L"command.com") ||
+            cmdisW(shell, slen, L"command.exe")) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
 static int
 cmdis(const char *shell, int slen, const char *cmd)
 {
@@ -534,12 +587,28 @@ cmdis(const char *shell, int slen, const char *cmd)
     const char *p = shell + slen - clen;
 
     if (slen == clen || (slen > clen && (p[-1] == '\\' || p[-1] == '/'))) {
-        if (_stricmp(p, cmd) == 0) {
+        if (0 == _stricmp(p, cmd)) {
             return TRUE;
         }
     }
     return FALSE;
 }
+
+
+static int
+cmdisW(const wchar_t *shell, int slen, const wchar_t *cmd)
+{
+    const int clen = (int)wcslen(cmd);
+    const wchar_t *p = shell + slen - clen;
+
+    if (slen == clen || (slen > clen && (p[-1] == '\\' || p[-1] == '/'))) {
+        if (0 == _wcsicmp(p, cmd)) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 
 
 /*
@@ -550,22 +619,35 @@ cmdis(const char *shell, int slen, const char *cmd)
  *      A low level interface that expects the caller has setup the calling environment.
  */
 LIBW32_API HANDLE
-w32_child_exec(
-    struct win32_spawn *args, HANDLE hStdIn, HANDLE hStdOut, HANDLE hStdErr)
+w32_child_execA(
+    win32_spawn_t *args, HANDLE hStdIn, HANDLE hStdOut, HANDLE hStdErr)
 {
     PROCESS_INFORMATION pi = {0};
     STARTUPINFOA si = {0};
+    char *argblk = NULL;
+    char *envblk = NULL;
     HANDLE hProc = 0;
-    char *argblk;
-    char *envblk;
 
-    /* 
-     *  Set up the start up info struct 
+    /*
+     *  Build env and command line.
+     */
+    if (NULL == args || (NULL == args->cmd && NULL == args->argv)) {
+        errno = EINVAL;
+        return 0;
+    }
+
+    if (! BuildVectorsA(args, &argblk, &envblk) != 0) {
+        InternalError("building arg and env");
+        return 0;
+    }
+
+    /*
+     *  Set up the start up info struct
      *      USESTDHANDLES,
-     *          The hStdInput, hStdOutput, and hStdError members contain additional information.
+     *          hStdInput, hStdOutput, and hStdError members contain additional information.
      *
-     *          If this flag is specified when calling one of the process creation functions, 
-     *          the handles must be inheritable and the function's bInheritHandles parameter 
+     *          If this flag is specified when calling one of the process creation functions,
+     *          the handles must be inheritable and the function's bInheritHandles parameter
      *          must be set to TRUE. For more information;
      */
     (void) memset(&si, 0, sizeof(STARTUPINFO));
@@ -582,40 +664,41 @@ w32_child_exec(
     si.dwFlags = STARTF_USESTDHANDLES;
     si.dwFlags |= STARTF_USESHOWWINDOW;
 
-    /* 
-     *  Build env and command line. 
+    /*
+     *  Launch the process that you want to redirect, as lpApplicationName is NULL, search path is:
+     *
+     *   o The directory from which the application loaded.
+     *   o The current directory for the parent process.
+     *   o The 32-bit Windows system directory. Use the GetSystemDirectory function to get the path of this directory.
+     *   o The 16-bit Windows system directory. There is no function that obtains the path of this directory, but it is searched. The name of this directory is System.
+     *   o The Windows directory. Use the GetWindowsDirectory function to get the path of this directory.
+     *   o The directories that are listed in the PATH environment variable.
      */
-    if (BuildVectors(args, &argblk, &envblk) != 0) {
-        InternalError("building arg and env");
-    }
-
-    /* 
-     *  Launch the process that you want to redirect. 
-     */
-    if (0 == (hProc = ExecChild(args, NULL, argblk, envblk, &si, &pi))) {
-        const char *path, *cmd =
-                        (args->argv ? args->argv[0] : args->cmd);
+    if (0 == (hProc = ExecChildA(args, NULL, argblk, envblk, &si, &pi))) {
+        const char *path, *cmd = (args->argv ? args->argv[0] : args->cmd);
         char *pfin, *buf = NULL;
 
-        //  Complete if,
-        //      Error != ERROR_FILE_NOT_FOUND
-        //      arg0 contains a '/'.
-        //  or  PATH is NULL
+        //  Complete if either:
+        //
+        //   o Error != ERROR_FILE_NOT_FOUND
+        //   o arg0 contains a '/'.
+        //   o PATH is NULL
         //
         if (WASNOT_ENOENT() || strchr(cmd, XSLASHCHAR) != NULL ||
-                NULL == (path = Getenv(args->envp, "PATH"))) {
+                NULL == (path = GetenvA(args->envv, "PATH"))) {
             goto done;
         }
 
-        if ((buf = calloc(_MAX_PATH + 1, 1)) == (const char *)NULL) {
+        if ((buf = calloc(_MAX_PATH + 1, sizeof(char))) == (const char *)NULL) {
             goto done;
         }
 
-        while (NULL != (path = Getpath(path, buf, _MAX_PATH-1)) && (*buf)) {
+        while (NULL != (path = GetpathA(path, buf, _MAX_PATH - 1)) && (*buf)) {
             /* If necessary, append a SLASH */
             pfin = buf + strlen(buf) - 1;
-            if (*pfin != SLASHCHAR && *pfin != XSLASHCHAR)
-                (void) strcat(buf, SLASH);
+            if (*pfin != SLASHCHAR && *pfin != XSLASHCHAR) {
+                strcat(buf, SLASH);
+            }
 
             /* Check length */
             if (strlen(buf) + strlen(cmd) < _MAX_PATH) {
@@ -624,19 +707,137 @@ w32_child_exec(
                 break;
             }
 
-            //  Try spawning it. if successful, or if errno comes back
-            //  with a value other than ENOENT and the pathname is not
-            //  a UNC name, return to the caller.
+            // If successful, or if errno comes back with a value other than ENOENT
+            // and the pathname is not a UNC name, return to the caller.
             //
-            if ((hProc = ExecChild(args, buf, argblk, envblk, &si, &pi)) != 0 ||
+            if ((hProc = ExecChildA(args, buf, argblk, envblk, &si, &pi)) != 0 ||
                     ((WASNOT_ENOENT()) && (!ISSLASH(*buf) || !ISSLASH(*(buf+1))))) {
                 break;
             }
         }
 
-done:;  if (buf != NULL) {
-            free(buf);
+done:;  free(buf);
+    }
+
+    /* Close any unnecessary handles. */
+    if (hProc) {                                // success
+        if (! CloseHandle(pi.hThread)) {
+            InternalError("CloseHandle (thread)");
         }
+    }
+
+    free(argblk);
+    free(envblk);
+    return hProc;
+}
+
+
+/*
+ *  w32_child_execW ---
+ *      Setup a STARTUPINFO structure and launches a redirected child using
+ *      the specified stdin/stdout and stderr handles.
+ *
+ *      A low level interface that expects the caller has setup the calling environment.
+ */
+LIBW32_API HANDLE
+w32_child_execW(
+    win32_spawnw_t *args, HANDLE hStdIn, HANDLE hStdOut, HANDLE hStdErr)
+{
+    PROCESS_INFORMATION pi = {0};
+    STARTUPINFOW si = {0};
+    wchar_t *argblk = NULL;
+    wchar_t *envblk = NULL;
+    HANDLE hProc = 0;
+
+    /*
+     *  Build env and command line.
+     */
+    if (NULL == args || (NULL == args->cmd && NULL == args->argv)) {
+        errno = EINVAL;
+        return 0;
+    }
+
+    if (! BuildVectorsW(args, &argblk, &envblk)) {
+        InternalError("building arg and env");
+        return 0;
+    }
+
+    /*
+     *  Set up the start up info struct
+     *      USESTDHANDLES,
+     *          hStdInput, hStdOutput, and hStdError members contain additional information.
+     *
+     *          If this flag is specified when calling one of the process creation functions,
+     *          the handles must be inheritable and the function's bInheritHandles parameter
+     *          must be set to TRUE. For more information;
+     */
+    (void) memset(&si, 0, sizeof(STARTUPINFO));
+    si.cb = sizeof(STARTUPINFO);
+    si.wShowWindow = ((args->flags & W32_SWHIDE) ? SW_HIDE : SW_SHOW);
+    si.hStdInput  = hStdIn;
+    si.hStdOutput = hStdOut;
+    si.hStdError  = hStdErr;
+
+    if (hStdIn)  { DWORD flags; assert(GetHandleInformation(hStdIn,  &flags) && (HANDLE_FLAG_INHERIT & flags)); }
+    if (hStdOut) { DWORD flags; assert(GetHandleInformation(hStdOut, &flags) && (HANDLE_FLAG_INHERIT & flags)); }
+    if (hStdErr) { DWORD flags; assert(GetHandleInformation(hStdErr, &flags) && (HANDLE_FLAG_INHERIT & flags)); }
+
+    si.dwFlags = STARTF_USESTDHANDLES;
+    si.dwFlags |= STARTF_USESHOWWINDOW;
+
+    /*
+     *  Launch the process that you want to redirect, as lpApplicationName is NULL, search path is:
+     *
+     *   o The directory from which the application loaded.
+     *   o The current directory for the parent process.
+     *   o The 32-bit Windows system directory. Use the GetSystemDirectory function to get the path of this directory.
+     *   o The 16-bit Windows system directory. There is no function that obtains the path of this directory, but it is searched. The name of this directory is System.
+     *   o The Windows directory. Use the GetWindowsDirectory function to get the path of this directory.
+     *   o The directories that are listed in the PATH environment variable.
+     */
+    if (0 == (hProc = ExecChildW(args, NULL, argblk, envblk, &si, &pi))) {
+        const wchar_t *path, *cmd = (args->argv ? args->argv[0] : args->cmd);
+        wchar_t *pfin, *buf = NULL;
+
+        //  Complete if either:
+        //
+        //   o Error != ERROR_FILE_NOT_FOUND
+        //   o arg0 contains a '/'.
+        //   o PATH is NULL
+        //
+        if (WASNOT_ENOENT() || wcschr(cmd, XSLASHCHAR) != NULL ||
+                NULL == (path = GetenvW(args->envv, L"PATH"))) {
+            goto done;
+        }
+
+        if ((buf = calloc(_MAX_PATH + 1, sizeof(wchar_t))) == (const wchar_t *)NULL) {
+            goto done;
+        }
+
+        while (NULL != (path = GetpathW(path, buf, _MAX_PATH - 1)) && (*buf)) {
+            /* If necessary, append a SLASH */
+            pfin = buf + wcslen(buf) - 1;
+            if (*pfin != SLASHCHAR && *pfin != XSLASHCHAR) {
+                wcscat(buf, LSLASH);
+            }
+
+            /* Check length */
+            if (wcslen(buf) + wcslen(cmd) < _MAX_PATH) {
+                wcscat(buf, cmd);
+            } else {
+                break;
+            }
+
+            // If successful, or if errno comes back with a value other than ENOENT
+            // and the pathname is not a UNC name, return to the caller.
+            //
+            if ((hProc = ExecChildW(args, buf, argblk, envblk, &si, &pi)) != 0 ||
+                    ((WASNOT_ENOENT()) && (!ISSLASH(*buf) || !ISSLASH(*(buf+1))))) {
+                break;
+            }
+        }
+
+done:;  free(buf);
     }
 
     /* Close any unnecessary handles. */
@@ -653,11 +854,12 @@ done:;  if (buf != NULL) {
 
 
 static HANDLE
-ExecChild(win32_spawn_t *args,
+ExecChildA(win32_spawn_t *args,
     const char *arg0, char *argv, char *envp, STARTUPINFOA *si, PROCESS_INFORMATION *pi)
 {
     HANDLE hProc = 0;
 
+    args->_dwFlags &= ~CREATE_UNICODE_ENVIRONMENT;
     if (CreateProcessA(
             arg0, argv,                         // [in]  application name/args.
             NULL, NULL,                         // [in]  SD's.
@@ -671,7 +873,33 @@ ExecChild(win32_spawn_t *args,
         hProc = pi->hProcess;
 
     } else if (WASNOT_ENOENT()) {               // XXX, current or hStdError ??
-        DisplayError(GetStdHandle(STD_OUTPUT_HANDLE), "CreateProcess", argv);
+        DisplayErrorA(GetStdHandle(STD_OUTPUT_HANDLE), "CreateProcess", argv);
+    }
+    return hProc;
+}
+
+
+static HANDLE
+ExecChildW(win32_spawnw_t *args,
+    const wchar_t *arg0, wchar_t *argv, wchar_t *envp, STARTUPINFOW *si, PROCESS_INFORMATION *pi)
+{
+    HANDLE hProc = 0;
+
+    if (envp) args->_dwFlags |= CREATE_UNICODE_ENVIRONMENT;
+    if (CreateProcessW(
+            arg0, argv,                         // [in]  application name/args.
+            NULL, NULL,                         // [in]  SD's.
+            TRUE,                               // [in]  handle inheritance options.
+            args->_dwFlags,                     // [in]  creation flags.
+            envp,                               // [in]  new envirnoment.
+            args->dir,                          // [in]  working directory.
+            si,                                 // [in]  startup information.
+            pi)) {                              // [out] process information.
+        args->_dwProcessId = pi->dwProcessId;
+        hProc = pi->hProcess;
+
+    } else if (WASNOT_ENOENT()) {               // XXX, current or hStdError ??
+        DisplayErrorW(GetStdHandle(STD_OUTPUT_HANDLE), L"CreateProcess", argv);
     }
     return hProc;
 }
@@ -742,12 +970,21 @@ w32_child_wait(HANDLE hProc, int *status, int nowait)
          *  Normal termination:     lo-byte = 0,            hi-byte = child exit code.
          *  Abnormal termination:   lo-byte = term status,  hi-byte = 0.
          */
+        if (STILL_ACTIVE == dwStatus) {         // should occur yet!
+            unsigned delay = 0;
+            do {
+                Sleep(100);                     // 10 * 100ms - 1 second
+                if (GetExitCodeProcess(hProc, (LPDWORD)&dwStatus) && STILL_ACTIVE != dwStatus) {
+                    break;  //done
+                }
+            } while (++delay < 10);
+        }
         CloseHandle(hProc);                     // process complete
         if (status) {
             if (0 == (dwStatus & 0xff)) {
-                *status = (int)dwStatus >> 8;
+                *status = (int)(dwStatus >> 8);
             } else {
-                *status = (int)dwStatus;
+                *status = (int)(dwStatus & 0xff);
             }
         }
         ret = TRUE;
@@ -763,122 +1000,291 @@ w32_child_wait(HANDLE hProc, int *status, int nowait)
 
 
 /*
- *  BuildVectors --- build up command line/environ vectors.
+ *  BuildVectorsA --- build up command line/environ vectors.
  *
  *      Set up the block forms of the environment and the command line. If "envp" is
  *      null, "_environ" is used instead. File handle info is passed in the environment
  *      if _fileinfo is !0.
  */
+
 static int
-BuildVectors(win32_spawn_t *args, char **argblk, char **envblk)
+BuildVectorsA(win32_spawn_t *args, char **argblk, char **envblk)
 {
-    const char **envp =
-#if defined(__WATCOMC__)
-            (args->envp ? args->envp : (const char **)environ);
-#else
-            (args->envp ? args->envp : (const char **)_environ);
-#endif
+    *envblk = NULL;
+
+    if (NULL == (*argblk = BuildArgA(args->cmd, args->argv))) {
+        return FALSE;
+    }
+
+    if (args->envv) {
+        if (NULL == (*envblk = BuildEnvA(args->envv))) {
+            free(*argblk);
+            *argblk = NULL;
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+
+
+static char *
+BuildArgA(const char *cmd, const char **argv)
+{
     const char * const *vp;
-    int tmp;
-    char *cptr;
+    char *ret;
+    int len;
 
     /*
-     *  Allocate space for command line string.  tmp counts the number of
-     *  bytes in the command line string including spaces between arguments
-     *  plus two charcater for possible quoting.
+     *  Allocate space for environment strings, count the number of bytes
+     *  in the environment strings including nulls between strings
      */
-    if (args->cmd) {
-        tmp = (int)strlen(args->cmd) + 1;
+    if (cmd) {
+        len = (int)strlen(cmd) +  1 /*nul*/;
+        assert(NULL == argv);
     } else {
-        for (vp = args->argv, tmp = 2+2; *vp; tmp += (int)strlen(*vp++) + 1)
+        for (vp = argv, len = 2 /*quotes*/ + 2 /*delim*/; *vp; len += (int)strlen(*vp++) + 1 /*nul*/)
             /**/;
     }
 
-    if (tmp > 32767) {
-        errno = E2BIG;                          // command line too long >32k
-        return -1;
+    if (len > (32 * 1024 * sizeof(char))) {
+        errno = E2BIG;                          // command line too long >32k.
+        return NULL;
     }
 
-    /* Allocate space for the command line plus 2 null bytes */
-    if ((*argblk = calloc(tmp * sizeof(char), 1)) == NULL) {
-        *envblk = NULL;
-        return -1;
-    }
-
-    /*
-     *  Allocate space for environment strings tmp counts the number of bytes
-     *  in the environment strings including nulls between strings
-     */
-    for (vp = envp, tmp = 2; *vp; tmp += (int)strlen(*vp++) + 1)
-        /**/;
-
-    /* Allocate space for the environment strings plus extra null byte */
-    if (NULL == (*envblk = calloc(tmp * sizeof(char), 1))) {
-        free(*argblk);
-        *argblk = NULL;
-        return -1;
+    if (NULL == (ret = (char *)calloc(len * sizeof(char), 1))) {
+        return NULL;
     }
 
     /*
      *  Build the command line by concatenating the argument strings
      *  with spaces between, and two null bytes at the end.
      */
-    cptr = *argblk;
-
-    if (args->cmd) {
-        strcpy(cptr, args->cmd);
-        cptr += strlen(args->cmd);
+    if (cmd) {
+        strcpy(ret, cmd);
 
     } else {
-        vp = args->argv;
-        for (tmp = 0; *vp; ++tmp) {
+        char *cursor = ret;
+
+        vp = argv;
+        for (len = 0; *vp; ++len) {
             const char *arg = *vp++;
             int quote = FALSE;
 
-            if (0 == tmp && *arg != '"' && strchr(arg, ' ')) {
-                ++quote;                        // quote, contains space
+            if (0 == len && *arg != '"' && strchr(arg, ' ')) {
+                quote = TRUE;                   // quote, contains space.
             }
 
-            if (quote) *cptr++ = '"';
-            if (0 == tmp) {
-                while (*arg) {                  // convert slashs within arg0
-                    *cptr++ = ('/' == *arg ? '\\' : *arg);
+            if (quote) *cursor++ = '"';
+            if (0 == len) {
+                while (*arg) {                  // convert slashs within arg0.
+                    *cursor++ = ('/' == *arg ? '\\' : *arg);
                     ++arg;
                 }
             } else {
-                strcpy(cptr, arg);
-                cptr += strlen(arg);
+                strcpy(cursor, arg);
+                cursor += strlen(arg);
             }
-            if (quote) *cptr++ = '"';
+            if (quote) *cursor++ = '"';
 
-            *cptr++ = ' ';
+            *cursor++ = ' ';                    // space delimiter.
         }
-        *cptr = cptr[-1] = '\0';                // remove extra blank
+
+        cursor[-1] = '\0';                      // remove extra delimiter.
+        *cursor = '\0';                         // terminator.
     }
 
+    return ret;
+}
+
+
+static char *
+BuildEnvA(const char **envv)
+{
+    /*
+     *  Set up the block forms of the environment and the command line.
+     *  If "envv" is null, "_environ" is used instead.
+     */
+    const char **envp =
+#if defined(__WATCOMC__)
+            (envv ? envv : (const char **)environ);
+#else
+            (envv ? envv : (const char **)_environ);
+#endif
+    const char * const *vp;
+    char *ret, *cursor;
+    int len;
+
+    /*
+     *  Allocate space for environment strings, count the number of bytes
+     *  in the environment strings including nulls between strings
+     */
+    for (vp = envp, len = 2 /*padding*/; *vp; len += (int)strlen(*vp++) + 1 /*nul*/)
+        /**/;
+
+    if (NULL == (ret = (char *)calloc(len * sizeof(char), 1))) {
+        return NULL;
+    }
 
     /*
      *  Build the environment block by concatenating the environment
      *  strings with nulls between and two null bytes at the end
      */
-    cptr = *envblk;
-    vp = envp;
+    for (cursor = ret, vp = envp, len = 0; *vp; ++len, ++vp) {
+        const int slen = strlen(*vp) + 1 /*nul*/;
+        memcpy(cursor, *vp, slen * sizeof(char));
+        cursor += slen;
+    }
 
-    for (tmp = 0; *vp; ++tmp) {
-        (void) strcpy(cptr, *vp);
-        cptr += strlen(*vp++) + 1;
+    if (cursor == ret) *cursor++ = '\0';
+    *cursor = '\0';                             // final terminator.
+
+    return ret;
+}
+
+
+/*
+ *  BuildVectorsW --- build up command line/environ vectors.
+ *
+ *      Set up the block forms of the environment and the command line. If "envp" is
+ *      null, "_wenviron" is used instead. File handle info is passed in the environment
+ *      if _fileinfo is !0.
+ */
+
+static int
+BuildVectorsW(win32_spawnw_t *args, wchar_t **argblk,  wchar_t **envblk)
+{
+    *envblk = NULL;
+
+    if (NULL == (*argblk = BuildArgW(args->cmd, args->argv))) {
+        return FALSE;
+    }
+
+    if (args->envv) {
+        if (NULL == (*envblk = BuildEnvW(args->envv))) {
+            free(*argblk);
+            *argblk = NULL;
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+
+static wchar_t *
+BuildArgW(const wchar_t *cmd, const wchar_t **argv)
+{
+    const wchar_t * const *vp;
+    wchar_t *ret;
+    int len;
+
+    /*
+     *  Allocate space for environment strings, count the number of bytes
+     *  in the environment strings including nulls between strings
+     */
+    if (cmd) {
+        len = (int)wcslen(cmd) +  1 /*nul*/;
+        assert(NULL == argv);
+    } else {
+        for (vp = argv, len = 2 /*quotes*/ + 2 /*delim*/; *vp; len += (int)wcslen(*vp++) + 1 /*nul*/)
+            /**/;
+    }
+
+    if (len > (32 * 1024 * sizeof(wchar_t))) {
+        errno = E2BIG;                          // command line too long >32k.
+        return NULL;
+    }
+
+    if (NULL == (ret = (wchar_t *)calloc(len * sizeof(wchar_t), 1))) {
+        return NULL;
     }
 
     /*
-     *  Empty environment block ... this requires two nulls.
+     *  Build the command line by concatenating the argument strings
+     *  with spaces between, and two null bytes at the end.
      */
-    if (cptr != NULL) {
-        if (cptr == *envblk) {
-            *cptr++ = '\0';
+    if (cmd) {
+        wcscpy(ret, cmd);
+
+    } else {
+        wchar_t *cursor = ret;
+
+        vp = argv;
+        for (len = 0; *vp; ++len) {
+            const wchar_t *arg = *vp++;
+            int quote = FALSE;
+
+            if (0 == len && *arg != '"' && wcschr(arg, ' ')) {
+                quote = TRUE;                   // quote, contains space.
+            }
+
+            if (quote) *cursor++ = '"';
+            if (0 == len) {
+                while (*arg) {                  // convert slashs within arg0.
+                    *cursor++ = ('/' == *arg ? '\\' : *arg);
+                    ++arg;
+                }
+            } else {
+                wcscpy(cursor, arg);
+                cursor += wcslen(arg);
+            }
+            if (quote) *cursor++ = '"';
+
+            *cursor++ = ' ';                    // space delimiter.
         }
-        *cptr = '\0';                           // Extra \0 terminates
+
+        cursor[-1] = '\0';                      // remove extra delimiter.
+        *cursor = '\0';                         // terminator.
     }
-    return 0;
+
+    return ret;
+}
+
+
+static wchar_t *
+BuildEnvW(const wchar_t **envv)
+{
+    /*
+     *  Set up the block forms of the environment and the command line.
+     *  If "envv" is null, "_environ" is used instead.
+     */
+    const wchar_t **envp =
+#if defined(__WATCOMC__)
+            (envv ? envv : (const wchar_t **)_wenviron);
+#else
+            (envv ? envv : (const wchar_t **)_wenviron);
+#endif
+    const wchar_t * const *vp;
+    wchar_t *ret, *cursor;
+    int len;
+
+    /*
+     *  Allocate space for environment strings, count the number of bytes
+     *  in the environment strings including nulls between strings
+     */
+    for (vp = envp, len = 2 /*padding*/; *vp; len += (int)wcslen(*vp++) + 1 /*nul*/)
+        /**/;
+
+    if (NULL == (ret = (wchar_t *)calloc(len * sizeof(wchar_t), 1))) {
+        return NULL;
+    }
+
+    /*
+     *  Build the environment block by concatenating the environment
+     *  strings with nulls between and two null bytes at the end
+     */
+    for (cursor = ret, vp = envp, len = 0; *vp; ++len, ++vp) {
+        const int slen = wcslen(*vp) + 1 /*nul*/;
+        memcpy(cursor, *vp, slen * sizeof(wchar_t));
+        cursor += slen;
+    }
+
+    if (cursor == ret) *cursor++ = '\0';
+    *cursor = '\0';                             // final terminator.
+
+    return ret;
 }
 
 
@@ -897,8 +1303,8 @@ BuildVectors(win32_spawn_t *args, char **argblk, char **envblk)
  *
  *      PATH=C:\BIN;"D:\CRT\TOOLS;B1";C:\BINP
  */
-static char *
-Getpath(const char *src, char *dst, unsigned maxlen)
+static const char *
+GetpathA(const char *src, char *dst, unsigned maxlen)
 {
     const char *save_src;
 
@@ -954,12 +1360,73 @@ Getpath(const char *src, char *dst, unsigned maxlen)
      */
 appendnull:
     *dst = '\0';
-    return((save_src != src) ? (char *)src : NULL);
+    return((save_src != src) ? (const char *)src : NULL);
+}
+
+
+static const wchar_t *
+GetpathW(const wchar_t *src, wchar_t *dst, unsigned maxlen)
+{
+    const wchar_t *save_src;
+
+    /* Strip off leading semi colons */
+    while (*src == ';') {
+        ++src;
+    }
+
+    /* Save original src pointer */
+    save_src = src;
+
+    /* Decrement maxlen to allow for the terminating _T('\0') */
+    if (--maxlen == 0) {
+        goto appendnull;
+    }
+
+    /* Get the next path in src string */
+    while (*src && (*src != ';')) {
+        if (*src != '"')  {                     // check for quote char
+            *dst++ = *src++;
+            if (--maxlen == 0) {
+                save_src = src;                 // ensure NULL return
+                goto appendnull;
+            }
+
+        } else {                                // quoted
+            /* Copy all chars until we hit the final quote or the EOS */
+            src++;                              // skip over opening quote
+            while (*src && (*src != '"')) {
+                *dst++ = *src++;
+                if ( --maxlen == 0 ) {
+                    save_src = src;             // ensure NULL return
+                    goto appendnull;
+                }
+            }
+
+            if (*src) {
+                src++;                          // skip over closing quote
+            }
+        }
+    }
+
+    /*
+     *  If we copied something and stopped because of a ';', skip ';'
+     *  before returning
+     */
+    while (*src == ';') {
+        ++src;
+    }
+
+    /*
+     *  Store a terminating null.
+     */
+appendnull:
+    *dst = '\0';
+    return ((save_src != src) ? (const wchar_t *)src : NULL);
 }
 
 
 static const char *
-Getenv(const char *const *envp, const char *val)
+GetenvA(const char *const *envp, const char *val)
 {
     const char *p = NULL;
 
@@ -973,7 +1440,7 @@ Getenv(const char *const *envp, const char *val)
                 p = *envp + len + 1;
                 break;
             }
-            envp++;
+            ++envp;
         }
     }
 
@@ -985,37 +1452,73 @@ Getenv(const char *const *envp, const char *val)
 }
 
 
+static const wchar_t *
+GetenvW(const wchar_t *const *envp, const wchar_t *val)
+{
+    const wchar_t *p = NULL;
+
+    if (envp) {                                 // Search local path
+        size_t len;
+
+        len = wcslen(val);
+        while (*envp) {
+            if (wcslen(*envp) > len && *(*envp + len) == '=' &&
+                    wcsncmp(*envp, val, len) == 0) {
+                p = *envp + len + 1;
+                break;
+            }
+            ++envp;
+        }
+    }
+
+    if (p == (const wchar_t *)NULL) {           // Global path
+        p = _wgetenv(val);
+    }
+
+    return (p);
+}
+
+
 /*
  *  WaiInternalError ---
  *      Displays the error number and corresponding message.
  */
 static void
-DisplayError(
+DisplayErrorA(
     HANDLE hOutput, const char *pszAPI, const char *args)
 {
     const DWORD rc = GetLastError();
-    LPVOID  lpvMessageBuffer;
-    char    szPrintBuffer[512];
-    DWORD   nCharsWritten;
+    char t_rcbuffer[512], buffer[512];
+    const char *rcmsg = w32_syserrorA(rc, t_rcbuffer, sizeof(t_rcbuffer));
+    int len;
 
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&lpvMessageBuffer, 0, NULL);
-
-    _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
-        "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
-            args ? args : "", args ? "\n" : "");
-    szPrintBuffer[sizeof(szPrintBuffer) - 1] = 0;
-
-    WriteConsoleA(hOutput, szPrintBuffer, lstrlenA(szPrintBuffer), &nCharsWritten, NULL);
-    LocalFree(lpvMessageBuffer);
+    len = _snprintf(buffer, sizeof(buffer),
+            "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
+                args ? args : "", args ? "\n" : "");
+    WriteConsoleA(hOutput, buffer, len, NULL, NULL);
 }
 
 
 static void
-InternalError(
-    const char *pszAPI)
+DisplayErrorW(
+    HANDLE hOutput, const wchar_t *pszAPI, const wchar_t *args)
 {
-    DisplayError(GetStdHandle(STD_OUTPUT_HANDLE), pszAPI, NULL);
+    const DWORD rc = GetLastError();
+    wchar_t t_rcbuffer[512], buffer[512];
+    const wchar_t *rcmsg = w32_syserrorW(rc, t_rcbuffer, _countof(t_rcbuffer));
+    int len;
+
+    len = _snwprintf(buffer, _countof(buffer),
+            L"Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
+                args ? args : L"", args ? L"\n" : L"");
+    WriteConsoleW(hOutput, buffer, len, NULL, NULL);
+}
+
+
+static void
+InternalError(const char *pszAPI)
+{
+    DisplayErrorA(GetStdHandle(STD_OUTPUT_HANDLE), pszAPI, NULL);
     ExitProcess(GetLastError());
 }
 

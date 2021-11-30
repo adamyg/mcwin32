@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.1 2021/06/10 15:45:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.2 2021/11/30 13:06:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -52,20 +52,20 @@ __CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.1 2021/06/10 15:45:0
 //      [XSI] [Option Start] #include <sys/resource.h>
 //
 //      int getrusage(int who, struct rusage *r_usage); [Option End]
-//  
+//
 //  DESCRIPTION
-//    
+//
 //      The getrusage() function shall provide measures of the resources used by the current process or its terminated
-//      and waited-for child processes. If the value of the who argument is RUSAGE_SELF, information shall be returned 
-//      about resources used by the current process. If the value of the who argument is RUSAGE_CHILDREN, information 
-//      shall be returned about resources used by the terminated and waited-for children of the current process. 
-//      
-//      If the child is never waited for (for example, if the parent has SA_NOCLDWAIT set or sets SIGCHLD to SIG_IGN), 
-//      the resource information for the child process is discarded and not included in the resource information 
+//      and waited-for child processes. If the value of the who argument is RUSAGE_SELF, information shall be returned
+//      about resources used by the current process. If the value of the who argument is RUSAGE_CHILDREN, information
+//      shall be returned about resources used by the terminated and waited-for children of the current process.
+//
+//      If the child is never waited for (for example, if the parent has SA_NOCLDWAIT set or sets SIGCHLD to SIG_IGN),
+//      the resource information for the child process is discarded and not included in the resource information
 //      provided by getrusage().
-//  
+//
 //      The r_usage argument is a pointer to an object of type struct rusage in which the returned information is stored.
-//  
+//
 //  RETURN VALUE
 //
 //      Upon successful completion, getrusage() shall return 0; otherwise, -1 shall be returned
@@ -79,7 +79,7 @@ __CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.1 2021/06/10 15:45:0
 //          The value of the who argument is not valid.
 */
 
-static void 
+static void
 totimeval(const FILETIME *ft, struct timeval *tv)
 {
     ULARGE_INTEGER time;
@@ -114,7 +114,7 @@ getrusage(int who, struct rusage *usage)
                 ! GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc))) {
                 w32_errno_set();
 
-            } else { 
+            } else {
                 totimeval(&kerneltime, &usage->ru_stime);   // system CPU time used
                 totimeval(&usertime, &usage->ru_utime);     // user CPU time used
                 usage->ru_majflt = pmc.PageFaultCount;      // page faults (hard page faults)

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.1 2021/04/25 14:47:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.2 2021/11/30 13:06:20 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -44,8 +44,8 @@ __CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.1 2021/04/25 14:47:18 cvsu
 
 #pragma comment(lib, "Ws2_32.lib")
 
- 
-LIBW32_API int /*ssize_t*/ 
+
+LIBW32_API int /*ssize_t*/
 writev(int fildes, const struct iovec *iov, int iovcnt)
 {
     SOCKET s = (SOCKET)-1;

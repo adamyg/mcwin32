@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_gistrerror_c,"$Id: w32_gistrerror.c,v 1.7 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_gistrerror_c,"$Id: w32_gistrerror.c,v 1.8 2021/11/30 13:06:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -80,7 +80,7 @@ __CIDENT_RCSID(gr_w32_gistrerror_c,"$Id: w32_gistrerror.c,v 1.7 2021/04/13 15:49
 
 #if (defined(_MSC_VER) && (_MSC_VER < 1400)) || \
 	defined(__WATCOMC__)
-LIBW32_API const char * 
+LIBW32_API const char *
 gai_strerror(int ecode)
 {
     return w32_gai_strerror(ecode);

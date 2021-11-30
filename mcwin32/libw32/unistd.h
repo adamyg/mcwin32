@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.30 2021/06/20 06:42:02 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.31 2021/11/30 13:06:19 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -476,7 +476,10 @@ LIBW32_API const char * getlogin (void);
 LIBW32_API int          getlogin_r (char *name, size_t namesize);
 
 LIBW32_API void         setprogname (const char *name);
+LIBW32_API void         setprognameW (const wchar_t *name);
 LIBW32_API const char * getprogname (void);
+LIBW32_API const char * getprognameA (void);
+LIBW32_API const wchar_t * getprognameW (void);
 
 LIBW32_API int          issetugid (void);
 

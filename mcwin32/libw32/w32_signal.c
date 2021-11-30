@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.5 2021/06/10 12:42:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.6 2021/11/30 13:06:20 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -25,7 +25,7 @@ __CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.5 2021/06/10 12:42:34 cvsu
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  */
@@ -38,18 +38,18 @@ __CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.5 2021/06/10 12:42:34 cvsu
 /*
 //  NAME
 //      sigemptyset - initialize and empty a signal set
-//  
+//
 //  SYNOPSIS
 //      #include <signal.h>
-//  
+//
 //      int sigemptyset(sigset_t *set); [Option End]
-//  
+//
 //  DESCRIPTION
 //      The sigemptyset() function initializes the signal set pointed to by set, such that all signals defined in POSIX.1-2017 are excluded.
-//  
+//
 //  RETURN VALUE
 //      Upon successful completion, sigemptyset() shall return 0; otherwise, it shall return -1 and set errno to indicate the error.
-//  
+//
 //  ERRORS
 //      No errors are defined.
 //

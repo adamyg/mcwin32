@@ -86,6 +86,7 @@
 #include "src/setup.h"                          /* use_internal_busybox */
 
 #include "win32_key.h"
+#include "win32_internal.h"
 
 #pragma comment(lib, "shell32.lib")
 #pragma comment(lib, "shfolder.lib")
@@ -968,7 +969,9 @@ my_systemv_flags (int flags, const char *command, char *const argv[])
         unsigned idx, slen = 0;
         char *cursor;
 
-//      if (0 != (flags & EXECUTE_AS_SHELL)) slen += 3; /*/C */
+//      if (0 != (flags & EXECUTE_AS_SHELL)) {
+//          slen += 3; /*/C */
+//      }
 
         for (idx = 0; NULL != (str = argv[idx]); ++idx) {
             if (*str) {
@@ -1194,60 +1197,85 @@ system_SET(int argc, const char **argv)
  *  TODO: Return resolved path to perl, python etc (utilise file/extension association)
  */
 static const char *
+ScriptMagic(int fd)
+{
+    char magic[128] = { 0 };
+    const char *script = NULL;
+
+    if (_read(fd, magic, sizeof(magic) - 1) > 2) {
+        if (magic[0] == '#' && magic[1] == '!') {   // sha-bang
+            const char *exec = magic + 2;
+            int len = -1;
+
+            while (*exec && ' ' == *exec) ++exec;
+            if (*exec == '/') {
+                if (0 == strncmp(exec, "/bin/sh", len = (sizeof("/bin/sh")-1))) {
+                    script = "sh";
+                } else if (0 == strncmp(exec, "/bin/ash", len = (sizeof("/bin/ash")-1))) {
+                    script = "ash";
+                } else if (0 == strncmp(exec, "/bin/bash", len = (sizeof("/bin/bash")-1))) {
+                    script = "bash";
+                } else if (0 == strncmp(exec, "/bin/sed", len = (sizeof("/bin/sed")-1))) {
+                    script = "sed";
+                } else if (0 == strncmp(exec, "/bin/awk", len = (sizeof("/bin/awk")-1))) {
+                    script = "awk";
+                } else if (0 == strncmp(exec, "/usr/bin/perl", len = (sizeof("/usr/bin/perl")-1))) {
+                    script = "perl";
+                } else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1))) {
+                    script = "python";
+                } else if (0 == strncmp(exec, "usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
+                    //
+                    //  Example:
+                    //  #! /usr/bin/env python
+                    const char *exec2 = exec + len;
+                    int len2;
+
+                    while (*exec2 && ' ' == *exec2) { ++exec2, ++len; }
+                    if (0 == strncmp(exec2, "python", len2 = (sizeof("python")-1))) {
+                        script = "python";
+                        len += len2;
+                    } else if (0 == strncmp(exec2, "python3", len2 = (sizeof("python3")-1))) {
+                        script = "python3";
+                        len += len2;
+                    }
+                }
+                //else, ignore others
+
+                if (script && exec[len] != ' ' && exec[len] != '\n' && exec[len] != '\r') {
+                    script = NULL;              // bad termination, ignore
+                }
+            }
+        }
+    }
+    return script;
+}
+
+
+static const char *
 IsScript(const char *cmd)
 {
-    char t_cmd[1024] = { 0 }, magic[128] = { 0 };
+    char t_cmd[1024] = { 0 };
     const char *script = NULL;
     const char *argv[3] = { 0 };
     int fd;
 
     strncpy(t_cmd, cmd, sizeof(t_cmd)-1);
     if (system_bustargs(t_cmd, argv, 2) >= 1 && argv[0]) {
-        if ((fd = _open(argv[0], O_RDONLY | O_BINARY)) >= 0) {
-            if (_read(fd, magic, sizeof(magic) - 1) > 2 && magic[0] == '#' && magic[1] == '!') {
-                // sha-bang
-                const char *exec = magic + 2;
-                int len = -1;
-
-                while (*exec && ' ' == *exec) ++exec;
-                if (*exec == '/') {
-                    if (0 == strncmp(exec, "/bin/sh", len = (sizeof("/bin/sh")-1)))
-                        script = "sh";
-                    else if (0 == strncmp(exec, "/bin/ash", len = (sizeof("/bin/ash")-1)))
-                        script = "ash";
-                    else if (0 == strncmp(exec, "/bin/bash", len = (sizeof("/bin/bash")-1)))
-                        script = "bash";
-                    else if (0 == strncmp(exec, "/bin/sed", len = (sizeof("/bin/sed")-1)))
-                        script = "sed";
-                    else if (0 == strncmp(exec, "/bin/awk", len = (sizeof("/bin/awk")-1)))
-                        script = "awk";
-                    else if (0 == strncmp(exec, "/usr/bin/perl", len = (sizeof("/usr/bin/perl")-1)))
-                        script = "perl";
-                    else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1)))
-                        script = "python";
-                    else if (0 == strncmp(exec, "usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
-                        //
-                        //  Example:
-                        //  #! /usr/bin/env python
-                        const char *exec2 = exec + len;
-                        int len2;
-
-                        while (*exec2 && ' ' == *exec2) { ++exec2, ++len; }
-                        if (0 == strncmp(exec2, "python", len2 = (sizeof("python")-1))) {
-                            script = "python";
-                            len += len2;
-                        } else if (0 == strncmp(exec2, "python3", len2 = (sizeof("python3")-1))) {
-                            script = "python3";
-                            len += len2;
-                        }
-                    }
-                    //else, ignore others
-
-                    if (script && exec[len] != ' ' && exec[len] != '\n' && exec[len] != '\r') {
-                        script = NULL;          //bad termination, ignore
-                    }
+        if (w32_utf8filenames_state()) {
+            wchar_t *warg0 = NULL;
+            
+            if (NULL != (warg0 = w32_utf2wca(argv[0], NULL))) {
+                if ((fd = _wopen(warg0, O_RDONLY | O_BINARY)) >= 0) {
+                    script = ScriptMagic(fd);
+                    _close(fd);
                 }
+                free(warg0);
             }
+            return script;
+        }
+
+        if ((fd = _open(argv[0], O_RDONLY | O_BINARY)) >= 0) {
+            script = ScriptMagic(fd);
             _close(fd);
         }
     }
@@ -1278,6 +1306,7 @@ win32_popen(const char *cmd, const char *mode)
             file = w32_popen(t_cmd, mode);
             g_free(t_cmd);
         }
+
     } else if (busybox && *busybox && NULL != (exec = IsScript(cmd))) {
         /*
          *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python | /usr/bin/env python>
@@ -1294,6 +1323,7 @@ win32_popen(const char *cmd, const char *mode)
             file = w32_popen(t_cmd, mode);
             g_free(t_cmd);
         }
+
     } else {
         file = w32_popen(cmd, mode);
     }
@@ -1309,7 +1339,7 @@ win32_popen(const char *cmd, const char *mode)
             if (0 != (hThread = CreateThread(NULL, 0, pipe_thread, NULL, 0, NULL))) {
                 SetThreadPriority(hThread, THREAD_PRIORITY_ABOVE_NORMAL);
                 CloseHandle(hThread);
-                sleep(3);                       /* yield */
+                sleep(3);                       // yield
             }
         }
     }

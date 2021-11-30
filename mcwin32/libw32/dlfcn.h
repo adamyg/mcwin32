@@ -1,14 +1,14 @@
 #ifndef GR_DLFCN_H_INCLUDED
 #define GR_DLFCN_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_dlfcn_h,"$Id: dlfcn.h,v 1.1 2021/06/10 15:45:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_dlfcn_h,"$Id: dlfcn.h,v 1.2 2021/11/30 13:06:19 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * <dlfcn.h> for windows
  *
- * Copyright (c) 1998 - 2019, Adam Young.
+ * Copyright (c) 1998 - 2021, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -29,6 +29,7 @@ __CPRAGMA_ONCE
  */
 
 #include <sys/cdefs.h>
+#include <wchar.h>
 
 __BEGIN_DECLS
 
@@ -39,6 +40,8 @@ __BEGIN_DECLS
 #define RTLD_LOCAL      0x08    /* all symbols are not made available for relocation processing by other modules. */
 
 LIBW32_API void *       dlopen(const char *file, int mode);
+LIBW32_API void *       dlopenA(const char *file, int mode);
+LIBW32_API void *       dlopenW(const wchar_t *file, int mode);
 LIBW32_API void *       dlsym(void *__restrict handle, const char *__restrict name);
 LIBW32_API int          dlclose(void *handle);
 LIBW32_API char *       dlerror(void);
