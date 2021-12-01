@@ -7,6 +7,7 @@ Tue Nov 30 21:00:38 2021 adamy
 	* submodule updates
 
 		o libmagic - 5.41
+		o libappupdater - master
 
 	* UTF8 exec/shell support.
 
@@ -31,7 +32,7 @@ Wed Oct 27 00:32:42 2021 adamy
 	* submodule updates
 
 		o libssh2 - 1.10,0
-		o libappupdater
+		o libappupdater - master
 
 Fri Oct 22 00:20:44 2021 adamy
 
