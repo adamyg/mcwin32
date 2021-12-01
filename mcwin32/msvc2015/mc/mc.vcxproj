@@ -865,7 +865,7 @@ xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\debug\busybox.exe" "$(OutDir)"</C
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32=0x501;_WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../..;../../include;../../libw32;../../libw32/msvc;../../../mcsrc;../../../gtk/include;../../../gtk/include/glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../..;../../../mcsrc;../../include;../../libw32/msvc;../../libw32;../../include/glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
