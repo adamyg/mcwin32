@@ -2,9 +2,13 @@ Pending
 
 	* build-222
 
+Tue Nov 30 21:00:38 2021 adamy
+
 	* submodule updates
 
-		o libmagic - 2.41
+		o libmagic - 5.41
+
+	* UTF8 exec/shell support.
 
 Tue Nov  9 21:37:13 2021 adamy
 
