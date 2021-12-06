@@ -751,6 +751,7 @@
     <ClInclude Include="..\..\config.h" />
     <ClInclude Include="..\..\src\drive.h" />
     <ClInclude Include="..\..\src\win32_key.h" />
+    <ClInclude Include="..\..\src\win32_utl.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\mc.rc" />

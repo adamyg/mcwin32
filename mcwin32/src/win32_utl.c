@@ -85,6 +85,7 @@
 
 #include "src/setup.h"                          /* use_internal_busybox */
 
+#include "win32_utl.h"
 #include "win32_key.h"
 #include "win32_internal.h"
 
@@ -109,6 +110,7 @@ static void             dospath (char *path);
 
 static const char *     IsScript (const char *cmd);
 
+static int              system_impl (int flags, const char *shell, const char *cmd);
 static int              system_bustargs (char *cmd, const char **argv, int cnt);
 static int              system_SET (int argc, const char **argv);
 
@@ -959,57 +961,73 @@ save_stop_handler(void)
  */
 
 int
-my_systemv_flags (int flags, const char *command, char *const argv[])
+my_systemv_flags (int flags, const char *command, char *const xargv[])
 {
+    const char **argv = NULL;
     char *cmd = NULL;
-    int status = 0;
+    unsigned idx;
+    int status = -1;
 
-    if (argv) {
-        const char *str;
-        unsigned idx, slen = 0;
-        char *cursor;
+    if (xargv && NULL != xargv[0]) {
 
-//      if (0 != (flags & EXECUTE_AS_SHELL)) {
-//          slen += 3; /*/C */
-//      }
+        if ((flags & EXECUTE_AS_SHELL) && NULL == xargv[1]) {
+            cmd = my_unquote(xargv[0], TRUE);
 
-        for (idx = 0; NULL != (str = argv[idx]); ++idx) {
-            if (*str) {
-                const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+      } else {
+            const char *str;
+            size_t slen = 0;
+            char *cursor;
 
-                slen += strlen(str) + 1 /*nul or space*/;
-                if (quote) slen += 2; /*quotes*/
+            for (idx = 0; xargv[idx]; ++idx) continue;
+            if (NULL == (argv = calloc(idx + 1, sizeof(void *)))) {
+                return -1;
             }
-        }
-
-        cmd = cursor = g_malloc(slen);
-
-//      if (argv[0]) {
-//          if (0 != (flags & EXECUTE_AS_SHELL)) {
-//              memcpy(cursor, "/C ", 3);
-//              cursor += 3;
-//          }
-//      }
-
-        for (idx = 0; NULL != (str = argv[idx]); ++idx) {
-            if (*str) {
-                const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
-
-                slen = strlen(str);
-                if (cursor != cmd) *cursor++ = ' ';
-                if (quote) *cursor++ = '"';
-                memcpy(cursor, str, slen);
-                cursor += slen;
-                if (quote) *cursor++ = '"';
+            for (idx = 0; NULL != (str = xargv[idx]); ++idx) {
+                if (NULL == (argv[idx] = my_unquote (str, FALSE))) {
+                    goto error;
+                }
             }
-        }
 
-        *cursor = '\0';
+            for (idx = 0; NULL != (str = argv[idx]); ++idx) {
+                if (*str) {
+                    const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+
+                    slen += strlen(str) + 1 /*nul or space*/;
+                    if (quote) slen += 2; /*quotes*/
+                }
+            }
+
+            if (NULL == (cmd = calloc(slen, 1))) {
+                goto error;
+            }
+
+            cursor = cmd;
+            for (idx = 0; NULL != (str = argv[idx]); ++idx) {
+                if (*str) {
+                    const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+
+                    slen = strlen(str);
+                    if (cursor != cmd) *cursor++ = ' ';
+                    if (quote) *cursor++ = '"';
+                    memcpy(cursor, str, slen);
+                    cursor += slen;
+                    if (quote) *cursor++ = '"';
+                }
+            }
+            *cursor = '\0';
+        }
     }
 
-    status = my_system (flags, command, (cmd ? cmd : ""));
-    g_free (cmd);
+    status = system_impl (flags, command, (cmd ? cmd : ""));
+    free (cmd);
 
+error:;
+    if (argv) {
+        for (idx = 0; argv[idx]; ++idx) {
+            free((void *)argv[idx]);
+        }
+        free ((void *)argv);
+    }
     return status;
 }
 
@@ -1025,7 +1043,24 @@ my_systemv_flags (int flags, const char *command, char *const argv[])
  * @return 0 if successfull, -1 otherwise
  */
 int
-my_system(int flags, const char *shell, const char *cmd)
+my_system (int flags, const char *shell, const char *cmd)
+{
+    if (cmd && *cmd) {
+        char *t_cmd;
+
+        if (NULL != (t_cmd = my_unquote (cmd, TRUE))) {
+            int ret = system_impl (flags, shell, t_cmd);
+            free((void *)t_cmd);
+            return ret;
+        }
+    }
+
+    return system_impl (flags, shell, cmd);
+}
+
+
+static int
+system_impl (int flags, const char *shell, const char *cmd)
 {
     const char *busybox = getenv("MC_BUSYBOX"), *exec = NULL;
     int shelllen, ret = -1;
@@ -1284,6 +1319,106 @@ IsScript(const char *cmd)
 
 
 /**
+ *  unquote an excaped command line.
+ */
+char *
+my_unquote(const char *cmd, int quotews)
+{ 
+    char *ret, *cursor, *start = NULL;
+    int blen, instring = 0, quoting = 0;
+
+    blen = (cmd ? strlen(cmd) * 2 : 0);
+    if (0 == blen || NULL == (ret = (char *)calloc(blen, 1))) {
+        return NULL;
+    }
+    
+    cursor = ret;
+    while (1) {
+        if ('\\' == *cmd) {
+            switch(*++cmd) {
+            case '\'': //escapeable characters'
+            case '\\':
+            case '"':
+            case ';':
+            case '?':
+            case '|':
+            case '[': case ']':
+            case '{': case '}':
+            case '<': case '>':
+            case '`':
+            case '!':
+            case '$':
+            case '&':
+            case '*':
+            case '(': case ')':
+            case '~':
+            case '#':
+            case '\r': case '\n': case '\t':
+                *cursor++ = *cmd++;
+                break;
+            case ' ': //space
+                if (quotews && !instring && !quoting) {
+                    if (start) { // encase white-space element.
+                        char *end = ++cursor;
+                        while (end > start) {
+                            end[0] = end[-1];
+                            --end;
+                        }
+                        start[0] = '"';
+                        start = NULL;
+                        quoting = 1;
+                    }
+                }
+                *cursor++ = *cmd++;
+                break;
+            case 0:  //eos
+                *cursor++ = '\\';
+                goto null;
+            default: //other, retain escape
+                *cursor++ = '\\';
+                *cursor++ = *cmd++;
+                break;
+            }
+
+        } else {
+            switch (*cmd) {
+            case '"': case '\'': //quotes
+                if (instring) {
+                    if (instring == *cmd) {
+                        instring = 0;
+                    }
+                } else if (start == cmd) {
+                    instring = *cmd; 
+                }
+                start = NULL;
+                break;
+            case ' ': case '\t': //whitespace
+                if (quoting) {
+                    *cursor++ = '"';
+                    quoting = 0;
+                }
+                if (! instring) {
+                    start = cursor + 1;
+                }
+                break;
+            case 0: //null
+                goto null;
+            default:
+                break;
+            }
+            *cursor++ = *cmd++;
+        }
+    }
+
+null:;
+    if (quoting) *cursor++ = '"';
+    assert(cursor < (ret + blen));
+    *cursor = 0;
+    return ret;
+}
+
+
+/**
  *  popen() implementation
  */
 FILE *
@@ -1325,7 +1460,13 @@ win32_popen(const char *cmd, const char *mode)
         }
 
     } else {
-        file = w32_popen(cmd, mode);
+        char *t_cmd;
+        if (NULL != (t_cmd = my_unquote(cmd, TRUE))) {
+            file = w32_popen(t_cmd, mode);
+            free((void *)t_cmd);
+        } else {
+            file = w32_popen(cmd, mode);
+        }
     }
 
     if (pe_open >= 0) {
