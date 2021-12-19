@@ -27,11 +27,14 @@
 
 __BEGIN_DECLS
 
-#define DIR_MAGIC               0x57333264      // W32d
+#define DIR_MAGIC               0x57333264  // W32d
+#define DIR_WMAGIC              0x57333244  // W32D
+#define DIR_UMAGIC              0x57333255  // W32U
 
 #define DIR_FISHPF              0x0001
 #define DIR_FISUTF8             0x0002
 #define DIR_FHAVESTATS          0x0040
+    //#define DIR_FDYNAMICREAD        0x1000      // TODO
 
 #define PATH_SEP                '/'
 #define PATH_SEP_STR            "/"
@@ -41,12 +44,12 @@ __BEGIN_DECLS
 
 DIR *                   w32_dir_alloc(void);
 void                    w32_dir_free(DIR *dp);
+int                     w32_dir_identifier(void);
 
-struct _dirlist *       w32_dir_pushA(DIR *dp, const char *filename);
-struct _dirlist *       w32_dir_pushW(DIR *dp, const wchar_t *filename);
+typedef int (*unc_push_t)(void *data, const wchar_t *);
 
-DIR *                   w32_unc_populateA(const char *servername);
-DIR *                   w32_unc_populateW(const wchar_t *servername);
+int                     w32_unc_iterateA(const char *servername, unc_push_t push, void *data);
+int                     w32_unc_iterateW(const wchar_t *servername, unc_push_t push, void *data);
 
 DIR *                   w32_unc_opendirA(const char *dirname);
 DIR *                   w32_unc_opendirW(const wchar_t *dirname);
@@ -63,4 +66,3 @@ int                     w32_unc_rootW(const wchar_t *path, int *length);
 __END_DECLS
 
 #endif /*LIBW32_DIRECT_H_INCLUDED*/
-
