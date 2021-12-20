@@ -5,7 +5,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2020
+   Written by: Adam Young 2012 - 2021
 
    This file is part of the Midnight Commander.
 
@@ -111,8 +111,15 @@ tty_change_screen_size (void)
 
 void
 tty_set_title (const char *title)
-{ // WIN32, title
-    if (title) SetConsoleTitleA(title);
+{
+    if (title) {
+        WCHAR t_title[512] = {0};
+        if (MultiByteToWideChar(CP_UTF8, 0, title, -1, t_title, _countof(t_title)) > 0) {
+            SetConsoleTitleW(t_title);
+        } else {
+            SetConsoleTitleA(title);
+        }
+    }
 }
 
 

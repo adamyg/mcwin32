@@ -36,7 +36,7 @@
         void        enable_bracketed_paste (void);
         void        disable_bracketed_paste (void);
 
-   Written by: Adam Young 2012 - 2020
+   Written by: Adam Young 2012 - 2021
 
    This file is part of the Midnight Commander.
 

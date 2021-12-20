@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_fallocate_c, "$Id: w32_fallocate.c,v 1.2 2020/04/28 22:59:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_fallocate_c, "$Id: w32_fallocate.c,v 1.3 2021/11/30 13:06:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -52,7 +52,7 @@ SYNOPSIS
 
 DESCRIPTION
 
-    The posix_fallocate() function shall ensure that any required storage for 
+    The posix_fallocate() function shall ensure that any required storage for
     regular file data starting at offset and continuing for len bytes is allocated
     on the file system storage media. If posix_fallocate() returns successfully,
     subsequent writes to the specified file data shall not fail due to the lack
@@ -62,24 +62,24 @@ DESCRIPTION
     shall adjust the file size to offset+ len. Otherwise, the file size shall not
     be changed.
 
-    It is implementation-defined whether a previous posix_fadvise() call influences 
+    It is implementation-defined whether a previous posix_fadvise() call influences
     allocation strategy.
 
-    Space allocated via posix_fallocate() shall be freed by a successful call to 
-    creat() or open() that truncates the size of the file. Space allocated via 
-    posix_fallocate() may be freed by a successful call to ftruncate() that reduces 
+    Space allocated via posix_fallocate() shall be freed by a successful call to
+    creat() or open() that truncates the size of the file. Space allocated via
+    posix_fallocate() may be freed by a successful call to ftruncate() that reduces
     the file size to a size smaller than offset+ len.
 
 RETURN VALUE
 
-    Upon successful completion, posix_fallocate() shall return zero; 
+    Upon successful completion, posix_fallocate() shall return zero;
     otherwise, an error number shall be returned to indicate the error.
 
 ERRORS
 
     The posix_fallocate() function shall fail if:
 
-    [EBADF] 
+    [EBADF]
          The fd argument is not a valid file descriptor.
 
     [EBADF]
@@ -141,7 +141,7 @@ posix_fallocate(int fd, off_t offset, off_t len)
             (void) FileSeek(handle, oldpos);    // attempt to restore position.
 
         //  Sets the valid data length of the specified file:
-        //    If SetFileValidData is used on a file, the potential performance gain is obtained by not filling the 
+        //    If SetFileValidData is used on a file, the potential performance gain is obtained by not filling the
         //    allocated clusters for the file with zeros. Therefore, reading from the file will return whatever
         //    the allocated clusters contain, potentially content from other users.
         //
@@ -177,7 +177,7 @@ posix_fallocate(int fd, off_t offset, off_t len)
 
 
 static BOOL
-FileTell(HANDLE hFile, uint64_t *pos) 
+FileTell(HANDLE hFile, uint64_t *pos)
 {
     LARGE_INTEGER liDistanceToMove = {0}, liNewFilePointer = {0};
 

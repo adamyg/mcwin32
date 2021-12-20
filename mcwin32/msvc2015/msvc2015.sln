@@ -20,6 +20,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libw32_test", "libw32_test\
 		{D2998A79-52C1-4CF1-A166-9AC6C0AA7E3B} = {D2998A79-52C1-4CF1-A166-9AC6C0AA7E3B}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mcsignature", "mcsignature\mcsignature.vcxproj", "{0B0F8930-6EEA-4A70-AC92-23A4CF0A8B78}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -58,6 +60,12 @@ Global
 		{D6523243-2234-AE97-AC0B-BC1789FFDBF0}.Release|x64.Build.0 = Release|x64
 		{D6523243-2234-AE97-AC0B-BC1789FFDBF0}.Release|x86.ActiveCfg = Release|Win32
 		{D6523243-2234-AE97-AC0B-BC1789FFDBF0}.Release|x86.Build.0 = Release|Win32
+		{0B0F8930-6EEA-4A70-AC92-23A4CF0A8B78}.Debug|x64.ActiveCfg = Debug|Win32
+		{0B0F8930-6EEA-4A70-AC92-23A4CF0A8B78}.Debug|x86.ActiveCfg = Debug|Win32
+		{0B0F8930-6EEA-4A70-AC92-23A4CF0A8B78}.Debug|x86.Build.0 = Debug|Win32
+		{0B0F8930-6EEA-4A70-AC92-23A4CF0A8B78}.Release|x64.ActiveCfg = Release|Win32
+		{0B0F8930-6EEA-4A70-AC92-23A4CF0A8B78}.Release|x86.ActiveCfg = Release|Win32
+		{0B0F8930-6EEA-4A70-AC92-23A4CF0A8B78}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

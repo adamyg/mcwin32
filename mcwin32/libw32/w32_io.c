@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.22 2021/05/26 01:34:15 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.23 2021/11/30 13:06:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -186,7 +186,7 @@ w32_utf8filenames_enable (void)
 }
 
 
-int
+LIBW32_API int
 w32_utf8filenames_state (void)
 {
     return x_utf8filenames;
@@ -2465,7 +2465,7 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, int maxlen)
     }
 
     if (ret > 0) {
-        w32_wdos2unix(buf);
+        w32_dos2unixW(buf);
     }
     return ret;
 }

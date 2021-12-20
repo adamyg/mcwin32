@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.9 2021/11/08 13:20:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.11 2021/11/30 13:06:20 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 shell and sub-process support
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -32,6 +32,7 @@ __CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.9 2021/11/08 13:20:58 cvsuse
 
 #include "win32_internal.h"
 #include "win32_child.h"
+#include "win32_misc.h"
 
 #include <stdlib.h>
 #include <signal.h>
@@ -59,8 +60,14 @@ typedef struct {
     int                 fd;
 } Redirect_t;
 
-static const char *     OutDirect(const char *path, int *append);
+static int              ShellA(const char *shell, const char *cmd, const char *fstdin, const char *fstdout, const char *fstderr);
+static int              ShellW(const wchar_t *shell, const wchar_t *cmd, const wchar_t *fstdin, const wchar_t *fstdout, const wchar_t *fstderr);
+static const char *     OutDirectA(const char *path, int *append);
+static const wchar_t *  OutDirectW(const wchar_t *path, int *append);
 static void             ShellCleanup(void *p);
+
+static const wchar_t *  ImportArgv(const char **argv);
+static const wchar_t ** ImportEnvv(const char **envv);
 
 static int              Dup(HANDLE old, HANDLE *dup, BOOL inherit);
 static int              Pipe(HANDLE *read, HANDLE *write);
@@ -70,7 +77,8 @@ static void             Close2(HANDLE handle, const char *desc);
 static int              StartRedirectThread(const char *what, HANDLE hPipe, int fd, HANDLE hDupPipe);
 static DWORD WINAPI     RedirectThread(LPVOID p);
 
-static void             DisplayError(HANDLE hOutput, const char *pszAPI, const char *args);
+static void             DisplayErrorA(HANDLE hOutput, const char *pszAPI, const char *args);
+static void             DisplayErrorW(HANDLE hOutput, const wchar_t *pszAPI, const wchar_t *args);
 static void             InternalError(const char *pszAPI);
 
 
@@ -82,12 +90,62 @@ int
 w32_shell(const char *shell, const char *cmd,
     const char *fstdin, const char *fstdout, const char *fstderr)
 {
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t *wshell = NULL, *wcmd = NULL,
+            *wfstdin = NULL, *wfstdout = NULL, *wfstderr = NULL;
+        int ret = -1;
+
+        if (NULL == shell || NULL != (wshell = w32_utf2wca(shell, NULL))) {
+            if (NULL == cmd || NULL != (wcmd = w32_utf2wca(cmd, NULL))) {
+                if (NULL == fstdin || NULL != (wfstdin = w32_utf2wca(fstdin, NULL))) {
+                    if (NULL == fstdout || NULL != (wfstdout = w32_utf2wca(fstdout, NULL))) {
+                        if (NULL == fstderr || NULL != (wfstderr = w32_utf2wca(fstderr, NULL))) {
+                            ret = ShellW(wshell, wcmd, wfstdin, wfstdout, wfstderr);
+                            free((void *)wfstderr);
+                        }
+                        free((void *)wfstdout);
+                    }
+                    free((void *)wfstdin);
+                }
+                free((void *)wcmd);
+            }
+            free((void *)wshell);
+        }
+        return ret;
+    }
+#endif  //UTF8FILENAMES
+
+    return ShellA(shell, cmd, fstdin, fstdout, fstderr);
+}
+
+
+int
+w32_shellA(const char *shell, const char *cmd,
+    const char *fstdin, const char *fstdout, const char *fstderr)
+{
+    return ShellA(shell, cmd, fstdin, fstdout, fstderr);
+}
+
+
+int
+w32_shellW(const wchar_t *shell, const wchar_t *cmd,
+    const wchar_t *fstdin, const wchar_t *fstdout, const wchar_t *fstderr)
+{
+    return ShellW(shell, cmd, fstdin, fstdout, fstderr);
+}
+
+
+static int
+ShellA(const char *shell, const char *cmd,
+    const char *fstdin, const char *fstdout, const char *fstderr)
+{
     static const char * sharg[] = {             // shell arguments
             "/C",       // command
             "/k"        // interactive
             };
     const int interactive = ((NULL == cmd || !*cmd) ? 1 : 0);
-    char *slash, *shname = WIN32_STRDUP(shell ? shell : w32_getshell());
+    char *slash, *shname = WIN32_STRDUP(shell && *shell ? shell : w32_getshell());
     int xstdout = FALSE, xstderr = FALSE;       // mode (TRUE == append)
     SECURITY_ATTRIBUTES sa;
     HANDLE hInFile, hOutFile, hErrFile;
@@ -102,8 +160,8 @@ w32_shell(const char *shell, const char *cmd,
     sa.lpSecurityDescriptor = NULL;
     sa.bInheritHandle = TRUE;                   // inherited
 
-    fstdout = OutDirect(fstdout, &xstdout);
-    fstderr = OutDirect(fstderr, &xstderr);
+    fstdout = OutDirectA(fstdout, &xstdout);
+    fstderr = OutDirectA(fstderr, &xstderr);
 
     // redirection
     hInFile = hOutFile = hErrFile = INVALID_HANDLE_VALUE;
@@ -166,9 +224,8 @@ w32_shell(const char *shell, const char *cmd,
         }
 
     } else {
-        // Create a duplicate of the output (file) handle for the
-        // std error write handle. This is necessary in case the
-        // child application closes one of its std output handles.
+        // Create a duplicate of the output (file) handle for thestd error write handle.
+        // This is necessary in case the child application closes one of its std output handles.
         //
         if (! Dup(hOutFile, &pd.hError, TRUE)) {
             InternalError("shell: dup (fileout)");
@@ -178,16 +235,24 @@ w32_shell(const char *shell, const char *cmd,
     // command or interactive
     (void)memset(&args, 0, sizeof(args));
 
-    if (w32_iscommand(shname)) {
+    if (w32_iscommandA(shname)) {
         slash = shname - 1;
         while ((slash = strchr(slash + 1, XSLASHCHAR)) != NULL) {
             *slash = SLASHCHAR;                 // convert slashes
         }
 
-        argv[0] = shname;
-        argv[1] = sharg[ interactive ];         // /C or /K
-        argv[2] = cmd;
-        argv[3] = NULL;
+        if (!interactive &&                     // /C embedded
+                cmd[0] == sharg[0][0] && cmd[1] == sharg[0][1]) {
+            argv[0] = shname;
+            argv[1] = cmd;
+            argv[2] = NULL;
+
+        } else {
+            argv[0] = shname;
+            argv[1] = sharg[ interactive ];     // /C or /K
+            argv[2] = cmd;
+            argv[3] = NULL;
+        }
 
     } else {
         argv[0] = shname;
@@ -199,7 +264,149 @@ w32_shell(const char *shell, const char *cmd,
     args.argv = argv;
     args._dwFlags = 0;
 
-    if (0 == (hProc = w32_child_exec(&args, pd.hInput, pd.hOutput, pd.hError))) {
+    if (0 == (hProc = w32_child_execA(&args, pd.hInput, pd.hOutput, pd.hError))) {
+        ShellCleanup((void *)&pd);
+        status = -1;
+
+    } else {
+        ShellCleanup((void *)&pd);
+        (void) w32_waitpid((int) hProc, &status, 0);
+    }
+
+    free(shname);
+    return status;
+}
+
+
+static int
+ShellW(const wchar_t *shell, const wchar_t  *cmd,
+    const wchar_t *fstdin, const wchar_t *fstdout, const wchar_t *fstderr)
+{
+    static const wchar_t *sharg[] = {           // shell arguments
+            L"/C",      // command
+            L"/k"       // interactive
+            };
+    const int interactive = ((NULL == cmd || !*cmd) ? 1 : 0);
+    wchar_t *slash, *shname = WIN32_STRDUPW(shell && *shell ? shell : w32_getshellW());
+    int xstdout = FALSE, xstderr = FALSE;       // mode (TRUE == append)
+    SECURITY_ATTRIBUTES sa;
+    HANDLE hInFile, hOutFile, hErrFile;
+    struct procdata pd = {0};
+    win32_spawnw_t args = {0};
+    const wchar_t *argv[4] = {0};
+    HANDLE hProc = 0;
+    int status = 0;
+
+    // sync or async
+    sa.nLength = sizeof(sa);
+    sa.lpSecurityDescriptor = NULL;
+    sa.bInheritHandle = TRUE;                   // inherited
+
+    fstdout = OutDirectW(fstdout, &xstdout);
+    fstderr = OutDirectW(fstderr, &xstderr);
+
+    // redirection
+    hInFile = hOutFile = hErrFile = INVALID_HANDLE_VALUE;
+
+    if (fstdin) {                               // O_RDONLY
+        hInFile = CreateFileW(fstdin, GENERIC_READ,
+                        0, &sa, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    }
+
+    if (fstdout) {
+        if (! xstdout)  {                       // O_RDWR|O_CREAT|O_TRUNC
+            hOutFile = CreateFileW(fstdout, GENERIC_READ | GENERIC_WRITE,
+                            0, &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+        } else {                                // O_RDWR|O_CREAT|O_APPEND
+            hOutFile = CreateFileW(fstdout, GENERIC_READ | GENERIC_WRITE | FILE_APPEND_DATA,
+                            0, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        }
+    }
+
+    if (fstderr) {
+        if (! xstderr)  {                       // O_RDWR|O_CREAT|O_TRUNC
+            hErrFile = CreateFileW(fstderr, GENERIC_READ | GENERIC_WRITE,
+                            0, &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+        } else {                                // O_RDWR|O_CREAT|O_APPEND
+            hErrFile = CreateFileW(fstderr, GENERIC_READ | GENERIC_WRITE | FILE_APPEND_DATA,
+                            0, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        }
+
+    } else if (fstdout) {
+        if (! xstdout)  {                       // O_RDWR|O_CREAT|O_TRUNC
+            hErrFile = CreateFileW(fstdout, GENERIC_READ | GENERIC_WRITE,
+                            0, &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+        } else {                                // O_RDWR|O_CREAT|O_APPEND
+            hErrFile = CreateFileW(fstdout, GENERIC_READ | GENERIC_WRITE | FILE_APPEND_DATA,
+                            0, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        }
+    }
+
+                                                // stdin
+    if ((pd.hInput = hInFile) == INVALID_HANDLE_VALUE) {
+        if (! Dup(GetStdHandle(STD_INPUT_HANDLE), &pd.hInput, TRUE)) {
+            InternalError("shell: dup (stdin)");
+        }
+    }
+
+                                                // stdout
+    if ((pd.hOutput = hOutFile) == INVALID_HANDLE_VALUE) {
+        if (! Dup(GetStdHandle(STD_OUTPUT_HANDLE), &pd.hOutput, TRUE)) {
+            InternalError("shell: dup (stdout)");
+        }
+    }
+
+                                                // stderr
+    if ((pd.hError = hErrFile) == INVALID_HANDLE_VALUE) {
+        if (! Dup(GetStdHandle(STD_ERROR_HANDLE), &pd.hError, TRUE)) {
+            InternalError("shell: dup (stderr)");
+        }
+
+    } else {
+        // Create a duplicate of the output (file) handle for thestd error write handle.
+        // This is necessary in case the child application closes one of its std output handles.
+        //
+        if (! Dup(hOutFile, &pd.hError, TRUE)) {
+            InternalError("shell: dup (fileout)");
+        }
+    }
+
+    // command or interactive
+    (void)memset(&args, 0, sizeof(args));
+
+    if (w32_iscommandW(shname)) {
+        slash = shname - 1;
+        while ((slash =  wcschr(slash + 1, XSLASHCHAR)) != NULL) {
+            *slash = SLASHCHAR;                 // convert slashes
+        }
+
+        if (!interactive &&                     // /C embedded
+                cmd[0] == sharg[0][0] && cmd[1] == sharg[0][1]) {
+            argv[0] = shname;
+            argv[1] = cmd;
+            argv[2] = NULL;
+
+        } else {
+            argv[0] = shname;
+            argv[1] = sharg[ interactive ];     // /C or /K
+            argv[2] = cmd;
+            argv[3] = NULL;
+        }
+
+    } else {
+        argv[0] = shname;
+        argv[1] = cmd;
+        argv[2] = NULL;
+    }
+
+    // create child process
+    args.argv = argv;
+    args._dwFlags = 0;
+
+    if (0 == (hProc = w32_child_execW(&args, pd.hInput, pd.hOutput, pd.hError))) {
         ShellCleanup((void *)&pd);
         status = -1;
 
@@ -214,7 +421,24 @@ w32_shell(const char *shell, const char *cmd,
 
 
 static const char *
-OutDirect(const char *path, int *append)
+OutDirectA(const char *path, int *append)
+{
+    *append = FALSE;
+    if (path) {
+        if ('>' == *path) {                     // ">name"
+            ++path;
+            if ('>' == *path) {                 // ">>name"
+                *append = TRUE;
+                ++path;
+            }
+        }
+    }
+    return path;
+}
+
+
+static const wchar_t *
+OutDirectW(const wchar_t *path, int *append)
 {
     *append = FALSE;
     if (path) {
@@ -254,7 +478,7 @@ ShellCleanup(void *p)
  *      Non-zero on success, otherwise 0 on error.
  */
 int
-w32_spawn(
+w32_spawnA(
     win32_spawn_t *args, int Stdout, int Stderr, int *Stdin)
 {
     assert(Stdout >=  0);                       // non-optional
@@ -267,7 +491,26 @@ w32_spawn(
 
     *Stdin = -1;                                // file descriptors
 
-    return w32_spawn2(args, Stdin, &Stdout, (Stderr >= 0 ? &Stderr : NULL));
+    return w32_spawnA2(args, Stdin, &Stdout, (Stderr >= 0 ? &Stderr : NULL));
+}
+
+
+
+int
+w32_spawnW(
+    win32_spawnw_t *args, int Stdout, int Stderr, int *Stdin)
+{
+    assert(Stdout >=  0);                       // non-optional
+    assert(Stderr >= -1);                       // optional
+    assert(Stdin);                              // output, non-optional
+
+    if (Stdout < 0 || Stderr < -1 || NULL == Stdin) {
+        return 0;
+    }
+
+    *Stdin = -1;                                // file descriptors
+
+    return w32_spawnW2(args, Stdin, &Stdout, (Stderr >= 0 ? &Stderr : NULL));
 }
 
 
@@ -284,7 +527,7 @@ w32_spawn(
  *      Non-zero process handle on success, otherwise 0 on error.
  */
 int
-w32_spawn2(
+w32_spawnA2(
     win32_spawn_t *args, int *Stdin, int *Stdout, int *Stderr)
 {
     int in = -1, out = -1, err = -1;
@@ -305,7 +548,7 @@ w32_spawn2(
 
     //  Create the child output pipe.
     //
-    if (! Pipe(&hOutputReadTmp, &hOutputWrite )) {
+    if (! Pipe(&hOutputReadTmp, &hOutputWrite)) {
         InternalError("spawn: pipe (stdout)");
     }
 
@@ -360,7 +603,150 @@ w32_spawn2(
             (out = _open_osfhandle((long)hOutputRead, _O_NOINHERIT)) >= 0) &&
         (Stderr == NULL || *Stderr >= 0 ||
             (err = _open_osfhandle((long)hErrorRead, _O_NOINHERIT)) >= 0)) {
-        hProc = w32_child_exec(args, hInputRead, hOutputWrite, hErrorWrite);
+        hProc = w32_child_execA(args, hInputRead, hOutputWrite, hErrorWrite);
+    }
+
+    //  Close pipe handles (do not continue to modify the parent).
+    //  You need to make sure that no handles to the write end of the
+    //  output pipe are maintained in this process or else the pipe will
+    //  not close when the child process exits and the ReadFile will hang.
+    //
+    Close(hInputRead); Close(hOutputWrite); Close(hErrorWrite);
+
+    //  Launch the thread(s) that gets the input and sends it to the child.
+    //
+    //      Theses are only required if the caller supplied the out/err fds.
+    //
+    if (hProc) {
+        if (*Stdin >= 0) {
+            assert(in == -1);
+        } else {
+            assert(in >= 0);
+            *Stdin = in;
+        }
+
+        if (*Stdout >= 0) {
+            assert(out == -1);
+            StartRedirectThread("stdout", hOutputRead, *Stdout,
+                (Stderr ? INVALID_HANDLE_VALUE : hErrorRead) );
+        } else {
+            assert(out >= 0);
+            *Stdout = out;
+        }
+
+        if (Stderr) {
+            if (*Stderr >= 0) {
+                assert(err == -1);
+                StartRedirectThread("stderr",
+                    hErrorRead, *Stderr, INVALID_HANDLE_VALUE);
+            } else {
+                assert(err >= 0);
+                *Stderr = err;
+            }
+        } else {
+            assert(err == -1);
+        }
+
+    } else {
+        Close(hInputWrite);
+        Close(hOutputRead);
+        if (Stderr) {
+            Close(hErrorRead);
+        }
+    }
+    return (int)(hProc);
+}
+
+
+int
+w32_spawnW2(
+    win32_spawnw_t *args, int *Stdin, int *Stdout, int *Stderr)
+{
+    int in = -1, out = -1, err = -1;
+    HANDLE hInputWriteTmp = 0, hInputRead = 0, hInputWrite = 0,
+        hErrorReadTmp = 0, hErrorRead = 0, hErrorWrite = 0,
+        hOutputReadTmp = 0, hOutputRead = 0, hOutputWrite = 0;
+    HANDLE hProc = 0;
+
+    if (NULL == Stdin || NULL == Stdout) {      // must be supplied
+        errno = EINVAL;
+        return 0;
+    }
+
+    //  Create the child input pipe.
+    //
+    if (! Pipe(&hInputRead, &hInputWriteTmp)) {
+        InternalError("pipe (stdin)");
+        errno = EINVAL;
+        return 0;
+    }
+
+    //  Create the child output pipe.
+    //
+    if (! Pipe(&hOutputReadTmp, &hOutputWrite)) {
+        InternalError("spawn: pipe (stdout)");
+        errno = EINVAL;
+        return 0;
+    }
+
+    //  Create the child error pipe.
+    //
+    //      Either,
+    //          Create a duplicate of the output write handle for the
+    //          std error write handle. This is necessary in case the
+    //          child application closes one of its std output handles.
+    //      or
+    //          Create stderr pipe, if stderr redirection is required.
+    //
+    if (! Stderr) {                             // no 'stderr' redirection
+        if (! Dup(hOutputWrite, &hErrorWrite, TRUE)) {
+            InternalError("spawn: dup (stdout)");
+            errno = EINVAL;
+            return 0;
+        }
+    } else {                                    // stderr redirection
+        if (! Pipe(&hErrorReadTmp, &hErrorWrite)) {
+            InternalError("spawn: pipe (stderr)");
+            errno = EINVAL;
+            return 0;
+        }
+    }
+
+    //  Create new output read handle and the input write handles. Set
+    //  the Properties to FALSE. Otherwise, the child inherits the
+    //  properties and, as a result, non-closeable handles to the pipes
+    //  are created.
+    //
+    if (! Dup(hInputWriteTmp, &hInputWrite, FALSE)) InternalError("spawn: dup (stdin)");
+    if (! Dup(hOutputReadTmp, &hOutputRead, FALSE)) InternalError("spawn: dup (stdout)");
+    if (Stderr) {
+        if (! Dup(hErrorReadTmp, &hErrorRead, FALSE)) {
+            InternalError("spawn: dup (stderr)");
+            errno = EINVAL;
+            return 0;
+        }
+    } else {
+        hErrorRead = 0;
+    }
+
+    //  Close inheritable copies of the handles you do
+    //  not want to be inherited.
+    //
+    Close2(hOutputReadTmp, "spawn (stdput1)");
+    Close2(hInputWriteTmp, "spawn (stdin1)");
+    if (Stderr) {
+        Close2(hErrorReadTmp, "spawn (stderr1)");
+    }
+
+    //  Open LIBC compatible handles (if required) and launch child process
+    //
+    if ((*Stdin  >= 0 ||
+            (in  = _open_osfhandle((long)hInputWrite, _O_NOINHERIT)) >= 0) &&
+        (*Stdout >= 0 ||
+            (out = _open_osfhandle((long)hOutputRead, _O_NOINHERIT)) >= 0) &&
+        (Stderr == NULL || *Stderr >= 0 ||
+            (err = _open_osfhandle((long)hErrorRead, _O_NOINHERIT)) >= 0)) {
+        hProc = w32_child_execW(args, hInputRead, hOutputWrite, hErrorWrite);
     }
 
     //  Close pipe handles (do not continue to modify the parent).
@@ -424,52 +810,318 @@ w32_spawn2(
  *  Returns:
  *      Non-zero on success, otherwise 0 on error.
  */
+
 int
 w32_exec(win32_exec_t *args)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        if (args->spawn.cmd || args->spawn.argv) {
+            win32_execw_t wargs = { 0 };
+            const wchar_t *wcmd = NULL;
+            int ret = 0;
+
+            if ((args->spawn.cmd &&
+                    NULL != (wcmd = w32_utf2wca(args->spawn.cmd, NULL))) ||
+                (args->spawn.argv &&
+                    NULL != (wcmd = ImportArgv(args->spawn.argv)))) {
+
+                wargs.spawn.cmd   = wcmd;
+                wargs.spawn.envv  = (args->spawn.envv ? ImportEnvv(args->spawn.envv) : NULL);
+                wargs.spawn.dir   = (args->spawn.dir  ? w32_utf2wca(args->spawn.dir, NULL) : NULL);
+                wargs.spawn.flags = args->spawn.flags;
+
+                ret = w32_execW(&wargs);
+
+                free((void *)wargs.spawn.dir);
+                free((void *)wargs.spawn.envv);
+                free((void *)wcmd);
+            }
+
+            args->hError  = wargs.hError;
+            args->hInput  = wargs.hInput;
+            args->hOutput = wargs.hOutput;
+            args->hProc   = wargs.hProc;
+            return ret;
+        }
+    }
+#endif  //UTF8FILENAMES
+
+    return w32_execA(args);
+}
+
+
+static const wchar_t *
+ImportArgv(const char **argv)
+{
+    const char * const *vp;
+    size_t bytes;
+    char *buffer;
+    int cnt, len;
+
+    /*
+     *  Allocate space for environment strings, count the number of bytes
+     *  in the environment strings including nulls between strings
+     */
+    if (NULL == argv) {
+        return NULL;
+    }
+
+    for (vp = argv, cnt = 0, len = 2 /*quotes*/ + 2 /*delim*/; *vp; ++vp) {
+        const char *arg = *vp;
+        if (*arg) {                             // non-empty.
+            const int wlen = w32_utf2wcl(arg);
+            if (wlen < 0) {
+                return NULL;                    // conversion error.
+            }
+            len += wlen;                        // inc's nul
+            ++cnt;
+        }
+    }
+
+    bytes = len * sizeof(wchar_t);
+    if (NULL == (buffer = (char *)calloc(bytes, 1))) {
+        return NULL;
+    }
+
+    /*
+     *  Build the command line by concatenating the argument strings
+     *  with spaces between, and two null bytes at the end.
+     */
+    {   wchar_t *cursor = (wchar_t *)(buffer),
+            *end = (wchar_t *)(buffer + bytes);
+        int argc, wlen;
+
+        vp = argv;
+        for (argc = 0; *vp; ++argc) {
+            const char *arg = *vp++;
+            int quote = FALSE;
+
+            if (*arg) {                         // non-empty.
+                if (0 == argc && *arg != '"' && strchr(arg, ' ')) {
+                    quote = TRUE;               // quote, contains space.
+                }
+
+                if (quote) *cursor++ = '"';
+                if ((wlen = w32_utf2wc(arg, cursor, end - cursor)) <= 0) {
+                    free((void *)buffer);
+                    assert(FALSE);
+                    return NULL;
+                }
+                if (0 == argc) {
+                    while (*cursor) {           // convert slashs within arg0.
+                        if ('/' == *cursor) *cursor = '\\';
+                        ++cursor;
+                    }
+                } else {
+                    cursor += wlen - 1 /*nul*/;
+                }
+                if (quote) *cursor++ = '"';
+
+                *cursor++ = ' ';                // space delimiter.
+            }
+        }
+
+        assert(cnt == argc);
+        assert(cursor <= end);
+        cursor[-1] = '\0';                      // remove extra delimiter.
+        *cursor = '\0';                         // terminator.
+    }
+
+    return (wchar_t *) buffer;                  // result.
+}
+
+
+static const wchar_t **
+ImportEnvv(const char **envv)
+{
+    const char * const *vp;
+    const wchar_t **ret;
+    size_t bytes;
+    char *buffer;
+    int cnt, len;
+
+    /*
+     *  Allocate space for environment strings, count the number of bytes
+     *  in the environment strings including nulls between strings
+     */
+    if (NULL == envv) {
+        return NULL;
+    }
+
+    for (vp = envv, cnt = 0, len = 0; *vp; ++vp) {
+        const char *arg = *vp;
+        if (*arg) {                             // non-empty.
+            const int wlen = w32_utf2wcl(arg);
+            if (wlen < 0) {
+                return NULL;                    // conversion error.
+            }
+            len += wlen;                        // inc's nul
+            ++cnt;
+        }
+    }
+
+    bytes = ((cnt + 1) * sizeof(wchar_t *)) + (len * sizeof(wchar_t));
+    if (NULL == (buffer = (char *)calloc(bytes, 1))) {
+        return NULL;
+    }
+
+    /*
+     *  Build the environment vector by importing the env collection.
+     */
+    ret = (const wchar_t **)buffer;
+
+    {   wchar_t *cursor = (wchar_t *)(buffer + ((cnt + 1) * sizeof(void *))),
+            *end = (wchar_t *)(buffer + bytes);
+        int envc, wlen;
+
+        vp = envv;
+        assert((void *)(&ret[cnt+1]) == (void *)cursor);
+        for (envc = 0; *vp; ++vp) {
+            const char *arg = *vp;
+            if (*arg) {                         // non-empty.
+                if ((wlen = w32_utf2wc(arg, cursor, end - cursor)) <= 0) {
+                    free((void *)buffer);
+                    assert(FALSE);
+                    return NULL;
+                }
+                ret[envc++] = cursor;
+                cursor += wlen;
+            }
+        }
+
+        assert(cnt == envc);
+        assert(cursor == end);
+        ret[envc] = NULL;
+    }
+
+    return ret;                                 // result.
+}
+
+
+/*
+ *  Exec -- exec a child process, returning native win32 handles.
+ *
+ *  Parameters:
+ *      args -      [in/out] Spawn arguments.
+ *
+ *  Returns:
+ *      Non-zero on success, otherwise 0 on error.
+ */
+
+int
+w32_execA(win32_exec_t *args)
 {
     HANDLE hInputWriteTmp = 0, hInputRead = 0, hInputWrite = 0,
         hErrorReadTmp = 0, hErrorRead = 0, hErrorWrite = 0,
         hOutputReadTmp = 0, hOutputRead = 0, hOutputWrite = 0;
 
-    //  Create the child input/out/err pipe.
-    //
+    // Non-optional arguments.
+    if (NULL == args ||
+            (NULL == args->spawn.cmd && NULL == args->spawn.argv)) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    // Create the child input/out/err pipes.
     if (! Pipe(&hInputRead, &hInputWriteTmp) ||
             ! Pipe(&hOutputReadTmp, &hOutputWrite) ||
             ! Pipe(&hErrorReadTmp, &hErrorWrite)) {
         InternalError("exec: pipe");
+        goto einval;
     }
 
-    //  Create new output read handle and the input write handles, set as non
-    //  inheritable. Otherwise, the child inherits the properties and, as a result,
-    //  non-closeable handles to the pipes are created.
-    //
+    // Create new output read handle and the input write handles, set as non inheritable.
+    // Otherwise, the child inherits the properties and, as a result, non-closeable handles to the pipes are created.
     if (! Dup(hInputWriteTmp, &hInputWrite, FALSE) ||
             ! Dup(hOutputReadTmp, &hOutputRead, FALSE) ||
             ! Dup(hErrorReadTmp, &hErrorRead, FALSE)) {
         InternalError("exec: dup");
+        goto einval;
     }
     Close(hOutputReadTmp); Close(hInputWriteTmp); Close(hErrorReadTmp);
 
-    //  Execute child.
-    //
-    args->hProc =
-        w32_child_exec(&args->spawn, hInputRead, hOutputWrite, hErrorWrite);
+    // Execute child.
+    args->hProc = w32_child_execA(&args->spawn, hInputRead, hOutputWrite, hErrorWrite);
 
-    //  Close pipe handles.
-    //
+    // Close pipe handles.
     Close(hInputRead); Close(hOutputWrite); Close(hErrorWrite);
 
-    //  Completion.
-    //
+    // Completion.
     if (0 == args->hProc) {
         Close(hInputWrite); Close(hOutputRead); Close(hErrorRead);
         return 0;
     }
 
-    args->hInput = hInputWrite;
+    args->hInput  = hInputWrite;
     args->hOutput = hOutputRead;
-    args->hError = hErrorRead;
-    return 1;
+    args->hError  = hErrorRead;
+    return (int)args->hProc;
+
+einval:;
+    Close(hOutputReadTmp); Close(hInputWriteTmp); Close(hErrorReadTmp);
+    Close(hInputRead); Close(hOutputWrite); Close(hErrorWrite);
+    Close(hInputWrite); Close(hOutputRead); Close(hErrorRead);
+    errno = EINVAL;
+    return -1;
+}
+
+
+int
+w32_execW(win32_execw_t *args)
+{
+    HANDLE hInputWriteTmp = 0, hInputRead = 0, hInputWrite = 0,
+        hErrorReadTmp = 0, hErrorRead = 0, hErrorWrite = 0,
+        hOutputReadTmp = 0, hOutputRead = 0, hOutputWrite = 0;
+
+    // Non-optional arguments.
+    if (NULL == args ||
+            (NULL == args->spawn.cmd && NULL == args->spawn.argv)) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    // Create the child input/out/err pipes.
+    if (! Pipe(&hInputRead, &hInputWriteTmp) ||
+            ! Pipe(&hOutputReadTmp, &hOutputWrite) ||
+            ! Pipe(&hErrorReadTmp, &hErrorWrite)) {
+        InternalError("exec: pipe");
+        goto einval;
+    }
+
+    // Create new output read handle and the input write handles, set as non inheritable.
+    // Otherwise, the child inherits the properties and, as a result, non-closeable handles to the pipes are created.
+    if (! Dup(hInputWriteTmp, &hInputWrite, FALSE) ||
+            ! Dup(hOutputReadTmp, &hOutputRead, FALSE) ||
+            ! Dup(hErrorReadTmp, &hErrorRead, FALSE)) {
+        InternalError("exec: dup");
+        goto einval;
+    }
+    Close(hOutputReadTmp); Close(hInputWriteTmp); Close(hErrorReadTmp);
+
+    // Execute child.
+    args->hProc = w32_child_execW(&args->spawn, hInputRead, hOutputWrite, hErrorWrite);
+
+    // Close pipe handles.
+    Close(hInputRead); Close(hOutputWrite); Close(hErrorWrite);
+
+    // Completion.
+    if (0 == args->hProc) {
+        Close(hInputWrite); Close(hOutputRead); Close(hErrorRead);
+        return 0;
+    }
+
+    args->hInput  = hInputWrite;
+    args->hOutput = hOutputRead;
+    args->hError  = hErrorRead;
+    return (int)args->hProc;
+
+einval:;
+    Close(hOutputReadTmp); Close(hInputWriteTmp); Close(hErrorReadTmp);
+    Close(hInputRead); Close(hOutputWrite); Close(hErrorWrite);
+    Close(hInputWrite); Close(hOutputRead); Close(hErrorRead);
+    errno = EINVAL;
+    return -1;
 }
 
 
@@ -485,9 +1137,9 @@ Dup(HANDLE old, HANDLE *dup, BOOL inherit)
     if (dup == NULL || old == INVALID_HANDLE_VALUE ||
             !DuplicateHandle(self, old, self, dup, 0, inherit, DUPLICATE_SAME_ACCESS)) {
         *dup = INVALID_HANDLE_VALUE;
-        return (FALSE);
+        return FALSE;
     }
-    return (TRUE);
+    return TRUE;
 }
 
 
@@ -518,7 +1170,7 @@ Pipe(HANDLE *read, HANDLE *write)
 static void
 Close(HANDLE handle)
 {
-    if (handle != INVALID_HANDLE_VALUE) {
+    if (handle && handle != INVALID_HANDLE_VALUE) {
         if (! CloseHandle(handle)) {
             InternalError("closehandle()");
         }
@@ -533,7 +1185,7 @@ Close(HANDLE handle)
 static void
 Close2(HANDLE handle, const char *desc)
 {
-    if (handle != INVALID_HANDLE_VALUE) {
+    if (handle && handle != INVALID_HANDLE_VALUE) {
         if (! CloseHandle(handle)) {
             char buffer[512];
             _snprintf(buffer, sizeof(buffer), "closehandle(%s)", desc);
@@ -556,7 +1208,7 @@ StartRedirectThread(
     DWORD tid;
     Redirect_t *p;
 
-    if ((p = malloc(sizeof(*p))) == NULL) {
+    if (NULL == (p = malloc(sizeof(*p)))) {
         InternalError("malloc");
     }
     p->what = what;
@@ -588,7 +1240,6 @@ RedirectThread(LPVOID p)
             }
             InternalError("ReadFile");          // .. something bad
         }
-
                                                 // redirect write loop
         if (_write(fd, buffer, cnt) != (int)cnt) {
             break;
@@ -611,34 +1262,41 @@ RedirectThread(LPVOID p)
  *      Displays the error number and corresponding message.
  */
 static void
-DisplayError(
-    HANDLE hOutput, const char *pszAPI, const char *args )
+DisplayErrorA(
+    HANDLE hOutput, const char *pszAPI, const char *args)
 {
-    DWORD   rc = GetLastError();
-    LPVOID  lpvMessageBuffer;
-    char    szPrintBuffer[512];
-    DWORD   nCharsWritten;
+    const DWORD rc = GetLastError();
+    char t_rcbuffer[512], buffer[512];
+    const char *rcmsg = w32_syserrorA(rc, t_rcbuffer, sizeof(t_rcbuffer));
+    int len;
 
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &lpvMessageBuffer, 0, NULL);
-
-    (void) _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
-        "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
-            args ? args : "", args ? "\n" : "");
-    szPrintBuffer[sizeof(szPrintBuffer) - 1] = 0;
-
-    WriteConsoleA(hOutput, szPrintBuffer,
-        lstrlenA(szPrintBuffer), &nCharsWritten, NULL);
-
-    LocalFree(lpvMessageBuffer);
+    len = _snprintf(buffer, sizeof(buffer),
+            "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
+                args ? args : "", args ? "\n" : "");
+    WriteConsoleA(hOutput, buffer, len, NULL, NULL);
 }
 
 
 static void
-InternalError(
-    const char *pszAPI)
+DisplayErrorW(
+    HANDLE hOutput, const wchar_t *pszAPI, const wchar_t *args)
 {
-    DisplayError(GetStdHandle(STD_OUTPUT_HANDLE), pszAPI, NULL);
+    const DWORD rc = GetLastError();
+    wchar_t t_rcbuffer[512], buffer[512];
+    const wchar_t *rcmsg = w32_syserrorW(rc, t_rcbuffer, _countof(t_rcbuffer));
+    int len;
+
+    len = _snwprintf(buffer, _countof(buffer),
+            L"Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
+                args ? args : L"", args ? L"\n" : L"");
+    WriteConsoleW(hOutput, buffer, len, NULL, NULL);
+}
+
+
+static void
+InternalError(const char *pszAPI)
+{
+    DisplayErrorA(GetStdHandle(STD_OUTPUT_HANDLE), pszAPI, NULL);
     ExitProcess(GetLastError());
 }
 

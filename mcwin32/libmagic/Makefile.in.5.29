@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.8 2021/12/01 12:58:46 cvsuser Exp $
+# $Id: Makefile.in,v 1.7 2021/04/13 16:00:16 cvsuser Exp $
 # libmagic makefile
 #
 #
@@ -87,14 +87,10 @@ MAGICDB=	$(D_BIN)/magic.mgc
 #MAGICPACKED=	file-511.tgz
 #MAGICSRC=	./file-511
 #MAGDIR=	./file-511/src/magic
-#VERSION=	5.29
-#MAGICPACKED=	file-5.29.gr.tgz
-#MAGICSRC=	./file-5.29/src
-#MAGDIR=	./file-5.29/magic
-VERSION=	5.41
-MAGICPACKED=	file-5.41.gr.tgz
-MAGICSRC=	./file-5.41/src
-MAGDIR=		./file-5.41/magic
+VERSION=	5.29
+MAGICPACKED=	file-5.29.gr.tgz
+MAGICSRC=	./file-5.29/src
+MAGDIR=		./file-5.29/magic
 
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 
@@ -129,12 +125,6 @@ CSOURCES+=\
 	localtime_r.c \
 	gmtime_r.c
 endif
-ifeq ($(VERSION),5.41)
-CSOURCES+=\
-	buffer.c \
-	is_csv.c \
-	is_json.c
-endif
 
 LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
@@ -163,7 +153,7 @@ release:
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
-$(MAGICLIB):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_STATIC -DBUILD_AS_WINDOWS_STATIC_LIBARAY
+$(MAGICLIB):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_STATIC
 $(MAGICLIB):		$(D_OBJ)/.created $(LIBOBJS)
 		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
 		$(AR) $(ARFLAGS) $@ $(LIBOBJS)

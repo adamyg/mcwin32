@@ -34,10 +34,10 @@
 #define PACKAGE_TARNAME     "file"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION     "5.29"
+#define PACKAGE_VERSION     "5.41"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING      "file 5.29"
+#define PACKAGE_STRING      "file 5.41"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT   "christos@astron.com"
@@ -480,6 +480,11 @@
 #define lstat w32_lstat
 #define readlink w32_readlink
 #endif
+#endif
+
+#if defined(__WATCOMC__) || \
+        (defined(_MSC_VER) && !defined(PRIx64))
+#define PRIx64 "ull"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////////

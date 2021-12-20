@@ -1,4 +1,32 @@
+Mon Dec 20 14:03:20 2021 adamy
+
+	* build-222
+
+Tue Dec  6 22:15:52 2021 adamy
+
+	* exec/shell support - 
+
+		o unquoting/escaping.(unix->dos) command line.
+		o UTF8/wide-character.
+
+	* make - command line usage.
+
+Tue Nov 30 21:00:38 2021 adamy
+
+	* submodule updates
+
+		o libmagic - 5.41
+		o libappupdater - master
+
+Tue Nov  9 21:37:13 2021 adamy
+
+	* UTF8 title support.
+
+	* further exec non-shell tweaks; argument quoting.
+
 Mon Nov  8 21:14:55 2021 adamy
+
+	* build-221
 
 	* exec non-shell tweaks
 
@@ -11,7 +39,7 @@ Wed Oct 27 00:32:42 2021 adamy
 	* submodule updates
 
 		o libssh2 - 1.10,0
-		o libappupdater
+		o libappupdater - master
 
 Fri Oct 22 00:20:44 2021 adamy
 

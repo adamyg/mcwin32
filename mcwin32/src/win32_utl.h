@@ -1,11 +1,6 @@
 /* -*- mode: c; indent-width: 4; -*- */
 /*
-   win32 tty/keys implementation
-
-   Copyright (C) 2012
-   The Free Software Foundation, Inc.
-
-   Written by: Adam Young 2012 - 2021
+   Written by: Adam Young 2021
 
    This file is part of the Midnight Commander.
 
@@ -24,8 +19,6 @@
 
  */
 
-extern void key_mouse_mode (int mode);
-extern void key_prog_mode (void);
-extern void key_shell_mode (void);
+extern char *my_unquote (const char *cmd, int quotews);
 
 /*end*/

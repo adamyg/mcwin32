@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rwlock_c,"$Id: w32_rwlock.c,v 1.1 2021/06/10 15:45:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rwlock_c,"$Id: w32_rwlock.c,v 1.2 2021/11/30 13:06:20 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -100,7 +100,7 @@ initialisation(void)
             acquire_srw_lock_exclusive  = (AcquireSRWLockExclusive_t) GetProcAddress(library, "AcquireSRWLockExclusive");
             release_srw_lock_exclusive  = (ReleaseSRWLockExclusive_t) GetProcAddress(library, "ReleaseSRWLockExclusive");
 
-            if (initialize_srw_lock && 
+            if (initialize_srw_lock &&
                     acquire_srw_lock_shared && release_srw_lock_shared &&
                     acquire_srw_lock_exclusive && release_srw_lock_exclusive) {
                 return;                         // success
@@ -211,7 +211,7 @@ static void WINAPI
 my_ReleaseSRWLockShared(PSRWLOCK srw)
 {
     xpsrwlock_t *rw = (xpsrwlock_t *)srw;
-    
+
     EnterCriticalSection(&rw->reader_lock);
     assert(rw->readers > 0);
     if (rw->readers > 0) {

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.14 2021/06/10 12:42:33 cvsuser Exp $
+# $Id: Makefile.in,v 1.15 2021/12/16 15:55:26 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -123,6 +123,7 @@ CSOURCES=\
 	w32_close.c \
 	w32_dir.c \
 	w32_dirent.c \
+	w32_wdirent.c \
 	w32_dlfcn.c \
 	w32_direntunc.c \
 	w32_domainname.c \

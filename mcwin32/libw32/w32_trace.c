@@ -31,7 +31,7 @@ w32InitTrace(void)
 
         } else if (! w32x_tracing_init) {
             w32x_tracing_init = 0;
-//          atexit(w32EndTrace); 
+//          atexit(w32EndTrace);
         }
         w32x_tracing_started = 1;
     }

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_reparse_c,"$Id: w32_reparse.c,v 1.10 2021/05/23 10:23:12 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_reparse_c,"$Id: w32_reparse.c,v 1.11 2021/12/19 16:31:14 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -280,7 +280,7 @@ w32_reparse_readW(const wchar_t *name, wchar_t *buf, int maxlen)
 
                     } else if (0 == wcsncmp(mount, L"\\??\\", 4)) {
                         if (0 == wcsncmp(mount, L"\\??\\Volume{", 11)) {
-                                            /* mount, resolve volume. */
+                                                /* mount, resolve volume. */
                             wchar_t volume[1024], pathNames[1024 * 4];
                             DWORD pathLen = 0;
 
@@ -291,7 +291,7 @@ w32_reparse_readW(const wchar_t *name, wchar_t *buf, int maxlen)
                                 wcsncpy_s(buf, maxlen, pathNames, maxlen);
                                 ret = 0;
                             }
-                        } else {            /* junction, remove leading "\??\" */
+                        } else {                /* junction, remove leading "\??\" */
                             wcsncpy_s(buf, maxlen, mount + 4, maxlen);
                         }
 

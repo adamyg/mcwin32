@@ -6,7 +6,7 @@
         mc_pread
         mc_pclose
 
-   Written by: Adam Young 2015 - 2020
+   Written by: Adam Young 2015 - 2021
 
    The Midnight Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
@@ -44,7 +44,10 @@
 #include "lib/util.h"
 #include "lib/utilunix.h"
 
-static const char       bin_sh[] = "/bin/sh";
+#include "win32_utl.h"
+
+
+static const char bin_sh[] = "/bin/sh";
 
 
 /**
@@ -57,19 +60,25 @@ static const char       bin_sh[] = "/bin/sh";
  */
 
 mc_pipe_t *
-mc_popen (const char *command, GError ** error)
+mc_popen (const char *xcommand, GError ** error)
 {
     win32_exec_t *args = NULL;
     const char *busybox = getenv("MC_BUSYBOX");
-    int x_errno = -1;
-    char *cmd = NULL;
+    const char *cmd = NULL;
     mc_pipe_t *p = NULL;
+    int x_errno = -1;
 
     if (error) *error = NULL;
 
-    if (command) {
-        while (' ' == *command) ++command;      /* consume leading whitespace (if any) */
+    if (xcommand) {
+        char *command;
+
+        while (' ' == *xcommand) ++xcommand;    // consume leading whitespace (if any).
             /* whitespace within "#! xxx" shall be visible; confusing matching logic below */
+
+        if (NULL == (command = my_unquote(xcommand, TRUE))) {
+            goto error;
+        }
 
         if (busybox && *busybox) {
             /*
@@ -82,16 +91,23 @@ mc_popen (const char *command, GError ** error)
                     space == (command + (sizeof(bin_sh) - 1)) && 0 == strncmp(command, bin_sh, sizeof(bin_sh)-1)) {
                 char *t_cmd;
 
-                if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" sh", space, NULL))) {
-                    cmd = t_cmd;                // replacement command.
+                if (NULL == (t_cmd = g_strconcat("\"", busybox, "\" sh", space, NULL))) {
+                    free((void *)command);
+                    goto error;
                 }
+                cmd = t_cmd;                    // replacement command.
             }
+        }
+
+        if (NULL == cmd) cmd = g_strdup(command);
+        free((void *)command);
+
+        if (NULL == cmd) {
+            goto error;
         }
     }
 
-    if ((NULL == cmd && (NULL == (cmd = g_strdup(command)))) ||
-            NULL == (p =
-                calloc(sizeof(mc_pipe_t) + sizeof(win32_exec_t), 1))) {
+    if (NULL == (p = (mc_pipe_t *)calloc(sizeof(mc_pipe_t) + sizeof(win32_exec_t), 1))) {
         x_errno = ENOMEM;
         goto error;
     }
@@ -125,7 +141,11 @@ error:;
         mc_replace_error (error, MC_PIPE_ERROR_CREATE_PIPE, "%s",
                 _("Cannot create pipe descriptor"));
     }
-    free(p);
+
+    if (p) {
+        if (args) g_free((void *)args->spawn.cmd);
+        free(p);
+    }
 
     return NULL;
 }

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_fsync_c,"$Id: w32_fsync.c,v 1.8 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_fsync_c,"$Id: w32_fsync.c,v 1.9 2021/11/30 13:06:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -113,7 +113,7 @@ w32_fsync(int fd)
             const DWORD err = GetLastError();
             switch (err) {
             case ERROR_ACCESS_DENIED:
-                /*  For a read-only handle, fsync should succeed, 
+                /*  For a read-only handle, fsync should succeed,
                  *  even though we have no way to sync the access-time changes.
                  */
                 return 0;

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_strlcat_c,"$Id: w32_strlcat.c,v 1.7 2018/10/12 00:52:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_strlcat_c,"$Id: w32_strlcat.c,v 1.8 2021/11/30 13:06:20 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -22,7 +22,7 @@ __CIDENT_RCSID(gr_w32_strlcat_c,"$Id: w32_strlcat.c,v 1.7 2018/10/12 00:52:04 cv
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==end==
  *

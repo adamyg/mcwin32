@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.7 2020/04/23 00:09:36 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.8 2021/11/30 13:06:20 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 popen implementation
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2021 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -26,13 +26,14 @@ __CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.7 2020/04/23 00:09:36 cvsuse
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
  */
 
 #include "win32_internal.h"
 #include "win32_child.h"
+#include "win32_misc.h"
 
 /*#define USE_NATIVE_POPEN*/                    /* test only */
 
@@ -55,10 +56,15 @@ struct pipe {
     struct pipe *       next;
 };
 
+static FILE *           PipeA(const char *cmd, const char *mode);
+static FILE *           PipeW(const wchar_t *cmd, const char *mode);
+
 static int              Dup(HANDLE old, HANDLE *dup, BOOL inherit);
 static int              Pipe2(HANDLE *read, HANDLE *write, int inherit);
 static void             Close(HANDLE handle);
 static void             Close2(HANDLE handle, const char *desc);
+
+static void             DisplayErrorA(HANDLE hOutput, const char *pszAPI, const char *args);
 static void             InternalError(const char *pszAPI);
 
 static CRITICAL_SECTION pipe_guard;
@@ -139,6 +145,45 @@ static struct pipe *    pipe_queue = (void *)-1;
 LIBW32_API FILE *
 w32_popen(const char *cmd, const char *mode)
 {
+    if (NULL == cmd) {
+        errno = EFAULT;
+        return NULL;
+    }
+
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t *wcmd = NULL;
+        FILE *ret = NULL;
+
+        if (NULL != (wcmd = w32_utf2wca(cmd, NULL))) {
+            ret = PipeW(wcmd, mode);
+            free((void *)wcmd);
+        }
+        return ret;
+    }
+#endif  //UTF8FILENAMES
+
+    return PipeA(cmd, mode);
+}
+
+
+LIBW32_API FILE *
+w32_popenA(const char *cmd, const char *mode)
+{
+    return PipeA(cmd, mode);
+}
+
+
+LIBW32_API FILE *
+w32_popenW(const wchar_t *cmd, const char *mode)
+{
+    return PipeW(cmd, mode);
+}
+
+
+static FILE *
+PipeA(const char *cmd, const char *mode)
+{
 #if (defined(_MSVC_VER) || defined(__WATCOMC__)) && \
         defined(USE_NATIVE_POPEN)
     return _popen(cmd, mode);
@@ -147,7 +192,7 @@ w32_popen(const char *cmd, const char *mode)
     int redirect_error = FALSE;
     const char *shell = w32_getshell();
     win32_spawn_t args = {0};
-    char readOrWrite, textOrBinary;
+    char readOrWrite, textOrBinary = 0;
     HANDLE in_read = INVALID_HANDLE_VALUE, in_write = INVALID_HANDLE_VALUE,
         out_read = INVALID_HANDLE_VALUE, out_write = INVALID_HANDLE_VALUE,
         err_read = INVALID_HANDLE_VALUE, err_write = INVALID_HANDLE_VALUE;
@@ -155,9 +200,8 @@ w32_popen(const char *cmd, const char *mode)
     struct pipe *p = NULL;
     char *cmd2 = NULL;
 
-    if (NULL == cmd || NULL == mode ) {
-        errno = EINVAL;
-        return NULL;
+    if (NULL == cmd || NULL == mode) {
+        goto einvalid;
     }
 
     // new pipe node
@@ -165,17 +209,26 @@ w32_popen(const char *cmd, const char *mode)
     case 'r': readOrWrite = 'r'; break;
     case 'w': readOrWrite = 'w'; break;
     default:
-        return NULL;            // either r or w
+        goto einvalid; // either r or w
     }
-    switch (mode[1]) {
-    case 't': textOrBinary = 't'; break;
-    case 'b': textOrBinary = 'b'; break;
-    case 0:
-        textOrBinary = 'b';     // optional
-        break;
-    default:
-        return NULL;
+
+    for (++mode; *mode; ++mode) {
+        switch (*mode) {
+        case 't':   //text mode.
+            if (textOrBinary) goto einvalid;
+            textOrBinary = 't';
+            break;
+        case 'b':   //binary mode.
+            if (textOrBinary) goto einvalid;
+            textOrBinary = 'b';
+            break;
+        case 'e':   //ignore, close on exec (linux)
+            break;
+        default:
+            return NULL;
+        }
     }
+    if (!textOrBinary) textOrBinary = 'b';      // optional, binary default.
 
     if (NULL == (p = calloc(1, sizeof(*p)))) {
         return NULL;
@@ -237,9 +290,7 @@ w32_popen(const char *cmd, const char *mode)
     }
     setvbuf(p->file, NULL, _IONBF, 0);          // non-buffered
 
-    // create the child process,
-    //      on success return pipe
-    //
+    // create the child process, on success return pipe
     args.argv = argv;                           // argument vector
     args._dwFlags =                             // creation flags
         CREATE_DEFAULT_ERROR_MODE|CREATE_NO_WINDOW;
@@ -250,7 +301,7 @@ w32_popen(const char *cmd, const char *mode)
     }
 
     if (0 != (p->handle =
-            w32_child_exec(&args, in_read, out_write, err_write))) {
+            w32_child_execA(&args, in_read, out_write, err_write))) {
 
         Close(in_read); Close(out_write); Close(err_write);
         free(cmd2);
@@ -274,9 +325,166 @@ pipe_error:
     free(cmd2);
     free(p);
     return NULL;
+
+einvalid:
+    errno = EINVAL;
+    return NULL;
+
 #endif  /*USE_NATIVE_POPEN*/
 }
 
+
+static FILE *
+PipeW(const wchar_t *cmd, const char *mode)
+{
+#if (defined(_MSVC_VER) || defined(__WATCOMC__)) && \
+        defined(USE_NATIVE_POPEN)
+    return _wpopen(cmd, mode);
+
+#else
+    int redirect_error = FALSE;
+    const wchar_t *shell = w32_getshellW();
+    win32_spawnw_t args = {0};
+    char readOrWrite = 0, textOrBinary = 0;
+    HANDLE in_read = INVALID_HANDLE_VALUE, in_write = INVALID_HANDLE_VALUE,
+        out_read = INVALID_HANDLE_VALUE, out_write = INVALID_HANDLE_VALUE,
+        err_read = INVALID_HANDLE_VALUE, err_write = INVALID_HANDLE_VALUE;
+    const wchar_t *argv[4] = {0};
+    struct pipe *p = NULL;
+    wchar_t *cmd2 = NULL;
+
+    if (NULL == cmd || NULL == mode) {
+        goto einvalid;
+    }
+
+    // new pipe node
+    switch (mode[0]) {
+    case 'r': readOrWrite = 'r'; break;
+    case 'w': readOrWrite = 'w'; break;
+    default:
+        goto einvalid; // either r or w
+    }
+
+    for (++mode; *mode; ++mode) {
+        switch (*mode) {
+        case 't':   //text mode.
+            if (textOrBinary) goto einvalid;
+            textOrBinary = 't';
+            break;
+        case 'b':   //binary mode.
+            if (textOrBinary) goto einvalid;
+            textOrBinary = 'b';
+            break;
+        case 'e':   //ignore, close on exec (linux)
+            break;
+        default:
+            return NULL;
+        }
+    }
+    if (!textOrBinary) textOrBinary = 'b';      // optional, binary default.
+
+    if (NULL == (p = calloc(1, sizeof(*p)))) {
+        return NULL;
+    }
+    p->magic = PIPE_MAGIC;
+    p->readOrWrite = readOrWrite;
+    p->textOrBinary = textOrBinary;
+
+    // detect the type of shell
+    argv[0] = shell;
+    if (w32_iscommandW(shell)) {
+        argv[1] = L"/C";
+        if (NULL == wcsstr(L"2>&1", cmd)) {     // redirect stderr to stdout ? */
+            argv[2] = cmd;
+        } else {
+            argv[2] = cmd2 = WIN32_STRDUPW(cmd);
+            wcsncpy(wcsstr(L"2>&1", cmd2), L"    ", 4);
+            redirect_error = TRUE;
+        }
+        argv[3] = NULL;
+    } else {
+        argv[1] = L"-i";
+        argv[2] = cmd;
+        argv[3] = NULL;
+    }
+
+    // create the Pipes...
+    if (! Pipe2(&in_read, &in_write, 1) || ! Pipe2(&out_read, &out_write, 2)) {
+        goto pipe_error;
+    }
+
+    if (redirect_error) {                       // 2>&1
+        if (! Dup(out_write, &err_write, TRUE)) {
+            goto pipe_error;
+        }
+    } else {                                    // .. otherwise seperate pipe
+        if (! Pipe2(&err_read, &err_write, 2)) {
+            goto pipe_error;
+        }
+    }
+
+    if ('r' == p->readOrWrite) {
+        if (NULL == (p->file = _fdopen(         // readable end of the pipe
+                _open_osfhandle((long)out_read,
+                    _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
+                    'b' == textOrBinary ? "rb" : "rt"))) {
+            goto pipe_error;
+        }
+        out_read = INVALID_HANDLE_VALUE;
+
+    } else {
+        if (NULL == (p->file = _fdopen(         // writeable end of the pipe
+                _open_osfhandle((long)in_write,
+                    _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
+                    'b' == textOrBinary ? "wb" : "wt"))) {
+            goto pipe_error;
+        }
+        in_write = INVALID_HANDLE_VALUE;
+    }
+    setvbuf(p->file, NULL, _IONBF, 0);          // non-buffered
+
+    // create the child process, on success return pipe
+    args.argv = argv;                           // argument vector
+    args._dwFlags =                             // creation flags
+        CREATE_DEFAULT_ERROR_MODE|CREATE_NO_WINDOW;
+
+    if ((void *)-1 == pipe_queue) {
+        InitializeCriticalSection(&pipe_guard);
+        pipe_queue = NULL;
+    }
+
+    if (0 != (p->handle =
+            w32_child_execW(&args, in_read, out_write, err_write))) {
+
+        Close(in_read); Close(out_write); Close(err_write);
+        free(cmd2);
+
+        p->hIn  = in_write;
+        p->hOut = out_read;
+        p->hErr = err_read;
+        p->pid  = args._dwProcessId;            // process identifier
+
+        EnterCriticalSection(&pipe_guard);
+        p->next = pipe_queue;
+        pipe_queue = p;
+        LeaveCriticalSection(&pipe_guard);
+        return p->file;
+    }
+
+    // on error, release pipe resources.
+pipe_error:
+    Close(in_read); Close(out_write); Close(err_write);
+    Close(in_write); Close(out_read); Close(err_read);
+    free(cmd2);
+    free(p);
+    return NULL;
+
+einvalid:
+    errno = EINVAL;
+    return NULL;
+
+#endif  /*USE_NATIVE_POPEN*/
+}
 
 
 /*
@@ -294,11 +502,11 @@ w32_pread_err(FILE *file, char *buf, int length)
 
         if ((void *)-1 != pipe_queue) {
             struct pipe **p2;                   // list pointers
-            
+
             EnterCriticalSection(&pipe_guard);
             for (p2 = &pipe_queue; *p2; p2 = &(*p2)->next) {
                 struct pipe *p = *p2;
-            
+
                 assert(p->magic == PIPE_MAGIC);
                 if (p->file == file) {
                     handle = p->hErr;
@@ -312,7 +520,7 @@ w32_pread_err(FILE *file, char *buf, int length)
             DWORD result;
             if (ReadFile(handle, buf, length, &result, NULL)) {
                 return (int)result;
-            }   
+            }
         }
     }
     return -1;                                  // done
@@ -385,16 +593,16 @@ w32_pclose(FILE *file)
         struct pipe *pipe = NULL;
 
         if ((void *)-1 != pipe_queue) {
-            struct pipe **p2;                       // list pointers
-            
+            struct pipe **p2;                   // list pointers
+
             EnterCriticalSection(&pipe_guard);
             for (p2 = &pipe_queue; *p2; p2 = &(*p2)->next) {
-                struct pipe *t_p = *p2;
+                struct pipe *p = *p2;
 
-                assert(t_p->magic == PIPE_MAGIC);
-                if (t_p->file == file) {
-                    *p2 = t_p->next;                // remove from chain
-                    pipe = t_p;
+                assert(p->magic == PIPE_MAGIC);
+                if (p->file == file) {
+                    *p2 = p->next;              // remove from chain
+                    pipe = p;
                     break;
                 }
             }
@@ -407,13 +615,19 @@ w32_pclose(FILE *file)
             if ('w' == pipe->readOrWrite) fclose(file); Close2(pipe->hIn, "pclose/stdin");
             if ('r' == pipe->readOrWrite) fclose(file); Close2(pipe->hOut, "pclose/stdout");
             Close2(pipe->hErr, "pclose/stderr");
-            if (! w32_child_wait(pipe->handle, &status, FALSE)) {
+            if (! w32_child_wait(pipe->handle, &status, FALSE /*block*/)) {
                 ret = -1;
             }
             free(pipe);
-            return (0 == ret ? status : -1);
+            if (0 == ret) {
+                errno = 0;
+                return status;
+            }
+            return -1;
         }
     }
+
+    errno = EINVAL;
     return -1;
 #endif  /*USE_NATIVE_POPEN*/
 }
@@ -484,7 +698,7 @@ Pipe2(HANDLE *read, HANDLE *write, int inherit)
 static void
 Close(HANDLE handle)
 {
-    if (handle != INVALID_HANDLE_VALUE) {
+    if (handle && handle != INVALID_HANDLE_VALUE) {
         if (! CloseHandle(handle)) {
             InternalError("CloseHandle(popen)");
         }
@@ -499,7 +713,7 @@ Close(HANDLE handle)
 static void
 Close2(HANDLE handle, const char *desc)
 {
-    if (handle != INVALID_HANDLE_VALUE) {
+    if (handle && handle != INVALID_HANDLE_VALUE) {
         if (! CloseHandle(handle)) {
             InternalError(desc);
         }
@@ -511,38 +725,28 @@ Close2(HANDLE handle, const char *desc)
  *  InternalError ---
  *      Displays the error number and corresponding message.
  */
+
 static void
-DisplayError(
+DisplayErrorA(
     HANDLE hOutput, const char *pszAPI, const char *args)
 {
-    DWORD   rc = GetLastError();
-    LPVOID  lpvMessageBuffer;
-    char    szPrintBuffer[512];
-    DWORD   nCharsWritten;
+    const DWORD rc = GetLastError();
+    char t_rcbuffer[512], buffer[512];
+    const char *rcmsg = w32_syserrorA(rc, t_rcbuffer, sizeof(t_rcbuffer));
+    int len;
 
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
-        NULL, rc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&lpvMessageBuffer, 0, NULL);
-
-    (void) _snprintf(szPrintBuffer, sizeof(szPrintBuffer),
-        "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, (char *)lpvMessageBuffer,
-            args ? args : "", args ? "\n" : "" );
-    szPrintBuffer[sizeof(szPrintBuffer) - 1] = 0;
-
-    if (hOutput == INVALID_HANDLE_VALUE) {
-        hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-    }
-
-    WriteConsoleA(hOutput, szPrintBuffer, lstrlenA(szPrintBuffer), &nCharsWritten, NULL);
-    LocalFree(lpvMessageBuffer);
+    len = _snprintf(buffer, sizeof(buffer),
+            "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
+                args ? args : "", args ? "\n" : "");
+    WriteConsoleA(hOutput, buffer, len, NULL, NULL);
 }
 
 
 static void
 InternalError(const char *pszAPI)
 {
-    DisplayError(INVALID_HANDLE_VALUE, pszAPI, NULL);
+    DisplayErrorA(GetStdHandle(STD_OUTPUT_HANDLE), pszAPI, NULL);
     ExitProcess(GetLastError());
 }
 
 /*end*/
-

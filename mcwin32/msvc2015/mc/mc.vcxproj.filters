@@ -761,9 +761,6 @@
     <ClInclude Include="..\..\..\mcsrc\src\textconf.h">
       <Filter>Header Files\mcsrc</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\mcsrc\src\util.h">
-      <Filter>Header Files\mcsrc</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\editor\edit.h">
       <Filter>Header Files\mcsrc\editor</Filter>
     </ClInclude>
@@ -1051,6 +1048,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\vfs\fish\fishdef.h">
       <Filter>Header Files\mcsrc\libvfs\fish</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\win32_utl.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

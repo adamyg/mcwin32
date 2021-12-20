@@ -672,6 +672,21 @@ VPATH	= ./src
 .PHONY:				build directories artifacts targets configuration gettext
 build:				directories artifacts targets configuration gettext import
 
+.PHONY:				help
+help:
+	@echo :
+	@echo : make [release,debug] target
+	@echo :
+	@echo : Build one or more of the following targets recursively within each sub-directory.
+	@echo :
+	@echo : Targets:
+	@echo :
+	@echo : build -        build everything.
+	@echo : package -      build all packages.
+	@echo : clean -        delete everything which can be remade.
+	@echo : help -         command line usage.
+	@echo :
+
 release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
 debug:

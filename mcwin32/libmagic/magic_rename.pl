@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: magic_rename.pl,v 1.3 2017/03/12 18:53:03 cvsuser Exp $
+# $Id: magic_rename.pl,v 1.4 2021/12/01 12:58:46 cvsuser Exp $
 # libmagic import tool
 # Rename global libmagic symbols, prefixing with library version number.
 #
@@ -42,6 +42,8 @@ my %x_files = (
         'funcs'             => 1,
         'getline'           => 1,
         'is_tar'            => 1,
+        'is_csv'            => 1,
+        'is_json'           => 1,
         'magic'             => 1,
         'print'             => 1,
         'readcdf'           => 1,
@@ -52,8 +54,8 @@ my %x_files = (
         );
 
 my $o_keep                  = 0;
-my $o_version               = '529';
-my $o_src                   = "./file-5.29/src";
+my $o_version               = '541';
+my $o_src                   = "./file-5.41/src";
 my $o_original              = 0;
 
 sub ProcessDir($);
@@ -94,7 +96,7 @@ Usage: perl magic_rename.pl [options]
 Options:
     --help                  Help.
     --src <path>            libmagic source directory.
-    --version=<version>     Magic lib version prefix (eg. 529).
+    --version=<version>     Magic lib version prefix (eg. 541).
     --original              Reprocess original file images, if they exist.
     --keep                  Keep temporary file images.
 EOU
@@ -159,19 +161,22 @@ ProcessFile($$;$)       # (dir, file, outfile)
     }
     close FILE;
 
-    $text =~ s/file_/file${o_version}_/g;
-    $text =~ s/cdf_/file${o_version}_cdf_/g;
-    $text =~ s/file${o_version}_opts\.h/file_opts.h/g;
-    $text =~ s/^(strlcpy|strlcat)/${o_version_$1/g;
+    $text =~ s/file_fmtcheck/softmagic${o_version}_fmtcheck/g;
+    $text =~ s/fmtcheck/file${o_version}_fmtcheck/g;
 
-    $text =~ s/file_fmt_check/softmagic${o_version}_fmt_check/g;
-        $text =~ s/fmtcheck/file${o_version}_fmtcheck/g;
+    $text =~ s/ file_/ file${o_version}_/g;
+    $text =~ s/ cdf_/ file${o_version}_cdf_/g;
 
     if ($o_version eq '511') { #5.29 via define's
         $text =~ s/sread/file${o_version}_sread/g;
         $text =~ s/getdelim/file${o_version}_getdelim/g;
         $text =~ s/getline/file${o_version}_getline/g;
+        $text =~ s/strlcpy/file${o_version}_strlcpy/g;
+        $text =~ s/strlcat/file{o_version}_strlcat/g;
     }
+
+    $text =~ s/file${o_version}_opts\.h/file_opts.h/g;
+    $text =~ s/file{o_version}_file{o_version}/file{o_version}/g;
 
     $text =~ s/X\.YY/${o_version}/
         if ($outfile eq 'magic.h');

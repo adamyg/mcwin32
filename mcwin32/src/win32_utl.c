@@ -85,7 +85,9 @@
 
 #include "src/setup.h"                          /* use_internal_busybox */
 
+#include "win32_utl.h"
 #include "win32_key.h"
+#include "win32_internal.h"
 
 #pragma comment(lib, "shell32.lib")
 #pragma comment(lib, "shfolder.lib")
@@ -108,6 +110,7 @@ static void             dospath (char *path);
 
 static const char *     IsScript (const char *cmd);
 
+static int              system_impl (int flags, const char *shell, const char *cmd);
 static int              system_bustargs (char *cmd, const char **argv, int cnt);
 static int              system_SET (int argc, const char **argv);
 
@@ -780,7 +783,7 @@ mc_USERCONFIGDIR(const char *subdir)
         char *dir = g_malloc(dirlen);
 
         if (dir) {
-            (void) _snprintf(dir, dirlen, "%s%s/", x_buffer, subdir);            
+            (void) _snprintf(dir, dirlen, "%s%s/", x_buffer, subdir);
             if (-1 == _access(dir, 0)) {
                 w32_mkdir(dir, 0666);
             }
@@ -958,35 +961,73 @@ save_stop_handler(void)
  */
 
 int
-my_systemv_flags (int flags, const char *command, char *const argv[])
+my_systemv_flags (int flags, const char *command, char *const xargv[])
 {
-    char *cmd = 0;
-    int status = 0;
+    const char **argv = NULL;
+    char *cmd = NULL;
+    unsigned idx;
+    int status = -1;
 
-    if (argv) {
-        const char *str;
-        unsigned idx, slen = 0;
-        char *cursor;
+    if (xargv && NULL != xargv[0]) {
 
-        for (idx = 0; NULL != (str = argv[idx]); ++idx)
-            if (*str) {
-                slen += strlen(str) + 1;
+        if ((flags & EXECUTE_AS_SHELL) && NULL == xargv[1]) {
+            cmd = my_unquote(xargv[0], TRUE);
+
+      } else {
+            const char *str;
+            size_t slen = 0;
+            char *cursor;
+
+            for (idx = 0; xargv[idx]; ++idx) continue;
+            if (NULL == (argv = calloc(idx + 1, sizeof(void *)))) {
+                return -1;
+            }
+            for (idx = 0; NULL != (str = xargv[idx]); ++idx) {
+                if (NULL == (argv[idx] = my_unquote (str, FALSE))) {
+                    goto error;
+                }
             }
 
-        cursor = cmd = g_malloc(slen);
+            for (idx = 0; NULL != (str = argv[idx]); ++idx) {
+                if (*str) {
+                    const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
 
-        for (idx = 0; NULL != (str = argv[idx]); ++idx)
-            if (*str) {
-                slen = strlen(str);
-                if (cursor != cmd) *cursor++ = ' ';
-                memcpy(cursor, argv[idx], slen);
-                cursor += slen;
+                    slen += strlen(str) + 1 /*nul or space*/;
+                    if (quote) slen += 2; /*quotes*/
+                }
             }
 
-        *cursor = '\0';
+            if (NULL == (cmd = calloc(slen, 1))) {
+                goto error;
+            }
+
+            cursor = cmd;
+            for (idx = 0; NULL != (str = argv[idx]); ++idx) {
+                if (*str) {
+                    const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+
+                    slen = strlen(str);
+                    if (cursor != cmd) *cursor++ = ' ';
+                    if (quote) *cursor++ = '"';
+                    memcpy(cursor, str, slen);
+                    cursor += slen;
+                    if (quote) *cursor++ = '"';
+                }
+            }
+            *cursor = '\0';
+        }
     }
-    status = my_system (flags, command, (cmd ? cmd : ""));
-    g_free (cmd);
+
+    status = system_impl (flags, command, (cmd ? cmd : ""));
+    free (cmd);
+
+error:;
+    if (argv) {
+        for (idx = 0; argv[idx]; ++idx) {
+            free((void *)argv[idx]);
+        }
+        free ((void *)argv);
+    }
     return status;
 }
 
@@ -1002,7 +1043,24 @@ my_systemv_flags (int flags, const char *command, char *const argv[])
  * @return 0 if successfull, -1 otherwise
  */
 int
-my_system(int flags, const char *shell, const char *cmd)
+my_system (int flags, const char *shell, const char *cmd)
+{
+    if (cmd && *cmd) {
+        char *t_cmd;
+
+        if (NULL != (t_cmd = my_unquote (cmd, TRUE))) {
+            int ret = system_impl (flags, shell, t_cmd);
+            free((void *)t_cmd);
+            return ret;
+        }
+    }
+
+    return system_impl (flags, shell, cmd);
+}
+
+
+static int
+system_impl (int flags, const char *shell, const char *cmd)
 {
     const char *busybox = getenv("MC_BUSYBOX"), *exec = NULL;
     int shelllen, ret = -1;
@@ -1174,64 +1232,189 @@ system_SET(int argc, const char **argv)
  *  TODO: Return resolved path to perl, python etc (utilise file/extension association)
  */
 static const char *
+ScriptMagic(int fd)
+{
+    char magic[128] = { 0 };
+    const char *script = NULL;
+
+    if (_read(fd, magic, sizeof(magic) - 1) > 2) {
+        if (magic[0] == '#' && magic[1] == '!') {   // sha-bang
+            const char *exec = magic + 2;
+            int len = -1;
+
+            while (*exec && ' ' == *exec) ++exec;
+            if (*exec == '/') {
+                if (0 == strncmp(exec, "/bin/sh", len = (sizeof("/bin/sh")-1))) {
+                    script = "sh";
+                } else if (0 == strncmp(exec, "/bin/ash", len = (sizeof("/bin/ash")-1))) {
+                    script = "ash";
+                } else if (0 == strncmp(exec, "/bin/bash", len = (sizeof("/bin/bash")-1))) {
+                    script = "bash";
+                } else if (0 == strncmp(exec, "/bin/sed", len = (sizeof("/bin/sed")-1))) {
+                    script = "sed";
+                } else if (0 == strncmp(exec, "/bin/awk", len = (sizeof("/bin/awk")-1))) {
+                    script = "awk";
+                } else if (0 == strncmp(exec, "/usr/bin/perl", len = (sizeof("/usr/bin/perl")-1))) {
+                    script = "perl";
+                } else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1))) {
+                    script = "python";
+                } else if (0 == strncmp(exec, "usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
+                    //
+                    //  Example:
+                    //  #! /usr/bin/env python
+                    const char *exec2 = exec + len;
+                    int len2;
+
+                    while (*exec2 && ' ' == *exec2) { ++exec2, ++len; }
+                    if (0 == strncmp(exec2, "python", len2 = (sizeof("python")-1))) {
+                        script = "python";
+                        len += len2;
+                    } else if (0 == strncmp(exec2, "python3", len2 = (sizeof("python3")-1))) {
+                        script = "python3";
+                        len += len2;
+                    }
+                }
+                //else, ignore others
+
+                if (script && exec[len] != ' ' && exec[len] != '\n' && exec[len] != '\r') {
+                    script = NULL;              // bad termination, ignore
+                }
+            }
+        }
+    }
+    return script;
+}
+
+
+static const char *
 IsScript(const char *cmd)
 {
-    char t_cmd[1024] = { 0 }, magic[128] = { 0 };
+    char t_cmd[1024] = { 0 };
     const char *script = NULL;
     const char *argv[3] = { 0 };
     int fd;
 
     strncpy(t_cmd, cmd, sizeof(t_cmd)-1);
     if (system_bustargs(t_cmd, argv, 2) >= 1 && argv[0]) {
-        if ((fd = _open(argv[0], O_RDONLY | O_BINARY)) >= 0) {
-            if (_read(fd, magic, sizeof(magic) - 1) > 2 && magic[0] == '#' && magic[1] == '!') {
-                // sha-bang
-                const char *exec = magic + 2;
-                int len = -1;
-
-                while (*exec && ' ' == *exec) ++exec;
-                if (*exec == '/') {
-                    if (0 == strncmp(exec, "/bin/sh", len = (sizeof("/bin/sh")-1)))
-                        script = "sh";
-                    else if (0 == strncmp(exec, "/bin/ash", len = (sizeof("/bin/ash")-1)))
-                        script = "ash";
-                    else if (0 == strncmp(exec, "/bin/bash", len = (sizeof("/bin/bash")-1)))
-                        script = "bash";
-                    else if (0 == strncmp(exec, "/bin/sed", len = (sizeof("/bin/sed")-1)))
-                        script = "sed";
-                    else if (0 == strncmp(exec, "/bin/awk", len = (sizeof("/bin/awk")-1)))
-                        script = "awk";
-                    else if (0 == strncmp(exec, "/usr/bin/perl", len = (sizeof("/usr/bin/perl")-1)))
-                        script = "perl";
-                    else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1)))
-                        script = "python";
-                    else if (0 == strncmp(exec, "usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
-                        //
-                        //  Example:
-                        //  #! /usr/bin/env python
-                        const char *exec2 = exec + len;
-                        int len2;
-
-                        while (*exec2 && ' ' == *exec2) { ++exec2, ++len; }
-                        if (0 == strncmp(exec2, "python", len2 = (sizeof("python")-1))) {
-                            script = "python";
-                            len += len2;
-                        } else if (0 == strncmp(exec2, "python3", len2 = (sizeof("python3")-1))) {
-                            script = "python3";
-                            len += len2;
-                        }
-                    }
-                    //else, ignore others
-
-                    if (script && exec[len] != ' ' && exec[len] != '\n' && exec[len] != '\r') {
-                        script = NULL;          //bad termination, ignore
-                    }
+        if (w32_utf8filenames_state()) {
+            wchar_t *warg0 = NULL;
+            
+            if (NULL != (warg0 = w32_utf2wca(argv[0], NULL))) {
+                if ((fd = _wopen(warg0, O_RDONLY | O_BINARY)) >= 0) {
+                    script = ScriptMagic(fd);
+                    _close(fd);
                 }
+                free(warg0);
             }
+            return script;
+        }
+
+        if ((fd = _open(argv[0], O_RDONLY | O_BINARY)) >= 0) {
+            script = ScriptMagic(fd);
             _close(fd);
         }
     }
     return script;
+}
+
+
+/**
+ *  unquote an excaped command line.
+ */
+char *
+my_unquote(const char *cmd, int quotews)
+{ 
+    char *ret, *cursor, *start = NULL;
+    int blen, instring = 0, quoting = 0;
+
+    blen = (cmd ? strlen(cmd) * 2 : 0);
+    if (0 == blen || NULL == (ret = (char *)calloc(blen, 1))) {
+        return NULL;
+    }
+    
+    cursor = ret;
+    while (1) {
+        if ('\\' == *cmd) {
+            switch(*++cmd) {
+            case '\'': //escapeable characters'
+            case '\\':
+            case '"':
+            case ';':
+            case '?':
+            case '|':
+            case '[': case ']':
+            case '{': case '}':
+            case '<': case '>':
+            case '`':
+            case '!':
+            case '$':
+            case '&':
+            case '*':
+            case '(': case ')':
+            case '~':
+            case '#':
+            case '\r': case '\n': case '\t':
+                *cursor++ = *cmd++;
+                break;
+            case ' ': //space
+                if (quotews && !instring && !quoting) {
+                    if (start) { // encase white-space element.
+                        char *end = ++cursor;
+                        while (end > start) {
+                            end[0] = end[-1];
+                            --end;
+                        }
+                        start[0] = '"';
+                        start = NULL;
+                        quoting = 1;
+                    }
+                }
+                *cursor++ = *cmd++;
+                break;
+            case 0:  //eos
+                *cursor++ = '\\';
+                goto null;
+            default: //other, retain escape
+                *cursor++ = '\\';
+                *cursor++ = *cmd++;
+                break;
+            }
+
+        } else {
+            switch (*cmd) {
+            case '"': case '\'': //quotes
+                if (instring) {
+                    if (instring == *cmd) {
+                        instring = 0;
+                    }
+                } else if (start == cmd) {
+                    instring = *cmd; 
+                }
+                start = NULL;
+                break;
+            case ' ': case '\t': //whitespace
+                if (quoting) {
+                    *cursor++ = '"';
+                    quoting = 0;
+                }
+                if (! instring) {
+                    start = cursor + 1;
+                }
+                break;
+            case 0: //null
+                goto null;
+            default:
+                break;
+            }
+            *cursor++ = *cmd++;
+        }
+    }
+
+null:;
+    if (quoting) *cursor++ = '"';
+    assert(cursor < (ret + blen));
+    *cursor = 0;
+    return ret;
 }
 
 
@@ -1258,6 +1441,7 @@ win32_popen(const char *cmd, const char *mode)
             file = w32_popen(t_cmd, mode);
             g_free(t_cmd);
         }
+
     } else if (busybox && *busybox && NULL != (exec = IsScript(cmd))) {
         /*
          *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python | /usr/bin/env python>
@@ -1274,8 +1458,15 @@ win32_popen(const char *cmd, const char *mode)
             file = w32_popen(t_cmd, mode);
             g_free(t_cmd);
         }
+
     } else {
-        file = w32_popen(cmd, mode);
+        char *t_cmd;
+        if (NULL != (t_cmd = my_unquote(cmd, TRUE))) {
+            file = w32_popen(t_cmd, mode);
+            free((void *)t_cmd);
+        } else {
+            file = w32_popen(cmd, mode);
+        }
     }
 
     if (pe_open >= 0) {
@@ -1289,7 +1480,7 @@ win32_popen(const char *cmd, const char *mode)
             if (0 != (hThread = CreateThread(NULL, 0, pipe_thread, NULL, 0, NULL))) {
                 SetThreadPriority(hThread, THREAD_PRIORITY_ABOVE_NORMAL);
                 CloseHandle(hThread);
-                sleep(3);                       /* yield */
+                sleep(3);                       // yield
             }
         }
     }
@@ -1977,7 +2168,7 @@ mc_build_filenamev(const char *first_element, va_list args)
                 int driveno = w32_getdrive();
                 if (driveno <= 0) driveno = w32_getlastdrive();
 
-                // see: vfs_canon() generally when we are returning 
+                // see: vfs_canon() generally when we are returning
                 // from a ftp/sftp or UNC reference.
                 if (driveno > 0) {
                     char drive[3] = "X:";

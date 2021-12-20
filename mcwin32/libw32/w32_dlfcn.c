@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.1 2021/06/10 12:42:33 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.2 2021/11/30 13:06:19 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.1 2021/06/10 12:42:33 cvsuse
  *
  *  dlopen, dlsym, dlclose and dlerror
  *
- * Copyright (c) 1998 - 2019, Adam Young.
+ * Copyright (c) 1998 - 2021, Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -37,12 +37,13 @@ __CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.1 2021/06/10 12:42:33 cvsuse
  * ==extra==
  */
 
+#include "win32_internal.h"
+
 #include <dlfcn.h>
 
-#include "win32_internal.h"
 #include <tailqueue.h>
 
-#define DLERROR_LEN             256             /* error buffer size */
+#define DLERROR_LEN             1024            /* error buffer size */
 
 typedef TAILQ_HEAD(globallibs, globallib)
                     globallibs_t;               /* name global module list */
@@ -63,10 +64,13 @@ static int                      x_modules;
 static globallibs_t             x_globals;
 
 static globallib_t *            mod_find(HMODULE handle);
-static globallib_t *            mod_push(HMODULE handle, const char *file);
+static globallib_t *            mod_pushA(HMODULE handle, const char *file);
+static globallib_t *            mod_pushW(HMODULE handle, const wchar_t *file);
 
-static void                     dlerror_set(const char *file, const char *msg);
-static void                     dlerror_last(const char *file);
+static void                     dlerror_setA(const char *file, const char *msg);
+static void                     dlerror_lastA(const char *file);
+static void                     dlerror_setW(const wchar_t *file, const char *msg);
+static void                     dlerror_lastW(const wchar_t *file);
 
 #define HARD_ERRORS             UINT __hardmode;
 #define HARD_ERRORS_DISABLE     __hardmode = SetErrorMode (0);
@@ -202,10 +206,36 @@ static void                     dlerror_last(const char *file);
 //  ERRORS
 //      No errors are defined.
 */
+
 LIBW32_API void *
 dlopen(const char *file, int mode)
 {
+#if defined(UTF8FILENAMES)
+    if (file && w32_utf8filenames_state()) {
+        wchar_t *wfile = NULL;
+        void *ret = NULL;
+
+        if (NULL != (wfile = w32_utf2wca(file, NULL))) {
+            ret = dlopenW(wfile, mode);
+            free((void *)wfile);
+        }
+        return ret;
+    }
+#endif  //UTF8FILENAMES
+
+    return dlopenA(file, mode);
+}
+
+
+LIBW32_API void *
+dlopenA(const char *file, int mode)
+{
     HMODULE hm = 0;
+
+    if (NULL == file || !*file) {
+        dlerror_lastA("missing file");
+        return NULL;
+    }
 
     if (0 == x_dlopen) {                        // runtime initialisation
         InitializeCriticalSection(&x_guard);
@@ -215,7 +245,7 @@ dlopen(const char *file, int mode)
 
     if (NULL == file) {				// global handle
         if (! (hm = GetModuleHandle(NULL))) {
-            dlerror_last("global handle");
+            dlerror_lastA("global handle");
         }
     } else {					// module specific
         HARD_ERRORS
@@ -240,8 +270,9 @@ dlopen(const char *file, int mode)
         t_file[i] = 0;
 
         HARD_ERRORS_DISABLE
-        if (! (hm = LoadLibrary(t_file))) {
-            dlerror_last(t_file);
+        if (0 == (hm = LoadLibraryA(t_file))) {
+            dlerror_lastA(t_file);
+
         } else if (RTLD_GLOBAL & mode) {        // global
             globallib_t *lib;
 
@@ -249,11 +280,80 @@ dlopen(const char *file, int mode)
             if (NULL != (lib = mod_find(hm))) {
                 ++lib->g_references;
             } else {
-                lib = mod_push(hm, t_file);
+                lib = mod_pushA(hm, t_file);
             }
             LeaveCriticalSection(&x_guard);
             if (! lib) {
-                dlerror_set(t_file, "memory allocation error");
+                dlerror_setA(t_file, "memory allocation error");
+                (void) FreeLibrary(hm);
+                hm = 0;
+            }
+        }
+        HARD_ERRORS_ENABLE
+    }
+    return (void *)hm;
+}
+
+
+LIBW32_API void *
+dlopenW(const wchar_t *file, int mode)
+{
+    HMODULE hm = 0;
+
+    if (NULL == file || !*file) {
+        dlerror_lastA("missing file");
+        return NULL;
+    }
+
+    if (0 == x_dlopen) {                        // runtime initialisation
+        InitializeCriticalSection(&x_guard);
+        TAILQ_INIT(&x_globals);
+        ++x_dlopen;
+    }
+
+    if (NULL == file) {				// global handle
+        if (! (hm = GetModuleHandle(NULL))) {
+            dlerror_lastA("global handle");
+        }
+
+    } else {					// module specific
+        HARD_ERRORS
+        const wchar_t *cursor;
+        wchar_t t_file[MAX_PATH*2];
+        unsigned i;
+                                                // import and convert
+        for (cursor = file, i = 0; *cursor && i < _countof(t_file)-1; ++i, ++cursor) {
+            wchar_t c;
+
+            if ('/' == (c = *cursor) || '\\' == c) {
+                if (i) {                        // compress
+                    while (0 != (c = cursor[1]) && ('/' == c || '\\' == c)) {
+                        ++cursor;
+                    }
+                }
+                t_file[i] = '\\';
+            } else {
+                t_file[i] = c;
+            }
+        }
+        t_file[i] = 0;
+
+        HARD_ERRORS_DISABLE
+        if (0 == (hm = LoadLibraryW(t_file))) {
+            dlerror_lastW(t_file);
+
+        } else if (RTLD_GLOBAL & mode) {        // global
+            globallib_t *lib;
+
+            EnterCriticalSection(&x_guard);
+            if (NULL != (lib = mod_find(hm))) {
+                ++lib->g_references;
+            } else {
+                lib = mod_pushW(hm, t_file);
+            }
+            LeaveCriticalSection(&x_guard);
+            if (! lib) {
+                dlerror_setW(t_file, "memory allocation error");
                 (void) FreeLibrary(hm);
                 hm = 0;
             }
@@ -372,9 +472,9 @@ dlclose(void *handle)
         globallib_t *lib;
 
         if (NULL != (lib = mod_find(hm))) {
-            dlerror_last(lib->g_name);
+            dlerror_lastA(lib->g_name);
         } else {
-            dlerror_last(NULL);
+            dlerror_lastA(NULL);
         }
         return -1;
 
@@ -446,7 +546,7 @@ mod_find(HMODULE handle)
 
 
 static globallib_t *
-mod_push(HMODULE handle, const char *file)
+mod_pushA(HMODULE handle, const char *file)
 {
     const size_t len = strlen(file);
     globallibs_t *libs = &x_globals;
@@ -460,12 +560,26 @@ mod_push(HMODULE handle, const char *file)
         ++x_modules;
         return lib;
     }
-    return 0;
+    return NULL;
+}
+
+
+static globallib_t *
+mod_pushW(HMODULE handle, const wchar_t *file)
+{
+    globallib_t *lib = NULL;
+    char *t_file = NULL;
+
+    if (file && NULL != (t_file = w32_wc2utfa(file, NULL))) {
+        lib = mod_pushA(handle, t_file); 
+        free(t_file);
+    }
+    return lib;
 }
 
 
 static void
-dlerror_set(const char *file, const char *msg)
+dlerror_setA(const char *file, const char *msg)
 {
     if (msg) {
         _snprintf(x_dlerror, sizeof(x_dlerror), "%s : %s", file, msg);
@@ -477,13 +591,44 @@ dlerror_set(const char *file, const char *msg)
 
 
 static void
-dlerror_last(const char *file)
+dlerror_lastA(const char *file)
 {
-    int len;
-    len = _snprintf(x_dlerror, sizeof(x_dlerror), "%s : ", file);
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), 0,
-                        x_dlerror, sizeof(x_dlerror) - len, NULL);
-    x_dlerror[sizeof(x_dlerror)-1] = 0;
-}
-/*end*/
+    x_dlerror[0] = 0;
 
+    if (file && *file) {
+        int len;
+
+        len = _snprintf(x_dlerror, sizeof(x_dlerror), "%s : ", file);
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), 0,
+            x_dlerror, sizeof(x_dlerror) - len, NULL);
+        x_dlerror[sizeof(x_dlerror)-1] = 0;
+    }
+}
+
+
+static void
+dlerror_setW(const wchar_t *file, const char *msg)
+{
+    char *t_file = NULL;
+
+    x_dlerror[0] = 0;
+    if ( NULL != (t_file = w32_wc2utfa(file, NULL))) {
+        dlerror_setA(t_file, msg);
+        free(t_file);
+    }
+}
+
+
+static void
+dlerror_lastW(const wchar_t *file)
+{
+    char *t_file = NULL;
+
+    x_dlerror[0] = 0;
+    if (NULL != (t_file = w32_wc2utfa(file, NULL))) {
+        dlerror_lastA(t_file);
+        free(t_file);
+    }
+}
+
+/*end*/

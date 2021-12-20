@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_socket_c,"$Id: w32_socket.c,v 1.10 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_socket_c,"$Id: w32_socket.c,v 1.11 2021/11/30 13:06:20 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -367,7 +367,7 @@ w32_recvfrom_fd(int fd, char *buf, int len, int flags,
 /*
  *  socksetblockingmode()
  */
-LIBW32_API int         
+LIBW32_API int
 w32_sockblockingmode_fd(int fd, int enabled)
 {
     SOCKET osf;
@@ -383,7 +383,7 @@ w32_sockblockingmode_fd(int fd, int enabled)
     }
     return ret;
 }
- 
+
 
 /*
  *  sockwrite() system call; aka write() for sockets.
