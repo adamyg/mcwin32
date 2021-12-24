@@ -1,7 +1,7 @@
 /*
    Virtual File System garbage collection code
 
-   Copyright (C) 2003-2020
+   Copyright (C) 2003-2021
    Free Software Foundation, Inc.
 
    Written by:
@@ -39,9 +39,7 @@
 
 #include <config.h>
 
-#include <stdlib.h>             /* For atol() */
-#include <sys/types.h>
-#include <sys/time.h>           /* gettimeofday() */
+#include <stdlib.h>
 
 #include "lib/global.h"
 #include "lib/event.h"
@@ -99,7 +97,7 @@ struct vfs_stamping
 {
     struct vfs_class *v;
     vfsid id;
-    struct timeval time;
+    gint64 time;
 };
 
 /*** file scope variables ************************************************************************/
@@ -108,17 +106,6 @@ static GSList *stamps = NULL;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
-/* --------------------------------------------------------------------------------------------- */
-
-/** Compare two timeval structures. Return TRUE if t1 is less than t2. */
-
-static gboolean
-timeoutcmp (const struct timeval *t1, const struct timeval *t2)
-{
-    return ((t1->tv_sec < t2->tv_sec)
-            || ((t1->tv_sec == t2->tv_sec) && (t1->tv_usec <= t2->tv_usec)));
-}
-
 /* --------------------------------------------------------------------------------------------- */
 
 static gint
@@ -142,7 +129,7 @@ vfs_addstamp (struct vfs_class *v, vfsid id)
         stamp = g_new (struct vfs_stamping, 1);
         stamp->v = v;
         stamp->id = id;
-        gettimeofday (&(stamp->time), NULL);
+        stamp->time = g_get_real_time ();
 
         stamps = g_slist_append (stamps, stamp);
     }
@@ -155,25 +142,21 @@ vfs_addstamp (struct vfs_class *v, vfsid id)
 gboolean
 vfs_stamp (struct vfs_class *v, vfsid id)
 {
-#if defined(WIN32) //non C11
-    struct vfs_stamping what = {0};
+#if defined(__WATCOMC__) //WIN32/c11
+    struct vfs_stamping what = { v, id, 0 };
 #else
     struct vfs_stamping what = {
         .v = v,
         .id = id
     };
-#endif    
+#endif
     GSList *stamp;
     gboolean ret = FALSE;
-    
-#if defined(WIN32) //non C11
-    what.v = v, what.id = id;
-#endif
 
     stamp = g_slist_find_custom (stamps, &what, vfs_stamp_compare);
     if (stamp != NULL && stamp->data != NULL)
     {
-        gettimeofday (&(VFS_STAMPING (stamp->data)->time), NULL);
+        VFS_STAMPING (stamp->data)->time = g_get_real_time ();
         ret = TRUE;
     }
 
@@ -185,19 +168,15 @@ vfs_stamp (struct vfs_class *v, vfsid id)
 void
 vfs_rmstamp (struct vfs_class *v, vfsid id)
 {
-#if defined(WIN32) //non C11
-    struct vfs_stamping what = {0};
+#if defined(__WATCOMC__)
+    struct vfs_stamping what = { v, id, 0 };
 #else
     struct vfs_stamping what = {
         .v = v,
         .id = id
     };
-#endif    
-    GSList *stamp;
-    
-#if defined(WIN32) //non C11
-    what.v = v, what.id = id;
 #endif
+    GSList *stamp;
 
     stamp = g_slist_find_custom (stamps, &what, vfs_stamp_compare);
     if (stamp != NULL)
@@ -267,7 +246,7 @@ void
 vfs_expire (gboolean now)
 {
     static gboolean locked = FALSE;
-    struct timeval curr_time, exp_time;
+    gint64 curr_time, exp_time;
     GSList *stamp;
 
     /* Avoid recursive invocation, e.g. when one of the free functions
@@ -276,9 +255,8 @@ vfs_expire (gboolean now)
         return;
     locked = TRUE;
 
-    gettimeofday (&curr_time, NULL);
-    exp_time.tv_sec = curr_time.tv_sec - vfs_timeout;
-    exp_time.tv_usec = curr_time.tv_usec;
+    curr_time = g_get_real_time ();
+    exp_time = curr_time - vfs_timeout * G_USEC_PER_SEC;
 
     if (now)
     {
@@ -298,7 +276,7 @@ vfs_expire (gboolean now)
                 stamping->v->free (stamping->id);
             MC_PTR_FREE (stamp->data);
         }
-        else if (timeoutcmp (&stamping->time, &exp_time))
+        else if (stamping->time <= exp_time)
         {
             /* update timestamp of VFS that is in use, or free unused VFS */
             if (stamping->v->nothingisopen != NULL && !stamping->v->nothingisopen (stamping->id))

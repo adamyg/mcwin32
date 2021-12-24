@@ -1,5 +1,5 @@
-[main]
-ChangePanel = tab
+[filemanager]
+ChangePanel = tab; ctrl-i
 Help = f1
 UserMenu = f2
 View = f3
@@ -60,9 +60,10 @@ DriveChange = alt-d
 DriveChangeA = alt-f1
 DriveChangeB = alt-f2
 
-[main:xmap]
+[filemanager:xmap]
 ChangeMode = c
 ChangeOwn = o
+ChangeAttributes = e
 CompareDirs = d
 CompareFiles = ctrl-d
 HotListAdd = h
@@ -203,6 +204,13 @@ View = f3
 Edit = f4
 Enter = enter
 
+[radio]
+Up = up; ctrl-p
+Down = down; ctrl-n
+Top = home; alt-lt; a1
+Bottom = end; alt-gt; c1
+Select = space
+
 [tree]
 Help = f1
 Reread = f2; ctrl-r
@@ -240,6 +248,16 @@ LinkNext = tab
 LinkPrev = alt-tab
 NodeNext = n
 NodePrev = p
+
+[chattr]
+Up = up; left; ctrl-p
+Down = down; right; ctrl-n
+Top = home; alt-lt; a1
+Bottom = end; alt-gt; c1
+PageUp = pgup; alt-v
+PageDown = pgdn; ctrl-v
+Mark = t; shift-t
+MarkAndDown = insert
 
 [editor]
 Store = ctrl-insert

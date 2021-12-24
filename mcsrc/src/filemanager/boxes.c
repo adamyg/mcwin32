@@ -1,7 +1,7 @@
 /*
    Some misc dialog boxes for the program.
 
-   Copyright (C) 1994-2020
+   Copyright (C) 1994-2021
    Free Software Foundation, Inc.
 
    Written by:
@@ -43,6 +43,7 @@
 #include "lib/global.h"
 
 #include "lib/tty/tty.h"
+#include "lib/tty/color.h"      /* tty_use_colors() */
 #include "lib/tty/key.h"        /* XCTRL and ALT macros  */
 #include "lib/skin.h"           /* INPUT_COLOR */
 #include "lib/mcconfig.h"       /* Load/save user formats */
@@ -73,10 +74,9 @@
 
 #include "command.h"            /* For cmdline */
 #include "dir.h"
-#include "panel.h"              /* LIST_FORMATS */
 #include "tree.h"
 #include "layout.h"             /* for get_nth_panel_name proto */
-#include "midnight.h"           /* current_panel */
+#include "filemanager.h"
 
 #include "boxes.h"
 
@@ -103,7 +103,7 @@ static const int panel_list_user_idx = 3;
 
 static char **status_format;
 static unsigned long panel_list_formats_id, panel_user_format_id, panel_brief_cols_id;
-static unsigned long mini_user_status_id, mini_user_format_id;
+static unsigned long user_mini_status_id, mini_user_format_id;
 
 #ifdef HAVE_CHARSET
 static int new_display_codepage;
@@ -119,6 +119,8 @@ static gchar *current_skin_name;
 #ifdef ENABLE_BACKGROUND
 static WListbox *bg_list = NULL;
 #endif /* ENABLE_BACKGROUND */
+
+static unsigned long shadows_id;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -266,9 +268,41 @@ sel_skin_button (WButton * button, int action)
 
         button_set_text (button, str_fit_to_term (skin_label, 20, J_LEFT_FIT));
     }
-    dlg_destroy (skin_dlg);
+    widget_destroy (WIDGET (skin_dlg));
 
     return 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static cb_ret_t
+appearance_box_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+{
+    switch (msg)
+    {
+    case MSG_INIT:
+        if (!tty_use_colors ())
+        {
+            Widget *shadow;
+
+            shadow = widget_find_by_id (w, shadows_id);
+            CHECK (shadow)->state = FALSE;
+            widget_disable (shadow, TRUE);
+        }
+        return MSG_HANDLED;
+
+    case MSG_NOTIFY:
+        if (sender != NULL && sender->id == shadows_id)
+        {
+            mc_global.tty.shadows = CHECK (sender)->state;
+            repaint_screen ();
+            return MSG_HANDLED;
+        }
+        return MSG_NOT_HANDLED;
+
+    default:
+        return dlg_default_callback (w, sender, msg, parm, data);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -286,7 +320,7 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
 
             in1 = INPUT (widget_find_by_id (w, panel_user_format_id));
             in2 = INPUT (widget_find_by_id (w, panel_brief_cols_id));
-            ch = CHECK (widget_find_by_id (w, mini_user_status_id));
+            ch  = CHECK (widget_find_by_id (w, user_mini_status_id));
             in3 = INPUT (widget_find_by_id (w, mini_user_format_id));
 
             if (!ch->state)
@@ -299,7 +333,7 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
             return MSG_HANDLED;
         }
 
-        if (sender != NULL && sender->id == mini_user_status_id)
+        if (sender != NULL && sender->id == user_mini_status_id)
         {
             WInput *in;
 
@@ -514,7 +548,7 @@ configure_box (void)
         char *time_out_new;
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[36+2],
+        quick_widget_t quick_widgets[35+2] = {0},
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -608,7 +642,6 @@ configure_box (void)
         qc =         XQUICK_CHECKBOX (qc, N_("Use internal busybo&x"), &use_internal_busybox, NULL),
         qc =         XQUICK_SEPARATOR (qc, FALSE),
         qc =         XQUICK_SEPARATOR (qc, FALSE),
-        qc =         XQUICK_SEPARATOR (qc, FALSE),
         qc =     XQUICK_STOP_GROUPBOX (qc),
         qc = XQUICK_STOP_COLUMNS (qc),
         qc = XQUICK_BUTTONS_OK_CANCEL (qc),
@@ -642,12 +675,14 @@ configure_box (void)
 void
 appearance_box (void)
 {
+    gboolean shadows = mc_global.tty.shadows;
+
     current_skin_name = g_strdup (mc_skin__default.name);
     skin_names = mc_skin_list ();
 
     {
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[7+2],
+        quick_widget_t quick_widgets[9+2] = {0},
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -658,6 +693,8 @@ appearance_box (void)
                 QUICK_BUTTON (str_fit_to_term (skin_name_to_label (current_skin_name), 20, J_LEFT_FIT),
                               B_USER, sel_skin_button, NULL),
             QUICK_STOP_COLUMNS,
+            QUICK_SEPARATOR (TRUE),
+            QUICK_CHECKBOX (N_("&Shadows"), &mc_global.tty.shadows, &shadows_id),
             QUICK_BUTTONS_OK_CANCEL,
             QUICK_END
             /* *INDENT-ON* */
@@ -667,7 +704,7 @@ appearance_box (void)
         quick_dialog_t qdlg = {
             -1, -1, 54,
             N_("Appearance"), "[Appearance]",
-            quick_widgets, dlg_default_callback, NULL
+            quick_widgets, appearance_box_callback, NULL
         };
 
 #if defined(WIN32)  //WIN32, quick
@@ -677,6 +714,8 @@ appearance_box (void)
         qc =     XQUICK_BUTTON (qc, str_fit_to_term (skin_name_to_label (current_skin_name), 20, J_LEFT_FIT),
                               B_USER, sel_skin_button, NULL),
         qc = XQUICK_STOP_COLUMNS (qc),
+        qc = XQUICK_SEPARATOR (qc, TRUE),
+        qc = XQUICK_CHECKBOX (qc, N_("&Shadows"), &mc_global.tty.shadows, &shadows_id),
         qc = XQUICK_BUTTONS_OK_CANCEL (qc),
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
@@ -686,7 +725,10 @@ appearance_box (void)
             mc_config_set_string (mc_global.main_config, CONFIG_APP_SECTION, "skin",
                                   current_skin_name);
         else
+        {
             skin_apply (NULL);
+            mc_global.tty.shadows = shadows;
+        }
     }
 
     g_free (current_skin_name);
@@ -711,7 +753,7 @@ panel_options_box (void)
         };
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[33+2],
+        quick_widget_t quick_widgets[33+2] = {0},
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -841,7 +883,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
     }
 
     {
-        gboolean mini_user_status;
+        gboolean user_mini_status;
         char panel_brief_cols_in[BUF_TINY];
         char *panel_brief_cols_out = NULL;
         char *panel_user_format = NULL;
@@ -856,7 +898,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
         };
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[12+2],
+        quick_widget_t quick_widgets[12+2] = {0},
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -872,7 +914,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
             QUICK_INPUT (panel->user_format, "user-fmt-input", &panel_user_format,
                          &panel_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
             QUICK_SEPARATOR (TRUE),
-            QUICK_CHECKBOX (N_("User &mini status"), &mini_user_status, &mini_user_status_id),
+            QUICK_CHECKBOX (N_("User &mini status"), &user_mini_status, &user_mini_status_id),
             QUICK_INPUT (panel->user_status_format[panel->list_format], "mini_input",
                          &mini_user_format, &mini_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
             QUICK_BUTTONS_OK_CANCEL,
@@ -899,7 +941,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
         qc = XQUICK_INPUT (qc, panel->user_format, "user-fmt-input", &panel_user_format,
                      &panel_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
         qc = XQUICK_SEPARATOR (qc, TRUE),
-        qc = XQUICK_CHECKBOX (qc, N_("User &mini status"), &mini_user_status, &mini_user_status_id),
+        qc = XQUICK_CHECKBOX (qc, N_("User &mini status"), &user_mini_status, &user_mini_status_id),
         qc = XQUICK_INPUT (qc, panel->user_status_format[panel->list_format], "mini_input",
                      &mini_user_format, &mini_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
         qc = XQUICK_BUTTONS_OK_CANCEL (qc),
@@ -907,7 +949,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
 
-        mini_user_status = panel->user_mini_status;
+        user_mini_status = panel->user_mini_status;
         result = panel->list_format;
         status_format = panel->user_status_format;
 
@@ -919,7 +961,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
         if ((int) panel->list_format != panel_list_user_idx)
             quick_widgets[6].state = WST_DISABLED;
 
-        if (!mini_user_status)
+        if (!user_mini_status)
             quick_widgets[9].state = WST_DISABLED;
 
         if (quick_dialog (&qdlg) == B_CANCEL)
@@ -931,7 +973,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
 
             *userp = panel_user_format;
             *minip = mini_user_format;
-            *use_msformat = mini_user_status;
+            *use_msformat = user_mini_status;
 
             cols = strtol (panel_brief_cols_out, &error, 10);
             if (*error == '\0')
@@ -978,7 +1020,7 @@ sort_box (dir_sort_options_t * op, const panel_field_t * sort_field)
 
     {
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[9+2],
+        quick_widget_t quick_widgets[9+2] = {0},
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -1033,7 +1075,7 @@ void
 confirm_box (void)
 {
 #if defined(WIN32)  //WIN32, quick
-    quick_widget_t quick_widgets[8+2],
+    quick_widget_t quick_widgets[8+2] = {0},
         *qc = quick_widgets;
 #else
     quick_widget_t quick_widgets[] = {
@@ -1093,7 +1135,7 @@ display_bits_box (void)
     };
 
 #if defined(WIN32)  //WIN32, quick
-    quick_widget_t quick_widgets[5+2],
+    quick_widget_t quick_widgets[5+2] = {0},
         *qc = quick_widgets;
 #else
     quick_widget_t quick_widgets[] = {
@@ -1161,7 +1203,7 @@ display_bits_box (void)
         gboolean new_meta;
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[9+2],
+        quick_widget_t quick_widgets[9+2] = {0},
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -1251,7 +1293,7 @@ tree_box (const char *current_dir)
     mytree = tree_new (2, 2, wd->lines - 6, wd->cols - 5, FALSE);
     group_add_widget_autopos (g, mytree, WPOS_KEEP_ALL, NULL);
     group_add_widget_autopos (g, hline_new (wd->lines - 4, 1, -1), WPOS_KEEP_BOTTOM, NULL);
-    bar = buttonbar_new (TRUE);
+    bar = buttonbar_new ();
     group_add_widget (g, bar);
     /* restore ButtonBar coordinates after add_widget() */
     WIDGET (bar)->x = 0;
@@ -1265,7 +1307,7 @@ tree_box (const char *current_dir)
         val = g_strdup (vfs_path_as_str (selected_name));
     }
 
-    dlg_destroy (dlg);
+    widget_destroy (wd);
     return val;
 }
 
@@ -1294,9 +1336,9 @@ configure_vfs_box (void)
 
 #if defined(WIN32)  //WIN32, quick
 #ifdef ENABLE_VFS_FTP
-        quick_widget_t quick_widgets[11+2],
+        quick_widget_t quick_widgets[11+2] = {0},
 #else
-        quick_widget_t quick_widgets[3+2],
+        quick_widget_t quick_widgets[3+2] = {0},
 #endif
             *qc = quick_widgets;
 #else
@@ -1399,13 +1441,13 @@ configure_vfs_box (void)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-cd_box (void)
+cd_box (const WPanel * panel)
 {
-    const Widget *w = CONST_WIDGET (current_panel);
+    const Widget *w = CONST_WIDGET (panel);
     char *my_str;
 
 #if defined(WIN32)  //WIN32, quick
-    quick_widget_t quick_widgets[2],
+    quick_widget_t quick_widgets[2] = {0},
             *qc = quick_widgets;
 #else
     quick_widget_t quick_widgets[] = {
@@ -1438,7 +1480,7 @@ symlink_box (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
              char **ret_existing, char **ret_new)
 {
 #if defined(WIN32)  //WIN32, quick
-    quick_widget_t quick_widgets[5+2],
+    quick_widget_t quick_widgets[5+2] = {0},
                 *qc = quick_widgets;
 #else
     quick_widget_t quick_widgets[] = {
@@ -1549,7 +1591,7 @@ jobs_box (void)
     }
 
     (void) dlg_run (jobs_dlg);
-    dlg_destroy (jobs_dlg);
+    widget_destroy (WIDGET (jobs_dlg));
 }
 #endif /* ENABLE_BACKGROUND */
 

@@ -1,0 +1,139 @@
+
+File Changes:
+
+	- lib/timer.c
+	- src/keybind-defaults.c
+	- src/filemanager/find.h
+	- src/editor/spell_dialogs.h
+	- src/editor/spell_dialogs.c
+	- src/editor/editcmd_dialogs.h
+	- src/editor/editcmd_dialogs.c
+	- src/editor/choosesyntax.c
+	- src/editor/spell.c
+	- src/viewer/inlines.h
+
+	+ src/keymap.c
+	+ src/filemanager/cd.h
+	+ src/filemanager/cd.c
+	+ src/editor/editmacros.h
+	+ src/editor/editmacros.c
+	+ src/editor/editsearch.h
+	+ src/editor/editsearch.c
+	+ src/editor/editcomplete.h
+	+ src/editor/editcomplete.c
+	+ lib/vfs/parse_ls_vga.c
+
+	! src/filemanager/midnight.h ==> src/filemanager/filemanager.h
+	! src/filemanager/midnight.c ==> src/filemanager/filemanager.c
+
+-----------------------------------------------------------------------------------------------
+
+d:\devl\mc\mcmerge>git merge --autostash 4.8.27
+Created autostash: 9f0512c23
+Removing src/viewer/inlines.h
+Auto-merging src/viewer/growbuf.c
+Auto-merging src/viewer/dialogs.c
+Auto-merging src/vfs/sftpfs/internal.c
+Auto-merging src/vfs/sftpfs/file.c
+Auto-merging src/vfs/sftpfs/config_parser.c
+Auto-merging src/vfs/ftpfs/ftpfs.c
+
+CONFLICT (content): Merge conflict in src/vfs/ftpfs/ftpfs.c
+Auto-merging src/vfs/extfs/extfs.c
+
+CONFLICT (content): Merge conflict in src/vfs/extfs/extfs.c
+Auto-merging src/usermenu.c
+
+CONFLICT (content): Merge conflict in src/usermenu.c
+Auto-merging src/textconf.c
+
+CONFLICT (content): Merge conflict in src/textconf.c
+Auto-merging src/main.c
+Auto-merging src/keymap.c
+Auto-merging src/filemanager/panel.c
+Auto-merging src/filemanager/listmode.c
+Auto-merging src/filemanager/hotlist.c
+Removing src/filemanager/find.h
+Auto-merging src/filemanager/filemanager.c
+
+CONFLICT (content): Merge conflict in src/filemanager/filemanager.c
+Auto-merging src/filemanager/filegui.c
+Auto-merging src/filemanager/ext.c
+
+CONFLICT (content): Merge conflict in src/filemanager/ext.c
+Auto-merging src/filemanager/boxes.c
+
+CONFLICT (content): Merge conflict in src/filemanager/boxes.c
+Auto-merging src/editor/syntax.c
+
+CONFLICT (modify/delete): src/editor/spell_dialogs.c deleted in 4.8.27 and modified in HEAD. Version HEAD of src/editor/spell_dialogs.c left in tree.
+Auto-merging src/editor/spell.c
+Auto-merging src/editor/editoptions.c
+Removing src/editor/editcmd_dialogs.h
+
+CONFLICT (modify/delete): src/editor/editcmd_dialogs.c deleted in 4.8.27 and modified in HEAD. Version HEAD of src/editor/editcmd_dialogs.c left in tree.
+
+Auto-merging src/editor/editcmd.c
+Removing src/editor/choosesyntax.c
+Auto-merging src/diffviewer/ydiff.c
+Auto-merging src/diffviewer/search.c
+Auto-merging src/cons.handler.c
+Auto-merging src/args.c
+
+CONFLICT (content): Merge conflict in src/args.c
+Auto-merging misc/mc.emacs.keymap
+Auto-merging misc/mc.default.keymap
+Removing m4.include/gnulib/ls-mntd-fs.m4
+Removing m4.include/ac_onceonly.m4
+Auto-merging lib/widget/wtools.c
+Auto-merging lib/widget/input_complete.c
+Auto-merging lib/widget/dialog.c
+
+CONFLICT (content): Merge conflict in lib/widget/dialog.c
+Auto-merging lib/vfs/xdirentry.h
+Auto-merging lib/vfs/vfs.c
+Auto-merging lib/vfs/path.c
+Auto-merging lib/vfs/parse_ls_vga.c
+
+CONFLICT (content): Merge conflict in lib/vfs/parse_ls_vga.c
+Auto-merging lib/vfs/interface.c
+
+CONFLICT (content): Merge conflict in lib/vfs/interface.c
+Auto-merging lib/util.c
+Auto-merging lib/tty/tty.c
+Removing lib/timer.h
+Auto-merging lib/strutil/strutil.c
+Auto-merging lib/shell.c
+Auto-merging lib/search.h
+Auto-merging lib/keybind.h
+Auto-merging lib/keybind.c
+
+CONFLICT (content): Merge conflict in lib/keybind.c
+Auto-merging lib/global.h
+Auto-merging lib/filehighlight/ini-file-read.c
+Auto-merging lib/charsets.c
+
+Removing doc/hints/l10n/mc.hint.uz
+Removing doc/hints/l10n/mc.hint.te
+Removing doc/hints/l10n/mc.hint.szl
+Removing doc/hints/l10n/mc.hint.sl
+Removing doc/hints/l10n/mc.hint.kk
+Removing doc/hints/l10n/mc.hint.ka
+Removing doc/hints/l10n/mc.hint.ia
+Removing doc/hints/l10n/mc.hint.hr
+Removing doc/hints/l10n/mc.hint.he
+Removing doc/hints/l10n/mc.hint.fi
+Removing doc/hints/l10n/mc.hint.br
+Removing doc/hints/l10n/mc.hint.az
+Removing doc/hints/l10n/mc.hint.ar
+Removing doc/hints/l10n/mc.hint.af
+Removing contrib/dist/redhat/mc.spec.in
+Removing contrib/dist/redhat/Makefile.am
+Removing contrib/dist/prototype.in
+Removing contrib/dist/pkginfo.in
+Removing contrib/dist/gentoo/README
+Removing contrib/dist/gentoo/Makefile.am
+Removing contrib/dist/Makefile.am
+Auto-merging .gitignore
+Automatic merge failed; fix conflicts and then commit the result.
+

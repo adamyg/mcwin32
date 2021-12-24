@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# Midnight command WIN32 builds 4.8.24, as at 20/04/20
+# Midnight command WIN32 builds 4.8.27, as at 21/12/22
 #
 # Copyright (c) 2007, 2012 - 2021 Adam Young.
 #
@@ -37,7 +37,7 @@ PKG_TARNAME	= @PACKAGE_TARNAME@
 PKG_URL		= @PACKAGE_URL@
 PKG_VERSION	= @PACKAGE_VERSION@
 ifeq ("","$(PKG_VERSION)")
-PKG_VERSION	= 4.8.24
+PKG_VERSION	= 4.8.27
 endif
 PKG_VERSION_1	=$(word 1,$(subst ., ,$(PKG_VERSION)))
 PKG_VERSION_2	=$(word 2,$(subst ., ,$(PKG_VERSION)))
@@ -196,7 +196,7 @@ RMDFLAGS=	-rf
 #########################################################################################
 #
 # Note: Objects output paths *must* be specialised as source components are not unique,
-#       for example 'init' and 'common'.
+# for example 'init' and 'common'.
 #
 
 ifeq ("wcl386","$(CC)")
@@ -221,7 +221,7 @@ MC_SRC=	\
 	$(D_OBJ)/events_init$(O)		\
 	$(D_OBJ)/execute$(O)			\
 	$(D_OBJ)/help$(O)			\
-	$(D_OBJ)/keybind-defaults$(O)		\
+	$(D_OBJ)/keymap$(O)			\
 	$(D_OBJ)/learn$(O)			\
 	$(D_OBJ)/main$(O)			\
 	$(D_OBJ)/selcodepage$(O)		\
@@ -239,6 +239,7 @@ D_OBJFM=	$(D_OBJ)/filemanager
 MC_FILEMANAGER=\
 	$(D_OBJFM)/achown$(O)			\
 	$(D_OBJFM)/boxes$(O)			\
+	$(D_OBJFM)/cd$(O)			\
 	$(D_OBJFM)/chmod$(O)			\
 	$(D_OBJFM)/chown$(O)			\
 	$(D_OBJFM)/cmd$(O)			\
@@ -247,13 +248,13 @@ MC_FILEMANAGER=\
 	$(D_OBJFM)/ext$(O)			\
 	$(D_OBJFM)/file$(O)			\
 	$(D_OBJFM)/filegui$(O)			\
+	$(D_OBJFM)/filemanager$(O)		\
 	$(D_OBJFM)/filenot$(O)			\
 	$(D_OBJFM)/fileopctx$(O)		\
 	$(D_OBJFM)/find$(O)			\
 	$(D_OBJFM)/hotlist$(O)			\
 	$(D_OBJFM)/info$(O)			\
 	$(D_OBJFM)/layout$(O)			\
-	$(D_OBJFM)/midnight$(O)			\
 	$(D_OBJFM)/mountlist$(O)		\
 	$(D_OBJFM)/panel$(O)			\
 	$(D_OBJFM)/panelize$(O)			\
@@ -269,19 +270,18 @@ D_OBJED=	$(D_OBJ)/editor
 
 MC_EDITOR=\
 	$(D_OBJED)/bookmark$(O)			\
-	$(D_OBJED)/choosesyntax$(O)		\
 	$(D_OBJED)/edit$(O)			\
 	$(D_OBJED)/editbuffer$(O)		\
 	$(D_OBJED)/editcmd$(O)			\
-	$(D_OBJED)/editcmd_dialogs$(O)		\
+	$(D_OBJED)/editcomplete$(O)		\
 	$(D_OBJED)/editdraw$(O)			\
+	$(D_OBJED)/editmacros$(O)		\
 	$(D_OBJED)/editmenu$(O)			\
 	$(D_OBJED)/editoptions$(O)		\
+	$(D_OBJED)/editsearch$(O)		\
 	$(D_OBJED)/editwidget$(O)		\
 	$(D_OBJED)/etags$(O)			\
 	$(D_OBJED)/format$(O)			\
-	$(D_OBJED)/spell$(O)			\
-	$(D_OBJED)/spell_dialogs$(O)		\
 	$(D_OBJED)/syntax$(O)
 
 D_OBJVW=	$(D_OBJ)/viewer
@@ -354,7 +354,6 @@ MC_LIBMC=\
 	$(D_OBJMC)/lib_serialize$(O)		\
 	$(D_OBJMC)/lib_shell$(O)		\
 	$(D_OBJMC)/lib_timefmt$(O)		\
-	$(D_OBJMC)/lib_timer$(O)		\
 	$(D_OBJMC)/lib_util$(O)			\
 	\
 	$(D_OBJMC)/event_event$(O)		\
@@ -399,6 +398,7 @@ MC_LIBMC=\
 	$(D_OBJMC)/tty_mouse$(O)		\
 	$(D_OBJMC)/tty_tty$(O)			\
 	\
+	$(D_OBJMC)/compat_strtok_r$(O)		\
 	$(D_OBJMC)/win32_key$(O)		\
 	$(D_OBJMC)/win32_tty$(O)		\
 	$(D_OBJMC)/win32_win$(O)		\
@@ -481,6 +481,7 @@ MC_LIBVFS=\
 	$(D_OBJVFS)/cpio_cpio$(O)		\
 	$(D_OBJVFS)/extfs_extfs$(O)		\
 	$(D_OBJVFS)/ftpfs_ftpfs$(O)		\
+	$(D_OBJVFS)/ftpfs_ftpfs_parse_ls$(O)	\
 	$(MC_LIBVFS_SFTPFS)			\
 	$(D_OBJVFS)/sfs_sfs$(O)			\
 	$(D_OBJVFS)/tar_tar$(O)
@@ -681,10 +682,10 @@ help:
 	@echo :
 	@echo : Targets:
 	@echo :
-	@echo : build -        build everything.
-	@echo : package -      build all packages.
-	@echo : clean -        delete everything which can be remade.
-	@echo : help -         command line usage.
+	@echo : build - build everything.
+	@echo : package - build all packages.
+	@echo : clean - delete everything which can be remade.
+	@echo : help - command line usage.
 	@echo :
 
 release:
@@ -1020,7 +1021,7 @@ $(LW)autoupdater$(A):
 # source rules
 #
 # note: output directories must be component specific as object name as not unique,
-#       for example common and init.
+# for example common and init.
 
 $(D_OBJ)/%$(O) :		./%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

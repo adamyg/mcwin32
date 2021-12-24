@@ -3,7 +3,7 @@
 /*
  *  win32 Midnight Commander -- config.h
  *
- *  Written by: Adam Young 2012 - 2020
+ *  Written by: Adam Young 2012 - 2021
  *
  *  This file is part of the Midnight Commander.
  *
@@ -40,7 +40,7 @@
 #pragma warning (disable : 4706)                /* assignment within conditional expression */
 #pragma warning (disable : 4996)                /* 'xxx' was declared deprecated */
 
-#elif defined(__WATCOMC__)
+#elif defined(__WATCOMC__) //WIN32/c11
 #pragma disable_message(136)                    /* Comparison equivalent to 'unsigned == 0' */
 #pragma disable_message(201)                    /* Unreachable code */
 #pragma disable_message(202)                    /* Unreferenced */
@@ -130,7 +130,7 @@ extern void                 tty_set_title(const char *title);
 #define HAVE_STRCASECMP 1
 #define HAVE_STRNCASECMP 1
 #define HAVE_GETOPT 1
-#if defined(__WATCOMC__)
+#if defined(__WATCOMC__) //WIN32/c11
 #define HAVE_STRLCPY 1
 #define HAVE_STRLCAT 1
 #define HAVE_LOCALE_H  1

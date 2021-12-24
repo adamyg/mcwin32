@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2020
+   Copyright (C) 1994-2021
    Free Software Foundation, Inc.
 
    Authors:
@@ -34,6 +34,7 @@
 
 #include <config.h>
 
+#include <stdarg.h>
 #include <stdlib.h>
 
 #include "lib/global.h"
@@ -168,6 +169,21 @@ hline_set_text (WHLine * l, const char *text)
         l->text = g_strdup (text);
 
     widget_draw (WIDGET (l));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+hline_set_textv (WHLine * l, const char *format, ...)
+{
+    va_list args;
+    char buf[BUF_1K];           /* FIXME: is it enough? */
+
+    va_start (args, format);
+    g_vsnprintf (buf, sizeof (buf), format, args);
+    va_end (args);
+
+    hline_set_text (l, buf);
 }
 
 /* --------------------------------------------------------------------------------------------- */

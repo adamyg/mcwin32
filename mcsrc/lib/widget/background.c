@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 2020
+   Copyright (C) 2020-2021
    The Free Software Foundation, Inc.
 
    Authors:
@@ -23,7 +23,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** \file hline.c
+/** \file background.c
  *  \brief Source: WBackground widget (background area of dialog)
  */
 

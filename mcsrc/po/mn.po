@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the mc package.
 #
 # Translators:
+# Shuree Nyam-Oidov <99shuree@gmail.com>, 2020
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2020-03-09 10:53+0300\n"
-"PO-Revision-Date: 2019-12-16 01:49+0000\n"
-"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
+"POT-Creation-Date: 2021-08-15 15:53+0200\n"
+"PO-Revision-Date: 2021-07-26 20:16+0000\n"
+"Last-Translator: Transifex Bot <>\n"
 "Language-Team: Mongolian (http://www.transifex.com/mc/mc/language/mn/)\n"
 "Language: mn\n"
 "MIME-Version: 1.0\n"
@@ -70,24 +71,6 @@ msgid "Cannot create %s directory"
 msgstr ""
 
 msgid "FATAL: not a directory:"
-msgstr ""
-
-#, c-format
-msgid "An error occurred while migrating user settings: %s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Your old settings were migrated from %s\n"
-"to Freedesktop recommended dirs.\n"
-"To get more info, please visit\n"
-"http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html"
-msgstr ""
-
-#, c-format
-msgid ""
-"Your old settings were migrated from %s\n"
-"to %s\n"
 msgstr ""
 
 msgid ""
@@ -164,10 +147,10 @@ msgstr ""
 msgid "True color not supported with ncurses."
 msgstr ""
 
-msgid "True color not supported in this slang version."
+msgid "Your terminal doesn't even seem to support 256 colors."
 msgstr ""
 
-msgid "Your terminal doesn't even seem to support 256 colors."
+msgid "True color not supported in this slang version."
 msgstr ""
 
 msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
@@ -462,11 +445,11 @@ msgstr "TERM хувьсагч утга аваагүй байна!\n"
 msgid "Cannot check SIGWINCH pipe"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "Cannot create pipe for SIGWINCH: %s (%d)\n"
-msgstr " %s: %s түр зуурын лавлахыг үүсгэж чадсангүй\n"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -525,18 +508,6 @@ msgstr ""
 msgid ""
 "Unexpected error in waitpid():\n"
 "%s"
-msgstr ""
-
-msgid "Warning"
-msgstr "Анхааруулга"
-
-msgid "Pipe failed"
-msgstr ""
-
-msgid "Dup failed"
-msgstr ""
-
-msgid "Error dup'ing old error pipe"
 msgstr ""
 
 #, c-format
@@ -909,25 +880,25 @@ msgid "Enter line:"
 msgstr ""
 
 msgid "ButtonBar|Help"
-msgstr ""
+msgstr "Туслмж"
 
 msgid "ButtonBar|Save"
-msgstr ""
+msgstr "Хадглх"
 
 msgid "ButtonBar|Edit"
-msgstr ""
+msgstr "Засврл"
 
 msgid "ButtonBar|Merge"
-msgstr ""
+msgstr "Нэгтгх"
 
 msgid "ButtonBar|Search"
-msgstr ""
+msgstr "Хайх"
 
 msgid "ButtonBar|Options"
-msgstr ""
+msgstr "Сонглт"
 
 msgid "ButtonBar|Quit"
-msgstr ""
+msgstr "Гарах"
 
 msgid "Quit"
 msgstr "Гарах"
@@ -957,16 +928,7 @@ msgid "Diff viewer: invalid mode"
 msgstr ""
 
 msgid "Two files are needed to compare"
-msgstr ""
-
-msgid "Choose syntax highlighting"
-msgstr ""
-
-msgid "< Auto >"
-msgstr ""
-
-msgid "< Reload Current Syntax >"
-msgstr ""
+msgstr "Хоёр файлд харьцуулалт хэрэгтэй"
 
 #, c-format
 msgid "Loading: %3d%%"
@@ -1000,6 +962,9 @@ msgid ""
 "Open it anyway?"
 msgstr ""
 
+msgid "Warning"
+msgstr "Анхааруулга"
+
 #, c-format
 msgid "Error reading from pipe: %s"
 msgstr ""
@@ -1007,14 +972,6 @@ msgstr ""
 #, c-format
 msgid "Cannot open pipe for reading: %s"
 msgstr ""
-
-#, c-format
-msgid "Searching %s: %3d%%"
-msgstr ""
-
-#, c-format
-msgid "Searching %s"
-msgstr "Хайж байна %s"
 
 msgid "File has hard-links. Detach before saving?"
 msgstr ""
@@ -1061,12 +1018,6 @@ msgstr ""
 msgid "Save As"
 msgstr ""
 
-msgid "Block is large, you may not be able to undo this action"
-msgstr ""
-
-msgid "Collect completions"
-msgstr ""
-
 msgid "&Quick save"
 msgstr ""
 
@@ -1095,27 +1046,6 @@ msgid "&Overwrite"
 msgstr ""
 
 msgid "Cannot save file"
-msgstr ""
-
-msgid "Delete macro"
-msgstr ""
-
-msgid "Press macro hotkey:"
-msgstr ""
-
-msgid "Macro not deleted"
-msgstr ""
-
-msgid "Save macro"
-msgstr ""
-
-msgid "Press the macro's new hotkey:"
-msgstr ""
-
-msgid "Repeat last commands"
-msgstr ""
-
-msgid "Repeat times:"
 msgstr ""
 
 #, c-format
@@ -1151,13 +1081,6 @@ msgstr ""
 
 msgid "&Local"
 msgstr "&Локал"
-
-msgid "Replace"
-msgstr ""
-
-#, c-format
-msgid "%ld replacements made"
-msgstr ""
 
 msgid "[NoName]"
 msgstr ""
@@ -1258,42 +1181,37 @@ msgstr ""
 
 msgid ""
 "Current text was modified without a file save.\n"
-"Continue discards these changes"
-msgstr ""
-
-msgid "In se&lection"
-msgstr ""
-
-msgid "&Find all"
-msgstr ""
-
-msgid "Enter replacement string:"
-msgstr ""
-
-msgid "Replace with:"
-msgstr ""
-
-msgid "&Replace"
-msgstr "&Солих"
-
-msgid "A&ll"
-msgstr "&Бүгд"
-
-msgid "&Skip"
-msgstr "&Алгасах"
-
-msgid "Confirm replace"
+"Continue discards these changes."
 msgstr ""
 
 msgid "Cancel"
 msgstr "Болих"
 
-msgid ""
-"Current text was modified without a file save.\n"
-"Continue discards these changes."
+msgid "Collect completions"
 msgstr ""
 
 msgid "NoName"
+msgstr ""
+
+msgid "Save macro"
+msgstr ""
+
+msgid "Press the macro's new hotkey:"
+msgstr ""
+
+msgid "Delete macro"
+msgstr ""
+
+msgid "Press macro hotkey:"
+msgstr ""
+
+msgid "Macro not deleted"
+msgstr ""
+
+msgid "Repeat last commands"
+msgstr ""
+
+msgid "Repeat times:"
 msgstr ""
 
 msgid "&Open file..."
@@ -1318,7 +1236,7 @@ msgid "Cop&y to file..."
 msgstr ""
 
 msgid "&User menu..."
-msgstr ""
+msgstr "Хэрэглэгчийн ц&эс"
 
 msgid "A&bout..."
 msgstr ""
@@ -1483,7 +1401,7 @@ msgid "Save &mode..."
 msgstr ""
 
 msgid "Learn &keys..."
-msgstr ""
+msgstr "Тэлхүүрээс &сурах"
 
 msgid "Syntax &highlighting..."
 msgstr ""
@@ -1498,7 +1416,7 @@ msgid "&Save setup"
 msgstr "&Тохиргоо хадгалах"
 
 msgid "&File"
-msgstr ""
+msgstr "&Файл"
 
 msgid "&Edit"
 msgstr ""
@@ -1507,7 +1425,7 @@ msgid "&Search"
 msgstr ""
 
 msgid "&Command"
-msgstr ""
+msgstr "&Команд"
 
 msgid "For&mat"
 msgstr ""
@@ -1516,7 +1434,7 @@ msgid "&Window"
 msgstr ""
 
 msgid "&Options"
-msgstr ""
+msgstr "&Сонголт"
 
 msgid "&None"
 msgstr ""
@@ -1584,12 +1502,51 @@ msgstr ""
 msgid "Editor options"
 msgstr ""
 
+msgid "In se&lection"
+msgstr ""
+
+msgid "&Find all"
+msgstr ""
+
+msgid "Enter replacement string:"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Replace with:"
+msgstr ""
+
+msgid "&Replace"
+msgstr "&Солих"
+
+msgid "A&ll"
+msgstr "&Бүгд"
+
+msgid "&Skip"
+msgstr "&Алгасах"
+
+msgid "Confirm replace"
+msgstr ""
+
+#, c-format
+msgid "Searching %s: %3d%%"
+msgstr ""
+
+#, c-format
+msgid "Searching %s"
+msgstr "Хайж байна %s"
+
+#, c-format
+msgid "%ld replacements made"
+msgstr ""
+
 msgid ""
 "A user friendly text editor\n"
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2020 the Free Software Foundation"
+msgid "Copyright (C) 1996-2021 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1602,22 +1559,22 @@ msgid "Edit: "
 msgstr ""
 
 msgid "ButtonBar|Mark"
-msgstr ""
+msgstr "Тэмдэг"
 
 msgid "ButtonBar|Replac"
-msgstr ""
+msgstr "Солих"
 
 msgid "ButtonBar|Copy"
-msgstr ""
+msgstr "Хуулах"
 
 msgid "ButtonBar|Move"
-msgstr ""
+msgstr "Нүүх"
 
 msgid "ButtonBar|Delete"
-msgstr ""
+msgstr "Устгах"
 
 msgid "ButtonBar|PullDn"
-msgstr ""
+msgstr "Цэс MC"
 
 msgid "Breton"
 msgstr ""
@@ -1709,6 +1666,15 @@ msgstr ""
 msgid "Select language"
 msgstr ""
 
+msgid "Choose syntax highlighting"
+msgstr ""
+
+msgid "< Auto >"
+msgstr ""
+
+msgid "< Reload Current Syntax >"
+msgstr ""
+
 msgid "Load syntax file"
 msgstr ""
 
@@ -1738,7 +1704,7 @@ msgstr ""
 
 msgid ""
 "Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
+"the subshell cannot be toggled."
 msgstr ""
 
 msgid "Type 'exit' to return to the Midnight Commander"
@@ -1764,6 +1730,10 @@ msgstr "бусад"
 
 msgid "Flag"
 msgstr "Флаг"
+
+#, c-format
+msgid "Permissions (octal): %o"
+msgstr ""
 
 msgid "Chown advanced command"
 msgstr ""
@@ -1808,7 +1778,7 @@ msgid "&Never"
 msgstr "&Хэзээч"
 
 msgid "On dum&b terminals"
-msgstr ""
+msgstr "Тэнэг терм&инал дээр "
 
 msgid "Alwa&ys"
 msgstr "&үргэлж"
@@ -1820,7 +1790,7 @@ msgid "&Verbose operation"
 msgstr "&Ажиллагааны детали"
 
 msgid "Compute tota&ls"
-msgstr ""
+msgstr "&Нийт тооцоолуур"
 
 msgid "Classic pro&gressbar"
 msgstr ""
@@ -1829,7 +1799,7 @@ msgid "Mkdi&r autoname"
 msgstr ""
 
 msgid "&Preallocate space"
-msgstr ""
+msgstr "Хуваарилсан за&й "
 
 msgid "Esc key mode"
 msgstr ""
@@ -1844,16 +1814,16 @@ msgid "Pause after run"
 msgstr ""
 
 msgid "Use internal edi&t"
-msgstr ""
+msgstr "&Дотоод засварыг хэрэглэх"
 
 msgid "Use internal vie&w"
-msgstr ""
+msgstr "Д&отоод харагдах байдлыг хэрэглэх"
 
 msgid "A&sk new file name"
-msgstr ""
+msgstr "&Шинэ файлийн нэрийг асуух"
 
 msgid "Auto m&enus"
-msgstr ""
+msgstr "&Авто меню"
 
 msgid "&Drop down menus"
 msgstr "&Унжигч цэс"
@@ -1862,27 +1832,30 @@ msgid "S&hell patterns"
 msgstr ""
 
 msgid "Co&mplete: show all"
-msgstr ""
+msgstr "Д&ууссан: бүгдийг харуулах"
 
 msgid "Rotating d&ash"
-msgstr ""
+msgstr "&Эргүүлэх зураас"
 
 msgid "Cd follows lin&ks"
-msgstr ""
+msgstr "CD &линк-ийг дагах"
 
 msgid "Sa&fe delete"
-msgstr ""
+msgstr "&Хадгалах Устгах"
 
 msgid "Safe overwrite"
-msgstr ""
+msgstr "Дар&ж бичсэнг хадгалах"
 
 msgid "A&uto save setup"
-msgstr ""
+msgstr "А&вто тохируулгыг хадгалах"
 
 msgid "Configure options"
 msgstr "Тохиргуулгын параметрүүд"
 
 msgid "Skin:"
+msgstr ""
+
+msgid "&Shadows"
 msgstr ""
 
 msgid "Appearance"
@@ -2104,6 +2077,114 @@ msgstr "Хэрэглэгчийн нэр:"
 msgid "SMB authentication"
 msgstr ""
 
+#, c-format
+msgid ""
+"Cannot chdir to \"%s\"\n"
+"%s"
+msgstr ""
+
+msgid "Secure deletion"
+msgstr ""
+
+msgid "Undelete"
+msgstr ""
+
+msgid "Synchronous updates"
+msgstr ""
+
+msgid "Synchronous directory updates"
+msgstr ""
+
+msgid "Immutable"
+msgstr ""
+
+msgid "Append only"
+msgstr ""
+
+msgid "No dump"
+msgstr ""
+
+msgid "No update atime"
+msgstr ""
+
+msgid "Compress"
+msgstr ""
+
+msgid "Compressed clusters"
+msgstr ""
+
+msgid "Compressed dirty file"
+msgstr ""
+
+msgid "Compression raw access"
+msgstr ""
+
+msgid "Encrypted inode"
+msgstr ""
+
+msgid "Journaled data"
+msgstr ""
+
+msgid "Indexed directory"
+msgstr ""
+
+msgid "No tail merging"
+msgstr ""
+
+msgid "Top of directory hierarchies"
+msgstr ""
+
+msgid "Inode uses extents"
+msgstr ""
+
+msgid "Huge_file"
+msgstr ""
+
+msgid "No COW"
+msgstr ""
+
+msgid "Direct access for files"
+msgstr ""
+
+msgid "Casefolded file"
+msgstr ""
+
+msgid "Inode has inline data"
+msgstr ""
+
+msgid "Project hierarchy"
+msgstr ""
+
+msgid "Verity protected inode"
+msgstr ""
+
+msgid "&Marked all"
+msgstr "Бүгдийг &тэмдэглэх"
+
+msgid "S&et marked"
+msgstr "Тэмдэглэгдсэнг &оноох"
+
+msgid "C&lear marked"
+msgstr "Тэмдэглэгдсэнг &устгах"
+
+msgid "Chattr command"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot chattr \"%s\"\n"
+"%s"
+msgstr ""
+
+msgid "Cannot change attributes on non-local filesystems"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot get flags of \"%s\"\n"
+"%s"
+msgstr ""
+
 msgid "set &user ID on execution"
 msgstr ""
 
@@ -2151,15 +2232,6 @@ msgstr ""
 
 msgid "Group name:"
 msgstr ""
-
-msgid "&Marked all"
-msgstr "Бүгдийг &тэмдэглэх"
-
-msgid "S&et marked"
-msgstr "Тэмдэглэгдсэнг &оноох"
-
-msgid "C&lear marked"
-msgstr "Тэмдэглэгдсэнг &устгах"
 
 msgid "Chmod command"
 msgstr " Команд chmod "
@@ -2271,7 +2343,7 @@ msgid "Which highlighting file you want to edit?"
 msgstr ""
 
 msgid "Compare directories"
-msgstr ""
+msgstr "Хавсралт файлийг харьцуулах"
 
 msgid "Select compare method:"
 msgstr ""
@@ -2346,12 +2418,6 @@ msgstr ""
 msgid "Cannot execute commands on non-local filesystems"
 msgstr ""
 
-#, c-format
-msgid ""
-"Cannot chdir to \"%s\"\n"
-"%s"
-msgstr ""
-
 msgid "Parameter"
 msgstr ""
 
@@ -2359,6 +2425,9 @@ msgstr ""
 msgid ""
 "Cannot create temporary command file\n"
 "%s"
+msgstr ""
+
+msgid "Pipe failed"
 msgstr ""
 
 #, c-format
@@ -2797,11 +2866,230 @@ msgid "&Stable symlinks"
 msgstr ""
 
 msgid "&Background"
-msgstr " &Ар тал"
+msgstr " &Фонд"
 
 #, c-format
 msgid "Invalid source pattern '%s'"
 msgstr ""
+
+msgid "File listin&g"
+msgstr "&Файлийг жагсаалт"
+
+msgid "&Quick view"
+msgstr "Х&урдан харах"
+
+msgid "&Info"
+msgstr "&Мэдээлэл"
+
+msgid "&Tree"
+msgstr "&Мод"
+
+msgid "&Listing format..."
+msgstr "&Жагшаалтын формат"
+
+msgid "&Sort order..."
+msgstr "Эрэмбэлэх &дараалал..."
+
+msgid "&Filter..."
+msgstr "&Шүүлт..."
+
+msgid "&Encoding..."
+msgstr "&Кодчилол"
+
+msgid "FT&P link..."
+msgstr "&FTP-холбоос..."
+
+msgid "S&hell link..."
+msgstr "S&hell-холбоос..."
+
+msgid "S&FTP link..."
+msgstr ""
+
+msgid "SM&B link..."
+msgstr "SM&B-холбоос..."
+
+msgid "Paneli&ze"
+msgstr "&Панелиз"
+
+msgid "&Rescan"
+msgstr ""
+
+msgid "&View"
+msgstr ""
+
+msgid "Vie&w file..."
+msgstr "&файлийг харах"
+
+msgid "&Filtered view"
+msgstr "&Шүүлтийг харах"
+
+msgid "&Copy"
+msgstr "Х&уулах"
+
+msgid "C&hmod"
+msgstr ""
+
+msgid "&Link"
+msgstr "&Линк"
+
+msgid "&Symlink"
+msgstr ""
+
+msgid "Relative symlin&k"
+msgstr "Ха&мааралтай symlink"
+
+msgid "Edit s&ymlink"
+msgstr "&Symlink-ийг засварлах"
+
+msgid "Ch&own"
+msgstr ""
+
+msgid "&Advanced chown"
+msgstr "&Ахисан шатны chown"
+
+msgid "Cha&ttr"
+msgstr ""
+
+msgid "&Rename/Move"
+msgstr ""
+
+msgid "&Mkdir"
+msgstr ""
+
+msgid "&Quick cd"
+msgstr "Х&урдан CD"
+
+msgid "Select &group"
+msgstr "&Групыг сонгох"
+
+msgid "U&nselect group"
+msgstr "Г&рупыг сонгохгүй"
+
+msgid "&Invert selection"
+msgstr ""
+
+msgid "E&xit"
+msgstr "Гара&х"
+
+msgid "&User menu"
+msgstr "Хэрэгл&эгчийн цэс"
+
+msgid "&Directory tree"
+msgstr "&Хавтас мод"
+
+msgid "&Find file"
+msgstr "&Файл хайх"
+
+msgid "S&wap panels"
+msgstr "Панелуудыг хооронд нь с&олих"
+
+msgid "Switch &panels on/off"
+msgstr "Унтраалга &панели on/off"
+
+msgid "&Compare directories"
+msgstr "&Хавсралт файлийг харьцуулах"
+
+msgid "C&ompare files"
+msgstr "Файлийн хар&ьцуулах"
+
+msgid "E&xternal panelize"
+msgstr "Г&адаад панелиз хийх"
+
+msgid "Show directory s&izes"
+msgstr "Хавсралтыг хэ&мжээ харуулах "
+
+msgid "Command &history"
+msgstr "Командын тү&үх "
+
+msgid "Viewed/edited files hi&story"
+msgstr "Харуулсан/засварласан файлийн тү&үх"
+
+msgid "Di&rectory hotlist"
+msgstr "Ка&талоги жагсаалт"
+
+msgid "&Active VFS list"
+msgstr "&Идэвхтэй VFS жагсаалт"
+
+msgid "&Background jobs"
+msgstr "фон&дын ажилууд"
+
+msgid "Screen lis&t"
+msgstr "Дэлгэцийн жагсаа&лт"
+
+msgid "&Undelete files (ext2fs only)"
+msgstr "&Сэргээгдсэн файлууд (зөвхөн ext2fs)"
+
+msgid "&Listing format edit"
+msgstr "&Засварлагдах бүтэцүүд"
+
+msgid "Edit &extension file"
+msgstr "Файлын &өргөтгөл"
+
+msgid "Edit &menu file"
+msgstr "Файл &цэс"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Өнгөөр то&руулсан бүлэг файлийг засварлах"
+
+msgid "&Configuration..."
+msgstr "&Тохиргоо..."
+
+msgid "&Layout..."
+msgstr "&Гадаад төрх..."
+
+msgid "&Panel options..."
+msgstr "&Панелийн сонголт"
+
+msgid "C&onfirmation..."
+msgstr "Бат&лах"
+
+msgid "&Appearance..."
+msgstr "Хараг&дах байдал"
+
+msgid "&Display bits..."
+msgstr "&Бит тэмдэгтүүд..."
+
+msgid "&Virtual FS..."
+msgstr "Виртуаль &FS..."
+
+msgid "Panels:"
+msgstr ""
+
+#, c-format
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "The Midnight Commander"
+msgstr ""
+
+msgid "Do you really want to quit the Midnight Commander?"
+msgstr ""
+
+msgid "&Above"
+msgstr ""
+
+msgid "&Left"
+msgstr "&Зүүн"
+
+msgid "&Below"
+msgstr ""
+
+msgid "&Right"
+msgstr "&Баруун"
+
+msgid "ButtonBar|Menu"
+msgstr "Цэс"
+
+msgid "ButtonBar|View"
+msgstr "Харах"
+
+msgid "ButtonBar|RenMov"
+msgstr "Арилгх"
+
+msgid "ButtonBar|Mkdir"
+msgstr "КтлогХ"
 
 msgid "&Chdir"
 msgstr "&Шилжих"
@@ -2813,7 +3101,7 @@ msgid "Pane&lize"
 msgstr "Па&нел хийх"
 
 msgid "&View - F3"
-msgstr "&Харах - F3"
+msgstr "Х&арах - F3"
 
 msgid "&Edit - F4"
 msgstr "&Засах - F4"
@@ -2829,6 +3117,9 @@ msgid "File name:"
 msgstr ""
 
 msgid "&Find recursively"
+msgstr ""
+
+msgid "Follow s&ymlinks"
 msgstr ""
 
 msgid "S&kip hidden"
@@ -2848,9 +3139,6 @@ msgstr ""
 
 msgid "Fir&st hit"
 msgstr ""
-
-msgid "&Tree"
-msgstr "&Мод"
 
 msgid "Find File"
 msgstr "Файл хайх"
@@ -2876,11 +3164,11 @@ msgstr[1] ""
 
 #, c-format
 msgid "Find File: \"%s\". Content: \"%s\""
-msgstr ""
+msgstr "Файл хайх  \"%s\". Агуулга : \"%s\""
 
 #, c-format
 msgid "Find File: \"%s\""
-msgstr ""
+msgstr "Файл хайх \"%s\""
 
 msgid "Searching"
 msgstr "Хайж байна"
@@ -3049,6 +3337,16 @@ msgstr ""
 msgid "Links:      %d"
 msgstr ""
 
+msgid "Attributes: not supported"
+msgstr ""
+
+#, c-format
+msgid "Attributes: %s"
+msgstr ""
+
+msgid "Attributes: unavailable"
+msgstr ""
+
 #, c-format
 msgid "Mode:       %s (%04o)"
 msgstr ""
@@ -3061,7 +3359,7 @@ msgid "&Equal split"
 msgstr "&Адил хэмжээ"
 
 msgid "&Menubar visible"
-msgstr ""
+msgstr "Меню бар&ыг харагдуулах"
 
 msgid "Command &prompt"
 msgstr ""
@@ -3070,13 +3368,13 @@ msgid "&Keybar visible"
 msgstr "&Гарыг үзүүлэх"
 
 msgid "H&intbar visible"
-msgstr ""
+msgstr "Hintbar -и&йг харуулах"
 
 msgid "&XTerm window title"
 msgstr ""
 
 msgid "&Show free space"
-msgstr ""
+msgstr "&Чөлөөтэй зайх харуулах"
 
 msgid "Panel split"
 msgstr ""
@@ -3095,219 +3393,6 @@ msgstr ""
 
 msgid "Layout"
 msgstr "Гадаад төрх"
-
-msgid "File listin&g"
-msgstr ""
-
-msgid "&Quick view"
-msgstr ""
-
-msgid "&Info"
-msgstr ""
-
-msgid "&Listing format..."
-msgstr ""
-
-msgid "&Sort order..."
-msgstr "Эрэмбэлэх &дараалал..."
-
-msgid "&Filter..."
-msgstr "&Шүүлт..."
-
-msgid "&Encoding..."
-msgstr ""
-
-msgid "FT&P link..."
-msgstr "&FTP-холбоос..."
-
-msgid "S&hell link..."
-msgstr "S&hell-холбоос..."
-
-msgid "S&FTP link..."
-msgstr ""
-
-msgid "SM&B link..."
-msgstr "SM&B-холбоос..."
-
-msgid "Paneli&ze"
-msgstr ""
-
-msgid "&Rescan"
-msgstr ""
-
-msgid "&View"
-msgstr ""
-
-msgid "Vie&w file..."
-msgstr ""
-
-msgid "&Filtered view"
-msgstr ""
-
-msgid "&Copy"
-msgstr ""
-
-msgid "C&hmod"
-msgstr ""
-
-msgid "&Link"
-msgstr ""
-
-msgid "&Symlink"
-msgstr ""
-
-msgid "Relative symlin&k"
-msgstr ""
-
-msgid "Edit s&ymlink"
-msgstr ""
-
-msgid "Ch&own"
-msgstr ""
-
-msgid "&Advanced chown"
-msgstr ""
-
-msgid "&Rename/Move"
-msgstr ""
-
-msgid "&Mkdir"
-msgstr ""
-
-msgid "&Quick cd"
-msgstr ""
-
-msgid "Select &group"
-msgstr ""
-
-msgid "U&nselect group"
-msgstr ""
-
-msgid "&Invert selection"
-msgstr ""
-
-msgid "E&xit"
-msgstr ""
-
-msgid "&User menu"
-msgstr ""
-
-msgid "&Directory tree"
-msgstr "&Хавтас мод"
-
-msgid "&Find file"
-msgstr ""
-
-msgid "S&wap panels"
-msgstr ""
-
-msgid "Switch &panels on/off"
-msgstr ""
-
-msgid "&Compare directories"
-msgstr ""
-
-msgid "C&ompare files"
-msgstr ""
-
-msgid "E&xternal panelize"
-msgstr ""
-
-msgid "Show directory s&izes"
-msgstr ""
-
-msgid "Command &history"
-msgstr ""
-
-msgid "Viewed/edited files hi&story"
-msgstr ""
-
-msgid "Di&rectory hotlist"
-msgstr ""
-
-msgid "&Active VFS list"
-msgstr ""
-
-msgid "&Background jobs"
-msgstr ""
-
-msgid "Screen lis&t"
-msgstr ""
-
-msgid "&Undelete files (ext2fs only)"
-msgstr "&Сэргээгдсэн файлууд (зөвхөн ext2fs)"
-
-msgid "&Listing format edit"
-msgstr "&Засварлагдах бүтэцүүд"
-
-msgid "Edit &extension file"
-msgstr "Файлын &өргөтгөл"
-
-msgid "Edit &menu file"
-msgstr "Файл &цэс"
-
-msgid "Edit hi&ghlighting group file"
-msgstr ""
-
-msgid "&Configuration..."
-msgstr "&Тохиргоо..."
-
-msgid "&Layout..."
-msgstr "&Гадаад төрх..."
-
-msgid "&Panel options..."
-msgstr ""
-
-msgid "C&onfirmation..."
-msgstr ""
-
-msgid "&Appearance..."
-msgstr ""
-
-msgid "&Display bits..."
-msgstr "&Бит тэмдэгтүүд..."
-
-msgid "&Virtual FS..."
-msgstr "Виртуаль &FS..."
-
-msgid "Panels:"
-msgstr ""
-
-#, c-format
-msgid "You have %zu opened screen. Quit anyway?"
-msgid_plural "You have %zu opened screens. Quit anyway?"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "The Midnight Commander"
-msgstr ""
-
-msgid "Do you really want to quit the Midnight Commander?"
-msgstr ""
-
-msgid "&Above"
-msgstr ""
-
-msgid "&Left"
-msgstr ""
-
-msgid "&Below"
-msgstr ""
-
-msgid "&Right"
-msgstr ""
-
-msgid "ButtonBar|Menu"
-msgstr ""
-
-msgid "ButtonBar|View"
-msgstr ""
-
-msgid "ButtonBar|RenMov"
-msgstr ""
-
-msgid "ButtonBar|Mkdir"
-msgstr ""
 
 msgid "Memory exhausted!"
 msgstr ""
@@ -3466,16 +3551,23 @@ msgid "Command"
 msgstr "Команд"
 
 msgid "Add to external panelize"
-msgstr ""
+msgstr "Гадаад панелиз нэмэх"
 
 msgid "Enter command label:"
 msgstr ""
 
-msgid "Cannot invoke command."
-msgstr "Командыг биелүүлэх боломжгүй."
+#, c-format
+msgid ""
+"External panelize:\n"
+"%s"
+msgstr ""
 
-msgid "Pipe close failed"
-msgstr "Урсгалыг хаахад алдаа гарлаа"
+#, c-format
+msgid ""
+"External panelize:\n"
+"failed to read data from child stdout:\n"
+"%s"
+msgstr ""
 
 msgid "Cannot run external panelize in a non-local directory"
 msgstr ""
@@ -3519,16 +3611,16 @@ msgid "Delete %s?"
 msgstr ""
 
 msgid "ButtonBar|Static"
-msgstr ""
+msgstr "Статик"
 
 msgid "ButtonBar|Dynamc"
-msgstr ""
+msgstr "Динамк"
 
 msgid "ButtonBar|Rescan"
-msgstr ""
+msgstr "Шинчлх"
 
 msgid "ButtonBar|Forget"
-msgstr ""
+msgstr "Мартах"
 
 msgid "ButtonBar|Rmdir"
 msgstr ""
@@ -3555,10 +3647,10 @@ msgid "Help"
 msgstr "Тусламж"
 
 msgid "ButtonBar|Index"
-msgstr ""
+msgstr "Индекс"
 
 msgid "ButtonBar|Prev"
-msgstr ""
+msgstr "Өмнөх"
 
 msgid "Learn keys"
 msgstr "Товчлуурыг судлах"
@@ -3671,45 +3763,38 @@ msgstr ""
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Анхааруулга: %s руу өөрчилж чадсангүй. \n"
 
-#, fuzzy
 msgid "With builtin Editor and Aspell support"
-msgstr "Байгуулан засварлагчын хамт\n"
+msgstr ""
 
-#, fuzzy
 msgid "With builtin Editor"
-msgstr "Байгуулан засварлагчын хамт\n"
+msgstr ""
 
-#, fuzzy
 msgid "With optional subshell support"
-msgstr "Subshell боломжыг хаах"
+msgstr ""
 
-#, fuzzy
 msgid "With subshell support as default"
-msgstr "Subshell боломжыг нээх (анхны утга)"
+msgstr ""
 
-#, fuzzy
 msgid "With support for background operations"
-msgstr "Арын үйл ажиллагааны боломжтойгоор\n"
+msgstr ""
 
-#, fuzzy
 msgid "With mouse support on xterm and Linux console"
-msgstr "xterm ба Linux консол дээр хулганы боломжтойгоор\n"
+msgstr ""
 
-#, fuzzy
 msgid "With mouse support on xterm"
-msgstr " xterm дээр хулганы боломжтойгоор\n"
+msgstr ""
 
-#, fuzzy
 msgid "With support for X11 events"
-msgstr " X11 ажиллагааны боломжтойгоор\n"
+msgstr ""
 
-#, fuzzy
 msgid "With internationalization support"
-msgstr "Олон улсын боломжтойгоор\n"
+msgstr ""
 
-#, fuzzy
 msgid "With multiple codepages support"
-msgstr "Олон кодлогч хуудасны боломжтойгоор\n"
+msgstr ""
+
+msgid "With ext2fs attributes support"
+msgstr ""
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
@@ -3808,7 +3893,7 @@ msgid "No suitable entries found in %s"
 msgstr ""
 
 msgid "User menu"
-msgstr ""
+msgstr "Хэрэглэгчийн цэс"
 
 #, c-format
 msgid ""
@@ -3861,13 +3946,15 @@ msgstr ""
 #, c-format
 msgid ""
 "Cannot open %s archive\n"
+"%s:\n"
 "%s"
 msgstr ""
-" %s-архивыг нээж чадсангүй\n"
-"%s"
 
-msgid "Inconsistent extfs archive"
-msgstr "Алдаатай архив extfs"
+#, c-format
+msgid ""
+"EXTFS virtual file system:\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid "Warning: cannot open %s directory\n"
@@ -4034,6 +4121,12 @@ msgid ""
 msgstr ""
 
 #, c-format
+msgid ""
+"SFS virtual file system:\n"
+"%s"
+msgstr ""
+
+#, c-format
 msgid "%s: Warning: file %s not found\n"
 msgstr ""
 
@@ -4067,6 +4160,9 @@ msgstr ""
 msgid "sftp: %s"
 msgstr ""
 
+msgid "sftp: failed to convert remote host IP address into text form"
+msgstr ""
+
 #, c-format
 msgid "sftp: making connection to %s"
 msgstr ""
@@ -4076,6 +4172,50 @@ msgstr ""
 
 #, c-format
 msgid "sftp: connection to server failed: %s"
+msgstr ""
+
+msgid "sftp: found host key of unsupported type: RSA1"
+msgstr ""
+
+msgid "sftp: unknown host key type:"
+msgstr ""
+
+#, c-format
+msgid ""
+"Permanently added\n"
+"%s (%s)\n"
+"to the list of known hosts."
+msgstr ""
+
+msgid "sftp: cannot get the remote host key"
+msgstr ""
+
+msgid "sftp: unsupported key type, can't check remote host key"
+msgstr ""
+
+msgid "sftp: can't compute host key fingerprint hash"
+msgstr ""
+
+#, c-format
+msgid ""
+"The authenticity of host\n"
+"%s (%s)\n"
+"can't be established!\n"
+"%s key fingerprint hash is\n"
+"SHA1:%s.\n"
+"Do you want to add it to the list of known hosts and continue connecting?"
+msgstr ""
+
+#, c-format
+msgid ""
+"%s (%s)\n"
+"is found in the list of known hosts but\n"
+"KEYS DO NOT MATCH! THIS COULD BE A MITM ATTACK!\n"
+"Are you sure you want to add it to the list of known hosts and continue "
+"connecting?"
+msgstr ""
+
+msgid "sftp: host key verification failed"
 msgstr ""
 
 #, c-format
@@ -4092,7 +4232,7 @@ msgstr ""
 msgid "sftp: Password is empty."
 msgstr ""
 
-msgid "sftp: Failure establishing SSH session"
+msgid "sftp: failure establishing SSH session"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"
@@ -4272,7 +4412,7 @@ msgid "ButtonBar|Hex"
 msgstr ""
 
 msgid "ButtonBar|Goto"
-msgstr ""
+msgstr "Явах"
 
 msgid "ButtonBar|Raw"
 msgstr ""
@@ -4284,7 +4424,7 @@ msgid "ButtonBar|Unform"
 msgstr ""
 
 msgid "ButtonBar|Format"
-msgstr ""
+msgstr "Формат"
 
 #, c-format
 msgid ""

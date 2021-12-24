@@ -1,7 +1,7 @@
 /*
    Directory panel listing format editor -- for the Midnight Commander
 
-   Copyright (C) 1994-2020
+   Copyright (C) 1994-2021
    Free Software Foundation, Inc.
 
    Written by:
@@ -89,18 +89,18 @@ static WListbox *l_listmode;
 
 static WLabel *pname;
 
-static const char *listmode_section = "[Listing format edit]";
+static char *listmode_section = "[Listing format edit]";
 
-static const char *s_genwidth[2] = { "Half width", "Full width" };
+static char *s_genwidth[2] = { "Half width", "Full width" };
 
 static WRadio *radio_genwidth;
-static const char *s_columns[2] = { "One column", "Two columns" };
+static char *s_columns[2] = { "One column", "Two columns" };
 
 static WRadio *radio_columns;
-static const char *s_justify[3] = { "Left justified", "Default justification", "Right justified" };
+static char *s_justify[3] = { "Left justified", "Default justification", "Right justified" };
 
 static WRadio *radio_justify;
-static const char *s_itemwidth[3] = { "Free width", "Fixed width", "Growable width" };
+static char *s_itemwidth[3] = { "Free width", "Fixed width", "Growable width" };
 
 static WRadio *radio_itemwidth;
 
@@ -276,7 +276,7 @@ init_listmode (char *oldlistformat)
 static void
 listmode_done (WDialog * h)
 {
-    dlg_destroy (h);
+    widget_destroy (WIDGET (h));
     if (0)
         update_panels (UP_OPTIMIZE, UP_KEEPSEL);
     repaint_screen ();
@@ -290,8 +290,7 @@ collect_new_format (void)
     char *newformat;
     int i;
     char *last;
-    char *text;
-    void *extra;
+    char *text, *extra;
 
     newformat = g_malloc (1024);
     if (radio_genwidth->sel)

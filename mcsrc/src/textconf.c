@@ -1,7 +1,7 @@
 /*
    Print features specific for this build
 
-   Copyright (C) 2000-2020
+   Copyright (C) 2000-2021
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -119,6 +119,10 @@ static const char *const features[] = {
     N_("With multiple codepages support"),
 #endif
 
+#ifdef ENABLE_EXT2FS_ATTR
+    N_("With ext2fs attributes support"),
+#endif
+
     NULL
 };
 
@@ -134,7 +138,7 @@ show_version (void)
 {
     size_t i;
 
-    printf (_("GNU Midnight Commander %s\n"), VERSION);
+    printf (_("GNU Midnight Commander %s\n"), mc_global.mc_version);
 
     printf (_("Built with GLib %d.%d.%d\n"),
             GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION);
@@ -225,7 +229,7 @@ show_datadirs_extended (void)
 
     PRINTF_SECTION2 (_("Config directory:"), mc_config_get_path ());
     PRINTF_SECTION2 (_("Data directory:"), mc_config_get_data_path ());
-    PRINTF ("skins:", mc_config_get_data_path (), MC_SKINS_SUBDIR PATH_SEP_STR);
+    PRINTF ("skins:", mc_config_get_data_path (), MC_SKINS_DIR PATH_SEP_STR);
 #ifdef ENABLE_VFS_EXTFS
     PRINTF ("extfs.d:", mc_config_get_data_path (), MC_EXTFS_DIR PATH_SEP_STR);
 #endif
@@ -234,16 +238,16 @@ show_datadirs_extended (void)
 #endif
 #ifdef USE_INTERNAL_EDIT
     PRINTF ("mcedit macros:", mc_config_get_data_path (), MC_MACRO_FILE);
-    PRINTF ("mcedit external macros:", mc_config_get_data_path (), MC_EXTMACRO_FILE ".*");
+    PRINTF ("mcedit external macros:", mc_config_get_data_path (), EDIT_HOME_MACRO_FILE ".*");
 #if defined(WIN32) //WIN32, config
     {
         static const struct {
             const char *desc, *key;
         } editpaths[] = {
-            { "syntax:",      EDIT_SYNTAX_FILE  },
-            { "clip:",        EDIT_CLIP_FILE    },
-            { "block:",       EDIT_BLOCK_FILE   },
-            { "temp:",        EDIT_TEMP_FILE    },
+//OLD       { "syntax:",      EDIT_SYNTAX_FILE  },
+//          { "clip:",        EDIT_CLIP_FILE    },
+//          { "block:",       EDIT_BLOCK_FILE   },
+//          { "temp:",        EDIT_TEMP_FILE    },
             { "global-menu:", EDIT_GLOBAL_MENU  },
             { "local-menu:",  EDIT_LOCAL_MENU   },
             { "home-menu:",   EDIT_HOME_MENU    }

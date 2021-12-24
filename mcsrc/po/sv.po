@@ -7,17 +7,18 @@
 # Cybjit <cybjit@gmail.com>, 2012
 # Henrik Mattsson-Mårn <h@reglage.net>, 2016
 # Jonas Hultén <jonas@kollektivet.nu>, 2017
+# Jörgen Städje <jorgen@qedata.se>, 2020
 # MagnusHerrlin <m8618@abc.se>, 2016
 # MagnusHerrlin <m8618@abc.se>, 2016
-# Sebastian Rasmussen <sebras@gmail.com>, 2019
+# Sebastian Rasmussen <sebras@gmail.com>, 2019-2020
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2020-03-09 10:53+0300\n"
-"PO-Revision-Date: 2019-12-16 01:49+0000\n"
-"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
+"POT-Creation-Date: 2021-08-15 15:53+0200\n"
+"PO-Revision-Date: 2021-07-26 20:16+0000\n"
+"Last-Translator: Transifex Bot <>\n"
 "Language-Team: Swedish (http://www.transifex.com/mc/mc/language/sv/)\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
@@ -81,30 +82,6 @@ msgstr "Kan inte skapa katalogen %s"
 
 msgid "FATAL: not a directory:"
 msgstr "ALLVARLIGT FEL: inte en katalog:"
-
-#, c-format
-msgid "An error occurred while migrating user settings: %s"
-msgstr "Ett fel uppstod under migreringen av användarinställningar: %s"
-
-#, c-format
-msgid ""
-"Your old settings were migrated from %s\n"
-"to Freedesktop recommended dirs.\n"
-"To get more info, please visit\n"
-"http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html"
-msgstr ""
-"Dina gamla inställningar blev migrerade från %s\n"
-"till kataloger rekommenderade av Freedesktop.\n"
-"För att få mer information, besök\n"
-"http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html"
-
-#, c-format
-msgid ""
-"Your old settings were migrated from %s\n"
-"to %s\n"
-msgstr ""
-"Dina gamla inställningar blev migrerade från %s\n"
-"till %s\n"
 
 msgid ""
 "Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
@@ -194,11 +171,11 @@ msgstr ""
 msgid "True color not supported with ncurses."
 msgstr "Fullfärg stöds inte med ncurses."
 
-msgid "True color not supported in this slang version."
-msgstr "Fullfärg stöds inte i den här versionen av slang."
-
 msgid "Your terminal doesn't even seem to support 256 colors."
 msgstr "Din terminal verkar inte ens stödja 256 färger."
+
+msgid "True color not supported in this slang version."
+msgstr "Fullfärg stöds inte i den här versionen av slang."
 
 msgid "Set COLORTERM=truecolor if your terminal really supports true colors."
 msgstr "Sätt COLORTERM=truecolor om din terminal verkligen stödjer fullfärg."
@@ -490,13 +467,13 @@ msgid "The TERM environment variable is unset!\n"
 msgstr "Omgivningsvariablen TERM är inte satt!\n"
 
 msgid "Cannot check SIGWINCH pipe"
-msgstr ""
+msgstr "Kan inte kontrollera SIGWINCH-tunnel"
 
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "Cannot create pipe for SIGWINCH: %s (%d)\n"
-msgstr "Tunnelströmmar kunde inte skapas"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -560,18 +537,6 @@ msgid ""
 msgstr ""
 "Oväntat fel i waitpid():\n"
 "%s"
-
-msgid "Warning"
-msgstr "Varning"
-
-msgid "Pipe failed"
-msgstr "Tunnel misslyckades"
-
-msgid "Dup failed"
-msgstr "Dup misslyckades"
-
-msgid "Error dup'ing old error pipe"
-msgstr "Ett fel uppstod under duplicering av en gammal feltunnel"
 
 #, c-format
 msgid "Directory cache expired for %s"
@@ -1040,15 +1005,6 @@ msgstr "Diff-visare: otillåtet läge"
 msgid "Two files are needed to compare"
 msgstr "Två filer behövs för att jämföra"
 
-msgid "Choose syntax highlighting"
-msgstr "Välj syntaxmarkering"
-
-msgid "< Auto >"
-msgstr "< Auto >"
-
-msgid "< Reload Current Syntax >"
-msgstr "< Ladda om nuvarande >"
-
 #, c-format
 msgid "Loading: %3d%%"
 msgstr "Laddar %3d%%"
@@ -1083,6 +1039,9 @@ msgstr ""
 "Filen \"%s\" är för stor.\n"
 "Öppna ändå?"
 
+msgid "Warning"
+msgstr "Varning"
+
 #, c-format
 msgid "Error reading from pipe: %s"
 msgstr "Fel vid lädning från tunnel: %s"
@@ -1090,14 +1049,6 @@ msgstr "Fel vid lädning från tunnel: %s"
 #, c-format
 msgid "Cannot open pipe for reading: %s"
 msgstr "Tunnel kunde inte öppnas för läsning: %s"
-
-#, c-format
-msgid "Searching %s: %3d%%"
-msgstr "Söker %s: %3d%%"
-
-#, c-format
-msgid "Searching %s"
-msgstr "Söker efter %s"
 
 msgid "File has hard-links. Detach before saving?"
 msgstr "Filen har hårda länkar. Koppla loss innan sparning?"
@@ -1144,12 +1095,6 @@ msgstr "Ändra radbrytningar till:"
 msgid "Save As"
 msgstr "Spara som"
 
-msgid "Block is large, you may not be able to undo this action"
-msgstr "Stort block, du kanske inte kan ångra denna åtgärd"
-
-msgid "Collect completions"
-msgstr "Samlar in kompletteringar"
-
 msgid "&Quick save"
 msgstr "S&nabbspara"
 
@@ -1179,27 +1124,6 @@ msgstr "&O Skriv över"
 
 msgid "Cannot save file"
 msgstr "Kan inte spara fil"
-
-msgid "Delete macro"
-msgstr "Ta bort makro"
-
-msgid "Press macro hotkey:"
-msgstr "Tryck makro-snabbtangent:"
-
-msgid "Macro not deleted"
-msgstr "Makro togs inte bort"
-
-msgid "Save macro"
-msgstr "Spara makro"
-
-msgid "Press the macro's new hotkey:"
-msgstr "Tryck på ny snabbtangent för makro:"
-
-msgid "Repeat last commands"
-msgstr "Repetera senaste kommandon"
-
-msgid "Repeat times:"
-msgstr "Repetitioner:"
 
 #, c-format
 msgid "Confirm save file: \"%s\""
@@ -1234,13 +1158,6 @@ msgstr "Vilken menyfil vill du editera?"
 
 msgid "&Local"
 msgstr "&Lokal"
-
-msgid "Replace"
-msgstr "Ersätt"
-
-#, c-format
-msgid "%ld replacements made"
-msgstr "%ld ersättningar gjordes"
 
 msgid "[NoName]"
 msgstr "[Namnlös]"
@@ -1345,47 +1262,40 @@ msgstr "Tryck på valfri tangent:"
 
 msgid ""
 "Current text was modified without a file save.\n"
-"Continue discards these changes"
-msgstr ""
-"Nuvarande text har modifierats utan att sparas.\n"
-"Fortsätt kastar bort dessa ändringar"
-
-msgid "In se&lection"
-msgstr "&I markerat"
-
-msgid "&Find all"
-msgstr "Hi&tta alla"
-
-msgid "Enter replacement string:"
-msgstr "Ange ersättningssträng:"
-
-msgid "Replace with:"
-msgstr "Ersätt med:"
-
-msgid "&Replace"
-msgstr "&Ersätt"
-
-msgid "A&ll"
-msgstr "A&lla"
-
-msgid "&Skip"
-msgstr "&Hoppa över"
-
-msgid "Confirm replace"
-msgstr "Bekräfta ersätt"
-
-msgid "Cancel"
-msgstr "Avbryt"
-
-msgid ""
-"Current text was modified without a file save.\n"
 "Continue discards these changes."
 msgstr ""
 "Nuvarande text har modifierats utan att sparas.\n"
 "Fortsätt kastar bort dessa ändringar."
 
+msgid "Cancel"
+msgstr "Avbryt"
+
+msgid "Collect completions"
+msgstr "Samlar in kompletteringar"
+
 msgid "NoName"
 msgstr "Namnlös"
+
+msgid "Save macro"
+msgstr "Spara makro"
+
+msgid "Press the macro's new hotkey:"
+msgstr "Tryck på ny snabbtangent för makro:"
+
+msgid "Delete macro"
+msgstr "Ta bort makro"
+
+msgid "Press macro hotkey:"
+msgstr "Tryck makro-snabbtangent:"
+
+msgid "Macro not deleted"
+msgstr "Makro togs inte bort"
+
+msgid "Repeat last commands"
+msgstr "Repetera senaste kommandon"
+
+msgid "Repeat times:"
+msgstr "Repetitioner:"
 
 msgid "&Open file..."
 msgstr "&Öppna fil..."
@@ -1397,7 +1307,7 @@ msgid "&Close"
 msgstr "S&täng"
 
 msgid "&History..."
-msgstr ""
+msgstr "&Historik…"
 
 msgid "Save &as..."
 msgstr "Spa&ra som..."
@@ -1675,6 +1585,45 @@ msgstr "Radbrytning vid längd:"
 msgid "Editor options"
 msgstr "Editoralternativ"
 
+msgid "In se&lection"
+msgstr "&I markerat"
+
+msgid "&Find all"
+msgstr "Hi&tta alla"
+
+msgid "Enter replacement string:"
+msgstr "Ange ersättningssträng:"
+
+msgid "Replace"
+msgstr "Ersätt"
+
+msgid "Replace with:"
+msgstr "Ersätt med:"
+
+msgid "&Replace"
+msgstr "&Ersätt"
+
+msgid "A&ll"
+msgstr "A&lla"
+
+msgid "&Skip"
+msgstr "&Hoppa över"
+
+msgid "Confirm replace"
+msgstr "Bekräfta ersätt"
+
+#, c-format
+msgid "Searching %s: %3d%%"
+msgstr "Söker %s: %3d%%"
+
+#, c-format
+msgid "Searching %s"
+msgstr "Söker efter %s"
+
+#, c-format
+msgid "%ld replacements made"
+msgstr "%ld ersättningar gjordes"
+
 msgid ""
 "A user friendly text editor\n"
 "written for the Midnight Commander."
@@ -1682,9 +1631,8 @@ msgstr ""
 "En användarvänlig texteditor\n"
 "skriven för Midnight Commander."
 
-#, fuzzy
-msgid "Copyright (C) 1996-2020 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2019 Free Software Foundation"
+msgid "Copyright (C) 1996-2021 the Free Software Foundation"
+msgstr ""
 
 msgid "About"
 msgstr "Om"
@@ -1803,6 +1751,15 @@ msgstr "Föreslå"
 msgid "Select language"
 msgstr "Välj språk"
 
+msgid "Choose syntax highlighting"
+msgstr "Välj syntaxmarkering"
+
+msgid "< Auto >"
+msgstr "< Auto >"
+
+msgid "< Reload Current Syntax >"
+msgstr "< Ladda om nuvarande >"
+
 msgid "Load syntax file"
 msgstr "Ladda syntax-fil"
 
@@ -1838,10 +1795,8 @@ msgstr "Skalet kör redan ett kommando"
 
 msgid ""
 "Not an xterm or Linux console;\n"
-"the panels cannot be toggled."
+"the subshell cannot be toggled."
 msgstr ""
-"Inte en xterm- eller linuxterminal;\n"
-"panelerna kan inte slås av/på."
 
 msgid "Type 'exit' to return to the Midnight Commander"
 msgstr "Skriv 'exit' för att återvända till Midnight Commander"
@@ -1866,6 +1821,10 @@ msgstr "andra"
 
 msgid "Flag"
 msgstr "Flagga"
+
+#, c-format
+msgid "Permissions (octal): %o"
+msgstr ""
 
 msgid "Chown advanced command"
 msgstr "Avancerat chown-kommando"
@@ -1990,6 +1949,9 @@ msgstr "Inställningar"
 
 msgid "Skin:"
 msgstr "Tema:"
+
+msgid "&Shadows"
+msgstr ""
 
 msgid "Appearance"
 msgstr "Utseende"
@@ -2214,6 +2176,116 @@ msgstr "Användarnamn:"
 msgid "SMB authentication"
 msgstr "SMB-autentisering"
 
+#, c-format
+msgid ""
+"Cannot chdir to \"%s\"\n"
+"%s"
+msgstr ""
+"Chdir till \"%s\" misslyckades\n"
+"%s"
+
+msgid "Secure deletion"
+msgstr ""
+
+msgid "Undelete"
+msgstr ""
+
+msgid "Synchronous updates"
+msgstr ""
+
+msgid "Synchronous directory updates"
+msgstr ""
+
+msgid "Immutable"
+msgstr ""
+
+msgid "Append only"
+msgstr ""
+
+msgid "No dump"
+msgstr ""
+
+msgid "No update atime"
+msgstr ""
+
+msgid "Compress"
+msgstr ""
+
+msgid "Compressed clusters"
+msgstr ""
+
+msgid "Compressed dirty file"
+msgstr ""
+
+msgid "Compression raw access"
+msgstr ""
+
+msgid "Encrypted inode"
+msgstr ""
+
+msgid "Journaled data"
+msgstr ""
+
+msgid "Indexed directory"
+msgstr ""
+
+msgid "No tail merging"
+msgstr ""
+
+msgid "Top of directory hierarchies"
+msgstr ""
+
+msgid "Inode uses extents"
+msgstr ""
+
+msgid "Huge_file"
+msgstr ""
+
+msgid "No COW"
+msgstr ""
+
+msgid "Direct access for files"
+msgstr ""
+
+msgid "Casefolded file"
+msgstr ""
+
+msgid "Inode has inline data"
+msgstr ""
+
+msgid "Project hierarchy"
+msgstr ""
+
+msgid "Verity protected inode"
+msgstr ""
+
+msgid "&Marked all"
+msgstr "Skriv &markerade"
+
+msgid "S&et marked"
+msgstr "Sä&tt markerade"
+
+msgid "C&lear marked"
+msgstr "N&ollställ markerade"
+
+msgid "Chattr command"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot chattr \"%s\"\n"
+"%s"
+msgstr ""
+
+msgid "Cannot change attributes on non-local filesystems"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot get flags of \"%s\"\n"
+"%s"
+msgstr ""
+
 msgid "set &user ID on execution"
 msgstr "sätt användar-I&D vid exekvering"
 
@@ -2261,15 +2333,6 @@ msgstr "Ägarnamn:"
 
 msgid "Group name:"
 msgstr "Gruppnamn:"
-
-msgid "&Marked all"
-msgstr "Skriv &markerade"
-
-msgid "S&et marked"
-msgstr "Sä&tt markerade"
-
-msgid "C&lear marked"
-msgstr "N&ollställ markerade"
 
 msgid "Chmod command"
 msgstr "Chmod kommandot"
@@ -2460,14 +2523,6 @@ msgstr "Inställningar kunde inte sparas till %s"
 msgid "Cannot execute commands on non-local filesystems"
 msgstr "Kommandon kan inte exekveras på ickelokala filsystem"
 
-#, c-format
-msgid ""
-"Cannot chdir to \"%s\"\n"
-"%s"
-msgstr ""
-"Chdir till \"%s\" misslyckades\n"
-"%s"
-
 msgid "Parameter"
 msgstr "Parameter"
 
@@ -2478,6 +2533,9 @@ msgid ""
 msgstr ""
 "Skapandet av en temporär kommandofil misslyckades\n"
 "%s"
+
+msgid "Pipe failed"
+msgstr "Tunnel misslyckades"
 
 #, c-format
 msgid " %s%s file error"
@@ -3002,6 +3060,225 @@ msgstr "&Bakgrund"
 msgid "Invalid source pattern '%s'"
 msgstr "Otillåtet källfilter '%s'"
 
+msgid "File listin&g"
+msgstr "Fillist&a"
+
+msgid "&Quick view"
+msgstr "Fil&vy"
+
+msgid "&Info"
+msgstr "&Info"
+
+msgid "&Tree"
+msgstr "&Träd"
+
+msgid "&Listing format..."
+msgstr "&Listformat..."
+
+msgid "&Sort order..."
+msgstr "&Sorteringsordning..."
+
+msgid "&Filter..."
+msgstr "&Filter..."
+
+msgid "&Encoding..."
+msgstr "Tecken&översättning..."
+
+msgid "FT&P link..."
+msgstr "FT&P-länk..."
+
+msgid "S&hell link..."
+msgstr "S&kallänk..."
+
+msgid "S&FTP link..."
+msgstr "SFTP-l&änk..."
+
+msgid "SM&B link..."
+msgstr "SM&B-länk..."
+
+msgid "Paneli&ze"
+msgstr "Pa&nelisera"
+
+msgid "&Rescan"
+msgstr "Läs in i&gen"
+
+msgid "&View"
+msgstr "&Visa"
+
+msgid "Vie&w file..."
+msgstr "Visa &fil..."
+
+msgid "&Filtered view"
+msgstr "Filtrerad v&y"
+
+msgid "&Copy"
+msgstr "&Kopiera"
+
+msgid "C&hmod"
+msgstr "C&hmod"
+
+msgid "&Link"
+msgstr "&Länk"
+
+msgid "&Symlink"
+msgstr "&Symlänk"
+
+msgid "Relative symlin&k"
+msgstr "&Relativ symlänk"
+
+msgid "Edit s&ymlink"
+msgstr "Redigera sy&mlänk"
+
+msgid "Ch&own"
+msgstr "Ch&own"
+
+msgid "&Advanced chown"
+msgstr "Ava&ncerad chown"
+
+msgid "Cha&ttr"
+msgstr ""
+
+msgid "&Rename/Move"
+msgstr "&Döp om/flytta"
+
+msgid "&Mkdir"
+msgstr "Ska&pa katalog"
+
+msgid "&Quick cd"
+msgstr "Snabb &cd"
+
+msgid "Select &group"
+msgstr "Välj &grupp"
+
+msgid "U&nselect group"
+msgstr "Välj &bort grupp"
+
+msgid "&Invert selection"
+msgstr "&Invertera markering"
+
+msgid "E&xit"
+msgstr "&Avsluta"
+
+msgid "&User menu"
+msgstr "&Användarmeny"
+
+msgid "&Directory tree"
+msgstr "Katalogtr&äd"
+
+msgid "&Find file"
+msgstr "&Sök fil"
+
+msgid "S&wap panels"
+msgstr "B&yt plats på paneler"
+
+msgid "Switch &panels on/off"
+msgstr "&Ta bort/fram paneler"
+
+msgid "&Compare directories"
+msgstr "Jämför &kataloger"
+
+msgid "C&ompare files"
+msgstr "&Jämför filer"
+
+msgid "E&xternal panelize"
+msgstr "&Panelisera externt kommando"
+
+msgid "Show directory s&izes"
+msgstr "V&isa katalogstorlekar"
+
+msgid "Command &history"
+msgstr "Kommando-&historik"
+
+msgid "Viewed/edited files hi&story"
+msgstr "Hi&storik över visade/redigerade filer"
+
+msgid "Di&rectory hotlist"
+msgstr "Katalog&favoriter"
+
+msgid "&Active VFS list"
+msgstr "Aktiv &VFS-lista"
+
+msgid "&Background jobs"
+msgstr "&Bakgrundsjobb"
+
+msgid "Screen lis&t"
+msgstr "Skä&rmlista"
+
+msgid "&Undelete files (ext2fs only)"
+msgstr "&Återskapa raderade filer (endast ext2fs)"
+
+msgid "&Listing format edit"
+msgstr "Redigera &listningsformatet"
+
+msgid "Edit &extension file"
+msgstr "Redigera &utökningsfil"
+
+msgid "Edit &menu file"
+msgstr "Redigera &menyfilen"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Redigera &gruppmarkeringsfil"
+
+msgid "&Configuration..."
+msgstr "K&onfiguration..."
+
+msgid "&Layout..."
+msgstr "&Layout..."
+
+msgid "&Panel options..."
+msgstr "&Panelalternativ..."
+
+msgid "C&onfirmation..."
+msgstr "&Konfirmera..."
+
+msgid "&Appearance..."
+msgstr "&Utseende..."
+
+msgid "&Display bits..."
+msgstr "&Displaybitar..."
+
+msgid "&Virtual FS..."
+msgstr "&Virtuellt FS..."
+
+msgid "Panels:"
+msgstr "Paneler:"
+
+#, c-format
+msgid "You have %zu opened screen. Quit anyway?"
+msgid_plural "You have %zu opened screens. Quit anyway?"
+msgstr[0] "Du har %zu öppnad skärm. Avsluta ändå?"
+msgstr[1] "Du har %zu öppnade skärmar. Avsluta ändå?"
+
+msgid "The Midnight Commander"
+msgstr "The Midnight Commander"
+
+msgid "Do you really want to quit the Midnight Commander?"
+msgstr "Vill du verkligen avsluta Midnight Commander?"
+
+msgid "&Above"
+msgstr "&Över"
+
+msgid "&Left"
+msgstr "&Vänster"
+
+msgid "&Below"
+msgstr "&Under"
+
+msgid "&Right"
+msgstr "&Höger"
+
+msgid "ButtonBar|Menu"
+msgstr "ButtonBar|Meny"
+
+msgid "ButtonBar|View"
+msgstr "ButtonBar|Visa"
+
+msgid "ButtonBar|RenMov"
+msgstr "ButtonBar|DöpFly"
+
+msgid "ButtonBar|Mkdir"
+msgstr "ButtonBar|NyKat"
+
 msgid "&Chdir"
 msgstr "&Byt katalog"
 
@@ -3030,6 +3307,9 @@ msgstr "Filnamn:"
 msgid "&Find recursively"
 msgstr "Sök i &underkataloger"
 
+msgid "Follow s&ymlinks"
+msgstr ""
+
 msgid "S&kip hidden"
 msgstr "Ignorera &dolda"
 
@@ -3047,9 +3327,6 @@ msgstr "A&lla teckenöversättningar"
 
 msgid "Fir&st hit"
 msgstr "F&örsta träff"
-
-msgid "&Tree"
-msgstr "&Träd"
 
 msgid "Find File"
 msgstr "Sök Fil"
@@ -3252,6 +3529,16 @@ msgstr "Ägare:      %s/%s"
 msgid "Links:      %d"
 msgstr "Länkar:     %d"
 
+msgid "Attributes: not supported"
+msgstr ""
+
+#, c-format
+msgid "Attributes: %s"
+msgstr ""
+
+msgid "Attributes: unavailable"
+msgstr ""
+
 #, c-format
 msgid "Mode:       %s (%04o)"
 msgstr "Läge:       %s (%04o)"
@@ -3298,219 +3585,6 @@ msgstr "Utmatningsrader:"
 
 msgid "Layout"
 msgstr "Layout"
-
-msgid "File listin&g"
-msgstr "Fillist&a"
-
-msgid "&Quick view"
-msgstr "Fil&vy"
-
-msgid "&Info"
-msgstr "&Info"
-
-msgid "&Listing format..."
-msgstr "&Listformat..."
-
-msgid "&Sort order..."
-msgstr "&Sorteringsordning..."
-
-msgid "&Filter..."
-msgstr "&Filter..."
-
-msgid "&Encoding..."
-msgstr "Tecken&översättning..."
-
-msgid "FT&P link..."
-msgstr "FT&P-länk..."
-
-msgid "S&hell link..."
-msgstr "S&kallänk..."
-
-msgid "S&FTP link..."
-msgstr "SFTP-l&änk..."
-
-msgid "SM&B link..."
-msgstr "SM&B-länk..."
-
-msgid "Paneli&ze"
-msgstr "Pa&nelisera"
-
-msgid "&Rescan"
-msgstr "Läs in i&gen"
-
-msgid "&View"
-msgstr "&Visa"
-
-msgid "Vie&w file..."
-msgstr "Visa &fil..."
-
-msgid "&Filtered view"
-msgstr "Filtrerad v&y"
-
-msgid "&Copy"
-msgstr "&Kopiera"
-
-msgid "C&hmod"
-msgstr "C&hmod"
-
-msgid "&Link"
-msgstr "&Länk"
-
-msgid "&Symlink"
-msgstr "&Symlänk"
-
-msgid "Relative symlin&k"
-msgstr "&Relativ symlänk"
-
-msgid "Edit s&ymlink"
-msgstr "Redigera sy&mlänk"
-
-msgid "Ch&own"
-msgstr "Ch&own"
-
-msgid "&Advanced chown"
-msgstr "Ava&ncerad chown"
-
-msgid "&Rename/Move"
-msgstr "&Döp om/flytta"
-
-msgid "&Mkdir"
-msgstr "Ska&pa katalog"
-
-msgid "&Quick cd"
-msgstr "Snabb &cd"
-
-msgid "Select &group"
-msgstr "Välj &grupp"
-
-msgid "U&nselect group"
-msgstr "Välj &bort grupp"
-
-msgid "&Invert selection"
-msgstr "&Invertera markering"
-
-msgid "E&xit"
-msgstr "&Avsluta"
-
-msgid "&User menu"
-msgstr "&Användarmeny"
-
-msgid "&Directory tree"
-msgstr "Katalogtr&äd"
-
-msgid "&Find file"
-msgstr "&Sök fil"
-
-msgid "S&wap panels"
-msgstr "B&yt plats på paneler"
-
-msgid "Switch &panels on/off"
-msgstr "&Ta bort/fram paneler"
-
-msgid "&Compare directories"
-msgstr "Jämför &kataloger"
-
-msgid "C&ompare files"
-msgstr "&Jämför filer"
-
-msgid "E&xternal panelize"
-msgstr "&Panelisera externt kommando"
-
-msgid "Show directory s&izes"
-msgstr "V&isa katalogstorlekar"
-
-msgid "Command &history"
-msgstr "Kommando-&historik"
-
-msgid "Viewed/edited files hi&story"
-msgstr ""
-
-msgid "Di&rectory hotlist"
-msgstr "Katalog&favoriter"
-
-msgid "&Active VFS list"
-msgstr "Aktiv &VFS-lista"
-
-msgid "&Background jobs"
-msgstr "&Bakgrundsjobb"
-
-msgid "Screen lis&t"
-msgstr "Skä&rmlista"
-
-msgid "&Undelete files (ext2fs only)"
-msgstr "&Återskapa raderade filer (endast ext2fs)"
-
-msgid "&Listing format edit"
-msgstr "Redigera &listningsformatet"
-
-msgid "Edit &extension file"
-msgstr "Redigera &utökningsfil"
-
-msgid "Edit &menu file"
-msgstr "Redigera &menyfilen"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Redigera &gruppmarkeringsfil"
-
-msgid "&Configuration..."
-msgstr "K&onfiguration..."
-
-msgid "&Layout..."
-msgstr "&Layout..."
-
-msgid "&Panel options..."
-msgstr "&Panelalternativ..."
-
-msgid "C&onfirmation..."
-msgstr "&Konfirmera..."
-
-msgid "&Appearance..."
-msgstr "&Utseende..."
-
-msgid "&Display bits..."
-msgstr "&Displaybitar..."
-
-msgid "&Virtual FS..."
-msgstr "&Virtuellt FS..."
-
-msgid "Panels:"
-msgstr "Paneler:"
-
-#, c-format
-msgid "You have %zu opened screen. Quit anyway?"
-msgid_plural "You have %zu opened screens. Quit anyway?"
-msgstr[0] "Du har %zu öppnad skärm. Avsluta ändå?"
-msgstr[1] "Du har %zu öppnade skärmar. Avsluta ändå?"
-
-msgid "The Midnight Commander"
-msgstr "The Midnight Commander"
-
-msgid "Do you really want to quit the Midnight Commander?"
-msgstr "Vill du verkligen avsluta Midnight Commander?"
-
-msgid "&Above"
-msgstr "&Över"
-
-msgid "&Left"
-msgstr "&Vänster"
-
-msgid "&Below"
-msgstr "&Under"
-
-msgid "&Right"
-msgstr "&Höger"
-
-msgid "ButtonBar|Menu"
-msgstr "ButtonBar|Meny"
-
-msgid "ButtonBar|View"
-msgstr "ButtonBar|Visa"
-
-msgid "ButtonBar|RenMov"
-msgstr "ButtonBar|DöpFly"
-
-msgid "ButtonBar|Mkdir"
-msgstr "ButtonBar|NyKat"
 
 msgid "Memory exhausted!"
 msgstr "Minnet är fullt!"
@@ -3674,11 +3748,18 @@ msgstr "Lägg till extern panelisering"
 msgid "Enter command label:"
 msgstr "Ange kommando-etikett:"
 
-msgid "Cannot invoke command."
-msgstr "Kan inte starta kommandot."
+#, c-format
+msgid ""
+"External panelize:\n"
+"%s"
+msgstr ""
 
-msgid "Pipe close failed"
-msgstr "Stänga ner tunnel misslyckades"
+#, c-format
+msgid ""
+"External panelize:\n"
+"failed to read data from child stdout:\n"
+"%s"
+msgstr ""
 
 msgid "Cannot run external panelize in a non-local directory"
 msgstr "Extern panelisering kan inte köras på en icke-lokal katalog"
@@ -3839,15 +3920,11 @@ msgstr ""
 msgid "Home directory path is not absolute"
 msgstr "Hemkatalogsökvägen är inte absolut"
 
-#, fuzzy
 msgid ""
 "GNU Midnight Commander\n"
 "is already running on this terminal.\n"
 "Subshell support will be disabled."
 msgstr ""
-"GNU Midnight Commander körs redan\n"
-"i den här terminalen. Underskal-\n"
-"support kommer att inaktiveras."
 
 #, c-format
 msgid ""
@@ -3890,53 +3967,46 @@ msgstr "Skalet är fortfarande aktivt. Avsluta ändå?"
 msgid "Warning: Cannot change to %s.\n"
 msgstr "Varning: Kan inte byta till %s.\n"
 
-#, fuzzy
 msgid "With builtin Editor and Aspell support"
-msgstr "Med inbyggd redigerare och stöd för aspell\n"
+msgstr ""
 
-#, fuzzy
 msgid "With builtin Editor"
-msgstr "Med inbyggd editor\n"
+msgstr ""
 
-#, fuzzy
 msgid "With optional subshell support"
-msgstr "Med valbar underskalsupport\n"
+msgstr ""
 
-#, fuzzy
 msgid "With subshell support as default"
-msgstr "Med underskalsupport förvalt\n"
+msgstr ""
 
-#, fuzzy
 msgid "With support for background operations"
-msgstr "Med stöd för bakgrundsoperationer\n"
+msgstr ""
 
-#, fuzzy
 msgid "With mouse support on xterm and Linux console"
-msgstr "Med stöd för mus på xterm och linuxkonsoll\n"
+msgstr ""
 
-#, fuzzy
 msgid "With mouse support on xterm"
-msgstr "Med stöd för mus på xterm\n"
+msgstr ""
 
-#, fuzzy
 msgid "With support for X11 events"
-msgstr "Med stöd för X11-händelser\n"
+msgstr ""
 
-#, fuzzy
 msgid "With internationalization support"
-msgstr "Med internationaliseringsstöd\n"
+msgstr ""
 
-#, fuzzy
 msgid "With multiple codepages support"
-msgstr "Med stöd för flera teckenöversättningar\n"
+msgstr ""
+
+msgid "With ext2fs attributes support"
+msgstr ""
 
 #, c-format
 msgid "Built with GLib %d.%d.%d\n"
 msgstr "Byggd med GLib %d.%d.%d\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Built with S-Lang %s with terminfo database\n"
-msgstr "Använder S-Lang-biblioteket med terminfo-databas\n"
+msgstr ""
 
 #, c-format
 msgid "Built with ncurses %s\n"
@@ -3945,9 +4015,9 @@ msgstr ""
 msgid "Built with ncurses (unknown version)"
 msgstr ""
 
-#, fuzzy, c-format
+#, c-format
 msgid "Built with ncursesw %s\n"
-msgstr "Använder ncursesw-biblioteket\n"
+msgstr ""
 
 msgid "Built with ncursesw (unknown version)"
 msgstr ""
@@ -4080,13 +4150,15 @@ msgstr ""
 #, c-format
 msgid ""
 "Cannot open %s archive\n"
+"%s:\n"
 "%s"
 msgstr ""
-"Kan inte öppna %s arkivet\n"
-"%s"
 
-msgid "Inconsistent extfs archive"
-msgstr "Inkonsistent extfsfil"
+#, c-format
+msgid ""
+"EXTFS virtual file system:\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid "Warning: cannot open %s directory\n"
@@ -4255,6 +4327,12 @@ msgstr ""
 "Ta bort lösenordet eller korrigera läge"
 
 #, c-format
+msgid ""
+"SFS virtual file system:\n"
+"%s"
+msgstr ""
+
+#, c-format
 msgid "%s: Warning: file %s not found\n"
 msgstr "%s: Varning: filen %s hittades inte\n"
 
@@ -4288,6 +4366,9 @@ msgstr "sftp: Ogiltigt värdnamn."
 msgid "sftp: %s"
 msgstr "sftp: %s"
 
+msgid "sftp: failed to convert remote host IP address into text form"
+msgstr ""
+
 #, c-format
 msgid "sftp: making connection to %s"
 msgstr "sftp: kopplar upp mot %s"
@@ -4298,6 +4379,50 @@ msgstr "sftp: uppkoppling avbruten av användare"
 #, c-format
 msgid "sftp: connection to server failed: %s"
 msgstr "sftp: uppkoppling mot server misslyckades: %s"
+
+msgid "sftp: found host key of unsupported type: RSA1"
+msgstr ""
+
+msgid "sftp: unknown host key type:"
+msgstr ""
+
+#, c-format
+msgid ""
+"Permanently added\n"
+"%s (%s)\n"
+"to the list of known hosts."
+msgstr ""
+
+msgid "sftp: cannot get the remote host key"
+msgstr ""
+
+msgid "sftp: unsupported key type, can't check remote host key"
+msgstr ""
+
+msgid "sftp: can't compute host key fingerprint hash"
+msgstr ""
+
+#, c-format
+msgid ""
+"The authenticity of host\n"
+"%s (%s)\n"
+"can't be established!\n"
+"%s key fingerprint hash is\n"
+"SHA1:%s.\n"
+"Do you want to add it to the list of known hosts and continue connecting?"
+msgstr ""
+
+#, c-format
+msgid ""
+"%s (%s)\n"
+"is found in the list of known hosts but\n"
+"KEYS DO NOT MATCH! THIS COULD BE A MITM ATTACK!\n"
+"Are you sure you want to add it to the list of known hosts and continue "
+"connecting?"
+msgstr ""
+
+msgid "sftp: host key verification failed"
+msgstr ""
 
 #, c-format
 msgid "sftp: Enter passphrase for %s "
@@ -4313,8 +4438,8 @@ msgstr "sftp: Mata in lösenord för %s "
 msgid "sftp: Password is empty."
 msgstr "sftp: Lösenordet är tomt."
 
-msgid "sftp: Failure establishing SSH session"
-msgstr "sftp: Upprättandet av en SSH-session misslyckades"
+msgid "sftp: failure establishing SSH session"
+msgstr ""
 
 msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: Ingen filhanterardata existerar för läsning av filen"
@@ -4570,6 +4695,3 @@ msgstr "Fortsätt från början?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Kan inte hämta en lokal kopia av /ftp://some.host/editme.txt"
-
-#~ msgid "Using the ncurses library\n"
-#~ msgstr "Använder ncurses-biblioteket\n"
