@@ -1,3 +1,13 @@
+Pending build-223
+
+Wed Dec 22 21:07:39 2021 adamy
+
+	* 4.8.27 merge
+
+		o mc_popen() script support.
+		o compat strtok_r() and inet_ntop().
+		o slang: SLsmg_set_color_in_region().
+
 Mon Dec 20 14:03:20 2021 adamy
 
 	* build-222
