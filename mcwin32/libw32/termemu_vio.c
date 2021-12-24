@@ -2563,18 +2563,25 @@ WCHAR_BUILD(const uint32_t ch, const struct WCHAR_COLORINFO *info, WCHAR_INFO *c
 
 
 static BOOL
+WATTR_COMPARE(const WCHAR_INFO *c1, const struct WCHAR_COLORINFO *info2)
+{
+    if (c1->Info.Flags || info2->Flags) {
+        return (c1->Info.Flags == info2->Flags &&
+                    c1->Info.Attributes == info2->Attributes &&
+                    c1->Info.fg == info2->fg &&
+                    c1->Info.bg == info2->bg &&
+                    c1->Info.fgrgb == info2->fgrgb &&
+                    c1->Info.bgrgb == info2->bgrgb);
+    }
+    return (c1->Info.Attributes == info2->Attributes);
+}
+
+
+static BOOL
 WCHAR_COMPARE(const WCHAR_INFO *c1, const WCHAR_INFO *c2)
 {
     if (c1->Char.UnicodeChar == c2->Char.UnicodeChar) {
-        if (c1->Info.Flags || c2->Info.Flags) {
-            return (c1->Info.Flags == c2->Info.Flags &&
-                       c1->Info.Attributes == c2->Info.Attributes &&
-                       c1->Info.fg == c2->Info.fg &&
-                       c1->Info.bg == c2->Info.bg &&
-                       c1->Info.fgrgb == c2->Info.fgrgb &&
-                       c1->Info.bgrgb == c2->Info.bgrgb);
-        }
-        return (c1->Info.Attributes == c2->Info.Attributes);
+        return WATTR_COMPARE(c1, &c2->Info);
     }
     return FALSE;
 }
