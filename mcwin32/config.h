@@ -34,6 +34,8 @@
 #pragma warning (disable : 4127)                /* conditional expression is constant */
 #pragma warning (disable : 4201)                /* nonstandard extension used : nameless struct/union */
 #pragma warning (disable : 4204)                /* nonstandard extension used : non-constant aggregate initializer */
+#pragma warning (disable : 4244)                /* possible loss of data */
+#pragma warning (disable : 4246)                /* possible loss of data */
 #pragma warning (disable : 4702)                /* unreachable code */
 #pragma warning (disable : 4706)                /* assignment within conditional expression */
 #pragma warning (disable : 4996)                /* 'xxx' was declared deprecated */
@@ -80,6 +82,11 @@ extern int                  win32_pclose(FILE *file);
 #ifndef popen
 #define popen(__cmd,__mode) win32_popen(__cmd, __mode)
 #define pclose(__file)      win32_pclose(__file)
+#endif
+
+extern const char *         mc_inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size);
+#if !defined(HAVE_STRTOK_R)
+extern char *               strtok_r(char *s, const char *delim, char **lasts);
 #endif
 
 extern void                 tty_set_title(const char *title);
