@@ -1,5 +1,5 @@
 
-Package List: build 220
+Package List: build 223
 
         mc.exe
         mcupdater.exe
@@ -12,12 +12,12 @@ Package List: build 220
         libglib-2.0.2.51.dll
         libgmodule-2.0.2.51.dll
         libintl.1.0.dll
-        libmagic.5.29.dll
-        libmbedcrypto.2.16.dll
-        libmbedtls.2.16.dll
-        libmbedx509.2.16.dll
-        libssh2.1.9.dll
-        libw32.1.1.dll
+        libmagic.5.41.dll
+        libmbedcrypto.2.27.dll
+        libmbedtls.2.27.dll
+        libmbedx509.2.27.dll
+        libssh2.1.10.dll
+        libw32.1.2.dll
         libz.1.2.dll
 
         mt7r19.dll
