@@ -20,5 +20,6 @@
  */
 
 extern char *my_unquote (const char *cmd, int quotews);
+extern const char *mc_isscript(const char *cmd);
 
 /*end*/

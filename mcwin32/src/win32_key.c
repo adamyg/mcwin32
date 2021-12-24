@@ -99,7 +99,11 @@ static  int __TryEnterDebugger() {
 #include "lib/tty/win.h"
 
 #include "src/args.h"                           /* mc_args__nomouse */
-#include "src/filemanager/midnight.h"           /* left/right panel */
+#if (VERSION_3 >= 27)
+#include "src/filemanager/filemanager.h"        /* left/right panel */
+#else
+#include "src/filemanager/midnight.h"
+#endif
 
 extern gboolean             quit_cmd_internal (int quiet);
 extern gboolean             confirm_exit;
@@ -450,7 +454,11 @@ key_shell_mode (void)
                     //   cmd seems to explicitly clear when executing in-built commands,
                     //   whereas apps this may not be the case; clear for consistency.
 
-                if (tty_use_256colors()) {      /* enable VT100/ANSI */
+#if (VERSION_3 >= 27)
+                if (tty_use_256colors(NULL)) {  /* enable VT100/ANSI */
+#else
+                if (tty_use_256colors()) {
+#endif
                     dwNewMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
                 }
                 if (dwNewMode != dwMode) {
