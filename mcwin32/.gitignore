@@ -6,6 +6,7 @@ bin.*/
 lib.*/
 objects*/
 msvc*/
+libglib_*/
 CVS/
 Makefile
 buildinfo.h
