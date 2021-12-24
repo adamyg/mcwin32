@@ -59,9 +59,17 @@ static const char bin_sh[] = "/bin/sh";
  *  @return newly created object of mc_pipe_t class in success, NULL otherwise
  */
 
+#if (VERSION_3 >= 27)
+mc_pipe_t *
+mc_popen (const char *xcommand, gboolean read_out, gboolean read_err, GError ** error)
+#else
 mc_pipe_t *
 mc_popen (const char *xcommand, GError ** error)
+#endif
 {
+#if (VERSION_3 < 27)
+    gboolean read_out = 1, read_err = 1;
+#endif
     win32_exec_t *args = NULL;
     const char *busybox = getenv("MC_BUSYBOX");
     const char *cmd = NULL;
@@ -81,18 +89,37 @@ mc_popen (const char *xcommand, GError ** error)
         }
 
         if (busybox && *busybox) {
-            /*
-             *  If </bin/sh> <cmd ...>
-             *  execute as <\"$(busybox)\" sh cmd ...>
-             */
-            const char *space;
+            const char *space, *exec;
 
             if (NULL != (space = strchr(command, ' ')) &&
                     space == (command + (sizeof(bin_sh) - 1)) && 0 == strncmp(command, bin_sh, sizeof(bin_sh)-1)) {
+                /*
+                 *  If </bin/sh> <cmd ...>
+                 *  execute as <\"$(busybox)\" sh cmd ...>
+                 */
                 char *t_cmd;
 
                 if (NULL == (t_cmd = g_strconcat("\"", busybox, "\" sh", space, NULL))) {
                     free((void *)command);
+                    x_errno = ENOMEM;
+                    goto error;
+                }
+                cmd = t_cmd;                    // replacement command.
+
+            } else if (NULL != (exec = mc_isscript(command))) {
+                /*
+                 *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python | /usr/bin/env python>
+                 */
+                char *t_cmd = NULL;
+
+                if (exec[0] == 'p') {           // perl/python
+                    t_cmd = g_strconcat(exec, " ", command, NULL);
+                } else {                        // sh/ash/bash
+                    t_cmd = g_strconcat("\"", busybox, "\" ", exec, " ", command, NULL);
+                }
+                if (NULL == t_cmd) {
+                    free((void *)command);
+                    x_errno = ENOMEM;
                     goto error;
                 }
                 cmd = t_cmd;                    // replacement command.
@@ -121,6 +148,20 @@ mc_popen (const char *xcommand, GError ** error)
     if (0 == w32_exec(args)) {
         x_errno = w32_errno_cnv(GetLastError());
         goto error;
+    }
+
+    if (read_out) {                             // reading stdout?
+        p->out.fd = 0;
+    } else if (args->hOutput) {                 // close stdout
+        CloseHandle(args->hOutput);
+        args->hOutput = 0;
+    }
+
+    if (read_err) {                             // reading stderr?
+        p->err.fd = 0;
+    } else if (args->hError) {                  // close stderr
+        CloseHandle(args->hError);
+        args->hError = 0;
     }
 
     p->out.len = MC_PIPE_BUFSIZE;               // read buffer length.
@@ -182,8 +223,8 @@ mc_pread (mc_pipe_t * p, GError ** error)
 
     if (error) *error = NULL;
 
-    read_out = (args->hOutput && p->out.len > 0);
-    read_err = (args->hError  && p->err.len > 0);
+    read_out = (p->out.fd >= 0);
+    read_err = (p->err.fd >= 0);
 
     if (! read_out && ! read_err) {
         return;
@@ -196,41 +237,73 @@ mc_pread (mc_pipe_t * p, GError ** error)
 
     if (read_out) {                             // stdout
         p->out.len = MC_PIPE_STREAM_UNREAD;
+        assert(args->hOutput && INVALID_HANDLE_VALUE != args->hOutput);
         handles[count++] = args->hOutput;
     }
 
     if (read_err) {                             // stderr
         p->err.len = MC_PIPE_STREAM_UNREAD;
+        assert(args->hError && INVALID_HANDLE_VALUE != args->hError);
         handles[count++] = args->hError;
+    }
+
+    if (!read_out && !read_err) {
+        p->out.len = MC_PIPE_STREAM_UNREAD;
+        p->err.len = MC_PIPE_STREAM_UNREAD;
+        return;
     }
                                                 // select(handles)
     ret = WaitForMultipleObjects(count, handles, FALSE, 2500 /*INFINITE*/);
 
     if (ret < count) {                          // stream ready?
+        int alternative = 1;
         HANDLE hPipe = handles[ret];
-        mc_pipe_stream_t *ps = ((hPipe == args->hOutput) ? &p->out : &p->err);
-        size_t len;
-        DWORD readcount;
 
-        if ((len = (size_t) ps->len) > MC_PIPE_BUFSIZE) {
-            len = MC_PIPE_BUFSIZE;
-        }
+        assert(0 == ret || 1 == ret);
+        while (hPipe) {
+            mc_pipe_stream_t *ps = ((hPipe == args->hOutput) ? &p->out : &p->err);
+            size_t buf_len;
+            DWORD readcount;
 
-        if (ReadFile(hPipe, ps->buf, (ps->null_term ? len-1 : len), &readcount, NULL) && readcount) {
-            if (ps->null_term) {                // optional terminator
-                ps->buf[readcount] = '\0';
+            if ((buf_len = (size_t) ps->len) >= MC_PIPE_BUFSIZE) {
+                buf_len = (ps->null_term ? MC_PIPE_BUFSIZE - 1 : MC_PIPE_BUFSIZE);
             }
-            ps->len = (int)readcount;
 
-        } else {                                // error conditions
-            const DWORD lastError = GetLastError();
+            if (ReadFile(hPipe, ps->buf, buf_len, &readcount, NULL)) {
+                if (readcount) {
+                    if (ps->null_term) {        // optional terminator
+                        ps->buf[readcount] = '\0';
+                    }
+                    ps->len = (int)readcount;
+                } else {
+                    ps->len = 0;
+                }
 
-            if (ERROR_BROKEN_PIPE == lastError) {
-                ps->len = MC_PIPE_STREAM_EOF;
+            } else {                            // error conditions
+                const DWORD lastError = GetLastError();
 
-            } else {
-                ps->len = MC_PIPE_ERROR_READ;
-                ps->error = w32_errno_cnv(lastError);
+                if (ERROR_BROKEN_PIPE == lastError) {
+                    ps->len = MC_PIPE_STREAM_EOF;
+                } else {
+                    ps->len = MC_PIPE_ERROR_READ;
+                    ps->error = w32_errno_cnv(lastError);
+                }
+            }
+
+            hPipe = 0;
+
+            if (read_out && read_err) {         // poll alternative input
+                if (alternative) {
+                    HANDLE t_handles[2] = {0};
+
+                    alternative = 0;
+                    t_handles[0] = (0 == ret ? args->hError : args->hOutput);
+                    assert(t_handles[0] != handles[ret]);
+
+                    if (WAIT_OBJECT_0 == (ret = WaitForMultipleObjects(1, t_handles, FALSE, 0 /*NON-BLOCKING*/))) {
+                        hPipe = t_handles[0];
+                    }
+                }
             }
         }
 
@@ -249,6 +322,52 @@ mc_pread (mc_pipe_t * p, GError ** error)
                 w32_errno_cnv(GetLastError()));
     }
 }
+
+
+/** 4.8.27+
+ * Reads a line from @stream. Reading stops after an EOL or a newline. If a newline is read,
+ * it is appended to the line.
+ *
+ * @stream mc_pipe_stream_t object
+ *
+ * @return newly created GString or NULL in case of EOL;
+ */
+
+#if (VERSION_3 >= 27)
+GString *
+mc_pstream_get_string (mc_pipe_stream_t * ps)
+{
+    char *s;
+    size_t size, i;
+    gboolean escape = FALSE;
+
+    g_return_val_if_fail (ps != NULL, NULL);
+
+    if (ps->len < 0)
+        return NULL;
+
+    size = ps->len - ps->pos;
+
+    if (size == 0)
+        return NULL;
+
+    s = ps->buf + ps->pos;
+
+    if (s[0] == '\0')
+        return NULL;
+
+    /* find ’\0’ or unescaped ’\n’ */
+    for (i = 0; i < size && !(s[i] == '\0' || (s[i] == '\n' && !escape)); i++)
+        escape = s[i] == '\\' ? !escape : FALSE;
+
+    if (i != size && s[i] == '\n')
+        i++;
+
+    ps->pos += i;
+
+    return g_string_new_len (s, i);
+}
+#endif  //VERSION_3
 
 
 /**
