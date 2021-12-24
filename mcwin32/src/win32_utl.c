@@ -108,8 +108,6 @@ static void             my_setpathenv (const char *name, const char *value, int 
 static void             unixpath (char *path);
 static void             dospath (char *path);
 
-static const char *     IsScript (const char *cmd);
-
 static int              system_impl (int flags, const char *shell, const char *cmd);
 static int              system_bustargs (char *cmd, const char **argv, int cnt);
 static int              system_SET (int argc, const char **argv);
@@ -290,7 +288,13 @@ mc_TMPDIR(void)
         char sysdir[MAX_PATH] = {0};
         const char *tmpdir;
 
-        tmpdir = getenv("TMP");                     /* determine the temp directory */
+        if (NULL != (tmpdir = getenv("MC_TMPDIR"))) { // 4.8.27
+            if (!*tmpdir || // verify either "/" or "X:/"
+                    !(IS_PATH_SEP(tmpdir[0]) || (':' == tmpdir[1] && !IS_PATH_SEP(tmpdir[2])))) {
+                tmpdir = NULL;
+            }
+        }
+        if (!tmpdir) tmpdir = getenv("TMP");    /* determine the temp directory */
         if (!tmpdir) tmpdir = getenv("TEMP");
         if (!tmpdir) tmpdir = getenv("TMPDIR");
         if (!tmpdir) {
@@ -1098,7 +1102,7 @@ system_impl (int flags, const char *shell, const char *cmd)
                      }
                 }
 
-            } else if ((flags & EXECUTE_AS_SHELL) && NULL != (exec = IsScript(cmd))) {
+            } else if ((flags & EXECUTE_AS_SHELL) && NULL != (exec = mc_isscript(cmd))) {
                 /*
                  *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python | /usr/bin/env python>
                  *  note: currently limited to extfs usage.
@@ -1286,8 +1290,8 @@ ScriptMagic(int fd)
 }
 
 
-static const char *
-IsScript(const char *cmd)
+const char *
+mc_isscript(const char *cmd)
 {
     char t_cmd[1024] = { 0 };
     const char *script = NULL;
@@ -1298,7 +1302,7 @@ IsScript(const char *cmd)
     if (system_bustargs(t_cmd, argv, 2) >= 1 && argv[0]) {
         if (w32_utf8filenames_state()) {
             wchar_t *warg0 = NULL;
-            
+
             if (NULL != (warg0 = w32_utf2wca(argv[0], NULL))) {
                 if ((fd = _wopen(warg0, O_RDONLY | O_BINARY)) >= 0) {
                     script = ScriptMagic(fd);
@@ -1323,7 +1327,7 @@ IsScript(const char *cmd)
  */
 char *
 my_unquote(const char *cmd, int quotews)
-{ 
+{
     char *ret, *cursor, *start = NULL;
     int blen, instring = 0, quoting = 0;
 
@@ -1331,7 +1335,7 @@ my_unquote(const char *cmd, int quotews)
     if (0 == blen || NULL == (ret = (char *)calloc(blen, 1))) {
         return NULL;
     }
-    
+
     cursor = ret;
     while (1) {
         if ('\\' == *cmd) {
@@ -1388,7 +1392,7 @@ my_unquote(const char *cmd, int quotews)
                         instring = 0;
                     }
                 } else if (start == cmd) {
-                    instring = *cmd; 
+                    instring = *cmd;
                 }
                 start = NULL;
                 break;
@@ -1442,7 +1446,7 @@ win32_popen(const char *cmd, const char *mode)
             g_free(t_cmd);
         }
 
-    } else if (busybox && *busybox && NULL != (exec = IsScript(cmd))) {
+    } else if (busybox && *busybox && NULL != (exec = mc_isscript(cmd))) {
         /*
          *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python | /usr/bin/env python>
          *      note: currently limited to extfs usage.
@@ -2203,6 +2207,55 @@ mc_build_filename(const char *first_element, ...)
     ret = mc_build_filenamev (first_element, args);
     va_end (args);
     return ret;
+}
+
+
+/**
+ *  inet_ntop - convert IPv4 and IPv6 addresses from binary to text.
+ */
+const char *
+mc_inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size)
+{
+#if (0)
+    switch (af) {
+    case AF_INET: {
+            struct sockaddr_in in;
+            memset(&in, 0, sizeof(in));
+            in.sin_family = AF_INET;
+            memcpy(&in.sin_addr, src, sizeof(struct in_addr));
+            getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in), dst, size, NULL, 0, NI_NUMERICHOST);
+        }
+        break;
+    case AF_INET6: {
+            struct sockaddr_in6 in;
+            memset(&in, 0, sizeof(in));
+            in.sin6_family = AF_INET6;
+            memcpy(&in.sin6_addr, src, sizeof(struct in_addr6));
+            getnameinfo((struct sockaddr *)&in, sizeof(struct sockaddr_in6), dst, size, NULL, 0, NI_NUMERICHOST);
+        }
+        break;
+    defaullt:
+        return NULL;
+    }
+    return dst;
+
+#else
+    struct sockaddr_storage ss = {0};
+    unsigned long s = (unsigned long)size;
+
+    ss.ss_family = af;
+    switch (af) {
+    case AF_INET:
+        ((struct sockaddr_in *)&ss)->sin_addr = *(struct in_addr *)src;
+        break;
+    case AF_INET6:
+        ((struct sockaddr_in6 *)&ss)->sin6_addr = *(struct in6_addr *)src;
+        break;
+    default:
+        return NULL;
+    }
+    return (WSAAddressToStringA((struct sockaddr *)&ss, sizeof(ss), NULL, dst, &s) == 0) ? dst : NULL;
+#endif
 }
 
 /*end*/
