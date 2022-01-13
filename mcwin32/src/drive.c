@@ -11,8 +11,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by:
-   Adam Young 2012 - 2021
+   Written by: Adam Young 2012 - 2022
 
    This file is part of the Midnight Commander.
 
@@ -378,12 +377,12 @@ enumerate_disks(int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueu
         DWORD cEntries = (DWORD)-1, cIndex;
 
         while (pnr) {
-            if (NO_ERROR == (dwResult = fns->fnWNetEnumResourceA(hEnum, &cEntries, pnr, &dwSize))) { 
+            if (NO_ERROR == (dwResult = fns->fnWNetEnumResourceA(hEnum, &cEntries, pnr, &dwSize))) {
                 //
                 //  Iterate result
                 for (cIndex = 0; cIndex < cEntries; ++cIndex) {
                     NETRESOURCE *nr = pnr + cIndex;
-                    
+
                     if (RESOURCEUSAGE_CONTAINER == (nr->dwUsage & RESOURCEUSAGE_CONTAINER)) {
                         // If the NETRESOURCE structure represents a container resource,
                         // call the EnumerateFunc function recursively.
@@ -446,3 +445,4 @@ enumerate_disks(int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueu
 #endif  //DO_NETWORK_DRIVES
 
 /*end*/
+

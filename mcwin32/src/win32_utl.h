@@ -1,6 +1,6 @@
 /* -*- mode: c; indent-width: 4; -*- */
 /*
-   Written by: Adam Young 2021
+   Adam Young 2021 - 2022
 
    This file is part of the Midnight Commander.
 
@@ -23,3 +23,4 @@ extern char *my_unquote (const char *cmd, int quotews);
 extern const char *mc_isscript(const char *cmd);
 
 /*end*/
+

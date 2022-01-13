@@ -36,7 +36,7 @@
         void        enable_bracketed_paste (void);
         void        disable_bracketed_paste (void);
 
-   Written by: Adam Young 2012 - 2021
+   Written by: Adam Young 2012 - 2022
 
    This file is part of the Midnight Commander.
 
@@ -965,7 +965,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                      *    GPM_DOWN   - A button press event. The `buttons' field will report which buttons are pressed after the event.
                      *    GPM_UP     - A button release event. The `buttons' field will report which buttons are being released.
                      *                      Note that this is different from the previous case.
-                     * 
+                     *
                      *  Theses bits are set at button-press, drag and button release events:
                      *
                      *    GPM_SINGLE - Used to identify a single press.

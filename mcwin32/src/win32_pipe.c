@@ -6,7 +6,7 @@
         mc_pread
         mc_pclose
 
-   Written by: Adam Young 2015 - 2021
+   Written by: Adam Young 2015 - 2022
 
    The Midnight Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as

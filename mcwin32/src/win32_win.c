@@ -10,8 +10,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by:
-   Adam Young 2012 - 2021
+   Written by: Adam Young 2012 - 2022
 
    This file is part of the Midnight Commander.
 
@@ -67,3 +66,4 @@ look_for_rxvt_extensions (void)
 }
 
 /*end*/
+
