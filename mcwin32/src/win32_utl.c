@@ -21,7 +21,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2021
+   Written by: Adam Young 2012 - 2022
 
    Portions sourced from lib/utilunix.c, see for additional information.
 
@@ -311,6 +311,54 @@ mc_TMPDIR(void)
     }
 
     return (x_buffer[0] ? x_buffer : NULL);
+}
+
+
+/**
+ *  Retrieve aspell DLL directory, if available.
+ *
+ *      <EXEPATH>
+ *
+ *      <Software\Aspell\bin>
+ */
+const char *
+mc_aspell_dllpath(void)
+{
+    static char x_buffer[MAX_PATH] = {0};
+    HKEY hKey = 0;
+    int len;
+
+    if (x_buffer[0]) {
+        return x_buffer;
+    }
+
+    // <EXEPATH>
+    if ((len = w32_getexedir(x_buffer, sizeof(x_buffer))) > 0) {
+        _snprintf(x_buffer + len, sizeof(x_buffer) - len, "\\%s.dll", ASPELL_DLLNAME);
+        x_buffer[sizeof(x_buffer) - 1] = 0;
+        if (0 == _access(x_buffer, 0)) {
+            x_buffer[len] = 0; //exclude delimiter
+            return x_buffer;
+        }
+    }
+
+    // <Software\Aspell\bin>
+    if (ERROR_SUCCESS == RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Aspell", 0, KEY_READ, &hKey)) {
+        DWORD dwSize = sizeof(x_buffer) - (sizeof(ASPELL_DLLNAME) + 8);
+
+        if (ERROR_SUCCESS == RegQueryValueExA(hKey, "Path", NULL, NULL, (LPBYTE)x_buffer, &dwSize) && dwSize) {
+            if (0 == x_buffer[dwSize]) --dwSize;
+            _snprintf(x_buffer + dwSize, sizeof(x_buffer) - dwSize, "\\%s.dll", ASPELL_DLLNAME);
+            x_buffer[sizeof(x_buffer) - 1] = 0;
+            if (0 == _access(x_buffer, 0)) {
+                x_buffer[dwSize] = 0; //exclude delimiter
+                return x_buffer;
+            }
+        }
+        RegCloseKey(hKey);
+    }
+
+    return NULL;
 }
 
 
@@ -2259,3 +2307,4 @@ mc_inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size)
 }
 
 /*end*/
+

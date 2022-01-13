@@ -173,7 +173,11 @@ spell_available (void)
     if (spell_module != NULL)
         return TRUE;
 
+#if defined(ASPELL_DLLNAME)
+    spell_module_fname = g_module_build_path (ASPELL_DLLPATH, ASPELL_DLLNAME);
+#else
     spell_module_fname = g_module_build_path (NULL, "libaspell");
+#endif
     spell_module = g_module_open (spell_module_fname, G_MODULE_BIND_LAZY);
 
     g_free (spell_module_fname);

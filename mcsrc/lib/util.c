@@ -655,7 +655,7 @@ x_basename (const char *s)
 #if defined(WIN32)
     {   const char *s1 = strrchr (s, PATH_SEP),
            *s2 = strrchr (s, PATH_SEP2);
-        path_sep = (s2 > s1 ? s2 : s1); 
+        path_sep = (s2 > s1 ? s2 : s1);
     }
 #else
     path_sep = strrchr (s, PATH_SEP);
@@ -1434,14 +1434,20 @@ guess_message_value (void)
     }
 
 #if defined(WIN32) //WIN32, config
-    if (locale == NULL) {
-        char LanguageName[32] = {0};
-        if (GetLocaleInfoA(GetUserDefaultLCID(), LOCALE_SISO639LANGNAME,
-                  LanguageName, sizeof(LanguageName)) && LanguageName[0]) {
-            return g_strdup(LanguageName);
+    if (NULL == locale) {
+        char iso639[16] = {0}, iso3166[16] = {0}, lang[64] = {0};
+        LCID lcid = GetThreadLocale();
+
+        if (GetLocaleInfoA(lcid, LOCALE_SISO639LANGNAME, iso639, sizeof(iso639)) &&
+                GetLocaleInfoA(lcid, LOCALE_SISO3166CTRYNAME, iso3166, sizeof(iso3166))) {
+
+            snprintf(lang, sizeof(lang), "%s_%s", iso639, iso3166); // "9_9"
+            lang[sizeof(lang) - 1] = '\0';
+
+            return g_strdup(lang);
         }
     }
-#endif //WIN32
+#endif  //WIN32
 
     if (locale == NULL)
         locale = "";

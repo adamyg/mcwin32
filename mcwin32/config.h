@@ -3,7 +3,7 @@
 /*
  *  win32 Midnight Commander -- config.h
  *
- *  Written by: Adam Young 2012 - 2021
+ *  Written by: Adam Young 2012 - 2022
  *
  *  This file is part of the Midnight Commander.
  *
@@ -60,6 +60,8 @@
  */
 #define MC_USERCONF_DIR     MC_APPLICATION_DIR  /* see: fileloc.h, default "mc" */
 #undef  MC_HOMEDIR_XDG                          /* enforce Freedesktop recommended dirs, not required */
+
+const char *                mc_aspell_dllpath_get(void);
 
 const char *                mc_TMPDIR(void);
 const char *                mc_SYSCONFDIR(void);
@@ -119,7 +121,9 @@ extern void                 tty_set_title(const char *title);
 #endif
 
 #define HAVE_LIBMAGIC
-#undef  HAVE_ASPELL
+#define HAVE_ASPELL
+#define ASPELL_DLLPATH mc_aspell_dllpath()
+#define ASPELL_DLLNAME "libaspell-0.60"
 #undef  HAVE_SUBSHELL_SUPPORT
 #define HAVE_CHARSET 1
 #define HAVE_SLANG 1
@@ -154,7 +158,7 @@ extern void                 tty_set_title(const char *title);
 #define ENABLE_NLS
 #undef  ENABLE_BACKGROUND
 #undef  ENABLE_SUBSHELL
-#define ENABLE_CONFIGURE_ARGS 1                  /* 4.8.24+ */
+#define ENABLE_CONFIGURE_ARGS 1                 /* 4.8.24+ */
 
 #define ENABLE_VFS 1
 #define ENABLE_VFS_CPIO 1
