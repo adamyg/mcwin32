@@ -178,10 +178,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\lib\timer.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/</ObjectFileName>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\lib\tty\color-internal.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libmc/tty/</ObjectFileName>
@@ -336,10 +332,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\editor\choosesyntax.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\editor\edit.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
@@ -352,14 +344,12 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\editor\editcmd_dialogs.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
-    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editcomplete.c" />
     <ClCompile Include="..\..\..\mcsrc\src\editor\editdraw.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editmacros.c" />
     <ClCompile Include="..\..\..\mcsrc\src\editor\editmenu.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
@@ -368,6 +358,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editsearch.c" />
     <ClCompile Include="..\..\..\mcsrc\src\editor\editwidget.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
@@ -381,10 +372,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\editor\spell.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\editor\spell_dialogs.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/editor/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/editor/</ObjectFileName>
     </ClCompile>
@@ -402,6 +389,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\cd.c" />
     <ClCompile Include="..\..\..\mcsrc\src\filemanager\chmod.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
@@ -434,6 +422,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\filemanager.c" />
     <ClCompile Include="..\..\..\mcsrc\src\filemanager\filenot.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
@@ -462,10 +451,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\filemanager\midnight.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\filemanager\mountlist.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/filemanager/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/filemanager/</ObjectFileName>
@@ -488,7 +473,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\file_history.c" />
     <ClCompile Include="..\..\..\mcsrc\src\help.c" />
-    <ClCompile Include="..\..\..\mcsrc\src\keybind-defaults.c" />
+    <ClCompile Include="..\..\..\mcsrc\src\keymap.c" />
     <ClCompile Include="..\..\..\mcsrc\src\learn.c" />
     <ClCompile Include="..\..\..\mcsrc\src\main.c" />
     <ClCompile Include="..\..\..\mcsrc\src\selcodepage.c" />
@@ -508,6 +493,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\ftpfs\ftpfs_parse_ls.c" />
     <ClCompile Include="..\..\..\mcsrc\src\vfs\local\local.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
@@ -607,6 +593,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/viewer/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/viewer/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\src\compat_strtok_r.c" />
     <ClCompile Include="..\..\src\drive.c">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">-DXXX_DO_NETWORK_DRIVES=1 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -687,21 +674,24 @@
     <ClInclude Include="..\..\..\mcsrc\lib\widget\widget-common.h" />
     <ClInclude Include="..\..\..\mcsrc\lib\widget\wtools.h" />
     <ClInclude Include="..\..\..\mcsrc\src\args.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\background.h" />
     <ClInclude Include="..\..\..\mcsrc\src\clipboard.h" />
     <ClInclude Include="..\..\..\mcsrc\src\diffviewer\internal.h" />
     <ClInclude Include="..\..\..\mcsrc\src\diffviewer\ydiff.h" />
     <ClInclude Include="..\..\..\mcsrc\src\editor\edit-impl.h" />
     <ClInclude Include="..\..\..\mcsrc\src\editor\edit.h" />
     <ClInclude Include="..\..\..\mcsrc\src\editor\editbuffer.h" />
-    <ClInclude Include="..\..\..\mcsrc\src\editor\editcmd_dialogs.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\editcomplete.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\editmacros.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\editor\editsearch.h" />
     <ClInclude Include="..\..\..\mcsrc\src\editor\editwidget.h" />
     <ClInclude Include="..\..\..\mcsrc\src\editor\etags.h" />
     <ClInclude Include="..\..\..\mcsrc\src\editor\spell.h" />
-    <ClInclude Include="..\..\..\mcsrc\src\editor\spell_dialogs.h" />
     <ClInclude Include="..\..\..\mcsrc\src\events_init.h" />
     <ClInclude Include="..\..\..\mcsrc\src\execute.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\achown.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\boxes.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\cd.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\chmod.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\chown.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\cmd.h" />
@@ -710,11 +700,13 @@
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\ext.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\file.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\filegui.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\filemanager.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\filenot.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\fileopctx.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\find.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\hotlist.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\info.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\ioblksize.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\layout.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\listmode.h" />
     <ClInclude Include="..\..\..\mcsrc\src\filemanager\midnight.h" />
@@ -727,6 +719,7 @@
     <ClInclude Include="..\..\..\mcsrc\src\help.h" />
     <ClInclude Include="..\..\..\mcsrc\src\history.h" />
     <ClInclude Include="..\..\..\mcsrc\src\keybind-defaults.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\keymap.h" />
     <ClInclude Include="..\..\..\mcsrc\src\learn.h" />
     <ClInclude Include="..\..\..\mcsrc\src\selcodepage.h" />
     <ClInclude Include="..\..\..\mcsrc\src\setup.h" />
@@ -744,7 +737,6 @@
     <ClInclude Include="..\..\..\mcsrc\src\vfs\sftpfs\init.h" />
     <ClInclude Include="..\..\..\mcsrc\src\vfs\sftpfs\internal.h" />
     <ClInclude Include="..\..\..\mcsrc\src\vfs\tar\tar.h" />
-    <ClInclude Include="..\..\..\mcsrc\src\viewer\inlines.h" />
     <ClInclude Include="..\..\..\mcsrc\src\viewer\internal.h" />
     <ClInclude Include="..\..\..\mcsrc\src\viewer\mcviewer.h" />
     <ClInclude Include="..\..\buildinfo.h" />
@@ -826,12 +818,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32=0x501;_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../..;../../../mcsrc;../../include;../../libw32/msvc;../../libw32;../../include/glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../..;../../../mcsrc;../../include;../../libaspell;../../libw32/msvc;../../libw32;../../include/glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(OutDir)libw32.lib;../../lib.vs140/debug/libglib-2.0.lib;../../lib.vs140/debug/libintl.lib;../../lib.vs140/debug/libssh2.lib;../../lib.vs140/debug/libmagic.lib;../../lib.vs140/debug/libz.lib;../../lib.vs140/debug/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)libw32.lib;../../lib.vs140/debug/libglib-2.0.lib;../../lib.vs140/debug/libgmodule-2.0.lib;../../lib.vs140/debug/libintl.lib;../../lib.vs140/debug/libssh2.lib;../../lib.vs140/debug/libmagic.lib;../../lib.vs140/debug/libz.lib;../../lib.vs140/debug/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\debug\etc"                  "$(OutDir)\etc\"

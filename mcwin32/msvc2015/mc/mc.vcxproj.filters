@@ -136,6 +136,9 @@
     <Filter Include="Header Files\mcsrc\libvfs\fish">
       <UniqueIdentifier>{7de8c171-2956-448d-987a-a88879abbce4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\mcsrc\filemanager">
+      <UniqueIdentifier>{cb5045c7-7dcc-4c91-9d00-5750b767cd6e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\mcsrc\src\args.c">
@@ -154,9 +157,6 @@
       <Filter>Source Files\mcsrc</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\help.c">
-      <Filter>Source Files\mcsrc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\keybind-defaults.c">
       <Filter>Source Files\mcsrc</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\learn.c">
@@ -228,9 +228,6 @@
     <ClCompile Include="..\..\..\mcsrc\src\filemanager\listmode.c">
       <Filter>Source Files\mcsrc\filemanager</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\filemanager\midnight.c">
-      <Filter>Source Files\mcsrc\filemanager</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\filemanager\mountlist.c">
       <Filter>Source Files\mcsrc\filemanager</Filter>
     </ClCompile>
@@ -249,9 +246,6 @@
     <ClCompile Include="..\..\..\mcsrc\src\editor\bookmark.c">
       <Filter>Source Files\mcsrc\editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\editor\choosesyntax.c">
-      <Filter>Source Files\mcsrc\editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\editor\edit.c">
       <Filter>Source Files\mcsrc\editor</Filter>
     </ClCompile>
@@ -259,9 +253,6 @@
       <Filter>Source Files\mcsrc\editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\editor\editcmd.c">
-      <Filter>Source Files\mcsrc\editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\editor\editcmd_dialogs.c">
       <Filter>Source Files\mcsrc\editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\editor\editdraw.c">
@@ -283,9 +274,6 @@
       <Filter>Source Files\mcsrc\editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\editor\spell.c">
-      <Filter>Source Files\mcsrc\editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\editor\spell_dialogs.c">
       <Filter>Source Files\mcsrc\editor</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\editor\syntax.c">
@@ -361,9 +349,6 @@
       <Filter>Source Files\mcsrc\libmc</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\lib\timefmt.c">
-      <Filter>Source Files\mcsrc\libmc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\lib\timer.c">
       <Filter>Source Files\mcsrc\libmc</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\lib\util.c">
@@ -651,6 +636,30 @@
     <ClCompile Include="..\..\src\drive.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\compat_strtok_r.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editcomplete.c">
+      <Filter>Source Files\mcsrc\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editmacros.c">
+      <Filter>Source Files\mcsrc\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\editor\editsearch.c">
+      <Filter>Source Files\mcsrc\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\cd.c">
+      <Filter>Source Files\mcsrc\filemanager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\filemanager\filemanager.c">
+      <Filter>Source Files\mcsrc\filemanager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\keymap.c">
+      <Filter>Source Files\mcsrc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\ftpfs\ftpfs_parse_ls.c">
+      <Filter>Source Files\mcsrc\libvfs\ftpfs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\buildinfo.h">
@@ -767,9 +776,6 @@
     <ClInclude Include="..\..\..\mcsrc\src\editor\editbuffer.h">
       <Filter>Header Files\mcsrc\editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\mcsrc\src\editor\editcmd_dialogs.h">
-      <Filter>Header Files\mcsrc\editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\editor\edit-impl.h">
       <Filter>Header Files\mcsrc\editor</Filter>
     </ClInclude>
@@ -782,17 +788,11 @@
     <ClInclude Include="..\..\..\mcsrc\src\editor\spell.h">
       <Filter>Header Files\mcsrc\editor</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\mcsrc\src\editor\spell_dialogs.h">
-      <Filter>Header Files\mcsrc\editor</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\diffviewer\internal.h">
       <Filter>Header Files\mcsrc\diffviewer</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\diffviewer\ydiff.h">
       <Filter>Header Files\mcsrc\diffviewer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\mcsrc\src\viewer\inlines.h">
-      <Filter>Header Files\mcsrc\viewer</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\viewer\internal.h">
       <Filter>Header Files\mcsrc\viewer</Filter>
@@ -1054,6 +1054,30 @@
     </ClInclude>
     <ClInclude Include="..\..\src\win32_utl.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\editor\editcomplete.h">
+      <Filter>Header Files\mcsrc\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\editor\editmacros.h">
+      <Filter>Header Files\mcsrc\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\editor\editsearch.h">
+      <Filter>Header Files\mcsrc\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\cd.h">
+      <Filter>Header Files\mcsrc\filemanager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\filemanager.h">
+      <Filter>Header Files\mcsrc\filemanager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\filemanager\ioblksize.h">
+      <Filter>Header Files\mcsrc\filemanager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\background.h">
+      <Filter>Header Files\mcsrc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\keymap.h">
+      <Filter>Header Files\mcsrc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
