@@ -1,6 +1,6 @@
-Pending build-223
+Pending build-224
 
-Wed Dec 22 21:07:39 2021 adamy
+Sun Jan  9 22:06:12 2022 adamy
 
 	* 4.8.27 merge
 
@@ -8,13 +8,23 @@ Wed Dec 22 21:07:39 2021 adamy
 		o compat strtok_r() and inet_ntop().
 		o slang: SLsmg_set_color_in_region().
 
+	* aspell enabled (https://github.com/adamyg/aspell-win32)
+
+		o dynamic libaspell path, binary then registry (Software\Aspell\Path).
+
+Sun Jan  6 19:31:23 2022 adamy
+
+	* build-223, bugfix #11
+
+		o wopendir binding.
+
 Mon Dec 20 14:03:20 2021 adamy
 
 	* build-222
 
 Tue Dec  6 22:15:52 2021 adamy
 
-	* exec/shell support - 
+	* exec/shell support -
 
 		o unquoting/escaping.(unix->dos) command line.
 		o UTF8/wide-character.
