@@ -176,7 +176,7 @@ CRELEASE=	@CRELEASE@
 LDDEBUG=	@LDDEBUG@
 LDRELEASE=	@LDRELEASE@
 
-CINCLUDE=	-I. -I$(MCSOURCE) -I$(D_INC) -I$(D_INC)/glib-2.0 @CINCLUDE@
+CINCLUDE=	-I. -I$(MCSOURCE) -I$(D_INC) -I$(D_INC)/glib-2.0 -I$(D_INC)/../libaspell @CINCLUDE@
 
 CEXTRA=		@DEFS@ -DLIBW32_DYNAMIC
 ifeq ("$(BUILD_TYPE)","release")
@@ -282,6 +282,7 @@ MC_EDITOR=\
 	$(D_OBJED)/editwidget$(O)		\
 	$(D_OBJED)/etags$(O)			\
 	$(D_OBJED)/format$(O)			\
+	$(D_OBJED)/spell$(O)			\
 	$(D_OBJED)/syntax$(O)
 
 D_OBJVW=	$(D_OBJ)/viewer
@@ -634,6 +635,7 @@ LIBRARIES=\
 	$(LW)ssh2$(A)				\
 	$(LW)intl$(A)				\
 	$(LW)glib-2.0$(A)			\
+	$(LW)gmodule-2.0$(A)			\
 	$(LW)mcutil$(A)				\
 	$(LW)mcvfs$(A)				\
 	$(LW)autoupdater$(A)
@@ -1010,6 +1012,10 @@ $(LW)intl$(A):
 
 .PHONY:		$(LW)glib-2.0$(A)
 $(LW)glib-2.0$(A):
+		$(MAKE) -C libglib
+
+.PHONY:		$(LW)gmodule-2.0$(A)
+$(LW)gmodule-2.0$(A):
 		$(MAKE) -C libglib
 
 .PHONY:		$(LW)autoupdater$(A)
