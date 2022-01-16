@@ -61,7 +61,7 @@
 #define MC_USERCONF_DIR     MC_APPLICATION_DIR  /* see: fileloc.h, default "mc" */
 #undef  MC_HOMEDIR_XDG                          /* enforce Freedesktop recommended dirs, not required */
 
-const char *                mc_aspell_dllpath_get(void);
+const char *                mc_aspell_dllpath(void);
 
 const char *                mc_TMPDIR(void);
 const char *                mc_SYSCONFDIR(void);
