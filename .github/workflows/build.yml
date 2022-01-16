@@ -20,7 +20,7 @@ jobs:
       with:
         arch: x86
 
-    - name: Generating enviroment
+    - name: Generating environment
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
@@ -55,4 +55,3 @@ jobs:
       with:
        files: ./mcwin32/releases/mcwin32-build*-setup.exe
        draft: true
-
