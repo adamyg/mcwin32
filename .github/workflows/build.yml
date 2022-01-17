@@ -41,6 +41,8 @@ jobs:
     - name: Package
       shell: cmd
       run: |
+        @set PERL=c:/Strawberry/perl/bin/perl
+        cd mcwin32
         @rem .\support\gmake-42 package
         "%programfiles(x86)%\Inno Setup 5\ISCC" ".\releases\mc-inno-setup.iss"
 
