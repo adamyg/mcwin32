@@ -362,6 +362,31 @@ mc_aspell_dllpath(void)
 }
 
 
+
+/**
+ *  Retrieve current locale.
+ */
+const char *
+mc_get_locale(void)
+{
+    static char x_lang[64] = {0};
+
+    if (0 == x_lang[0]) 
+    {
+        char iso639[16] = {0}, iso3166[16] = {0};
+        LCID lcid = GetThreadLocale();
+
+        if (GetLocaleInfoA(lcid, LOCALE_SISO639LANGNAME, iso639, sizeof(iso639)) &&
+                GetLocaleInfoA(lcid, LOCALE_SISO3166CTRYNAME, iso3166, sizeof(iso3166))) {
+            snprintf(x_lang, sizeof(x_lang), "%s_%s", iso639, iso3166); // "9_9"
+            x_lang[sizeof(x_lang) - 1] = '\0';
+        }
+    }
+    return x_lang[0] ? x_lang : NULL;
+}
+
+
+
 /**
  *  Retrieve global system configuration path, equivalent to '/etc/mc'.
  *
@@ -2307,4 +2332,3 @@ mc_inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size)
 }
 
 /*end*/
-

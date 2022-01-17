@@ -1435,15 +1435,8 @@ guess_message_value (void)
 
 #if defined(WIN32) //WIN32, config
     if (NULL == locale) {
-        char iso639[16] = {0}, iso3166[16] = {0}, lang[64] = {0};
-        LCID lcid = GetThreadLocale();
-
-        if (GetLocaleInfoA(lcid, LOCALE_SISO639LANGNAME, iso639, sizeof(iso639)) &&
-                GetLocaleInfoA(lcid, LOCALE_SISO3166CTRYNAME, iso3166, sizeof(iso3166))) {
-
-            snprintf(lang, sizeof(lang), "%s_%s", iso639, iso3166); // "9_9"
-            lang[sizeof(lang) - 1] = '\0';
-
+        const char *lang = mc_get_locale();
+        if (lang && *lang) {
             return g_strdup(lang);
         }
     }

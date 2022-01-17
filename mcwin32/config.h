@@ -62,6 +62,7 @@
 #undef  MC_HOMEDIR_XDG                          /* enforce Freedesktop recommended dirs, not required */
 
 const char *                mc_aspell_dllpath(void);
+const char *                mc_get_locale(void);
 
 const char *                mc_TMPDIR(void);
 const char *                mc_SYSCONFDIR(void);
