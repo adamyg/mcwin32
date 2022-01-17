@@ -44,14 +44,14 @@ jobs:
         @rem .\support\gmake-42 package
         "%programfiles(x86)%\Inno Setup 5\ISCC" ".\releases\mc-inno-setup.iss"
 
-    - name: package
+    - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
         name: mcwin32-package
         path: ./mcwin32/releases/mcwin32-build*-setup.exe
 
-    - name: Release
+    - name: Release artifacts
       uses: softprops/action-gh-release@v1
       with:
-       files: ./mcwin32/releases/mcwin32-build*-setup.exe
-       draft: true
+        files: ./mcwin32/releases/mcwin32-build*-setup.exe
+        draft: true
