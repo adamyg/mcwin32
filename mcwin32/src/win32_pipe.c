@@ -292,17 +292,15 @@ mc_pread (mc_pipe_t * p, GError ** error)
 
             hPipe = 0;
 
-            if (read_out && read_err) {         // poll alternative input
-                if (alternative) {
-                    HANDLE t_handles[2] = {0};
+            if (alternative && count > 1) {     // poll alternative input
+                HANDLE t_handles[2] = {0};
 
-                    alternative = 0;
-                    t_handles[0] = (0 == ret ? args->hError : args->hOutput);
-                    assert(t_handles[0] != handles[ret]);
+                alternative = 0;
+                t_handles[0] = handles[ret ? 0 : 1];
+                assert(hPipe != t_handles[0]);
 
-                    if (WAIT_OBJECT_0 == (ret = WaitForMultipleObjects(1, t_handles, FALSE, 0 /*NON-BLOCKING*/))) {
-                        hPipe = t_handles[0];
-                    }
+                if (WAIT_OBJECT_0 == (ret = WaitForMultipleObjects(1, t_handles, FALSE, 0 /*NON-BLOCKING*/))) {
+                    hPipe = t_handles[0];
                 }
             }
         }
