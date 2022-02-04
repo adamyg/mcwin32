@@ -7,6 +7,7 @@ lib.*/
 objects*/
 msvc*/
 libglib_*/
+crash/
 CVS/
 Makefile
 buildinfo.h
@@ -30,4 +31,5 @@ wd*.bat
 *.sav
 *.bak
 *.orig
-
+*.org
+*.bat
