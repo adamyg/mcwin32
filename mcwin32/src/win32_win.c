@@ -66,4 +66,3 @@ look_for_rxvt_extensions (void)
 }
 
 /*end*/
-
