@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.16 2022/01/30 14:46:01 cvsuser Exp $
+# $Id: Makefile.in,v 1.17 2022/02/11 12:48:06 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -181,7 +181,6 @@ CSOURCES=\
 	w32_sysdir.c \
 	w32_time.c \
 	w32_timegm.c \
-	w32_trace.c \
 	w32_truncate.c \
 	w32_uname.c \
 	w32_unlink.c \
