@@ -69,7 +69,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <w32_trace.h>
+#include "win32_trace.h"
 
 #if defined(__WATCOMC__)
 _WCRTLINK extern char volatile __WD_Present;    /* debugger present? */
@@ -336,7 +336,6 @@ typedef DWORD (WINAPI *CancelSynchronousIo_t)(HANDLE hThread);
 static HANDLE           primary_thread;
 static CancelSynchronousIo_t CancelSynchronousIoFn;
 
-//  static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
 static DWORD WINAPI     CancelSynchronousIoImp(HANDLE hThread);
 
 static BOOL __stdcall   CtrlHandler(DWORD fdwCtrlType);
@@ -818,8 +817,8 @@ check_winch (int check_type)
         RECT rect;
 
         font[0] = 0;
-        win32APICALL_HANDLE(hConsole, GetStdHandle(STD_OUTPUT_HANDLE));
-        win32APICALL(GetConsoleScreenBufferInfo(hConsole, &sbinfo));
+        win32API_CALL_HANDLE(hConsole, GetStdHandle(STD_OUTPUT_HANDLE));
+        win32API_CALL(GetConsoleScreenBufferInfo(hConsole, &sbinfo));
         rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
         cols = 1 + sbinfo.srWindow.Right  - sbinfo.srWindow.Left;
 
@@ -832,7 +831,7 @@ check_winch (int check_type)
         } else if (2 == check_type) {           /* check for a possible font change */
             SLtt_get_font(font, sizeof(font));
             nfont = (ofont[0] && (0 != memcmp(font, ofont, sizeof(ofont))));
-            win32APICALL(GetWindowRect(GetConsoleWindow(), &rect));
+            win32API_CALL(GetWindowRect(GetConsoleWindow(), &rect));
             if ((orect.right - orect.left) != (rect.right - rect.left) ||
                     (orect.bottom - orect.top) != (rect.bottom - rect.top)) {
                 if (orect.bottom) {
@@ -845,7 +844,7 @@ check_winch (int check_type)
             ++mc_global.tty.winch_flag;
             if (-1 == nfont) {
                 SLtt_get_font(font, sizeof(font));
-                win32APICALL(GetWindowRect(GetConsoleWindow(), &rect));
+                win32API_CALL(GetWindowRect(GetConsoleWindow(), &rect));
             }
             (void) memcpy(ofont, font, sizeof(ofont));
             orect = rect;
@@ -874,11 +873,11 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 
 //  if (block || (dirty >= 3) || is_idle()) {   /* act on winch_flag, otherwise tty_refresh() */
         // There seems to be a display update/key polling issue, whereby some interactive dialogs (copy/move etc)
-        // request input prior to dialog rendering is completion; underlying cause/conditions are unclear.
+        // request input prior to dialog rendering is completed; underlying cause/conditions are unclear.
         mc_refresh();
 //      dirty = 1;
 //  } else {
-//      ++dirty;    /* update every 3rd poll */
+//      ++dirty; /* update every 3rd poll */
 //  }
 
     if (mc_global.tty.winch_flag) {
