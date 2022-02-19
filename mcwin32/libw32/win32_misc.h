@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_MISC_H_INCLUDED
 #define LIBW32_WIN32_MISC_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.8 2021/11/30 13:06:20 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.9 2022/02/17 16:05:01 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 public interface
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -73,9 +73,10 @@ LIBW32_API int              w32_IsElevated(void);
 LIBW32_API int              w32_IsAdministrator(void);
 
 LIBW32_API const char *     w32_syserrorA(DWORD dwError, char *buf, int bufien);
+LIBW32_API const char *     w32_vsyserrorA(DWORD dwError, char *buf, int bufien, ...);
 LIBW32_API const wchar_t *  w32_syserrorW(DWORD dwError, wchar_t *buf, int buflen);
+LIBW32_API const wchar_t *  w32_vsyserrorW(DWORD dwError, wchar_t *buf, int buflen, ...);
 
 __END_DECLS
 
 #endif /*LIBW32_WIN32_MISC_H_INCLUDED*/
-
