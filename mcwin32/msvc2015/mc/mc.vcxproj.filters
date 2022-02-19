@@ -660,6 +660,9 @@
     <ClCompile Include="..\..\..\mcsrc\src\vfs\ftpfs\ftpfs_parse_ls.c">
       <Filter>Source Files\mcsrc\libvfs\ftpfs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\win32_trace.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\buildinfo.h">
@@ -1078,6 +1081,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\mcsrc\src\keymap.h">
       <Filter>Header Files\mcsrc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\win32_trace.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -333,11 +333,12 @@ MC_OBJS=\
 #		- $(D_OBJMC)/tty_key$(O)
 #		- $(D_OBJMC)/tty_win$(O)
 #
+#		+ $(D_OBJ)/win32_glib$(O)
 #		+ $(D_OBJ)/win32_key$(O)
+#		+ $(D_OBJ)/win32_pipe$(O)
+#		+ $(D_OBJ)/win32_trace$(O)
 #		+ $(D_OBJ)/win32_tty$(O)
 #		+ $(D_OBJ)/win32_win$(O)
-#		+ $(D_OBJ)/win32_pipe$(O)
-#		+ $(D_OBJ)/win32_glib$(O)
 #
 #	lib/vfs
 #	lib/widget
@@ -405,6 +406,7 @@ MC_LIBMC=\
 	$(D_OBJMC)/win32_win$(O)		\
 	$(D_OBJMC)/win32_utl$(O)		\
 	$(D_OBJMC)/win32_pipe$(O)		\
+	$(D_OBJMC)/win32_trace$(O)		\
 	$(D_OBJMC)/win32_glib$(O)		\
 	\
 	$(D_OBJMC)/vfs_direntry$(O)		\
@@ -690,8 +692,11 @@ help:
 	@echo : help - command line usage.
 	@echo :
 
+.PHONY:				release
 release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+
+.PHONY:				debug
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
@@ -761,9 +766,10 @@ $(D_BIN)/$(PLBRNAME).dll:	$(LIBPLBRPATH)
 		@$(CP) -f $(subst /,\,$^) $@
 endif
 
-.PHONY: 	package
-package:
+.PHONY:		package
+package:	packageinfo
 	$(INNO) ./releases/mc-inno-setup.iss
+	-$(RM) packageinfo.h
 
 .PHONY:		clean
 clean:
@@ -805,11 +811,16 @@ else
 BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
 endif
 
-.PHONY: 			buildinfo new_buildnumber
+.PHONY: 			buildinfo
 buildinfo.h:			buildinfo
 buildinfo:
 		@echo updating buildinfo.h ...
 		-@$(PERL) ./buildinfo.pl -o buildinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
+			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@"
+
+.PHONY:				packageinfo
+packageinfo:
+		-@$(PERL) ./buildinfo.pl -o packageinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
 			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@" --type="$(BUILD_TYPE)"
 
 buildinfo.h:			BUILDNUMBER buildinfo.pl
