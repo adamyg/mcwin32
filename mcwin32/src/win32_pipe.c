@@ -45,6 +45,7 @@
 #include "lib/utilunix.h"
 
 #include "win32_utl.h"
+#include "win32_trace.h"
 
 
 static const char bin_sh[] = "/bin/sh";
@@ -84,9 +85,14 @@ mc_popen (const char *xcommand, GError ** error)
         while (' ' == *xcommand) ++xcommand;    // consume leading whitespace (if any).
             /* whitespace within "#! xxx" shall be visible; confusing matching logic below */
 
+        win32Trace(("mc_popen: in:<%s>", xcommand ? xcommand : ""))
+     // my_unquote_test();
+
         if (NULL == (command = my_unquote(xcommand, TRUE))) {
             goto error;
         }
+
+        win32Trace(("mc_popen: qu:<%s>", command))
 
         if (busybox && *busybox) {
             const char *space, *exec;
@@ -112,9 +118,9 @@ mc_popen (const char *xcommand, GError ** error)
                  */
                 char *t_cmd = NULL;
 
-                if (exec[0] == 'p') {           // perl/python
+                if (exec[0] == 'p') {           // perl/python.
                     t_cmd = g_strconcat(exec, " ", command, NULL);
-                } else {                        // sh/ash/bash
+                } else {                        // sh/ash/bash.
                     t_cmd = g_strconcat("\"", busybox, "\" ", exec, " ", command, NULL);
                 }
                 if (NULL == t_cmd) {
@@ -134,6 +140,7 @@ mc_popen (const char *xcommand, GError ** error)
         }
     }
 
+
     if (NULL == (p = (mc_pipe_t *)calloc(sizeof(mc_pipe_t) + sizeof(win32_exec_t), 1))) {
         x_errno = ENOMEM;
         goto error;
@@ -144,6 +151,8 @@ mc_popen (const char *xcommand, GError ** error)
 
     args = (win32_exec_t *)(p + 1);
     args->spawn.cmd = cmd;
+
+    win32Trace(("mc_popen: ex:<%s>", cmd))
 
     if (0 == w32_exec(args)) {
         x_errno = w32_errno_cnv(GetLastError());
@@ -193,33 +202,62 @@ error:;
 
 
 /**
- *  Read stdout and stderr of pipe asynchronously.
+ * Read stdout and stderr of pipe asynchronously.
  *
- *  @parameter p pipe descriptor
+ * @parameter p pipe descriptor
  *
- *  The lengths of read data contain in p->out.len and p->err.len.
- *  Before read, p->xxx.len is an input:
+ * The lengths of read data contain in p->out.len and p->err.len.
  *
- *      p->xxx.len > 0:    do read stream p->xxx and store data in p->xxx.buf;
- *      p->xxx.len <= 0:   do not read stream p->xxx.
+ * Before read, p->xxx.len is an input. It defines the number of data to read.
+ * Should not be greater than MC_PIPE_BUFSIZE.
  *
- *  After read, p->xxx.len is an output and contains the following:
+ * After read, p->xxx.len is an output and contains the following:
+ *   p->xxx.len > 0: an actual length of read data stored in p->xxx.buf;
+ *   p->xxx.len == MC_PIPE_STREAM_EOF: EOF of stream p->xxx;
+ *   p->xxx.len == MC_PIPE_STREAM_UNREAD: stream p->xxx was not read;
+ *   p->xxx.len == MC_PIPE_ERROR_READ: reading error, and p->xxx.errno is set appropriately.
  *
- *      p->xxx.len > 0:    an actual length of read data stored in p->xxx.buf;
- *      p->xxx.len ==      MC_PIPE_STREAM_EOF:    EOF of stream p->xxx;
- *      p->xxx.len ==      MC_PIPE_STREAM_UNREAD: stream p->xxx was not read;
- *      p->xxx.len ==      MC_PIPE_ERROR_READ:    reading error, and p->xxx.errno is set appropriately.
- *
- *  @paremeter error contains pointer to object to handle error code and message.
+ * @paremeter error contains pointer to object to handle error code and message
  */
+
+static DWORD
+WaitForMultiplePipes (DWORD waitcount, HANDLE *handles, DWORD timeout)
+{
+    DWORD h, avail, waitcnt = 0;
+
+    if (waitcount) {
+        while (1) {
+            for (h = 0; h < waitcount; ++h) {
+                if (0 == PeekNamedPipe(handles[h], NULL, 0, NULL, &avail, NULL)) {
+                    if (GetLastError() == ERROR_BROKEN_PIPE) {
+                        return h + WAIT_ABANDONED_0;
+                    }
+                    return WAIT_FAILED;
+                } else if (avail > 0) {
+                    return h + WAIT_OBJECT_0;
+                }
+            }
+
+            if (INFINITE != timeout) {
+                if (timeout < 20) return WAIT_TIMEOUT;
+                timeout -= 20;
+            }
+
+            SleepEx(20, TRUE);
+        }
+    }
+    return WAIT_FAILED;
+}
+
 
 void
 mc_pread (mc_pipe_t * p, GError ** error)
 {
     win32_exec_t *args = (win32_exec_t *)(p + 1);
     gboolean read_out, read_err;
+    mc_pipe_stream_t *streams[3] = {0};
     HANDLE handles[3] = {0};
-    DWORD ret, count = 0;
+    DWORD waitcnt = 0, ret;
 
     if (error) *error = NULL;
 
@@ -227,6 +265,8 @@ mc_pread (mc_pipe_t * p, GError ** error)
     read_err = (p->err.fd >= 0);
 
     if (! read_out && ! read_err) {
+        p->out.len = MC_PIPE_STREAM_UNREAD;
+        p->err.len = MC_PIPE_STREAM_UNREAD;
         return;
     }
 
@@ -238,50 +278,44 @@ mc_pread (mc_pipe_t * p, GError ** error)
     if (read_out) {                             // stdout
         p->out.len = MC_PIPE_STREAM_UNREAD;
         assert(args->hOutput && INVALID_HANDLE_VALUE != args->hOutput);
-        handles[count++] = args->hOutput;
+        handles[waitcnt] = args->hOutput;
+        streams[waitcnt] = &p->out;
+        ++waitcnt;
     }
 
     if (read_err) {                             // stderr
         p->err.len = MC_PIPE_STREAM_UNREAD;
         assert(args->hError && INVALID_HANDLE_VALUE != args->hError);
-        handles[count++] = args->hError;
-    }
-
-    if (!read_out && !read_err) {
-        p->out.len = MC_PIPE_STREAM_UNREAD;
-        p->err.len = MC_PIPE_STREAM_UNREAD;
-        return;
+        handles[waitcnt] = args->hError;
+        streams[waitcnt] = &p->err;
+        ++waitcnt;
     }
                                                 // select(handles)
-    ret = WaitForMultipleObjects(count, handles, FALSE, 2500 /*INFINITE*/);
+    ret = WaitForMultiplePipes(waitcnt, handles, 20000 /*20 seconds*/);
 
-    if (ret < count) {                          // stream ready?
-        int alternative = 1;
-        HANDLE hPipe = handles[ret];
-
-        assert(0 == ret || 1 == ret);
-        while (hPipe) {
-            mc_pipe_stream_t *ps = ((hPipe == args->hOutput) ? &p->out : &p->err);
+    while (1) {                                 // stream ready?
+         if (ret >= WAIT_OBJECT_0 && ret < (WAIT_OBJECT_0 + 2)) {
+            mc_pipe_stream_t *ps = streams[ret - WAIT_OBJECT_0];
+            HANDLE hPipe = handles[ret - WAIT_OBJECT_0];
+            DWORD count = 0;
             size_t buf_len;
-            DWORD readcount;
 
             if ((buf_len = (size_t) ps->len) >= MC_PIPE_BUFSIZE) {
                 buf_len = (ps->null_term ? MC_PIPE_BUFSIZE - 1 : MC_PIPE_BUFSIZE);
             }
 
-            if (ReadFile(hPipe, ps->buf, buf_len, &readcount, NULL)) {
-                if (readcount) {
+            if (ReadFile(hPipe, ps->buf, buf_len, &count, NULL)) {
+                if (count) {
                     if (ps->null_term) {        // optional terminator
-                        ps->buf[readcount] = '\0';
+                        ps->buf[count] = '\0';
                     }
-                    ps->len = (int)readcount;
+                    ps->len = (int)count;
                 } else {
                     ps->len = 0;
                 }
 
             } else {                            // error conditions
                 const DWORD lastError = GetLastError();
-
                 if (ERROR_BROKEN_PIPE == lastError) {
                     ps->len = MC_PIPE_STREAM_EOF;
                 } else {
@@ -290,34 +324,34 @@ mc_pread (mc_pipe_t * p, GError ** error)
                 }
             }
 
-            hPipe = 0;
+            if (2 == waitcnt--) {               // poll alternative input
+                const DWORD alt = (WAIT_OBJECT_0 == ret ? 1 : 0);
 
-            if (alternative && count > 1) {     // poll alternative input
-                HANDLE t_handles[2] = {0};
-
-                alternative = 0;
-                t_handles[0] = handles[ret ? 0 : 1];
-                assert(hPipe != t_handles[0]);
-
-                if (WAIT_OBJECT_0 == (ret = WaitForMultipleObjects(1, t_handles, FALSE, 0 /*NON-BLOCKING*/))) {
-                    hPipe = t_handles[0];
+                ret = WaitForMultiplePipes(1, handles + alt, 0 /*NON-BLOCKING*/);
+                if (WAIT_OBJECT_0 == ret || WAIT_ABANDONED_0 == ret) {
+                    ret += alt;
+                    continue;
                 }
             }
+
+        } else if (ret >= WAIT_ABANDONED_0 && ret < (WAIT_ABANDONED_0 + 2)) {
+                                                // pipe broken
+            mc_pipe_stream_t *ps = streams[ret - WAIT_ABANDONED_0];
+            if (ps) {
+                ps->len = MC_PIPE_STREAM_EOF;
+            }
+
+        } else if (ret == WAIT_TIMEOUT) {       // timeout
+            if (read_out) p->out.len = MC_PIPE_STREAM_EOF;
+            if (read_err) p->err.len = MC_PIPE_STREAM_EOF;
+
+        } else {                                // unknown condition.
+            mc_propagate_error (error, MC_PIPE_ERROR_READ,
+                _("Unexpected error in pread() reading data from a child process : %s"),
+                unix_error_string(w32_errno_cnv(GetLastError())));
         }
 
-    } else if (ret == WAIT_TIMEOUT) {           // select() timeout
-        if (read_out) {
-            p->out.len = MC_PIPE_STREAM_EOF;
-        }
-
-        if (read_err) {
-            p->err.len = MC_PIPE_STREAM_EOF;
-        }
-
-    } else {                                    // unknown condition
-        mc_propagate_error (error, MC_PIPE_ERROR_READ,
-            _("Unexpected error in select() reading data from a child process : %s"),
-                w32_errno_cnv(GetLastError()));
+        break;  // done.
     }
 }
 
