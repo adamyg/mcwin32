@@ -19,7 +19,7 @@
 ; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;
 
-#include "../buildinfo.h"
+#include "../packageinfo.h"
 
 #if defined(BUILD_TOOLCHAIN)
 #if defined(BUILD_TYPE)
