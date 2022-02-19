@@ -87,6 +87,7 @@
 
 #include "win32_utl.h"
 #include "win32_key.h"
+#include "win32_trace.h"
 #include "win32_internal.h"
 
 #pragma comment(lib, "shell32.lib")
@@ -123,13 +124,14 @@ static const char *     busybox_cmds[] = {      /* redirected commands (see vfs/
 //      unxz, unzip, usleep, uudecode, uuencode, vi, wc, wget, which, whoami, xargs, xz, xzcat, yes, zcat
 //
         "ar", "ash", "awk", "base64", "bunzip2", "bzcat", "bzip2", "cat", "cksum", "cpio", "dd", "diff",
-        "dos2unix", "echo", "gunzip", "gzip", "ls",
+        "dos2unix", "echo", "ed", "gunzip", "gzip", "ls",
         "lzcat", "lzma", "lzop", "lzopcat", "ps",
-        "tar", "uncompress", "unexpand", "unix2dos", "unlzma", "unlzop",
+        "strings", "tar", "uncompress", "unexpand", "unix2dos", "unlzma", "unlzop",
         "unxz", "unzip", "uudecode", "uuencode", "xz", "xzcat", "zcat"
 
 // MISSING: lz4, ulz4
         };
+
 static const char       bin_sh[] = "/bin/sh";
 static const char       cmd_sh[] = "cmd.exe";
 
@@ -199,12 +201,12 @@ set_term(void)
 static void
 set_home(void)
 {
-    extern const char *g_get_user_config_dir(void);
-    const char *cp;
-
-    if ((cp = getenv("APPDATA")) != NULL) {
-        my_setpathenv("MC_HOME", g_get_user_config_dir(), FALSE);
-    }
+//  extern const char *g_get_user_config_dir(void);
+//  const char *cp;
+//
+//  if (NULL != (cp = getenv("MC_HOME")) && *cp) {
+//      my_setpathenv("MC_HOME", g_get_user_config_dir(), FALSE);
+//  }
 }
 
 
@@ -228,8 +230,11 @@ set_busybox(void)
     const char *busybox = NULL;
     char buffer[MAX_PATH] = {0};
 
-    if (NULL != getenv("MC_BUSYBOX")) return;
+    if (NULL != (busybox = getenv("MC_BUSYBOX")) && *busybox) {
+        return;
+    }
 
+    busybox = "busybox";
     if (w32_getexedir(buffer, sizeof(buffer) - 16) > 0) {
         strcat(buffer, "/busybox.exe");
         buffer[sizeof(buffer) - 1] = 0;
@@ -240,7 +245,7 @@ set_busybox(void)
         }
     }
 
-    my_setpathenv("MC_BUSYBOX", (busybox ? busybox : "busybox"), TRUE);
+    my_setpathenv("MC_BUSYBOX", busybox, TRUE);
 }
 
 
@@ -252,28 +257,32 @@ set_busybox(void)
 static void
 set_tmpdir(void)
 {
-    if (NULL == getenv("MC_TMPDIR")) {
-        const char *tmpdir = mc_TMPDIR();
+    const char *tmpdir = NULL;
+    
+    if (NULL != (tmpdir = getenv("MC_TMPDIR")) && *tmpdir)  {
+        return;
+    }
 
-        if (tmpdir && *tmpdir) {
+    tmpdir = mc_TMPDIR();
+    if (tmpdir && *tmpdir) {
+        char buffer[MAX_PATH] = {0};
+        struct passwd *pwd;
+        struct stat st = {0};
 
-            char buffer[MAX_PATH] = {0};
-            struct passwd *pwd;
-            struct stat st = {0};
-
-            pwd = getpwuid (getuid ());             /* check permissions */
-            snprintf (buffer, sizeof (buffer), "%s%cmc-%s", tmpdir, PATH_SEP, pwd->pw_name);
-            buffer[sizeof(buffer) - 1] = 0;
-            canonicalize_pathname (buffer);
-            if (0 == w32_lstat(buffer, &st)) {
-                if (! S_ISDIR(st.st_mode)) {
-                    tmpdir = NULL;
-                }
-            } else if (0 != w32_mkdir (buffer, S_IRWXU)) {
+        pwd = getpwuid (getuid ());             /* check permissions */
+        snprintf (buffer, sizeof (buffer), "%s%cmc-%s", tmpdir, PATH_SEP, pwd->pw_name);
+        buffer[sizeof(buffer) - 1] = 0;
+        canonicalize_pathname (buffer);
+        if (0 == w32_lstat(buffer, &st)) {
+            if (! S_ISDIR(st.st_mode)) {
                 tmpdir = NULL;
             }
+        } else if (0 != w32_mkdir (buffer, S_IRWXU)) {
+            tmpdir = NULL;
+        }
 
-            if (tmpdir) my_setpathenv("MC_TMPDIR", tmpdir, TRUE);
+        if (tmpdir) {
+            my_setpathenv("MC_TMPDIR", tmpdir, TRUE);
         }
     }
 }
@@ -362,7 +371,6 @@ mc_aspell_dllpath(void)
 }
 
 
-
 /**
  *  Retrieve current locale.
  */
@@ -386,6 +394,107 @@ mc_get_locale(void)
 }
 
 
+/**
+ *  Retrieve file-name of magic database.
+ *
+ *      <SYSCONFDIR>\magic..
+ */
+const char *
+mc_MAGICPATH(void)
+{
+    static char x_buffer[MAX_PATH];
+
+    if (0 == x_buffer[0]) {
+        _snprintf(x_buffer, sizeof(x_buffer), "%s/magic", mc_SYSCONFDIR());
+        x_buffer[sizeof(x_buffer) - 1] = 0;
+        unixpath(x_buffer);
+    }
+    return x_buffer;
+}
+
+
+/**
+ *  Retrieve global system configuration path, equivalent to '/etc/mc'.
+ *
+ *      <EXEPATH>
+ *          <exepath>\<subdir>\
+ *
+ *      <INSTALLPATH>
+ *          X:\Program Files\<Midnight Commander>\<subdir>\
+ *
+ *              SHGetFolderPath(CSIDL_PROGRAM_FILES)
+ *              or getenv(ProgramFiles)
+ *
+ *      <APPDATA>
+ *          X:\Documents and Settings\All Users\Application Data\<Midnight Commander>\etc\
+ *
+ *              SHGetFolderPath(CSIDL_COMMON_APPDATA)
+ *              or getenv(ALLUSERSPROFILE)
+ */
+static const char *
+get_conf_dir(const char *subdir, char *buffer, size_t buflen)
+{
+    int len, done = FALSE;
+
+    if (buffer[0]) {
+        return buffer;
+    }
+
+    // <EXEPATH>, generally same as INSTALLDIR
+    if ((len = w32_getexedir(buffer, buflen)) > 0) {
+        _snprintf(buffer + len, buflen - len, "/%s/", subdir);
+        buffer[buflen - 1] = 0;
+        if (0 == _access(buffer, 0)) {
+            done = TRUE;
+        }
+    }
+
+    // <INSTALLPATH>
+    if (! done) {
+        if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer))) {
+            len = strlen(buffer);
+            _snprintf(buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
+            buffer[buflen - 1] = 0;
+            if (0 == _access(buffer, 0)) {
+                done = TRUE;
+            }
+        }
+    }
+
+    // <APPDATA>
+    if (! done)  {
+        if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, buffer))) {
+            len = strlen(buffer);
+            _snprintf(buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
+            buffer[buflen - 1] = 0;
+            if (0 == _access(buffer, 0)) {
+                done = TRUE;
+            }
+        }
+    }
+
+    // default - INSTALLPATH
+    if (! done) {
+        const char *env;
+
+        if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer))) {
+            len = strlen(buffer);
+            _snprintf(buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
+
+        } else if (NULL != (env = getenv("ProgramFiles"))) {
+            _snprintf(buffer, buflen, "%s/%s/%s/", env, MC_APPLICATION_DIR, subdir);
+
+        } else {
+            _snprintf(buffer, buflen, "c:/Program Files/%s/%s/", MC_APPLICATION_DIR, subdir);
+        }
+        buffer[buflen - 1] = 0;
+        mkdir(buffer, S_IRWXU);
+    }
+
+    unixpath(buffer);
+    return buffer;
+}
+
 
 /**
  *  Retrieve global system configuration path, equivalent to '/etc/mc'.
@@ -405,86 +514,12 @@ mc_get_locale(void)
  *              SHGetFolderPath(CSIDL_COMMON_APPDATA)
  *              or getenv(ALLUSERSPROFILE)
  */
+
 const char *
 mc_SYSCONFDIR(void)
 {
     static char x_buffer[MAX_PATH];
-
-    if (0 == x_buffer[0]) {
-        int len, done = FALSE;
-
-        // <EXEPATH>, generally same as INSTALLDIR
-        if ((len = w32_getexedir(x_buffer, sizeof(x_buffer))) > 0) {
-            _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/etc/");
-            x_buffer[sizeof(x_buffer) - 1] = 0;
-            if (0 == _access(x_buffer, 0)) {
-                done = TRUE;
-            }
-        }
-
-        // <INSTALLPATH>
-        if (! done) {
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/etc/", MC_APPLICATION_DIR);
-                x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
-                    done = TRUE;
-                }
-            }
-        }
-
-        // <APPDATA>
-        if (! done)  {
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/etc/", MC_APPLICATION_DIR);
-                x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
-                    done = TRUE;
-                }
-            }
-        }
-
-        // default - INSTALLPATH
-        if (! done) {
-            const char *env;
-
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/etc/", MC_APPLICATION_DIR);
-
-            } else if (NULL != (env = getenv("ProgramFiles"))) {
-                _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/etc/", env, MC_APPLICATION_DIR);
-
-            } else {
-                _snprintf(x_buffer, sizeof(x_buffer), "c:/Program Files/%s/etc/", MC_APPLICATION_DIR);
-            }
-            x_buffer[sizeof(x_buffer) - 1] = 0;
-            mkdir(x_buffer, S_IRWXU);
-        }
-
-        unixpath(x_buffer);
-    }
-    return x_buffer;
-}
-
-
-/**
- *  Retrieve file-name of magic database.
- *
- *      <SYSCONFDIR>\magic..
- */
-const char *
-mc_MAGICPATH(void)
-{
-    static char x_buffer[MAX_PATH];
-
-    if (0 == x_buffer[0]) {
-        _snprintf(x_buffer, sizeof(x_buffer), "%s/magic", mc_SYSCONFDIR());
-        x_buffer[sizeof(x_buffer) - 1] = 0;
-    }
-    return x_buffer;
+    return get_conf_dir("etc", x_buffer, sizeof(x_buffer));
 }
 
 
@@ -510,64 +545,7 @@ const char *
 mc_DATADIR(void)
 {
     static char x_buffer[MAX_PATH];
-
-    if (0 == x_buffer[0]) {
-        int len, done = FALSE;
-
-        // <EXEPATH>, generally same as INSTALLDIR
-        if ((len = w32_getexedir(x_buffer, sizeof(x_buffer))) > 0) {
-            _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/share/");
-            x_buffer[sizeof(x_buffer) - 1] = 0;
-            if (0 == _access(x_buffer, 0)) {
-                done = TRUE;
-            }
-        }
-
-        // <INSTALLPATH>
-        if (! done) {
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/share/", MC_APPLICATION_DIR);
-                x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
-                    done = TRUE;
-                }
-            }
-        }
-
-        // <APPDATA>
-        if (! done)  {
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/share/", MC_APPLICATION_DIR);
-                x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
-                    done = TRUE;
-                }
-            }
-        }
-
-        // default - INSTALLPATH
-        if (! done) {
-            const char *env;
-
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/share/", MC_APPLICATION_DIR);
-
-            } else if (NULL != (env = getenv("ProgramFiles"))) {
-                _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/share/", env, MC_APPLICATION_DIR);
-
-            } else {
-                _snprintf(x_buffer, sizeof(x_buffer), "c:/Program Files/%s/share/", MC_APPLICATION_DIR);
-            }
-            x_buffer[sizeof(x_buffer) - 1] = 0;
-            mkdir(x_buffer, S_IRWXU);
-        }
-
-        unixpath(x_buffer);
-    }
-    return x_buffer;
+    return get_conf_dir("share", x_buffer, sizeof(x_buffer));
 }
 
 
@@ -593,64 +571,7 @@ const char *
 mc_LOCALEDIR(void)
 {
     static char x_buffer[MAX_PATH];
-
-    if (0 == x_buffer[0]) {
-        int len, done = FALSE;
-
-        // <EXEPATH>, generally same as INSTALLDIR
-        if ((len = w32_getexedir(x_buffer, sizeof(x_buffer))) > 0) {
-            _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/locale/");
-            x_buffer[sizeof(x_buffer) - 1] = 0;
-            if (0 == _access(x_buffer, 0)) {
-                done = TRUE;
-            }
-        }
-
-        // <INSTALLPATH>
-        if (! done) {
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/locale/", MC_APPLICATION_DIR);
-                x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
-                    done = TRUE;
-                }
-            }
-        }
-
-        // <APPDATA>
-        if (! done)  {
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/locale/", MC_APPLICATION_DIR);
-                x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
-                    done = TRUE;
-                }
-            }
-        }
-
-        // default - INSTALLPATH
-        if (! done) {
-            const char *env;
-
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/locale/", MC_APPLICATION_DIR);
-
-            } else if (NULL != (env = getenv("ProgramFiles"))) {
-                _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/locale/", env, MC_APPLICATION_DIR);
-
-            } else {
-                _snprintf(x_buffer, sizeof(x_buffer), "c:/Program Files/%s/locale/", MC_APPLICATION_DIR);
-            }
-            x_buffer[sizeof(x_buffer) - 1] = 0;
-            mkdir(x_buffer, S_IRWXU);
-        }
-
-        unixpath(x_buffer);
-    }
-    return x_buffer;
+    return get_conf_dir("locale", x_buffer, sizeof(x_buffer));
 }
 
 
@@ -676,64 +597,7 @@ const char *
 mc_LIBEXECDIR(void)
 {
     static char x_buffer[MAX_PATH];
-
-    if (0 == x_buffer[0]) {
-        int len, done = FALSE;
-
-        // <EXEPATH>, generally same as INSTALLDIR
-        if ((len = w32_getexedir(x_buffer, sizeof(x_buffer))) > 0) {
-            _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/plugin/");
-            x_buffer[sizeof(x_buffer) - 1] = 0;
-            if (0 == _access(x_buffer, 0)) {
-                done = TRUE;
-            }
-        }
-
-        // <INSTALLPATH>
-        if (! done) {
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/plugin/", MC_APPLICATION_DIR);
-                x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
-                    done = TRUE;
-                }
-            }
-        }
-
-        // <APPDATA>
-        if (! done)  {
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/plugin/", MC_APPLICATION_DIR);
-                x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
-                    done = TRUE;
-                }
-            }
-        }
-
-        // default - INSTALLPATH
-        if (! done) {
-            const char *env;
-
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, x_buffer))) {
-                len = strlen(x_buffer);
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/plugin/", MC_APPLICATION_DIR);
-
-            } else if (NULL != (env = getenv("ProgramFiles"))) {
-                _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/plugin/", env, MC_APPLICATION_DIR);
-
-            } else {
-                _snprintf(x_buffer, sizeof(x_buffer), "c:/Program Files/%s/plugin/", MC_APPLICATION_DIR);
-            }
-            x_buffer[sizeof(x_buffer) - 1] = 0;
-            mkdir(x_buffer, S_IRWXU);
-        }
-
-        unixpath(x_buffer);
-    }
-    return x_buffer;
+    return get_conf_dir("plugin", x_buffer, sizeof(x_buffer));
 }
 
 
@@ -763,7 +627,11 @@ mc_EXTHELPERSDIR(void)
 
 
 /**
- *  Retrieve the user specific configuration path.
+ *   Retrieve the user specific configuration path.
+ *
+ *      <XDG_CONFIG_HOME>
+ *          If $XDG_CONFIG_HOME is either not set or empty, a default equal to $HOME/.config should be used.
+ *          XDG Base Directory Specification, glib compatiblity ??
  *
  *      <SYSCONFDIR>
  *          x:\Documents and Settings\<user>\Application Data\<Midnight Commander>\
@@ -777,24 +645,52 @@ mc_EXTHELPERSDIR(void)
  *      CWD
  *          <cwd><Midnight Commander>\
  */
-char *
+const char *
 mc_USERCONFIGDIR(const char *subdir)
 {
     static char x_buffer[MAX_PATH];
 
     if (0 == x_buffer[0]) {
         const char *env;
-        int len, done = TRUE;
+        int len, done = FALSE;
+
+#if (0) // <XDG_CONFIG_HOME>/mc
+        if (NULL != (env = getenv("XDG_CONFIG_HOME")) && *env) { 
+            if (0 == _access(env, 0)) {
+                _snprintf(x_buffer, sizeof(x_buffer), "%s/mc", env);
+                mkdir(x_buffer, S_IRWXU);       /* auto create */
+                if (0 == _access(x_buffer, 0)) {
+                    done = TRUE;
+                }
+            }
+        }
+
+        /* <HOME>/.config/mc */
+        if (!done) { //
+            if (NULL != (env = getenv("HOME")) && *env) { 
+                _snprintf(x_buffer, sizeof(x_buffer), "%s/.config", env);
+                if (0 == _access(x_buffer, 0)) {
+                    _snprintf(x_buffer, sizeof(x_buffer), "%s/.config/mc", env);
+                    mkdir(x_buffer, S_IRWXU);   /* auto create */
+                    if (0 == _access(x_buffer, 0)) {
+                        done = TRUE;
+                    }
+                }
+            }
+        }
+#endif
 
         // <PERSONAL>
-        if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, x_buffer)) &&
-                            (len = strlen(x_buffer)) > 0) {
+        if (!done) {
+            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, x_buffer)) &&
+                                (len = strlen(x_buffer)) > 0) {
                                                 /* personal settings */
-            _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
-            x_buffer[sizeof(x_buffer) - 1] = 0;
-            if (0 == _access(x_buffer, 0)) {
-                x_buffer[len+1] = 0;
-                done = TRUE;
+                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
+                x_buffer[sizeof(x_buffer) - 1] = 0;
+                if (0 == _access(x_buffer, 0)) {
+                    x_buffer[len+1] = 0;
+                    done = TRUE;
+                }
             }
         }
 
@@ -811,7 +707,7 @@ mc_USERCONFIGDIR(const char *subdir)
             }
         }
 
-        // <HOME>
+        // <HOME> --- XXX, consider as first option.
         if (! done) {
             if ((env = getenv("HOME")) != NULL && (len = strlen(env)) > 0) {
                                                 /* personal settings, new */
@@ -824,7 +720,7 @@ mc_USERCONFIGDIR(const char *subdir)
             }
         }
 
-        // new user
+        // new user, create
         if (! done) {
             const char *env;
                                                 /* personal settings */
@@ -836,7 +732,7 @@ mc_USERCONFIGDIR(const char *subdir)
             } else if ((env = getenv("HOME")) != NULL && (len = strlen(env)) > 0) {
                 _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
                 done = TRUE;
-                                                /* full back */
+                                                /* full back, current working directory */
             } else if (w32_getcwd(x_buffer, sizeof(x_buffer)) && (len = strlen(x_buffer)) > 0) {
                 _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
                 done = TRUE;
@@ -1315,8 +1211,8 @@ ScriptMagic(int fd)
     const char *script = NULL;
 
     if (_read(fd, magic, sizeof(magic) - 1) > 2) {
-        if (magic[0] == '#' && magic[1] == '!') {   // sha-bang
-            const char *exec = magic + 2;
+        if (magic[0] == '#' && magic[1] == '!') {
+            const char *exec = magic + 2;       // sha-ban
             int len = -1;
 
             while (*exec && ' ' == *exec) ++exec;
@@ -1391,18 +1287,22 @@ mc_isscript(const char *cmd)
             _close(fd);
         }
     }
+
+    win32Trace(("mc_isscript: <%s>=%s\n", cmd, (script ? script : "NA")))
     return script;
 }
 
 
 /**
- *  unquote an excaped command line.
+ *  unquote an excaped command line; yet retain any existing quoted elements.
  */
 char *
 my_unquote(const char *cmd, int quotews)
 {
     char *ret, *cursor, *start = NULL;
     int blen, instring = 0, quoting = 0;
+
+    win32Trace(("mc_unqquote: in:<%s>", cmd))
 
     blen = (cmd ? strlen(cmd) * 2 : 0);
     if (0 == blen || NULL == (ret = (char *)calloc(blen, 1))) {
@@ -1413,7 +1313,7 @@ my_unquote(const char *cmd, int quotews)
     while (1) {
         if ('\\' == *cmd) {
             switch(*++cmd) {
-            case '\'': //escapeable characters'
+            case '\'': // escapeable characters
             case '\\':
             case '"':
             case ';':
@@ -1433,7 +1333,7 @@ my_unquote(const char *cmd, int quotews)
             case '\r': case '\n': case '\t':
                 *cursor++ = *cmd++;
                 break;
-            case ' ': //space
+            case ' ': // space
                 if (quotews && !instring && !quoting) {
                     if (start) { // encase white-space element.
                         char *end = ++cursor;
@@ -1442,16 +1342,15 @@ my_unquote(const char *cmd, int quotews)
                             --end;
                         }
                         start[0] = '"';
-                        start = NULL;
                         quoting = 1;
                     }
                 }
                 *cursor++ = *cmd++;
                 break;
-            case 0:  //eos
+            case 0:  // eos
                 *cursor++ = '\\';
                 goto null;
-            default: //other, retain escape
+            default: // other, retain escape
                 *cursor++ = '\\';
                 *cursor++ = *cmd++;
                 break;
@@ -1459,29 +1358,37 @@ my_unquote(const char *cmd, int quotews)
 
         } else {
             switch (*cmd) {
-            case '"': case '\'': //quotes
-                if (instring) {
-                    if (instring == *cmd) {
-                        instring = 0;
+            case '"': case '\'': // quotes
+                if (!quoting) {
+                    if (instring) { // end-of-string "xxx" or 'xxx'
+                        if (instring == *cmd) {
+                            instring = 0;
+                        }
+                    } else if (NULL == start) { // first non-white?
+                        instring = *cmd; // start-of-string
                     }
-                } else if (start == cmd) {
-                    instring = *cmd;
+                } else {
+                    if ('"' == *cmd) {  // double quote
+                        *cursor++ = '"';
+                    }
                 }
-                start = NULL;
+                /*FALLTHRU*/
+            default: // non-whitespace
+                if (NULL == start) {
+                    start = cursor;  // first non-whitespace
+                }               
                 break;
-            case ' ': case '\t': //whitespace
-                if (quoting) {
-                    *cursor++ = '"';
-                    quoting = 0;
-                }
-                if (! instring) {
-                    start = cursor + 1;
+            case ' ': case '\t': // whitespace
+                if (!instring) {
+                    if (quoting) { // end-of-string
+                        *cursor++ = '"'; // close quotes
+                        quoting = 0;
+                    }
+                    start = NULL;
                 }
                 break;
             case 0: //null
                 goto null;
-            default:
-                break;
             }
             *cursor++ = *cmd++;
         }
@@ -1491,8 +1398,27 @@ null:;
     if (quoting) *cursor++ = '"';
     assert(cursor < (ret + blen));
     *cursor = 0;
+
+    win32Trace(("mc_unqquote: rt:<%s>", ret))
     return ret;
 }
+
+
+#if defined(_DEBUG)
+void
+my_unquote_test(void)
+{
+    char *result;
+
+    result = my_unquote("C:/Program\\ Files\\ \\(x86\\)/Midnight\\ Commander/plugin/extfs.d/uzip list", TRUE);
+    assert(0 == strcmp(result, "\"C:/Program Files (x86)/Midnight Commander/plugin/extfs.d/uzip\" list"));
+    free(result);
+
+    result = my_unquote("\"C:/Program Files (x86)\\Midnight Commander/plugin/extfs.d/uzip\" list", TRUE);
+    assert(0 == strcmp(result, "\"C:/Program Files (x86)\\Midnight Commander/plugin/extfs.d/uzip\" list"));
+    free(result);
+}
+#endif
 
 
 /**
@@ -1641,7 +1567,6 @@ close_error_pipe(int error, const char *text)
     }
 
     query_dialog(title, text, D_NORMAL, 1, _("&Ok"));
-//  message(error, title, "%s", text);
     return 1;
 }
 

@@ -70,7 +70,7 @@ const char *                mc_DATADIR(void);
 const char *                mc_LOCALEDIR(void);
 const char *                mc_MAGICPATH(void);
 const char *                mc_LIBEXECDIR(void);
-char *                      mc_USERCONFIGDIR(const char *subdir);
+const char *                mc_USERCONFIGDIR(const char *subdir);
 const char *                mc_EXTHELPERSDIR(void);
 
 #define SYSCONFDIR          mc_SYSCONFDIR()     /* /etc/mc */
