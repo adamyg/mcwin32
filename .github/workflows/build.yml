@@ -44,7 +44,7 @@ jobs:
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         @rem .\support\gmake-42 package
-        "%programfiles(x86)%\Inno Setup 5\ISCC" ".\releases\mc-inno-setup.iss"
+        "%programfiles(x86)%\Inno Setup 5\ISCC" -DBUILD_INFO=1 -DBUILD_TYPE=debug ".\releases\mc-inno-setup.iss"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
