@@ -50,8 +50,8 @@
 
 #include "win32_key.h"
 
-static int      tty_mouse_enabled = 0;          /* mouse mode; true/false */
-static wchar_t  original_title[512];            /* original title */
+static int tty_mouse_enabled = 0;               /* mouse mode; true/false */
+static wchar_t original_title[512];             /* original title */
 
 int reset_hp_softkeys = 0;                      /* command line argument */
 
@@ -527,4 +527,3 @@ tty_destroy_winch_pipe (void)
 }
 
 /*end*/
-
