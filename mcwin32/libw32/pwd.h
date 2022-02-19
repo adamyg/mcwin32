@@ -1,7 +1,7 @@
 #ifndef LIBW32_PWD_H_INCLUDED
 #define LIBW32_PWD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_pwd_h,"$Id: pwd.h,v 1.8 2021/05/19 16:14:53 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_pwd_h,"$Id: pwd.h,v 1.9 2022/02/17 16:04:59 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -10,7 +10,7 @@ __CPRAGMA_ONCE
  *
  *      pwd.h - password structure
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

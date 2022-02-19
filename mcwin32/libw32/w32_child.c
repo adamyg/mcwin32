@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.13 2021/11/30 13:06:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.15 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 sub-process support
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -637,7 +637,7 @@ w32_child_execA(
     }
 
     if (! BuildVectorsA(args, &argblk, &envblk) != 0) {
-        InternalError("building arg and env");
+        InternalError("BuildVector");
         return 0;
     }
 
@@ -872,8 +872,8 @@ ExecChildA(win32_spawn_t *args,
         args->_dwProcessId = pi->dwProcessId;
         hProc = pi->hProcess;
 
-    } else if (WASNOT_ENOENT()) {               // XXX, current or hStdError ??
-        DisplayErrorA(GetStdHandle(STD_OUTPUT_HANDLE), "CreateProcess", argv);
+    } else if (WASNOT_ENOENT()) {
+        DisplayErrorA(GetStdHandle(STD_OUTPUT_HANDLE), "CreateProcess", arg0);
     }
     return hProc;
 }
@@ -898,8 +898,8 @@ ExecChildW(win32_spawnw_t *args,
         args->_dwProcessId = pi->dwProcessId;
         hProc = pi->hProcess;
 
-    } else if (WASNOT_ENOENT()) {               // XXX, current or hStdError ??
-        DisplayErrorW(GetStdHandle(STD_OUTPUT_HANDLE), L"CreateProcess", argv);
+    } else if (WASNOT_ENOENT()) {
+        DisplayErrorW(GetStdHandle(STD_OUTPUT_HANDLE), L"CreateProcess", arg0);
     }
     return hProc;
 }
@@ -1485,32 +1485,30 @@ GetenvW(const wchar_t *const *envp, const wchar_t *val)
  */
 static void
 DisplayErrorA(
-    HANDLE hOutput, const char *pszAPI, const char *args)
+    HANDLE hOutput, const char *msg, const char *cmd)
 {
     const DWORD rc = GetLastError();
-    char t_rcbuffer[512], buffer[512];
-    const char *rcmsg = w32_syserrorA(rc, t_rcbuffer, sizeof(t_rcbuffer));
+    char t_rcbuffer[512], buffer[1024];
+    const char *rcmsg = w32_vsyserrorA(rc, t_rcbuffer, sizeof(t_rcbuffer), cmd, NULL);
     int len;
 
     len = _snprintf(buffer, sizeof(buffer),
-            "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
-                args ? args : "", args ? "\n" : "");
+            "Internal Error: %s = %u (%s).\n", msg, (unsigned)rc, rcmsg);
     WriteConsoleA(hOutput, buffer, len, NULL, NULL);
 }
 
 
 static void
 DisplayErrorW(
-    HANDLE hOutput, const wchar_t *pszAPI, const wchar_t *args)
+    HANDLE hOutput, const wchar_t *msg, const wchar_t *cmd)
 {
     const DWORD rc = GetLastError();
-    wchar_t t_rcbuffer[512], buffer[512];
-    const wchar_t *rcmsg = w32_syserrorW(rc, t_rcbuffer, _countof(t_rcbuffer));
+    wchar_t t_rcbuffer[512], buffer[1024];
+    const wchar_t *rcmsg = w32_vsyserrorW(rc, t_rcbuffer, _countof(t_rcbuffer), cmd, NULL);
     int len;
 
     len = _snwprintf(buffer, _countof(buffer),
-            L"Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
-                args ? args : L"", args ? L"\n" : L"");
+            L"Internal Error: %s = %u (%s).\n", msg, (unsigned)rc, rcmsg);
     WriteConsoleW(hOutput, buffer, len, NULL, NULL);
 }
 

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.8 2021/11/30 13:06:20 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.9 2022/02/17 16:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 popen implementation
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -192,7 +192,7 @@ PipeA(const char *cmd, const char *mode)
     int redirect_error = FALSE;
     const char *shell = w32_getshell();
     win32_spawn_t args = {0};
-    char readOrWrite, textOrBinary = 0;
+    char readOrWrite = 0, textOrBinary = 0;
     HANDLE in_read = INVALID_HANDLE_VALUE, in_write = INVALID_HANDLE_VALUE,
         out_read = INVALID_HANDLE_VALUE, out_write = INVALID_HANDLE_VALUE,
         err_read = INVALID_HANDLE_VALUE, err_write = INVALID_HANDLE_VALUE;
@@ -269,6 +269,9 @@ PipeA(const char *cmd, const char *mode)
             goto pipe_error;
         }
     }
+
+    assert('t' == p->textOrBinary || 'b' == p->textOrBinary);
+    assert('r' == p->readOrWrite || 'w' == p->readOrWrite);
 
     if ('r' == p->readOrWrite) {
         if (NULL == (p->file = _fdopen(         // readable end of the pipe
@@ -728,16 +731,15 @@ Close2(HANDLE handle, const char *desc)
 
 static void
 DisplayErrorA(
-    HANDLE hOutput, const char *pszAPI, const char *args)
+    HANDLE hOutput, const char *msg, const char *cmd)
 {
     const DWORD rc = GetLastError();
     char t_rcbuffer[512], buffer[512];
-    const char *rcmsg = w32_syserrorA(rc, t_rcbuffer, sizeof(t_rcbuffer));
+    const char *rcmsg = w32_vsyserrorA(rc, t_rcbuffer, sizeof(t_rcbuffer), cmd, NULL);
     int len;
 
     len = _snprintf(buffer, sizeof(buffer),
-            "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
-                args ? args : "", args ? "\n" : "");
+            "Internal Error: %s = %d (%s).\n", msg, rc, rcmsg);
     WriteConsoleA(hOutput, buffer, len, NULL, NULL);
 }
 

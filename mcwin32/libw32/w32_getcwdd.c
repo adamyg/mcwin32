@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwdd_c,"$Id: w32_getcwdd.c,v 1.5 2021/05/24 15:10:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwdd_c,"$Id: w32_getcwdd.c,v 1.6 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getcwdd() implementation
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

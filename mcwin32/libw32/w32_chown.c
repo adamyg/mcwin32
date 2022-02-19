@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_chown_c,"$Id: w32_chown.c,v 1.8 2021/05/23 10:23:11 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_chown_c,"$Id: w32_chown.c,v 1.9 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 chown() system calls.
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

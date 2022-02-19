@@ -1,14 +1,14 @@
 #ifndef LIBW32_POLL_H_INCLUDED
 #define LIBW32_POLL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_poll_h,"$Id: poll.h,v 1.6 2018/09/29 02:22:53 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_poll_h,"$Id: poll.h,v 1.7 2022/02/17 16:04:59 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win <poll.h>
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

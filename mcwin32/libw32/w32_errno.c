@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_errno_c,"$Id: w32_errno.c,v 1.9 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_errno_c,"$Id: w32_errno.c,v 1.10 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 errno mapping support
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -366,7 +366,7 @@ static const int    xlaterrno[] = {
     ENOSPC,         /* 314 (0x13A)    ERROR_DISK_RESOURCES_EXHAUSTED           The physical resources of this disk have been exhausted. */
     EINVAL,         /* 315 (0x13B)    ERROR_INVALID_TOKEN                      The token representing the data is invalid. */
     ENOSYS,         /* 316 (0x13C)    ERROR_DEVICE_FEATURE_NOT_SUPPORTED       The device does not support the command feature. */
-    -1,             /* 317 (0x13D)    ERROR_MR_MID_NOT_FOUND                   The system cannot find message text for message number 0x % 1 in the message file for %2. */
+    -1,             /* 317 (0x13D)    ERROR_MR_MID_NOT_FOUND                   The system cannot find message text for message number 0x%1 in the message file for %2. */
     ENOENT,         /* 318 (0x13E)    ERROR_SCOPE_NOT_FOUND                    The scope specified was not found. */
     -1,             /* 319 (0x13F)    ERROR_UNDEFINED_SCOPE                    The Central Access Policy specified is not defined on the target machine. */
     EINVAL,         /* 320 (0x140)    ERROR_INVALID_CAP                        The Central Access Policy obtained from Active Directory is invalid. */
