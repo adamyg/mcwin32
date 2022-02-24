@@ -75,7 +75,7 @@ libexecdir	= @libexecdir@
 libdir		= @libdir@
 datadir		= @datadir@
 
-        # package directories
+	# package directories
 pkgname		= mc
 ifeq (rief,$(findstring rief,$(libexecdir)))
 pkglibexecdir	= $(libexecdir)
@@ -114,11 +114,43 @@ XCLEAN=
 # Configuration
 
 ifeq ("$(BUILD_TYPE)","")	#default
-BUILD_TYPE=	debug
-MAKEFLAGS+=	BUILD_TYPE=debug
+
+.PHONY:				help clean build package
+help clean build package:
+ifneq ("$(word 1,$(MAKECMDGOALS))","debug")
+ifneq ("$(word 1,$(MAKECMDGOALS))","release")
+	@echo :
+	@echo : make [release or debug] target
+	@echo :
+	@echo : Build one or more of the following targets recursively within each sub-directory.
+	@echo :
+	@echo : Targets:
+	@echo :
+	@echo : build - build everything.
+	@echo : package - build all packages.
+	@echo : clean - delete everything which can be remade.
+	@echo : help - command line usage.
+	@echo :
 endif
-ifneq ("$(BUILD_TYPE)","release")
+endif
+	@echo done
+
+.PHONY:				release
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+
+.PHONY:				debug
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+else	# BUILD_TYPE
+
+ifeq ("$(BUILD_TYPE)","debug")
 RTSUFFIX=d
+else
+ifneq ("$(BUILD_TYPE)","release")
+$(error invalid BUILD_TYPE; debug or release expected)
+endif
 endif
 
 # Directories
@@ -1133,3 +1165,6 @@ $(D_OBJVFS)/undelfs_%$(O) :	$(MCSOURCE)/src/vfs/undelfs/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 #end
+
+endif	# BUILD_TYPE
+

@@ -946,7 +946,7 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
         if ((flags & EXECUTE_AS_SHELL) && NULL == xargv[1]) {
             cmd = my_unquote(xargv[0], TRUE);
 
-      } else {
+        } else {
             const char *str;
             size_t slen = 0;
             char *cursor;
