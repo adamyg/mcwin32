@@ -36,10 +36,12 @@ __CPRAGMA_ONCE
 #if (_MSC_VER != 1500)                          /* MSVC 9/2008 */
 #if (_MSC_VER != 1600)                          /* MSVC 10/2010 */
 #if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
-#if (_MSC_VER <  1910 || _MSC_VER > 1916)       /* MSVC 19.10 .. 16/2017 */
-#if (_MSC_VER > 1929)                           /* MSVC 19.20 / 2019.09 */
-#error unistd.h: untested MSVC Version (2005 -- 2019.08) only ...
-	 //see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+#if (_MSC_VER <  1910 || _MSC_VER > 1916)       /* MSVC 2017: 19.10 .. 16 */
+#if (_MSC_VER > 1929)                           /* MSVC 2019: 19.20 .. 29 */
+#if (_MSC_VER > 1931)                           /* MSVC 2022: 19.30 .. 31 */
+#error unistd.h: untested MSVC Version (2005 -- 2019.31)
+	//see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+#endif //2022
 #endif //2019
 #endif //2017
 #endif //2015
