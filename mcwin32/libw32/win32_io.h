@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.21 2022/02/17 16:05:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.22 2022/02/24 16:39:23 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -31,25 +31,6 @@ __CPRAGMA_ONCE
 #undef DATADIR                                  /* namespace issue */
 
 #if defined(_MSC_VER)
-#if (_MSC_VER != 1200)                          /* MSVC 6 */
-#if (_MSC_VER != 1400)                          /* MSVC 8/2005 */
-#if (_MSC_VER != 1500)                          /* MSVC 9/2008 */
-#if (_MSC_VER != 1600)                          /* MSVC 10/2010 */
-#if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
-#if (_MSC_VER <  1910 || _MSC_VER > 1916)       /* MSVC 2017: 19.10 .. 16 */
-#if (_MSC_VER > 1929)                           /* MSVC 2019: 19.20 .. 29 */
-#if (_MSC_VER > 1931)                           /* MSVC 2022: 19.30 .. 31 */
-#error unistd.h: untested MSVC Version (2005 -- 2019.31)
-	//see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
-#endif //2022
-#endif //2019
-#endif //2017
-#endif //2015
-#endif //2010
-#endif //2008
-#endif //2005
-#endif //_MSC_VER
-
 #pragma  warning(disable:4115)
 
 #elif defined(__WATCOMC__)
