@@ -248,7 +248,7 @@ const key_code_name_t   key_name_conv_tab[] = {
 
     /* Alternative label */
     { ESC_CHAR,         "esc",          N_("Escape key"), "Esc" },
-    { KEY_BACKSPACE,    "bs",           N_("Backspace key"), "Bakspace" },
+    { KEY_BACKSPACE,    "bs",           N_("Backspace key"), "Backspace" },
     { KEY_IC,           "ins",          N_("Insert key"), "Ins" },
     { KEY_DC,           "del",          N_("Delete key"), "Del" },
     { (int) '+',        "plus",         N_("Plus"), "+" },
@@ -465,10 +465,11 @@ key_shell_mode (void)
                 }
             }
 
-//          if ((DWORD)-1 != consoleAttribute) {
+//          if ((DWORD)-1 != consoleAttribute) { // ???
 //              SetConsoleTextAttribute(hConsoleOut, consoleAttribute);
 //          }
 //          SetConsoleMode(hConsoleOut, consoleOutMode);
+
             SetConsoleMode(hConsoleIn, consoleMode);
         }
         SetConsoleCtrlHandler(NULL, TRUE);
@@ -569,6 +570,7 @@ lookup_keycode (const long code, int *idx)
             return TRUE;
         }
     }
+
     *idx = -1;
     return FALSE;
 }
@@ -673,10 +675,12 @@ lookup_key (const char *name, char **label)
     }
 
     if (use_ctrl != -1) {
-        if (k < 256)
-            k = XCTRL (k);
-        else
-            k |= KEY_M_CTRL;
+        if (/*k < 256*/ k < 0x1f ||
+                (k >= 'a' && k <= 'z') || (k >= 'A' && k <= '^')) {
+            k = XCTRL (k);                      /* ctrl-<a..z>, and ctrl-backslash */
+        } else {
+            k |= KEY_M_CTRL;                    /* ctrl-<fx>, ctrl-space etc */
+        }
     }
 
     if (use_meta != -1)
@@ -715,7 +719,7 @@ lookup_key_by_code (const int keycode)
         if (mod & KEY_M_CTRL) {
             /* non printeble chars like a CTRL-[A..Z] */
             if (k < 32)
-                k += 64;
+                k += 64;                        /* A...^, includes ESC & Ctrl-\ */
 
             if (lookup_keycode (KEY_M_CTRL, &idx)) {
                 use_ctrl = idx;
@@ -1210,15 +1214,13 @@ key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned Asci
                         /* Ctrl-d is delete */
                         ch = KEY_DC;
                         mod &= ~KEY_M_CTRL;
-                    }
 
-                    else if (ch == (31 & 'h')) {
+                    } else if (ch == (31 & 'h')) {
                         /* Ctrl-h is backspace */
                         ch = KEY_BACKSPACE;
                         mod &= ~KEY_M_CTRL;
-                    }
 
-                    else if (ch == KEY_BACKSPACE && (mod & KEY_M_SHIFT)) {
+                    } else if (ch == KEY_BACKSPACE && (mod & KEY_M_SHIFT)) {
                         /* Shift+BackSpace is backspace */
                         mod &= ~KEY_M_SHIFT;
                     }
