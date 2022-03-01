@@ -13,6 +13,7 @@ owcsetup.dbg
 .created
 mc.aps
 .#*
+*.00*
 *.o
 *.obj
 *.a

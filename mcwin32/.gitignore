@@ -18,6 +18,7 @@ testaccounts.txt
 mc.aps
 .#*
 wd*.bat
+*.00*
 *.o
 *.obj
 *.a
