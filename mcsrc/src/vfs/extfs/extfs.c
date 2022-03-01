@@ -515,7 +515,10 @@ extfs_open_archive (int fstype, const char *name, struct extfs_super_t **pparc, 
     static dev_t archive_counter = 0;
     mc_pipe_t *result = NULL;
     mode_t mode;
-    char *cmd = NULL, *cmd0 = NULL; //WIN32
+#if defined(WIN32) // WIN32, cmd-quoting
+    char *quoted_cmd;
+#endif
+    char *cmd = NULL;
     struct stat mystat;
     struct extfs_super_t *current_archive;
     struct vfs_s_entry *root_entry;
@@ -546,15 +549,25 @@ extfs_open_archive (int fstype, const char *name, struct extfs_super_t **pparc, 
             tmp = name_quote (vfs_path_get_last_path_str (name_vpath), FALSE);
     }
 
-    cmd0 = name_quote (g_strconcat (info->path, info->prefix, NULL), FALSE); //WIN32
+#if defined(WIN32) // WIN32, cmd-quoting
+    quoted_cmd = name_quote (g_strconcat (info->path, info->prefix, NULL), FALSE);
     if (local_last_path != NULL)
-        cmd = g_strconcat (cmd0 /*info->path, info->prefix*/, " list ", local_last_path, (char *) NULL);
+        cmd = g_strconcat (quoted_cmd, " list ", local_last_path, (char *) NULL);
     else if (tmp != NULL)
     {
-        cmd = g_strconcat (cmd0 /*info->path, info->prefix*/, " list ", tmp, (char *) NULL);
+        cmd = g_strconcat (quoted_cmd, " list ", tmp, (char *) NULL);
         g_free (tmp);
     }
-    g_free (cmd0);
+    g_free (quoted_cmd);
+#else
+    if (local_last_path != NULL)
+        cmd = g_strconcat (info->path, info->prefix, " list ", local_last_path, (char *) NULL);
+    else if (tmp != NULL)
+    {
+        cmd = g_strconcat (info->path, info->prefix, " list ", tmp, (char *) NULL);
+        g_free (tmp);
+    }
+#endif
 
     if (cmd != NULL)
     {
@@ -928,6 +941,9 @@ extfs_cmd (const char *str_extfs_cmd, const struct extfs_super_t *archive,
     char *quoted_localname;
     char *archive_name, *quoted_archive_name;
     const extfs_plugin_info_t *info;
+#if defined(WIN32) // WIN32, cmd-quoting
+    char *quoted_cmd;
+#endif
     char *cmd;
     int retval = 0;
     GError *error = NULL;
@@ -945,8 +961,16 @@ extfs_cmd (const char *str_extfs_cmd, const struct extfs_super_t *archive,
     g_free (archive_name);
     quoted_localname = name_quote (localname, FALSE);
     info = &g_array_index (extfs_plugins, extfs_plugin_info_t, archive->fstype);
+
+#if defined(WIN32) // WIN32, cmd-quoting
+    quoted_cmd = name_quote (g_strconcat (info->path, info->prefix, NULL), FALSE);
+    cmd = g_strconcat (quoted_cmd, str_extfs_cmd,
+                       quoted_archive_name, " ", file, " ", quoted_localname, (char *) NULL);
+    g_free (quoted_cmd);   
+#else
     cmd = g_strconcat (info->path, info->prefix, str_extfs_cmd,
                        quoted_archive_name, " ", file, " ", quoted_localname, (char *) NULL);
+#endif
     g_free (quoted_file);
     g_free (quoted_localname);
     g_free (quoted_archive_name);

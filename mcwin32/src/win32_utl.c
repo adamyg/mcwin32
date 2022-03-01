@@ -104,7 +104,7 @@ static void             set_editor (void);
 static void             set_busybox (void);
 
 static void             my_setenv (const char *name, const char *value, int overwrite);
-static void             my_setpathenv (const char *name, const char *value, int overwrite);
+static void             my_setpathenv (const char *name, const char *value, int overwrite, int quote_ws);
 
 static void             unixpath (char *path);
 static void             dospath (char *path);
@@ -131,6 +131,8 @@ static const char *     busybox_cmds[] = {      /* redirected commands (see vfs/
 
 // MISSING: lz4, ulz4
         };
+
+static const char *     busybox_path = NULL;    /* resolve path to busybox */
 
 static const char       bin_sh[] = "/bin/sh";
 static const char       cmd_sh[] = "cmd.exe";
@@ -187,7 +189,7 @@ WIN32_Setup(void)
 static void
 set_shell(void)
 {
-    my_setpathenv("SHELL", w32_getshell(), FALSE);
+    my_setpathenv("SHELL", w32_getshell(), FALSE, FALSE);
 }
 
 
@@ -231,6 +233,15 @@ set_busybox(void)
     char buffer[MAX_PATH] = {0};
 
     if (NULL != (busybox = getenv("MC_BUSYBOX")) && *busybox) {
+        char *t_busybox = strdup(busybox);  // import external version.
+        if ('"' == t_busybox[0]) { // remove quotes; optional.
+            size_t len = strlen(t_busybox);
+            if ('"' == t_busybox[len-1]) {
+                memmove(t_busybox, t_busybox + 1, --len);
+                t_busybox[len - 1] = 0;
+            }
+        }
+        busybox_path = t_busybox;
         return;
     }
 
@@ -245,7 +256,16 @@ set_busybox(void)
         }
     }
 
-    my_setpathenv("MC_BUSYBOX", busybox, TRUE);
+    /* publish, quote if path contains whitespace */
+    my_setpathenv("MC_BUSYBOX", busybox, TRUE, TRUE);
+    busybox_path = strdup(busybox);
+}
+
+
+const char *
+mc_BUSYBOX(void)
+{
+    return busybox_path;
 }
 
 
@@ -282,7 +302,7 @@ set_tmpdir(void)
         }
 
         if (tmpdir) {
-            my_setpathenv("MC_TMPDIR", tmpdir, TRUE);
+            my_setpathenv("MC_TMPDIR", tmpdir, TRUE, FALSE);
         }
     }
 }
@@ -785,21 +805,28 @@ my_setenv(const char *name, const char *value, int overwrite)
 
 
 static void
-my_setpathenv(const char *name, const char *value, int overwrite)
+my_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
 {
-    char buf[1024];
+    char path[1204]={0}, buf[1024]={0};
 
     if ((1 == overwrite) || NULL == getenv(name)) {
+        strncpy(path, value, sizeof(path)-1);
+        canonicalize_pathname(path);
+        dospath(path);
+
 #if defined(__WATCOMC__)
-        strncpy(buf, value, sizeof(buf));
-        buf[sizeof(buf)-1] = 0;
-        canonicalize_pathname(buf);
-        dospath(buf);
-        setenv(name, (const char *)buf, TRUE);
+        if (quote_ws && strchr(path, ' ')) {
+            snprintf(buf, sizeof(buf)-1, "\"%s\"", path);
+            setenv(name, (const char *)buf, TRUE);
+        } else {
+            setenv(name, (const char *)path, TRUE);
+        }
 #else
-        snprintf(buf, sizeof(buf), "%s=%s", name, value);
-        canonicalize_pathname(buf + strlen(name) + 1);
-        buf[sizeof(buf) - 1] = 0;
+        if (quote_ws && strchr(path, ' ')) {
+            snprintf(buf, sizeof(buf)-1, "%s=\"%s\"", name, path);
+        } else {
+            snprintf(buf, sizeof(buf)-1, "%s=%s", name, path);
+        }
         putenv(buf);
 #endif
     }
@@ -1035,7 +1062,7 @@ my_system (int flags, const char *shell, const char *cmd)
 static int
 system_impl (int flags, const char *shell, const char *cmd)
 {
-    const char *busybox = getenv("MC_BUSYBOX"), *exec = NULL;
+    const char *busybox = mc_BUSYBOX(), *exec = NULL;
     int shelllen, ret = -1;
 
     if ((flags & EXECUTE_INTERNAL) && cmd) {
@@ -1427,7 +1454,7 @@ my_unquote_test(void)
 FILE *
 win32_popen(const char *cmd, const char *mode)
 {
-    const char *busybox = getenv("MC_BUSYBOX");
+    const char *busybox = mc_BUSYBOX();
     const char *space, *exec;
     FILE *file = NULL;
 

@@ -72,7 +72,7 @@ mc_popen (const char *xcommand, GError ** error)
     gboolean read_out = 1, read_err = 1;
 #endif
     win32_exec_t *args = NULL;
-    const char *busybox = getenv("MC_BUSYBOX");
+    const char *busybox = mc_BUSYBOX();
     const char *cmd = NULL;
     mc_pipe_t *p = NULL;
     int x_errno = -1;

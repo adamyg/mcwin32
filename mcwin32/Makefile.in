@@ -113,27 +113,33 @@ XCLEAN=
 
 # Configuration
 
+BUSYBOX=	@BUSYBOX@
+ifeq ($(BUSYBOX),busybox)
+BUSYBOX=	$(shell which busybox 2>/dev/null)
+endif
+
 ifeq ("$(BUILD_TYPE)","")	#default
 
 .PHONY:				help clean build package
 help clean build package:
 ifneq ("$(word 1,$(MAKECMDGOALS))","debug")
 ifneq ("$(word 1,$(MAKECMDGOALS))","release")
-	@echo :
-	@echo : make [release or debug] target
-	@echo :
-	@echo : Build one or more of the following targets recursively within each sub-directory.
-	@echo :
-	@echo : Targets:
-	@echo :
-	@echo : build - build everything.
-	@echo : package - build all packages.
-	@echo : clean - delete everything which can be remade.
-	@echo : help - command line usage.
-	@echo :
+	@$(BUSYBOX) echo -n -e '\
+		|\n\
+		| make [release or debug] target \n\
+		|\n\
+		|	Build one or more of the following targets recursively within each sub-directory. \n\
+		|\n\
+		| Targets: \n\
+		|\n\
+		|	build   - build everything. \n\
+		|	package - build all packages. \n\
+		|	clean   - delete everything which can be remade. \n\
+		|	help    - command line usage. \n\
+		'
 endif
 endif
-	@echo done
+	@echo .
 
 .PHONY:				release
 release:
@@ -185,11 +191,6 @@ INSTALL_DATA=	@INSTALL_DATA@
 INNO=		@INNO@
 ifeq ($(INNO),) # Inno5: allowing legacy XP installations
 INNO=		"C:/Program Files (x86)/Inno Setup 5/Compil32"
-endif
-
-BUSYBOX=	@BUSYBOX@
-ifeq ($(BUSYBOX),busybox)
-BUSYBOX=	$(shell which busybox 2>/dev/null)
 endif
 
 MCSOURCE=	../mcsrc
@@ -711,18 +712,19 @@ build:				directories artifacts targets configuration gettext import
 
 .PHONY:				help
 help:
-	@echo :
-	@echo : make [release,debug] target
-	@echo :
-	@echo : Build one or more of the following targets recursively within each sub-directory.
-	@echo :
-	@echo : Targets:
-	@echo :
-	@echo : build - build everything.
-	@echo : package - build all packages.
-	@echo : clean - delete everything which can be remade.
-	@echo : help - command line usage.
-	@echo :
+	@$(BUSYBOX) echo -e '\
+		|\n\
+		| make [release or debug] target \n\
+		|\n\
+		|	Build one or more of the following targets recursively within each sub-directory. \n\
+		|\n\
+		| Targets: \n\
+		|\n\
+		|	build   - build everything. \n\
+		|	package - build all packages. \n\
+		|	clean   - delete everything which can be remade. \n\
+		|	help    - command line usage. \n\
+		'
 
 .PHONY:				release
 release:

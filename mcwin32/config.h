@@ -63,6 +63,7 @@
 
 const char *                mc_aspell_dllpath(void);
 const char *                mc_get_locale(void);
+const char *                mc_BUSYBOX(void);
 
 const char *                mc_TMPDIR(void);
 const char *                mc_SYSCONFDIR(void);
