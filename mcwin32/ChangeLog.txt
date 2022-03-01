@@ -1,12 +1,16 @@
 Pending build-224
 
-Sun Jan  9 22:06:12 2022 adamy
+Tue Mar  1 19:29:46 2022 adamy
+
+	* #14 - <ctrl-space> key mapping.
 
 	* 4.8.27 merge
 
 		o mc_popen() script support.
+		o mc_pread() pipe rework.
 		o compat strtok_r() and inet_ntop().
 		o slang: SLsmg_set_color_in_region().
+		o command quoting; white-space handling.
 
 	* aspell enabled (https://github.com/adamyg/aspell-win32)
 
