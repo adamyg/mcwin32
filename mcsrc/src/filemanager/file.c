@@ -2042,8 +2042,9 @@ operate_single_file (const WPanel * panel, FileOperation operation, file_op_tota
 #ifdef ENABLE_BACKGROUND
                 /* create UI to show confirmation dialog */
                 if (!mc_global.we_are_background)
+#endif //WIN32, #14
                     file_op_context_create_ui (ctx, TRUE, FILEGUI_DIALOG_ONE_ITEM);
-#endif
+//WIN32, #endif
                 if (is_file)
                     value = move_file_file (panel, tctx, ctx, src, dest);
                 else
