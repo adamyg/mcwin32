@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.15 2022/03/05 08:18:53 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.16 2022/03/05 09:37:49 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -685,8 +685,8 @@ Link() {
     if ($version_number) {
         if ($version_number =~ /^\s*(\d+)\s*$/) {
             # <major>
-            $dll_version = "$1";                # <name>major
-            $version_number = "$1";
+            $dll_version = "$1.0";              # <name>major.0
+            $version_number = ".$1";
 
         } elsif ($version_number =~ /^\s*(\d+):(\d+)$/) {
             # <major>:<minor>
@@ -695,7 +695,7 @@ Link() {
 
         } elsif ($version_number =~ /^\s*(\d+):(\d+):(\d+)$/) {
             # <major>:<minor>:<revision>
-            $dll_version = "$1.$2.$3";          # major.minor.<minor>
+            $dll_version = "$1.$2";             # major.minor
             $version_number = ".$1.$2.$3";      # <name>.<major.<revision>.dll
 
         } elsif ($version_number =~ /^\s*(\d+)\s*\.\s*(\d+)$/) {
@@ -705,7 +705,7 @@ Link() {
 
         } elsif ($version_number =~ /^\s*(\d+)\s*\.\s*(\d+)\.\s*(\d+)$/) {
             # <major>.<minor>.<revision>
-            $dll_version = "$1.$2.$3";          # major.minor.<minor>
+            $dll_version = "$1.$2";             # major.minor
             $version_number = ".$1.$2.$3";      # <name>.<major.<revision>.dll
 
         } else {
