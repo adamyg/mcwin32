@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.8 2021/12/01 12:58:46 cvsuser Exp $
+# $Id: Makefile.in,v 1.9 2022/03/05 08:24:17 cvsuser Exp $
 # libmagic makefile
 #
 #
@@ -151,6 +151,7 @@ XCLEAN+=	$(MAGICDB) magic.mgc
 OBJS=		$(LIBOBJS) $(DLLOBJS) $(UTILOBJS)
 LIBS=		$(MAGICLIB) $(MAGICDLL)
 TSKS=		$(MAGICUTIL)
+INSTALLED=
 
 # Rules
 
@@ -169,6 +170,7 @@ $(MAGICLIB):		$(D_OBJ)/.created $(LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libmagic.$(VERSION).dll
 $(MAGICDLL):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_DYNAMIC
 $(MAGICDLL):		$(DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) -o $@ $^ -version-number $(VERSIONSPEC) \
@@ -207,8 +209,8 @@ installinc:		../include/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(MAGICDLL) $(DLLOBJS) >nul 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1
+		-@$(LIBTOOL) --mode=clean $(RM) $(MAGICDLL) $(OBJS) >nul 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1
 		-@$(RM) $(LIBOBJS) $(UTILOBJS) >nul 2>&1
 
 $(D_OBJ)/%$(O):		%$(C)

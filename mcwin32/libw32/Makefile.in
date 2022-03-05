@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.17 2022/02/11 12:48:06 cvsuser Exp $
+# $Id: Makefile.in,v 1.18 2022/03/05 08:28:01 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -203,7 +203,7 @@ endif
 OBJS=		$(LIBOBJS) $(DLLOBJS)
 LIBS=		$(W32LIB) $(W32DLL)
 TSKS=
-
+INSTALLED=
 
 #########################################################################################
 # Rules
@@ -222,6 +222,7 @@ $(W32LIB):		$(D_OBJ)/.created $(LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libw32.$(VERSION).dll
 $(W32DLL):		CEXTRA += -DLIBW32_DYNAMIC -DLIBW32_LIBRARY
 $(W32DLL):		DLLDEF = -export-symbols libw32.def
 $(W32DLL):		$(DLLOBJS)
@@ -235,7 +236,7 @@ $(D_OBJ)/.created:
 clean:
 		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(W32DLL) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(W32LIB) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(W32LIB) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(RMFLAGS) $(LIBOBJS) >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%.c

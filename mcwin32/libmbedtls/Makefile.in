@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.6 2021/11/08 13:12:55 cvsuser Exp $
+# $Id: Makefile.in,v 1.7 2022/03/05 08:24:49 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
-# Copyright (c) 2017 - 2021 Adam Young.
+# Copyright (c) 2017 - 2022 Adam Young.
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.
@@ -207,6 +207,7 @@ TARGET=		mbedtls_selftest$(E)
 TARGETOBJS=	$(D_OBJ)/selftest.obj
 
 TSKS=		$(D_BIN)/$(TARGET)
+INSTALLED=
 
 # Rules
 
@@ -228,6 +229,7 @@ $(MBEDCRYPTOLIB):	$(CRYPTO_LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libmbedcrypto.$(VERSION).dll
 $(MBEDCRYPTODLL):	LIBNAME=libmbedcrypto
 $(MBEDCRYPTODLL):	LIBDEF=-export-symbols win32/libmbedcrypto.def
 $(MBEDCRYPTODLL):	CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDCRYPTO_SOURCE -D_WINDLL
@@ -242,6 +244,7 @@ $(MBEDX509LIB):		$(X509_LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libmbedx509.$(VERSION).dll
 $(MBEDX509DLL):		LIBNAME=libmbedx509
 $(MBEDX509DLL):		LIBDEF=-export-symbols win32/libmbedx509.def
 $(MBEDX509DLL):		CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDX509_SOURCE -D_WINDLL
@@ -256,6 +259,7 @@ $(MBEDTLSLIB):		$(TLS_LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libmbedtls.$(VERSION).dll
 $(MBEDTLSDLL):		LIBNAME=libmbedtls
 $(MBEDTLSDLL):		LIBDEF=-export-symbols win32/libmbedtls.def
 $(MBEDTLSDLL):		CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDTLS_SOURCE -DLIBMBEDTLS -D_WINDLL
@@ -293,7 +297,7 @@ installinc:		../include/.created ../include/mbedtls/.created
 clean:
 		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
 		-@$(RM) ../include/mbedtls/* >/dev/null 2>&1
 

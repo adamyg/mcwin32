@@ -109,7 +109,7 @@ LP=		lib
 E=		.exe
 
 CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
-XCLEAN=
+XCLEAN=		$(D_BIN)/*.map
 
 # Configuration
 
@@ -120,8 +120,8 @@ endif
 
 ifeq ("$(BUILD_TYPE)","")	#default
 
-.PHONY:				help clean build package
-help clean build package:
+.PHONY:				help clean vclean build package
+help clean vclean build package:
 ifneq ("$(word 1,$(MAKECMDGOALS))","debug")
 ifneq ("$(word 1,$(MAKECMDGOALS))","release")
 	@$(BUSYBOX) echo -n -e '\
@@ -133,8 +133,9 @@ ifneq ("$(word 1,$(MAKECMDGOALS))","release")
 		| Targets: \n\
 		|\n\
 		|	build   - build everything. \n\
-		|	package - build all packages. \n\
+		|	package - build package. \n\
 		|	clean   - delete everything which can be remade. \n\
+		|	vclean  - delete all. \n\
 		|	help    - command line usage. \n\
 		'
 endif
@@ -626,6 +627,7 @@ CFG_DOC+=		$(D_BIN)/ChangeLog.txt
 CFG_DOC+=		$(D_BIN)/README.txt
 
 MSGLANGS=		$(notdir $(wildcard $(PO_SRC)/*.po))
+BASEMSGDIRS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=))
 MSGDIRS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=/LC_MESSAGES/.created))
 MSGOBJS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=/LC_MESSAGES/$(PACKAGE).mo))
 
@@ -644,6 +646,7 @@ CONFIGURATION=\
 	$(CFG_PLUGIN_EXTFS_D)			\
 	$(CFG_PLUGIN_FISH)			\
 	$(CFG_DOC)
+
 
 #########################################################################################
 # targets
@@ -751,6 +754,12 @@ configuration:			$(CONFIGURATION) configuration-win32
 
 gettext:			$(MSGDIRS) $(MSGOBJS)
 
+CONFIGURATION_WIN32=\
+	$(addprefix $(D_ETC)/,$(CFG_WIN32_ETC)) \
+	$(addprefix $(D_PLUGIN)/,$(CFG_WIN32_PLUGIN)) \
+	$(addprefix $(WIN32_PLUGIN_SRC)/extfs.d/,$(CFG_WIN32_PLUGIN_EXTFS_D)) \
+	$(addprefix $(D_SHARE)/skins/,$(CFG_WIN32_SKINS))
+
 .PHONY:				configuration-win32
 configuration-win32:				# unconditional export
 		@echo exporting mcwin32 specialised files ...
@@ -822,9 +831,15 @@ clean:
 		$(MAKE) -C libw32 clean
 		$(MAKE) -C autoupdater clean
 		-$(RM) $(MSGOBJS) $(MSGDIRS) >nul 2>&1
+		-$(RM) $(CONFIGURATION) >nul 2>&1
+		-$(RM) $(CONFIGURATION_WIN32) >nul 2>&1
 		-$(RM) $(DIRECTORIES) >nul 2>&1
-		-$(RMDIR) $(dir $(DIRECTORIES) $(MSGDIRS)) >nul 2>&1
+		-$(RMDIR) $(call reverse, $(dir $(DIRECTORIES)) $(BASEMSGDIRS) $(dir $(MSGDIRS)))) >nul 2>&1
 		-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) >nul 2>&1
+
+.PHONY:		vclean
+vclean:		clean
+		-$(RM) $(IMPORT) >nul 2>&1
 
 
 #########################################################################################
@@ -1055,12 +1070,8 @@ $(LW)ssh2$(A):
 $(LW)intl$(A):
 		$(MAKE) -C libintl
 
-.PHONY:		$(LW)glib-2.0$(A)
-$(LW)glib-2.0$(A):
-		$(MAKE) -C libglib
-
-.PHONY:		$(LW)gmodule-2.0$(A)
-$(LW)gmodule-2.0$(A):
+.PHONY:		$(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A)
+$(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A):
 		$(MAKE) -C libglib
 
 .PHONY:		$(LW)autoupdater$(A)

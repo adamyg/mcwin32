@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.5 2021/10/25 14:25:41 cvsuser Exp $
+# $Id: Makefile.in,v 1.6 2022/03/05 08:29:12 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -96,6 +96,9 @@ RMDFLAGS=	-rf
 #########################################################################################
 # Targets
 
+VERSION=	1.0.1
+VERSIONSPEC=	$(subst .,:,$(VERSION))
+
 UPDATERDLL=	$(D_LIB)/$(LP)autoupdater.la
 UPDATERTSK=	$(D_BIN)/mcupdater$(E)
 SIGNATURETSK=	$(D_BIN)/mcsignature$(E)
@@ -151,6 +154,7 @@ SIGNATUREOBJS=\
 OBJS=		$(DLLOBJS) $(UPDATEROBJS) $(SIGNATUREOBJS)
 LIBS=		$(UPDATERDLL)
 TSKS=		$(UPDATERTSK) $(SIGNATURETSK)
+INSTALLED=
 
 
 #########################################################################################
@@ -164,6 +168,7 @@ release:
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
+INSTALLED+=	$(D_BIN)/libautoupdater.$(VERSION).dll
 $(UPDATERDLL):		CEXTRA += -I$(UPDATERSRC) -I$(UPDATERSRC)/src -I$(EXPATSRC)
 $(UPDATERDLL):		CEXTRA += -DXML_STATIC -DCOMPILED_FROM_DSP -D_CRT_SECURE_NO_DEPRECATE
 $(UPDATERDLL):		CEXTRA += -DUNICODE -D_UNICODE
@@ -173,7 +178,7 @@ $(UPDATERDLL):		CEXTRA += -D_DEBUG
 endif
 $(UPDATERDLL):		CEXTRA += -DBUILDING_LIBAUTOUPDATER
 $(UPDATERDLL):		$(D_OBJ)/.created $(DLLOBJS)
-		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(DLLOBJS) -version-number 1.0.1 \
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(DLLOBJS) -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) $(LDLIBS) version.lib wininet.lib advapi32.lib user32.lib
 
 $(UPDATERTSK):		CEXTRA += -I$(UPDATERSRC)
@@ -195,7 +200,7 @@ installinc:		include/.created
 		@echo "do not delete, managed directory" > $@
 
 clean:
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%.cpp
 		$(CC) $(CXXFLAGS) -o $@ -c $<

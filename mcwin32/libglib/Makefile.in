@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.8 2022/01/06 13:49:18 cvsuser Exp $
-# libssh2 makefile.
+# $Id: Makefile.in,v 1.9 2022/03/05 08:22:01 cvsuser Exp $
+# libglib makefile.
 #
 #
-# Copyright (c) 2016 - 2021 Adam Young.
+# Copyright (c) 2016 - 2022 Adam Young.
 # 
 # This file is part of the Midnight Commander.
 # 
@@ -42,6 +42,7 @@ LP=		lib
 
 CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
 XCLEAN=
+BAK=
 
 # Compilers, programs
 
@@ -326,7 +327,9 @@ OBJS=		$(GBLIBLIBOBJS) $(GLIBDLLOBJS) \
 
 LIBS=		$(GLIBLIB) $(GLIBDLL) \
 		$(GMODULELIB) $(GMODULEDLL)
+
 TSKS=
+INSTALLED=
 
 
 ############################################################
@@ -347,10 +350,11 @@ $(GLIBLIB):		$(GLIBLIBOBJS)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libglib.$(VERSION).dll
 $(GLIBDLL):		CEXTRA += -DGLIB_DYNAMIC_COMPILATION -DDLL_EXPORT -DPCRE_STATIC
 $(GLIBDLL):		$(GLIBDLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) -o $@ $^ $(LDLIBS)
+			-rpath $(D_LIB) -bindir $(D_BIN) -dlbase libglib -o $@ $^ $(LDLIBS)
 
 $(GMODULELIB):		CEXTRA += -DGMODULE_STATIC_COMPILATION
 $(GMODULELIB):		$(GMODULELIBOBJS)
@@ -358,10 +362,11 @@ $(GMODULELIB):		$(GMODULELIBOBJS)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libmodule.$(VERSION).dll
 $(GMODULEDLL):		CEXTRA += -DGMODULE_DYNAMIC_COMPILATION -DDLL_EXPORT
 $(GMODULEDLL):		$(GMODULEDLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) -o $@ $^ $(D_LIB)/$(LP)glib-2.0.lib $(LDLIBS)
+			-rpath $(D_LIB) -bindir $(D_BIN) -dlbase libmodule -o $@ $^ $(D_LIB)/$(LP)glib-2.0.lib $(LDLIBS)
 
 source:			.unpacked.$(VERSION)
 		$(MAKE) unpacked
@@ -471,7 +476,7 @@ clean:
 		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GLIBDLL) $(GLIBDLLOBJS) >nul 2>&1)
 		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GMODULEDLL) $(GMODULEDLLOBJS) >nul 2>&1)
-		-@$(RM) $(subst /,\,$(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1)
+		-@$(RM) $(subst /,\,$(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1)
 		-@$(RM) $(subst /,\,$(GLIBLIBOBJS) >nul 2>&1)
 		-@$(RM) $(subst /,\,$(GMODULELIBOBJS) >nul 2>&1)
 

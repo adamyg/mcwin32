@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.5 2021/04/13 16:00:16 cvsuser Exp $
+# $Id: Makefile.in,v 1.6 2022/03/05 08:21:36 cvsuser Exp $
 # libintl makefile
 #
 #
@@ -105,7 +105,7 @@ DLLOBJS=\
 OBJS=		$(LIBOBJS) $(DLLOBJS)
 LIBS=		$(INTLLIB) $(INTLDLL)
 TSKS=
-
+INSTALLED=
 
 ############################################################
 # Rules
@@ -124,6 +124,7 @@ $(INTLLIB):		$(LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $(subst /,\,$^)
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libintl.$(VERSION).dll
 $(INTLDLL):		CEXTRA += -I$(INTLSRC) -DLIBINTL_DYANMIC -D__LIBINTL_BUILD -D_WIN32 -D_WIN32_WINNT=0X601
 $(INTLDLL):		$(DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
@@ -144,7 +145,7 @@ installinc:		../include/.created
 clean:
 		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(INTLDLL) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%.c

@@ -1,10 +1,10 @@
 
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.5 2020/06/14 00:48:00 cvsuser Exp $
+# $Id: Makefile.in,v 1.6 2022/03/05 08:28:22 cvsuser Exp $
 # libz makefile
 #
 #
-# Copyright (c) 2016 - 2020 Adam Young.
+# Copyright (c) 2016 - 2022 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -154,6 +154,7 @@ endif
 OBJS=		$(LIBOBJS) $(DLLOBJS)
 LIBS=		$(ZLIB) $(ZDLL)
 TSKS=
+INSTALLED=
 
 # Rules
 
@@ -174,6 +175,7 @@ $(ZLIB):		$(LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libz.$(VERSION).dll
 $(ZDLL):		CEXTRA += -DZLIB_DLL
 ifeq ("yes","@ISWIN32@")
 $(ZDLL):		ZDEF = -export-symbols $(ZSRC)/win32/zlib.def
@@ -206,7 +208,7 @@ installinc:		../include/.created
 clean:
 		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(ZDLL) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%.c
