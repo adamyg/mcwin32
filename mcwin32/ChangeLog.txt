@@ -1,6 +1,17 @@
-Pending build-224
+Sun Mar  6 21:19:10 2022 adamy
+
+	* Build-224
+
+	* #16 - access directory expansion and other special keys.
+
+		o <Esc-Tab>, mapped to <alt-tab>
+		o <Esc-1..9,0>. mapped tp <F1> ... <F10>
 
 Tue Mar  1 19:29:46 2022 adamy
+
+	* busybox
+
+		o bundled busybox-w32-FRP-4621-gf3c5e8bc3.exe (https://frippery.org/busybox)
 
 	* #14 - <ctrl-space> key mapping.
 
@@ -11,6 +22,7 @@ Tue Mar  1 19:29:46 2022 adamy
 		o compat strtok_r() and inet_ntop().
 		o slang: SLsmg_set_color_in_region().
 		o command quoting; white-space handling.
+		o reduced beep freq/duration.
 
 	* aspell enabled (https://github.com/adamyg/aspell-win32)
 
