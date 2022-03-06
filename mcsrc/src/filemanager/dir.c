@@ -544,7 +544,6 @@ dir_list_free_list (dir_list * list)
     list->size = 0;
 }
 
-
 /* --------------------------------------------------------------------------------------------- */
 /** Used to set up a directory list when there is no access to a directory */
 

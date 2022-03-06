@@ -229,7 +229,7 @@ typedef struct
     /* Set if the nice and useful keybar is visible */
     gboolean keybar_visible;
 
-#if defined(ENABLE_BACKGROUND) || defined(WIN32) //WIN32, config
+#if defined(ENABLE_BACKGROUND)
     /* If true, this is a background process */
     gboolean we_are_background;
 #endif                          /* ENABLE_BACKGROUND */

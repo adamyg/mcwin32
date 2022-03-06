@@ -735,7 +735,6 @@ widget_default_make_local (Widget * w, const WRect * delta)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-
 /**
  * Default callback function to find widget.
  *
