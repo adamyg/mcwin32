@@ -357,7 +357,7 @@ void
 SLtt_beep(void)
 {
     if (! SLtt_Ignore_Beep) {
-        Beep(2048, 500);
+        Beep(750, 120);
     }
 }
 
