@@ -22,6 +22,9 @@
 
 __BEGIN_DECLS
 
+extern void             OutputDebugPrintA (const char *fmt, ...);
+extern void             OutputDebugPrintW (const wchar_t *fmt, ...);
+
 extern void             w32_trace (const char *, ...);
 extern void             w32_tracev (const char *, va_list);
 extern void             w32_trace_api (const char *name, unsigned line, const char *file);

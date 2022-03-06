@@ -3,8 +3,10 @@
 #include "win32_internal.h"
 #include "win32_trace.h"
 
+#include <sys/time.h>
 #include <unistd.h>
 #include <errno.h>
+
 
 #ifndef TRACE_FILE
 #define TRACE_FILE      "mctrace.log"
@@ -19,6 +21,41 @@ static void             w32_trace_init(void);
 static void __cdecl     w32_trace_close(void);
 
 static const char *     GetErrorText(DWORD dwError, char *buffer, unsigned buflen);
+
+
+void
+OutputDebugPrintA(const char *fmt, ...)
+{
+    struct timeval tv;
+    char out[512];
+    va_list ap; 
+    int prefix;
+
+    va_start(ap, fmt);
+    w32_gettimeofday(&tv, NULL);
+    prefix = sprintf(out, "%lu.%03u:", tv.tv_sec, tv.tv_usec / 1000);
+    vsprintf_s(out + prefix, _countof(out) - prefix, fmt, ap);
+    va_end(ap); 
+    OutputDebugStringA(out);
+}
+
+
+void
+OutputDebugPrintW(const wchar_t *fmt, ...)
+{
+    struct timeval tv;
+    wchar_t out[512];
+    va_list ap; 
+    int prefix;
+
+    va_start(ap, fmt);
+    w32_gettimeofday(&tv, NULL);
+    prefix = swprintf(out, _countof(out), L"%lu.%03u:", tv.tv_sec, tv.tv_usec / 1000);
+    vswprintf(out + prefix, _countof(out) - prefix, fmt, ap);
+    out[_countof(out) - 1] = 0;
+    va_end(ap); 
+    OutputDebugStringW(out);
+}
 
 
 static void
