@@ -1,7 +1,7 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# Midnight command WIN32 builds 4.8.24, as at 20/04/20
+# Midnight command WIN32 builds 4.8.27, as at 21/12/22
 #
-# Copyright (c) 2007, 2012 - 2021 Adam Young.
+# Copyright (c) 2007, 2012 - 2022 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -37,7 +37,7 @@ PKG_TARNAME	= @PACKAGE_TARNAME@
 PKG_URL		= @PACKAGE_URL@
 PKG_VERSION	= @PACKAGE_VERSION@
 ifeq ("","$(PKG_VERSION)")
-PKG_VERSION	= 4.8.24
+PKG_VERSION	= 4.8.27
 endif
 PKG_VERSION_1	=$(word 1,$(subst ., ,$(PKG_VERSION)))
 PKG_VERSION_2	=$(word 2,$(subst ., ,$(PKG_VERSION)))
@@ -75,7 +75,7 @@ libexecdir	= @libexecdir@
 libdir		= @libdir@
 datadir		= @datadir@
 
-        # package directories
+	# package directories
 pkgname		= mc
 ifeq (rief,$(findstring rief,$(libexecdir)))
 pkglibexecdir	= $(libexecdir)
@@ -109,16 +109,55 @@ LP=		lib
 E=		.exe
 
 CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
-XCLEAN=
+XCLEAN=		$(D_BIN)/*.map
 
 # Configuration
 
-ifeq ("$(BUILD_TYPE)","")	#default
-BUILD_TYPE=	debug
-MAKEFLAGS+=	BUILD_TYPE=debug
+BUSYBOX=	@BUSYBOX@
+ifeq ($(BUSYBOX),busybox)
+BUSYBOX=	$(shell which busybox 2>/dev/null)
 endif
-ifneq ("$(BUILD_TYPE)","release")
+
+ifeq ("$(BUILD_TYPE)","")	#default
+
+.PHONY:				help clean vclean build package
+help clean vclean build package:
+ifneq ("$(word 1,$(MAKECMDGOALS))","debug")
+ifneq ("$(word 1,$(MAKECMDGOALS))","release")
+	@$(BUSYBOX) echo -n -e '\
+		|\n\
+		| make [release or debug] target \n\
+		|\n\
+		|	Build one or more of the following targets recursively within each sub-directory. \n\
+		|\n\
+		| Targets: \n\
+		|\n\
+		|	build   - build everything. \n\
+		|	package - build package. \n\
+		|	clean   - delete everything which can be remade. \n\
+		|	vclean  - delete all. \n\
+		|	help    - command line usage. \n\
+		'
+endif
+endif
+	@echo .
+
+.PHONY:				release
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+
+.PHONY:				debug
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+else	# BUILD_TYPE
+
+ifeq ("$(BUILD_TYPE)","debug")
 RTSUFFIX=d
+else
+ifneq ("$(BUILD_TYPE)","release")
+$(error invalid BUILD_TYPE; debug or release expected)
+endif
 endif
 
 # Directories
@@ -155,11 +194,6 @@ ifeq ($(INNO),) # Inno5: allowing legacy XP installations
 INNO=		"C:/Program Files (x86)/Inno Setup 5/Compil32"
 endif
 
-BUSYBOX=	@BUSYBOX@
-ifeq ($(BUSYBOX),busybox)
-BUSYBOX=	$(shell which busybox 2>/dev/null)
-endif
-
 MCSOURCE=	../mcsrc
 ##MCSOURCE=	../mcmerge
 GTKINSTALL=	.
@@ -176,7 +210,7 @@ CRELEASE=	@CRELEASE@
 LDDEBUG=	@LDDEBUG@
 LDRELEASE=	@LDRELEASE@
 
-CINCLUDE=	-I. -I$(MCSOURCE) -I$(D_INC) -I$(D_INC)/glib-2.0 @CINCLUDE@
+CINCLUDE=	-I. -I$(MCSOURCE) -I$(D_INC) -I$(D_INC)/glib-2.0 -I$(D_INC)/../libaspell @CINCLUDE@
 
 CEXTRA=		@DEFS@ -DLIBW32_DYNAMIC
 ifeq ("$(BUILD_TYPE)","release")
@@ -196,7 +230,7 @@ RMDFLAGS=	-rf
 #########################################################################################
 #
 # Note: Objects output paths *must* be specialised as source components are not unique,
-#       for example 'init' and 'common'.
+# for example 'init' and 'common'.
 #
 
 ifeq ("wcl386","$(CC)")
@@ -221,7 +255,7 @@ MC_SRC=	\
 	$(D_OBJ)/events_init$(O)		\
 	$(D_OBJ)/execute$(O)			\
 	$(D_OBJ)/help$(O)			\
-	$(D_OBJ)/keybind-defaults$(O)		\
+	$(D_OBJ)/keymap$(O)			\
 	$(D_OBJ)/learn$(O)			\
 	$(D_OBJ)/main$(O)			\
 	$(D_OBJ)/selcodepage$(O)		\
@@ -239,6 +273,7 @@ D_OBJFM=	$(D_OBJ)/filemanager
 MC_FILEMANAGER=\
 	$(D_OBJFM)/achown$(O)			\
 	$(D_OBJFM)/boxes$(O)			\
+	$(D_OBJFM)/cd$(O)			\
 	$(D_OBJFM)/chmod$(O)			\
 	$(D_OBJFM)/chown$(O)			\
 	$(D_OBJFM)/cmd$(O)			\
@@ -247,13 +282,13 @@ MC_FILEMANAGER=\
 	$(D_OBJFM)/ext$(O)			\
 	$(D_OBJFM)/file$(O)			\
 	$(D_OBJFM)/filegui$(O)			\
+	$(D_OBJFM)/filemanager$(O)		\
 	$(D_OBJFM)/filenot$(O)			\
 	$(D_OBJFM)/fileopctx$(O)		\
 	$(D_OBJFM)/find$(O)			\
 	$(D_OBJFM)/hotlist$(O)			\
 	$(D_OBJFM)/info$(O)			\
 	$(D_OBJFM)/layout$(O)			\
-	$(D_OBJFM)/midnight$(O)			\
 	$(D_OBJFM)/mountlist$(O)		\
 	$(D_OBJFM)/panel$(O)			\
 	$(D_OBJFM)/panelize$(O)			\
@@ -269,19 +304,19 @@ D_OBJED=	$(D_OBJ)/editor
 
 MC_EDITOR=\
 	$(D_OBJED)/bookmark$(O)			\
-	$(D_OBJED)/choosesyntax$(O)		\
 	$(D_OBJED)/edit$(O)			\
 	$(D_OBJED)/editbuffer$(O)		\
 	$(D_OBJED)/editcmd$(O)			\
-	$(D_OBJED)/editcmd_dialogs$(O)		\
+	$(D_OBJED)/editcomplete$(O)		\
 	$(D_OBJED)/editdraw$(O)			\
+	$(D_OBJED)/editmacros$(O)		\
 	$(D_OBJED)/editmenu$(O)			\
 	$(D_OBJED)/editoptions$(O)		\
+	$(D_OBJED)/editsearch$(O)		\
 	$(D_OBJED)/editwidget$(O)		\
 	$(D_OBJED)/etags$(O)			\
 	$(D_OBJED)/format$(O)			\
 	$(D_OBJED)/spell$(O)			\
-	$(D_OBJED)/spell_dialogs$(O)		\
 	$(D_OBJED)/syntax$(O)
 
 D_OBJVW=	$(D_OBJ)/viewer
@@ -332,11 +367,12 @@ MC_OBJS=\
 #		- $(D_OBJMC)/tty_key$(O)
 #		- $(D_OBJMC)/tty_win$(O)
 #
+#		+ $(D_OBJ)/win32_glib$(O)
 #		+ $(D_OBJ)/win32_key$(O)
+#		+ $(D_OBJ)/win32_pipe$(O)
+#		+ $(D_OBJ)/win32_trace$(O)
 #		+ $(D_OBJ)/win32_tty$(O)
 #		+ $(D_OBJ)/win32_win$(O)
-#		+ $(D_OBJ)/win32_pipe$(O)
-#		+ $(D_OBJ)/win32_glib$(O)
 #
 #	lib/vfs
 #	lib/widget
@@ -354,7 +390,6 @@ MC_LIBMC=\
 	$(D_OBJMC)/lib_serialize$(O)		\
 	$(D_OBJMC)/lib_shell$(O)		\
 	$(D_OBJMC)/lib_timefmt$(O)		\
-	$(D_OBJMC)/lib_timer$(O)		\
 	$(D_OBJMC)/lib_util$(O)			\
 	\
 	$(D_OBJMC)/event_event$(O)		\
@@ -399,11 +434,13 @@ MC_LIBMC=\
 	$(D_OBJMC)/tty_mouse$(O)		\
 	$(D_OBJMC)/tty_tty$(O)			\
 	\
+	$(D_OBJMC)/compat_strtok_r$(O)		\
 	$(D_OBJMC)/win32_key$(O)		\
 	$(D_OBJMC)/win32_tty$(O)		\
 	$(D_OBJMC)/win32_win$(O)		\
 	$(D_OBJMC)/win32_utl$(O)		\
 	$(D_OBJMC)/win32_pipe$(O)		\
+	$(D_OBJMC)/win32_trace$(O)		\
 	$(D_OBJMC)/win32_glib$(O)		\
 	\
 	$(D_OBJMC)/vfs_direntry$(O)		\
@@ -481,6 +518,7 @@ MC_LIBVFS=\
 	$(D_OBJVFS)/cpio_cpio$(O)		\
 	$(D_OBJVFS)/extfs_extfs$(O)		\
 	$(D_OBJVFS)/ftpfs_ftpfs$(O)		\
+	$(D_OBJVFS)/ftpfs_ftpfs_parse_ls$(O)	\
 	$(MC_LIBVFS_SFTPFS)			\
 	$(D_OBJVFS)/sfs_sfs$(O)			\
 	$(D_OBJVFS)/tar_tar$(O)
@@ -589,6 +627,7 @@ CFG_DOC+=		$(D_BIN)/ChangeLog.txt
 CFG_DOC+=		$(D_BIN)/README.txt
 
 MSGLANGS=		$(notdir $(wildcard $(PO_SRC)/*.po))
+BASEMSGDIRS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=))
 MSGDIRS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=/LC_MESSAGES/.created))
 MSGOBJS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=/LC_MESSAGES/$(PACKAGE).mo))
 
@@ -607,6 +646,7 @@ CONFIGURATION=\
 	$(CFG_PLUGIN_EXTFS_D)			\
 	$(CFG_PLUGIN_FISH)			\
 	$(CFG_DOC)
+
 
 #########################################################################################
 # targets
@@ -633,6 +673,7 @@ LIBRARIES=\
 	$(LW)ssh2$(A)				\
 	$(LW)intl$(A)				\
 	$(LW)glib-2.0$(A)			\
+	$(LW)gmodule-2.0$(A)			\
 	$(LW)mcutil$(A)				\
 	$(LW)mcvfs$(A)				\
 	$(LW)autoupdater$(A)
@@ -674,21 +715,25 @@ build:				directories artifacts targets configuration gettext import
 
 .PHONY:				help
 help:
-	@echo :
-	@echo : make [release,debug] target
-	@echo :
-	@echo : Build one or more of the following targets recursively within each sub-directory.
-	@echo :
-	@echo : Targets:
-	@echo :
-	@echo : build -        build everything.
-	@echo : package -      build all packages.
-	@echo : clean -        delete everything which can be remade.
-	@echo : help -         command line usage.
-	@echo :
+	@$(BUSYBOX) echo -e '\
+		|\n\
+		| make [release or debug] target \n\
+		|\n\
+		|	Build one or more of the following targets recursively within each sub-directory. \n\
+		|\n\
+		| Targets: \n\
+		|\n\
+		|	build   - build everything. \n\
+		|	package - build all packages. \n\
+		|	clean   - delete everything which can be remade. \n\
+		|	help    - command line usage. \n\
+		'
 
+.PHONY:				release
 release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+
+.PHONY:				debug
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
@@ -708,6 +753,12 @@ targets:			$(LIBRARIES) $(TARGETS)
 configuration:			$(CONFIGURATION) configuration-win32
 
 gettext:			$(MSGDIRS) $(MSGOBJS)
+
+CONFIGURATION_WIN32=\
+	$(addprefix $(D_ETC)/,$(CFG_WIN32_ETC)) \
+	$(addprefix $(D_PLUGIN)/,$(CFG_WIN32_PLUGIN)) \
+	$(addprefix $(WIN32_PLUGIN_SRC)/extfs.d/,$(CFG_WIN32_PLUGIN_EXTFS_D)) \
+	$(addprefix $(D_SHARE)/skins/,$(CFG_WIN32_SKINS))
 
 .PHONY:				configuration-win32
 configuration-win32:				# unconditional export
@@ -758,9 +809,10 @@ $(D_BIN)/$(PLBRNAME).dll:	$(LIBPLBRPATH)
 		@$(CP) -f $(subst /,\,$^) $@
 endif
 
-.PHONY: 	package
-package:
+.PHONY:		package
+package:	packageinfo
 	$(INNO) ./releases/mc-inno-setup.iss
+	-$(RM) packageinfo.h
 
 .PHONY:		clean
 clean:
@@ -779,9 +831,15 @@ clean:
 		$(MAKE) -C libw32 clean
 		$(MAKE) -C autoupdater clean
 		-$(RM) $(MSGOBJS) $(MSGDIRS) >nul 2>&1
+		-$(RM) $(CONFIGURATION) >nul 2>&1
+		-$(RM) $(CONFIGURATION_WIN32) >nul 2>&1
 		-$(RM) $(DIRECTORIES) >nul 2>&1
-		-$(RMDIR) $(dir $(DIRECTORIES) $(MSGDIRS)) >nul 2>&1
+		-$(RMDIR) $(call reverse, $(dir $(DIRECTORIES)) $(BASEMSGDIRS) $(dir $(MSGDIRS)))) >nul 2>&1
 		-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) >nul 2>&1
+
+.PHONY:		vclean
+vclean:		clean
+		-$(RM) $(IMPORT) >nul 2>&1
 
 
 #########################################################################################
@@ -802,11 +860,16 @@ else
 BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
 endif
 
-.PHONY: 			buildinfo new_buildnumber
+.PHONY: 			buildinfo
 buildinfo.h:			buildinfo
 buildinfo:
 		@echo updating buildinfo.h ...
 		-@$(PERL) ./buildinfo.pl -o buildinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
+			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@"
+
+.PHONY:				packageinfo
+packageinfo:
+		-@$(PERL) ./buildinfo.pl -o packageinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
 			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@" --type="$(BUILD_TYPE)"
 
 buildinfo.h:			BUILDNUMBER buildinfo.pl
@@ -1007,8 +1070,8 @@ $(LW)ssh2$(A):
 $(LW)intl$(A):
 		$(MAKE) -C libintl
 
-.PHONY:		$(LW)glib-2.0$(A)
-$(LW)glib-2.0$(A):
+.PHONY:		$(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A)
+$(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A):
 		$(MAKE) -C libglib
 
 .PHONY:		$(LW)autoupdater$(A)
@@ -1020,7 +1083,7 @@ $(LW)autoupdater$(A):
 # source rules
 #
 # note: output directories must be component specific as object name as not unique,
-#       for example common and init.
+# for example common and init.
 
 $(D_OBJ)/%$(O) :		./%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
@@ -1115,3 +1178,6 @@ $(D_OBJVFS)/undelfs_%$(O) :	$(MCSOURCE)/src/vfs/undelfs/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 #end
+
+endif	# BUILD_TYPE
+

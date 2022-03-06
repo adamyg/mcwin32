@@ -4,19 +4,19 @@ Source
 Win32 native port for Busybox (latest build can be found in the below link)
 
 	https://github.com/pclouds/busybox-w32
-	
-	
+
+
 An alternative version is available at
 
-	https://github.com/rmyorston/busybox-w32	
-	
+	https://github.com/rmyorston/busybox-w32
+
 	binaries are available at: https://frippery.org/busybox
 
 
 Status
 ======
 
-I would consider this port experimental. Things may work, or may not. Things may never work because 
+I would consider this port experimental. Things may work, or may not. Things may never work because
 of huge differences between Linux and Windows. Or things may work in future, if you report the faults to
 busybox@busybox.net, especially with patches.
 

@@ -1,7 +1,7 @@
 /*
    Extension dependent execution.
 
-   Copyright (C) 1994-2020
+   Copyright (C) 1994-2021
    Free Software Foundation, Inc.
 
    Written by:
@@ -67,7 +67,8 @@
 #include "src/selcodepage.h"    /* do_set_codepage */
 #endif
 
-#include "panel.h"              /* do_cd */
+#include "filemanager.h"        /* current_panel */
+#include "panel.h"              /* panel_cd */
 
 #include "ext.h"
 
@@ -75,9 +76,10 @@
 
 /*** file scope macro definitions ****************************************************************/
 
-#ifdef FILE_L
-#define FILE_CMD "file -L "
+#ifdef USE_FILE_CMD
+#define FILE_CMD "file -z " FILE_S FILE_L
 #else
+/* actually file is unused, but define some reasonable command */
 #define FILE_CMD "file "
 #endif
 
@@ -113,7 +115,7 @@ exec_cleanup_script (vfs_path_t * script_vpath)
     if (script_vpath != NULL)
     {
         (void) mc_unlink (script_vpath);
-        vfs_path_free (script_vpath);
+        vfs_path_free (script_vpath, TRUE);
     }
 }
 
@@ -133,7 +135,7 @@ exec_cleanup_file_name (const vfs_path_t * filename_vpath, gboolean has_changed)
         has_changed = localmtime != mystat.st_mtime;
     }
     mc_ungetlocalcopy (filename_vpath, localfilecopy_vpath, has_changed);
-    vfs_path_free (localfilecopy_vpath);
+    vfs_path_free (localfilecopy_vpath, TRUE);
     localfilecopy_vpath = NULL;
 }
 
@@ -180,7 +182,7 @@ exec_expand_format (char symbol, gboolean is_result_quoted)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static char *
+static GString *
 exec_get_export_variables (const vfs_path_t * filename_vpath)
 {
     char *text;
@@ -222,12 +224,13 @@ exec_get_export_variables (const vfs_path_t * filename_vpath)
             g_free (text);
         }
     }
-    return g_string_free (export_vars_string, FALSE);
+
+    return export_vars_string;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-static char *
+static GString *
 exec_make_shell_string (const char *lc_data, const vfs_path_t * filename_vpath)
 {
     GString *shell_string;
@@ -279,7 +282,6 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t * filename_vpath)
             else
             {
                 int i;
-                char *v;
 
                 i = check_format_view (lc_data);
                 if (i != 0)
@@ -300,8 +302,10 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t * filename_vpath)
                     }
                     else
                     {
+                        char *v;
+
                         i = check_format_var (lc_data, &v);
-                        if (i > 0 && v != NULL)
+                        if (i > 0)
                         {
                             g_string_append (shell_string, v);
                             g_free (v);
@@ -350,9 +354,9 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t * filename_vpath)
                 g_string_append_c (shell_string, *lc_data);
         }
     }                           /* for */
-    return g_string_free (shell_string, FALSE);
-}
 
+    return shell_string;
+}
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -404,7 +408,7 @@ exec_extension_view (void *target, char *cmd, const vfs_path_t * filename_vpath,
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-exec_extension_cd (void)
+exec_extension_cd (WPanel * panel)
 {
     char *q;
     vfs_path_t *p_vpath;
@@ -419,18 +423,18 @@ exec_extension_cd (void)
     q[1] = 0;
 
     p_vpath = vfs_path_from_str_flags (pbuffer, VPF_NO_CANON);
-    do_cd (p_vpath, cd_parse_command);
-    vfs_path_free (p_vpath);
+    panel_cd (panel, p_vpath, cd_parse_command);
+    vfs_path_free (p_vpath, TRUE);
 }
 
 
 /* --------------------------------------------------------------------------------------------- */
 
 static vfs_path_t *
-exec_extension (void *target, const vfs_path_t * filename_vpath, const char *lc_data,
-                int start_line)
+exec_extension (WPanel * panel, void *target, const vfs_path_t * filename_vpath,
+                const char *lc_data, int start_line)
 {
-    char *shell_string, *export_variables;
+    GString *shell_string, *export_variables;
     vfs_path_t *script_vpath = NULL;
     int cmd_file_fd;
     FILE *cmd_file;
@@ -449,14 +453,13 @@ exec_extension (void *target, const vfs_path_t * filename_vpath, const char *lc_
     do_local_copy = !vfs_file_is_local (filename_vpath);
 
     shell_string = exec_make_shell_string (lc_data, filename_vpath);
-
     if (shell_string == NULL)
         goto ret;
 
     if (is_cd)
     {
-        exec_extension_cd ();
-        g_free (shell_string);
+        exec_extension_cd (panel);
+        g_string_free (shell_string, TRUE);
         goto ret;
     }
 
@@ -472,6 +475,7 @@ exec_extension (void *target, const vfs_path_t * filename_vpath, const char *lc_
     {
         message (D_ERROR, MSG_ERROR,
                  _("Cannot create temporary command file\n%s"), unix_error_string (errno));
+        g_string_free (shell_string, TRUE);
         goto ret;
     }
 
@@ -481,23 +485,27 @@ exec_extension (void *target, const vfs_path_t * filename_vpath, const char *lc_
     export_variables = exec_get_export_variables (filename_vpath);
     if (export_variables != NULL)
     {
-        fprintf (cmd_file, "%s\n", export_variables);
-        g_free (export_variables);
+        fputs (export_variables->str, cmd_file);
+        g_string_free (export_variables, TRUE);
     }
 
 #if defined(WIN32)  //WIN32, command
     { static const char XEXTHELPERSDIR[] = "@EXTHELPERSDIR@";
+      const char *command = shell_string->str;
       const char *cursor;
 
-      if (NULL != (cursor = strstr(shell_string, XEXTHELPERSDIR))) {
+      if (NULL != (cursor = strstr(command, XEXTHELPERSDIR))) {
         /*
-         *  Dynamically replace EXTHELPERSDIR references, allowing for variable 
-         *  installation configuration.
+         *  Dynamically replace EXTHELPERSDIR references,
+         *  allowing for variable installation configuration.
          *
          *      <prefix>"<libexedir>/<postfix>" ....
+         *
+         *  Example:
+         *      " @EXTHELPERSDIR@/archive.sh view zip"
          */
         const char *exthelperdir = mc_LIBEXECDIR();
-        const int prefix = cursor - shell_string;
+        const int prefix = cursor - command;
         char *t_shell_string;
         int postfix = 0;
 
@@ -508,16 +516,15 @@ exec_extension (void *target, const vfs_path_t * filename_vpath, const char *lc_
         }
                                                 /* rebuild path specification */
         t_shell_string = g_strdup_printf ("%.*s\"%s%c%.*s\"%s",
-                prefix, shell_string, exthelperdir, PATH_SEP, postfix, cursor, cursor + postfix);
+                prefix, command, exthelperdir, PATH_SEP, postfix, cursor, cursor + postfix);
 
-        g_free (shell_string);
-        shell_string = t_shell_string;
+        g_string_assign (shell_string, t_shell_string);
       }
     }
 #endif  //WIN32
 
-    fputs (shell_string, cmd_file);
-    g_free (shell_string);
+    fputs (shell_string->str, cmd_file);
+    g_string_free (shell_string, TRUE);
 
     /*
      * Make the script remove itself when it finishes.
@@ -795,7 +802,7 @@ regex_check_type (const vfs_path_t * filename_vpath, const char *ptr, gboolean c
             /* No data */
             content_string[0] = '\0';
         }
-        vfs_path_free (localfile_vpath);
+        vfs_path_free (localfile_vpath, TRUE);
     }
 
     if (got_data == -1)
@@ -1106,7 +1113,7 @@ regex_command_for (void *target, const vfs_path_t * filename_vpath, const char *
                         {
                             vfs_path_t *sv;
 
-                            sv = exec_extension (target, filename_vpath, r + 1,
+                            sv = exec_extension (current_panel, target, filename_vpath, r + 1,
                                                  view_at_line_number);
                             if (script_vpath != NULL)
                                 *script_vpath = sv;

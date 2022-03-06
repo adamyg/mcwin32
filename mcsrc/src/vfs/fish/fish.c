@@ -2,7 +2,7 @@
    Virtual File System: FISH implementation for transfering files over
    shell connections.
 
-   Copyright (C) 1998-2020
+   Copyright (C) 1998-2021
    Free Software Foundation, Inc.
 
    Written by:
@@ -54,8 +54,6 @@
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
-#include <sys/time.h>           /* gettimeofday() */
-#include <sys/socket.h>
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>           /* uintmax_t */
@@ -493,7 +491,7 @@ fish_info (struct vfs_class *me, struct vfs_s_super *super)
         while (TRUE)
         {
             int res;
-            char buffer[BUF_8K];
+            char buffer[BUF_8K] = "";
 
             res = vfs_s_get_line_interruptible (me, buffer, sizeof (buffer), fish_super->sockr);
             if ((res == 0) || (res == EINTR))
@@ -770,8 +768,7 @@ fish_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path)
 
     vfs_print_message (_("fish: Reading directory %s..."), remote_path);
 
-    gettimeofday (&dir->timestamp, NULL);
-    dir->timestamp.tv_sec += fish_directory_timeout;
+    dir->timestamp = g_get_real_time () + fish_directory_timeout * G_USEC_PER_SEC;
 
     quoted_path = strutils_shell_escape (remote_path);
     (void) fish_command_v (me, super, NONE, FISH_SUPER (super)->scr_ls, "FISH_FILENAME=%s;\n",
@@ -923,6 +920,7 @@ fish_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path)
             {
                 struct tm tim;
 
+                memset (&tim, 0, sizeof (tim));
                 /* cppcheck-suppress invalidscanf */
                 if (sscanf (buffer + 1, "%d %d %d %d %d %d", &tim.tm_year, &tim.tm_mon,
                             &tim.tm_mday, &tim.tm_hour, &tim.tm_min, &tim.tm_sec) != 6)
@@ -944,6 +942,7 @@ fish_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path)
                 ST.st_rdev = makedev (maj, min);
 #endif
             }
+            break;
         default:
             break;
         }
@@ -1666,29 +1665,25 @@ fish_fh_open (struct vfs_class *me, vfs_file_handler_t * fh, int flags, mode_t m
 
         if (fh->ino->localname == NULL)
         {
-            vfs_path_t *vpath;
+            vfs_path_t *vpath = NULL;
             int tmp_handle;
 
             tmp_handle = vfs_mkstemps (&vpath, me->name, fh->ino->ent->name);
             if (tmp_handle == -1)
-            {
-                vfs_path_free (vpath);
-                goto fail;
-            }
-            fh->ino->localname = g_strdup (vfs_path_as_str (vpath));
-            vfs_path_free (vpath);
+                return (-1);
+
+            fh->ino->localname = vfs_path_free (vpath, FALSE);
             close (tmp_handle);
         }
         return 0;
     }
+
     if (fh->ino->localname == NULL && vfs_s_retrieve_file (me, fh->ino) == -1)
-        goto fail;
+        return (-1);
+
     if (fh->ino->localname == NULL)
         vfs_die ("retrieve_file failed to fill in localname");
     return 0;
-
-  fail:
-    return -1;
 }
 
 /* --------------------------------------------------------------------------------------------- */

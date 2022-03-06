@@ -2,7 +2,7 @@
 #define LIBW32_EDIDENTIFIER_H_INCLUDED
 
 /* -*- mode: c; indent-width: 4; -*- */
-/*  $Id: edidentifier.h,v 1.3 2018/09/29 02:22:53 cvsuser Exp $
+/*  $Id: edidentifier.h,v 1.4 2022/02/17 16:04:58 cvsuser Exp $
  *  Compiler specific object identify functionality.
  *
  *      __CIDENT(description)
@@ -10,7 +10,7 @@
  *      __CPRAGMA_ONCE
  *
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.13 2021/11/30 13:06:20 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.14 2022/02/17 16:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 util unix functionality.
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -39,7 +39,9 @@ __CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.13 2021/11/30 13:06:20 cvsuser
 #include "win32_internal.h"
 #include "win32_child.h"
 #include "win32_misc.h"
+
 #include <unistd.h>
+#include <wchar.h>
 #include <assert.h>
 
 #pragma comment(lib, "shell32.lib")
@@ -614,25 +616,66 @@ w32_getexedir(char *buf, int maxlen)
 LIBW32_API const char *
 w32_syserrorA(DWORD dwError, char *buf, int buflen)
 {
-    if (buf && buflen > 0) {
-        DWORD len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
-                        FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, dwError,
-                            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, buflen - 1 /*nul*/, NULL);
+    return w32_vsyserrorA(dwError, buf, buflen, NULL);
+}
 
-        if (0 == len) {
-            if ((len = (buflen - 1)) > sizeof("Unknown error")) {
-                len = sizeof("Unknown error");
+
+LIBW32_API const char *
+w32_vsyserrorA(DWORD dwError, char *buf, int buflen, ...)
+{
+    if (buf && buflen > 0) {
+        const DWORD ret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
+                                FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, dwError,
+                                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, --buflen /*nul*/, NULL);
+        int len;
+
+        if (0 == ret) {                         // error, overflow etc
+            if ((len = buflen) > sizeof("unknown error")) {
+                len = sizeof("unknown error");
             }
-            memcpy(buf, "Unknown error", len);
+            memcpy(buf, "unknown error", len * sizeof(char));
+
         } else {
-            while (--len) {                     // remove trailing whitespace
+            int idx = 1, len = (DWORD)ret; 
+            const char *arg;
+            va_list ap;
+
+            // remove trailing whitespace
+            while (--len) {
                 const char ch = buf[len];
                 if (ch == ' ' || ch == '.' || ch == '\n' || ch == '\r') {
-                    continue;  // consume
+                    continue; // consume
                 }
-                break;  //done
+                break; // done
             }
-            buf[len+1] = 0;
+            buf[++len] = 0;
+
+            // replace %1...x
+            va_start(ap, buflen);
+            while (NULL != (arg = va_arg(ap, const char *)) && idx <= 9 && len < buflen) {
+                char *cursor = buf;
+
+                while (NULL != (cursor = strchr(cursor, '%'))) {
+                    if (cursor[1] == ('0' + idx)) {
+                        int arglen = strlen(arg);
+
+                        len -= 2; // %x being replace
+                        if ((len + arglen) >= buflen) {
+                            arglen = buflen - len; // overflow, truncate
+                        }
+                        memmove(cursor + arglen, cursor + 2, strlen(cursor + 2) + 1 /*nul*/);
+                        memcpy(cursor, arg, arglen);
+                        len += arglen;
+                        break;
+                    }
+
+                    if ('%' == *++cursor) {
+                        ++cursor; // %%
+                    }
+                }
+                ++idx;
+            }
+            va_end(ap);
         }
         return buf;
     }
@@ -643,25 +686,66 @@ w32_syserrorA(DWORD dwError, char *buf, int buflen)
 LIBW32_API const wchar_t *
 w32_syserrorW(DWORD dwError, wchar_t *buf, int buflen)
 {
-    if (buf && buflen > 0) {
-        DWORD len = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
-                        FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, dwError,
-                            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, buflen - 1 /*nul*/, NULL);
+    return w32_vsyserrorW(dwError, buf, buflen, NULL);
+}
 
-        if (0 == len) {
-            if ((len = (buflen - 1)) > sizeof("Unknown error")) {
-                len = sizeof("Unknown error");
+
+LIBW32_API const wchar_t *
+w32_vsyserrorW(DWORD dwError, wchar_t *buf, int buflen, ...)
+{
+    if (buf && buflen > 0) {
+        const DWORD ret = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
+                                FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, dwError,
+                                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, --buflen /*nul*/,  NULL);
+        int len;
+
+        if (0 == ret) {                         // error, overflow etc
+            if ((len = buflen) > sizeof("unknown error")) {
+                len = sizeof("unknown error");
             }
-            memcpy(buf, "Unknown error", len);
+            memcpy(buf, L"unknown error", len * sizeof(wchar_t));
+
         } else {
-            while (--len) {                     // remove trailing whitespace
+            int idx = 1, len = (DWORD)ret; 
+            const wchar_t *arg;
+            va_list ap;
+
+            // remove trailing whitespace
+            while (--len) {
                 const wchar_t ch = buf[len];
                 if (ch == ' ' || ch == '.' || ch == '\n' || ch == '\r') {
-                    continue;  // consume
+                    continue; // consume
                 }
-                break;  //done
+                break; // done
             }
-            buf[len+1] = 0;
+            buf[++len] = 0; // terminate, len inc nul
+
+            // replace %1...x
+            va_start(ap, buflen);
+            while (NULL != (arg = va_arg(ap, const wchar_t *)) && idx <= 9 && len < buflen) {
+                wchar_t *cursor = buf;
+
+                while (NULL != (cursor = wcschr(cursor, '%'))) {
+                    if (cursor[1] == ('0' + idx)) {
+                        int arglen = wcslen(arg);
+
+                        len -= 2; // %x being replace
+                        if ((len + arglen) >= buflen) {
+                            arglen = buflen - len; // overflow, truncate
+                        }
+                        wmemmove(cursor + arglen, cursor + 2, wcslen(cursor + 2) + 1 /*nul*/);
+                        wmemcpy(cursor, arg, arglen);
+                        len += arglen;
+                        break;
+                    }
+
+                    if ('%' == *++cursor) {
+                        ++cursor; // %%
+                    }
+                }
+                ++idx;
+            }
+            va_end(ap);
         }
         return buf;
     }

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.9 2021/06/20 06:42:02 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.10 2022/02/17 16:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.9 2021/06/20 06:42:02
  *
  *      realpath
  *
- * Copyright (c) 2018 - 2021 Adam Young.
+ * Copyright (c) 2018 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

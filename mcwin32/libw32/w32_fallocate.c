@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_fallocate_c, "$Id: w32_fallocate.c,v 1.3 2021/11/30 13:06:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_fallocate_c, "$Id: w32_fallocate.c,v 1.4 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 posix_fallocate() system calls
  *
- * Copyright (c) 2018 - 2020 Adam Young.
+ * Copyright (c) 2018 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

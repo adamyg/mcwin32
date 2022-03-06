@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.22 2021/12/19 16:31:14 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.23 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.22 2021/12/19 16:31:14 cvs
  *
  *      opendir, closedir, readdir, seekdir, rewindir, telldir
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

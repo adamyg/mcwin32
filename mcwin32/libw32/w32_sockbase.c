@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.5 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.6 2022/02/17 16:05:00 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
  * Base functionality.
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

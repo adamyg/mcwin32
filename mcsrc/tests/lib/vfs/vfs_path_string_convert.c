@@ -1,7 +1,7 @@
 /*
    lib/vfs - get vfs_path_t from string
 
-   Copyright (C) 2011-2020
+   Copyright (C) 2011-2021
    Free Software Foundation, Inc.
 
    Written by:
@@ -187,7 +187,7 @@ START_PARAMETRIZED_TEST (test_from_to_string, test_from_to_string_ds)
     mctest_assert_ptr_eq (path_element->class, data->expected_vfs_class);
     mctest_assert_str_eq (path_element->path, data->expected_element_path);
 
-    vfs_path_free (vpath);
+    vfs_path_free (vpath, TRUE);
 }
 /* *INDENT-OFF* */
 END_PARAMETRIZED_TEST
@@ -269,7 +269,7 @@ START_PARAMETRIZED_TEST (test_partial_string_by_index, test_partial_string_by_in
     mctest_assert_str_eq (actual_result, data->expected_result);
     g_free (actual_result);
 
-    vfs_path_free (vpath);
+    vfs_path_free (vpath, TRUE);
 }
 /* *INDENT-OFF* */
 END_PARAMETRIZED_TEST
@@ -302,7 +302,7 @@ START_TEST (test_vfs_path_encoding_at_end)
     mctest_assert_not_null (element->encoding);
     mctest_assert_str_eq (result, ETALON_STR);
 
-    vfs_path_free (vpath);
+    vfs_path_free (vpath, TRUE);
 }
 
 /* *INDENT-OFF* */
@@ -314,11 +314,9 @@ END_TEST
 int
 main (void)
 {
-    int number_failed;
+    TCase *tc_core;
 
-    Suite *s = suite_create (TEST_SUITE_NAME);
-    TCase *tc_core = tcase_create ("Core");
-    SRunner *sr;
+    tc_core = tcase_create ("Core");
 
     tcase_add_checked_fixture (tc_core, setup, teardown);
 
@@ -331,13 +329,7 @@ main (void)
 #endif
     /* *********************************** */
 
-    suite_add_tcase (s, tc_core);
-    sr = srunner_create (s);
-    srunner_set_log (sr, "vfs_path_string_convert.log");
-    srunner_run_all (sr, CK_ENV);
-    number_failed = srunner_ntests_failed (sr);
-    srunner_free (sr);
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return mctest_run_all (tc_core);
 }
 
 /* --------------------------------------------------------------------------------------------- */

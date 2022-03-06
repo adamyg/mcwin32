@@ -2,7 +2,7 @@
 /*
  * win32 Slang Screen Management (SLsmg) function emulation.
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -357,7 +357,7 @@ void
 SLtt_beep(void)
 {
     if (! SLtt_Ignore_Beep) {
-        Beep(2048, 500);
+        Beep(750, 120);
     }
 }
 
@@ -912,6 +912,49 @@ SLsmg_fill_region(int r, int c, unsigned nr, unsigned nc, SLwchar_Type ch)
             while (cursor < cend) {
                 if (! WCHAR_COMPARE(cursor, &text)) {
                     *cursor = text;
+                    flags |= TOUCHED;
+                }
+                ++cursor;
+            }
+            vio.c_screen[i].flags |= flags;
+        }
+
+        vio.c_row = r; vio.c_col = c;
+    }
+}
+
+
+/*
+ *  SLsmg_fill_region ---
+ *      Change the color of a specifed region
+ *      The rectangle's upper left corner is at row 'r' and column 'c', and whose width and height is given by dc and dr, respectively.
+ *      The position of the virtual cursor will be left at (r, c).
+ **/
+void
+SLsmg_set_color_in_region (int color, int r, int c, unsigned dr, unsigned dc)
+{
+    int rmin, rmax, cmin, cmax;
+
+    if (0 == vio.inited) return;                /* not initialised */
+    if (0 == dr || 0 == dc) return;             /* zero size */
+
+    if (1 == cliptoarena(r, dr, 0, vio.rows, &rmin, &rmax) &&
+            1 == cliptoarena(c, dc, 0, vio.cols, &cmin, &cmax)) {
+        int i;
+
+        assert(r >= 0 && r < vio.rows);
+        assert(c >= 0 && c < vio.cols);
+        assert(rmin >= 0 && rmax <= vio.rows);
+        assert(cmin >= 0 && cmax <= vio.cols);
+
+        for (i = rmin; i < rmax; ++i) {
+            WCHAR_INFO *cursor = vio.c_screen[i].text + cmin,
+                *cend = vio.c_screen[i].text + cmax;
+            unsigned flags = 0;
+
+            while (cursor < cend) {
+                if (! WATTR_COMPARE(cursor, &vio.c_color)) {
+                    cursor->Info = vio.c_color;
                     flags |= TOUCHED;
                 }
                 ++cursor;

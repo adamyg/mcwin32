@@ -10,7 +10,7 @@
    Janne Kukonlehto added much error recovery to them for being used
    in an interactive program.
 
-   Copyright (C) 1994-2020
+   Copyright (C) 1994-2021
    Free Software Foundation, Inc.
 
    Written by:
@@ -155,7 +155,7 @@ statfs (char const *filename, struct fs_info *buf)
 
 #include "src/setup.h"          /* verbose, safe_overwrite */
 
-#include "midnight.h"
+#include "filemanager.h"
 #include "fileopctx.h"          /* FILE_CONT */
 
 #include "filegui.h"
@@ -492,6 +492,7 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
 
     vfs_path_t *p;
     char *s1;
+    const char *cs1;
     char s2[BUF_SMALL];
     int w, bw1, bw2;
     unsigned short i;
@@ -522,14 +523,14 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
     p = vfs_path_from_str (ui->src_filename);
     s1 = vfs_path_to_str_flags (p, 0, VPF_STRIP_HOME | VPF_STRIP_PASSWORD);
     NEW_LABEL (1, s1);
-    vfs_path_free (p);
+    vfs_path_free (p, TRUE);
     g_free (s1);
     /* new file size */
     size_trunc_len (s2, sizeof (s2), ui->src_stat->st_size, 0, panels_options.kilobyte_si);
     NEW_LABEL (2, s2);
     /* new file modification date & time */
-    s1 = (char *) file_date (ui->src_stat->st_mtime);
-    NEW_LABEL (3, s1);
+    cs1 = file_date (ui->src_stat->st_mtime);
+    NEW_LABEL (3, cs1);
 
     /* existing file */
     NEW_LABEL (4, dlg_widgets[4].text);
@@ -537,14 +538,14 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
     p = vfs_path_from_str (ui->tgt_filename);
     s1 = vfs_path_to_str_flags (p, 0, VPF_STRIP_HOME | VPF_STRIP_PASSWORD);
     NEW_LABEL (5, s1);
-    vfs_path_free (p);
+    vfs_path_free (p, TRUE);
     g_free (s1);
     /* existing file size */
     size_trunc_len (s2, sizeof (s2), ui->dst_stat->st_size, 0, panels_options.kilobyte_si);
     NEW_LABEL (6, s2);
     /* existing file modification date & time */
-    s1 = (char *) file_date (ui->dst_stat->st_mtime);
-    NEW_LABEL (7, s1);
+    cs1 = file_date (ui->dst_stat->st_mtime);
+    NEW_LABEL (7, cs1);
 
     /* will "Append" and "Reget" buttons be in the dialog? */
     do_append = !S_ISDIR (ui->dst_stat->st_mode);
@@ -670,7 +671,7 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
     if (result != B_CANCEL)
         ui->dont_overwrite_with_zero = CHECK (dlg_widgets[14].widget)->state;
 
-    dlg_destroy (ui->replace_dlg);
+    widget_destroy (wd);
 
     return (result == B_CANCEL) ? REPLACE_ABORT : (replace_action_t) result;
 
@@ -949,7 +950,7 @@ file_op_context_destroy_ui (file_op_context_t * ctx)
         file_op_context_ui_t *ui = (file_op_context_ui_t *) ctx->ui;
 
         dlg_run_done (ui->op_dlg);
-        dlg_destroy (ui->op_dlg);
+        widget_destroy (WIDGET (ui->op_dlg));
         MC_PTR_FREE (ctx->ui);
     }
 }
@@ -964,7 +965,6 @@ file_progress_show (file_op_context_t * ctx, off_t done, off_t total,
                     const char *stalled_msg, gboolean force_update)
 {
     file_op_context_ui_t *ui;
-    char buffer[BUF_TINY];
 
     if (!verbose || ctx == NULL || ctx->ui == NULL)
         return;
@@ -983,25 +983,24 @@ file_progress_show (file_op_context_t * ctx, off_t done, off_t total,
     if (!force_update)
         return;
 
-    if (ui->showing_eta && ctx->eta_secs > 0.5)
+    if (!ui->showing_eta || ctx->eta_secs <= 0.5)
+        label_set_text (ui->progress_file_label, stalled_msg);
+    else
     {
         char buffer2[BUF_TINY];
 
         file_eta_prepare_for_show (buffer2, ctx->eta_secs, FALSE);
         if (ctx->bps == 0)
-            g_snprintf (buffer, sizeof (buffer), "%s %s", buffer2, stalled_msg);
+            label_set_textv (ui->progress_file_label, "%s %s", buffer2, stalled_msg);
         else
         {
             char buffer3[BUF_TINY];
 
             file_bps_prepare_for_show (buffer3, ctx->bps);
-            g_snprintf (buffer, sizeof (buffer), "%s (%s) %s", buffer2, buffer3, stalled_msg);
+            label_set_textv (ui->progress_file_label, "%s (%s) %s", buffer2, buffer3, stalled_msg);
         }
-    }
-    else
-        g_snprintf (buffer, sizeof (buffer), "%s", stalled_msg);
 
-    label_set_text (ui->progress_file_label, buffer);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1009,7 +1008,6 @@ file_progress_show (file_op_context_t * ctx, off_t done, off_t total,
 void
 file_progress_show_count (file_op_context_t * ctx, size_t done, size_t total)
 {
-    char buffer[BUF_TINY];
     file_op_context_ui_t *ui;
 
     if (ctx == NULL || ctx->ui == NULL)
@@ -1021,10 +1019,10 @@ file_progress_show_count (file_op_context_t * ctx, size_t done, size_t total)
         return;
 
     if (ctx->progress_totals_computed)
-        g_snprintf (buffer, sizeof (buffer), _("Files processed: %zu/%zu"), done, total);
+        label_set_textv (ui->total_files_processed_label, _("Files processed: %zu/%zu"), done,
+                         total);
     else
-        g_snprintf (buffer, sizeof (buffer), _("Files processed: %zu"), done);
-    label_set_text (ui->total_files_processed_label, buffer);
+        label_set_textv (ui->total_files_processed_label, _("Files processed: %zu"), done);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1033,7 +1031,6 @@ void
 file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ctx,
                           uintmax_t copied_bytes, gboolean show_summary)
 {
-    char buffer[BUF_TINY];
     char buffer2[BUF_TINY];
     char buffer3[BUF_TINY];
     file_op_context_ui_t *ui;
@@ -1070,26 +1067,23 @@ file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ct
         {
             file_eta_prepare_for_show (buffer3, tctx->eta_secs, TRUE);
             if (tctx->bps == 0)
-                g_snprintf (buffer, sizeof (buffer), _("Time: %s %s"), buffer2, buffer3);
+                label_set_textv (ui->time_label, _("Time: %s %s"), buffer2, buffer3);
             else
             {
                 file_bps_prepare_for_show (buffer4, (long) tctx->bps);
-                g_snprintf (buffer, sizeof (buffer), _("Time: %s %s (%s)"), buffer2, buffer3,
-                            buffer4);
+                label_set_textv (ui->time_label, _("Time: %s %s (%s)"), buffer2, buffer3, buffer4);
             }
         }
         else
         {
             if (tctx->bps == 0)
-                g_snprintf (buffer, sizeof (buffer), _("Time: %s"), buffer2);
+                label_set_textv (ui->time_label, _("Time: %s"), buffer2);
             else
             {
                 file_bps_prepare_for_show (buffer4, (long) tctx->bps);
-                g_snprintf (buffer, sizeof (buffer), _("Time: %s (%s)"), buffer2, buffer4);
+                label_set_textv (ui->time_label, _("Time: %s (%s)"), buffer2, buffer4);
             }
         }
-
-        label_set_text (ui->time_label, buffer);
     }
 
     if (ui->total_bytes_label != NULL)
@@ -1097,14 +1091,12 @@ file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ct
         size_trunc_len (buffer2, 5, tctx->copied_bytes, 0, panels_options.kilobyte_si);
 
         if (!ctx->progress_totals_computed)
-            g_snprintf (buffer, sizeof (buffer), _(" Total: %s "), buffer2);
+            hline_set_textv (ui->total_bytes_label, _(" Total: %s "), buffer2);
         else
         {
             size_trunc_len (buffer3, 5, ctx->progress_bytes, 0, panels_options.kilobyte_si);
-            g_snprintf (buffer, sizeof (buffer), _(" Total: %s/%s "), buffer2, buffer3);
+            hline_set_textv (ui->total_bytes_label, _(" Total: %s/%s "), buffer2, buffer3);
         }
-
-        hline_set_text (ui->total_bytes_label, buffer);
     }
 }
 
@@ -1167,9 +1159,9 @@ file_progress_show_target (file_op_context_t * ctx, const vfs_path_t * vpath)
 gboolean
 file_progress_show_deleting (file_op_context_t * ctx, const char *s, size_t * count)
 {
-    static guint64 timestamp = 0;
+    static gint64 timestamp = 0;
     /* update with 25 FPS rate */
-    static const guint64 delay = G_USEC_PER_SEC / 25;
+    static const gint64 delay = G_USEC_PER_SEC / 25;
 
     gboolean ret;
 
@@ -1300,7 +1292,7 @@ file_mask_dialog (file_op_context_t * ctx, FileOperation operation,
     /* filter out a possible password from def_text */
     vpath = vfs_path_from_str_flags (def_text, only_one ? VPF_NO_CANON : VPF_NONE);
     tmp = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
-    vfs_path_free (vpath);
+    vfs_path_free (vpath, TRUE);
 
     if (source_easy_patterns)
         def_text_secure = strutils_glob_escape (tmp);
@@ -1344,9 +1336,9 @@ file_mask_dialog (file_op_context_t * ctx, FileOperation operation,
 
 #if defined(WIN32)  //WIN32, quick
 #ifdef ENABLE_BACKGROUND
-        quick_widget_t quick_widgets[20],
+        quick_widget_t quick_widgets[20] = {0},
 #else
-        quick_widget_t quick_widgets[19],
+        quick_widget_t quick_widgets[19] = {0},
 #endif
             *qc = quick_widgets;
 #else
@@ -1503,7 +1495,7 @@ file_mask_dialog (file_op_context_t * ctx, FileOperation operation,
             dest_dir = g_strdup ("./");
         }
 
-        vfs_path_free (vpath);
+        vfs_path_free (vpath, TRUE);
 
         if (val == B_USER)
             *do_bg = TRUE;

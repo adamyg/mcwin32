@@ -11,8 +11,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by:
-   Adam Young 2012 - 2021
+   Written by: Adam Young 2012 - 2022
 
    This file is part of the Midnight Commander.
 
@@ -53,7 +52,11 @@
 #include "lib/keybind.h"                        /* CK_Cancel etc */
 #include "src/filemanager/panel.h"
 #include "src/filemanager/cmd.h"                /* reread_cmd() */
-#include "src/filemanager/midnight.h"           /* left/right panel */
+#if (VERSION_3 >= 27)
+#include "src/filemanager/filemanager.h"        /* left/right panel */
+#else
+#include "src/filemanager/midnight.h"
+#endif
 
 #include "drive.h"
 
@@ -275,9 +278,13 @@ drive_sel(WPanel *panel)
                         if (get_panel_type (is_right) != view_listing) {
                             create_panel (is_right, view_listing);
                         }
+#if (VERSION_3 >= 27)
+                        panel_do_cd (panel, cwd_vdir, cd_exact);
+                        vfs_path_free (cwd_vdir, TRUE);
+#else
                         do_cd (cwd_vdir, cd_exact);
                         vfs_path_free (cwd_vdir);
-
+#endif
                     } else {
                         message (D_ERROR, MSG_ERROR, _("Cannot change drive to \"%s\"\n%s"), t_path,
                                     unix_error_string (errno));
@@ -289,7 +296,8 @@ drive_sel(WPanel *panel)
         }
     }
 
-    dlg_destroy (drive_dlg);
+  //dlg_destroy (drive_dlg);
+    widget_destroy (WIDGET (drive_dlg));
     repaint_screen ();
 }
 
@@ -369,12 +377,12 @@ enumerate_disks(int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueu
         DWORD cEntries = (DWORD)-1, cIndex;
 
         while (pnr) {
-            if (NO_ERROR == (dwResult = fns->fnWNetEnumResourceA(hEnum, &cEntries, pnr, &dwSize))) { 
+            if (NO_ERROR == (dwResult = fns->fnWNetEnumResourceA(hEnum, &cEntries, pnr, &dwSize))) {
                 //
                 //  Iterate result
                 for (cIndex = 0; cIndex < cEntries; ++cIndex) {
                     NETRESOURCE *nr = pnr + cIndex;
-                    
+
                     if (RESOURCEUSAGE_CONTAINER == (nr->dwUsage & RESOURCEUSAGE_CONTAINER)) {
                         // If the NETRESOURCE structure represents a container resource,
                         // call the EnumerateFunc function recursively.
@@ -437,3 +445,4 @@ enumerate_disks(int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueu
 #endif  //DO_NETWORK_DRIVES
 
 /*end*/
+

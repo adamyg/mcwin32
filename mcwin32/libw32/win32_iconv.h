@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_ICONV_H_INCLUDED
 #define LIBW32_WIN32_ICONV_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_iconv_h,"$Id: win32_iconv.h,v 1.6 2021/10/19 14:12:30 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_iconv_h,"$Id: win32_iconv.h,v 1.7 2022/02/17 16:05:01 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 iconv dynamic loader.
  *
- * Copyright (c) 2007, 2012 - 2018, Adam Young.
+ * Copyright (c) 2007, 2012 - 2022, Adam Young.
  * All rights reserved.
  *
  *

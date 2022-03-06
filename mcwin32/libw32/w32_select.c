@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_select_c,"$Id: w32_select.c,v 1.7 2021/11/30 13:06:20 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_select_c,"$Id: w32_select.c,v 1.8 2022/02/17 16:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  *  Windows 'select' compat interface
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

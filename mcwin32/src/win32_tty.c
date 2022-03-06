@@ -5,7 +5,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2021
+   Written by: Adam Young 2012 - 2022
 
    This file is part of the Midnight Commander.
 
@@ -41,6 +41,7 @@
 #include "lib/tty/tty.h"
 #include "lib/tty/tty-slang.h"
 #include "lib/tty/tty-internal.h"
+#include "lib/tty/color-internal.h"
 #include "lib/tty/mouse.h"                      /* use_mouse_p */
 #include "lib/tty/color.h"                      /* tty_use_256colors(); */
 #include "lib/tty/win.h"
@@ -49,8 +50,8 @@
 
 #include "win32_key.h"
 
-static int      tty_mouse_enabled = 0;          /* mouse mode; true/false */
-static wchar_t  original_title[512];            /* original title */
+static int tty_mouse_enabled = 0;               /* mouse mode; true/false */
+static wchar_t original_title[512];             /* original title */
 
 int reset_hp_softkeys = 0;                      /* command line argument */
 
@@ -63,7 +64,11 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
     }
 
     if (NULL == getenv("COLORTERM")) {
-        if (tty_use_256colors()) {              /* TODO: command line, max colors. */
+#if (VERSION_3 >= 27)
+        if (tty_use_256colors(NULL)) {          /* TODO: command line, max colors. */
+#else
+        if (tty_use_256colors()) {
+#endif
             (void) putenv("COLORTERM=24bit");   /* allow true-color skins */
         } else {
             (void) putenv("COLORTERM=16");
@@ -298,6 +303,15 @@ void
 tty_fill_region (int y, int x, int rows, int cols, unsigned char ch)
 {
     SLsmg_fill_region (y, x, rows, cols, ch);
+}
+
+
+void // 4.8.27+
+tty_colorize_area (int y, int x, int rows, int cols, int color)
+{
+    if (use_colors) {
+        SLsmg_set_color_in_region (color, y, x, rows, cols);
+    }
 }
 
 

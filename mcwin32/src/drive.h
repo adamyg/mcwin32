@@ -2,13 +2,12 @@
 #define MC_WIN32_DRIVE_H
 /* -*- mode: c; indent-width: 4; -*- */
 /*
-   win32 Change-drive command 
- 
+   win32 Change-drive command
+
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by:
-   Adam Young 2012
+   Written by: Adam Young 2012 - 2022
 
    This file is part of the Midnight Commander.
 

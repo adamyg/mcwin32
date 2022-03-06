@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.5 2020/04/25 20:17:11 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.6 2022/02/17 16:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 poll system calls
  *
- * Copyright (c) 1998 - 2018, Adam Young.
+ * Copyright (c) 1998 - 2022, Adam Young.
  *
  *
  * This file is part of the Midnight Commander.

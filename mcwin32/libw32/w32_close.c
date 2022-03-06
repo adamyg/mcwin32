@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_close_c,"$Id: w32_close.c,v 1.9 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_close_c,"$Id: w32_close.c,v 1.10 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 close() system calls.
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

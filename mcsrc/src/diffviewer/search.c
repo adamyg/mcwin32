@@ -1,7 +1,7 @@
 /*
    Search functions for diffviewer.
 
-   Copyright (C) 2010-2020
+   Copyright (C) 2010-2021
    Free Software Foundation, Inc.
 
    Written by:
@@ -82,9 +82,9 @@ mcdiffview_dialog_search (WDiff * dview)
     {
 #if defined(WIN32)  //WIN32, quick
 #ifdef HAVE_CHARSET
-        quick_widget_t quick_widgets[12],
+        quick_widget_t quick_widgets[12] = {0},
 #else
-        quick_widget_t quick_widgets[11],
+        quick_widget_t quick_widgets[11] = {0},
 #endif
             *qc = quick_widgets;
 #else

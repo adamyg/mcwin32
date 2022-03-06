@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.23 2021/11/30 13:06:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.24 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.23 2021/11/30 13:06:19 cvsuser Ex
  *
  *      stat, lstat, fstat, readlink, symlink, open
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

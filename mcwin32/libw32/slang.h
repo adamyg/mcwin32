@@ -4,7 +4,7 @@
 /*
  * win32 <slang.h> partial implementation
  *
- * Copyright (c) 2007, 2012 - 2020 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -181,6 +181,7 @@ LIBW32_API void             SLsmg_draw_hline (int cnt);
 LIBW32_API int              SLsmg_get_row (void);
 LIBW32_API int              SLsmg_get_column (void);
 LIBW32_API void             SLsmg_fill_region (int, int, unsigned, unsigned, SLwchar_Type);
+LIBW32_API void             SLsmg_set_color_in_region (int color, int r, int c, unsigned dr, unsigned dc);
 LIBW32_API void             SLsmg_forward (int n);
 
 LIBW32_API int              SLtt_initialize (const char *term);

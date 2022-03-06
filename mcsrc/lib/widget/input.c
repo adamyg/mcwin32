@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2020
+   Copyright (C) 1994-2021
    Free Software Foundation, Inc.
 
    Authors:
@@ -50,8 +50,6 @@
 #include "lib/event.h"          /* mc_event_raise() */
 #include "lib/mcconfig.h"       /* mc_config_history_*() */
 
-#include "input_complete.h"
-
 /*** global variables ****************************************************************************/
 
 gboolean quote = FALSE;
@@ -87,11 +85,11 @@ static char *kill_buffer = NULL;
 /* --------------------------------------------------------------------------------------------- */
 
 static size_t
-get_history_length (const GList * history)
+get_history_length (GList * history)
 {
     size_t len = 0;
 
-    for (; history != NULL; history = (const GList *) g_list_previous (history))
+    for (; history != NULL; history = g_list_previous (history))
         len++;
 
     return len;
@@ -808,7 +806,7 @@ input_execute_cmd (WInput * in, long command)
         do_show_hist (in);
         break;
     case CK_Complete:
-        complete (in);
+        input_complete (in);
         break;
     default:
         res = MSG_NOT_HANDLED;
@@ -897,7 +895,7 @@ input_destroy (WInput * in)
         exit (EXIT_FAILURE);
     }
 
-    input_free_completions (in);
+    input_complete_free (in);
 
     /* clean history */
     if (in->history.list != NULL)
@@ -943,12 +941,12 @@ input_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
     {
     case MSG_MOUSE_DOWN:
         widget_select (w);
-        in->first = FALSE;
 
         if (event->x >= w->cols - HISTORY_BUTTON_WIDTH && should_show_history_button (in))
             do_show_hist (in);
         else
         {
+            in->first = FALSE;
             input_mark_cmd (in, FALSE);
             input_set_point (in, input_screen_to_point (in, event->x));
             /* save point for the possible following MSG_MOUSE_DRAG action */
@@ -1132,7 +1130,7 @@ input_handle_char (WInput * in, int key)
 
     if (quote)
     {
-        input_free_completions (in);
+        input_complete_free (in);
         v = insert_char (in, key);
         input_update (in, TRUE);
         quote = FALSE;
@@ -1146,38 +1144,25 @@ input_handle_char (WInput * in, int key)
             return MSG_NOT_HANDLED;
         if (in->first)
             port_region_marked_for_delete (in);
-        input_free_completions (in);
+        input_complete_free (in);
         v = insert_char (in, key);
+        input_update (in, TRUE);
     }
     else
     {
+        gboolean keep_first;
+
         if (command != CK_Complete)
-            input_free_completions (in);
+            input_complete_free (in);
         input_execute_cmd (in, command);
         v = MSG_HANDLED;
-        if (in->first)
-            input_update (in, TRUE);    /* needed to clear in->first */
+        /* if in->first == TRUE and history or completion window was cancelled,
+           keep "first" state */
+        keep_first = in->first && (command == CK_History || command == CK_Complete);
+        input_update (in, !keep_first);
     }
 
-    input_update (in, TRUE);
     return v;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-/* This function is a test for a special input key used in complete.c */
-/* Returns 0 if it is not a special key, 1 if it is a non-complete key
-   and 2 if it is a complete key */
-int
-input_key_is_in_map (WInput * in, int key)
-{
-    long command;
-
-    command = widget_lookup_key (WIDGET (in), key);
-    if (command == CK_IgnoreKey)
-        return 0;
-
-    return (command == CK_Complete) ? 2 : 1;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1191,7 +1176,7 @@ input_assign_text (WInput * in, const char *text)
     if (text == NULL)
         text = "";
 
-    input_free_completions (in);
+    input_complete_free (in);
     in->mark = -1;
     in->need_push = TRUE;
     in->charpoint = 0;
@@ -1239,7 +1224,7 @@ input_set_point (WInput * in, int pos)
     max_pos = str_length (in->buffer);
     pos = MIN (pos, max_pos);
     if (pos != in->point)
-        input_free_completions (in);
+        input_complete_free (in);
     in->point = pos;
     in->charpoint = 0;
     input_update (in, TRUE);
@@ -1262,6 +1247,9 @@ input_update (WInput * in, gboolean clear_first)
     /* don't draw widget not put into dialog */
     if (w->owner == NULL || !widget_get_state (WIDGET (w->owner), WST_ACTIVE))
         return;
+
+    if (clear_first)
+        in->first = FALSE;
 
     if (should_show_history_button (in))
         has_history = HISTORY_BUTTON_WIDTH;
@@ -1344,9 +1332,6 @@ input_update (WInput * in, gboolean clear_first)
                 str_cnext_char (&cp);
         }
     }
-
-    if (clear_first)
-        in->first = FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1382,17 +1367,8 @@ input_clean (WInput * in)
     in->point = 0;
     in->charpoint = 0;
     in->mark = -1;
-    input_free_completions (in);
+    input_complete_free (in);
     input_update (in, FALSE);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-input_free_completions (WInput * in)
-{
-    g_strfreev (in->completions);
-    in->completions = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */

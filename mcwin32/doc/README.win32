@@ -8,6 +8,8 @@ the current 4.8.x development stream.
 
         Version         Latest Build
 
+        4.8.27          224 (mc merge, libaspell - beta)
+
         4.8.24          223 (bug fixes - unable to load skins)
         4.8.24          222 (UTF8 exec/shell support, libmagic upgrade)
         4.8.24          221 (bug fixes - whitespace handling, mbedtls and libssh2 upgrades)

@@ -1,14 +1,14 @@
 #ifndef LIBW32_ALLOCA_H_INCLUDED
 #define LIBW32_ALLOCA_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_alloca_h,"$Id: alloca.h,v 1.4 2018/09/29 02:22:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_alloca_h,"$Id: alloca.h,v 1.5 2022/02/17 16:04:58 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <alloc.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.15 2021/12/16 15:55:26 cvsuser Exp $
+# $Id: Makefile.in,v 1.18 2022/03/05 08:28:01 cvsuser Exp $
 # libwin32 makefile.
 #
 #
-# Copyright (c) 2007, 2012 - 2021 Adam Young.
+# Copyright (c) 2007, 2012 - 2022 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -181,7 +181,6 @@ CSOURCES=\
 	w32_sysdir.c \
 	w32_time.c \
 	w32_timegm.c \
-	w32_trace.c \
 	w32_truncate.c \
 	w32_uname.c \
 	w32_unlink.c \
@@ -204,7 +203,7 @@ endif
 OBJS=		$(LIBOBJS) $(DLLOBJS)
 LIBS=		$(W32LIB) $(W32DLL)
 TSKS=
-
+INSTALLED=
 
 #########################################################################################
 # Rules
@@ -223,6 +222,7 @@ $(W32LIB):		$(D_OBJ)/.created $(LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libw32.$(VERSION).dll
 $(W32DLL):		CEXTRA += -DLIBW32_DYNAMIC -DLIBW32_LIBRARY
 $(W32DLL):		DLLDEF = -export-symbols libw32.def
 $(W32DLL):		$(DLLOBJS)
@@ -236,7 +236,7 @@ $(D_OBJ)/.created:
 clean:
 		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(W32DLL) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(W32LIB) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(W32LIB) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(RMFLAGS) $(LIBOBJS) >/dev/null 2>&1
 
 $(D_OBJ)/%$(O):		%.c

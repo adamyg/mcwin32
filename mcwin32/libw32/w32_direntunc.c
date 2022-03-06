@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.4 2021/12/16 15:55:26 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.5 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 unc directory access services ...
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

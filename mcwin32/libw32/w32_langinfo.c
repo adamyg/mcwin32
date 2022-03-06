@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_langinfo_c,"$Id: w32_langinfo.c,v 1.7 2021/11/30 13:06:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_langinfo_c,"$Id: w32_langinfo.c,v 1.8 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 langinfo() implementation
  *
- * Copyright (c) 2007, 2012 - 2018 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

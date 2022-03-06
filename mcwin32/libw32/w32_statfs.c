@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.9 2021/05/24 15:10:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.10 2022/02/17 16:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 statfs()/statvfs() and getmntinfo() system calls.
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

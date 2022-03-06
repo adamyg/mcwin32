@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.12 2021/06/10 12:42:33 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.13 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 pwd() implementation
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

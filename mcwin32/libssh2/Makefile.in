@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.14 2021/11/08 13:14:15 cvsuser Exp $
+# $Id: Makefile.in,v 1.15 2022/03/05 08:25:25 cvsuser Exp $
 # libssh2 makefile.
 #
 #
-# Copyright (c) 2015 - 2021, Adam Young.
+# Copyright (c) 2015 - 2022, Adam Young.
 # All rights reserved.
 #
 #
@@ -157,6 +157,7 @@ endif
 LIBS=		$(SSH2LIB)
 DLLS=		$(SSH2DLL)
 TSKS=
+INSTALLED=
 
 # Rules
 
@@ -180,6 +181,7 @@ $(SSH2LIB):		$(LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
+INSTALLED+=	$(D_BIN)/libssh2.$(VERSION).dll
 $(SSH2DLL):		CEXTRA += -DLIBSSH2_DYANMIC -D_WINDLL
 $(SSH2DLL):		$(DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
@@ -210,7 +212,7 @@ installinc:		../include/.created
 clean:
 		@echo $(BUILD_TYPE) clean
 		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
 		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
 		-@$(RM) ../include/libssh2/*.h >/dev/null 2>&1
 

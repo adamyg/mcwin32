@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.11 2021/11/30 13:06:20 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.13 2022/02/19 14:52:09 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 shell and sub-process support
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -493,7 +493,6 @@ w32_spawnA(
 
     return w32_spawnA2(args, Stdin, &Stdout, (Stderr >= 0 ? &Stderr : NULL));
 }
-
 
 
 int
@@ -1263,32 +1262,30 @@ RedirectThread(LPVOID p)
  */
 static void
 DisplayErrorA(
-    HANDLE hOutput, const char *pszAPI, const char *args)
+    HANDLE hOutput, const char *msg, const char *cmd)
 {
     const DWORD rc = GetLastError();
     char t_rcbuffer[512], buffer[512];
-    const char *rcmsg = w32_syserrorA(rc, t_rcbuffer, sizeof(t_rcbuffer));
+    const char *rcmsg = w32_vsyserrorA(rc, t_rcbuffer, sizeof(t_rcbuffer), cmd, NULL);
     int len;
 
     len = _snprintf(buffer, sizeof(buffer),
-            "Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
-                args ? args : "", args ? "\n" : "");
+            "Internal Error: %s = %d (%s).\n", msg, rc, rcmsg);
     WriteConsoleA(hOutput, buffer, len, NULL, NULL);
 }
 
 
 static void
 DisplayErrorW(
-    HANDLE hOutput, const wchar_t *pszAPI, const wchar_t *args)
+    HANDLE hOutput, const wchar_t *msg, const wchar_t *cmd)
 {
     const DWORD rc = GetLastError();
     wchar_t t_rcbuffer[512], buffer[512];
-    const wchar_t *rcmsg = w32_syserrorW(rc, t_rcbuffer, _countof(t_rcbuffer));
+    const wchar_t *rcmsg = w32_vsyserrorW(rc, t_rcbuffer, _countof(t_rcbuffer), cmd, NULL);
     int len;
 
     len = _snwprintf(buffer, _countof(buffer),
-            L"Internal Error: %s = %d (%s).\n%s%s", pszAPI, rc, rcmsg,
-                args ? args : L"", args ? L"\n" : L"");
+            L"Internal Error: %s = %d (%s).\n", msg, rc, rcmsg);
     WriteConsoleW(hOutput, buffer, len, NULL, NULL);
 }
 

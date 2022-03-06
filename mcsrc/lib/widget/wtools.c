@@ -1,7 +1,7 @@
 /*
    Widget based utility functions.
 
-   Copyright (C) 1994-2020
+   Copyright (C) 1994-2021
    Free Software Foundation, Inc.
 
    Authors:
@@ -151,9 +151,8 @@ fg_message (int flags, const char *title, const char *text)
     d = do_create_message (flags, title, text);
     tty_getch ();
     dlg_run_done (d);
-    dlg_destroy (d);
+    widget_destroy (WIDGET (d));
 }
-
 
 /* --------------------------------------------------------------------------------------------- */
 /** Show message box from background */
@@ -211,7 +210,7 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
 
     {
 #if defined(WIN32)  //WIN32,quick
-        quick_widget_t quick_widgets[5],
+        quick_widget_t quick_widgets[5] = {0},
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -371,7 +370,7 @@ query_dialog (const char *header, const char *text, int flags, int count, ...)
         }
 
         /* free used memory */
-        dlg_destroy (query_dlg);
+        widget_destroy (WIDGET (query_dlg));
     }
     else
     {
@@ -395,7 +394,7 @@ query_set_sel (int new_sel)
 /* --------------------------------------------------------------------------------------------- */
 /**
  * Create message dialog.  The caller must call dlg_run_done() and
- * dlg_destroy() to dismiss it.  Not safe to call from background.
+ * widget_destroy() to dismiss it.  Not safe to call from background.
  */
 
 WDialog *
@@ -598,17 +597,17 @@ void
 status_msg_init (status_msg_t * sm, const char *title, double delay, status_msg_cb init_cb,
                  status_msg_update_cb update_cb, status_msg_cb deinit_cb)
 {
-    guint64 start;
+    gint64 start;
 
     /* repaint screen to remove previous finished dialog */
     mc_refresh ();
 
-    start = mc_timer_elapsed (mc_global.timer);
+    start = g_get_real_time ();
 
     sm->dlg = dlg_create (TRUE, 0, 0, 7, MIN (MAX (40, COLS / 2), COLS), WPOS_CENTER, FALSE,
                           dialog_colors, NULL, NULL, NULL, title);
     sm->start = start;
-    sm->delay = (guint64) (delay * G_USEC_PER_SEC);
+    sm->delay = (gint64) (delay * G_USEC_PER_SEC);
     sm->block = FALSE;
 
     sm->init = init_cb;
@@ -643,7 +642,7 @@ status_msg_deinit (status_msg_t * sm)
 
     /* close and destroy dialog */
     dlg_run_done (sm->dlg);
-    dlg_destroy (sm->dlg);
+    widget_destroy (WIDGET (sm->dlg));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -673,7 +672,7 @@ status_msg_common_update (status_msg_t * sm)
         /* dialog is not shown yet */
 
         /* do not change sm->start */
-        guint64 start = sm->start;
+        gint64 start = sm->start;
 
         if (mc_time_elapsed (&start, sm->delay))
             dlg_init (sm->dlg);

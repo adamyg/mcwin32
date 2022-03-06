@@ -3,7 +3,7 @@
 /*
  *  win32 Midnight Commander -- config.h
  *
- *  Written by: Adam Young 2012 - 2020
+ *  Written by: Adam Young 2012 - 2022
  *
  *  This file is part of the Midnight Commander.
  *
@@ -34,11 +34,13 @@
 #pragma warning (disable : 4127)                /* conditional expression is constant */
 #pragma warning (disable : 4201)                /* nonstandard extension used : nameless struct/union */
 #pragma warning (disable : 4204)                /* nonstandard extension used : non-constant aggregate initializer */
+#pragma warning (disable : 4244)                /* possible loss of data */
+#pragma warning (disable : 4246)                /* possible loss of data */
 #pragma warning (disable : 4702)                /* unreachable code */
 #pragma warning (disable : 4706)                /* assignment within conditional expression */
 #pragma warning (disable : 4996)                /* 'xxx' was declared deprecated */
 
-#elif defined(__WATCOMC__)
+#elif defined(__WATCOMC__) //WIN32/c11
 #pragma disable_message(136)                    /* Comparison equivalent to 'unsigned == 0' */
 #pragma disable_message(201)                    /* Unreachable code */
 #pragma disable_message(202)                    /* Unreferenced */
@@ -59,13 +61,17 @@
 #define MC_USERCONF_DIR     MC_APPLICATION_DIR  /* see: fileloc.h, default "mc" */
 #undef  MC_HOMEDIR_XDG                          /* enforce Freedesktop recommended dirs, not required */
 
+const char *                mc_aspell_dllpath(void);
+const char *                mc_get_locale(void);
+const char *                mc_BUSYBOX(void);
+
 const char *                mc_TMPDIR(void);
 const char *                mc_SYSCONFDIR(void);
 const char *                mc_DATADIR(void);
 const char *                mc_LOCALEDIR(void);
 const char *                mc_MAGICPATH(void);
 const char *                mc_LIBEXECDIR(void);
-char *                      mc_USERCONFIGDIR(const char *subdir);
+const char *                mc_USERCONFIGDIR(const char *subdir);
 const char *                mc_EXTHELPERSDIR(void);
 
 #define SYSCONFDIR          mc_SYSCONFDIR()     /* /etc/mc */
@@ -80,6 +86,11 @@ extern int                  win32_pclose(FILE *file);
 #ifndef popen
 #define popen(__cmd,__mode) win32_popen(__cmd, __mode)
 #define pclose(__file)      win32_pclose(__file)
+#endif
+
+extern const char *         mc_inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size);
+#if !defined(HAVE_STRTOK_R)
+extern char *               strtok_r(char *s, const char *delim, char **lasts);
 #endif
 
 extern void                 tty_set_title(const char *title);
@@ -112,7 +123,9 @@ extern void                 tty_set_title(const char *title);
 #endif
 
 #define HAVE_LIBMAGIC
-#undef  HAVE_ASPELL
+#define HAVE_ASPELL
+#define ASPELL_DLLPATH mc_aspell_dllpath()
+#define ASPELL_DLLNAME "libaspell-0.60"
 #undef  HAVE_SUBSHELL_SUPPORT
 #define HAVE_CHARSET 1
 #define HAVE_SLANG 1
@@ -123,7 +136,7 @@ extern void                 tty_set_title(const char *title);
 #define HAVE_STRCASECMP 1
 #define HAVE_STRNCASECMP 1
 #define HAVE_GETOPT 1
-#if defined(__WATCOMC__)
+#if defined(__WATCOMC__) //WIN32/c11
 #define HAVE_STRLCPY 1
 #define HAVE_STRLCAT 1
 #define HAVE_LOCALE_H  1
@@ -147,7 +160,7 @@ extern void                 tty_set_title(const char *title);
 #define ENABLE_NLS
 #undef  ENABLE_BACKGROUND
 #undef  ENABLE_SUBSHELL
-#define ENABLE_CONFIGURE_ARGS 1                  /* 4.8.24+ */
+#define ENABLE_CONFIGURE_ARGS 1                 /* 4.8.24+ */
 
 #define ENABLE_VFS 1
 #define ENABLE_VFS_CPIO 1

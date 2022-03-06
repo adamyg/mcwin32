@@ -1,7 +1,7 @@
 /*
    Interface to the terminal controlling library.
 
-   Copyright (C) 2005-2020
+   Copyright (C) 2005-2021
    Free Software Foundation, Inc.
 
    Written by:
@@ -48,11 +48,17 @@
 #include <sys/ioctl.h>
 #endif
 
+/* In some systems (like Solaris 11.4 SPARC), TIOCSWINSZ is defined in termios.h */
+#if !defined(_WIN32)
+#include <termios.h>
+#endif
+
 #include "lib/global.h"
 #include "lib/strutil.h"
 
 #include "tty.h"
 #include "tty-internal.h"
+#include "color.h"              /* tty_set_normal_attrs() */
 #include "mouse.h"              /* use_mouse_p */
 #include "win.h"
 
@@ -96,14 +102,21 @@ sigintr_set(int state)
  *
  * @param force_xterm Set forced the XTerm type
  *
- * @return true if @param force_xterm is true or value of $TERM is one of term*, konsole*
- *              rxvt*, Eterm or dtterm
+ * @return true if @param force_xterm is true or value of $TERM is one of following:
+ *         term*
+ *         konsole*
+ *         rxvt*
+ *         Eterm
+ *         dtterm
+ *         alacritty*
+ *         foot*
+ *         screen*
+ *         tmux*
  */
 gboolean
 tty_check_term (gboolean force_xterm)
 {
     const char *termvalue;
-    const char *xdisplay;
 
     termvalue = getenv ("TERM");
     if (termvalue == NULL || *termvalue == '\0')
@@ -112,16 +125,18 @@ tty_check_term (gboolean force_xterm)
         exit (EXIT_FAILURE);
     }
 
-    xdisplay = getenv ("DISPLAY");
-    if (xdisplay != NULL && *xdisplay == '\0')
-        xdisplay = NULL;
-
-    return force_xterm || strncmp (termvalue, "xterm", 5) == 0
+    /* *INDENT-OFF* */
+    return force_xterm
+        || strncmp (termvalue, "xterm", 5) == 0
         || strncmp (termvalue, "konsole", 7) == 0
         || strncmp (termvalue, "rxvt", 4) == 0
         || strcmp (termvalue, "Eterm") == 0
         || strcmp (termvalue, "dtterm") == 0
-        || (strncmp (termvalue, "screen", 6) == 0 && xdisplay != NULL);
+        || strncmp (termvalue, "alacritty", 9) == 0
+        || strncmp (termvalue, "foot", 4) == 0
+        || strncmp (termvalue, "screen", 6) == 0
+        || strncmp (termvalue, "tmux", 4) == 0;
+    /* *INDENT-ON* */
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -191,7 +206,8 @@ tty_got_winch (void)
     fd_set fdset;
     /* *INDENT-OFF* */
     /* instant timeout */
-    struct timeval timeout = { /*.tv_sec = 0, .tv_usec = 0, WIN32*/ 0 };
+    struct timeval timeout = { .tv_sec = 0, .tv_usec = 0 };
+
     /* *INDENT-ON* */
     int ok;
 
@@ -280,6 +296,17 @@ tty_draw_box (int y, int x, int ys, int xs, gboolean single)
 
 /* --------------------------------------------------------------------------------------------- */
 
+void
+tty_draw_box_shadow (int y, int x, int rows, int cols, int shadow_color)
+{
+    /* draw right shadow */
+    tty_colorize_area (y + 1, x + cols, rows - 1, 2, shadow_color);
+    /* draw bottom shadow */
+    tty_colorize_area (y + rows, x + 2, 1, cols, shadow_color);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 char *
 mc_tty_normalize_from_utf8 (const char *str)
 {
@@ -324,6 +351,17 @@ tty_resize (int fd)
 #else
     return 0;
 #endif
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Clear screen */
+void
+tty_clear_screen (void)
+{
+    tty_set_normal_attrs ();
+    tty_fill_region (0, 0, LINES, COLS, ' ');
+    tty_refresh ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -380,9 +418,16 @@ tty_init_xterm_support (gboolean is_xterm)
         }
     }
 
-    /* No termcap for SGR extended mouse (yet), hardcode it for now */
+    /* There's only one termcap entry "kmous", typically containing "\E[M" or "\E[<".
+     * We need the former in xmouse_seq, the latter in xmouse_extended_seq.
+     * See tickets 2956, 3954, and 4063 for details. */
     if (xmouse_seq != NULL)
+    {
+        if (strcmp (xmouse_seq, ESC_STR "[<") == 0)
+            xmouse_seq = ESC_STR "[M";
+
         xmouse_extended_seq = ESC_STR "[<";
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

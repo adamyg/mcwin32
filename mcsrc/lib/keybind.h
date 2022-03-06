@@ -9,15 +9,17 @@
 /*** typedefs(not structures) and defined constants **********************************************/
 
 /* keymap sections */
-#define KEYMAP_SECTION_MAIN "main"
-#define KEYMAP_SECTION_MAIN_EXT "main:xmap"
+#define KEYMAP_SECTION_FILEMANAGER "filemanager"
+#define KEYMAP_SECTION_FILEMANAGER_EXT "filemanager:xmap"
 #define KEYMAP_SECTION_PANEL "panel"
 #define KEYMAP_SECTION_DIALOG "dialog"
 #define KEYMAP_SECTION_MENU "menu"
 #define KEYMAP_SECTION_INPUT "input"
 #define KEYMAP_SECTION_LISTBOX "listbox"
+#define KEYMAP_SECTION_RADIO "radio"
 #define KEYMAP_SECTION_TREE "tree"
 #define KEYMAP_SECTION_HELP "help"
+#define KEYMAP_SECTION_CHATTR "chattr"
 #define KEYMAP_SECTION_EDITOR "editor"
 #define KEYMAP_SECTION_EDITOR_EXT "editor:xmap"
 #define KEYMAP_SECTION_VIEWER "viewer"
@@ -67,6 +69,7 @@ enum
     CK_ChangeMode,
     CK_ChangeOwn,
     CK_ChangeOwnAdvanced,
+    CK_ChangeAttributes,
     CK_Remove,
     CK_BackSpace,
     CK_Redo,
@@ -229,6 +232,9 @@ enum
     /* tree */
     CK_Forget = 450L,
 
+    /* chattr dialog */
+    CK_MarkAndDown = 480L,
+
     /* editor */
     /* cursor movements */
     CK_Tab = 500L,
@@ -310,7 +316,7 @@ enum
     CK_InsertLiteral,
     CK_ExternalCommand,
     CK_Date,
-    CK_Mail,
+    CK_EditMail,
 
     /* viewer */
     CK_WrapMode = 600L,
@@ -346,20 +352,6 @@ enum
 };
 
 /*** structures declarations (and typedefs of structures)*****************************************/
-
-typedef struct name_keymap_t
-{
-    const char *name;
-    long val;
-} name_keymap_t;
-
-typedef struct key_config_t
-{
-    time_t mtime;               /* mtime at the moment we read config file */
-    GArray *keymap;
-    GArray *ext_keymap;
-    gchar *labels[10];
-} key_config_t;
 
 /* The global keymaps are of this type */
 typedef struct global_keymap_t

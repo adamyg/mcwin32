@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mknod_c,"$Id: w32_mknod.c,v 1.9 2021/05/23 10:23:12 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mknod_c,"$Id: w32_mknod.c,v 1.10 2022/02/17 16:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mknod() system calls.
  *
- * Copyright (c) 2007, 2012 - 2021 Adam Young.
+ * Copyright (c) 2007, 2012 - 2022 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
