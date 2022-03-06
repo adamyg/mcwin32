@@ -1309,7 +1309,11 @@ try_complete (char *text, int *lc_start, int *lc_end, input_complete_t flags)
     state.flags = flags;
 
     SHOW_C_CTX ("try_complete");
+#if defined(WIN32) //WIN32, mc-bugfix
+    state.word = g_strndup (text + *lc_start, strnlen (text + *lc_start, *lc_end - *lc_start));   
+#else
     state.word = g_strndup (text + *lc_start, *lc_end - *lc_start);
+#endif
 
     state.is_cd = check_is_cd (text, *lc_start, state.flags);
 
