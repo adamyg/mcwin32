@@ -60,6 +60,8 @@ extern const key_code_name_t key_name_conv_tab[];
 
 extern int old_esc_mode_timeout;
 
+extern int console_alert_mode; //WIN32, alert-mode
+
 extern int double_click_speed;
 extern gboolean old_esc_mode;
 extern gboolean use_8th_bit_as_meta;

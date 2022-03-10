@@ -321,6 +321,7 @@ int                     double_click_speed  = 250;          /* setup.c */
 gboolean                old_esc_mode        = 0;            /* setup.c */
 int                     old_esc_mode_timeout = 1000000;     /* setup.c */
 int                     use_8th_bit_as_meta = 1;            /* setup.c */
+int                     console_alert_mode  = 1;            /* setup.c: legacy beep */
 
 static enum { KEY_SORTNONE, KEY_SORTBYNAME, KEY_SORTBYCODE}
                         key_conv_tab_order  = KEY_SORTNONE;

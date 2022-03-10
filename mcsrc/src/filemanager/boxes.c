@@ -1191,32 +1191,48 @@ display_bits_box (void)
 #else /* HAVE_CHARSET */
 
 #if defined(WIN32) //WIN32, alert-options
-static int visible_option_id, audible_beep_id, legacy_beep_id;
+static unsigned long visible_option_id, audible_beep_id, legacy_beep_id;
+
+static void
+alert_options_decode (int *visible_option, int *audible_beep, int *legacy_beep)
+{
+    *visible_option = *audible_beep = *legacy_beep = 0;
+
+    if (SLTT_BEEP_FLASH & console_alert_mode) *visible_option = 1;
+    else if (SLTT_BEEP_INVERT & console_alert_mode) *visible_option = 2;
+    if (SLTT_BEEP_AUDIBLE & console_alert_mode)
+    {
+        *audible_beep = 1;
+        if (SLTT_BEEP_LEGACY & console_alert_mode)
+            *legacy_beep = 1;
+    }
+}
 
 static void
 alert_options_apply (int visible_option, int audible_beep, int legacy_beep)
 {
-    SLtt_Ignore_Beep = 0;
-    if (1 == visible_option) SLtt_Ignore_Beep |= SLTT_BEEP_FLASH;
-    else if (2 == visible_option) SLtt_Ignore_Beep |= SLTT_BEEP_INVERT;
-    if (audible_beep) {
-        SLtt_Ignore_Beep |= SLTT_BEEP_AUDIBLE;
+    console_alert_mode = 0;
+    if (1 == visible_option) console_alert_mode |= SLTT_BEEP_FLASH;
+    else if (2 == visible_option) console_alert_mode |= SLTT_BEEP_INVERT;
+    if (audible_beep) 
+    {
+        console_alert_mode |= SLTT_BEEP_AUDIBLE;
         if (legacy_beep)
-            SLtt_Ignore_Beep |= SLTT_BEEP_LEGACY;
+             console_alert_mode |= SLTT_BEEP_LEGACY;
     }
 }
 
 static void
 alert_options_test (Widget * w)
 {
-    const int old_SLtt_Ignore_Beep = SLtt_Ignore_Beep;   
+    const int old_console_alert_mode = console_alert_mode;   
     const int t_visible_option = RADIO(widget_find_by_id(w, visible_option_id))->sel;
     const int t_audible_beep = CHECK(widget_find_by_id(w, audible_beep_id))->state;
     const int t_legacy_beep = CHECK(widget_find_by_id(w, legacy_beep_id))->state;
 
     alert_options_apply (t_visible_option, t_audible_beep, t_legacy_beep);
-    SLtt_beep ();
-    SLtt_Ignore_Beep = old_SLtt_Ignore_Beep;
+    tty_beep ();
+    console_alert_mode = old_console_alert_mode;
 }
 
 static cb_ret_t
@@ -1305,17 +1321,9 @@ display_bits_box (void)
         };
 
         const int visible_num = G_N_ELEMENTS (visible_options);
-        int visible_option = 0;
-        int audible_beep = 0;
-        int legacy_beep = 0;
+        int visible_option, audible_beep, legacy_beep;
 
-        if (SLTT_BEEP_FLASH & SLtt_Ignore_Beep) visible_option = 1;
-        else if (SLTT_BEEP_INVERT & SLtt_Ignore_Beep) visible_option = 2;
-        if (SLTT_BEEP_AUDIBLE & SLtt_Ignore_Beep) {
-            audible_beep = 1;
-            if (SLTT_BEEP_LEGACY & SLtt_Ignore_Beep) 
-                legacy_beep = 1;
-        }
+        alert_options_decode (&visible_option, &audible_beep, &legacy_beep);
 
         qc = XQUICK_START_COLUMNS (qc),
         qc =    XQUICK_LABEL (qc, N_("Input / display codepage:"), NULL),

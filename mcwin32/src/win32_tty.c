@@ -43,6 +43,7 @@
 #include "lib/tty/tty-internal.h"
 #include "lib/tty/color-internal.h"
 #include "lib/tty/mouse.h"                      /* use_mouse_p */
+#include "lib/tty/key.h"                        /* console_alert_mode */
 #include "lib/tty/color.h"                      /* tty_use_256colors(); */
 #include "lib/tty/win.h"
 
@@ -473,6 +474,7 @@ mc_tty_normalize_lines_char (const char *str)
 void
 tty_beep (void)
 {
+    SLtt_Ignore_Beep = console_alert_mode;
     SLtt_beep();
 }
 
