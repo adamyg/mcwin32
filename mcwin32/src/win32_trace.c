@@ -33,7 +33,7 @@ OutputDebugPrintA(const char *fmt, ...)
 
     va_start(ap, fmt);
     w32_gettimeofday(&tv, NULL);
-    prefix = sprintf(out, "%lu.%03u:", tv.tv_sec, tv.tv_usec / 1000);
+    prefix = sprintf(out, "%lu.%03u: ", tv.tv_sec, tv.tv_usec / 1000);
     vsprintf_s(out + prefix, _countof(out) - prefix, fmt, ap);
     va_end(ap); 
     OutputDebugStringA(out);
@@ -50,7 +50,7 @@ OutputDebugPrintW(const wchar_t *fmt, ...)
 
     va_start(ap, fmt);
     w32_gettimeofday(&tv, NULL);
-    prefix = swprintf(out, _countof(out), L"%lu.%03u:", tv.tv_sec, tv.tv_usec / 1000);
+    prefix = swprintf(out, _countof(out), L"%lu.%03u: ", tv.tv_sec, tv.tv_usec / 1000);
     vswprintf(out + prefix, _countof(out) - prefix, fmt, ap);
     out[_countof(out) - 1] = 0;
     va_end(ap); 
@@ -135,7 +135,7 @@ w32_tracev(const char *fmt, va_list ap)
     if (0 == len || buffer[len-1] != '\n') {
         buffer[len++] = '\n', buffer[len] = 0;  /* newline terminate */
     }
-    OutputDebugString(buffer);
+    OutputDebugStringA(buffer);
 #endif  //WIN32
 }
 
