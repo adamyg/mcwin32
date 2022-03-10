@@ -383,6 +383,9 @@ static const struct
     { "mouse_repeat_rate", &mou_auto_repeat },
     { "double_click_speed", &double_click_speed },
     { "old_esc_mode_timeout", &old_esc_mode_timeout },
+#if defined(WIN32)  //WIN32, alert-options
+    { "console_alert_mode", &SLtt_Ignore_Beep },
+#endif
     { "max_dirt_limit", &mcview_max_dirt_limit },
     { "num_history_items_recorded", &num_history_items_recorded },
 #ifdef ENABLE_VFS

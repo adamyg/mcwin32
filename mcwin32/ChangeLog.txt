@@ -1,3 +1,18 @@
+Pending build-225
+
+Wed Mar  9 21:50:55 2022 adamy
+
+	* Console alert mode (#17 - Console alert options, audible and/or visible indicator).
+
+		o Configuration, under <Display Bits>
+
+			- Visible indicators <Invisible, Flash window or Flash baseline> [default = Invisible].
+			- Audible <on/off> [default = on]
+
+		o "console_alert_mode", configuration element (save/restore).
+		o Supporting slang extensions.
+		o Utilise windows "SystemAsterisk".
+
 Sun Mar  6 21:19:10 2022 adamy
 
 	* Build-224
