@@ -7,7 +7,20 @@ Wed Mar  9 21:50:55 2022 adamy
 		o Configuration, under <Display Bits>
 
 			- Visible indicators <Invisible, Flash window or Flash baseline> [default = Invisible].
-			- Audible <on/off> [default = on]
+			- Audible <on/off> [default = on].
+
+				+-------------------- Display bits -------------------+
+				| Input / display codepage:   [ UTF-8 ]               |
+				|-----------------------------------------------------|
+				|  Console alert mode          Other Options          |
+				|  ( ) Invisible               [x] Full 8 bits input  |
+				|  ( ) Flash window                                   |
+				|  (*) Flash baseline                                 |
+				|  [ ] Audible                                        |
+				|  [ ] Legacy beep                                    |
+				|-----------------------------------------------------|
+				|                 [< OK >] [ Cancel ]                 |
+				+-----------------------------------------------------+
 
 		o "console_alert_mode", configuration element (save/restore).
 		o Supporting slang extensions.

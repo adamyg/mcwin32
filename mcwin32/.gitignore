@@ -1,6 +1,7 @@
 .makelib/
 include/
 patch/
+ref/
 bin/
 bin.*/
 lib.*/

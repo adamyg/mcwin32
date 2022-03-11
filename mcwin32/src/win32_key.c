@@ -111,6 +111,7 @@ extern gboolean             confirm_exit;
 extern void                 sigintr_set (int state);  /* tty.c */
 
 #include "win32_key.h"
+#include "win32_trace.h"
 
 
 /*
@@ -121,11 +122,13 @@ extern void                 sigintr_set (int state);  /* tty.c */
  *      DEL, HOME, END, PAGE UP, PAGE DOWN, and direction keys in the
  *      clusters to the left of the keypad; and the divide (/) and
  *      ENTER keys in the keypad.
+ *
+ *      Table is scanned in reverse.
  */
 
 #define W32KEYS     ((int)(sizeof(w32Keys)/sizeof(w32Keys[0])))
 
-static const struct {
+static const struct w32key {
     WORD            vk;                         /* windows virtual key code */
     int             mods;                       /* modifiers */
 #define MOD_ALL             -1
@@ -135,45 +138,46 @@ static const struct {
     int             key;                        /* interval key value */
 
 } w32Keys[] = {
-    { VK_PAUSE,         0,              "Complete",     ALT('\t') },
-    { VK_F7,            KEY_M_ALT,      "FileFind",     ALT('?') },
-    { VK_BACK,          MOD_ALL,        "Back",         KEY_BACKSPACE },
-    { VK_TAB,           MOD_ALL,        "TAB",          '\t' },
-    { VK_ESCAPE,        MOD_ALL,        "ESC",          ESC_CHAR },
-    { VK_RETURN,        MOD_ALL,        "RETURN",       '\n' },
-    { VK_PRIOR,         MOD_ALL,        "PRIOR",        KEY_PPAGE },
-    { VK_NEXT,          MOD_ALL,        "NEXT",         KEY_NPAGE },
-    { VK_END,           MOD_ALL,        "END",          KEY_END },
-    { VK_HOME,          MOD_ALL,        "HOME",         KEY_HOME },
-    { VK_LEFT,          MOD_ALL,        "LEFT",         KEY_LEFT },
-    { VK_UP,            MOD_ALL,        "UP",           KEY_UP },
-    { VK_RIGHT,         MOD_ALL,        "RIGHT",        KEY_RIGHT },
-    { VK_DOWN,          MOD_ALL,        "DOWN",         KEY_DOWN },
-    { VK_INSERT,        MOD_ALL,        "INSERT",       KEY_IC },
-    { VK_DELETE,        MOD_ALL,        "DELETE",       KEY_DC },
-    { VK_SUBTRACT,      MOD_ALL,        "-",            KEY_KP_SUBTRACT },
-    { VK_MULTIPLY,      MOD_ALL,        "*",            KEY_KP_MULTIPLY },
-    { VK_ADD,           MOD_ALL,        "+",            KEY_KP_ADD },
-    { VK_F1,            MOD_FUNC,       "F1",           KEY_F(1) },
-    { VK_F2,            MOD_FUNC,       "F2",           KEY_F(2) },
-    { VK_F3,            MOD_FUNC,       "F3",           KEY_F(3) },
-    { VK_F4,            MOD_FUNC,       "F4",           KEY_F(4) },
-    { VK_F5,            MOD_FUNC,       "F5",           KEY_F(5) },
-    { VK_F6,            MOD_FUNC,       "F6",           KEY_F(6) },
-    { VK_F7,            MOD_FUNC,       "F7",           KEY_F(7) },
-    { VK_F8,            MOD_FUNC,       "F8",           KEY_F(8) },
-    { VK_F9,            MOD_FUNC,       "F9",           KEY_F(9) },
-    { VK_F10,           MOD_FUNC,       "F10",          KEY_F(10) },
-    { VK_F11,           MOD_FUNC,       "F11",          KEY_F(11) },
-    { VK_F12,           MOD_FUNC,       "F12",          KEY_F(12) },
-    { VK_F13,           MOD_FUNC,       "F13",          KEY_F(13) },
-    { VK_F14,           MOD_FUNC,       "F14",          KEY_F(14) },
-    { VK_F15,           MOD_FUNC,       "F15",          KEY_F(15) },
-    { VK_F16,           MOD_FUNC,       "F16",          KEY_F(16) },
-    { VK_F17,           MOD_FUNC,       "F17",          KEY_F(17) },
-    { VK_F18,           MOD_FUNC,       "F18",          KEY_F(18) },
-    { VK_F19,           MOD_FUNC,       "F19",          KEY_F(19) },
-    { VK_F20,           MOD_FUNC,       "F20",          KEY_F(20) }
+    { VK_PAUSE,     0,              "Complete",     ALT('\t') },
+    { VK_F7,        KEY_M_ALT,      "FileFind",     ALT('?') },
+    { VK_BACK,      MOD_ALL,        "Backspace",    KEY_BACKSPACE },
+    { VK_TAB,       MOD_ALL,        "TAB",          '\t' },
+    { VK_TAB,       KEY_M_SHIFT,    "BackTab",      KEY_BTAB },
+    { VK_ESCAPE,    MOD_ALL,        "ESC",          ESC_CHAR },
+    { VK_RETURN,    MOD_ALL,        "RETURN",       '\n' },
+    { VK_PRIOR,     MOD_ALL,        "PRIOR",        KEY_PPAGE },
+    { VK_NEXT,      MOD_ALL,        "NEXT",         KEY_NPAGE },
+    { VK_END,       MOD_ALL,        "END",          KEY_END },
+    { VK_HOME,      MOD_ALL,        "HOME",         KEY_HOME },
+    { VK_LEFT,      MOD_ALL,        "LEFT",         KEY_LEFT },
+    { VK_UP,        MOD_ALL,        "UP",           KEY_UP },
+    { VK_RIGHT,     MOD_ALL,        "RIGHT",        KEY_RIGHT },
+    { VK_DOWN,      MOD_ALL,        "DOWN",         KEY_DOWN },
+    { VK_INSERT,    MOD_ALL,        "INSERT",       KEY_IC },
+    { VK_DELETE,    MOD_ALL,        "DELETE",       KEY_DC },
+    { VK_SUBTRACT,  MOD_ALL,        "-",            KEY_KP_SUBTRACT },
+    { VK_MULTIPLY,  MOD_ALL,        "*",            KEY_KP_MULTIPLY },
+    { VK_ADD,       MOD_ALL,        "+",            KEY_KP_ADD },
+    { VK_F1,        MOD_FUNC,       "F1",           KEY_F(1) },
+    { VK_F2,        MOD_FUNC,       "F2",           KEY_F(2) },
+    { VK_F3,        MOD_FUNC,       "F3",           KEY_F(3) },
+    { VK_F4,        MOD_FUNC,       "F4",           KEY_F(4) },
+    { VK_F5,        MOD_FUNC,       "F5",           KEY_F(5) },
+    { VK_F6,        MOD_FUNC,       "F6",           KEY_F(6) },
+    { VK_F7,        MOD_FUNC,       "F7",           KEY_F(7) },
+    { VK_F8,        MOD_FUNC,       "F8",           KEY_F(8) },
+    { VK_F9,        MOD_FUNC,       "F9",           KEY_F(9) },
+    { VK_F10,       MOD_FUNC,       "F10",          KEY_F(10) },
+    { VK_F11,       MOD_FUNC,       "F11",          KEY_F(11) },
+    { VK_F12,       MOD_FUNC,       "F12",          KEY_F(12) },
+    { VK_F13,       MOD_FUNC,       "F13",          KEY_F(13) },
+    { VK_F14,       MOD_FUNC,       "F14",          KEY_F(14) },
+    { VK_F15,       MOD_FUNC,       "F15",          KEY_F(15) },
+    { VK_F16,       MOD_FUNC,       "F16",          KEY_F(16) },
+    { VK_F17,       MOD_FUNC,       "F17",          KEY_F(17) },
+    { VK_F18,       MOD_FUNC,       "F18",          KEY_F(18) },
+    { VK_F19,       MOD_FUNC,       "F19",          KEY_F(19) },
+    { VK_F20,       MOD_FUNC,       "F20",          KEY_F(20) }
     };
 
 /*
@@ -680,9 +684,10 @@ lookup_key (const char *name, char **label)
     if (use_ctrl != -1) {
         if (/*k < 256*/ k < 0x1f ||
                 (k >= 'a' && k <= 'z') || (k >= 'A' && k <= '^')) {
-            k = XCTRL (k);                      /* ctrl-<a..z>, and ctrl-backslash */
+            k = XCTRL (k);                      /* ctrl-<a..z>, and <ctrl-backslash> */
+
         } else {
-            k |= KEY_M_CTRL;                    /* ctrl-<fx>, ctrl-space etc */
+            k |= KEY_M_CTRL;                    /* <ctrl-fx>, <ctrl-space>, <ctrl-esc> etc */
         }
     }
 
@@ -732,7 +737,8 @@ lookup_key_by_code (const int keycode)
         }
 
         if (mod & KEY_M_SHIFT) {
-            if (lookup_keycode (KEY_M_ALT, &idx)) {
+//BUGFIX:   if (lookup_keycode (KEY_M_ALT, &idx)) {
+            if (lookup_keycode (KEY_M_SHIFT, &idx)) {
                 use_shift = idx;
                 if (k < 127) {
                     g_string_append_c (s, (gchar) g_ascii_toupper ((gchar) k));
@@ -1086,11 +1092,13 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 }
 
 
-
 static int
 key_esc_special(void)
 {
-    DWORD timeoutms = 1000;                     // key-up wait.
+    DWORD timeoutms = INFINITE;                 // key-up wait.
+
+    if (0 == old_esc_mode)                      // enabled ?
+        return ESC_CHAR;
 
     while (1) {
         INPUT_RECORD ir = {0};
@@ -1100,8 +1108,8 @@ key_esc_special(void)
                 PeekConsoleInput(hConsoleIn, &ir, 1, &count) && 1 == count) {
 
             if (KEY_EVENT == ir.EventType) {
+                const KEY_EVENT_RECORD *key = &ir.Event.KeyEvent;
                 if (ir.Event.KeyEvent.bKeyDown) {
-                    const KEY_EVENT_RECORD *key = &ir.Event.KeyEvent;
                     WORD wVirtualKeyCode = key->wVirtualKeyCode;
                     int c = -1;
 
@@ -1111,8 +1119,12 @@ key_esc_special(void)
                         c = key_mapwin32(key->dwControlKeyState, fnKeyCode, 0);
 
                     } else if (VK_TAB == wVirtualKeyCode) {
-                                                // Alt-Tab
-                        c = ALT('\t');
+                        c = ALT('\t');          // Alt-Tab
+
+                    } else if (VK_ESCAPE == wVirtualKeyCode) {
+                        if (key->wRepeatCount) {
+                            c = ESC_CHAR;       // ESC-ESC, surpress 2nd
+                        }
                     }
 
                     if (-1 != c) {
@@ -1123,7 +1135,13 @@ key_esc_special(void)
 
                 } else {
                     (void) ReadConsoleInput(hConsoleIn, &ir, 1, &count);
-                    timeoutms = 650;
+                    if (VK_ESCAPE == key->wVirtualKeyCode) {
+                        timeoutms = 500;
+                        if (old_esc_mode_timeout > 0) {
+                            timeoutms = (old_esc_mode_timeout / 1000000) * 1000;
+                            timeoutms += (old_esc_mode_timeout % 1000000) / 1000;
+                        }
+                    }
                     continue;                   // consume
                 }
             }
@@ -1246,39 +1264,25 @@ key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned Asci
 
     /* Virtual keys */
     for (i = W32KEYS-1; i >= 0; i--) {
-        if (w32Keys[i].vk == wVirtKeyCode &&
-                ((w32Keys[i].mods == MOD_ALL || w32Keys[i].mods == MOD_FUNC) ||
-                    (w32Keys[i].mods == MOD_ENHANCED && (dwCtrlKeyState & (ENHANCED_KEY))) ||
-                    (w32Keys[i].mods >= 0 && w32Keys[i].mods == mod) )) {
+        const struct w32key *key = w32Keys + i;
 
-            if ((ch = w32Keys[i].key) >= 0) {
-                                                /* apply modifiers */
-                if (w32Keys[i].mods == MOD_FUNC) {
-                    if (ch >= KEY_F(1) && ch <= KEY_F(10) && (mod == KEY_M_SHIFT)) {
-                        /* convert Shift+Fn to F(n+10) */
-                        ch += 10;
+        if (key->vk == wVirtKeyCode &&
+                ((key->mods == MOD_ALL || key->mods == MOD_FUNC) ||
+                    (key->mods == MOD_ENHANCED && (dwCtrlKeyState & (ENHANCED_KEY))) ||
+                    (key->mods >= 0 && key->mods == mod) )) {
 
-                    } else {
-                        /* otherwise, apply ignoring Shift */
-                        ch |= (mod & ~KEY_M_SHIFT);
+            /* apply modifiers */
+            if ((ch = key->key) >= 0) {
+                if (key->mods == MOD_FUNC) {
+                    // Convert Shift+Fn to F(n+10)
+                    if (ch >= KEY_F(1) && ch <= KEY_F(10) && (mod & KEY_M_SHIFT) != 0) {
+                        ch += 10;               
                     }
 
-                } else if (w32Keys[i].mods == MOD_ALL) {
-                    if (ch == (31 & 'd')) {
-                        /* Ctrl-d is delete */
-                        ch = KEY_DC;
-                        mod &= ~KEY_M_CTRL;
+                    // Apply ignoring Shift
+                    ch |= (mod & ~KEY_M_SHIFT); 
 
-                    } else if (ch == (31 & 'h')) {
-                        /* Ctrl-h is backspace */
-                        ch = KEY_BACKSPACE;
-                        mod &= ~KEY_M_CTRL;
-
-                    } else if (ch == KEY_BACKSPACE && (mod & KEY_M_SHIFT)) {
-                        /* Shift+BackSpace is backspace */
-                        mod &= ~KEY_M_SHIFT;
-                    }
-
+                } else if (key->mods == MOD_ALL) {
                     ch |= mod;
                 }
             }
@@ -1331,6 +1335,11 @@ get_key_code (int no_delay)
 
                     if ((c = key_mapwin32(pKey->dwControlKeyState,
                                 pKey->wVirtualKeyCode, pKey->uChar.AsciiChar)) != -1) {
+#if defined(_DEBUG)
+                        char *skeyname = lookup_key_by_code (c);
+                        OutputDebugPrintA ("%05u/0x%04x = %s\n", c, c, skeyname);
+                        g_free (skeyname);
+#endif
                         return c;
                     }
                 } else {
