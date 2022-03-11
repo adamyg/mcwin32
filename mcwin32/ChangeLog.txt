@@ -1,5 +1,12 @@
 Pending build-225
 
+Fri Mar 11 21:41:28 2022 adamy
+
+	* #16 - Completion
+
+		o Support unix and windows directory separator.
+		o CDPATH delimiter.
+
 Wed Mar  9 21:50:55 2022 adamy
 
 	* Console alert mode (#17 - Console alert options, audible and/or visible indicator).

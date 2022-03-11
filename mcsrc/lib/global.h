@@ -146,10 +146,13 @@
 #define PATH_SEP2 '\\'
 #define PATH_SEP_STR2 "\\"
 #define IS_PATH_SEP(c) ((c) == PATH_SEP || (c) == PATH_SEP2)
+#define PATH_ENV_SEP ';'
+extern char *strrchr2(const char *s, int c1, int c2);
+extern char *strchr2(const char *s, int c1, int c2);
 #else
 #define IS_PATH_SEP(c) ((c) == PATH_SEP)
-#endif
 #define PATH_ENV_SEP ':'
+#endif
 #define TMPDIR_DEFAULT "/tmp"
 #define SCRIPT_SUFFIX ""
 #define get_default_editor() "vi"

@@ -2,7 +2,7 @@
 include/
 patch/
 ref/
-bin/
+bin
 bin.*/
 lib.*/
 objects*/
@@ -10,6 +10,7 @@ msvc*/
 libglib_*/
 crash/
 CVS/
+bin_shortcut.lnk
 Makefile
 buildinfo.h
 BUILDNUMBER

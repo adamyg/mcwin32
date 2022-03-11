@@ -597,6 +597,7 @@
     <ClCompile Include="..\..\src\drive.c">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">-DXXX_DO_NETWORK_DRIVES=1 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="..\..\src\strchr2.c" />
     <ClCompile Include="..\..\src\win32_glib.c" />
     <ClCompile Include="..\..\src\win32_key.c" />
     <ClCompile Include="..\..\src\win32_pipe.c" />

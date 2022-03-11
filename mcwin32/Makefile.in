@@ -435,6 +435,7 @@ MC_LIBMC=\
 	$(D_OBJMC)/tty_tty$(O)			\
 	\
 	$(D_OBJMC)/compat_strtok_r$(O)		\
+	$(D_OBJMC)/strchr2$(O)			\
 	$(D_OBJMC)/win32_key$(O)		\
 	$(D_OBJMC)/win32_tty$(O)		\
 	$(D_OBJMC)/win32_win$(O)		\
