@@ -1,3 +1,7 @@
+Sat Mar  5 17:41:51 2022 adamy
+
+	* fish support
+
 Tue Jun  9 13:22:00 2020 adamy
 
 	* Mirror MC configuration during builds, example
@@ -48,3 +52,5 @@ Wed Mar  8 02:55:35 2017 adamy
 	* MISSING: lzip and lz4 decompression support, research options.
 
 	* sfs, zip support.
+
+#end

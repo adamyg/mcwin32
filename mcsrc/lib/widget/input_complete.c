@@ -172,7 +172,11 @@ filename_completion_function (const char *text, int state, input_complete_t flag
         g_free (users_dirname);
         vfs_path_free (dirname_vpath, TRUE);
 
+#if defined(WIN32) //WIN32, path
+        if ((*text != '\0') && (temp = strrchr2 (text, PATH_SEP, PATH_SEP2)) != NULL)
+#else
         if ((*text != '\0') && (temp = strrchr (text, PATH_SEP)) != NULL)
+#endif
         {
             filename = g_strdup (++temp);
             dirname = g_strndup (text, temp - text);
@@ -944,13 +948,13 @@ try_complete_all_possible (try_complete_automation_state_t * state, char *text, 
 
                 cdpath_ref = g_strdup (getenv ("CDPATH"));
                 cdpath = cdpath_ref;
-                c = (cdpath == NULL) ? '\0' : ':';
+                c = (cdpath == NULL) ? '\0' : PATH_ENV_SEP;
 
-                while (matches == NULL && c == ':')
+                while (matches == NULL && c == PATH_ENV_SEP)
                 {
                     char *s;
 
-                    s = strchr (cdpath, ':');
+                    s = strchr (cdpath, PATH_ENV_SEP);
                     /* cppcheck-suppress nullPointer */
                     if (s == NULL)
                         s = strchr (cdpath, '\0');

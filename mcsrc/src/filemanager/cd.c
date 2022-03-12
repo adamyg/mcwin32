@@ -179,13 +179,13 @@ handle_cdpath (const char *path)
 
         cdpath = g_strdup (getenv ("CDPATH"));
         p = cdpath;
-        c = (p == NULL) ? '\0' : ':';
+        c = (p == NULL) ? '\0' : PATH_ENV_SEP;
 
-        while (!result && c == ':')
+        while (!result && c == PATH_ENV_SEP)
         {
             char *s;
 
-            s = strchr (p, ':');
+            s = strchr (p, PATH_ENV_SEP);
             if (s == NULL)
                 s = strchr (p, '\0');
             c = *s;

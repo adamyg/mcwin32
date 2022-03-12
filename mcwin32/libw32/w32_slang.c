@@ -28,7 +28,10 @@
  */
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT                0x601
+#define _WIN32_WINNT                0x501       // Windows XP
+#endif
+#ifndef WINVER
+#define WINVER                      _WIN32_WINNT
 #endif
 #include "win32_internal.h"
 #define PSAPI_VERSION               1           // EnumProcessModules and psapi.dll
@@ -44,6 +47,8 @@
 #define TERMEMU_VIO_SOURCE                      /* private interface */
 #define TERMEMU_VIO_STATIC                      /* static binding */
 #include "termemu_vio.c"
+
+#pragma comment(lib, "Winmm.lib")               /* PlaySound() */
 
 #include "unicode_cp437.h"
 
@@ -71,7 +76,7 @@ LIBW32_API int SLsmg_Backspace_Moves    = 0;
 
 LIBW32_API int SLtt_Screen_Rows         = 0;
 LIBW32_API int SLtt_Screen_Cols         = 0;
-LIBW32_API int SLtt_Ignore_Beep         = 0;
+LIBW32_API int SLtt_Ignore_Beep         = SLTT_BEEP_AUDIBLE; /* default(1), beep() */
 LIBW32_API int SLtt_Use_Ansi_Colors     = -1;   /* full color support */
 LIBW32_API int SLtt_True_Color          = 0;    /* extension */
 LIBW32_API int SLtt_Term_Cannot_Scroll  = 0;
@@ -122,6 +127,7 @@ static void             set_position(int row, int col);
 static int              cliptoarena(int coord, int n, int start, int end, int *coordmin, int *coordmax);
 static void             write_char(SLwchar_Type ch, unsigned cnt);
 static void             write_string(const char *str, unsigned cnt);
+static void             invert_region(int top_row, int bot_row);
 
 static const void *     utf8_decode_raw(const void *src, const void *cpend, int32_t *cooked, int32_t *raw);
 static const void *     utf8_decode_safe(const void *src, const void *cpend, int32_t *cooked);
@@ -353,12 +359,51 @@ SLtt_set_mono(int obj, char *name, SLtt_Char_Type c)
  *  SLtt_beep ---
  *      Audible bell.
  **/
+static void
+beep(int sync)
+{
+    if (0 == (SLTT_BEEP_LEGACY & SLtt_Ignore_Beep)) {
+        PlaySoundA("SystemAsterisk", NULL, sync ? SND_SYNC : SND_ASYNC); // Windows 2000+
+    } else {
+        Beep(750, 120); // legacy
+    }
+}
+
+
 void
 SLtt_beep(void)
 {
-    if (! SLtt_Ignore_Beep) {
-        Beep(750, 120);
-    }
+    int audible;
+
+    if (0 == SLtt_Ignore_Beep) 
+        return;
+
+    audible = (SLTT_BEEP_AUDIBLE & SLtt_Ignore_Beep);
+
+    if (SLTT_BEEP_FLASH & SLtt_Ignore_Beep) { // flash title, optional sound
+        FLASHWINFO fi = {0};
+        fi.cbSize = sizeof(fi);
+        fi.hwnd = vio.whandle;
+        fi.dwFlags = FLASHW_ALL;
+        fi.uCount = 1;
+        fi.dwTimeout = 0;
+        FlashWindowEx(&fi);
+        if (audible) beep(FALSE);
+
+    } else if (SLTT_BEEP_INVERT & SLtt_Ignore_Beep) { // invert last line, optional sound
+        invert_region(vio.rows-1, vio.rows);
+        vio_flush();
+        if (audible) {
+            beep(TRUE);
+        } else {
+            Sleep(200);
+        }
+        invert_region(vio.rows-1, vio.rows);
+        vio_flush();
+
+    } else { // default, sound
+        beep(FALSE);
+    }   
 }
 
 
@@ -678,6 +723,24 @@ top:                                            /* get here only on newline */
     }
     goto top;
 #endif
+}
+
+
+static void             
+invert_region(int top_row, int bot_row)
+{
+    if (bot_row > vio.rows) bot_row = vio.rows;
+    while (top_row < bot_row) {
+        WCHAR_INFO *cursor = vio.c_screen[top_row].text,
+            *cend = cursor + vio.cols;
+
+        vio.c_screen[top_row].flags |= TOUCHED|TRASHED;
+        while (cursor < cend) {
+            cursor->Info.Attributes ^= VIO_INVERSE;
+            ++cursor;
+        }
+        ++top_row;
+    }
 }
 
 

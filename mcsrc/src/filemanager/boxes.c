@@ -550,6 +550,7 @@ configure_box (void)
 #if defined(WIN32)  //WIN32, quick
         quick_widget_t quick_widgets[35+2] = {0},
             *qc = quick_widgets;
+
 #else
         quick_widget_t quick_widgets[] = {
             /* *INDENT-OFF* */
@@ -1189,6 +1190,86 @@ display_bits_box (void)
 /* --------------------------------------------------------------------------------------------- */
 #else /* HAVE_CHARSET */
 
+#if defined(WIN32) //WIN32, alert-options
+static unsigned long visible_option_id, audible_beep_id, legacy_beep_id;
+
+static void
+alert_options_decode (int *visible_option, int *audible_beep, int *legacy_beep)
+{
+    *visible_option = *audible_beep = *legacy_beep = 0;
+
+    if (SLTT_BEEP_FLASH & console_alert_mode) *visible_option = 1;
+    else if (SLTT_BEEP_INVERT & console_alert_mode) *visible_option = 2;
+    if (SLTT_BEEP_AUDIBLE & console_alert_mode)
+    {
+        *audible_beep = 1;
+        if (SLTT_BEEP_LEGACY & console_alert_mode)
+            *legacy_beep = 1;
+    }
+}
+
+static void
+alert_options_apply (int visible_option, int audible_beep, int legacy_beep)
+{
+    console_alert_mode = 0;
+    if (1 == visible_option) console_alert_mode |= SLTT_BEEP_FLASH;
+    else if (2 == visible_option) console_alert_mode |= SLTT_BEEP_INVERT;
+    if (audible_beep) 
+    {
+        console_alert_mode |= SLTT_BEEP_AUDIBLE;
+        if (legacy_beep)
+             console_alert_mode |= SLTT_BEEP_LEGACY;
+    }
+}
+
+static void
+alert_options_test (Widget * w)
+{
+    const int old_console_alert_mode = console_alert_mode;   
+    const int t_visible_option = RADIO(widget_find_by_id(w, visible_option_id))->sel;
+    const int t_audible_beep = CHECK(widget_find_by_id(w, audible_beep_id))->state;
+    const int t_legacy_beep = CHECK(widget_find_by_id(w, legacy_beep_id))->state;
+
+    alert_options_apply (t_visible_option, t_audible_beep, t_legacy_beep);
+    tty_beep ();
+    console_alert_mode = old_console_alert_mode;
+}
+
+static cb_ret_t
+display_bits_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+{
+    switch (msg)
+    {
+    case MSG_NOTIFY:
+        /* message from "Single press" checkbutton */
+        if (sender != NULL) 
+        {
+            if (sender->id == audible_beep_id)
+            {
+                const gboolean not_single = !CHECK (sender)->state;
+                Widget *ww;
+
+                /* input line */
+                ww = widget_find_by_id (w, legacy_beep_id);
+                widget_disable (ww, not_single);
+
+                alert_options_test (w);
+                return MSG_HANDLED;
+            } 
+            else if (sender->id == visible_option_id || sender->id == legacy_beep_id)
+            {
+                alert_options_test (w);
+                return MSG_HANDLED;
+            }
+        }
+        return MSG_NOT_HANDLED;
+
+    default:
+        return dlg_default_callback (w, sender, msg, parm, data);
+    }
+}
+#endif  //WIN32
+
 void
 display_bits_box (void)
 {
@@ -1203,7 +1284,7 @@ display_bits_box (void)
         gboolean new_meta;
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[9+2] = {0},
+        quick_widget_t quick_widgets[19+2] = {0},
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -1219,23 +1300,50 @@ display_bits_box (void)
             QUICK_END
             /* *INDENT-ON* */
         };
-#endif  //WIN32,quick
 
         quick_dialog_t qdlg = {
             -1, -1, 46,
             N_("Display bits"), "[Display bits]",
-            quick_widgets, NULL, NULL
+            quick_widgets, NULL, NULL};
+        };
+#endif  //WIN32,quick
+
+#if defined(WIN32)  //WIN32, quick/alert-options
+        quick_dialog_t qdlg = {
+            -1, -1, 46,
+            N_("Display bits"), "[Display bits]",
+            quick_widgets, display_bits_callback, NULL};
+
+        const char *visible_options[] = {
+            N_("Invisible"),
+            N_("Flash window"),
+            N_("Flash baseline")
         };
 
-#if defined(WIN32)  //WIN32, quick
+        const int visible_num = G_N_ELEMENTS (visible_options);
+        int visible_option, audible_beep, legacy_beep;
+
+        alert_options_decode (&visible_option, &audible_beep, &legacy_beep);
+
         qc = XQUICK_START_COLUMNS (qc),
-        qc =     XQUICK_LABEL (qc, N_("Input / display codepage:"), NULL),
+        qc =    XQUICK_LABEL (qc, N_("Input / display codepage:"), NULL),
         qc = XQUICK_NEXT_COLUMN (qc),
-        qc =     XQUICK_BUTTON (qc, cpname, B_USER, sel_charset_button, NULL),
+        qc =    XQUICK_BUTTON (qc, cpname, B_USER, sel_charset_button, NULL),
         qc = XQUICK_STOP_COLUMNS (qc),
         qc = XQUICK_SEPARATOR (qc, TRUE),
-        qc =     XQUICK_CHECKBOX (qc, N_("F&ull 8 bits input"), &new_meta, NULL),
+        qc = XQUICK_START_COLUMNS (qc),
+        qc =    XQUICK_START_GROUPBOX (qc, N_("Console alert mode")),
+        qc =        XQUICK_RADIO (qc, visible_num, visible_options, &visible_option, &visible_option_id),
+        qc =        XQUICK_CHECKBOX (qc, N_("Audible"), &audible_beep, &audible_beep_id),
+        qc =        XQUICK_CHECKBOX (qc, N_("Legacy beep"), &legacy_beep, &legacy_beep_id),
+        qc =    XQUICK_STOP_GROUPBOX (qc),
+        qc = XQUICK_NEXT_COLUMN (qc),
+        qc =    XQUICK_START_GROUPBOX (qc, N_("Other Options")),
+        qc =        XQUICK_CHECKBOX (qc, N_("F&ull 8 bits input"), &new_meta, NULL),
+        qc =    XQUICK_STOP_GROUPBOX (qc),
+        qc = XQUICK_STOP_COLUMNS (qc),
         qc = XQUICK_BUTTONS_OK_CANCEL (qc),
+
         qc = XQUICK_END (qc);
         assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
@@ -1256,13 +1364,17 @@ display_bits_box (void)
                 g_free (errmsg);
             }
 
+#if defined(WIN32)  //WIN32, alert-options
+            alert_options_apply (visible_option, audible_beep, legacy_beep);
+#endif
+
 #ifdef HAVE_SLANG
             tty_display_8bit (mc_global.display_codepage != 0 && mc_global.display_codepage != 1);
 #else
             tty_display_8bit (mc_global.display_codepage != 0);
 #endif
             use_8th_bit_as_meta = !new_meta;
-
+            
             repaint_screen ();
         }
     }

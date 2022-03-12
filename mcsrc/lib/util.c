@@ -652,11 +652,8 @@ x_basename (const char *s)
     const char *url_delim, *path_sep;
 
     url_delim = g_strrstr (s, VFS_PATH_URL_DELIMITER);
-#if defined(WIN32)
-    {   const char *s1 = strrchr (s, PATH_SEP),
-           *s2 = strrchr (s, PATH_SEP2);
-        path_sep = (s2 > s1 ? s2 : s1);
-    }
+#if defined(WIN32) //WIN32, path
+    path_sep = strrchr2 (s, PATH_SEP, PATH_SEP2);
 #else
     path_sep = strrchr (s, PATH_SEP);
 #endif

@@ -663,6 +663,9 @@
     <ClCompile Include="..\..\src\win32_trace.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\strchr2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\buildinfo.h">

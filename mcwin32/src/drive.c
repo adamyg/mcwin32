@@ -445,4 +445,3 @@ enumerate_disks(int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueu
 #endif  //DO_NETWORK_DRIVES
 
 /*end*/
-

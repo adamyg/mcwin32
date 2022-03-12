@@ -75,6 +75,12 @@ LIBW32_API extern int          SLtt_Try_Termcap;
 #define SLTT_ALTC_MASK          0x20000000UL    /* Alternative Character */
 #define SLTT_ATTRIBUTE          0x80000000UL    /* Internal attribute, otherwise native */
 
+/* SLtt_Ignore_Beep options */
+#define SLTT_BEEP_AUDIBLE       0x01
+#define SLTT_BEEP_FLASH         0x02
+#define SLTT_BEEP_INVERT        0x04
+#define SLTT_BEEP_LEGACY        0x80
+
 /* VT100-compatible symbols -- box chars */
 #define XTERM_ACS_ULCORNER      'l'
 #define XTERM_ACS_LLCORNER      'm'

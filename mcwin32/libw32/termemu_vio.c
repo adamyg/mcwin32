@@ -1751,7 +1751,7 @@ CopyOutEx(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
                 const WCHAR_INFO cell = *cursor++;
 
                 if (start >= 0) {               // attribute run
-                    if (SameAttributesFGBG(&cell, &info, fg, bg, VIO_BOLD|VIO_BLINK|VIO_ITALIC|VIO_FAINT)) {
+                    if (SameAttributesFGBG(&cell, &info, fg, bg, VIO_BOLD|VIO_BLINK|VIO_ITALIC|VIO_FAINT|VIO_INVERSE)) {
                         ocursor[col++] = cell;  // update out image
                         *text = (WCHAR)cell.Char.UnicodeChar;
                         if (++text >= etext)
@@ -1774,14 +1774,17 @@ CopyOutEx(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
                 text  = textbuf;
                 info  = cell.Info;
                 COLOR256(&info, &fg, &bg);
+                if (info.Attributes & VIO_INVERSE) {
+                    SWAPRGB(fg, bg);
+                }
 
                 if (start > 0) {                // if previous is space, also redraw; address font cell draw bleeding.
                     const WCHAR_INFO backcell = cursor[-2];
 
                     if ((IsSpace(cell.Char.UnicodeChar) &&
-                            SameAttributesFGBG(&backcell, &info, fg, bg, VIO_BOLD | VIO_BLINK | VIO_ITALIC | VIO_FAINT)) ||
+                            SameAttributesFGBG(&backcell, &info, fg, bg, VIO_BOLD|VIO_BLINK|VIO_ITALIC|VIO_FAINT|VIO_INVERSE)) ||
                         (IsSpace(backcell.Char.UnicodeChar) &&
-                            SameAttributesBG(&backcell, &info, bg, VIO_BOLD | VIO_BLINK | VIO_ITALIC | VIO_FAINT))) {
+                            SameAttributesBG(&backcell, &info, bg, VIO_BOLD|VIO_BLINK|VIO_ITALIC|VIO_FAINT|VIO_INVERSE))) {
                         *text++ = (WCHAR)backcell.Char.UnicodeChar;
                         --start;
                     }
@@ -3249,6 +3252,8 @@ vio_define_attr(int obj, const char *what, const char *fg, const char *bg)
 //  }
 
     if (VIO_INVERSE & (fattr|battr)) {          // apply inverse.
+        fattr &= ~VIO_INVERSE;
+        battr &= ~VIO_INVERSE;
         SWAPFGBG(fcolor, bcolor);
         SWAPRGB(frgb, brgb);
     }
@@ -3310,7 +3315,11 @@ vio_define_winattr(int obj, int fg, int bg, uint16_t attributes)
     assert(bg >= WIN_COLOR_MIN && bg < WIN_COLOR_NUM);
     if (obj < 0 || obj >= MAXOBJECTS) return;
 
-    if (VIO_INVERSE & attributes) SWAPFGBG(fg, bg);
+    if (VIO_INVERSE & attributes) {
+        attributes &= ~VIO_INVERSE;
+        SWAPFGBG(fg, bg);
+    }
+
     if (fg < 0 || bg < 0) {                     // specials, dynamic
         vio.c_attrs[obj].Flags = VIO_F16;       // vt/xterm
         vio.c_attrs[obj].Attributes = attributes;
@@ -3342,8 +3351,13 @@ vio_define_vtattr(int obj, int fg, int bg, uint16_t attributes)
         vio.c_attrs[obj].Flags = VIO_F256;
         if (vio.maxcolors > 16) vio.activecolors = 256;
     }
+
+    if (VIO_INVERSE & attributes) {
+        attributes &= ~VIO_INVERSE;
+        SWAPFGBG(fg, bg);
+    }
+
     vio.c_attrs[obj].Attributes = attributes;
-    if (VIO_INVERSE & attributes) SWAPFGBG(fg, bg);
     vio.c_attrs[obj].fg = (short)vtnormal(fg);
     vio.c_attrs[obj].bg = (short)vtnormal(bg);
     vio.c_attrs[obj].fgrgb = (COLORREF)-1;
@@ -3361,8 +3375,13 @@ vio_define_rgbattr(int obj, int fg, int bg, uint16_t attributes)
 
     vio.c_attrs[obj].Flags = VIO_FRGB;          // true-color
     if (vio.maxcolors > 16) vio.activecolors = 256;
+
+    if (VIO_INVERSE & attributes) {
+        attributes &= ~VIO_INVERSE;
+        SWAPFGBG(fg, bg);
+    }
+
     vio.c_attrs[obj].Attributes = attributes;
-    if (VIO_INVERSE & attributes) SWAPFGBG(fg, bg);
     vio.c_attrs[obj].fg = (short)rgb_search(16, fg); // shadow colors (vt/xterm)
     vio.c_attrs[obj].bg = (short)rgb_search(16, bg);
     vio.c_attrs[obj].fgrgb = (COLORREF)fg;      // true-colors
@@ -3422,7 +3441,11 @@ vio_set_wincolor(int fg, int bg, uint16_t attributes)
     assert(fg >= WIN_COLOR_MIN && fg < WIN_COLOR_NUM);
     assert(bg >= WIN_COLOR_MIN && bg < WIN_COLOR_NUM);
 
-    if (VIO_INVERSE & attributes) SWAPFGBG(fg, bg);
+    if (VIO_INVERSE & attributes) {
+        attributes &= ~VIO_INVERSE;
+        SWAPFGBG(fg, bg);
+    }
+
     if (fg < 0 || bg < 0) {                     // specials, dynamic
         vio.c_color.Flags = VIO_F16;            // vt/xterm
         vio.c_color.Attributes = attributes;
@@ -3453,8 +3476,12 @@ vio_set_vtcolor(int fg, int bg, uint16_t attributes)
 
     vio.c_color.Flags = VIO_F16;
     if (fg >= 16 || bg >= 16) vio.c_color.Flags = VIO_F256;
+    if (VIO_INVERSE & attributes) {
+        attributes &= ~VIO_INVERSE;
+        SWAPFGBG(fg, bg);
+    }
+
     vio.c_color.Attributes = attributes;
-    if (VIO_INVERSE & attributes) SWAPFGBG(fg, bg);
     vio.c_color.fg = (short)vtnormal(fg);       // primary colors (vt/xterm)
     vio.c_color.bg = (short)vtnormal(bg);
     vio.c_color.fgrgb = (COLORREF)-1;           // true-colors (none)
@@ -3474,8 +3501,12 @@ vio_set_rgbcolor(int32_t fg, int32_t bg, uint16_t attributes)
 
     vio.c_color.Flags = VIO_FRGB;
     if (vio.maxcolors > 16) vio.activecolors = 256;
+    if (VIO_INVERSE & attributes) {
+        attributes &= VIO_INVERSE;
+        SWAPFGBG(fg, bg);
+    }
+
     vio.c_color.Attributes = attributes;
-    if (VIO_INVERSE & attributes) SWAPFGBG(fg, bg);
     vio.c_color.fg = (short)rgb_search(16, fg); // shadow colors (vt/xterm)
     vio.c_color.bg = (short)rgb_search(16, bg);
     vio.c_color.fgrgb = (COLORREF)fg;           // true-colors
