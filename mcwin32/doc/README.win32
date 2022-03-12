@@ -1,13 +1,14 @@
 
 Native GNU Midnight Commander for Win32
 
---------------------------------
+--------------------------------------------
 
 Windows XP+/32 bit native port of GNU Midnight Commander, based on
 the current 4.8.x development stream.
 
         Version         Latest Build
 
+        4.8.27          225 (enhancements #16 and #17).
         4.8.27          224 (mc merge, libaspell - beta) See [https://github.com/adamyg/aspell-win32] for distributions.
 
         4.8.24          223 (bug fixes - unable to load skins)
@@ -112,9 +113,9 @@ Resources
 Window native port for GNU Midnight Commander, the latest builds can be
 found at the links:
 
-   https://sourceforge.net/projects/mcwin32/
-
-   https://github.com/adamyg/mcwin32
+   https://github.com/adamyg/mcwin32/ (master)
+   
+   https://sourceforge.net/projects/mcwin32/ (mirror)
 
 
 Specific information regarding the base Midnight Commander 4.8.x engine,
@@ -145,7 +146,7 @@ quickly. Please feel free to raise tickets on SourceForge when
 issues are encountered.
 
 adamy
-Oct/2021
+Mar/2022
 
 
 Other Resources
