@@ -47,8 +47,10 @@
 #include "win32_utl.h"
 #include "win32_trace.h"
 
-
 static const char bin_sh[] = "/bin/sh";
+
+static mc_pipe_t *pipe_open (const char *xcommand, gboolean read_out, gboolean read_err, gboolean write_in, GError ** error);
+static gboolean pipe_read (mc_pipe_t *p, gboolean fdout, gboolean fderr, GError **error);
 
 
 /**
@@ -60,17 +62,47 @@ static const char bin_sh[] = "/bin/sh";
  *  @return newly created object of mc_pipe_t class in success, NULL otherwise
  */
 
-#if (VERSION_3 >= 27)
 mc_pipe_t *
-mc_popen (const char *xcommand, gboolean read_out, gboolean read_err, GError ** error)
-#else
-mc_pipe_t *
-mc_popen (const char *xcommand, GError ** error)
-#endif
+mc_popen (const char *command, gboolean read_out, gboolean read_err, GError ** error)
 {
-#if (VERSION_3 < 27)
-    gboolean read_out = 1, read_err = 1;
-#endif
+    return pipe_open (command, read_out, read_err, FALSE, error);
+}
+
+
+int
+mc_popen2 (const char *command, int *fds, GError **error)
+{
+    mc_pipe_t *p;
+
+    if (NULL != (p = pipe_open(command, TRUE, FALSE, TRUE, error))) {
+        win32_exec_t *args = (win32_exec_t *)(p + 1);
+        int t_fdin = -1, t_fdout = -1;
+
+        if ((t_fdin = _open_osfhandle((long)args->hOutput, _O_BINARY)) >= 0) {
+            args->hOutput = 0;                  // change ownership
+            
+            if ((t_fdout = _open_osfhandle((long)args->hInput, _O_BINARY)) >= 0) {
+                const int handle = (int)args->hProc;
+
+                args->hInput = 0;               // change ownership
+                args->hProc = 0;
+                mc_pclose (p, NULL);
+
+                fds[0] = t_fdin;
+                fds[1] = t_fdout;
+                return handle;
+            }
+            close (t_fdin);
+        }
+        mc_pclose (p, NULL);
+    }
+    return -1;
+}
+
+
+static mc_pipe_t *
+pipe_open (const char *xcommand, gboolean fdout, gboolean fderr, gboolean fdin, GError ** error)
+{
     win32_exec_t *args = NULL;
     const char *busybox = mc_BUSYBOX();
     const char *cmd = NULL;
@@ -140,7 +172,6 @@ mc_popen (const char *xcommand, GError ** error)
         }
     }
 
-
     if (NULL == (p = (mc_pipe_t *)calloc(sizeof(mc_pipe_t) + sizeof(win32_exec_t), 1))) {
         x_errno = ENOMEM;
         goto error;
@@ -159,14 +190,14 @@ mc_popen (const char *xcommand, GError ** error)
         goto error;
     }
 
-    if (read_out) {                             // reading stdout?
+    if (fdout) {                                // reading stdout?
         p->out.fd = 0;
     } else if (args->hOutput) {                 // close stdout
         CloseHandle(args->hOutput);
         args->hOutput = 0;
     }
 
-    if (read_err) {                             // reading stderr?
+    if (fderr) {                                // reading stderr?
         p->err.fd = 0;
     } else if (args->hError) {                  // close stderr
         CloseHandle(args->hError);
@@ -251,23 +282,46 @@ WaitForMultiplePipes (DWORD waitcount, HANDLE *handles, DWORD timeout)
 
 
 void
-mc_pread (mc_pipe_t * p, GError ** error)
+mc_pread (mc_pipe_t *p, GError **error)
+{
+    pipe_read (p, p->out.fd >= 0, p->err.fd >= 0, error);
+}
+
+
+int
+mc_pread2 (mc_pipe_t *p, void *buf, size_t len)
+{
+    if (p->out.fd >= 0) {
+        p->out.len = len;                       // buffer length
+
+        if (pipe_read (p, TRUE, FALSE, NULL)) {
+            const int ret = p->out.len;
+            if (ret >= 0) {
+                memcpy (buf, p->out.buf, ret);
+                return ret;
+            }
+        }
+    }
+    return -1;
+}
+
+
+static gboolean
+pipe_read (mc_pipe_t *p, gboolean fdout, gboolean fderr, GError **error)
 {
     win32_exec_t *args = (win32_exec_t *)(p + 1);
-    gboolean read_out, read_err;
     mc_pipe_stream_t *streams[3] = {0};
     HANDLE handles[3] = {0};
+    ssize_t buflens[3] = {0};
     DWORD waitcnt = 0, ret;
+    gboolean rc = FALSE;
 
     if (error) *error = NULL;
 
-    read_out = (p->out.fd >= 0);
-    read_err = (p->err.fd >= 0);
-
-    if (! read_out && ! read_err) {
+    if (!fdout && !fderr) {
         p->out.len = MC_PIPE_STREAM_UNREAD;
         p->err.len = MC_PIPE_STREAM_UNREAD;
-        return;
+        return FALSE;
     }
 
     if (args->hInput) {                         // close stdin
@@ -275,19 +329,21 @@ mc_pread (mc_pipe_t * p, GError ** error)
         args->hInput = 0;
     }
 
-    if (read_out) {                             // stdout
-        p->out.len = MC_PIPE_STREAM_UNREAD;
+    if (fdout) {                                // stdout
         assert(args->hOutput && INVALID_HANDLE_VALUE != args->hOutput);
         handles[waitcnt] = args->hOutput;
         streams[waitcnt] = &p->out;
+        buflens[waitcnt] = p->out.len;
+        p->out.len = MC_PIPE_STREAM_UNREAD;
         ++waitcnt;
     }
 
-    if (read_err) {                             // stderr
-        p->err.len = MC_PIPE_STREAM_UNREAD;
+    if (fderr) {                                // stderr
         assert(args->hError && INVALID_HANDLE_VALUE != args->hError);
         handles[waitcnt] = args->hError;
         streams[waitcnt] = &p->err;
+        buflens[waitcnt] = p->err.len;
+        p->err.len = MC_PIPE_STREAM_UNREAD;
         ++waitcnt;
     }
                                                 // select(handles)
@@ -296,15 +352,18 @@ mc_pread (mc_pipe_t * p, GError ** error)
     while (1) {                                 // stream ready?
          if (ret >= WAIT_OBJECT_0 && ret < (WAIT_OBJECT_0 + 2)) {
             mc_pipe_stream_t *ps = streams[ret - WAIT_OBJECT_0];
-            HANDLE hPipe = handles[ret - WAIT_OBJECT_0];
+            HANDLE handle = handles[ret - WAIT_OBJECT_0];
+            size_t buflen = buflens[ret - WAIT_OBJECT_0];
             DWORD count = 0;
-            size_t buf_len;
 
-            if ((buf_len = (size_t) ps->len) >= MC_PIPE_BUFSIZE) {
-                buf_len = (ps->null_term ? MC_PIPE_BUFSIZE - 1 : MC_PIPE_BUFSIZE);
+            if (buflen >= MC_PIPE_BUFSIZE) {
+                buflen = (ps->null_term ? MC_PIPE_BUFSIZE - 1 : MC_PIPE_BUFSIZE);
             }
+            assert(buflen && buflen <= MC_PIPE_BUFSIZE);
 
-            if (ReadFile(hPipe, ps->buf, buf_len, &count, NULL)) {
+            ps->error = 0;                      // last error.
+
+            if (ReadFile(handle, ps->buf, buflen, &count, NULL)) {
                 if (count) {
                     if (ps->null_term) {        // optional terminator
                         ps->buf[count] = '\0';
@@ -313,6 +372,7 @@ mc_pread (mc_pipe_t * p, GError ** error)
                 } else {
                     ps->len = 0;
                 }
+                rc = TRUE;
 
             } else {                            // error conditions
                 const DWORD lastError = GetLastError();
@@ -338,12 +398,12 @@ mc_pread (mc_pipe_t * p, GError ** error)
                                                 // pipe broken
             mc_pipe_stream_t *ps = streams[ret - WAIT_ABANDONED_0];
             if (ps) {
-                ps->len = MC_PIPE_STREAM_EOF;
+                ps->len = MC_PIPE_STREAM_EOF;   
             }
 
         } else if (ret == WAIT_TIMEOUT) {       // timeout
-            if (read_out) p->out.len = MC_PIPE_STREAM_EOF;
-            if (read_err) p->err.len = MC_PIPE_STREAM_EOF;
+            if (fdout) p->out.len = MC_PIPE_STREAM_EOF;
+            if (fderr) p->err.len = MC_PIPE_STREAM_EOF;
 
         } else {                                // unknown condition.
             mc_propagate_error (error, MC_PIPE_ERROR_READ,
@@ -353,6 +413,8 @@ mc_pread (mc_pipe_t * p, GError ** error)
 
         break;  // done.
     }
+
+    return rc;
 }
 
 
@@ -365,7 +427,6 @@ mc_pread (mc_pipe_t * p, GError ** error)
  * @return newly created GString or NULL in case of EOL;
  */
 
-#if (VERSION_3 >= 27)
 GString *
 mc_pstream_get_string (mc_pipe_stream_t * ps)
 {
@@ -399,7 +460,6 @@ mc_pstream_get_string (mc_pipe_stream_t * ps)
 
     return g_string_new_len (s, i);
 }
-#endif  //VERSION_3
 
 
 /**

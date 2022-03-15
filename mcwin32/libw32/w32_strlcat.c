@@ -203,4 +203,3 @@ __stdlibrary_has_strlcat(void)
 #endif  /*_MSC_VER*/
 
 /*end*/
-

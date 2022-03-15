@@ -5,7 +5,7 @@ __CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.2 2021/11/30 13:06:1
 /*
  * win32 getrusage() system calls
  *
- * Copyright (c) 2020, Adam Young.
+ * Copyright (c) 2020 - 2022, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

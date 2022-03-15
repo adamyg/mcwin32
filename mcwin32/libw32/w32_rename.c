@@ -5,7 +5,7 @@ __CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.4 2021/05/24 15:10:34 cvsu
 /*
  * win32 rename() system calls.
  *
- * Copyright (c) 2020 - 2021 Adam Young.
+ * Copyright (c) 2020 - 2022 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -115,7 +115,6 @@ w32_rename(const char *ofile, const char *nfile)
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
         wchar_t wofile[WIN32_PATH_MAX], wnfile[WIN32_PATH_MAX];
-        int mode = 0;
 
         if (NULL == ofile || NULL == nfile) {
             errno = EFAULT;

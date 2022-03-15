@@ -68,7 +68,7 @@ static SOCKET
 nativehandle(int fd)
 {
     if (fd >= 0)
-	return (SOCKET)fd;
+        return (SOCKET)fd;
     return INVALID_SOCKET;
 }
 
@@ -87,14 +87,14 @@ retry:;
     if ((s = socket(af, type, protocol)) == INVALID_SOCKET) {
         if (0 == done++) {
             if (WSAGetLastError() == WSANOTINITIALISED && 0 == w32_sockinit()) {
-		goto retry;			/* hide winsock initialisation */
+                goto retry;                     /* hide winsock initialisation */
             }
         }
         w32_sockerror();
         ret = -1;
     } else {
         SetHandleInformation((HANDLE)s, HANDLE_FLAG_INHERIT, 0);
-	assert((int)s < 0x7fffffff);
+        assert((int)s < 0x7fffffff);
     }
     return (int)s;
 }
@@ -113,7 +113,7 @@ w32_connect_native(int fd, const struct sockaddr *name, socklen_t namelen)
     if ((osf = nativehandle(fd)) == (SOCKET)INVALID_SOCKET) {
         ret = -1;
     } else if (connect(osf, name, namelen) != 0) {
-	w32_sockerror();
+        w32_sockerror();
         ret = -1;
     }
     return ret;
@@ -526,4 +526,3 @@ w32_shutdown_native(int fd, int how)
 }
 
 /*end*/
-

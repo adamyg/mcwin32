@@ -490,8 +490,6 @@ MC_LIBMC+=$(MC_4_8_24)
 #	vfs/local
 #	vfs/cpio
 #	vfs/extfs
-#	vfs/fish	TODO -- shell/pipe
-#		- $(D_OBJVFS)/fish_fish$(O)
 #	vfs/ftpfs
 #	vfs/sfs
 #	vfs/sftpfs
@@ -514,12 +512,13 @@ MC_LIBVFS_SFTPFS=\
 	$(D_OBJVFS)/sftpfs_vfs_subclass$(O)
 
 MC_LIBVFS=\
-	$(D_OBJVFS)/plugins_init$(O)		\
-	$(D_OBJVFS)/local_local$(O)		\
 	$(D_OBJVFS)/cpio_cpio$(O)		\
 	$(D_OBJVFS)/extfs_extfs$(O)		\
+	$(D_OBJVFS)/fish_fish$(O)		\
 	$(D_OBJVFS)/ftpfs_ftpfs$(O)		\
 	$(D_OBJVFS)/ftpfs_ftpfs_parse_ls$(O)	\
+	$(D_OBJVFS)/local_local$(O)		\
+	$(D_OBJVFS)/plugins_init$(O)		\
 	$(MC_LIBVFS_SFTPFS)			\
 	$(D_OBJVFS)/sfs_sfs$(O)			\
 	$(D_OBJVFS)/tar_tar$(O)

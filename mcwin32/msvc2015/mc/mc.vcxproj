@@ -489,6 +489,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\fish\fish.c" />
     <ClCompile Include="..\..\..\mcsrc\src\vfs\ftpfs\ftpfs.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>

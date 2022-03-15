@@ -73,4 +73,3 @@ strnlen(const char *s, size_t maxlen)
 #endif
 
 /*end*/
-

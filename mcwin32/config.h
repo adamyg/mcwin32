@@ -168,7 +168,7 @@ extern void                 tty_set_title(const char *title);
 #define ENABLE_VFS_SFS 1
 #define ENABLE_VFS_EXTFS 1
 #define ENABLE_VFS_FTP 1
-#undef  ENABLE_VFS_FISH
+#define ENABLE_VFS_FISH 1                       /* build-225+ */
 #define ENABLE_VFS_SFTP 1                       /* libssh2 */
 #undef  ENABLE_VFS_SMB
 #undef  ENABLE_VFS_UNDELFS

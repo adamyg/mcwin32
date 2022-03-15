@@ -275,14 +275,23 @@ sel_console(Select_t *selfd)
         selfd->s_avail |= T_WRITE;
 
     if (selfd->s_wanted & T_READ)
-        while (PeekConsoleInput(h, &k, 1, &count) && count) {
+#if defined(USE_UNICODE)
+        while (PeekConsoleInputW(h, &k, 1, &count) && count) {
+#else
+        while (PeekConsoleInputA(h, &k, 1, &count) && count) {
+#endif
             if (k.EventType == KEY_EVENT) {
                 if (k.Event.KeyEvent.bKeyDown) {
                     selfd->s_avail |= T_READ;
                     break;
                 }
             }
-	    (void) ReadConsoleInput (h, &k, 1, &count);
+
+#if defined(USE_UNICODE)
+	    (void) ReadConsoleInputW(h, &k, 1, &count);
+#else
+	    (void) ReadConsoleInputA(h, &k, 1, &count);
+#endif
         }
 }
 
@@ -334,4 +343,3 @@ sel_unknown(Select_t *selfd)
 }
 
 /*end*/
-

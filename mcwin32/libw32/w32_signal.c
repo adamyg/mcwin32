@@ -84,4 +84,3 @@ sigaction(int sig, struct sigaction *sa, struct sigaction *osa)
 #endif /*__MINGW32__*/
 
 /*end*/
-

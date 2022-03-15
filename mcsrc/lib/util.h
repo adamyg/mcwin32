@@ -217,6 +217,9 @@ int my_systemv (const char *command, char *const argv[]);
 int my_systemv_flags (int flags, const char *command, char *const argv[]);
 
 mc_pipe_t *mc_popen (const char *command, gboolean read_out, gboolean read_err, GError ** error);
+#if defined(WIN32) //WIN32, fish
+int mc_popen2 (const char *command, int *fds, GError **error);
+#endif
 void mc_pread (mc_pipe_t * p, GError ** error);
 void mc_pclose (mc_pipe_t * p, GError ** error);
 
