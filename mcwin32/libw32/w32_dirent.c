@@ -37,7 +37,6 @@ __CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.23 2022/02/17 16:04:59 cvs
 #define _DIRENT_SOURCE
 #include "win32_internal.h"
 #include <unistd.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>

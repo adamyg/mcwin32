@@ -640,4 +640,3 @@ munlock(const void *addr, size_t len)
 //int munlockall(void);
 
 /*end*/
-

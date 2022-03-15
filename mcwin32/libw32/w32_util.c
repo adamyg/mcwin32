@@ -627,9 +627,9 @@ w32_vsyserrorA(DWORD dwError, char *buf, int buflen, ...)
         const DWORD ret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
                                 FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, dwError,
                                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, --buflen /*nul*/, NULL);
-        int len;
-
         if (0 == ret) {                         // error, overflow etc
+            int len;
+
             if ((len = buflen) > sizeof("unknown error")) {
                 len = sizeof("unknown error");
             }
@@ -697,9 +697,9 @@ w32_vsyserrorW(DWORD dwError, wchar_t *buf, int buflen, ...)
         const DWORD ret = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
                                 FORMAT_MESSAGE_MAX_WIDTH_MASK, NULL, dwError,
                                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, --buflen /*nul*/,  NULL);
-        int len;
-
         if (0 == ret) {                         // error, overflow etc
+            int len;
+
             if ((len = buflen) > sizeof("unknown error")) {
                 len = sizeof("unknown error");
             }

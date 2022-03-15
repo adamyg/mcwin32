@@ -4,7 +4,7 @@
  * Copyright (c) 2016 - 2022 Adam Young.
  * 
  * This file is part of the Midnight Commander.
- * 
+ *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.

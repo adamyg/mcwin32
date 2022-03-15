@@ -8,7 +8,7 @@ __CPRAGMA_ONCE
 /*
  * <dlfcn.h> for windows
  *
- * Copyright (c) 1998 - 2021, Adam Young.
+ * Copyright (c) 1998 - 2022, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

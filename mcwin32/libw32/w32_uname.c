@@ -5,7 +5,7 @@ __CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.6 2021/06/10 12:42:34 cvsuse
 /*
  * win32 uname() system calls.
  *
- * Copyright (c) 1998 - 2020, Adam Young.
+ * Copyright (c) 1998 - 2022, Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -437,4 +437,3 @@ uname(struct utsname *u)
 }
 
 /*end*/
-

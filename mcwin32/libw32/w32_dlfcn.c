@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.2 2021/11/30 13:06:19 cvsuse
  *
  *  dlopen, dlsym, dlclose and dlerror
  *
- * Copyright (c) 1998 - 2021, Adam Young.
+ * Copyright (c) 1998 - 2022, Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -32,7 +32,7 @@ __CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.2 2021/11/30 13:06:19 cvsuse
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained
+ * Group. Copyright remains with the authors and the original Standard can be obtained 
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
  */

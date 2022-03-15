@@ -8,31 +8,27 @@ __CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.8 2022/02/17 16:05:00 
  * Copyright (c) 2016 - 2022, Adam Young.
  * All rights reserved.
  *
- * This file is part of the GRIEF Editor.
+ * This file is part of the Midnight Commander.
  *
- * The GRIEF Editor is free software: you can redistribute it
- * and/or modify it under the terms of the GRIEF Editor License.
+ * The Midnight Commander is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
  *
- * Redistributions of source code must retain the above copyright
- * notice, and must be distributed with the license document above.
- *
- * Redistributions in binary form must reproduce the above copyright
- * notice, and must include the license document above in
- * the documentation and/or other materials provided with the
- * distribution.
- *
- * The GRIEF Editor is distributed in the hope that it will be useful,
+ * The Midnight Commander is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * License for more details.
- * ==end==
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
  * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
- * ==extra==
+ * ==end==
  */
 
 #include "win32_internal.h"
