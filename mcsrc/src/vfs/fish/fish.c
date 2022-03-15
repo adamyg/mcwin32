@@ -67,6 +67,7 @@
 #include "lib/mcconfig.h"
 #if defined(WIN32) //WIN32, fish
 #include "lib/widget.h"
+#include "win32_misc.h"
 #endif
 
 #include "src/execute.h"        /* pre_exec, post_exec */
@@ -424,18 +425,41 @@ static void
 fish_pipeopen (struct vfs_s_super *super, const char *path, const char *argv[])
 {
 #if defined(WIN32) //WIN32, fish
-    char cmd[1024];
+    char cmd[1024], t_path[MAX_PATH] = {0};
     GError *error = NULL;
-    int len, fdin = 1, fdout = -1;
+    int fds[2] = {-1, -1};
+    int syslen, len;
 
-    if (0 == strcmp(path, "ssh"))
-    { //FIXME
-        const char *t_path1 = "C:\\Windows\\SysNative\\OpenSSH\\ssh.exe"; //64-bit
-        const char *t_path2 = "C:\\Windows\\System32\\OpenSSH\\ssh.exe"; //32-bit
-        if (0 == access(t_path1, 0))
-            path = t_path1;
-        else if (0 == access(t_path2, 0))
-            path = t_path2;
+    if (0 == strcmp(path, "ssh")) { //FIXME
+        // OpenSSH
+        if (0 != (syslen = GetWindowsDirectoryA(t_path, sizeof(t_path)))) {
+            snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\System32\\OpenSSH\\ssh.exe"); //32-bit
+            if (0 == access(t_path, 0)) {
+                path = t_path;
+            } else {
+                snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\SysNative\\OpenSSH\\ssh.exe"); //64-bit
+                if (0 == access(t_path, 0)) {
+                    path = t_path;
+                }
+            }
+        }
+
+        // WinRSH
+        if (path != t_path && 0 != (syslen = w32_getsysdirA(SYSDIR_PROGRAM_FILES, t_path, sizeof(t_path))))  {
+            snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinRSH\\ssh.exe");
+            if (0 == access(t_path, 0)) {
+                path = t_path;
+            }
+        }
+
+    } else if (0 == strcmp(path, "rsh")) {
+        // WinRSH
+        if (0 != (syslen = w32_getsysdirA(SYSDIR_PROGRAM_FILES, t_path, sizeof(t_path))))  {
+            snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinRSH\\rsh.exe");
+            if (0 == access(t_path, 0)) {
+                path = t_path;
+            }
+        }
     }
 
     len = snprintf (cmd, sizeof(cmd), "%s", path);
@@ -450,15 +474,14 @@ fish_pipeopen (struct vfs_s_super *super, const char *path, const char *argv[])
         }
     }
 
-    if (-1 == mc_popen2 (cmd, &fdin, &fdout, &error))
+    if (-1 == mc_popen2 (cmd, fds, &error))
     {
         message (D_ERROR, _("Fish pipe"), "%s", error->message);
         g_error_free (error);
-        return;
     }
 
-    FISH_SUPER(super)->sockr = fdin;
-    FISH_SUPER(super)->sockw = fdout;
+    FISH_SUPER(super)->sockr = fds[0];
+    FISH_SUPER(super)->sockw = fds[1];
 
 #else
     int fileset1[2], fileset2[2];

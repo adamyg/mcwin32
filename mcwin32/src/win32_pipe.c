@@ -70,19 +70,31 @@ mc_popen (const char *command, gboolean read_out, gboolean read_err, GError ** e
 
 
 int
-mc_popen2 (const char *command, int *fdin, int *fdout, GError **error)
+mc_popen2 (const char *command, int *fds, GError **error)
 {
     mc_pipe_t *p;
 
     if (NULL != (p = pipe_open(command, TRUE, FALSE, TRUE, error))) {
         win32_exec_t *args = (win32_exec_t *)(p + 1);
+        int t_fdin = -1, t_fdout = -1;
 
-        *fdin = _open_osfhandle((long)args->hOutput, _O_BINARY);
-        *fdout = _open_osfhandle((long)args->hInput, _O_BINARY);
-        args->hOutput = args->hInput = 0;
-        args->hProc = 0;
+        if ((t_fdin = _open_osfhandle((long)args->hOutput, _O_BINARY)) >= 0) {
+            args->hOutput = 0;                  // change ownership
+            
+            if ((t_fdout = _open_osfhandle((long)args->hInput, _O_BINARY)) >= 0) {
+                const int handle = (int)args->hProc;
+
+                args->hInput = 0;               // change ownership
+                args->hProc = 0;
+                mc_pclose (p, NULL);
+
+                fds[0] = t_fdin;
+                fds[1] = t_fdout;
+                return handle;
+            }
+            close (t_fdin);
+        }
         mc_pclose (p, NULL);
-        return 0;
     }
     return -1;
 }

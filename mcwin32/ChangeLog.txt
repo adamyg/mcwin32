@@ -1,6 +1,12 @@
-Pending build-225
+Pending build-226
+
+Tue Mar 15 14:47:05 2022 adamy
+
+	* #21 - FISH enabled, OpenSSH required.
 
 Fri Mar 11 21:41:28 2022 adamy
+
+	* build-225
 
 	* #16 - Completion
 
