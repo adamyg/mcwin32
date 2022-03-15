@@ -526,10 +526,10 @@ apply_rules_going_right (WEdit * edit, off_t i)
                     {
                         _rule.end = e;
                         _rule.border = RULE_ON_LEFT_BORDER;
-                        _rule._context = count;
+                        _rule._context = (unsigned char) count;
                         if (!r->between_delimiters && _rule.keyword == 0)
                         {
-                            _rule.context = count;
+                            _rule.context = (unsigned char) count;
                             contextchanged = TRUE;
                         }
                         break;
