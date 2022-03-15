@@ -666,6 +666,9 @@
     <ClCompile Include="..\..\src\strchr2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\fish\fish.c">
+      <Filter>Source Files\mcsrc\libvfs\fish</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\buildinfo.h">

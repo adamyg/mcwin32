@@ -65,6 +65,9 @@
 #include "lib/fileloc.h"
 #include "lib/util.h"           /* my_exit() */
 #include "lib/mcconfig.h"
+#if defined(WIN32) //WIN32, fish
+#include "lib/widget.h"
+#endif
 
 #include "src/execute.h"        /* pre_exec, post_exec */
 
@@ -124,10 +127,18 @@ int fish_directory_timeout = 900;
 
 /*** file scope type declarations ****************************************************************/
 
+#if defined(WIN32)
+#if !defined(ECONNRESET)
+#define ECONNRESET      WSAECONNRESET           /* 10054 "Connection reset by peer" */
+#endif
+#if !defined(ENETUNREACH)
+#define ENETUNREACH     WSAENETUNREACH          /* 10051 "Network is unreachable" */
+#endif
+#endif
+
 typedef struct
 {
     struct vfs_s_super base;    /* base class */
-
     int sockr;
     int sockw;
     char *scr_ls;
@@ -412,6 +423,44 @@ fish_free_archive (struct vfs_class *me, struct vfs_s_super *super)
 static void
 fish_pipeopen (struct vfs_s_super *super, const char *path, const char *argv[])
 {
+#if defined(WIN32) //WIN32, fish
+    char cmd[1024];
+    GError *error = NULL;
+    int len, fdin = 1, fdout = -1;
+
+    if (0 == strcmp(path, "ssh"))
+    { //FIXME
+        const char *t_path1 = "C:\\Windows\\SysNative\\OpenSSH\\ssh.exe"; //64-bit
+        const char *t_path2 = "C:\\Windows\\System32\\OpenSSH\\ssh.exe"; //32-bit
+        if (0 == access(t_path1, 0))
+            path = t_path1;
+        else if (0 == access(t_path2, 0))
+            path = t_path2;
+    }
+
+    len = snprintf (cmd, sizeof(cmd), "%s", path);
+    if (argv && argv[0])
+    {
+        unsigned i = 1; // skip argv[0]
+        while (argv[i]) {
+            const char *arg = argv[i++];
+            const char *fmt = (strchr(arg, ' ') ? " \"%s\"" : " %s");
+            int t_len = snprintf(cmd + len, sizeof(cmd) - len, fmt, arg);
+            len += t_len;
+        }
+    }
+
+    if (-1 == mc_popen2 (cmd, &fdin, &fdout, &error))
+    {
+        message (D_ERROR, _("Fish pipe"), "%s", error->message);
+        g_error_free (error);
+        return;
+    }
+
+    FISH_SUPER(super)->sockr = fdin;
+    FISH_SUPER(super)->sockw = fdout;
+
+#else
     int fileset1[2], fileset2[2];
     int res;
 
@@ -444,6 +493,7 @@ fish_pipeopen (struct vfs_s_super *super, const char *path, const char *argv[])
         execvp (path, (char **) argv);
         my_exit (3);
     }
+#endif  //WIN32
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -782,7 +832,6 @@ fish_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path)
         int res;
 
         res = vfs_s_get_line_interruptible (me, buffer, sizeof (buffer), FISH_SUPER (super)->sockr);
-
         if ((res == 0) || (res == EINTR))
         {
             vfs_s_free_entry (me, ent);
@@ -890,8 +939,13 @@ fish_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path)
         case 'P':
             {
                 size_t skipped;
-
+#if defined(WIN32) //WIN32, fish
+                mode_t t_mode = 0;
+                vfs_parse_filemode (buffer + 1, &skipped, &t_mode);
+                ST.st_mode = t_mode;
+#else
                 vfs_parse_filemode (buffer + 1, &skipped, &ST.st_mode);
+#endif
                 break;
             }
         case 'R':
@@ -901,8 +955,13 @@ fish_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path)
                    we expect: Roctal-filemode octal-filetype uid.gid
                  */
                 size_t skipped;
-
+#if defined(WIN32) //WIN32, fish
+                mode_t t_mode = 0;
+                vfs_parse_raw_filemode (buffer + 1, &skipped, &t_mode);
+                ST.st_mode = t_mode;
+#else
                 vfs_parse_raw_filemode (buffer + 1, &skipped, &ST.st_mode);
+#endif
                 break;
             }
         case 'd':
@@ -1393,7 +1452,7 @@ fish_chmod (const vfs_path_t * vpath, mode_t mode)
 static int
 fish_chown (const vfs_path_t * vpath, uid_t owner, gid_t group)
 {
-    char *sowner, *sgroup;
+    const char *sowner, *sgroup;
     struct passwd *pw;
     struct group *gr;
     const char *crpath;
