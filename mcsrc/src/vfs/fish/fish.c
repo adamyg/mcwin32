@@ -425,6 +425,7 @@ static void
 fish_pipeopen (struct vfs_s_super *super, const char *path, const char *argv[])
 {
 #if defined(WIN32) //WIN32, fish
+    fish_super_t *fish_super = FISH_SUPER (super);
     char cmd[1024], t_path[MAX_PATH] = {0};
     GError *error = NULL;
     int fds[2] = {-1, -1};
@@ -444,18 +445,23 @@ fish_pipeopen (struct vfs_s_super *super, const char *path, const char *argv[])
             }
         }
 
-        // WinRSH
+        // WinXSH
         if (path != t_path && 0 != (syslen = w32_getsysdirA(SYSDIR_PROGRAM_FILES, t_path, sizeof(t_path))))  {
-            snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinRSH\\ssh.exe");
+            snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinXSH\\ssh.exe");
             if (0 == access(t_path, 0)) {
                 path = t_path;
+            } else {
+                snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinXSH\\slogin.exe");
+                if (0 == access(t_path, 0)) {
+                    path = t_path;
+                }
             }
         }
 
     } else if (0 == strcmp(path, "rsh")) {
-        // WinRSH
+        // WinXSH
         if (0 != (syslen = w32_getsysdirA(SYSDIR_PROGRAM_FILES, t_path, sizeof(t_path))))  {
-            snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinRSH\\rsh.exe");
+            snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinXSH\\rsh.exe");
             if (0 == access(t_path, 0)) {
                 path = t_path;
             }
@@ -480,8 +486,8 @@ fish_pipeopen (struct vfs_s_super *super, const char *path, const char *argv[])
         g_error_free (error);
     }
 
-    FISH_SUPER(super)->sockr = fds[0];
-    FISH_SUPER(super)->sockw = fds[1];
+    fish_super->sockr = fds[0];
+    fish_super->sockw = fds[1];
 
 #else
     int fileset1[2], fileset2[2];

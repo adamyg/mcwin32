@@ -78,10 +78,10 @@ mc_popen2 (const char *command, int *fds, GError **error)
         win32_exec_t *args = (win32_exec_t *)(p + 1);
         int t_fdin = -1, t_fdout = -1;
 
-        if ((t_fdin = _open_osfhandle((long)args->hOutput, _O_BINARY)) >= 0) {
+        if ((t_fdin = _open_osfhandle((long)args->hOutput, _O_NOINHERIT|_O_BINARY|_O_RDONLY)) >= 0) {
             args->hOutput = 0;                  // change ownership
             
-            if ((t_fdout = _open_osfhandle((long)args->hInput, _O_BINARY)) >= 0) {
+            if ((t_fdout = _open_osfhandle((long)args->hInput, _O_NOINHERIT|_O_BINARY|_O_WRONLY)) >= 0) {
                 const int handle = (int)args->hProc;
 
                 args->hInput = 0;               // change ownership

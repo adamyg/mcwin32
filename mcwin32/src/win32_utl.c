@@ -823,7 +823,7 @@ my_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
 
     if ((1 == overwrite) || NULL == getenv(name)) {
         strncpy(path, value, sizeof(path)-1);
-        canonicalize_pathname(path);
+        canonicalize_pathname (path);
         dospath(path);
 
 #if defined(__WATCOMC__)
@@ -1854,6 +1854,25 @@ tilde_expand(const char *directory)
  *
  *  Notes: Sourced from lib/utilunix.c
  */
+
+static int
+current_drive(char *path)
+{
+    int driveno = w32_getdrive();
+
+    if (driveno <= 0) driveno = w32_getlastdrive();
+    if (driveno <= 0) driveno = w32_getsystemdrive();
+    if (driveno > 0) {
+        path[0] = driveno + ('A' - 1);
+        path[1] = ':';
+        path[2] = PATH_SEP;
+        path[3] = 0;
+        return 1;
+    }
+    return 0;
+}
+
+
 void
 custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
 {
@@ -1861,53 +1880,42 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
     char *lpath = orgpath;                      /* path without leading UNC part */
     int unc = FALSE;
     char *p, *s;
-    size_t len;
 
     /* Standardise to the system seperator */
-    if (0 == lpath[0]) {
+    if (0 == lpath[0])
         return;                                 /* empty */
-    }
-    for (s = lpath; *s; ++s) {
-        if ('\\' == *s || '/' == *s) {
+
+    for (s = lpath; *s; ++s)
+        if ('\\' == *s || '/' == *s)
             *s = PATH_SEP;
-        }
-    }
 
     /* Detect and preserve UNC paths: "//server/" */
-    if ((flags & CANON_PATH_GUARDUNC) &&
-                lpath[0] == PATH_SEP && lpath[1] == PATH_SEP && lpath[2]) {
-        p = lpath + 2;
-        while (p[0] && p[0] != PATH_SEP) {
-            ++p;
-        }
+    if ((flags & CANON_PATH_GUARDUNC) != 0 && IS_PATH_SEP (lpath[0]) && IS_PATH_SEP (lpath[1]) && lpath[2])
+    {
+        for (p = lpath + 2; p[0] != '\0' && !IS_PATH_SEP (p[0]); p++)
+            ;
 
-        if (p[0] == PATH_SEP && p > (orgpath + 2)) {
-            if (0 == strcmp(p + 1, "..")) {     /* "//servername/.." --> "X:/" */
-                int driveno = w32_getdrive();
-                if (driveno <= 0) driveno = w32_getlastdrive();
-                if (driveno <= 0) driveno = w32_getsystemdrive();
-                if (driveno > 0) {
-                    lpath[0] = driveno + ('A' - 1);
-                    lpath[1] = ':';
-                    lpath[2] = PATH_SEP;
-                    lpath[3] = 0;
+        if (p[0] == PATH_SEP && p > (orgpath + 2)) 
+        {
+            if (0 == strcmp(p + 1, ".."))
+            {                                   /* "//servername/.." --> "X:/" */
+                if (current_drive (lpath))
                     return;
-                }
             }
             lpath = p;
             unc = TRUE;
         }
     }
 
-    if (0 == lpath[0] || 0 == lpath[1]) {
+    if (0 == lpath[0] || 0 == lpath[1])
         return;
-    }
 
     /* DOS'ish
      *  o standardize seperator
      *  o preserve leading drive
      */
-    if (!unc) {
+    if (!unc) 
+    {
         if (PATH_SEP == lpath[0] &&
                 ':' == lpath[2] && isalpha((unsigned char)lpath[1])) {
             str_move (lpath, lpath + 1);        /* /X:, remove leading '/' vfs name mangling */
@@ -1924,96 +1932,81 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
     if (flags & CANON_PATH_JOINSLASHES)
     {
         /* Collapse multiple slashes */
-        p = lpath;
-        while (*p)
-        {
-            if (p[0] == PATH_SEP && p[1] == PATH_SEP && (p == lpath || *(p - 1) != ':'))
+        for (p = lpath; *p != '\0'; p++)
+            if (IS_PATH_SEP (p[0]) && IS_PATH_SEP (p[1]) && (p == lpath || *(p - 1) != ':'))
             {
                 s = p + 1;
-                while (*(++s) == PATH_SEP);
+                while (IS_PATH_SEP (*(++s)))
+                    ;
                 str_move (p + 1, s);
             }
-            p++;
-        }
-    }
 
-    if (flags & CANON_PATH_JOINSLASHES)
-    {
         /* Collapse "/./" -> "/" */
-        p = lpath;
-        while (*p)
-        {
-            if (p[0] == PATH_SEP && p[1] == '.' && p[2] == PATH_SEP)
+        for (p = lpath; *p != '\0';)
+            if (IS_PATH_SEP (p[0]) && p[1] == '.' && IS_PATH_SEP (p[2]))
                 str_move (p, p + 2);
             else
                 p++;
-        }
     }
 
     if (flags & CANON_PATH_REMSLASHDOTS)
     {
+        size_t len;
+
         /* Remove trailing slashes */
-        p = lpath + strlen (lpath) - 1;
-        while (p > lpath && *p == PATH_SEP)
+        for (p = lpath + strlen (lpath) - 1; p > lpath && IS_PATH_SEP (*p); p--)
         {
-            if (p >= lpath - (url_delim_len + 1)
-                    && strncmp (p - url_delim_len + 1, VFS_PATH_URL_DELIMITER, url_delim_len) == 0)
+            if (p >= lpath + url_delim_len - 1
+                && strncmp (p - url_delim_len + 1, VFS_PATH_URL_DELIMITER, url_delim_len) == 0)
                 break;
-            *p-- = 0;
+            *p = '\0';
         }
 
         /* Remove leading "./" */
-        if (lpath[0] == '.' && lpath[1] == PATH_SEP)
+        if (lpath[0] == '.' && IS_PATH_SEP (lpath[1]))
         {
-            if (lpath[2] == 0)
+            if (lpath[2] == '\0')
             {
-                lpath[1] = 0;
+                lpath[1] = '\0';
                 return;
             }
-            else
-            {
-                str_move (lpath, lpath + 2);
-            }
+
+            str_move (lpath, lpath + 2);
         }
 
         /* Remove trailing "/" or "/." */
         len = strlen (lpath);
         if (len < 2)
             return;
-        if (lpath[len - 1] == PATH_SEP
+
+        if (IS_PATH_SEP (lpath[len - 1])
             && (len < url_delim_len
-                || strncmp (lpath + len - url_delim_len, VFS_PATH_URL_DELIMITER, url_delim_len) != 0))
-        {
+                || strncmp (lpath + len - url_delim_len, VFS_PATH_URL_DELIMITER,
+                            url_delim_len) != 0))
             lpath[len - 1] = '\0';
-        }
-        else
+        else if (lpath[len - 1] == '.' && IS_PATH_SEP (lpath[len - 2]))
         {
-            if (lpath[len - 1] == '.' && lpath[len - 2] == PATH_SEP)
+            if (len == 2)
             {
-                if (len == 2)
-                {
-                    lpath[1] = '\0';
-                    return;
-                }
-                else
-                {
-                    lpath[len - 2] = '\0';
-                }
+                lpath[1] = '\0';
+                return;
             }
+
+            lpath[len - 2] = '\0';
         }
     }
 
+    /* Collapse "/.." with the previous part of path */
     if (flags & CANON_PATH_REMDOUBLEDOTS)
     {
 #ifdef HAVE_CHARSET
         const size_t enc_prefix_len = strlen (VFS_ENCODING_PREFIX);
 #endif /* HAVE_CHARSET */
 
-        /* Collapse "/.." with the previous part of path */
-        p = lpath;
-        while (p[0] && p[1] && p[2])
+        for (p = lpath; p[0] != '\0' && p[1] != '\0' && p[2] != '\0';)
         {
-            if ((p[0] != PATH_SEP || p[1] != '.' || p[2] != '.') || (p[3] != PATH_SEP && p[3] != 0))
+            if (!IS_PATH_SEP (p[0]) || p[1] != '.' || p[2] != '.'
+                || (!IS_PATH_SEP (p[3]) && p[3] != '\0'))
             {
                 p++;
                 continue;
@@ -2022,30 +2015,38 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
             /* search for the previous token */
             s = p - 1;
             if (s >= lpath + url_delim_len - 2
-                    && strncmp (s - url_delim_len + 2, VFS_PATH_URL_DELIMITER, url_delim_len) == 0)
+                && strncmp (s - url_delim_len + 2, VFS_PATH_URL_DELIMITER, url_delim_len) == 0)
             {
                 s -= (url_delim_len - 2);
-                while (s >= lpath && *s-- != PATH_SEP);
+                while (s >= lpath && !IS_PATH_SEP (*s--))
+                    ;
             }
 
             while (s >= lpath)
             {
                 if (s - url_delim_len > lpath
-                        && strncmp (s - url_delim_len, VFS_PATH_URL_DELIMITER, url_delim_len) == 0)
+                    && strncmp (s - url_delim_len, VFS_PATH_URL_DELIMITER, url_delim_len) == 0)
                 {
                     char *vfs_prefix = s - url_delim_len;
-                    struct vfs_class *vclass;
+                    vfs_class *vclass;
 
-                    while (vfs_prefix > lpath && *--vfs_prefix != PATH_SEP);
-                    if (*vfs_prefix == PATH_SEP)
+                    while (vfs_prefix > lpath && !IS_PATH_SEP (*--vfs_prefix))
+                        ;
+                    if (IS_PATH_SEP (*vfs_prefix))
                         vfs_prefix++;
-
                     *(s - url_delim_len) = '\0';
+
                     vclass = vfs_prefix_to_class (vfs_prefix);
                     *(s - url_delim_len) = *VFS_PATH_URL_DELIMITER;
+
+                    if (vclass != NULL && (vclass->flags & VFSF_REMOTE) != 0)
+                    {
+                        s = vfs_prefix;
+                        continue;
+                    }
                 }
 
-                if (*s == PATH_SEP)
+                if (IS_PATH_SEP (*s))
                     break;
 
                 s--;
@@ -2088,9 +2089,7 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
             {
                 /* "token/.." -> "." */
                 if (lpath[0] != PATH_SEP)
-                {
                     lpath[0] = '.';
-                }
                 lpath[1] = 0;
             }
             else
@@ -2108,12 +2107,11 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
                     s[2] = '\0';
 
                     /* search for the previous token */
-                    /* s[-1] == PATH_SEP */
-                    p = s - 1;
-                    while (p >= lpath && *p != PATH_SEP)
-                        p--;
+                    /* IS_PATH_SEP (s[-1]) */
+                    for (p = s - 1; p >= lpath && !IS_PATH_SEP (*p); p--)
+                        ;
 
-                    if (p != NULL)
+                    if (p >= lpath)
                         continue;
                 }
 #endif /* HAVE_CHARSET */
@@ -2188,19 +2186,20 @@ mc_build_filenamev(const char *first_element, va_list args)
 
             canonicalize_pathname (tmp_element);
             len = strlen (tmp_element);
-            start = (tmp_element[0] == PATH_SEP) ? tmp_element + 1 : tmp_element;
+            start = IS_PATH_SEP (tmp_element[0]) ? tmp_element + 1 : tmp_element; 
 
             g_string_append (path, start);
-            if (tmp_element[len - 1] != PATH_SEP && element != NULL) {
+            if (!IS_PATH_SEP (tmp_element[len - 1]) && element != NULL)
                 g_string_append_c (path, PATH_SEP);
-            }
             g_free (tmp_element);
         }
     }
     while (element != NULL);
 
-    if (absolute) {
-        if (! path->len || ':' != path->str[1] /*not-drive*/) {
+    if (absolute) 
+    {
+        if (! path->len || ':' != path->str[1] /*not-drive*/)
+        {
             g_string_prepend_c (path, PATH_SEP);    // reapply leading
 
             //WIN32, drive
@@ -2209,9 +2208,9 @@ mc_build_filenamev(const char *first_element, va_list args)
                 int driveno = w32_getdrive();
                 if (driveno <= 0) driveno = w32_getlastdrive();
 
-                // see: vfs_canon() generally when we are returning
-                // from a ftp/sftp or UNC reference.
-                if (driveno > 0) {
+                // see: vfs_canon() generally when we are returning from a ftp/sftp or UNC reference.
+                if (driveno > 0) 
+                {
                     char drive[3] = "X:";
                     drive[0] = driveno + ('A' - 1);
                     g_string_prepend (path, drive); // "/" --> "X:/"
@@ -2221,7 +2220,6 @@ mc_build_filenamev(const char *first_element, va_list args)
     }
 
     ret = g_string_free (path, FALSE);
-
     canonicalize_pathname (ret);
 
     return ret;
