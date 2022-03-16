@@ -1,11 +1,11 @@
 #ifndef GR_EDPACKAGE_H_INCLUDED
 #define GR_EDPACKAGE_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(edpackage_h, "$Id: package.h.in,v 1.2 2018/09/29 02:22:53 cvsuser Exp $")
+__CIDENT_RCSID(edpackage_h, "$Id: package.h.in,v 1.3 2022/03/16 13:46:58 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: h; set-indent: 4; -*- */
-/* $Id: package.h.in,v 1.2 2018/09/29 02:22:53 cvsuser Exp $
+/* $Id: package.h.in,v 1.3 2022/03/16 13:46:58 cvsuser Exp $
  * Package configuration.
  *
  *

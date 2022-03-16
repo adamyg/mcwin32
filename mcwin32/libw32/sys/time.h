@@ -1,7 +1,7 @@
-#ifndef LIBW32_SYS_TIME_H
-#define LIBW32_SYS_TIME_H
+#ifndef LIBW32_SYS_TIME_H_INCLUDED
+#define LIBW32_SYS_TIME_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_time_h,"$Id: time.h,v 1.7 2022/02/24 15:33:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_time_h,"$Id: time.h,v 1.8 2022/03/16 13:47:01 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -150,5 +150,4 @@ LIBW32_API struct tm *  gmtime_r(const time_t *ctm, struct tm *res);
 
 __END_DECLS
 
-#endif  /*LIBW32_SYS_TIME_H*/
-
+#endif /*LIBW32_SYS_TIME_H_INCLUDED*/
