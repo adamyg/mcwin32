@@ -14,8 +14,8 @@ Features include the ability work with common archive formats as if they were si
 Midnight Commander also includes an builtin editor/viewer, features include syntax highlighting for many languages, macros, code snippets, 
 simple integration with external tools, automatic indentation, mouse support, clipboard and the ability to work in both ASCII and hex modes.
 
-Midnight Commander also supports accessing remote filesystems through SSH’s Secure File Transfer Protocol, SFTP and legacy RSH connections. 
-This way you can easily transfer files between servers.
+Midnight Commander supports accessing remote filesystems through several methods, including SSH’s Secure File Transfer Protocol, SFTP. 
+This is in addition to FISH, using either a SSH client or legacy RSH connections. This way you can easily transfer files between servers.
 
 Midnight Commander can also rename groups of files, move files to a different directory at the same time as it renames them. 
 It lets the user specify the original and resulting file names using wildcard characters.
