@@ -36,9 +36,9 @@
 
 Latest builds:
 
+   * https://github.com/adamyg/mcwin32/releases
    * https://sourceforge.net/projects/mcwin32
 
 Source:
 
-   * https://github.com/adamyg/mwin32
-
+   * https://github.com/adamyg/mcwin32
