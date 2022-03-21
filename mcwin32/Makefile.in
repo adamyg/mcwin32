@@ -757,7 +757,7 @@ gettext:			$(MSGDIRS) $(MSGOBJS)
 CONFIGURATION_WIN32=\
 	$(addprefix $(D_ETC)/,$(CFG_WIN32_ETC)) \
 	$(addprefix $(D_PLUGIN)/,$(CFG_WIN32_PLUGIN)) \
-	$(addprefix $(WIN32_PLUGIN_SRC)/extfs.d/,$(CFG_WIN32_PLUGIN_EXTFS_D)) \
+	$(addprefix $(D_PLUGIN)/extfs.d/,$(CFG_WIN32_PLUGIN_EXTFS_D)) \
 	$(addprefix $(D_SHARE)/skins/,$(CFG_WIN32_SKINS))
 
 .PHONY:				configuration-win32
