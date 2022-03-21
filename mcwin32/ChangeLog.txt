@@ -1,8 +1,11 @@
-Pending build-226
+Mon Mar 21 10:47:17 2022 adamy
 
-Tue Mar 15 14:47:05 2022 adamy
+	* build-226
 
-	* #21 - FISH enabled, OpenSSH required.
+	* #21 - FISH enabled
+
+		o ssh - OpenSSH required (https://github.com/powershell/Win32-OpenSSH) or WinXRSH (below).
+		o rsh - WinRXH (https://github.com/adamyg/winxsh).
 
 Fri Mar 11 21:41:28 2022 adamy
 
