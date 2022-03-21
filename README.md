@@ -31,6 +31,7 @@ It lets the user specify the original and resulting file names using wildcard ch
 ## Installation
 
 Recent distributions are now bundled with an installer, the following shall prompt and then check for available upgrades.
+Note: Automatic checks wont occur at this time; functionality staged for a later release.
 
 ```
 mcupdater force
