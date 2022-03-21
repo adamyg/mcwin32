@@ -4,32 +4,45 @@
 
 ## Native Midnight Commander 4.8.27 for Windows/Win32
 
-	Windows XP+/32 bit native port of GNU Midnight Commander,
-	based on the current 4.8.27 development stream.
+Windows XP+/32 bit native port of GNU Midnight Commander, based on the current 4.8.27 development stream.
 
-	Supports both the recent Windows 10 plus the prior legacy console,
-	16 and 256 colour modes are available within either.
+Supports both the recent Windows 10 plus the prior legacy console, 16 and 256 colour modes are available within either.
 
-	Midnight Commander (also known as mc) is a free cross-platform orthodox file manager
-	and a clone of Norton Commander.
+Midnight Commander (also known as mc) is a free cross-platform orthodox file manager and a clone of Norton Commander.
 
-	Features include the ability work with common archive formats as if they were simply another
-	directory, and to function as an SFTP/FTP client. Midnight Commander also includes an builtin
-	editor/viewer, features include syntax highlighting for many languages, macros, code snippets, 
-	simple integration with external tools, automatic indentation, mouse support, clipboard and
-	the ability to work in both ASCII and hex modes.
+Features include the ability work with common archive formats as if they were simply another directory, and to function as an SFTP/FTP client.
+Midnight Commander also includes an builtin editor/viewer, features include syntax highlighting for many languages, macros, code snippets, 
+simple integration with external tools, automatic indentation, mouse support, clipboard and the ability to work in both ASCII and hex modes.
 
-	Midnight Commander can also rename groups of files, move files to a different directory at the 
-	same time as it renames them. It lets the user specify the original and resulting file names
-	using wildcard characters.
+Midnight Commander also supports accessing remote filesystems through SSH’s Secure File Transfer Protocol, SFTP and legacy RSH connections. 
+This way you can easily transfer files between servers.
+
+Midnight Commander can also rename groups of files, move files to a different directory at the same time as it renames them. 
+It lets the user specify the original and resulting file names using wildcard characters.
 
 
 ## Examples
 
-
 ![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample01.png?raw=true)
 
 ![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample03.png?raw=true)
+
+
+## Installation
+
+Recent distributions are now bundled with an installer, the following shall prompt and then check for available upgrades.
+
+```
+mcupdater force
+```
+
+Updating older distribution shall require you download from one of the sites listed below or alternatively winget and then update if requried.
+
+```
+winget install --id=GNU.MidnightCommander -e	
+```
+
+To utilise *Files transferred over Shell protocol* **(FISH)** over SSH, an ssh client is required, you can either install [Win32-OpenSSH](https://github.com/powershell/Win32-OpenSSH) or [WinXSH](https://github.com/adamyg/winxsh).  For legacy RSH based connections [WinXSH](https://github.com/adamyg/winxsh) is needed.
 
 
 ## Distributions
