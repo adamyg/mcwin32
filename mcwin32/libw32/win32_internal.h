@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.21 2022/02/17 16:05:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.22 2022/03/16 13:47:01 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -16,6 +16,7 @@ __CPRAGMA_ONCE
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
+ * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.

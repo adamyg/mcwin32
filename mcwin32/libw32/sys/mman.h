@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_MMAN_H_INCLUDED
 #define LIBW32_SYS_MMAN_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_mman_h,"$Id: mman.h,v 1.6 2022/02/24 15:33:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_mman_h,"$Id: mman.h,v 1.7 2022/03/16 13:47:01 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -83,4 +83,3 @@ LIBW32_API int          munlock __P((const void *, size_t));
 __END_DECLS
 
 #endif /*LIBW32_SYS_MMAN_H_INCLUDED*/
-

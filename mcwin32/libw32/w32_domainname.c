@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getdomainname_c,"$Id: w32_domainname.c,v 1.2 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getdomainname_c,"$Id: w32_domainname.c,v 1.3 2022/03/16 13:46:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getdomainname()
  *
- * Copyright (c) 2017, Adam Young.
+ * Copyright (c) 2017 - 2022 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,6 +13,7 @@ __CIDENT_RCSID(gr_w32_getdomainname_c,"$Id: w32_domainname.c,v 1.2 2021/04/13 15
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
+ * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.

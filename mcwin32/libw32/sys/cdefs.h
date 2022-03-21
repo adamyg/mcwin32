@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_CDEFS_H_INCLUDED
 #define LIBW32_SYS_CDEFS_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_cdefs_h,"$Id: cdefs.h,v 1.6 2022/02/24 15:33:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_cdefs_h,"$Id: cdefs.h,v 1.7 2022/03/16 13:47:01 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*-
@@ -43,6 +43,10 @@ __CPRAGMA_ONCE
  *  Library binding.
  */
 #if !defined(LIBW32_API)
+
+#if defined(LIBW32_DYNAMIC) && defined(LIBW32_STATIC)
+#error LIBW32_DYNAMIC and LIBW32_STATIC are mutually exclusive
+#endif
 
 #if defined(LIBW32_DYNAMIC)
     #if defined(LIBW32_LIBRARY)     /* library source */

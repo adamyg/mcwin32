@@ -1,7 +1,7 @@
 #ifndef LIBW32_LANGINFO_H_INCLUDED
 #define LIBW32_LANGINFO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_langinfo_h,"$Id: langinfo.h,v 1.5 2022/02/17 16:04:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_langinfo_h,"$Id: langinfo.h,v 1.6 2022/03/16 13:46:58 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -12,11 +12,10 @@ __CPRAGMA_ONCE
  *
  * This file is part of the Midnight Commander.
  *
- * This file is part of the Midnight Commander.
- *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
+ * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.

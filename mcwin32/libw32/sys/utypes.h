@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_UTYPES_H_INCLUDED
 #define LIBW32_SYS_UTYPES_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_utypes_h,"$Id: utypes.h,v 1.17 2022/02/24 16:38:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_utypes_h,"$Id: utypes.h,v 1.18 2022/03/16 13:47:01 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -12,7 +12,6 @@ __CPRAGMA_ONCE
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
- *
  * The Midnight Commander is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the License,

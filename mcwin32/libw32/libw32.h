@@ -11,6 +11,7 @@
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
+ * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -36,4 +37,4 @@
 #include <win32_direct.h>
 #include <win32_misc.h>
 
-#endif /*LIBW32_WIN32_H_INCLUDED*/
+#endif /*LIBW32_LIBW32_H_INCLUDED*/

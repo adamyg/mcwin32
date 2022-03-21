@@ -62,18 +62,22 @@ static void
 w32_trace_init(void)
 {
     if (! x_tracing_started) {
-#if !defined(_DEBUG)
-        if (NULL == getenv("MC_TRACE")) {
-            return; //optional
-        }
-#endif  //_DEBUG
+        const char *mc_trace = getenv("MC_TRACE");
+        const char *trace_file = (mc_trace ? mc_trace : TRACE_FILE);
 
-        if (NULL == (x_trace_file = fopen(TRACE_FILE, "wt"))) {
-            printf("Midnight Commander[DEBUG]: cannot open trace file '" TRACE_FILE "': %s \n", strerror(errno));
+#if defined(NDEBUG)
+        if (NULL == mc_trace) return; //optional
+#endif  //NDEBUG
+
+        if (NULL == (x_trace_file = fopen(trace_file, "wt"))) {
+            printf("Midnight Commander[DEBUG]: cannot open trace file '%s' : %s \n", trace_file, strerror(errno));
 
         } else if (! x_tracing_init) {
-            x_tracing_init = 0;
-            // atexit(w32_trace_close);
+#if !defined(NDEBUG)
+            printf("Midnight Commander[DEBUG]: opened trace file '%s'\n", trace_file);
+#endif
+         // atexit(w32_trace_close);
+            x_tracing_init = 1;
         }
         x_tracing_started = 1;
     }
