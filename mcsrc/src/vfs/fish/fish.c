@@ -432,6 +432,7 @@ fish_pipeopen (struct vfs_s_super *super, const char *path, const char *argv[])
     int syslen, len;
 
     if (0 == strcmp(path, "ssh")) { //FIXME
+#if (1)
         // OpenSSH
         if (0 != (syslen = GetWindowsDirectoryA(t_path, sizeof(t_path)))) {
             snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\System32\\OpenSSH\\ssh.exe"); //32-bit
@@ -447,16 +448,15 @@ fish_pipeopen (struct vfs_s_super *super, const char *path, const char *argv[])
 
         // WinXSH
         if (path != t_path && 0 != (syslen = w32_getsysdirA(SYSDIR_PROGRAM_FILES, t_path, sizeof(t_path))))  {
-            snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinXSH\\ssh.exe");
+            snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinXSH\\slogin.exe");
             if (0 == access(t_path, 0)) {
                 path = t_path;
-            } else {
-                snprintf (t_path + syslen, (sizeof(t_path)-1) - syslen, "\\WinXSH\\slogin.exe");
-                if (0 == access(t_path, 0)) {
-                    path = t_path;
-                }
             }
         }
+#else
+        snprintf (t_path, sizeof(t_path), "/devl/winrsh/bin.owc19/debug/slogin.exe");
+        path = t_path;
+#endif
 
     } else if (0 == strcmp(path, "rsh")) {
         // WinXSH
