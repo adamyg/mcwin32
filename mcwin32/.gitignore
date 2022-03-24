@@ -18,11 +18,16 @@ owcsetup.dbg
 testaccounts.txt
 .created
 mc.aps
+__libtool__.lnk
 .#*
 wd*.bat
 *.00*
-*.o
+*.cache
+*.exe
+*.dll
+*.pdb
 *.obj
+*.o
 *.a
 *.lo
 *.la
