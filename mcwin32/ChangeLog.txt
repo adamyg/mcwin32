@@ -1,3 +1,7 @@
+Wed Jun  8 19:37:49 2022 adamy
+
+	* mingw32 builds
+
 Mon Mar 21 10:47:17 2022 adamy
 
 	* build-226
