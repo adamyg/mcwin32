@@ -91,6 +91,15 @@ g_get_current_dir (void)
 const char *
 g_get_user_config_dir (void)
 {
+    /* confirm symbol resolution/link options */
+#if !defined(__GNUC__)
+#if !defined(NDEBUG)
+    static const char glib_var[] = G_STRINGIFY(GLIB_VAR);
+    assert(0 == strcmp(glib_var, "extern __declspec(dllimport)"));
+#endif
+#endif
+    assert(NULL != g_utf8_skip);
+
     return mc_USERCONFIGDIR(NULL);
 }
 

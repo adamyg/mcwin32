@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.7 2022/03/16 14:01:00 cvsuser Exp $
+# $Id: Makefile.in,v 1.8 2022/06/08 09:51:45 cvsuser Exp $
 # libz makefile
 #
 #
@@ -74,7 +74,11 @@ D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libz
 
 XFLAGS=
 CFLAGS=		@CFLAGS@
+ifeq ("gcc","@CC@")
+CWARN=		$(filter-out -Wshadow -Wmissing-prototypes -Wsign-compare -Wimplicit-fallthrough, @CWARN@) -Wno-sign-compare -Wno-implicit-fallthrough
+else
 CWARN=		@CWARN@
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 CXXFLAGS=	@CXXFLAGS@
@@ -107,8 +111,8 @@ ARFLAGS=	rcv
 YFLAGS=		-d
 RMFLAGS=	-f
 
-############################################################
 
+#########################################################################################
 # Targets
 
 ZLIB=		$(D_LIB)/$(LP)z_static$(A)
@@ -144,10 +148,13 @@ LIBOBJS=\
 
 DLLOBJS=\
 	$(subst $(O),.lo,$(LIBOBJS))
-ifeq ("mingw32","@build_os@")
+
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 DLLOBJS+=	$(D_OBJ)/zlib_res.o
-else ifeq ("win32","@build_os@")
+else
 DLLOBJS+=	$(D_OBJ)/zlib.res
+endif
 endif
 
 OBJS=		$(LIBOBJS) $(DLLOBJS)
@@ -155,6 +162,7 @@ LIBS=		$(ZLIB) $(ZDLL)
 TSKS=
 INSTALLED=
 
+#########################################################################################
 # Rules
 
 .PHONY: 	build release debug
@@ -177,11 +185,12 @@ $(ZLIB):		$(LIBOBJS)
 INSTALLED+=	$(D_BIN)/libz.$(VERSION).dll
 $(ZDLL):		CEXTRA += -DZLIB_DLL
 ifeq ("yes","@ISWIN32@")
-$(ZDLL):		ZDEF = -export-symbols $(ZSRC)/win32/zlib.def
+$(ZDLL):		ZDEF = -export-symbols $(ZSRC)/win32/zlib.def --export-fastcall
 endif
+$(ZDLL):		MAPFILE=$(basename $@).map
 $(ZDLL):		$(DLLOBJS)
-		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) $(ZDEF) -o $@ $^ $(LDLIBS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(ZDEF) $^ $(LDLIBS) @LDMAPFILE@
 
 source:			.unpacked.$(VERSION)
 		$(MAKE) unpacked
@@ -223,3 +232,4 @@ $(D_OBJ)/%_res.o:	%1.rc
 		$(RC) -o $@ $<
 
 #end
+

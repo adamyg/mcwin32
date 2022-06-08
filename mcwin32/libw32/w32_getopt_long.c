@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt_long.c,v 1.3 2021/11/30 13:06:19 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt_long.c,v 1.4 2022/06/08 09:51:43 cvsuser Exp $")
 
 /*-
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -32,19 +32,18 @@ __CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt_long.c,v 1.3 2021/11/30 13:06:19
  *  $NetBSD: getopt_long.c,v 1.21.4.1 2008/01/09 01:34:14 matt Exp $
  */
 
+
 #include <assert.h>
 #include <err.h>
 #include <errno.h>
 
-//  #if defined(HAVE_GETOPT_H) && defined(HAVE_STRUCT_OPTION)
 #include <getopt.h>
-//  #endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-//#define REPLACE_GETOPT
+    //#define REPLACE_GETOPT
 
 #ifndef _DIAGASSERT
 #define _DIAGASSERT	assert
@@ -336,6 +335,7 @@ start:
 #endif  //REPLACE_GETOPT
 
 
+extern int __import_getopt(int nargc, char * const *nargv, const char *ostr);
 int
 __import_getopt(int nargc, char * const *nargv, const char *ostr)
 {
@@ -491,5 +491,6 @@ getopt_long2(int nargc, char * const *nargv, const char *options, const struct o
 	return retval;
 #undef IDENTICAL_INTERPRETATION
 }
+
 
 //end

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.14 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.15 2022/06/08 09:51:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -1276,7 +1276,7 @@ DisplayErrorA(
     int len;
 
     len = _snprintf(buffer, sizeof(buffer),
-            "Internal Error: %s = %d (%s).\n", msg, rc, rcmsg);
+            "Internal Error: %s = %u (%s).\n", msg, (unsigned)rc, rcmsg);
     WriteConsoleA(hOutput, buffer, len, NULL, NULL);
 }
 
@@ -1291,7 +1291,7 @@ DisplayErrorW(
     int len;
 
     len = _snwprintf(buffer, _countof(buffer),
-            L"Internal Error: %s = %d (%s).\n", msg, rc, rcmsg);
+            L"Internal Error: %s = %u (%s).\n", msg, (unsigned)rc, rcmsg);
     WriteConsoleW(hOutput, buffer, len, NULL, NULL);
 }
 

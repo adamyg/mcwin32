@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.16 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.17 2022/06/08 09:51:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -512,9 +512,9 @@ EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
     (void) GetWindowThreadProcessId(hwnd, &pid);
     return pid != info->dwProcessId
-            || GetExitCodeProcess(info->hProcess, &status)
-                && status == STILL_ACTIVE       // value = 259
-                && PostMessage(hwnd, WM_CLOSE, 0, 0);
+            || (GetExitCodeProcess(info->hProcess, &status)
+                 && status == STILL_ACTIVE       // value = 259
+                 && PostMessage(hwnd, WM_CLOSE, 0, 0));
 }
 
 
@@ -661,9 +661,11 @@ w32_child_execA(
     si.hStdOutput = hStdOut;
     si.hStdError  = hStdErr;
 
+#if !defined(NDEBUG)
     if (hStdIn)  { DWORD flags; assert(GetHandleInformation(hStdIn,  &flags) && (HANDLE_FLAG_INHERIT & flags)); }
     if (hStdOut) { DWORD flags; assert(GetHandleInformation(hStdOut, &flags) && (HANDLE_FLAG_INHERIT & flags)); }
     if (hStdErr) { DWORD flags; assert(GetHandleInformation(hStdErr, &flags) && (HANDLE_FLAG_INHERIT & flags)); }
+#endif
 
     si.dwFlags = STARTF_USESTDHANDLES;
     si.dwFlags |= STARTF_USESHOWWINDOW;
@@ -782,9 +784,11 @@ w32_child_execW(
     si.hStdOutput = hStdOut;
     si.hStdError  = hStdErr;
 
+#if !defined(NDEBUG)
     if (hStdIn)  { DWORD flags; assert(GetHandleInformation(hStdIn,  &flags) && (HANDLE_FLAG_INHERIT & flags)); }
     if (hStdOut) { DWORD flags; assert(GetHandleInformation(hStdOut, &flags) && (HANDLE_FLAG_INHERIT & flags)); }
     if (hStdErr) { DWORD flags; assert(GetHandleInformation(hStdErr, &flags) && (HANDLE_FLAG_INHERIT & flags)); }
+#endif
 
     si.dwFlags = STARTF_USESTDHANDLES;
     si.dwFlags |= STARTF_USESHOWWINDOW;
@@ -1052,7 +1056,7 @@ BuildArgA(const char *cmd, const char **argv)
             /**/;
     }
 
-    if (len > (32 * 1024 * sizeof(char))) {
+    if (len > (int)(32 * 1024 * sizeof(char))) {
         errno = E2BIG;                          // command line too long >32k.
         return NULL;
     }
@@ -1155,7 +1159,6 @@ BuildEnvA(const char **envv)
  *      null, "_wenviron" is used instead. File handle info is passed in the environment
  *      if _fileinfo is !0.
  */
-
 static int
 BuildVectorsW(win32_spawnw_t *args, wchar_t **argblk,  wchar_t **envblk)
 {
@@ -1196,7 +1199,7 @@ BuildArgW(const wchar_t *cmd, const wchar_t **argv)
             /**/;
     }
 
-    if (len > (32 * 1024 * sizeof(wchar_t))) {
+    if (len > (int)(32 * 1024 * sizeof(wchar_t))) {
         errno = E2BIG;                          // command line too long >32k.
         return NULL;
     }

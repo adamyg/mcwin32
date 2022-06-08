@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.25 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.26 2022/06/08 09:51:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -39,7 +39,11 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.25 2022/03/16 13:46:59 cvsuser Ex
  */
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT        0x0501              /* enable xp+ features */
+#define _WIN32_WINNT 0x0501                     /* enable xp+ features */
+#endif
+#if defined(__MINGW32__)
+#undef  _WIN32_VER
+#define _WIN32_VER _WIN32_WINNT
 #endif
 
 #include <assert.h>
@@ -684,7 +688,7 @@ my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR path, int length)
                             (GetFinalPathNameByHandleW_t)GetProcAddress(hinst, "GetFinalPathNameByHandleW"))) {
                                                 // XP+
             x_GetFinalPathNameByHandleW = my_GetFinalPathNameByHandleWImp;
-            (void)FreeLibrary(hinst);
+            if (hinst) FreeLibrary(hinst);
         }
     }
 
@@ -857,7 +861,7 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, int length)
                           (GetFinalPathNameByHandleA_t)GetProcAddress(hinst, "GetFinalPathNameByHandleA"))) {
                                                 // XP+
             x_GetFinalPathNameByHandleA = my_GetFinalPathNameByHandleAImp;
-            (void)FreeLibrary(hinst);
+            if (hinst) FreeLibrary(hinst);
         }
     }
 
@@ -1215,7 +1219,7 @@ my_CreateSymbolicLinkW(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWOR
                         (CreateSymbolicLinkW_t)GetProcAddress(hinst, "CreateSymbolicLinkW"))) {
                                                 // XP+
             x_CreateSymbolicLinkW = my_CreateSymbolicLinkWImp;
-            (void) FreeLibrary(hinst);
+            if (hinst) FreeLibrary(hinst);
         }
     }
     return x_CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
@@ -1247,7 +1251,7 @@ my_CreateSymbolicLinkA(const char *lpSymlinkFileName, const char *lpTargetFileNa
                         (CreateSymbolicLinkA_t)GetProcAddress(hinst, "CreateSymbolicLinkA"))) {
                                                 // XP+
             x_CreateSymbolicLinkA = my_CreateSymbolicLinkAImp;
-            (void) FreeLibrary(hinst);
+            if (hinst) FreeLibrary(hinst);
         }
     }
     return x_CreateSymbolicLinkA(lpSymlinkFileName, lpTargetFileName, dwFlags);
@@ -1849,7 +1853,9 @@ ApplyOwner(struct stat *sb, const DWORD dwAttributes, HANDLE handle)
     // Inquire
     if (handle && INVALID_HANDLE_VALUE != handle) {
         PSID owner = NULL, group = NULL;
+#if defined(_DEBUG) && (0)
         int uid = -1, gid = -1;
+#endif
 
         if (GetSecurityInfo(handle, SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION,
                 &owner, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
@@ -2943,7 +2949,9 @@ StatW(const wchar_t *name, struct stat *sb)
 {
     wchar_t fullname[WIN32_PATH_MAX] = {0}, *pfname = NULL;
     int flength, ret = -1;
+#if defined(DO_FILEMAGIC)
     BOOL domagic = 0;
+#endif
 
     if (name == NULL || sb == NULL) {
         ret = -EFAULT;                          /* basic checks */

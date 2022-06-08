@@ -2,6 +2,8 @@
  *  libintl, namespace.h
  */
 
+#include "w32config.h"
+
 #ifdef  _MSC_VER
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
@@ -12,6 +14,9 @@
 #include <sys/types.h>
 #include <sys/utypes.h>
 #include <limits.h>
+#if defined(HAVE_STDINT_H)
+#include <stdint.h>
+#endif
 #include <unistd.h>
 
 #ifndef __RCSID
@@ -48,10 +53,10 @@ extern char *           libintl_strsep(char **stringp, const char *delim);
 #define strsep(__a,__b) libintl_strsep(__a,__b)
 #endif
 
-#if defined(_MSC_VER)
-#define LC_MESSAGES     (LC_MAX + 1)
+#if defined(_MSC_VER) || \
+        defined(__MINGW32__)
+#define LC_MESSAGES     (LC_MAX + 1) /*XXX*/
 #endif
 
 /*end*/
-
 

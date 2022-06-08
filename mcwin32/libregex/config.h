@@ -11,16 +11,13 @@
 #include <stdio.h>                      /* snprintf */
 #include <math.h>
 
-typedef unsigned int u_int32_t;
-typedef int ssize_t;
-
 #if defined(_WIN32)
 #if !defined(_POSIX2_RE_DUP_MAX)
 #define _POSIX2_RE_DUP_MAX              255
 #endif
 #endif
 
-#undef INFINITY 			/*redef*/
+#undef INFINITY                         /*redef*/
 
 #if !defined(_DIAGASSERT)
 #define _DIAGASSERT(__x)                /*not used*/

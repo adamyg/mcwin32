@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getsubopt_c,"$Id: w32_getsubopt.c,v 1.7 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_strsep_c,"$Id: w32_strsep.c,v 1.1 2022/06/08 09:51:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*-
@@ -29,72 +29,47 @@ __CIDENT_RCSID(gr_w32_getsubopt_c,"$Id: w32_getsubopt.c,v 1.7 2022/06/08 09:51:4
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *  "@(#)getsubopt.c	8.1 (Berkeley) 6/4/93"
- *  "$FreeBSD: src/lib/libc/stdlib/getsubopt.c,v 1.7 2007/01/09 00:28:10 imp Exp $"
  */
 
-#include "win32_internal.h"
-#include <stdlib.h>
-#include <string.h>
+#include <sys/param.h>
 #include <unistd.h>
 
 /*
- *  The SVID interface to getsubopt provides no way of figuring out which
- *  part of the suboptions list wasn't matched.  This makes error messages
- *  tricky...  The extern variable suboptarg is a pointer to the token
- *  which didn't match.
+ * Get next token from string *stringp, where tokens are possibly-empty
+ * strings separated by characters from delim.
+ *
+ * Writes NULs into the string at *stringp to end tokens.
+ * delim need not remain constant from call to call.
+ * On return, *stringp points past the last NUL written (if there might
+ * be further tokens), or is NULL (if there are definitely no more tokens).
+ *
+ * If *stringp is NULL, strsep returns NULL.
  */
-/*LIBW32_VAR*/ char *suboptarg = NULL;
-
-LIBW32_API int
-getsubopt(char **optionp, char * const *tokens, char **valuep)
+LIBW32_API char *
+strsep(char **stringp, const char *delim)
 {
-	int cnt;
-	char *p;
+	char *s;
+	const char *spanp;
+	int c, sc;
+	char *tok;
 
-	suboptarg = *valuep = NULL;
-
-	if (!optionp || !*optionp)
-		return(-1);
-
-	/* skip leading white-space, commas */
-	for (p = *optionp; *p && (*p == ',' || *p == ' ' || *p == '\t'); ++p);
-
-	if (!*p) {
-		*optionp = p;
-		return(-1);
+	if ((s = *stringp) == NULL)
+		return (NULL);
+	for (tok = s;;) {
+		c = *s++;
+		spanp = delim;
+		do {
+			if ((sc = *spanp++) == c) {
+				if (c == 0)
+					s = NULL;
+				else
+					s[-1] = 0;
+				*stringp = s;
+				return (tok);
+			}
+		} while (sc != 0);
 	}
-
-	/* save the start of the token, and skip the rest of the token. */
-	for (suboptarg = p;
-	    *++p && *p != ',' && *p != '=' && *p != ' ' && *p != '\t';);
-
-	if (*p) {
-		/*
-		 * If there's an equals sign, set the value pointer, and
-		 * skip over the value part of the token.  Terminate the
-		 * token.
-		 */
-		if (*p == '=') {
-			*p = '\0';
-			for (*valuep = ++p;
-			    *p && *p != ',' && *p != ' ' && *p != '\t'; ++p);
-			if (*p)
-				*p++ = '\0';
-		} else
-			*p++ = '\0';
-		/* Skip any whitespace or commas after this token. */
-		for (; *p && (*p == ',' || *p == ' ' || *p == '\t'); ++p);
-	}
-
-	/* set optionp for next round. */
-	*optionp = p;
-
-	for (cnt = 0; *tokens; ++tokens, ++cnt)
-		if (!strcmp(suboptarg, *tokens))
-			return(cnt);
-	return(-1);
+	/* NOTREACHED */
 }
 
 /*end*/

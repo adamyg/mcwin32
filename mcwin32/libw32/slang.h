@@ -40,26 +40,26 @@ __BEGIN_DECLS
 #define SLANG_VERSION           30000           /* interface version only; needs confirming */
 #define SLANG_VERSION_STRING    "3.0.0 libw32"
 
-LIBW32_API extern const int     SLang_Version;
+LIBW32_VAR const int            SLang_Version;
     /*
      *  Used to test for specific Slang features, currently only true color support.
      *
      *  true-color was added versions:
      *      64bit   20301   slang-2.3.1
-     *	    32bit   30000   slang-3 (projected)
+     *      32bit   30000   slang-3 (projected)
      */
 
 typedef unsigned char          SLsmg_Char_Type;
 typedef uint32_t               SLtt_Char_Type;
 typedef uint32_t               SLwchar_Type;
 
-LIBW32_API extern int          SLsmg_Display_Eight_Bit;
+LIBW32_VAR int                 SLsmg_Display_Eight_Bit;
 
-LIBW32_API extern int          SLtt_Screen_Rows;
-LIBW32_API extern int          SLtt_Screen_Cols;
-LIBW32_API extern int          SLtt_Ignore_Beep;
-LIBW32_API extern int          SLtt_Use_Ansi_Colors;
-LIBW32_API extern int          SLtt_Try_Termcap;
+LIBW32_VAR int                 SLtt_Screen_Rows;
+LIBW32_VAR int                 SLtt_Screen_Cols;
+LIBW32_VAR int                 SLtt_Ignore_Beep;
+LIBW32_VAR int                 SLtt_Use_Ansi_Colors;
+LIBW32_VAR int                 SLtt_Try_Termcap;
 #define                        SLtt_Has_Alt_Charset 1  /* FIXME */
 
  /*

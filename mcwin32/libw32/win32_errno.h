@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_ERRNO_H_INCLUDED
 #define LIBW32_WIN32_ERRNO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.8 2022/03/16 13:47:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.9 2022/06/08 09:51:44 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -52,59 +52,37 @@ __CPRAGMA_ONCE
 #endif //EADDRINUSE != 10048
 #endif //__MAKEDEPEND__
 
-#if defined(_MSC_VER) || defined(__MAKEDEPEND__)
-#undef EADDRINUSE           //100
-#undef EADDRNOTAVAIL        //101
-#undef EAFNOSUPPORT         //102
-#undef EALREADY             //103
-//#define EBADMSG           104
-//#define ECANCELED         105
-#undef ECONNABORTED         //106
-#undef ECONNREFUSED         //107
-#undef ECONNRESET           //108
-#undef EDESTADDRREQ         //109
-#undef EHOSTUNREACH         //110
-//#define EIDRM             111
-#undef EINPROGRESS          //112
-#undef EISCONN              //113
-#undef ELOOP                //114
-#undef EMSGSIZE             //115g
-#undef ENETDOWN             //116
-#undef ENETRESET            //117
-#undef ENETUNREACH          //118
-#undef ENOBUFS              //119
-//#define ENODATA           120
-//#define ENOLINK           121
-//#define ENOMSG            122
-#undef ENOPROTOOPT          //123
-//#define ENOSR             124
-//#define ENOSTR            125
-//#define ENOTCONN          126
-#undef ENOTCONN             //126
-#undef ENOTRECOVERABLE      //127
-#undef ENOTSOCK             //128
-//#define ENOTSUP           129
-#undef EOPNOTSUPP           //130
-//#define EOTHER            131
-//#define EOVERFLOW         132
-//#define EOWNERDEAD        133
-//#define EPROTO            134
-#undef EPROTONOSUPPORT      //135
-#undef EPROTOTYPE           //136
-//#define ETIME             137
-#undef ETIMEDOUT            //138
-//#define ETXTBSY           139
-#undef EWOULDBLOCK          //140
+	/* Check for (MSVC && !WATCOMC), at times we masquerade WC as MSVC */
+#if (defined(_MSC_VER) && !defined(__WATCOMC__)) || \
+	defined(__MAKEDEPEND__)
+#include "msvc_errno.h"
 #endif //EADDRINUSE
 
 /*
  *  System <errno.h>
  */
-#if defined(_MSC_VER) && \
+#if defined(_MSC_VER) && (_MSC_VER > 1600) && \
         !defined(_CRT_NO_POSIX_ERROR_CODES)
 #define _CRT_NO_POSIX_ERROR_CODES               /* disable POSIX error number, see <errno.h> (MSVC 2010+) */
 #endif //_MSC_VER
+
 #include <errno.h>
+
+#if defined(EWOULDBLOCK)                        /* _CRT_NO_POSIX_ERROR_CODES not available */
+#if (_MSC_VER == 1600) && !defined(__WATCOMC__)
+#include "msvc_errno.h"
+#endif
+#if (__MINGW64_VERSION_MAJOR)                   /* unconditionally defined */
+    /*
+     *  RETHINK, as the following are assumed by the native pthread package:
+     *
+     *      #define ETIMEDOUT   138
+     *      #define ENOTSUP	129
+     *      #define EWOULDBLOCK	140
+     */
+#include "msvc_errno.h"
+#endif
+#endif
 
 /*
  *  Addition UNIX style errno's, plus Windows Sockets errors redefined as regular Berkeley error constants.
@@ -114,8 +92,8 @@ __CPRAGMA_ONCE
      *  General use error codes,
      *      which utilise their defined value under MSVC POSIX definition, see <errno.h>
      *
-     *  MSVC: Their definitions are disabled using _CRT_NO_POSIX_ERROR_CODES,
-     *      as many conflict with the WinSock aliases below,
+     *  MSVC: Their definitions can be disabled using _CRT_NO_POSIX_ERROR_CODES, as many conflict with the 
+     *      WinSock aliases below, but this generates complication errors within C++ code elements.
      */
 #define EBADMSG         104                     /* Bad message. */
 #define ECANCELED       105                     /* Operation canceled. */
@@ -145,7 +123,7 @@ __CPRAGMA_ONCE
      *  WinSock errors are aliased to their BSD/POSIX counter part.
      *
      *  Note: This works for *most* errors, yet the following result in conflicts and are
-     *      explicity remapped during i/o operations.
+     *      explicitly remapped during i/o operations: see w32_neterrno_map()
      *
 #define EINTR           WSAEINTR                // 10004 "Interrupted system call"
 #define EBADF           WSAEBADF                // 10009 "Bad file number"
@@ -410,18 +388,34 @@ __CPRAGMA_ONCE
 #define EOPNOTSUPP      10045                   /* 10045 "Operation not supported on socket" */
 #endif
 
+#if !defined(ENETUNREACH)
+#define ENETUNREACH      10051                  /* 10051 "Network is unreachable" */
+#elif (ENETUNREACH != 10051)
+#error Inconsistent ENETUNREACH definition ....
+#endif
+
+#if !defined(ECONNRESET)
+#define ECONNRESET      10054                   /* 10054 "Connection reset by peer" */
+#elif (ECONNRESET != 10054)
+#error Inconsistent ECONNRESET definition ....
+#endif
+
 #if !defined(ENOBUFS)
 #define ENOBUFS         10055                   /* 10055 "No buffer space available" */
 #endif
 
 #if !defined(ETIMEDOUT)
 #define ETIMEDOUT       10060                   /* 10060 "Connection timed out" */
+#elif (ETIMEDOUT != 10060)
+#error Inconsistent ETIMEDOUT definition ....
 #endif
 
 #if !defined(ELOOP)
 #define ELOOP           10062                   /* 10062 "Too many levels of symbolic links" */
+#elif (ELOOP != 10062)
+#error Inconsistent ELOOP definition ....
 #endif
 
-#endif  //!LIBW32_ERRNO_WINSOCK
+#endif /*LIBW32_WIN32_ERRNO_H_INCLUDED*/
 
 /*end*/

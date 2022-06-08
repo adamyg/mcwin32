@@ -139,6 +139,15 @@
     <Filter Include="Header Files\mcsrc\filemanager">
       <UniqueIdentifier>{cb5045c7-7dcc-4c91-9d00-5750b767cd6e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\include">
+      <UniqueIdentifier>{472d3d44-895b-4b8a-925a-031264bd95d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\glib-2.0">
+      <UniqueIdentifier>{872bc916-75f2-4d77-9928-e256ce98bc00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\glib-2.0\glib">
+      <UniqueIdentifier>{bb52fab5-dea0-4e93-a4de-7428cee46eb6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\mcsrc\src\args.c">
@@ -1090,6 +1099,252 @@
     </ClInclude>
     <ClInclude Include="..\..\src\win32_trace.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libintl.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libssh2.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libssh2_helper.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libssh2_Sftp.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\magic.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\regex.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\zconf.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\zlib.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib.h">
+      <Filter>Header Files\include\glib-2.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glibconfig.h">
+      <Filter>Header Files\include\glib-2.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\gmodule.h">
+      <Filter>Header Files\include\glib-2.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\gmoduleconf.h">
+      <Filter>Header Files\include\glib-2.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\galloca.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\garray.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gasyncqueue.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gatomic.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbacktrace.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbase64.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbitlock.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbookmarkfile.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbytes.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gcharset.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gchecksum.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gconvert.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gdataset.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gdate.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gdatetime.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gdir.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\genviron.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gerror.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gfileutils.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\ggettext.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\ghash.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\ghmac.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\ghook.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\ghostutils.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\giochannel.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gkeyfile.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\glib-autocleanups.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\glist.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmacros.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmain.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmappedfile.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmarkup.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmem.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmessages.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gnode.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\goption.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gpattern.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gpoll.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gprimes.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gqsort.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gquark.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gqueue.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\grand.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gregex.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gscanner.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gsequence.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gshell.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gslice.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gslist.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gspawn.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gstrfuncs.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gstring.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gstringchunk.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtestutils.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gthread.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gthreadpool.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtimer.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtimezone.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtrashstack.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtree.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtypes.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gunicode.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gurifuncs.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gutils.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\guuid.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gvariant.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gvarianttype.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gversion.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gversionmacros.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\glib-2.0\glib\gwin32.h">
+      <Filter>Header Files\include\glib-2.0\glib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

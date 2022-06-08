@@ -1,11 +1,12 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_string_c,"$Id: w32_string.c,v 1.9 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_setrlimit_c,"$Id: w32_setrlimit.c,v 1.1 2022/06/08 09:51:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * win32 string functionality
+ * win32 setrlimit() system calls
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2020 - 2022, Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
@@ -38,48 +39,38 @@ __CIDENT_RCSID(gr_w32_string_c,"$Id: w32_string.c,v 1.9 2022/06/08 09:51:44 cvsu
 
 #include "win32_internal.h"
 
-#include <stddef.h>
-#include <string.h>
+#include <sys/resource.h>
+#include <stdio.h>
 #include <unistd.h>
 
-
-#if defined(NEED_STRCASECMP)
-LIBW32_API int
-strcasecmp(const char *s1, const char *s2)
+int
+setrlimit(int resource, const struct rlimit *rlp)
 {
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
-    return _stricmp(s1, s2);
+    if (NULL == rlp) {
+        errno = EINVAL;
+    } else if (rlp->rlim_cur > rlp->rlim_max) {
+        errno = EINVAL;
+    } else {
+        switch (resource) {
+        case RLIMIT_NOFILE: {
+                int newmax, ret = 0;
+                if (rlp->rlim_max > WIN32_FILDES_DEF) {
+#if defined(__WATCOMC__)
+                    if (_grow_handles(rlp->rlim_max) < rlp->rlim_max) {
 #else
-    return stricmp(s1, s2);
+                    if (-1 == (newmax = _setmaxstdio(rlp->rlim_max))) {
 #endif
+                        errno = EINVAL;
+                        ret = -1;
+                    }
+                    w32_sockfd_limit(rlp->rlim_max);
+                }
+                return ret;
+            }
+        }
+        errno = ENOSYS;
+    }
+    return -1;
 }
-#endif
-
-
-#if defined(NEED_STRCASECMP)
-LIBW32_API int
-strncasecmp(const char *s1, const char *s2, size_t len)
-{
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
-    return _strnicmp(s1, s2, len);
-#else
-    return strnicmp(s1, s2, len);
-#endif
-}
-#endif
-
-
-#if defined(NEED_STRNLEN)
-LIBW32_API size_t
-strnlen(const char *s, size_t maxlen)
-{
-    register const char *e;
-    size_t n;
-
-    for (e = s, n = 0; *e && n < maxlen; e++, n++)
-        /**/;
-    return n;
-}
-#endif
 
 /*end*/

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.10 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.11 2022/06/08 09:51:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -250,7 +250,7 @@ PipeA(const char *cmd, const char *mode)
             argv[2] = cmd;
         } else {
             argv[2] = cmd2 = WIN32_STRDUP(cmd);
-            strncpy(strstr("2>&1", cmd2), "    ", 4);
+            memcpy(strstr("2>&1", cmd2), "    ", 4);
             redirect_error = TRUE;
         }
         argv[3] = NULL;
@@ -620,8 +620,10 @@ w32_pclose(FILE *file)
         if (pipe) {
             int status = 0, ret = 0;
 
-            if ('w' == pipe->readOrWrite) fclose(file); Close2(pipe->hIn, "pclose/stdin");
-            if ('r' == pipe->readOrWrite) fclose(file); Close2(pipe->hOut, "pclose/stdout");
+            if ('w' == pipe->readOrWrite) fclose(file);
+            Close2(pipe->hIn,  "pclose/stdin");
+            if ('r' == pipe->readOrWrite) fclose(file);
+            Close2(pipe->hOut, "pclose/stdout");
             Close2(pipe->hErr, "pclose/stderr");
             if (! w32_child_wait(pipe->handle, &status, FALSE /*block*/)) {
                 ret = -1;
@@ -744,7 +746,7 @@ DisplayErrorA(
     int len;
 
     len = _snprintf(buffer, sizeof(buffer),
-            "Internal Error: %s = %d (%s).\n", msg, rc, rcmsg);
+            "Internal Error: %s = %u (%s).\n", msg, (unsigned)rc, rcmsg);
     WriteConsoleA(hOutput, buffer, len, NULL, NULL);
 }
 

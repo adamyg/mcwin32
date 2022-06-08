@@ -5,4 +5,3 @@
 #include "gmoduleconf.h.win32"
 
 /**/
-

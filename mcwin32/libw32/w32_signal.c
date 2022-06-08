@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.8 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.9 2022/06/08 09:51:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -33,7 +33,7 @@ __CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.8 2022/03/16 13:47:00 cvsu
 #include <unistd.h>
 #include <signal.h>
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW64__)
 /*
 //  NAME
 //      sigemptyset - initialize and empty a signal set
@@ -56,9 +56,10 @@ __CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.8 2022/03/16 13:47:00 cvsu
 LIBW32_API int
 sigemptyset(sigset_t *ss)
 {
-//  if (ss) {
-//      memset(ss, 0, sizeof(*ss));
-//  }
+    if (ss) {
+        memset(ss, 0, sizeof(*ss));
+        return 0;
+    }
     errno = EINVAL;
     return -1;
 }
@@ -67,6 +68,11 @@ sigemptyset(sigset_t *ss)
 LIBW32_API int
 sigaction(int sig, struct sigaction *sa, struct sigaction *osa)
 {
+    switch (sig) {
+    case SIGPIPE:
+        return 0;
+    }
+
 //  if (sa) {
 //      if (osa) {
 //          osa->sa_handler = signal(sig, (void (__cdecl *)(int))sa->sa_handler);
@@ -75,7 +81,6 @@ sigaction(int sig, struct sigaction *sa, struct sigaction *osa)
 //          signal(sig, (void (__cdecl *)(int))sa->sa_handler);
 //      }
 //  }
-
     errno = EINVAL;
     return -1;
 }

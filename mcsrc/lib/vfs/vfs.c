@@ -44,6 +44,9 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#if defined(WIN32) //WIN32, drive
+#include <ctype.h>
+#endif
 
 #ifdef __linux__
 #ifdef HAVE_LINUX_FS_H

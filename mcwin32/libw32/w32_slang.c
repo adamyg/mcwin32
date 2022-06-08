@@ -62,26 +62,27 @@
 #define UNICODE_REPLACEFULL         0xff1f      /* full-width '?' */
 #define UNICODE_MAX                 0x10ffff
 
-LIBW32_API const int SLang_Version      = SLANG_VERSION;
+/*LIBW32_VAR*/ const int SLang_Version      = SLANG_VERSION;
 
 /*
  *  also see libw32.def; variables must be explicitly exported.
  */
-LIBW32_API int SLsmg_Tab_Width          = 8;
-LIBW32_API int SLsmg_Display_Eight_Bit  = 256;
-LIBW32_API int SLsmg_Display_Alt_Chars  = 0;
-LIBW32_API int SLsmg_Newline_Behavior   = 0;
-LIBW32_API int SLsmg_Backspace_Moves    = 0;
+/*LIBW32_VAR*/ int SLsmg_Tab_Width          = 8;
+/*LIBW32_VAR*/ int SLsmg_Display_Eight_Bit  = 256;
+/*LIBW32_VAR*/ int SLsmg_Display_Alt_Chars  = 0;
+/*LIBW32_VAR*/ int SLsmg_Newline_Behavior   = 0;
+/*LIBW32_VAR*/ int SLsmg_Backspace_Moves    = 0;
 
-LIBW32_API int SLtt_Screen_Rows         = 0;
-LIBW32_API int SLtt_Screen_Cols         = 0;
-LIBW32_API int SLtt_Ignore_Beep         = SLTT_BEEP_AUDIBLE; /* default(1), beep() */
-LIBW32_API int SLtt_Use_Ansi_Colors     = -1;   /* full color support */
-LIBW32_API int SLtt_True_Color          = 0;    /* extension */
-LIBW32_API int SLtt_Term_Cannot_Scroll  = 0;
-LIBW32_API int SLtt_Term_Cannot_Insert  = 0;
-LIBW32_API int SLtt_Try_Termcap         = 0;
+/*LIBW32_VAR*/ int SLtt_Screen_Rows         = 0;
+/*LIBW32_VAR*/ int SLtt_Screen_Cols         = 0;
+/*LIBW32_VAR*/ int SLtt_Ignore_Beep         = SLTT_BEEP_AUDIBLE; /* default(1), beep() */
+/*LIBW32_VAR*/ int SLtt_Use_Ansi_Colors     = -1;   /* full color support */
+/*LIBW32_VAR*/ int SLtt_True_Color          = 0;    /* extension */
+/*LIBW32_VAR*/ int SLtt_Term_Cannot_Scroll  = 0;
+/*LIBW32_VAR*/ int SLtt_Term_Cannot_Insert  = 0;
+/*LIBW32_VAR*/ int SLtt_Try_Termcap         = 0;
 
+#if (UNUSED)
 static const uint32_t   acs_oem[128] = {        /* alternative character map to OEM/CP437 */
      /*
       * NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL
@@ -121,6 +122,7 @@ static const uint32_t   acs_oem[128] = {        /* alternative character map to 
         '-',    0xc4,   '-',    '_',    0xc3,   0xb4,   0xc1,   0xc2,
         0xb3,   0xf3,   0xf2,   0xe3,   '!',    0x9c,   0xf9,   0x7f,
         };
+#endif
 
 static void             set_position(int row, int col);
 static int              cliptoarena(int coord, int n, int start, int end, int *coordmin, int *coordmax);
@@ -374,7 +376,7 @@ SLtt_beep(void)
 {
     int audible;
 
-    if (0 == SLtt_Ignore_Beep) 
+    if (0 == SLtt_Ignore_Beep)
         return;
 
     audible = (SLTT_BEEP_AUDIBLE & SLtt_Ignore_Beep);
@@ -402,7 +404,7 @@ SLtt_beep(void)
 
     } else { // default, sound
         beep(FALSE);
-    }   
+    }
 }
 
 
@@ -592,14 +594,17 @@ write_string(const char *str, unsigned cnt)
     const WCHAR_COLORINFO *color = &vio.c_color;
     const char *send = str + cnt;
     WCHAR_INFO *cursor, *cend;
-    unsigned flags = 0, nl;
+    unsigned flags = 0;
+#if defined(SLSMG_NEWLINE_PRINTABLE)
+    unsigned nl;
+#endif
     unsigned char ch;
     int col;
 
 #if defined(SLSMG_NEWLINE_SCROLLS)
 top:                                            /* get here only on newline */
-#endif
     nl = 0;
+#endif
     if (vio.c_row >= vio.rows) {
         cursor = cend = NULL;                   /* off screen */
     } else {
@@ -725,7 +730,7 @@ top:                                            /* get here only on newline */
 }
 
 
-static void             
+static void
 invert_region(int top_row, int bot_row)
 {
     if (bot_row > vio.rows) bot_row = vio.rows;
@@ -770,7 +775,7 @@ SLsmg_vprintf(const char *fmt, va_list ap)
 
     if (0 == vio.inited) return;                /* not initialised */
 
-    if ((len = _vsnprintf(buf, sizeof(buf), fmt, ap)) < 0 || len >= sizeof(buf)) {
+    if ((len = _vsnprintf(buf, sizeof(buf), fmt, ap)) < 0 || len >= (int)sizeof(buf)) {
         len = sizeof(buf);                      /* error/overflow */
     }
     if (len > 0) {

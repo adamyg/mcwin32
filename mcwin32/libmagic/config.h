@@ -1,10 +1,10 @@
-#ifndef CONFIG_H_INCLUDED
-#define CONFIG_H_INCLUDED
+#ifndef LIBMAGIC_CONFIG_H_INCLUDED
+#define LIBMAGIC_CONFIG_H_INCLUDED
 /*
- *  WIN32 config.h
+ *  libmagic <config.h> ...
  */
 
-#include <../config.h>
+#include "w32config.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -84,7 +84,7 @@
     //#undef HAVE_DPRINTF
 
 /* Define to 1 if you have the <err.h> header file. */
-#define HAVE_ERR_H
+#define HAVE_ERR_H 1
 
 /* Define to 1 if you have the <fcntl.h> header file. */
     //#undef HAVE_FCNTL_H
@@ -105,10 +105,10 @@
     //#define HAVE_GETLINE
 
 /* Define to 1 if you have the <getopt.h> header file. */
-#define HAVE_GETOPT_H
+#define HAVE_GETOPT_H 1
 
 /* Define to 1 if you have the `getopt_long' function. */
-#define HAVE_GETOPT_LONG
+#define HAVE_GETOPT_LONG 1
 
 /* Define to 1 if you have the `getpagesize' function. */
     //#undef HAVE_GETPAGESIZE
@@ -126,10 +126,10 @@
     //#undef HAVE_LIBGNURX
 
 /* Define to 1 if you have the `z' library (-lz). */
-#define HAVE_LIBZ
+#define HAVE_LIBZ 1
 
 /* Define to 1 if you have the <limits.h> header file. */
-#define HAVE_LIMITS_H
+#define HAVE_LIMITS_H 1
 
 /* Define to 1 if you have the <locale.h> header file. */
 #if defined(__WATCOMC__)
@@ -140,20 +140,20 @@
     //#undef HAVE_LOCALTIME_R
 
 /* Define to 1 if mbrtowc and mbstate_t are properly declared. */
-#define HAVE_MBRTOWC
+#define HAVE_MBRTOWC 1
 
 /* Define to 1 if <wchar.h> declares mbstate_t. */
-#define HAVE_MBSTATE_T
+#define HAVE_MBSTATE_T 1
 
 /* Define to 1 if you have the <memory.h> header file. */
-#define HAVE_MEMORY_H
+#define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `mkostemp' function. */
-#define HAVE_MKOSTEMP
+#define HAVE_MKOSTEMP 1
 
 /* Define to 1 if you have the `mkstemp' function. */
 #if defined(__WATCOMC__)
-#define HAVE_MKSTEMP
+#define HAVE_MKSTEMP 1
 #endif
 
 /* Define to 1 if you have a working `mmap' system call. */
@@ -175,25 +175,25 @@
     //#undef HAVE_SIG_T
 
 /* Define to 1 if you have the <stddef.h> header file. */
-#define HAVE_STDDEF_H
+#define HAVE_STDDEF_H 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#define HAVE_STDINT_H
+#define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdlib.h> header file. */
-#define HAVE_STDLIB_H
+#define HAVE_STDLIB_H 1
 
 /* Define to 1 if you have the `strcasestr' function. */
     //#undef HAVE_STRCASESTR
 
 /* Define to 1 if you have the `strerror' function. */
-#define HAVE_STRERROR
+#define HAVE_STRERROR 1
 
 /* Define to 1 if you have the <strings.h> header file. */
     //#undef HAVE_STRINGS_H
 
 /* Define to 1 if you have the <string.h> header file. */
-#define HAVE_STRING_H
+#define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strlcat' function. */
     //#define HAVE_STRLCAT
@@ -211,7 +211,7 @@
     //#define HAVE_STRTOUL
 
 /* HAVE_STRUCT_OPTION */
-#define HAVE_STRUCT_OPTION
+#define HAVE_STRUCT_OPTION 1
 
 /* Define to 1 if `st_rdev' is a member of `struct stat'. */
     //#undef HAVE_STRUCT_STAT_ST_RDEV
@@ -226,7 +226,7 @@
     //#undef HAVE_SYS_MMAN_H
 
 /* Define to 1 if you have the <sys/param.h> header file. */
-#define HAVE_SYS_PARAM_H
+#define HAVE_SYS_PARAM_H 1
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
     //#undef HAVE_SYS_STAT_H
@@ -256,7 +256,7 @@
     //#undef HAVE_UINTPTR_T
 
 /* Define to 1 if you have the <unistd.h> header file. */
-#define HAVE_UNISTD_H
+#define HAVE_UNISTD_H 1
 
 /* Define to 1 if you have the `uselocale' function. */
     //#undef HAVE_USELOCALE
@@ -283,10 +283,10 @@
     //#undef HAVE_VISIBILITY
 
 /* Define to 1 if you have the <wchar.h> header file. */
-#define HAVE_WCHAR_H
+#define HAVE_WCHAR_H 1
 
 /* Define to 1 if you have the <wctype.h> header file. */
-#define HAVE_WCTYPE_H
+#define HAVE_WCTYPE_H 1
 
 /* Define to 1 if you have the `wcwidth' function. */
     //#define HAVE_WCWIDTH
@@ -301,7 +301,7 @@
     //#undef HAVE_XLOCALE_H
 
 /* Define to 1 if you have the <zlib.h> header file. */
-#define HAVE_ZLIB_H
+#define HAVE_ZLIB_H 1
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries. */
     //#undef LT_OBJDIR
@@ -313,7 +313,7 @@
     //#undef MAJOR_IN_SYSMACROS
 
 /* Define to 1 if you have the ANSI C header files. */
-#define STDC_HEADERS
+#define STDC_HEADERS 1
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
     //#define TM_IN_SYS_TIME
@@ -444,7 +444,8 @@
 #if defined(WIN32_UNISTD_MAP)
 #include <sys/socket.h>                         /* resolve order issues */
 #endif
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__WATCOMC__) || \
+        defined(HAVE_SYS_UTIME_H)
 #include <sys/utime.h>                          /* utime() and utimbuf */
 #endif
 
@@ -456,7 +457,7 @@
 #endif
 
     /*function mappings*/
-    
+
 #if defined(_MSC_VER) || defined(__WATCOMC__)
 #if (_MSC_VER < 1500)   /* MSVC 2008 */
 #define vsnprintf _vsnprintf
@@ -475,6 +476,9 @@
 #endif
 #endif  /*MSC_VER || WATCOM*/
 
+int w32_ioctl(int fd, unsigned long request, int *value);
+#define ioctl(__a,__b,__c) w32_ioctl(__a,__b,__c)
+
 #if defined(__MINGW32__)
 #if !defined(lstat)
 #define lstat w32_lstat
@@ -482,12 +486,15 @@
 #endif
 #endif
 
-#if defined(__WATCOMC__) || \
-        (defined(_MSC_VER) && !defined(PRIx64))
+#if defined(HAVE_INTTYPES_H)
+#include <inttypes.h>
+#endif
+
+#if !defined(PRIx64) && \
+        (defined(__WATCOMC__) || defined(_MSC_VER))
 #define PRIx64 "ull"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-#endif  /*CONFIG_H_INCLUDED*/
-
+#endif /*LIBMAGIC_CONFIG_H_INCLUDED*/

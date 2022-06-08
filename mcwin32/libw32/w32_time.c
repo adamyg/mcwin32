@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.11 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.12 2022/06/08 09:51:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -139,27 +139,24 @@ w32_sleep (unsigned int secs)
 //
 //  DESCRIPTION
 //
-//      The  gettimeofday()  function  shall  obtain  the  current  time,
-//      expressed  as  seconds  and  microseconds  since  the  Epoch, and
-//      store  it  in  the  timeval  structure  pointed  to  by  tp.  The
-//      resolution of the system clock is unspecified.
+//      The gettimeofday() function shall obtain the current time, expressed aa seconds and 
+//      microseconds since the Epoch, and store it in the timeval structure pointed to by tp.
+//      The resolution of the system clock is unspecified.
 //
 //      If tzp is not a null pointer, the behavior is unspecified.
 //
 //  RETURN VALUE
-//
 //      The  gettimeofday()  function  shall  return 0 and no value shall
 //      be reserved to indicate an error.
 //
 //  ERRORS
-//
 //      No errors are defined.
 //
 */
 
 LIBW32_API int
 w32_gettimeofday(
-    struct timeval *tv, /*struct timezone*/ void *tz)
+    struct timeval *tv, struct timezone *tz)
 {
     __CUNUSED(tz)
     if (tv) {
@@ -173,7 +170,7 @@ w32_gettimeofday(
 
 #elif defined(__MINGW32__)
 #undef gettimeofday
-        return gettimeofday(tv, tz)
+        return gettimeofday(tv, tz);
 
 #else //DEFAULT
         FILETIME ft;
@@ -319,24 +316,14 @@ w32_utime(const char *path, const struct utimbuf *times)
 LIBW32_API int
 w32_utimeA(const char *path, const struct utimbuf *times)
 {
-#if defined(__MINGW32__)
-#undef utime
-    return utime(path, (struct utimbuf *)times);
-#else
     return _utime(path, (struct _utimbuf *)times);
-#endif
 }
 
 
 LIBW32_API int
 w32_utimeW(const wchar_t *path, const struct utimbuf *times)
 {
-#if defined(__MINGW32__)
-#undef utime
-    return wutime(path, (struct utimbuf *)times);
-#else
     return _wutime(path, (struct _utimbuf *)times);
-#endif
 }
 
 /*end*/

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.11 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.12 2022/06/08 09:51:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -359,7 +359,6 @@ getmntinfo(struct statfs **psb, int flags)
     static struct statfs *x_getmntinfo = NULL;  // global instance
     struct statfs *sb;
     char szDrivesAvail[32*4], *p;
-    int numVolumes[32] = {0};
     int cnt;
 
     if (! psb) {                                // invalid
@@ -431,7 +430,7 @@ enum_volumes(struct statfs *result, long resultsize, int *mnts)
 
     errno = 0;
 
-    if (INVALID_HANDLE_VALUE != (handle = FindFirstVolumeW(volume, ARRAYSIZE(volume)))) {
+    if (INVALID_HANDLE_VALUE != (handle = FindFirstVolumeW(volume, _countof(volume)))) {
         do {
             //
             //  query volume(s).
@@ -480,7 +479,7 @@ enum_volumes(struct statfs *result, long resultsize, int *mnts)
 
             //
             //  next volume.
-            ret = FindNextVolumeW(handle, volume, ARRAYSIZE(volume));
+            ret = FindNextVolumeW(handle, volume, _countof(volume));
             if (! ret) {
                 const DWORD lasterr = GetLastError();
                 if (lasterr != ERROR_NO_MORE_FILES) {

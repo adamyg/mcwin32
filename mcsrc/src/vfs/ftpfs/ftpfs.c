@@ -78,7 +78,6 @@ What to do with this?
 #include <stdio.h>              /* sscanf() */
 #include <stdlib.h>             /* atoi() */
 #include <sys/types.h>          /* POSIX-required by sys/socket.h and netdb.h */
-#include <netdb.h>              /* struct hostent */
 #include <sys/socket.h>         /* AF_INET */
 #include <netinet/in.h>         /* struct in_addr */
 #ifdef HAVE_ARPA_INET_H
@@ -89,6 +88,7 @@ What to do with this?
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
+#include <netdb.h>              /* struct hostent */
 #include <errno.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -1467,7 +1467,7 @@ ftpfs_linear_abort (struct vfs_class *me, vfs_file_handler_t * fh)
 
     vfs_print_message ("%s", _("ftpfs: aborting transfer."));
 
-    if (send (ftp_super->sock, ipbuf, sizeof (ipbuf), MSG_OOB) != sizeof (ipbuf))
+    if (send (ftp_super->sock, (void *)ipbuf, sizeof (ipbuf), MSG_OOB) != sizeof (ipbuf))
     {
         vfs_print_message (_("ftpfs: abort error: %s"), unix_error_string (errno));
         if (dsock != -1)

@@ -342,7 +342,14 @@ typedef struct
 /*** WIN32 ****/
 
 #if defined(WIN32) //WIN32, quick
-inline quick_widget_t *
+
+#if defined(__GNUC__)
+#define XQUICK_INLINE static inline
+#else
+#define XQUICK_INLINE inline
+#endif
+
+XQUICK_INLINE quick_widget_t *
 XQUICK_CHECKBOX(quick_widget_t *qc,
     const char *txt, int *st, unsigned long *id_)
 {
@@ -357,7 +364,7 @@ XQUICK_CHECKBOX(quick_widget_t *qc,
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_BUTTON(quick_widget_t *qc,
     const char *txt, int act, bcback_fn cb, unsigned long *id_)
 {
@@ -373,7 +380,7 @@ XQUICK_BUTTON(quick_widget_t *qc,
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE inline quick_widget_t *
 XQUICK_INPUT(quick_widget_t *qc,
     const char *txt, const char *hname, char **res, unsigned long *id_,
         int is_passwd_, int strip_passwd_, int completion_flags_)
@@ -397,7 +404,7 @@ XQUICK_INPUT(quick_widget_t *qc,
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE inline quick_widget_t *
 XQUICK_LABELED_INPUT(quick_widget_t *qc,
     const char *label_, quick_input_label_location_t label_loc,
     const char *txt, const char *hname, char **res, unsigned long *id_,
@@ -421,7 +428,7 @@ XQUICK_LABELED_INPUT(quick_widget_t *qc,
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE inline quick_widget_t *
 XQUICK_LABEL(quick_widget_t *qc,
     const char *txt, unsigned long *id_)
 {
@@ -436,7 +443,7 @@ XQUICK_LABEL(quick_widget_t *qc,
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_RADIO(quick_widget_t *qc,
     int cnt, const char **items_, int *val, unsigned long *id_)
 {
@@ -453,7 +460,7 @@ XQUICK_RADIO(quick_widget_t *qc,
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_START_GROUPBOX(quick_widget_t *qc, const char *t)
 {
     quick_widget_t tqc = {0};
@@ -466,7 +473,7 @@ XQUICK_START_GROUPBOX(quick_widget_t *qc, const char *t)
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_STOP_GROUPBOX(quick_widget_t *qc)
 {
     quick_widget_t tqc = {0};
@@ -484,7 +491,7 @@ XQUICK_STOP_GROUPBOX(quick_widget_t *qc)
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_SEPARATOR(quick_widget_t *qc, gboolean line_)
 {
     quick_widget_t tqc = {0};
@@ -498,7 +505,7 @@ XQUICK_SEPARATOR(quick_widget_t *qc, gboolean line_)
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_START_COLUMNS(quick_widget_t *qc)
 {
     quick_widget_t tqc = {0};
@@ -516,7 +523,7 @@ XQUICK_START_COLUMNS(quick_widget_t *qc)
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_NEXT_COLUMN(quick_widget_t *qc)
 {
     quick_widget_t tqc = {0};
@@ -534,7 +541,7 @@ XQUICK_NEXT_COLUMN(quick_widget_t *qc)
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_STOP_COLUMNS(quick_widget_t *qc)
 {
     quick_widget_t tqc = {0};
@@ -552,7 +559,7 @@ XQUICK_STOP_COLUMNS(quick_widget_t *qc)
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_START_BUTTONS(quick_widget_t *qc, gboolean space_, gboolean line_)
 {
     quick_widget_t tqc = {0};
@@ -566,7 +573,7 @@ XQUICK_START_BUTTONS(quick_widget_t *qc, gboolean space_, gboolean line_)
     return ++qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_BUTTONS_OK_CANCEL(quick_widget_t *qc)
 {
     qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
@@ -575,7 +582,7 @@ XQUICK_BUTTONS_OK_CANCEL(quick_widget_t *qc)
     return qc;
 }
 
-inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_END(quick_widget_t *qc)
 {
     quick_widget_t tqc = {0};

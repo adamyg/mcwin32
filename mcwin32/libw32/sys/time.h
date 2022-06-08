@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_TIME_H_INCLUDED
 #define LIBW32_SYS_TIME_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_time_h,"$Id: time.h,v 1.8 2022/03/16 13:47:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_time_h,"$Id: time.h,v 1.9 2022/06/08 09:51:45 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -29,11 +29,15 @@ __CPRAGMA_ONCE
  */
 
 #include <sys/cdefs.h>
+#if defined(__MINGW32__)
+#include_next <sys/time.h>              /* struct timeval */
+#else
+#include <sys/socket.h>                 /* struct timeval */
+#endif
 #include <sys/utypes.h>                 /* suseconds_t */
-#include <sys/select.h>
 #include <time.h>
 
-#if defined(NEED_TIMEVAL)
+#if defined(NEED_TIMEVAL) /*|| defined(__MINGW64_VERSION_MAJOR)*/
 #if !defined(_WINSOCKAPI_) && !defined(_WINSOCK2API_)
 //
 //  The <sys/time.h> header shall define the timeval structure that includes at
@@ -44,12 +48,15 @@ __CPRAGMA_ONCE
 //
 //  yet current winsock definitions are as follows.
 //
+#ifndef _TIMEVAL_DEFINED
+#define _TIMEVAL_DEFINED
 struct timeval {
     long                tv_sec;         /* seconds */
     long                tv_usec;        /* and microseconds */
 };
-#endif
-#endif
+#endif //_TIMEVAL_DEFINED
+#endif //_WINSOCK2API_
+#endif //NEED_TIMEVAL
 
 struct w32_timeval {
     time_t              tv_sec;         /* seconds */
@@ -60,13 +67,6 @@ struct itimerval {
     struct timeval      it_interval;    /* timer interval */
     struct timeval      it_value;       /* current value */
 };
-
-/*
- -  struct timezone {
- -      int tz_minuteswest;             // minutes west of Greenwich
- -      int tz_dsttime;                 // type of dst correction
- -  };
- */
 
 #if !defined(TIMEVAL_TO_TIMESPEC)
 #define TIMEVAL_TO_TIMESPEC(tv, ts) {       \
@@ -120,15 +120,15 @@ struct itimerval {
 __BEGIN_DECLS
 
 #define ITIMER_REAL     0               /* Decrements in real time. */
-#define ITIMER_VIRTUAL  1               /* Decrements in process virtual time. */
-#define ITIMER_PROF     2               /* Decrements both in process virtual time and when the system is running on behalf of the process. */
+    //#define ITIMER_VIRTUAL  1               /* unsupported - Decrements in process virtual time. */
+    //#define ITIMER_PROF     2               /* unsupported - Decrements both in process virtual time and when the system is running on behalf of the process. */
 
 LIBW32_API int          getitimer(int which, struct itimerval *value);
 LIBW32_API int          setitimer(int which, const struct itimerval *value, struct itimerval *ovalue);
 
 #if defined(_WINSOCKAPI_) || defined(_WINSOCK2API_)
-LIBW32_API int          w32_gettimeofday(struct timeval *, /*struct timezone*/ void *);
-LIBW32_API int          w32_select(int, fd_set *, fd_set *, fd_set *, struct timeval *timeout);
+LIBW32_API int          w32_gettimeofday(struct timeval *tv, struct timezone *tz);
+LIBW32_API int          w32_select(int, fd_set *, fd_set *, fd_set *, const struct timeval *timeout);
 #endif
 
 #if defined(NEED_TIMEVAL) || \
@@ -139,6 +139,7 @@ LIBW32_API int          utimes(const char *, const struct timeval[2]);
 #if defined(_MSC_VER) || defined(__WATCOMC__)
 LIBW32_API time_t       timegm(struct tm *tm);
 #endif
+
 /*
  *  POSIX 1003.1c -- <time.h>
  *

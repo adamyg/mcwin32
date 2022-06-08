@@ -1,7 +1,7 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.17 2022/03/16 13:47:01 cvsuser Exp $
+/* $Id: w32config.hin,v 1.18 2022/06/08 09:51:44 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
@@ -33,9 +33,11 @@
 
 #if !defined(_MSC_VER)
 #if !defined(__WATCOMC__)
+#if !defined(__MINGW32__)
 #error config.h: MSVC or WATCOMC targets only ...
 #endif
-#endif /*MSC || WATCOM*/
+#endif
+#endif /*MSC || WATCOM || MINGW */
 
 #undef MAKELIB_CC_COMPILER
 #undef MAKELIB_CC_VERSION
@@ -61,6 +63,9 @@
 #if !defined(__cplusplus)
 #pragma disable_message(136)                    // comparison equivalent to 'unsigned == 0'
 #pragma disable_message(138)                    // no newline at end of file
+#if (__WATCOMC__ >= 1300)                       // owc2.0
+#pragma disable_message(303)                    // parameter 'xxx' has been defined, but not referenced.
+#endif
 #endif
 #pragma disable_message(201)                    // unreachable code
 #pragma disable_message(202)                    // symbol 'xxx' has been defined, but not referenced
@@ -159,6 +164,7 @@
 #undef HAVE_SYS_STATVFS_H
 #undef HAVE_SYS_VFS_H
 #undef HAVE_SYS_MMAN_H
+#undef HAVE_SYS_TIMEB_H
 #undef HAVE_WAIT_H
 #undef HAVE_POLL_H
 #undef HAVE_SYS_PRCTL_H
@@ -173,6 +179,7 @@
 #undef HAVE_STDATOMIC_H
 #undef HAVE_THREADS_H
 #undef HAVE_XTHREADS_H
+#undef HAVE_LIBPTHREAD
 
 #undef HAVE_THREAD_H
 #undef HAVE_PTHREAD_H
@@ -413,7 +420,7 @@
  */
 
         /* environ support */
-	
+
 #undef HAVE_ENVIRON
 #undef HAVE__ENVIRON
 #undef HAVE___ENVIRON
@@ -484,9 +491,11 @@
 #undef HAVE_STRCASECMP
 #undef HAVE_STRNCASECMP
 #undef HAVE___STRCASECMP
+#undef HAVE___STRNCASECMP
 #undef HAVE_STRCHR
 #undef HAVE_STRERROR
 #undef HAVE_STRICMP
+#undef HAVE_STRNICMP
 #undef HAVE_STRRCHR
 #undef HAVE_STRDUP
 #undef HAVE_STRFTIME
@@ -506,6 +515,7 @@
 #undef HAVE_STRCASESTR
 #undef HAVE_STRCASESTR_L
 #undef HAVE_STRTONUM
+#undef HAVE_STRTOK_R
 
 #undef HAVE_ISASCII
 #undef HAVE___ISASCII
@@ -519,7 +529,6 @@
 #undef HAVE_SETPGRP
 #undef HAVE_SETSID
 
-#undef HAVE_STRTOK_R
 #undef HAVE_STRERROR_L
 #undef HAVE_STRERROR_R
 

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.15 2022/03/16 13:47:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.16 2022/06/08 09:51:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -258,7 +258,7 @@ w32_utf2wc(const char *src, wchar_t *dest, size_t maxlen)
     dest[0] = 0;
     if ((ret = MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, maxlen)) > 0) {
         assert(ret <= (int)maxlen);
-        if (ret == maxlen)
+        if (ret == (int)maxlen)
             dest[maxlen - 1] = 0;
 
     } else {
@@ -357,7 +357,7 @@ w32_wc2utf(const wchar_t *src, char *dest, size_t maxlen)
     dest[0] = 0;
     if ((ret = WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, maxlen, NULL, NULL)) > 0) {
         assert(ret <= (int)maxlen);
-        if (ret == maxlen) {
+        if (ret == (int)maxlen) {
             dest[maxlen - 1] = 0;
             --ret;
         }
@@ -631,7 +631,7 @@ w32_vsyserrorA(DWORD dwError, char *buf, int buflen, ...)
         if (0 == ret) {                         // error, overflow etc
             int len;
 
-            if ((len = buflen) > sizeof("unknown error")) {
+            if ((len = buflen) > (int)sizeof("unknown error")) {
                 len = sizeof("unknown error");
             }
             memcpy(buf, "unknown error", len * sizeof(char));
@@ -701,7 +701,7 @@ w32_vsyserrorW(DWORD dwError, wchar_t *buf, int buflen, ...)
         if (0 == ret) {                         // error, overflow etc
             int len;
 
-            if ((len = buflen) > sizeof("unknown error")) {
+            if ((len = buflen) > (int)sizeof("unknown error")) {
                 len = sizeof("unknown error");
             }
             memcpy(buf, L"unknown error", len * sizeof(wchar_t));

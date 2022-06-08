@@ -744,6 +744,88 @@
     <ClInclude Include="..\..\..\mcsrc\src\viewer\mcviewer.h" />
     <ClInclude Include="..\..\buildinfo.h" />
     <ClInclude Include="..\..\config.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glibconfig.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\galloca.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\garray.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gasyncqueue.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gatomic.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbacktrace.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbase64.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbitlock.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbookmarkfile.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gbytes.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gcharset.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gchecksum.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gconvert.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gdataset.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gdate.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gdatetime.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gdir.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\genviron.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gerror.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gfileutils.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\ggettext.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\ghash.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\ghmac.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\ghook.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\ghostutils.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\giochannel.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gkeyfile.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\glib-autocleanups.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\glist.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmacros.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmain.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmappedfile.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmarkup.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmem.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gmessages.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gnode.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\goption.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gpattern.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gpoll.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gprimes.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gqsort.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gquark.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gqueue.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\grand.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gregex.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gscanner.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gsequence.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gshell.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gslice.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gslist.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gspawn.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gstrfuncs.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gstring.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gstringchunk.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtestutils.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gthread.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gthreadpool.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtimer.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtimezone.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtrashstack.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtree.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gtypes.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gunicode.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gurifuncs.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gutils.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\guuid.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gvariant.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gvarianttype.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gversion.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gversionmacros.h" />
+    <ClInclude Include="..\..\include\glib-2.0\glib\gwin32.h" />
+    <ClInclude Include="..\..\include\glib-2.0\gmodule.h" />
+    <ClInclude Include="..\..\include\glib-2.0\gmoduleconf.h" />
+    <ClInclude Include="..\..\include\libintl.h" />
+    <ClInclude Include="..\..\include\libssh2.h" />
+    <ClInclude Include="..\..\include\libssh2_helper.h" />
+    <ClInclude Include="..\..\include\libssh2_Sftp.h" />
+    <ClInclude Include="..\..\include\magic.h" />
+    <ClInclude Include="..\..\include\regex.h" />
+    <ClInclude Include="..\..\include\zconf.h" />
+    <ClInclude Include="..\..\include\zlib.h" />
     <ClInclude Include="..\..\src\drive.h" />
     <ClInclude Include="..\..\src\win32_key.h" />
     <ClInclude Include="..\..\src\win32_trace.h" />
@@ -823,11 +905,13 @@
       <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32=0x501;_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../..;../../../mcsrc;../../include;../../libaspell;../../libw32/msvc;../../libw32;../../include/glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/DDO_NETWORK_DRIVES=1 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(OutDir)libw32.lib;../../lib.vs140/debug/libglib-2.0.lib;../../lib.vs140/debug/libgmodule-2.0.lib;../../lib.vs140/debug/libintl.lib;../../lib.vs140/debug/libssh2.lib;../../lib.vs140/debug/libmagic.lib;../../lib.vs140/debug/libz.lib;../../lib.vs140/debug/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateMapFile>true</GenerateMapFile>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\debug\etc"                  "$(OutDir)\etc\"
@@ -870,6 +954,7 @@ xcopy /y /d      "$(ProjectDir)..\..\bin.vs140\debug\busybox.exe" "$(OutDir)"</C
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(OutDir)libw32.lib;../../lib.vs140/release/libglib-2.0.lib;../../lib.vs140/release/libgmodule-2.0.lib;../../lib.vs140/release/libintl.lib;../../lib.vs140/release/libssh2.lib;../../lib.vs140/release/libmagic.lib;../../lib.vs140/release/libz.lib;../../lib.vs140/release/libregex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateMapFile>true</GenerateMapFile>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d /e "$(ProjectDir)..\..\bin.vs140\release\doc"               "$(OutDir)\doc\"

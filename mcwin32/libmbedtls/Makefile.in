@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.8 2022/03/21 02:45:11 cvsuser Exp $
+# $Id: Makefile.in,v 1.9 2022/06/08 09:51:42 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
@@ -90,8 +90,8 @@ LDLIBS=		-L$(D_LIB) @LIBS@ @LIBM@ @EXTRALIBS@
 ARFLAGS=	rcv
 RMFLAGS=	-f
 
-############################################################
 
+#########################################################################################
 # Targets
 
 MBEDCRYPTOLIB=	$(D_LIB)/$(LP)mbedcrypto_static$(A)
@@ -115,10 +115,12 @@ MBEDSRC=	$(MBEDBASE)/library
 MBEDINCLUDE=	$(MBEDBASE)/include
 
 CINCLUDE+=	-I./win32 -I$(MBEDINCLUDE)
-CEXTRA+=	-D_WIN32_WINNT=0x601 -DLIBMBED_WIN32 -DLIBMBED_HAVE_ZLIB
+CEXTRA+=	-DLIBMBED_WIN32 -DLIBMBED_HAVE_ZLIB
 CEXTRA+=	-DMBEDTLS_EXPORTS -DKRML_VERIFIED_UINT128
 
-VPATH+=		$(MBEDSRC) $(MBEDBASE)/programs/test ./win32
+VPATH+=		$(MBEDSRC)
+VPATH+=		$(MBEDBASE)/programs/test
+VPATH+=		./win32
 
 #see: library/CMakelists.txt
 CRYPTO_SOURCES=	aes.c			aesni.c			arc4.c		\
@@ -155,38 +157,48 @@ TLS_SOURCES=	debug.c			net_sockets.c		\
 		ssl_srv.c		ssl_ticket.c		\
 		ssl_tls.c		ssl_tls13_keys.c
 
+#######
 CRYPTO_LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CRYPTO_SOURCES)))
 CRYPTO_DLLOBJS=\
 	$(subst $(O),.lo,$(CRYPTO_LIBOBJS))			\
 	$(D_OBJ)/crypto_globals.lo
-ifeq ("mingw32","win32")
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 CRYPTO_DLLOBJS+=$(D_OBJ)/libmbedtls_res.o
-else ifeq ("win32","win32")
+else
 CRYPTO_DLLOBJS+=$(D_OBJ)/libmbedtls.res
 endif
+endif
 
+#######
 X509_LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(X509_SOURCES)))
 X509_DLLOBJS=\
 	$(subst $(O),.lo,$(X509_LIBOBJS))			\
 	$(D_OBJ)/x509_globals.lo
-ifeq ("mingw32","win32")
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 X509_DLLOBJS+=	$(D_OBJ)/libmbedtls_res.o
-else ifeq ("win32","win32")
+else
 X509_DLLOBJS+=	$(D_OBJ)/libmbedtls.res
 endif
+endif
 
+#######
 TLS_LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(TLS_SOURCES)))
 TLS_DLLOBJS=\
 	$(subst $(O),.lo,$(TLS_LIBOBJS))
-ifeq ("mingw32","win32")
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 TLS_DLLOBJS+=	$(D_OBJ)/libmbedtls_res.o
-else ifeq ("win32","win32")
+else
 TLS_DLLOBJS+=	$(D_OBJ)/libmbedtls.res
 endif
+endif
 
+###
 LIBOBJS=	$(CRYPTO_LIBOBJS)	\
 		$(X509_LIBOBJS)		\
 		$(TLS_LIBOBJS)
@@ -204,11 +216,13 @@ DLLS=		$(MBEDCRYPTODLL)	\
 		$(MBEDTLSDLL)
 
 TARGET=		mbedtls_selftest$(E)
-TARGETOBJS=	$(D_OBJ)/selftest.obj
+TARGETOBJS=	$(D_OBJ)/selftest$(O)
 
 TSKS=		$(D_BIN)/$(TARGET)
 INSTALLED=
 
+
+#########################################################################################
 # Rules
 
 .PHONY: 	build release debug
@@ -220,7 +234,7 @@ release:
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
-CEXTRA		+= -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -D__STDC_WANT_LIB_EXT1__=1
+CEXTRA		+= -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 
 #######
 $(MBEDCRYPTOLIB):	CEXTRA += -DLIBMBED_STATIC -DLIBMBEDCRYPTO_SOURCE
@@ -250,7 +264,7 @@ $(MBEDX509DLL):		LIBDEF=-export-symbols win32/libmbedx509.def
 $(MBEDX509DLL):		CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDX509_SOURCE -D_WINDLL
 $(MBEDX509DLL):		$(X509_DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) $(LIBDEF) -o $@ $^ -llibmbedcrypto $(LDLIBS)
+			-rpath $(D_LIB) -bindir $(D_BIN) $(LIBDEF) -o $@ $^ -lmbedcrypto $(LDLIBS)
 
 #######
 $(MBEDTLSLIB):		CEXTRA += -DLIBMBED_STATIC -DLIBMBEDTLS_SOURCE
@@ -265,12 +279,12 @@ $(MBEDTLSDLL):		LIBDEF=-export-symbols win32/libmbedtls.def
 $(MBEDTLSDLL):		CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDTLS_SOURCE -DLIBMBEDTLS -D_WINDLL
 $(MBEDTLSDLL):		$(TLS_DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) $(LIBDEF) -o $@ $^ -llibmbedcrypto -llibmbedx509 $(LDLIBS)
+			-rpath $(D_LIB) -bindir $(D_BIN) $(LIBDEF) -o $@ $^ -lmbedcrypto -lmbedx509 $(LDLIBS)
 
 #######
 $(D_BIN)/$(TARGET):	MAPFILE=$(basename $@).map
 $(D_BIN)/$(TARGET):	$(D_OBJ)/.created $(TARGETOBJS)
-		$(CC) $(LDFLAGS) -o $@ $(TARGETOBJS) $(LDFLAGS) -llibmbedtls -llibmbedcrypto -llibmbedx509 $(LDLIBS) @LDMAPFILE@
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(TARGETOBJS) $(LDFLAGS) -lmbedtls -lmbedcrypto -lmbedx509 $(LDLIBS) @LDMAPFILE@
 
 #######
 source:			.unpacked.$(VERSION)

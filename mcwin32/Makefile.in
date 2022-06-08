@@ -179,11 +179,13 @@ D_LOCALE=	$(D_BIN)/locale
 CC=		@CC@
 CXX=		@CXX@
 AR=		@AR@
+RANLIB=		@RANLIB@
 RM=		@RM@
 RMDIR=		@RMDIR@
 CP=		@CP@
 RC=		@RC@
 PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
 TAR=		@TAR@
 INSTALL=	@INSTALL@
 INSTALL_PROGRAM=@INSTALL_PROGRAM@
@@ -205,6 +207,12 @@ MAN2HLP=	$(PERL) $(D_BIN)/man2hlp.pl
 XFLAGS=
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
+ifeq ("gcc","@CC@")
+#CWARN+=	-Wno-shadow -Wno-type-limits
+CWARN+=		-Wno-sign-compare -Wno-missing-prototypes
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function
+CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 LDDEBUG=	@LDDEBUG@
@@ -523,7 +531,12 @@ MC_LIBVFS=\
 	$(D_OBJVFS)/sfs_sfs$(O)			\
 	$(D_OBJVFS)/tar_tar$(O)
 
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+MC_RES=		$(D_OBJ)/mc_res.o
+else
 MC_RES=		$(D_OBJ)/mc.res
+endif
+
 
 OBJS=		$(MC_OBJS)
 
@@ -664,19 +677,31 @@ IMPORT+=\
 	$(D_BIN)/$(PLBRNAME).dll
 endif
 
+AUTOUPDATER=	no
+ifeq (vs,$(findstring vs,"@TOOLCHAIN@"))
+AUTOUPDATER=	yes
+else ifeq ("@TOOLCHAIN@","owc20")
+AUTOUPDATER=	yes
+else ifeq ("@TOOLCHAIN@","owc19")
+AUTOUPDATER=	yes
+endif
+
 LIBRARIES=\
 	$(LW)w32$(A)				\
-	$(LW)regex$(A)				\
 	$(LW)z$(A)				\
+	$(LW)regex$(A)				\
 	$(LW)magic$(A)				\
+	$(LW)intl$(A)				\
+	$(LW)gmodule-2.0$(A)			\
+	$(LW)glib-2.0$(A)			\
 	$(LW)mbedtls$(A)			\
 	$(LW)ssh2$(A)				\
-	$(LW)intl$(A)				\
-	$(LW)glib-2.0$(A)			\
-	$(LW)gmodule-2.0$(A)			\
 	$(LW)mcutil$(A)				\
-	$(LW)mcvfs$(A)				\
+	$(LW)mcvfs$(A)
+ifeq ("$(AUTOUPDATER)","yes")
+LIBRARIES+=\
 	$(LW)autoupdater$(A)
+endif
 
 reverse = $(if $1,$(call reverse,$(wordlist 2,999999,$1)) $(firstword $1))
 LDLIBRARIES = $(call reverse, $(LIBRARIES))
@@ -847,7 +872,7 @@ vclean:		clean
 
 $(D_BIN)/mc$(E):	MAPFILE=$(basename $@).map
 $(D_BIN)/mc$(E):		$(MC_OBJS) $(MC_RES) $(LDLIBRARIES)
-		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS) @LDMAPFILE@
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS) @LDMAPFILE@
 
 $(MC_RES):			config.h buildinfo.h
 
@@ -886,6 +911,7 @@ BUILDNUMBER:
 		@echo $(GITHUB_RUN_NUMBER)>$@
 endif
 
+.PHONY:			new_buildnumber
 new_buildnumber:
 		-@chmod +w BUILDNUMBER >nul 2>&1
 		@echo incrementing build number ...
@@ -895,8 +921,11 @@ new_buildnumber:
 			"
 		-@chmod -w BUILDNUMBER >/dev/null 2>&1
 
-$(D_OBJ)/%.res: %.rc
-		$(RC) -nologo -Fo$@ $<
+$(D_OBJ)/%.res:		%.rc
+		$(RC) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) -o $@ $<
 
 $(D_BIN)/man2hlp.pl:		$(MCSOURCE)/src/man2hlp/man2hlp.in
 		@$(PERL) ./support/sedin.pl -u $^ $@
@@ -1035,12 +1064,14 @@ $(D_LOCALE)/%/LC_MESSAGES/$(PACKAGE).mo: $(PO_SRC)/%.po
 # libraries
 
 $(LW)mcutil$(A):		$(D_OBJMC)/.created $(MC_LIBMC)
-		-@$(RM) -f $@ >nul 2>&1
-		$(AR) $(ARFLAGS) /OUT:$@ $(subst /,\,$(MC_LIBMC))
+		$(RM) $(RMFLAGS) $@
+		$(AR) $(ARFLAGS) $@ $(MC_LIBMC)
+		$(RANLIB) $@
 
 $(LW)mcvfs$(A):			$(D_OBJVFS)/.created $(MC_LIBVFS)
-		-@$(RM) -f $@ >nul 2>&1
-		$(AR) $(ARFLAGS) /OUT:$@ $(subst /,\,$(MC_LIBVFS))
+		$(RM) $(RMFLAGS) $@
+		$(AR) $(ARFLAGS) $@ $(MC_LIBVFS)
+		$(RANLIB) $@
 
 .PHONY:		$(LW)w32$(A)
 $(LW)w32$(A):
@@ -1073,10 +1104,12 @@ $(LW)intl$(A):
 .PHONY:		$(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A)
 $(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A):
 		$(MAKE) -C libglib
-
+   
+ifeq ("$(AUTOUPDATER)","yes")
 .PHONY:		$(LW)autoupdater$(A)
 $(LW)autoupdater$(A):
 		$(MAKE) -C autoupdater
+endif
 
 
 #########################################################################################
@@ -1180,4 +1213,3 @@ $(D_OBJVFS)/undelfs_%$(O) :	$(MCSOURCE)/src/vfs/undelfs/%.c
 #end
 
 endif	# BUILD_TYPE
-

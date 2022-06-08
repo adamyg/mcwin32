@@ -2,13 +2,27 @@ name: build
 on: [push]
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
-
+        config:
+        - {
+            name: "Windows Latest MSVC",
+            os: windows-latest,
+            toolchain: vc2022,
+            toolversion: vs170
+          }
+        - {
+           name: "Windows Latest MinGW",
+           os: windows-latest,
+           toolchain: mingw32,
+           toolversion: mingw32
+          }
+        
     steps:
+
     - name: Checkout repository
       uses: actions/checkout@v2
 
@@ -16,41 +30,56 @@ jobs:
       run: |
         git submodule update --init --recursive
 
-    - uses: ilammy/msvc-dev-cmd@v1
+    - name: MSVC setup
+      uses: ilammy/msvc-dev-cmd@v1
+      if: startsWith(matrix.config.name, 'Windows Latest MSVC')
       with:
         arch: x86
 
-    - name: Generating environment
+    - name: MinGW64 setup
+      if: startsWith(matrix.config.name, 'Windows Latest MinGW')
       shell: cmd
       run: |
+        c:\msys64\usr\bin\pacman --noconfirm -S base-devel
+        c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gcc
+        c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-i686-gcc
+
+    - name: Generate
+      if: startsWith(matrix.config.name, 'Windows Latest')
+      shell: cmd
+      run: |
+        @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
+        @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
+        @if NOT "${{ matrix.config.toolchain }}"=="mingw32" c:\msys64\usr\bin\pacman --noconfirm -S bison
+        @if "${{ matrix.config.toolchain }}"=="vs2022" choco install innosetup --version=5.6.1 --force
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
-        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose vc2019
-        choco install innosetup --version=5.6.1 --force
-        @rem set
-        @rem dir c:\tools
-        @rem dir "%programfiles(x86)%"
+        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose "${{ matrix.config.toolchain }}"
 
     - name: Compile
+      if: startsWith(matrix.config.name, 'Windows Latest')
       shell: cmd
       run: |
+        @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
+        @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         .\support\gmake-42 release build
 
     - name: Package
+      uses: actions/upload-artifact@v2
+      with:
+        name: package-${{ matrix.config.toolchain }}
+        path: ./bin.${{ matrix.config.toolversion }}/release/*
+
+    - name: Installer
+      if: startsWith(matrix.config.name, 'Windows Latest MSVC')
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         @rem .\support\gmake-42 release package
         "%programfiles(x86)%\Inno Setup 5\ISCC" -DBUILD_INFO=1 -DBUILD_TYPE=release ".\releases\mc-inno-setup.iss"
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: mcwin32-package
-        path: ./mcwin32/releases/mcwin32-build*-setup.exe
 
     - name: Release artifacts
       uses: softprops/action-gh-release@v1

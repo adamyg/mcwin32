@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.6 2022/03/05 08:29:12 cvsuser Exp $
+# $Id: Makefile.in,v 1.7 2022/06/08 09:51:42 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -52,9 +52,18 @@ D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
 XFLAGS=
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@ $(CWALL)
+ifeq ("gcc","@CC@")
+#CWARN+=	-Wno-shadow -Wno-sign-compare -Wno-type-limits
+#CWARN+=	-Wno-unused-variable -Wno-unused-parameter
+#CWARN+=	-Wno-unused-parameter -Wno-unused-function
+#CWARN+=	-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 CXXFLAGS=	@CXXFLAGS@
+ifeq ("gcc","@CC@")
+CXXFLAGS+=	-fpermissive
+endif
 CXXDEBUG=	@CXXDEBUG@
 ifeq ("$(CXXDEBUG)","")
 CXXDEBUG=	$(CDEBUG)
@@ -78,11 +87,11 @@ CDEPFLAGS=	$(CEXTRA) $(CINCLUDE)
 
 ifeq ("$(BUILD_TYPE)","release")
 CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-CXXFLAGS+=	$(CXXRELEASE) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXRELEASE) $(CXXWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDRELEASE) @LDFLAGS@
 else
 CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-CXXFLAGS+=	$(CXXDEBUG) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXDEBUG) $(CXXWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDDEBUG) @LDFLAGS@
 endif
 LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
@@ -140,11 +149,15 @@ DLLOBJS=\
 	$(D_OBJ)/xmlrole.lo		\
 	$(D_OBJ)/xmltok.lo
 
-
 UPDATEROBJS=\
 	$(D_OBJ)/mcupdater$(O)		\
-	$(D_OBJ)/updater.res		\
 	$(D_OBJ)/getopt$(O)
+
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+UPDATEROBJS+=	$(D_OBJ)/updater_res.o
+else
+UPDATEROBJS+=	$(D_OBJ)/updater.res
+endif
 
 SIGNATUREOBJS=\
 	$(D_OBJ)/mcsignature$(O)	\
@@ -215,6 +228,9 @@ $(D_OBJ)/%.lo:		%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJ)/%.res:		%.rc
-		$(RC) -Fo$@ -I./libappupdater/src $(RCDEFS) $<
+		$(RC) -fo$@ -I./libappupdater/src $(RCDEFS) $<
 
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) -o $@ -I./libappupdater/src $(RCDEFS) $<
+		
 #end

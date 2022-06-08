@@ -1,7 +1,7 @@
 #ifndef TERMEMU_VIO_H_INCLUDED
 #define TERMEMU_VIO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.6 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.7 2022/06/08 09:51:43 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -92,7 +92,6 @@ enum vt_colors {
 #define VIO_STRIKE          0x4000
 #define VIO_FAINT           0x8000
 #define VIO_ATTRIBUTES      0xff00
-
 #define VIO_MINCOLS         12
 #define VIO_MINROWS         2
 #define VIO_MAXCOLS         1024
@@ -134,6 +133,7 @@ LIBVIO_API int              vio_screenbuffersize(void);
 
 LIBVIO_API int              vio_open(int *rows, int *cols);
 LIBVIO_API void             vio_close(void);
+LIBVIO_API void             vio_config_truecolor(int truecolor);
 LIBVIO_API int              vio_winch(int *rows, int *cols);
 LIBVIO_API void             vio_get_size(int *rows, int *cols);
 LIBVIO_API int              vio_toggle_size(int *rows, int *cols);
@@ -170,6 +170,8 @@ LIBVIO_API int              vio_atvprintf(int row, int col, const char *fmt, va_
 LIBVIO_API int              vio_atprintf(int row, int col, const char *fmt, ...);
 LIBVIO_API void             vio_putc(unsigned ch, unsigned cnt, int move);
 LIBVIO_API void             vio_flush(void);
+
+int vio_wcwidth(wchar_t ucs);
 
 #undef LIBVIO_API
 

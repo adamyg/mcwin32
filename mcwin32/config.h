@@ -25,7 +25,7 @@
 #include "w32config.h"                          /* common configuration */
 
 #define WIN32_UNISTD_MAP                        /* enable unistd API mapping */
-//  #define WIN32_SOCKET_MAP                    /* enable socket API mapping; not compatible with libssh */
+    //#define WIN32_SOCKET_MAP                  /* enable socket API mapping; not compatible with libssh */
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
@@ -102,7 +102,6 @@ extern void                 tty_set_title(const char *title);
 #undef  HAVE_SLANG_SLANG_H
 #define HAVE_SLANG_H 1
 #define HAVE_SYS_PARAM_H 1
-#undef  HAVE_SYS_SELECT_H
 #define HAVE_SYS_VFS_H 1
 #define HAVE_SYS_TIME_H 1
 #define HAVE_UNISTD_H 1
@@ -132,6 +131,7 @@ extern void                 tty_set_title(const char *title);
 #undef  HAVE_TEXTMODE_X11_SUPPORT
 #undef  HAVE_LIBGPM
 
+/* XXX: libcompat */
 #undef  HAVE_REALPATH                           /* FIXME */
 #define HAVE_STRCASECMP 1
 #define HAVE_STRNCASECMP 1
@@ -170,7 +170,7 @@ extern void                 tty_set_title(const char *title);
 #define ENABLE_VFS_FTP 1
 #define ENABLE_VFS_FISH 1                       /* build-225+ */
 #define ENABLE_VFS_SFTP 1                       /* libssh2 */
-#undef  ENABLE_VFS_SMB
+#undef  ENABLE_VFS_SMB                          /* defunct */
 #undef  ENABLE_VFS_UNDELFS
 
 #define SIG_ATOMIC_VOLATILE_T int               /* FIXME */

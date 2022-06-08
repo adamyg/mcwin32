@@ -45,6 +45,7 @@
 #include <signal.h>             /* kill() */
 #include <stdio.h>
 #include <stdarg.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>

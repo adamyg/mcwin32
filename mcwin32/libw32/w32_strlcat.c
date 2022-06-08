@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_strlcat_c,"$Id: w32_strlcat.c,v 1.9 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_strlcat_c,"$Id: w32_strlcat.c,v 1.10 2022/06/08 09:51:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -149,7 +149,7 @@ __CIDENT_RCSID(gr_w32_strlcat_c,"$Id: w32_strlcat.c,v 1.9 2022/03/16 13:47:00 cv
 //       <Todd.Miller@courtesan.com>.
 /*/
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 
 #include <sys/types.h>
 #include <string.h>
