@@ -51,7 +51,6 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
         @if NOT "${{ matrix.config.toolchain }}"=="mingw32" c:\msys64\usr\bin\pacman --noconfirm -S bison
-        @if "${{ matrix.config.toolchain }}"=="vs2022" choco install innosetup --version=5.6.1 --force
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose "${{ matrix.config.toolchain }}"
@@ -70,18 +69,20 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: package-${{ matrix.config.toolchain }}
-        path: ./bin.${{ matrix.config.toolversion }}/release/*
+        path: mcwin32/bin.${{ matrix.config.toolversion }}/release/*
 
     - name: Installer
       if: startsWith(matrix.config.name, 'Windows Latest MSVC')
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
+        choco install innosetup --version=5.6.1 --force
         cd mcwin32
         @rem .\support\gmake-42 release package
         "%programfiles(x86)%\Inno Setup 5\ISCC" -DBUILD_INFO=1 -DBUILD_TYPE=release ".\releases\mc-inno-setup.iss"
 
     - name: Release artifacts
+      if: startsWith(matrix.config.name, 'Windows Latest MSVC')
       uses: softprops/action-gh-release@v1
       with:
         files: ./mcwin32/releases/mcwin32-build*-setup.exe
