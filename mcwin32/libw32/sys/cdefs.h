@@ -51,28 +51,32 @@ __CPRAGMA_ONCE
 #if defined(LIBW32_DYNAMIC)
     #if defined(LIBW32_LIBRARY)     /* library source */
         #ifdef __GNUC__
-        #define LIBW32_API __attribute__((dllexport)) extern
+            #define LIBW32_API __attribute__((dllexport)) extern
+        #elif defined(__WATCOMC__)
+            #define LIBW32_API extern __declspec(dllexport)
         #else
-        #define LIBW32_API __declspec(dllexport)
+            #define LIBW32_API __declspec(dllexport)
         #endif
     #else
         #ifdef __GNUC__
-        #define LIBW32_API __attribute__((dllimport)) extern
+            #define LIBW32_API __attribute__((dllimport)) extern
+        #elif defined(__WATCOMC__)
+            #define LIBW32_API extern __declspec(dllimport)
         #else
-        #define LIBW32_API __declspec(dllimport)
+            #define LIBW32_API __declspec(dllimport)
         #endif
     #endif
 
 #else   /*static*/
     #if defined(LIBW32_LIBRARY)     /* library source */
         #ifndef LIBW32_STATIC                   /* verify STATIC/DYNAMIC configuration */
-        #error  LIBW32 static library yet LIB32_STATIC not defined.
+            #error  LIBW32 static library yet LIB32_STATIC not defined.
         #endif
         #ifdef _WINDLL                          /*verify target configuration */
-        #error  LIBW32 static library yet _WINDLL defined.
+            #error  LIBW32 static library yet _WINDLL defined.
         #endif
     #endif
-#endif           
+#endif
 
 #ifndef LIBW32_API
 #define LIBW32_API
