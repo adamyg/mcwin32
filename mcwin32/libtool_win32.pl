@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.19 2022/06/09 09:42:52 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.20 2022/06/09 16:37:09 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -64,7 +64,7 @@ my $o_tag;
 my $o_preserve_dup_deps;
 my $o_quiet = 1;
 my $o_silent = 0;
-my $o_verbose = 1;
+my $o_verbose = 0;
 my $o_keeptmp = 0;
 my $o_debug;
 my $o_version;

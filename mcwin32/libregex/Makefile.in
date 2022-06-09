@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.4 2022/03/05 08:25:06 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2022/06/09 16:39:37 cvsuser Exp $
 # libregex makefile
 #
 #
