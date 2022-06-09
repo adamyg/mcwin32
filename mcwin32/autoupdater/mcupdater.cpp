@@ -1,4 +1,4 @@
-//  $Id: mcupdater.cpp,v 1.5 2021/08/17 07:17:38 cvsuser Exp $
+//  $Id: mcupdater.cpp,v 1.6 2022/06/09 16:46:04 cvsuser Exp $
 //
 //  Midnight Commander AutoUpdater command line.
 //
