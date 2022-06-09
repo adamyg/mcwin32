@@ -20,7 +20,13 @@ jobs:
            toolchain: mingw32,
            toolversion: mingw32
           }
-        
+        - {
+           name: "Windows Latest OWC",
+           os: windows-latest,
+           toolchain: owc20,
+           toolversion: owc20
+          }
+
     steps:
 
     - name: Checkout repository
@@ -44,12 +50,20 @@ jobs:
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gcc
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-i686-gcc
 
+    - name: OpenWatcom setup
+      uses: open-watcom/setup-watcom@v0
+      if: startsWith(matrix.config.name, 'Windows Latest OWC')
+      with:
+        version: "2.0"
+        location: "C:\Watcom"
+
     - name: Generate
       if: startsWith(matrix.config.name, 'Windows Latest')
       shell: cmd
       run: |
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
+        @if "${{ matrix.config.toolchain }}"=="owc20"  call .\mcwin32\support\owc20setenv.bat "C:\Watcom"
         @if NOT "${{ matrix.config.toolchain }}"=="mingw32" c:\msys64\usr\bin\pacman --noconfirm -S bison
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
@@ -61,6 +75,7 @@ jobs:
       run: |
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
+        @if "${{ matrix.config.toolchain }}"=="owc20"  call .\mcwin32\support\owc20setenv.bat "C:\Watcom"
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         .\support\gmake-42 release build
