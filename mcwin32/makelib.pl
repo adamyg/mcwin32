@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.23 2022/06/08 09:51:42 cvsuser Exp $
+# $Id: makelib.pl,v 1.24 2022/06/09 13:16:09 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -754,7 +754,7 @@ my %win_entries     = (
         LIBTOOL             => '@PERLPATH@perl '.'$<LIBTOOL>',
         CPPDEP              => '',
         LT_OBJDIR           => '.libs/',
-        RC                  => 'rc',
+        RC                  => 'rc /nologo',
 
         LIBS                => '',
         EXTRALIBS           => 'advapi32.lib gdi32.lib'.
@@ -3050,6 +3050,8 @@ Makefile($$$)           # (type, dir, file)
         } else {
             if ($type eq 'vc' || $type eq 'wc') {
                 if (! /LIBTOOL/) {              # not LIBTOOL command lines
+
+                    # option conversion
                     s/(\$\(CFLAGS\).*) -o \$\@/$1 -Fo\$@ -Fd\$(\@D)\//;
                     s/(\$\(CXXFLAGS\).*) -o \$\@/$1 -Fo\$@ -Fd\$(\@D)\//;
 
@@ -3067,6 +3069,8 @@ Makefile($$$)           # (type, dir, file)
 
             } elsif ($type eq 'owc') {
                 if (! /LIBTOOL/) {              # not LIBTOOL command lines
+
+                    # option and directory slash conversion
                     if ('-o' ne $x_tokens{OSWITCH}) {
                         s/(\$\(CFLAGS\).*) -o \$\@/$1 -Fo=\$(subst \/,\\,\$@)/;
                         s/(\$\(CXXFLAGS\).*) -o \$\@/$1 -Fo=\$(subst \/,\\,\$@)/;
@@ -3085,6 +3089,18 @@ Makefile($$$)           # (type, dir, file)
                         s/-L([^\s]+)/-"Wl,LIBPATH \$(subst \/,\\,$1)"/;
                             # -Wl,<linker directive>
                     }
+
+                    if ('-i=' eq $x_tokens{ISWITCH}) {
+                        # s/-I([^\s]+)/-i="$1"/g;
+                        # s/-I ([^\s]+)/-i="$1"/g;
+                            # gnuwin32 (gmake 3.x) quotes would be retained;
+                            # this can not be guaranteed under an alt instance, for example gmake (4.x).
+                        s/-I([^\s]+)/-i=\$(subst \/,\\,$1)/g;
+                        s/-I ([^\s]+)/-i=\$(subst \/,\\,$1)/g;
+                    }
+
+                    s/\$</\$(subst \/,\\,\$<)/;
+                    s/\$\^/\$(subst \/,\\,\$^)/;
 
                 } elsif (/[\\]$/) {
                     $continuation = 1;          # LIBTOOL, continuation?
@@ -3140,20 +3156,6 @@ Makefile($$$)           # (type, dir, file)
             $xclean .= ' $(D_OBJ)/*.mbr';
 
         } elsif ($type eq 'owc') {              # OpenWatcom
-            # directory slash conversion
-
-            if ('-i=' eq $x_tokens{ISWITCH}) {
-            # $text =~ s/-I([^\s]+)/-i="$1"/g;
-            # $text =~ s/-I ([^\s]+)/-i="$1"/g;
-                    #gnuwin32 (gmake 3.x) make quotes would be retained;
-                    #this can not be guaranteed under an alt instance, for example gmake (4.x).
-                $text =~ s/-I([^\s]+)/-i=\$(subst \/,\\,$1)/g;
-                $text =~ s/-I ([^\s]+)/-i=\$(subst \/,\\,$1)/g;
-            }
-
-            $text =~ s/\$</\$(subst \/,\\,\$<)/g;
-            $text =~ s/\$\^/\$(subst \/,\\,\$^)/g;
-
             $clean .= ' *.err';
             $xclean .= ' $(D_OBJ)/*.mbr';
         }
