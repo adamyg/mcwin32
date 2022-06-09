@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.18 2022/06/09 09:30:27 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.19 2022/06/09 09:42:52 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -1268,7 +1268,7 @@ ParseSymFile($$)
     my $mode = 0;
 
     open(SYM, "<", $file) or
-        die "cannot open symbol file <".$file".> : $!\n";
+        die "cannot open symbol file <".$file."> : $!\n";
     while (<SYM>) {
         s/\s*([\n\r]+|$)//;
         s/^\s+//;
