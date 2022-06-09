@@ -1,2 +1,4 @@
 libappupdater
 Makefile
+*.mbr
+*.err

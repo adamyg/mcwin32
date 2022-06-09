@@ -4,7 +4,7 @@
 //
 
 #include <cstdlib>
-#include <string>
+#include <string.h>
 #include <iostream>
 
 #include "../buildinfo.h"
@@ -77,23 +77,29 @@ main(int argc, char *argv[])
 
     const char *arg = argv[0];
 
-    if (0 == _stricmp("disable", arg)) {
+#if defined(__MINGW32__)
+#define STRICMP(__a,__b) strcasecmp(__a,__b)
+#else
+#define STRICMP(__a,__b) _stricmp(__a,__b)
+#endif
+
+    if (0 == STRICMP("disable", arg)) {
         mode = 0;
-    } else if (0 == _stricmp("enable", arg)) {
+    } else if (0 == STRICMP("enable", arg)) {
         mode = 1;
-    } else if (0 == _stricmp("auto", arg)) {
+    } else if (0 == STRICMP("auto", arg)) {
         mode = 2;
-    } else if (0 == _stricmp("prompt", arg)) {
+    } else if (0 == STRICMP("prompt", arg)) {
         mode = 3;
-    } else if (0 == _stricmp("force", arg)) {
+    } else if (0 == STRICMP("force", arg)) {
         mode = 4;
-    } else if (0 == _stricmp("reinstall", arg)) {
+    } else if (0 == STRICMP("reinstall", arg)) {
         mode = 5;
-    } else if (0 == _stricmp("reset", arg)) {
+    } else if (0 == STRICMP("reset", arg)) {
         mode = -1;
-    } else if (0 == _stricmp("dump", arg)) {
+    } else if (0 == STRICMP("dump", arg)) {
         mode = -2;
-    } else if (0 == _stricmp("config", arg)) {
+    } else if (0 == STRICMP("config", arg)) {
         std::cout
             << PACKAGE_NAME << "\n"
             << "Built:   " << BUILD_DATE << "\n"
@@ -164,8 +170,8 @@ static const char *
 Basename(const char *filename)
 {
     const char *name;
-    return (NULL != (name = std::strrchr(filename, '/')))
-                || (NULL != (name = std::strrchr(filename, '\\'))) ? name + 1 : filename;
+    return (NULL != (name = strrchr(filename, '/')))
+                || (NULL != (name = strrchr(filename, '\\'))) ? name + 1 : filename;
 }
 
 /*end*/

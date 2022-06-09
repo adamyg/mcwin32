@@ -195,10 +195,12 @@ $(UPDATERDLL):		$(D_OBJ)/.created $(DLLOBJS)
 			-rpath $(D_LIB) -bindir $(D_BIN) $(LDLIBS) version.lib wininet.lib advapi32.lib user32.lib
 
 $(UPDATERTSK):		CEXTRA += -I$(UPDATERSRC)
+$(UPDATERTSK):		MAPFILE=$(basename $@).map
 $(UPDATERTSK):		$(UPDATEROBJS)
 		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(UPDATEROBJS) $(D_LIB)/libautoupdater$(A) $(LDLIBS) @LDMAPFILE@
 
 $(SIGNATURETSK):	CEXTRA += -I$(UPDATERSRC) -I$(SIGNSRC)
+$(SIGNATURETSK):	MAPFILE=$(basename $@).map
 $(SIGNATURETSK):	$(SIGNATUREOBJS)
 		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(SIGNATUREOBJS) $(D_LIB)/libautoupdater$(A) $(LDLIBS) @LDMAPFILE@
 
