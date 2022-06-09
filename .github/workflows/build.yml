@@ -64,7 +64,6 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="owc20"  call .\mcwin32\support\owc20setenv.bat C:\Watcom
-        @if NOT "${{ matrix.config.toolchain }}"=="mingw32" c:\msys64\usr\bin\pacman --noconfirm -S bison
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose "${{ matrix.config.toolchain }}"
