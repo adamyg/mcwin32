@@ -55,7 +55,7 @@ jobs:
       if: startsWith(matrix.config.name, 'Windows Latest OWC')
       with:
         version: "2.0"
-        location: "C:\Watcom"
+        location: "C:\\Watcom"
 
     - name: Generate
       if: startsWith(matrix.config.name, 'Windows Latest')
