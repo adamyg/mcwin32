@@ -5,7 +5,8 @@ ref/
 bin
 bin.*/
 lib.*/
-objects*/
+objects.*/
+obj.*/
 msvc*/
 libglib_*/
 crash/
