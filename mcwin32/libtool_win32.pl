@@ -64,7 +64,7 @@ my $o_tag;
 my $o_preserve_dup_deps;
 my $o_quiet = 1;
 my $o_silent = 0;
-my $o_verbose = 0;
+my $o_verbose = 1;
 my $o_keeptmp = 0;
 my $o_debug;
 my $o_version;
@@ -214,7 +214,7 @@ Compile()
             push @INCLUDES, shift @ARGV;
 
         } elsif (/^-d(.*)$/) {                  # -d <define[=value]>
-            if ('wcl386' eq $cc && (/^-d[1-3][ist]$/ || /^-db$/)) {
+            if ('wcl386' eq $cc && (/^-d[0-9]/ || /^-db$/)) {
                 push @STUFF, $_;
             } else {
                 push @DEFINES, ($1 ? $1 : shift @ARGV);
@@ -276,6 +276,7 @@ Compile()
     my $true_object = ${true_path}.basename($object, 'lo')."obj";
 
     Verbose "cc:       ${cc}";
+    Verbose "extra:    @STUFF";
     Verbose "defines:";
         foreach(@DEFINES) { Verbose "\t$_"; }
     Verbose "includes:";
@@ -283,7 +284,6 @@ Compile()
     Verbose "object:   ${object}";
     Verbose "  true:   ${true_object}";
     Verbose "source:   ${source}";
-    Verbose "...:      @STUFF";
 
     my $cmd = '';
 
@@ -301,16 +301,16 @@ Compile()
         $cmd .= " -bd";                         # DLL builds
         foreach (@DEFINES) { $cmd .= " -d$_"; }
         foreach (@INCLUDES) { $cmd .= " -I=\"$_\""; }
-        $cmd .= " -Fo=\"$true_object\"";
-        $cmd .= " -c $source";
+        $cmd .= " -Fo=\"".unix2dos($true_object)."\"";
+        $cmd .= " -c ".unix2dos($source);
 
     } elsif ('owcc' eq $cc) {       # OpenWatcom, posix driver.
         $cmd  = "$cc @STUFF -DDLL=1";
         $cmd .= " -shared";                     # DLL builds
         foreach (@DEFINES) { $cmd .= " -D$_"; }
         foreach (@INCLUDES) { $cmd .= " -I \"$_\""; }
-        $cmd .= " -o \"$true_object\"";
-        $cmd .= " -c $source";
+        $cmd .= " -o \"".unix2dos($true_object)."\"";
+        $cmd .= " -c ".unix2dos($source);
 
     } elsif ('gcc' eq $cc || 'g++' eq $cc) {
         $cmd  = "$cc @STUFF -D DLL=1 -shared";
@@ -329,8 +329,8 @@ Compile()
         if (0 != ($ret = System($cmd)));
 
     # generate lo artifact
-    open(LO, ">${object}") or
-        die "cannot create <$object> : $!\n";
+    open(LO, ">", $object) or
+        die "cannot create <".$object."> : $!\n";
     print LO "#libtool win32 generated, do not modify\n";
     print LO "mode=dll\n";
     print LO "cc=$cc\n";
@@ -711,6 +711,7 @@ Link()
     }
 
     Verbose "cc:       $cc";
+    Verbose "extra:    @STUFF";
     Verbose "output:   $output";
     Verbose "objects:";
         foreach(@OBJECTS) {
@@ -718,7 +719,6 @@ Link()
         }
     Verbose "libraries:";
         foreach(@LIBRARIES) { Verbose "\t$_"; }
-    Verbose "...:      @STUFF";
 
     my ($dll_version, $dll_major, $dll_minor) = ('', 0, 0);
     if ($version_number) {
