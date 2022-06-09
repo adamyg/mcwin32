@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.17 2022/06/08 09:51:42 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.18 2022/06/09 09:30:27 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -1086,8 +1086,8 @@ OpenCommandFile($)
     my ($file) = @_;
     my @NARGV;
 
-    open(CMD, "<${file}") or
-        die "cannot open command line <$file> : $!\n";
+    open(CMD, "<", $file) or
+        die "cannot open command line <".$file."> : $!\n";
     while (<CMD>) {
         s/\s*([\n\r]+|$)//;
         s/^\s+//;
@@ -1126,8 +1126,8 @@ ParseDefFile($$$)
     my ($file, $EXPORTSRef, $DESCRIPTIONRef) = @_;
     my $mode = 0;
 
-    open(DEF, "<${file}") or
-        die "cannot open <$file> : $!\n";
+    open(DEF, "<", $file) or
+        die "cannot open <".$file."> : $!\n";
     while (<DEF>) {
         s/\s*([\n\r]+|$)//;
         s/^\s+//;
@@ -1267,8 +1267,8 @@ ParseSymFile($$)
     my ($file, $EXPORTSRef) = @_;
     my $mode = 0;
 
-    open(SYM, "<${file}") or
-        die "cannot open symbol file <$file> : $!\n";
+    open(SYM, "<", $file) or
+        die "cannot open symbol file <".$file".> : $!\n";
     while (<SYM>) {
         s/\s*([\n\r]+|$)//;
         s/^\s+//;
@@ -1312,8 +1312,8 @@ Clean()
     foreach(@LIBRARIES) {
         my $lib = $_;
         if ($lib =~ /\.la$/ && -f $lib) {       # library artifact
-            open(LA, "<${lib}") or
-                die "cannot open library artifact <${lib}> : $!\n";
+            open(LA, "<", $lib) or
+                die "cannot open library artifact <".$lib."> : $!\n";
             while (<LA>) {
                 s/\s*([\n\r]+|$)//;
                 if (/^(lib|dll|map|sym|pdb|exp|manifest)=(.*)$/) {
@@ -1361,8 +1361,8 @@ true_object($)          #(lo)
 
     return $lo
         if ($lo !~ /.lo$/);
-    open(LO, "<${lo}") or
-        die "cannot open object image <$lo> : $!\n";
+    open(LO, "<", $lo) or
+        die "cannot open object image <".$lo."> : $!\n";
     while (<LO>) {
         s/\s*([\n\r]+|$)//;
         next if (!$_ || /^\s#/);
@@ -1388,8 +1388,8 @@ true_library($;$)       #(la [,striplib])
 
     return $la
         if ($la !~ /.la$/);
-    open(LA, "<${la}") or
-        die "cannot open library image <$la> : $!\n";
+    open(LA, "<", $la) or
+        die "cannot open library image <".$la."> : $!\n";
     while (<LA>) {
         s/\s*([\n\r]+|$)//;
         next if (!$_ || /^\s#/);
