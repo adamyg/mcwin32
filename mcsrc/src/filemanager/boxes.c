@@ -1,7 +1,7 @@
 /*
    Some misc dialog boxes for the program.
 
-   Copyright (C) 1994-2021
+   Copyright (C) 1994-2022
    Free Software Foundation, Inc.
 
    Written by:
@@ -53,9 +53,6 @@
 #ifdef ENABLE_VFS_FTP
 #include "src/vfs/ftpfs/ftpfs.h"
 #endif /* ENABLE_VFS_FTP */
-#ifdef ENABLE_VFS_SMB
-#include "src/vfs/smbfs/smbfs.h"
-#endif /* ENABLE_VFS_SMB */
 
 #include "lib/util.h"           /* Q_() */
 #include "lib/widget.h"
@@ -281,7 +278,9 @@ appearance_box_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm
     switch (msg)
     {
     case MSG_INIT:
+#ifdef ENABLE_SHADOWS
         if (!tty_use_colors ())
+#endif
         {
             Widget *shadow;
 
@@ -320,7 +319,7 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
 
             in1 = INPUT (widget_find_by_id (w, panel_user_format_id));
             in2 = INPUT (widget_find_by_id (w, panel_brief_cols_id));
-            ch  = CHECK (widget_find_by_id (w, user_mini_status_id));
+            ch = CHECK (widget_find_by_id (w, user_mini_status_id));
             in3 = INPUT (widget_find_by_id (w, mini_user_format_id));
 
             if (!ch->state)
@@ -1304,7 +1303,7 @@ display_bits_box (void)
         quick_dialog_t qdlg = {
             -1, -1, 46,
             N_("Display bits"), "[Display bits]",
-            quick_widgets, NULL, NULL};
+            quick_widgets, NULL, NULL
         };
 #endif  //WIN32,quick
 

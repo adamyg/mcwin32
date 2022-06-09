@@ -1,7 +1,7 @@
 /*
    Virtual File System: FTP file system.
 
-   Copyright (C) 1995-2021
+   Copyright (C) 1995-2022
    Free Software Foundation, Inc.
 
    Written by:
@@ -78,6 +78,7 @@ What to do with this?
 #include <stdio.h>              /* sscanf() */
 #include <stdlib.h>             /* atoi() */
 #include <sys/types.h>          /* POSIX-required by sys/socket.h and netdb.h */
+#include <netdb.h>              /* struct hostent */
 #include <sys/socket.h>         /* AF_INET */
 #include <netinet/in.h>         /* struct in_addr */
 #ifdef HAVE_ARPA_INET_H
@@ -88,7 +89,6 @@ What to do with this?
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
-#include <netdb.h>              /* struct hostent */
 #include <errno.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -782,7 +782,6 @@ ftpfs_load_no_proxy_list (void)
 static gboolean
 ftpfs_check_proxy (const char *host)
 {
-    GSList *npe;
 
     if (ftpfs_proxy_host == NULL || *ftpfs_proxy_host == '\0' || host == NULL || *host == '\0')
         return FALSE;           /* sanity check */
@@ -796,29 +795,35 @@ ftpfs_check_proxy (const char *host)
     if (strchr (host, '.') == NULL)
         return FALSE;
 
-    ftpfs_load_no_proxy_list ();
-    for (npe = no_proxy; npe != NULL; npe = g_slist_next (npe))
+    if (no_proxy == NULL)
     {
-        const char *domain = (const char *) npe->data;
+        GSList *npe;
 
-        if (domain[0] == '.')
+        ftpfs_load_no_proxy_list ();
+
+        for (npe = no_proxy; npe != NULL; npe = g_slist_next (npe))
         {
-            size_t ld, lh;
+            const char *domain = (const char *) npe->data;
 
-            ld = strlen (domain);
-            lh = strlen (host);
-
-            while (ld != 0 && lh != 0 && host[lh - 1] == domain[ld - 1])
+            if (domain[0] == '.')
             {
-                ld--;
-                lh--;
-            }
+                size_t ld, lh;
 
-            if (ld == 0)
+                ld = strlen (domain);
+                lh = strlen (host);
+
+                while (ld != 0 && lh != 0 && host[lh - 1] == domain[ld - 1])
+                {
+                    ld--;
+                    lh--;
+                }
+
+                if (ld == 0)
+                    return FALSE;
+            }
+            else if (g_ascii_strcasecmp (host, domain) == 0)
                 return FALSE;
         }
-        else if (g_ascii_strcasecmp (host, domain) == 0)
-            return FALSE;
     }
 
     return TRUE;
@@ -1493,14 +1498,14 @@ ftpfs_linear_abort (struct vfs_class *me, vfs_file_handler_t * fh)
             gint64 start_tim;
             char buf[BUF_8K];
 
-            start_tim = g_get_real_time ();
+            start_tim = g_get_monotonic_time ();
 
             /* flush the remaining data */
             while (read (dsock, buf, sizeof (buf)) > 0)
             {
                 gint64 tim;
 
-                tim = g_get_real_time ();
+                tim = g_get_monotonic_time ();
 
                 if (tim > start_tim + ABORT_TIMEOUT)
                 {
@@ -1752,7 +1757,7 @@ ftpfs_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path
         return (-1);
     }
 
-    dir->timestamp = g_get_real_time () + ftpfs_directory_timeout * G_USEC_PER_SEC;
+    dir->timestamp = g_get_monotonic_time () + ftpfs_directory_timeout * G_USEC_PER_SEC;
 
     if (ftp_super->strict == RFC_STRICT)
         sock = ftpfs_open_data_connection (me, super, "LIST", 0, TYPE_ASCII, 0);

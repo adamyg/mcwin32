@@ -1,7 +1,7 @@
 /*
    Search functions for diffviewer.
 
-   Copyright (C) 2010-2021
+   Copyright (C) 2010-2022
    Free Software Foundation, Inc.
 
    Written by:
@@ -109,7 +109,6 @@ mcdiffview_dialog_search (WDiff * dview)
             /* *INDENT-ON* */
         };
 #endif  //WIN32
-
 
         quick_dialog_t qdlg = {
             -1, -1, 58,

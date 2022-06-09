@@ -72,17 +72,22 @@
 #include "win32_trace.h"
 
 #if defined(__WATCOMC__)
+#if (__WATCOMC__ >= 1300)
+char volatile __WD_Present = 0;                 /* ??? */
+#else
 _WCRTLINK extern char volatile __WD_Present;    /* debugger present? */
+#endif
 #if defined(_M_IX86)
 extern void                 EnterDebugger(void);
 #pragma aux EnterDebugger = "int 3"
 #define TryEnterDebugger()  __TryEnterDebugger()
-static  int __TryEnterDebugger() {
+static  int __TryEnterDebugger() 
+{
     if (__WD_Present) {
         EnterDebugger();
-        return 1; //triggereds
+        return 1; //available
     }
-    return 0; //non-available
+    return 0; //not-available
 }
 #endif
 #endif  /*__WATCOMC__*/

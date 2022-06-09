@@ -380,7 +380,7 @@ XQUICK_BUTTON(quick_widget_t *qc,
     return ++qc;
 }
 
-XQUICK_INLINE inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_INPUT(quick_widget_t *qc,
     const char *txt, const char *hname, char **res, unsigned long *id_,
         int is_passwd_, int strip_passwd_, int completion_flags_)
@@ -404,7 +404,7 @@ XQUICK_INPUT(quick_widget_t *qc,
     return ++qc;
 }
 
-XQUICK_INLINE inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_LABELED_INPUT(quick_widget_t *qc,
     const char *label_, quick_input_label_location_t label_loc,
     const char *txt, const char *hname, char **res, unsigned long *id_,
@@ -428,7 +428,7 @@ XQUICK_LABELED_INPUT(quick_widget_t *qc,
     return ++qc;
 }
 
-XQUICK_INLINE inline quick_widget_t *
+XQUICK_INLINE quick_widget_t *
 XQUICK_LABEL(quick_widget_t *qc,
     const char *txt, unsigned long *id_)
 {

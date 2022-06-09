@@ -523,22 +523,11 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\init.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\internal.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\vfs_class.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\vfs_subclass.c">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)/libvfs/</ObjectFileName>
-    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\sftpfs.c" />
     <ClCompile Include="..\..\..\mcsrc\src\vfs\tar\tar.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/libvfs/</ObjectFileName>
     </ClCompile>
@@ -739,6 +728,7 @@
     <ClInclude Include="..\..\..\mcsrc\src\vfs\sfs\sfs.h" />
     <ClInclude Include="..\..\..\mcsrc\src\vfs\sftpfs\init.h" />
     <ClInclude Include="..\..\..\mcsrc\src\vfs\sftpfs\internal.h" />
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\sftpfs\sftpfs.h" />
     <ClInclude Include="..\..\..\mcsrc\src\vfs\tar\tar.h" />
     <ClInclude Include="..\..\..\mcsrc\src\viewer\internal.h" />
     <ClInclude Include="..\..\..\mcsrc\src\viewer\mcviewer.h" />

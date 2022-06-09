@@ -39,8 +39,12 @@
 
 #if defined(__WATCOMC__)
     /*
-     *  --- WATCOMC 1.9
+     *  --- WATCOMC 1.9+
      */
+#if (__WATCOMC__ >= 1300)
+#define HAVE_STDINT_H 1                 /*uintptr_t*/
+#endif
+
 #define G_VA_COPY(dest,src) ((dest)[0]=(src)[0],(void)0)
 
 extern void MemoryBarrier(void);
@@ -58,6 +62,7 @@ extern void MemoryBarrier(void);
 #pragma disable_message(201)            /* Unreachable code */
 #pragma disable_message(202)            /* Symbol 'xxx' has been defined, but not referenced */
 #pragma disable_message(302)            /* Expression is only useful for its side effects */
+#pragma disable_message(303)            /* Parameter 'xxx' has been defined, but not referenced */
 
 #elif defined(_MSC_VER)
     /*

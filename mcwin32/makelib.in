@@ -31,7 +31,7 @@
 
 $PACKAGE	= 'mc';
 $PACKAGE_NAME	= 'Midnight Commander WIN32';
-$PACKAGE_VERSION= '4.8.27';
+$PACKAGE_VERSION= '4.8.28';
 
 $PACKAGE_URL	= 'https://github.com/adamyg/mcwin32';
 
@@ -145,6 +145,10 @@ Configure()
 			add_system_library('-lDbghelp');
 			add_system_library('-lBcrypt');
 		}
+
+             	add_system_library('-lComctl32');       # updater, common controls
+             	add_system_library('-lOleAut32');
+
 		add_system_library('-lMswsock');
 		add_system_library('-lNcrypt');
 		add_system_library('-lCrypt32');

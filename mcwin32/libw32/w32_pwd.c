@@ -647,7 +647,7 @@ fill_builtin(const struct WellKnownSID *wksid,
             pSID = NULL;
         }
     } else {
-        if (! ConvertStringSidToSidA(wksid->name, &pSID)) {
+        if (! ConvertStringSidToSidA((char *)wksid->name, &pSID)) {
             pSID = NULL;
         }
     }

@@ -5,7 +5,7 @@
 
 # Midnight Commander for Windows
 
-## Native Midnight Commander 4.8.27 for Windows/Win32
+## Native Midnight Commander 4.8.28 for Windows/Win32
 
 Windows XP+/32 bit native port of GNU Midnight Commander, based on the current 4.8.27 development stream.
 

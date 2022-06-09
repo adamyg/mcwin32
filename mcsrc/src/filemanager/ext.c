@@ -366,8 +366,8 @@ exec_extension_view (void *target, char *cmd, const vfs_path_t * filename_vpath,
 #if !defined(WIN32) //WIN32, C11
     mcview_mode_flags_t def_flags = {
         /* *INDENT-OFF* */
-        .wrap  = FALSE,
-        .hex   = mcview_global_flags.hex,
+        .wrap = FALSE,
+        .hex = mcview_global_flags.hex,
         .magic = FALSE,
         .nroff = mcview_global_flags.nroff
         /* *INDENT-ON* */

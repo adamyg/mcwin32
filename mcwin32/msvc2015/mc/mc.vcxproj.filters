@@ -582,16 +582,7 @@
     <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\file.c">
       <Filter>Source Files\mcsrc\libvfs\sftpfs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\init.c">
-      <Filter>Source Files\mcsrc\libvfs\sftpfs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\internal.c">
-      <Filter>Source Files\mcsrc\libvfs\sftpfs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\vfs_class.c">
-      <Filter>Source Files\mcsrc\libvfs\sftpfs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\vfs_subclass.c">
       <Filter>Source Files\mcsrc\libvfs\sftpfs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\lib\shell.c">
@@ -677,6 +668,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\mcsrc\src\vfs\fish\fish.c">
       <Filter>Source Files\mcsrc\libvfs\fish</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\mcsrc\src\vfs\sftpfs\sftpfs.c">
+      <Filter>Source Files\mcsrc\libvfs\sftpfs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1345,6 +1339,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\glib-2.0\glib\gwin32.h">
       <Filter>Header Files\include\glib-2.0\glib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mcsrc\src\vfs\sftpfs\sftpfs.h">
+      <Filter>Header Files\mcsrc\libvfs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

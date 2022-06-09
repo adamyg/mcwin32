@@ -1,7 +1,7 @@
 /*
    Search & replace engine of MCEditor.
 
-   Copyright (C) 2021
+   Copyright (C) 2021-2022
    Free Software Foundation, Inc.
 
    Written by:
@@ -224,7 +224,7 @@ edit_dialog_replace_show (WEdit * edit, const char *search_default, const char *
             QUICK_END
             /* *INDENT-ON* */
         };
-#endif  //WIN332
+#endif  //WIN32
 
         quick_dialog_t qdlg = {
             -1, -1, 58,
@@ -317,7 +317,7 @@ edit_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text, i
             QUICK_END
             /* *INDENT-ON* */
         };
-#endif  //WIN332
+#endif  //WIN32
 
         quick_dialog_t qdlg = {
             ypos, xpos, -1,

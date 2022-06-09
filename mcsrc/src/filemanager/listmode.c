@@ -1,7 +1,7 @@
 /*
    Directory panel listing format editor -- for the Midnight Commander
 
-   Copyright (C) 1994-2021
+   Copyright (C) 1994-2022
    Free Software Foundation, Inc.
 
    Written by:
@@ -135,7 +135,7 @@ select_new_item (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-bplus_cback (struct WButton * button, int action)
+bplus_cback (int action)
 {
     return 0;
 }
@@ -143,7 +143,7 @@ bplus_cback (struct WButton * button, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-bminus_cback (struct WButton * button, int action)
+bminus_cback (int action)
 {
     return 0;
 }
@@ -151,7 +151,7 @@ bminus_cback (struct WButton * button, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-badd_cback (struct WButton * button, int action)
+badd_cback (int action)
 {
     char *s = select_new_item ();
     if (s)

@@ -2,7 +2,7 @@
    Virtual File System: FISH implementation for transfering files over
    shell connections.
 
-   Copyright (C) 1998-2021
+   Copyright (C) 1998-2022
    Free Software Foundation, Inc.
 
    Written by:
@@ -140,6 +140,7 @@ int fish_directory_timeout = 900;
 typedef struct
 {
     struct vfs_s_super base;    /* base class */
+
     int sockr;
     int sockw;
     char *scr_ls;
@@ -847,7 +848,7 @@ fish_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path)
 
     vfs_print_message (_("fish: Reading directory %s..."), remote_path);
 
-    dir->timestamp = g_get_real_time () + fish_directory_timeout * G_USEC_PER_SEC;
+    dir->timestamp = g_get_monotonic_time () + fish_directory_timeout * G_USEC_PER_SEC;
 
     quoted_path = strutils_shell_escape (remote_path);
     (void) fish_command_v (me, super, NONE, FISH_SUPER (super)->scr_ls, "FISH_FILENAME=%s;\n",
@@ -861,6 +862,7 @@ fish_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, char *remote_path)
         int res;
 
         res = vfs_s_get_line_interruptible (me, buffer, sizeof (buffer), FISH_SUPER (super)->sockr);
+
         if ((res == 0) || (res == EINTR))
         {
             vfs_s_free_entry (me, ent);

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# Midnight command WIN32 builds 4.8.27, as at 21/12/22
+# Midnight command WIN32 builds 4.8.28
 #
 # Copyright (c) 2007, 2012 - 2022 Adam Young.
 #
@@ -37,7 +37,7 @@ PKG_TARNAME	= @PACKAGE_TARNAME@
 PKG_URL		= @PACKAGE_URL@
 PKG_VERSION	= @PACKAGE_VERSION@
 ifeq ("","$(PKG_VERSION)")
-PKG_VERSION	= 4.8.27
+PKG_VERSION	= 4.8.28
 endif
 PKG_VERSION_1	=$(word 1,$(subst ., ,$(PKG_VERSION)))
 PKG_VERSION_2	=$(word 2,$(subst ., ,$(PKG_VERSION)))
@@ -128,7 +128,8 @@ ifneq ("$(word 1,$(MAKECMDGOALS))","release")
 		|\n\
 		| make [release or debug] target \n\
 		|\n\
-		|	Build one or more of the following targets recursively within each sub-directory. \n\
+		|	Build one or more of the following targets recursively within each sub-directory\n\
+		|	for the toolchain @TOOLCHAIN@. \n\
 		|\n\
 		| Targets: \n\
 		|\n\
@@ -501,8 +502,6 @@ MC_LIBMC+=$(MC_4_8_24)
 #	vfs/ftpfs
 #	vfs/sfs
 #	vfs/sftpfs
-#	vfs/smbfs
-#		- $(D_OBJVFS)/smbfs_smbfs$(O)
 #	vfs/tar
 #	vfs/undelfs	linux specific
 #		- $(D_OBJVFS)/undelfs_undelfs$(O)
@@ -514,10 +513,8 @@ MC_LIBVFS_SFTPFS=\
 	$(D_OBJVFS)/sftpfs_connection$(O)	\
 	$(D_OBJVFS)/sftpfs_dir$(O)		\
 	$(D_OBJVFS)/sftpfs_file$(O)		\
-	$(D_OBJVFS)/sftpfs_init$(O)		\
 	$(D_OBJVFS)/sftpfs_internal$(O)		\
-	$(D_OBJVFS)/sftpfs_vfs_class$(O)	\
-	$(D_OBJVFS)/sftpfs_vfs_subclass$(O)
+	$(D_OBJVFS)/sftpfs_sftpfs$(O)
 
 MC_LIBVFS=\
 	$(D_OBJVFS)/cpio_cpio$(O)		\
@@ -680,9 +677,9 @@ endif
 AUTOUPDATER=	no
 ifeq (vs,$(findstring vs,"@TOOLCHAIN@"))
 AUTOUPDATER=	yes
-else ifeq ("@TOOLCHAIN@","owc20")
+else ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
 AUTOUPDATER=	yes
-else ifeq ("@TOOLCHAIN@","owc19")
+else ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 AUTOUPDATER=	yes
 endif
 
@@ -744,7 +741,8 @@ help:
 		|\n\
 		| make [release or debug] target \n\
 		|\n\
-		|	Build one or more of the following targets recursively within each sub-directory. \n\
+		|	Build one or more of the following targets recursively within each sub-directory\n\
+		|	for the toolchain @TOOLCHAIN@. \n\
 		|\n\
 		| Targets: \n\
 		|\n\

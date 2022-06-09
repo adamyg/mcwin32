@@ -1,20 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the mc package.
-# 
+#
 # Translators:
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2021-08-01 19:02+0200\n"
-"PO-Revision-Date: 2021-07-26 20:16+0000\n"
-"Last-Translator: Transifex Bot <>\n"
+"POT-Creation-Date: 2022-03-27 13:41+0200\n"
+"PO-Revision-Date: 2010-12-29 10:19+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Interlingue (http://www.transifex.com/mc/mc/language/ie/)\n"
+"Language: ie\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ie\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
@@ -629,12 +629,6 @@ msgid "Disables subshell support"
 msgstr ""
 
 msgid "Log ftp dialog to specified file"
-msgstr ""
-
-msgid "Set debug level"
-msgstr ""
-
-msgid "<integer>"
 msgstr ""
 
 msgid "Launches the file viewer on a file"
@@ -1542,7 +1536,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2021 the Free Software Foundation"
+msgid "Copyright (C) 1996-2022 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1738,7 +1732,9 @@ msgstr ""
 msgid ""
 "Cannot chmod \"%s\"\n"
 "%s"
-msgstr "chmod \"%s\" ne successat\n%s"
+msgstr ""
+"chmod \"%s\" ne successat\n"
+"%s"
 
 msgid "&Ignore"
 msgstr "&Ignorar"
@@ -1753,7 +1749,9 @@ msgstr "&Repenar"
 msgid ""
 "Cannot chown \"%s\"\n"
 "%s"
-msgstr "chown \"%s\" ne successat\n%s"
+msgstr ""
+"chown \"%s\" ne successat\n"
+"%s"
 
 msgid "< Default >"
 msgstr "< Predefinit >"
@@ -1963,8 +1961,7 @@ msgstr ""
 msgid "Sort order"
 msgstr ""
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
-#. prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
 msgid "Confirmation|&Delete"
 msgstr "&Deleter"
 
@@ -2060,19 +2057,6 @@ msgstr "&Terminar"
 
 msgid "Background jobs"
 msgstr "Taches in funde"
-
-#, c-format
-msgid "Password for \\\\%s\\%s"
-msgstr ""
-
-msgid "Domain:"
-msgstr "Dominia:"
-
-msgid "Username:"
-msgstr "Nómine de usator:"
-
-msgid "SMB authentication"
-msgstr "Autentication SMB"
 
 #, c-format
 msgid ""
@@ -2385,9 +2369,6 @@ msgid "SFTP to machine"
 msgstr ""
 
 msgid "Shell link to machine"
-msgstr ""
-
-msgid "SMB link to machine"
 msgstr ""
 
 msgid "Undelete files on an ext2 file system"
@@ -2884,7 +2865,7 @@ msgstr "Árb&or"
 msgid "&Listing format..."
 msgstr ""
 
-msgid "&Sort order..."
+msgid "S&ort order..."
 msgstr ""
 
 msgid "&Filter..."
@@ -2899,11 +2880,8 @@ msgstr "Conexion FT&P..."
 msgid "S&hell link..."
 msgstr ""
 
-msgid "S&FTP link..."
-msgstr "Conexion S&FTP..."
-
-msgid "SM&B link..."
-msgstr "Conexion SM&B..."
+msgid "&SFTP link..."
+msgstr ""
 
 msgid "Paneli&ze"
 msgstr "Pa&nelisar"
@@ -3799,6 +3777,10 @@ msgstr ""
 msgid "Built with ncursesw (unknown version)"
 msgstr ""
 
+#, c-format
+msgid "Built with libssh2 %d.%d.%d\n"
+msgstr ""
+
 msgid "Virtual File Systems:"
 msgstr ""
 
@@ -3878,7 +3860,9 @@ msgstr "Menú de usator"
 msgid ""
 "Cannot open cpio archive\n"
 "%s"
-msgstr "Ne successat aperter li archive cpio\n%s"
+msgstr ""
+"Ne successat aperter li archive cpio\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -4174,7 +4158,8 @@ msgid ""
 "%s (%s)\n"
 "is found in the list of known hosts but\n"
 "KEYS DO NOT MATCH! THIS COULD BE A MITM ATTACK!\n"
-"Are you sure you want to add it to the list of known hosts and continue connecting?"
+"Are you sure you want to add it to the list of known hosts and continue "
+"connecting?"
 msgstr ""
 
 msgid "sftp: host key verification failed"
@@ -4209,33 +4194,6 @@ msgid "sftp: (Ctrl-G break) Listing... %s"
 msgstr ""
 
 msgid "sftp: Listing done."
-msgstr ""
-
-#, c-format
-msgid "reconnect to %s failed"
-msgstr ""
-
-msgid "Authentication failed"
-msgstr "Autentication ne successat"
-
-#, c-format
-msgid "Error %s creating directory %s"
-msgstr ""
-
-#, c-format
-msgid "Error %s removing directory %s"
-msgstr ""
-
-#, c-format
-msgid "%s opening remote file %s"
-msgstr ""
-
-#, c-format
-msgid "%s removing remote file %s"
-msgstr ""
-
-#, c-format
-msgid "%s renaming files\n"
 msgstr ""
 
 #, c-format

@@ -1,7 +1,7 @@
 /*
    Virtual File System switch code
 
-   Copyright (C) 1995-2021
+   Copyright (C) 1995-2022
    Free Software Foundation, Inc.
 
    Written by: 1995 Miguel de Icaza
@@ -789,4 +789,3 @@ vfs_clone_file (int dest_vfs_fd, int src_vfs_fd)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-
