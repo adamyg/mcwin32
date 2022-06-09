@@ -49,8 +49,6 @@ jobs:
         c:\msys64\usr\bin\pacman --noconfirm -S base-devel
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gcc
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-i686-gcc
-        PATH
-        which which
         dir c:\msys64\usr\bin
 
     - name: OpenWatcom setup

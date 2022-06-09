@@ -252,9 +252,18 @@ CLBRNAME=	clbr19
 MT7RNAME=	mt7r19
 PLBRNAME=	plbr19
 endif
+
+	# As path format is dependent on which variant,
+	# firstly resolve using WATCOM envvar, otherwise fallback to which.
+LIBCLBRPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(CLBRNAME).dll))
+ifeq ("","$(LIBCLBRPATH)")
 LIBCLBRPATH=	$(shell which $(CLBRNAME).dll)
 LIBMT7RPATH=	$(shell which $(MT7RNAME).dll)
 LIBPLBRPATH=	$(shell which $(PLBRNAME).dll)
+else
+LIBMT7RPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(MT7RNAME).dll))
+LIBPLBRPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(PLBRNAME).dll))
+endif
 endif
 
 MC_SRC=	\
