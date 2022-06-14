@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INCLUDE_H_INCLUDED
 #define LIBW32_WIN32_INCLUDE_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_include_h,"$Id: win32_include.h,v 1.9 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_include_h,"$Id: win32_include.h,v 1.10 2022/06/14 02:19:59 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -42,9 +42,9 @@ __CPRAGMA_ONCE
 #define _CRT_SECURE_NO_DEPRECATE                /* disable deprecate warnings */
 #endif
 
-#if !defined(_CRT_NO_POSIX_ERROR_CODES)
-#define _CRT_NO_POSIX_ERROR_CODES               /* disable POSIX error number, see <errno.h> */
-#endif
+    //#if !defined(_CRT_NO_POSIX_ERROR_CODES)
+    //#define _CRT_NO_POSIX_ERROR_CODES             /* disable POSIX error number, see <errno.h> */
+    //#endif
 #endif /*_MSC_VER*/
 
     //#if defined(__WATCOMC__) && (__WATCOMC__ < 1300)

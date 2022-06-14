@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.11 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.12 2022/06/14 02:19:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -280,7 +280,7 @@ PipeA(const char *cmd, const char *mode)
 
     if ('r' == p->readOrWrite) {
         if (NULL == (p->file = _fdopen(         // readable end of the pipe
-                _open_osfhandle((long)out_read,
+                _open_osfhandle((OSFHANDLE)out_read,
                     _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
                     'b' == textOrBinary ? "rb" : "rt"))) {
             goto pipe_error;
@@ -289,7 +289,7 @@ PipeA(const char *cmd, const char *mode)
 
     } else {
         if (NULL == (p->file = _fdopen(         // writeable end of the pipe
-                _open_osfhandle((long)in_write,
+                _open_osfhandle((OSFHANDLE)in_write,
                     _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
                     'b' == textOrBinary ? "wb" : "wt"))) {
             goto pipe_error;
@@ -433,7 +433,7 @@ PipeW(const wchar_t *cmd, const char *mode)
 
     if ('r' == p->readOrWrite) {
         if (NULL == (p->file = _fdopen(         // readable end of the pipe
-                _open_osfhandle((long)out_read,
+                _open_osfhandle((OSFHANDLE)out_read,
                     _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
                     'b' == textOrBinary ? "rb" : "rt"))) {
             goto pipe_error;
@@ -442,7 +442,7 @@ PipeW(const wchar_t *cmd, const char *mode)
 
     } else {
         if (NULL == (p->file = _fdopen(         // writeable end of the pipe
-                _open_osfhandle((long)in_write,
+                _open_osfhandle((OSFHANDLE)in_write,
                     _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
                     'b' == textOrBinary ? "wb" : "wt"))) {
             goto pipe_error;

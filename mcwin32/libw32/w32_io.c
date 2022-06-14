@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.26 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.27 2022/06/14 02:19:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -199,6 +199,61 @@ LIBW32_API int
 w32_utf8filenames_state (void)
 {
     return x_utf8filenames;
+}
+
+
+/*
+//  NAME
+//      handle conversion
+//
+//  SYNOPSIS
+//      int w32_HTOI(HANDLE handle)
+//      HANDLE w32_ITOH(int fd)
+// 
+//  NOTES:
+//
+//      MSDN - Interprocess Communication Between 32-bit and 64-bit Applications
+//
+//          64-bit versions of Windows use 32-bit handles for interoperability.
+//          When sharing a handle between 32-bit and 64-bit applications, only the lower 32 bits are significant,
+//          so it is safe to truncate the handle (when passing it from 64-bit to 32-bit) or sign-extend the handle (when passing it from 32-bit to 64-bit).
+//          Handles that can be shared include handles to user objects such as windows (HWND), handles to GDI objects such as pens and brushes (HBRUSH and HPEN),
+//          and handles to named objects such as mutexes, semaphores, and file handles.
+//
+//  RETURN VALUE
+//      Converted handle.
+*/
+
+int
+w32_HTOI(HANDLE handle)
+{
+#if defined(__MINGW32__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#endif
+#if defined(_WIN32)
+    assert((0xffffffff00000000LLU & (uint64_t)handle) == 0 || handle == INVALID_HANDLE_VALUE);
+#endif
+    if (INVALID_HANDLE_VALUE == handle) return -1;
+    return (int)handle;
+#if defined(__MINGW64__)
+#pragma GCC diagnostic pop
+#endif
+}
+
+
+HANDLE
+w32_ITOH(int fd)
+{
+#if defined(__MINGW32__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#endif
+    if (-1 == fd) return INVALID_HANDLE_VALUE;
+    return (HANDLE)fd;
+#if defined(__MINGW64__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 
@@ -614,7 +669,7 @@ w32_fstatW(int fd, struct stat *sb)
 
         } else if ((handle = ((HANDLE) _get_osfhandle(fd))) == INVALID_HANDLE_VALUE) {
                                                 // socket, a named pipe, or an anonymous pipe.
-            if (fd > WIN32_FILDES_MAX && FILE_TYPE_PIPE == GetFileType((HANDLE) fd)) {
+            if (fd > WIN32_FILDES_MAX && FILE_TYPE_PIPE == GetFileType(w32_ITOH(fd))) {
                 sb->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
                 sb->st_mode |= S_IFIFO;
                 sb->st_dev = sb->st_rdev = 1;
@@ -787,7 +842,7 @@ w32_fstatA(int fd, struct stat *sb)
 
         } else if ((handle = ((HANDLE) _get_osfhandle(fd))) == INVALID_HANDLE_VALUE) {
                                                 // socket, a named pipe, or an anonymous pipe.
-            if (fd > WIN32_FILDES_MAX && FILE_TYPE_PIPE == GetFileType((HANDLE) fd)) {
+            if (fd > WIN32_FILDES_MAX && FILE_TYPE_PIPE == GetFileType(w32_ITOH(fd))) {
                 sb->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
                 sb->st_mode |= S_IFIFO;
                 sb->st_dev = sb->st_rdev = 1;

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.10 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.11 2022/06/14 02:19:59 cvsuser Exp $")
 
 /*
  * win32 socket file-descriptor support
@@ -41,6 +41,7 @@ __CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.10 2022/06/08 09:51:44 cvs
 
 #include "win32_include.h"
 #include "win32_internal.h"
+#include "win32_misc.h"
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -197,11 +198,11 @@ w32_issockfd(int fd, SOCKET *s)
              *  MSVC 2015+ no longer suitable; asserts when out-of-range.
              *  Unfortunately socket handles can be small numeric values yet so are file descriptors.
              */
-            if (fd >= 0x80 && 0 == (fd & 0x3) && IsSocket((HANDLE)fd)) {
+            if (fd >= 0x80 && 0 == (fd & 0x3) && IsSocket(w32_ITOH(fd))) {
                 t_s = (SOCKET)fd;
 
             } else if (fd >= x_fdlimit ||
-                    _get_osfhandle(fd) == (int)INVALID_HANDLE_VALUE) {
+                    _get_osfhandle(fd) == (OSFHANDLE)INVALID_HANDLE_VALUE) {
                 t_s = (SOCKET)fd;               /* invalid assume socket; otherwise file */
             }
         }

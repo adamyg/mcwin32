@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockpair_c,"$Id: w32_sockpair.c,v 1.9 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockpair_c,"$Id: w32_sockpair.c,v 1.10 2022/06/14 02:19:59 cvsuser Exp $")
 
 /*
  * win32 socket file-descriptor support
@@ -176,9 +176,9 @@ w32_socketpair_fd(int af, int type, int proto, int sock[2])
         int s0 = -1, s1 = -1;
 
         if (sock[0] < WIN32_FILDES_MAX ||
-                (s0 = _open_osfhandle((long)sock[0], 0)) == -1 ||
+                (s0 = _open_osfhandle((OSFHANDLE)sock[0], 0)) == -1 ||
             sock[1] < WIN32_FILDES_MAX ||
-                (s1 = _open_osfhandle((long)sock[1], 0)) == -1) {
+                (s1 = _open_osfhandle((OSFHANDLE)sock[1], 0)) == -1) {
 
             closesocket((SOCKET)sock[1]);
             if (s0 >= 0) _close(s0);
@@ -211,8 +211,8 @@ w32_socketpair_native(int af, int type, int proto, int sock[2])
     int addr2_len = sizeof (addr2);
     int nerr;
 
-    sock[0] = INVALID_SOCKET;
-    sock[1] = INVALID_SOCKET;
+    sock[0] = -1;
+    sock[1] = -1;
 
     assert(af == AF_INET && type == SOCK_STREAM && (0 == proto || IPPROTO_IP == proto || IPPROTO_TCP == proto));
 

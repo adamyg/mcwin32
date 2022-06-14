@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.20 2022/06/09 16:39:50 cvsuser Exp $
+# $Id: Makefile.in,v 1.21 2022/06/14 02:19:58 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -111,9 +111,6 @@ W32DLL=		$(D_LIB)/$(LP)w32.la
 
 VERSION=	1.2.0
 VERSIONSPEC=	$(subst .,:,$(VERSION))
-
-#	bsd_bsearch.c
-#	bsd_qsort.c
 
 CSOURCES=\
 	w32_access.c \

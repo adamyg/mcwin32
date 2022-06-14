@@ -89,7 +89,7 @@ VS_VERSION_INFO VERSIONINFO
                                 VALUE "LegalTrademarks",        "see GNU General Public License"
 
                                 VALUE "Maintainers",
-                                        "Port: https://sourceforge.net/projects/mcwin32 \n"
+                                        "Port: https://github.com/adamyg/mcwin32 \n"
                                         "Original: mc-devel@gnome.org"
 
                                 VALUE "OriginalFilename",       "mc.exe"

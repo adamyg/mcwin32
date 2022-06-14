@@ -1,10 +1,10 @@
-# $Id: makeconfig.pm,v 1.5 2022/06/08 09:51:42 cvsuser Exp $
+# $Id: makeconfig.pm,v 1.6 2022/06/14 02:20:38 cvsuser Exp $
 # Makefile generation under Win32.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
 #
 #
-# Copyright (c) 2020, Adam Young.
+# Copyright (c) 2020 - 2022, Adam Young.
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.

@@ -15,10 +15,16 @@ jobs:
             toolversion: vs170
           }
         - {
-           name: "Windows Latest MinGW",
+           name: "Windows Latest MinGW32",
            os: windows-latest,
            toolchain: mingw32,
            toolversion: mingw32
+          }
+        - {
+           name: "Windows Latest MinGW64",
+           os: windows-latest,
+           toolchain: mingw64,
+           toolversion: mingw64
           }
         - {
            name: "Windows Latest OWC",

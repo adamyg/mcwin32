@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_CDEFS_H_INCLUDED
 #define LIBW32_SYS_CDEFS_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_cdefs_h,"$Id: cdefs.h,v 1.9 2022/06/09 16:46:41 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_cdefs_h,"$Id: cdefs.h,v 1.10 2022/06/14 02:19:59 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*-
@@ -146,7 +146,7 @@ __CPRAGMA_ONCE
  * remove const cast-away warnings
  */
 #ifndef __DECONST
-#define __DECONST(__t,__a)      ((__t *)(const void *)(__a))
+#define __DECONST(__t,__a)      ((__t)(const void *)(__a))
 #endif
 #ifndef __UNCONST
 #define __UNCONST(__a)          ((void *)(const void *)(__a))

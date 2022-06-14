@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.14 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.15 2022/06/14 02:19:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -479,7 +479,7 @@ setgroups(size_t size, const gid_t *gidset)
 static void
 fill_groups(void)
 {
-    DWORD resume_handle = 0;
+    DWORD_PTR resume_handle = 0;
     NET_API_STATUS nStatus;
     unsigned cbufsz = 0;
     char name[MAX_PATH];

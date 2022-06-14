@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.35 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.36 2022/06/14 02:19:58 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -33,7 +33,7 @@ __CPRAGMA_ONCE
  */
 
 #if defined(_MSC_VER)
-#ifndef __MAKEDEPEND__
+#if !defined(__MAKEDEPEND__)
 #if (_MSC_VER != 1200)                          /* MSVC 6 */
 #if (_MSC_VER != 1400)                          /* MSVC 8/2005 */
 #if (_MSC_VER != 1500)                          /* MSVC 9/2008 */
@@ -51,8 +51,8 @@ __CPRAGMA_ONCE
 #endif //2010
 #endif //2008
 #endif //2005
+#endif //MS6
 #endif //__MAKEDEPEND__
-#endif //_MSC_VER
 
 #pragma warning(disable:4115)
 
@@ -410,7 +410,7 @@ __BEGIN_DECLS
 #define SIGWINCH        -102
 #define SIGPIPE         -103
 
-#if !defined(__MINGW64_)
+#if !defined(__MINGW32__) || defined(__MINGW64_VERSION_MAJOR)
 typedef struct {
     unsigned            junk;
 } sigset_t;
@@ -429,7 +429,7 @@ struct sigaction {
 
 LIBW32_API int          sigemptyset (sigset_t *);
 LIBW32_API int          sigaction (int, struct sigaction *, struct sigaction *);
-#endif /*__MINGW64__*/
+#endif /*__MINGW32__*/
 
 /*shell support*/
 #if !defined(WNOHANG)
@@ -482,11 +482,15 @@ LIBW32_API int          w32_gethostname (char *name, size_t namelen);
 LIBW32_API int          w32_getdomainname (char *name, size_t namelen);
 
 #if defined(WIN32_UNISTD_MAP)
-#if (defined(_WINSOCKAPI_) || defined(_WINSOCK2API_)) /*&& (defined(__MINGW32_) && !defined(__MINGW64_VERSION_MAJOR))*/
+#if (defined(_WINSOCKAPI_) || defined(_WINSOCK2API_))
+#if !defined(gethostname)
 #define gethostname(__name,__namelen) \
                         w32_gethostname(__name,__namelen)
+#endif //gethostname
+#if !defined(getdomainname)
 #define getdomainname(__name,__namelen) \
                         w32_getdomainname(__name,__namelen)
+#endif //getdomainname
 #endif
 #endif /*WIN32_UNISTD_MAP*/
 

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.17 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.18 2022/06/14 02:19:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -322,7 +322,7 @@ w32_waitpid(int pid, int *status, int options)
         /*
          *  wait for the child whose process ID is equal to the value of pid.
          */
-        if (w32_child_wait((HANDLE)pid, status, options & WNOHANG)) {
+        if (w32_child_wait(w32_ITOH(pid), status, options & WNOHANG)) {
             ret = pid;
         }
     }
@@ -450,7 +450,7 @@ LIBW32_API int
 w32_kill(int pid, int value)
 {
     if (pid > 0) {
-        HANDLE hProc = (HANDLE)pid;
+        HANDLE hProc = w32_ITOH(pid);
 
         /* Still running ?? */
         if (WaitForSingleObject(hProc, 0) != WAIT_TIMEOUT) {

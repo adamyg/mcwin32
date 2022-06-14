@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.15 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.16 2022/06/14 02:19:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -276,7 +276,7 @@ ShellA(const char *shell, const char *cmd,
 
     } else {
         ShellCleanup((void *)&pd);
-        (void) w32_waitpid((int) hProc, &status, 0);
+        (void) w32_waitpid(w32_HTOI(hProc), &status, 0);
     }
 
     free(shname);
@@ -418,7 +418,7 @@ ShellW(const wchar_t *shell, const wchar_t  *cmd,
 
     } else {
         ShellCleanup((void *)&pd);
-        (void) w32_waitpid((int) hProc, &status, 0);
+        (void) w32_waitpid(w32_HTOI(hProc), &status, 0);
     }
 
     free(shname);
@@ -603,11 +603,11 @@ w32_spawnA2(
     //  Open LIBC compatible handles (if required) and launch child process
     //
     if ((*Stdin  >= 0 ||
-            (in  = _open_osfhandle((long)hInputWrite, _O_NOINHERIT)) >= 0) &&
+            (in  = _open_osfhandle((OSFHANDLE)hInputWrite, _O_NOINHERIT)) >= 0) &&
         (*Stdout >= 0 ||
-            (out = _open_osfhandle((long)hOutputRead, _O_NOINHERIT)) >= 0) &&
+            (out = _open_osfhandle((OSFHANDLE)hOutputRead, _O_NOINHERIT)) >= 0) &&
         (Stderr == NULL || *Stderr >= 0 ||
-            (err = _open_osfhandle((long)hErrorRead, _O_NOINHERIT)) >= 0)) {
+            (err = _open_osfhandle((OSFHANDLE)hErrorRead, _O_NOINHERIT)) >= 0)) {
         hProc = w32_child_execA(args, hInputRead, hOutputWrite, hErrorWrite);
     }
 
@@ -659,7 +659,7 @@ w32_spawnA2(
             Close(hErrorRead);
         }
     }
-    return (int)(hProc);
+    return w32_HTOI(hProc);
 }
 
 
@@ -746,11 +746,11 @@ w32_spawnW2(
     //  Open LIBC compatible handles (if required) and launch child process
     //
     if ((*Stdin  >= 0 ||
-            (in  = _open_osfhandle((long)hInputWrite, _O_NOINHERIT)) >= 0) &&
+            (in  = _open_osfhandle((OSFHANDLE)hInputWrite, _O_NOINHERIT)) >= 0) &&
         (*Stdout >= 0 ||
-            (out = _open_osfhandle((long)hOutputRead, _O_NOINHERIT)) >= 0) &&
+            (out = _open_osfhandle((OSFHANDLE)hOutputRead, _O_NOINHERIT)) >= 0) &&
         (Stderr == NULL || *Stderr >= 0 ||
-            (err = _open_osfhandle((long)hErrorRead, _O_NOINHERIT)) >= 0)) {
+            (err = _open_osfhandle((OSFHANDLE)hErrorRead, _O_NOINHERIT)) >= 0)) {
         hProc = w32_child_execW(args, hInputRead, hOutputWrite, hErrorWrite);
     }
 
@@ -802,7 +802,7 @@ w32_spawnW2(
             Close(hErrorRead);
         }
     }
-    return (int)(hProc);
+    return w32_HTOI(hProc);
 }
 
 
@@ -1061,7 +1061,7 @@ w32_execA(win32_exec_t *args)
     args->hInput  = hInputWrite;
     args->hOutput = hOutputRead;
     args->hError  = hErrorRead;
-    return (int)args->hProc;
+    return w32_HTOI(args->hProc);
 
 einval:;
     Close(hOutputReadTmp); Close(hInputWriteTmp); Close(hErrorReadTmp);
@@ -1119,7 +1119,7 @@ w32_execW(win32_execw_t *args)
     args->hInput  = hInputWrite;
     args->hOutput = hOutputRead;
     args->hError  = hErrorRead;
-    return (int)args->hProc;
+    return w32_HTOI(args->hProc);
 
 einval:;
     Close(hOutputReadTmp); Close(hInputWriteTmp); Close(hErrorReadTmp);

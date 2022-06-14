@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_socket_c,"$Id: w32_socket.c,v 1.14 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_socket_c,"$Id: w32_socket.c,v 1.15 2022/06/14 02:19:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -78,7 +78,7 @@ retry:;
         w32_sockerror();
         ret = -1;
     } else if ((ret = (int)s) < WIN32_FILDES_MAX &&
-                    (ret = _open_osfhandle((long)s, 0)) == -1) {
+                    (ret = _open_osfhandle((OSFHANDLE)s, 0)) == -1) {
         closesocket(s);
         errno = EMFILE;
     } else {
@@ -209,7 +209,7 @@ w32_accept_fd(int fd, struct sockaddr *addr, int *addrlen)
             w32_sockerror();
             ret = -1;
         } else if ((ret = (int)s) < WIN32_FILDES_MAX &&
-                         (ret = _open_osfhandle((long)s, 0)) == -1) {
+                         (ret = _open_osfhandle((OSFHANDLE)s, 0)) == -1) {
             (void) closesocket(s);
             errno = EMFILE;
         } else {
