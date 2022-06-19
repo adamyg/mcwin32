@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_SOCKET_H_INCLUDED
 #define LIBW32_SYS_SOCKET_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_socket_h,"$Id: socket.h,v 1.11 2022/02/24 15:33:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_socket_h,"$Id: socket.h,v 1.12 2022/06/08 09:51:45 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -32,14 +32,17 @@ __CPRAGMA_ONCE
  * ==end==
  */
 
+#if !defined(_WINSOCK2_H)                       /* MINGW32 guard */
 #include <win32_include.h>                      /* winsock and windows.h guard */
+#endif
 #include <win32_errno.h>
 
 #include <sys/cdefs.h>
+#include <time.h>
 
 __BEGIN_DECLS
 
-LIBW32_API extern int   w32_h_errno;
+LIBW32_VAR int          w32_h_errno;
 
 struct pollfd;
 
@@ -97,8 +100,12 @@ LIBW32_API int          w32_recvfrom_native(int fd, char *buf, int len, int flag
 LIBW32_API int          w32_shutdown_fd(int fd, int flags);
 LIBW32_API int          w32_shutdown_native(int fd, int flags);
 
-LIBW32_API int          w32_sockblockingmode_fd(int fd, int enabled);
-LIBW32_API int          w32_sockblockingmode_native(int fd, int enabled);
+LIBW32_API int          w32_socknonblockingio_fd(int fd, int enabled);
+LIBW32_API int          w32_socknonblockingio_native(int fd, int enabled);
+
+LIBW32_API int          w32_sockinheritable_fd(int fd, int enabled);
+LIBW32_API int          w32_sockinheritable_native(int fd, int enabled);
+
 LIBW32_API int          w32_sockwrite_fd(int fd, const void *buffer, unsigned int cnt);
 LIBW32_API int          w32_sockwrite_native(int fd, const void *buffer, unsigned int cnt);
 LIBW32_API int          w32_sockread_fd(int fd, void *buf, unsigned int nbyte);
@@ -183,7 +190,7 @@ LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout
 #define accept(a,b,c)           w32_accept_fd(a,b,c)
 #define poll(a,b,c)             w32_poll_fd(a,b,c)
 #define send(a,b,c,d)           w32_send_fd(a,b,c,d)
-#define sendto(a,b,c,d,e)       w32_sendto_fd(a,b,c,d,e)
+#define sendto(a,b,c,d,e,f      w32_sendto_fd(a,b,c,d,e,f)
 #define sendmsg(a,b,c)          w32_sendmsg_fd(a,b,c)
 #define recv(a,b,c,d)           w32_recv_fd(a,b,c,d)
 #define recvfrom(a,b,c,d,e,f)   w32_recvfrom_fd(a,b,c,d,e,f)
@@ -192,7 +199,8 @@ LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout
 #define poll(a,b,c)             w32_poll_fd(a,b,c)
 #endif
 
-#define sockblockingmode(a,b)   w32_sockblockingmode_fd(a,b)
+#define socknonblockingio(a,b)  w32_socknonblockingio_fd(a,b)
+#define sockinheritable(a,b)    w32_sockinheritable_fd(a,b)
 #define sockread(a,b,c)         w32_sockread_fd(a,b,c)
 #define sockwrite(a,b,c)        w32_sockwrite_fd(a,b,c)
 #define sockclose(a)            w32_sockclose_fd(a)
@@ -215,7 +223,7 @@ LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout
 #define accept(a,b,c)           w32_accept_native(a,b,c)
 #define poll(a,b,c)             w32_poll_native(a,b,c)
 #define send(a,b,c,d)           w32_send_native(a,b,c,d)
-#define sendto(a,b,c,d,e)       w32_sendto_native(a,b,c,d,e)
+#define sendto(a,b,c,d,e,f)     w32_sendto_native(a,b,c,d,e,f)
 #define sendmsg(a,b,c)          w32_sendmsg_native(a,b,c)
 #define recv(a,b,c,d)           w32_recv_native(a,b,c,d)
 #define recvfrom(a,b,c,d,e,f)   w32_recvfrom_native(a,b,c,d,e,f)
@@ -224,7 +232,8 @@ LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout
 #define poll(a,b,c)             w32_poll_native(a,b,c)
 #endif /*SOCKET_MAPCALLS*/
 
-#define sockblockingmode(a,b)   w32_sockblockingmode_native(a,b)
+#define socknonblockingio(a,b)  w32_socknonblockingio_native(a,b)
+#define sockinheritable(a,b)    w32_sockinheritable_native(a,b)
 #define sockread(a,b,c)         w32_sockread_native(a,b,c)
 #define sockwrite(a,b,c)        w32_sockwrite_native(a,b,c)
 #define sockclose(a)            w32_sockclose_native(a)
@@ -232,8 +241,45 @@ LIBW32_API int          w32_poll_native(struct pollfd *fds, int cnt, int timeout
 #define socketpair(a,b,c,d)     w32_socketpair_native(a,b,c,d)
 
 #endif /*WIN32_SOCKET_MAP_FD|NATIVE*/
-
+                                       
+LIBW32_API int                  w32_select(int, fd_set *, fd_set *, fd_set *, const struct timeval *timeout);
+                                       
 __END_DECLS
+                                       
+/* missing definitions */
+
+#if defined(_MSC_VER) || \
+    defined(__MINGW64_VERSION_MAJOR) /* MingGW-w64/32 */
+#include <Iphlpapi.h>                           /* if_nametoindex() */
+#endif
+
+#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+INT WSAAPI inet_pton(INT Family, PCSTR pszAddrString, PVOID pAddrBuf);
+PCSTR WSAAPI inet_ntop(INT Family, const VOID *pAddr, PSTR pStringBuf, size_t StringBufSize);
+
+ULONG WINAPI if_nametoindex(PCSTR InterfaceName);
+
+typedef struct addrinfo ADDRINFOA, *PADDRINFOA;
+    //see: w32_sockbase.c
+    //INT WSAAPI getaddrinfo(PCSTR pNodeName, PCSTR pServiceName, const ADDRINFOA *pHints, PADDRINFOA *ppResult);
+VOID WSAAPI freeaddrinfo(PADDRINFOA pAddrInfo);
+#endif
+
+#if defined(__WATCOMC__)
+#if !defined(HAVE_TIMESPEC)                     /* missing definitions */
+#define HAVE_TIMESPEC
+#endif
+#if !defined(_TIMESPEC_DEFINED) && (__WATCOMC__ < 1300)
+#define _TIMESPEC_DEFINED                       /* OWC1.9=1290, OWC2.0=1300 */
+struct timespec {
+        time_t tv_sec;
+        long tv_nsec;
+};
+#else
+#include <signal.h>
+#endif  /*TIMESPEC_STRUCT_T*/
+
+ULONG WINAPI if_nametoindex(PCSTR InterfaceName);
+#endif
 
 #endif /*LIBW32_SYS_SOCKET_H_INCLUDED*/
-

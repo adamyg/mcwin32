@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.15 2022/03/05 08:25:25 cvsuser Exp $
+# $Id: Makefile.in,v 1.17 2022/06/09 16:39:43 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -64,7 +64,7 @@ endif
 D_INC=		$(ROOT)/include
 D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
 D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libssh2
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libssh2
 
 # Common flags
 
@@ -92,8 +92,8 @@ ARFLAGS=	rcv
 YFLAGS=		-d
 RMFLAGS=	-f
 
-############################################################
 
+#########################################################################################
 # Targets
 
 SSH2LIB=	$(D_LIB)/$(LP)ssh2_static$(A)
@@ -107,8 +107,11 @@ SSH2BASE=	./libssh2-$(VERSION)
 SSH2SRC=	$(SSH2BASE)/src
 SSH2INCLUDE=	$(SSH2BASE)/include
 
-CINCLUDE+=	-I$(SSH2BASE)/win32 -I$(SSH2INCLUDE) -I./sdk
-CEXTRA+=	-D_WIN32_WINNT=0x601 -DLIBSSH2_WIN32 -DLIBSSH2_HAVE_ZLIB
+CINCLUDE+=	-I$(SSH2BASE)/win32 -I$(SSH2INCLUDE)
+ifneq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+CINCLUDE+=	-I./sdk
+endif
+CEXTRA+=	-DLIBSSH2_WIN32 -DLIBSSH2_HAVE_ZLIB
 
 ##CEXTRA+=	-DLIBSSH2_WINOPENSSL
 ##CEXTRA+=	-DLIBSSH2_WINCNG
@@ -121,7 +124,6 @@ CEXTRA+=	-DLIBSSH2_MBEDTLS
 			#
 LDLIBS+=	libmbedcrypto_static.lib
 LDLIBS+=	libz_static.lib
-##LDLIBS+=	./sdk/bcrypt.lib ./sdk/crypt32.lib
 
 VPATH+=		$(SSH2SRC) $(SSH2BASE)/win32
 CRYPTO_CSOURCES=\
@@ -148,10 +150,13 @@ LIBOBJS=\
 
 DLLOBJS=\
 	$(subst $(O),.lo,$(LIBOBJS))
-ifeq ("mingw32","@build_os@")
+
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 DLLOBJS+=	$(D_OBJ)/libssh2_res.o
-else ifeq ("win32","@build_os@")
+else
 DLLOBJS+=	$(D_OBJ)/libssh2.res
+endif
 endif
 
 LIBS=		$(SSH2LIB)
@@ -159,6 +164,7 @@ DLLS=		$(SSH2DLL)
 TSKS=
 INSTALLED=
 
+#########################################################################################
 # Rules
 
 .PHONY:		build release debug
@@ -184,8 +190,8 @@ $(SSH2LIB):		$(LIBOBJS)
 INSTALLED+=	$(D_BIN)/libssh2.$(VERSION).dll
 $(SSH2DLL):		CEXTRA += -DLIBSSH2_DYANMIC -D_WINDLL
 $(SSH2DLL):		$(DLLOBJS)
-		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) $(SSH2DEF) -o $@ $^ $(LDLIBS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(SSH2DEF) $^ $(LDLIBS)
 
 source:			.unpacked.$(VERSION)
 		$(MAKE) unpacked

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.4 2022/03/16 13:47:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.5 2022/06/08 09:51:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -736,7 +736,7 @@ d_Wow64DisableWow64FsRedirection(PVOID *OldValue)
                                                 // XP+
             x_Wow64DisableWow64FsRedirection = my_Wow64DisableWow64FsRedirection;
             x_Wow64RevertWow64FsRedirection = NULL;
-            FreeLibrary(hinst);
+            if (hinst) FreeLibrary(hinst);
         }
 #else
         x_Wow64DisableWow64FsRedirection = my_Wow64DisableWow64FsRedirection;

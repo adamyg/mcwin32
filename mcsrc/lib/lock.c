@@ -1,7 +1,7 @@
 /*
    File locking
 
-   Copyright (C) 2003-2021
+   Copyright (C) 2003-2022
    Free Software Foundation, Inc.
 
    Written by:
@@ -45,6 +45,7 @@
 #include <signal.h>             /* kill() */
 #include <stdio.h>
 #include <stdarg.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>

@@ -1,7 +1,7 @@
 #ifndef LIBW32_DIRENT_H_INCLUDED
 #define LIBW32_DIRENT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.14 2022/03/16 13:46:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.15 2022/06/14 02:19:58 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -238,3 +238,4 @@ LIBW32_API int          getdirentries __P((int, char *, int, long *));
 __END_DECLS
 
 #endif /*LIBW32_DIRENT_H_INCLUDED*/
+

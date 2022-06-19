@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.6 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.8 2022/06/14 02:19:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -90,13 +90,14 @@ w32_unc_iterateW(const wchar_t *servername, unc_push_t push, void *data)
     assert(NULL != push);
     assert(NULL != data);
     do {
-        DWORD entries = (DWORD)-1, tr = 0, resume = 0;
+        DWORD entries = (DWORD)-1, tr = 0;
+        DWORD resume_handle = 0;
 
         if (servername && !*servername) {       // DNS or NetBIOS name
             servername = NULL;                  // NULL == localserver
         }
 
-        res = NetShareEnum((wchar_t *)servername, 502, (LPBYTE *)&buffer, MAX_PREFERRED_LENGTH, &entries, &tr, &resume);
+        res = NetShareEnum((wchar_t *)servername, 502, (LPBYTE *)&buffer, MAX_PREFERRED_LENGTH, &entries, &tr, &resume_handle);
         if (ERROR_SUCCESS == res || ERROR_MORE_DATA == res) {
             const SHARE_INFO_502 *ent;
             unsigned count = 0;
@@ -227,7 +228,8 @@ w32_unc_readdirA(DIR *dp)
             struct dirent *dpent = (struct dirent *)dp->dd_buf;
             int namlen = strlen(cursor);
 
-            if (namlen >= sizeof(dpent->d_name)) namlen = sizeof(dpent->d_name) - 1;
+            if (namlen >= (int)sizeof(dpent->d_name))
+                namlen = sizeof(dpent->d_name) - 1;
             dpent->d_namlen = namlen;
             memcpy(dpent->d_name, cursor, namlen + 1 /*nul*/);
             dpent->d_reclen = sizeof(struct dirent);
@@ -316,7 +318,7 @@ w32_unc_validA(const char *path)
         if (NULL == (scan = strpbrk(path, "*?|<>\"\\/"))
                 || IS_PATH_SEP(scan[0])) {
             const size_t namelen =              // servername length
-                    (scan ? (scan - path) : strlen(path));
+                    (scan ? (size_t)(scan - path) : strlen(path));
 
             if (namelen > 0) {
                 return namelen;
@@ -337,7 +339,7 @@ w32_unc_validW(const wchar_t *path)
         if (NULL == (scan = wcspbrk(path, L"*?|<>\"\\/"))
                 || IS_PATH_SEP(scan[0])) {
             const size_t namelen =              // servername length
-                    (scan ? (scan - path) : wcslen(path));
+                    (scan ? (size_t)(scan - path) : wcslen(path));
 
             if (namelen > 0) {
                 return namelen;
@@ -368,7 +370,7 @@ w32_unc_rootA(const char *path, int *length)
 
             if (length) *length = namelen;
             if (GetComputerNameA(computerName, &computerSz)) {
-                if (namelen == computerSz &&
+                if ((DWORD)namelen == computerSz &&
                         0 == _strnicmp(path + 2, computerName, namelen)) {
                     return 2;                   // local server
                 }
@@ -396,7 +398,7 @@ w32_unc_rootW(const wchar_t *path, int *length)
 
             if (length) *length = namelen;
             if (GetComputerNameW(computerName, &computerSz)) {
-                if (namelen == computerSz &&
+                if ((DWORD)namelen == computerSz &&
                         0 == _wcsnicmp(path + 2, computerName, namelen)) {
                     return 2;                   // local server
                 }

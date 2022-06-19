@@ -63,7 +63,7 @@ BEGIN
 				LIBW32_VERSION "\0"
 
 			VALUE "Comments",
-				"For more information visit https://sourceforge.net/p/mcwin32/\0"
+				"For more information visit https://github.com/adamyg/mcwin32\0"
 		END
 	END
 	BLOCK "VarFileInfo"

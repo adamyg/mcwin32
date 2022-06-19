@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.34 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.36 2022/06/14 02:19:58 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -33,7 +33,7 @@ __CPRAGMA_ONCE
  */
 
 #if defined(_MSC_VER)
-#ifndef __MAKEDEPEND__
+#if !defined(__MAKEDEPEND__)
 #if (_MSC_VER != 1200)                          /* MSVC 6 */
 #if (_MSC_VER != 1400)                          /* MSVC 8/2005 */
 #if (_MSC_VER != 1500)                          /* MSVC 9/2008 */
@@ -41,8 +41,8 @@ __CPRAGMA_ONCE
 #if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
 #if (_MSC_VER <  1910 || _MSC_VER > 1916)       /* MSVC 2017: 19.10 .. 16 */
 #if (_MSC_VER > 1929)                           /* MSVC 2019: 19.20 .. 29 */
-#if (_MSC_VER > 1931)                           /* MSVC 2022: 19.30 .. 31 */
-#error unistd.h: untested MSVC Version (2005 -- 2019.31)
+#if (_MSC_VER > 1932)                           /* MSVC 2022: 19.30 .. 32 */
+#error unistd.h: untested MSVC Version (2005 -- 2019.32)
 	//see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 #endif //2022
 #endif //2019
@@ -51,8 +51,8 @@ __CPRAGMA_ONCE
 #endif //2010
 #endif //2008
 #endif //2005
+#endif //MS6
 #endif //__MAKEDEPEND__
-#endif //_MSC_VER
 
 #pragma warning(disable:4115)
 
@@ -106,17 +106,25 @@ __CPRAGMA_ONCE
  *  avoid importing <win32_include.h>
  *      which among others includes <ctype.h>
  */
-
 #include <win32_errno.h>
+#include <win32_time.h>
 
 #include <sys/cdefs.h>                          /* __BEGIN_DECLS, __PDECL */
 #include <sys/utypes.h>
 #include <sys/stat.h>
+#if defined(HAVE_SYS_STATFS_H)
 #include <sys/statfs.h>
+#endif
+#if defined(HAVE_SYS_UTIME_H)
+#include <sys/utime.h>
+#endif
 #include <time.h>                               /* required to replace strfime() */
-#include <utime.h>
 #include <stddef.h>                             /* offsetof() */
+#if defined(USE_NATIVE_DIRECT)
+#include <direct.h>
+#else
 #include <dirent.h>                             /* MAXPATHLENGTH, MAXNAMELENGTH */
+#endif
 #include <limits.h>                             /* _MAX_PATH */
 #include <process.h>                            /* getpid, _beginthread */
 
@@ -136,6 +144,10 @@ __CPRAGMA_ONCE
 
 #ifndef _countof
 #define _countof(__type) (sizeof(__type)/sizeof(__type[0]))
+#endif
+
+#if defined(LIBW32_UNISTD_MAP) && !defined(WIN32_UNISTD_MAP)
+#define WIN32_UNISTD_MAP 1
 #endif
 
 __BEGIN_DECLS
@@ -398,7 +410,7 @@ __BEGIN_DECLS
 #define SIGWINCH        -102
 #define SIGPIPE         -103
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) || defined(__MINGW64_VERSION_MAJOR)
 typedef struct {
     unsigned            junk;
 } sigset_t;
@@ -442,44 +454,45 @@ LIBW32_API int          WIFSTOPPED(int status);
 #endif
 
 /* <stdlib.h> */
-LIBW32_API extern char *suboptarg;
+LIBW32_VAR char         *suboptarg;
 
 LIBW32_API int          getsubopt (char **optionp, char * const *tokens, char **valuep);
 
 /* <string.h> */
+//#if (0) //libcompat
 #if defined(_MSC_VER) || defined(__WATCOMC__)
+#define NEED_STRCASECMP                         /*see: w32_string.c*/
+#endif
+#if defined(NEED_STRCASECMP)
 LIBW32_API int          strcasecmp(const char *s1, const char *s2);
 LIBW32_API int          strncasecmp(const char *s1, const char *s2, size_t len);
-#endif /*_MSC_VER*/
+#endif /*NEED_STRCASECMP*/
 
 #if (defined(_MSC_VER) && (_MSC_VER < 1400)) || \
-            defined(__MINGW32__) || defined(__WATCOMC__)
+            defined(__WATCOMC__) || \
+            defined(__MINGW32__)
 #define NEED_STRNLEN                            /*see: w32_string.c*/
 #endif
 #if defined(NEED_STRNLEN)
 LIBW32_API size_t       strnlen(const char *s, size_t maxlen);
 #endif /*NEED_STRNLEN*/
-
-/* <unistd.h> */
-LIBW32_API int          gettimeofday (struct timeval *tv, struct timezone *tz);
-
-LIBW32_API int          w32_utime (const char *path, const struct utimbuf *times);
-LIBW32_API int          w32_utimeA (const char *path, const struct utimbuf *times);
-LIBW32_API int          w32_utimeW (const wchar_t *path, const struct utimbuf *times);
-
-#if defined(WIN32_UNISTD_MAP)
-/*
-#if !defined(_WINSOCKAPI_) && !defined(_WINSOCK2API_)
-#define gethostname(__name,__namelen) \
-                w32_gethostname (__name, __namelen)
-#endif
-*/
-#define getdomainname(__name,__namelen) \
-                w32_getdomainname (__name, __namelen)
-#endif /*WIN32_UNISTD_MAP*/
+//#endif //libcompat
 
 LIBW32_API int          w32_gethostname (char *name, size_t namelen);
 LIBW32_API int          w32_getdomainname (char *name, size_t namelen);
+
+#if defined(WIN32_UNISTD_MAP)
+#if (defined(_WINSOCKAPI_) || defined(_WINSOCK2API_))
+#if !defined(gethostname)
+#define gethostname(__name,__namelen) \
+                        w32_gethostname(__name,__namelen)
+#endif //gethostname
+#if !defined(getdomainname)
+#define getdomainname(__name,__namelen) \
+                        w32_getdomainname(__name,__namelen)
+#endif //getdomainname
+#endif
+#endif /*WIN32_UNISTD_MAP*/
 
 LIBW32_API const char * getlogin (void);
 LIBW32_API int          getlogin_r (char *name, size_t namesize);
@@ -507,6 +520,7 @@ LIBW32_API int          w32_getgpid (void);
 #endif /*WIN32_UNISTD_MAP*/
 
 LIBW32_API int          getgroups (int gidsetsize, gid_t grouplist[]);
+LIBW32_API int          setgroups (size_t size, const gid_t *gidset);
 
 /* time.h */
 LIBW32_API unsigned int sleep (unsigned int secs);
@@ -557,6 +571,8 @@ LIBW32_API int          w32_renameW (const wchar_t *ofile, const wchar_t *nfile)
 LIBW32_API ssize_t      pread (int fildes, void *buf, size_t nbyte, off_t offset);
 LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t offset);
 
+LIBW32_API int          w32_pipe(int fildes[2]);
+
 #if defined(WIN32_UNISTD_MAP)
 #define open            w32_open
 #define stat(a,b)       w32_stat(a, b)
@@ -569,10 +585,12 @@ LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t
 #define unlink(p)       w32_unlink(p)
 #define access(p,m)     w32_access(p, m)
 #define rename(a,b)     w32_rename(a,b)
+#define pipe(__f)       w32_pipe(__f)
 #endif /*WIN32_UNISTD_MAP*/
 
 #if defined(WIN32_UNISTD_MAP) || \
-    defined(WIN32_SOCKET_MAP_FD) || defined(WIN32_SOCKET_MAP_NATIVE)
+    defined(LIBW32_SOCKET_MAP_FD) || defined(WIN32_SOCKET_MAP_FD) || \
+    defined(LIBW32_SOCKET_MAP_NATIVE) || defined(WIN32_SOCKET_MAP_NATIVE)
 #define strerror(a)     w32_strerror(a)
 	//#define g_strerror(a)   w32_strerror(a)         /* must also replace libglib version */
 #endif
@@ -604,7 +622,7 @@ LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, int size);
 #define getcwd(d,s)     w32_getcwd(d,s)
 #define utime(p,t)      w32_utime(p,t)
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
 #ifndef vsnprintf
 #define vsnprintf       _vsnprintf
 #endif
@@ -676,9 +694,9 @@ LIBW32_API int          mknod (const char *path, int mode, int dev);
 LIBW32_API int          mknodA (const char *path, int mode, int dev);
 LIBW32_API int          mknodW (const wchar_t *path, int mode, int dev);
 
-#if !defined(F_GETFL)
-#define F_GETFL                         1
-#define F_SETFL                         2
+#if !defined(F_GETFL)   /* match linux definitions */
+#define F_GETFL         3       /* get file status flags */
+#define F_SETFL         4       /* set file status flags */
 #endif
 
 #if !defined(fcntl)
@@ -688,15 +706,28 @@ LIBW32_API int          w32_fcntl (int fd, int ctrl, int);
 LIBW32_API int          w32_fsync (int fildes);
 
 /*string.h*/
+//#if (0) //libcompat
 LIBW32_API char *       strsep (char **stringp, const char *delim);
-#if defined(_MSC_VER)
+#if !defined(HAVE_STRSEP)
+#define HAVE_STRSEP     1
+#endif
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#if !defined(HAVE_STRLCAT)
+#define HAVE_STRLCAT    1
+#define HAVE_STRLCPY    1
+#endif
 LIBW32_API size_t       strlcat (char *dst, const char *src, size_t siz);
 LIBW32_API size_t       strlcpy (char *dst, const char *src, size_t siz);
+//#endif //libcompat
+
 #if (_MSC_VER <= 1600)
 LIBW32_API unsigned long long strtoull (const char * nptr, char ** endptr, int base);
-LIBW32_API long long    strtoll(const char * nptr, char ** endptr, int base);
+LIBW32_API long long    strtoll (const char * nptr, char ** endptr, int base);
 #endif
 #endif /*_MSC_VER*/
+
+LIBW32_API void         setproctitle(const char *fmt, ...);
+LIBW32_API void         setproctitle_fast(const char *fmt, ...);
 
 __END_DECLS
 

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.5 2021/05/24 15:10:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.6 2022/06/08 09:51:43 cvsuser Exp $")
 
 /*
  * iconv implementation using Win32 API to convert.
@@ -14,12 +14,8 @@ __CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.5 2021/05/24 1
  * ==nonotice==
  */
 
-#ifndef WINVER
-# define WINVER 0x0500        /* for WC_NO_BEST_FIT_CHARS */
-#endif
+#include <win32_include.h>
 
-#define STRICT
-#include <windows.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
@@ -1644,7 +1640,7 @@ iso2022jp_mbtowc(csconv_t *cv, const uchar *buf, int bufsize, ushort *wbuf, int 
         return seterror(EILSEQ);
 
     /* reset the mode for informal sequence */
-    if (cv->mode != ISO2022_MODE(cs, shift))
+    if ((int)cv->mode != ISO2022_MODE(cs, shift))
         cv->mode = ISO2022_MODE(cs, shift);
 
     return len;
@@ -1715,7 +1711,7 @@ iso2022jp_wctomb(csconv_t *cv, ushort *wbuf, int wbufsize, uchar *buf, int bufsi
     else if (tmpsize < esc_len + len)
         return seterror(EILSEQ);
 
-    if (cv->mode == ISO2022_MODE(cs, shift))
+    if ((int)cv->mode == ISO2022_MODE(cs, shift))
     {
         /* remove escape sequence */
         if (esc_len != 0)

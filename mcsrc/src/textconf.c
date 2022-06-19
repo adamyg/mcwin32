@@ -1,7 +1,7 @@
 /*
    Print features specific for this build
 
-   Copyright (C) 2000-2021
+   Copyright (C) 2000-2022
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -29,6 +29,10 @@
 #include <limits.h>
 #include <stdio.h>
 #include <sys/types.h>
+
+#if defined (ENABLE_VFS) && defined(ENABLE_VFS_SFTP)
+#include <libssh2.h>
+#endif /* ENABLE_VFS_SFTP && ENABLE_VFS */
 
 #include "lib/global.h"
 #include "lib/fileloc.h"
@@ -72,9 +76,6 @@ static const char *const vfs_supported[] = {
 #ifdef ENABLE_VFS_FISH
     "fish",
 #endif
-#ifdef ENABLE_VFS_SMB
-    "smbfs",
-#endif /* ENABLE_VFS_SMB */
     NULL
 };
 #endif /* ENABLE_VFS */
@@ -161,6 +162,11 @@ show_version (void)
 #error "Cannot compile mc without S-Lang or ncurses"
 #endif /* !HAVE_SLANG && !USE_NCURSES */
 
+#if defined (ENABLE_VFS) && defined(ENABLE_VFS_SFTP)
+    printf (_("Built with libssh2 %d.%d.%d\n"),
+            LIBSSH2_VERSION_MAJOR, LIBSSH2_VERSION_MINOR, LIBSSH2_VERSION_PATCH);
+#endif /* ENABLE_VFS_SFTP && ENABLE_VFS */
+
     for (i = 0; features[i] != NULL; i++)
         puts (_(features[i]));
 
@@ -244,10 +250,6 @@ show_datadirs_extended (void)
         static const struct {
             const char *desc, *key;
         } editpaths[] = {
-//OLD       { "syntax:",      EDIT_SYNTAX_FILE  },
-//          { "clip:",        EDIT_CLIP_FILE    },
-//          { "block:",       EDIT_BLOCK_FILE   },
-//          { "temp:",        EDIT_TEMP_FILE    },
             { "global-menu:", EDIT_GLOBAL_MENU  },
             { "local-menu:",  EDIT_LOCAL_MENU   },
             { "home-menu:",   EDIT_HOME_MENU    }

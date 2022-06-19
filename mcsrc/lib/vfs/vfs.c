@@ -1,7 +1,7 @@
 /*
    Virtual File System switch code
 
-   Copyright (C) 1995-2021
+   Copyright (C) 1995-2022
    Free Software Foundation, Inc.
 
    Written by: 1995 Miguel de Icaza
@@ -44,6 +44,9 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#if defined(WIN32) //WIN32, drive
+#include <ctype.h>
+#endif
 
 #ifdef __linux__
 #ifdef HAVE_LINUX_FS_H
@@ -786,4 +789,3 @@ vfs_clone_file (int dest_vfs_fd, int src_vfs_fd)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-

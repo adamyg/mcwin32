@@ -37,21 +37,23 @@
 #include "w32config.h"
 #endif
 
+#if !defined(WINDOWS_MEAN_AND_LEAN)
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x601
-#else
-#if(_WIN32_WINNT < 0x601)
-#undef  _WIN32_WINNT
+#elif (_WIN32_WINNT < 0x601)
+#undef _WIN32_WINNT
 #define _WIN32_WINNT 0x601
 #endif
-#endif
+#undef WINVER
+#define WINVER _WIN32_WINNT
 
-#define PSAPI_VERSION               1           // EnumProcessModules and psapi.dll
 #if !defined(WINDOWS_MEAN_AND_LEAN)
-#define  WINDOWS_MEAN_AND_LEAN
+#define WINDOWS_MEAN_AND_LEAN
+#define PSAPI_VERSION               1           // EnumProcessModules and psapi.dll
 #include <windows.h>
 #endif
 #include <psapi.h>
+#endif
 
 #include <stdio.h>
 #include <math.h>
@@ -102,7 +104,7 @@ static void                         vio_trace(const char *, ...);
 
 #define ISACS                       0x1000000   /* ACS mapped character */
 
-#if ((defined(_MSC_VER) && (_MSC_VER < 1500)) || defined(__MINGW32__)) && \
+#if (defined(_MSC_VER) && (_MSC_VER < 1500)) && \
             !defined(CONSOLE_OVERSTRIKE)
 #pragma pack(push, 1)
 
@@ -221,6 +223,7 @@ static __inline void    WCHAR_BUILD(const uint32_t ch, const struct WCHAR_COLORI
 static __inline BOOL    WCHAR_COMPARE(const WCHAR_INFO *c1, const WCHAR_INFO *c2);
 static __inline unsigned WCHAR_UPDATE(WCHAR_INFO *cursor, const uint32_t ch, const struct WCHAR_COLORINFO *color);
 
+struct attrmap;
 static int              parse_color(const char *color, const char *defname, const struct attrmap *map, int *attr);
 static int              parse_true_color(const char *color, COLORREF *rgb, int *attr);
 static int              parse_attributes(const char *attr);
@@ -560,8 +563,8 @@ vio_init(void)
     RECT rect = {0};
     int ret = 0;
 
-    assert(WIN_COLOR_FOREGROUND == VT_COLOR_FOREGROUND);
-    assert(WIN_COLOR_BACKGROUND == VT_COLOR_BACKGROUND);
+    assert((int)WIN_COLOR_FOREGROUND == (int)VT_COLOR_FOREGROUND);
+    assert((int)WIN_COLOR_BACKGROUND == (int)VT_COLOR_BACKGROUND);
 
     //  Console handle,
     //      when stdout has been redirected, create a local console.
@@ -1015,19 +1018,29 @@ w32_GetParentProcessId()
 }
 
 
-#if defined(__WATCOMC__)
+#if defined(__MINGW32__)
+typedef struct _OSVERSIONINFOW RTL_OSVERSIONINFOW, *PRTL_OSVERSIONINFOW;
+typedef DWORD (WINAPI *fnRtlGetVersion_t)(PRTL_OSVERSIONINFOW);
+
+#elif defined(__WATCOMC__)
 typedef struct _OSVERSIONINFOW RTL_OSVERSIONINFOW, *PRTL_OSVERSIONINFOW;
 #endif
+
+#if !defined(__MINGW32__)
+typedef NTSTATUS (WINAPI *fnRtlGetVersion_t)(PRTL_OSVERSIONINFOW);
+#endif
+
+DWORD WINAPI GetModuleFileNameExA(HANDLE hProcess,HMODULE hModule,LPSTR lpFilename,DWORD nSize);
+BOOL WINAPI EnumProcessModules(HANDLE hProcess, HMODULE *lphModule, DWORD cb, LPDWORD lpcbNeeded);
 
 static BOOL
 w32_RtlGetVersion(RTL_OSVERSIONINFOW *rovi)
 {
-    typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
-#define STATUS_SUCCESS      (0x00000000)
+#define STATUS_SUCCESS  (0x00000000)
 
     HMODULE hMod = GetModuleHandleA("ntdll.dll");
     if (hMod) {
-        RtlGetVersionPtr cb = (RtlGetVersionPtr)GetProcAddress(hMod, "RtlGetVersion");
+        fnRtlGetVersion_t cb = (fnRtlGetVersion_t)GetProcAddress(hMod, "RtlGetVersion");
         if (cb) {
             rovi->dwOSVersionInfoSize = sizeof(*rovi);
             if (STATUS_SUCCESS == cb(rovi)) {
@@ -1712,7 +1725,7 @@ SameAttributesBG(const WCHAR_INFO *cell, const struct WCHAR_COLORINFO *info, con
  *      nothing.
  **/
 static void
-CopyOutEx(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
+CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
 {
     const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
     const int rows = vio.rows, cols = vio.cols;
@@ -2040,7 +2053,7 @@ CopyOutEx2(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
  *      nothing.
  **/
 static void
-UnderOutEx(copyoutctx_t *ctx, size_t pos, size_t cnt)
+UnderOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt)
 {
     const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
     const int rows = vio.rows, cols = vio.cols;
@@ -2111,7 +2124,7 @@ UnderOutEx(copyoutctx_t *ctx, size_t pos, size_t cnt)
  *      nothing.
  **/
 static void
-StrikeOutEx(copyoutctx_t *ctx, size_t pos, size_t cnt)
+StrikeOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt)
 {
     const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
     const int rows = vio.rows, cols = vio.cols;
@@ -2550,7 +2563,7 @@ consolefontcreate(int height, int width, int weight, int italic, const char *fac
 }
 
 
-static void __inline
+static __inline void
 WCHAR_BUILD(const uint32_t ch, const struct WCHAR_COLORINFO *info, WCHAR_INFO *ci)
 {
     ci->Info = *info;
@@ -2628,7 +2641,8 @@ parse_color(const char *color, const char *defname, const struct attrmap *map, i
         const int len = (int)(a - color);
 
         strncpy(t_name, color, sizeof(t_name)-1);// remove attribute component.
-        if (len < sizeof(t_name)) t_name[len] = 0;
+        if (len < (int)sizeof(t_name)) 
+            t_name[len] = 0;
         color = t_name;
 
         *attr = parse_attributes(a);
@@ -3922,9 +3936,12 @@ int vio_wcwidth(wchar_t ucs)
       (ucs >= 0xfe10 && ucs <= 0xfe19) || /* Vertical forms */
       (ucs >= 0xfe30 && ucs <= 0xfe6f) || /* CJK Compatibility Forms */
       (ucs >= 0xff00 && ucs <= 0xff60) || /* Fullwidth Forms */
-      (ucs >= 0xffe0 && ucs <= 0xffe6) ||
-      (ucs >= 0x20000 && ucs <= 0x2fffd) ||
-      (ucs >= 0x30000 && ucs <= 0x3fffd)));
+      (ucs >= 0xffe0 && ucs <= 0xffe6)
+#if defined(SIZEOF_WCHAR_T) && (SIZEOF_WCHAR_T > 2)
+      || (ucs >= 0x20000 && ucs <= 0x2fffd)
+      || (ucs >= 0x30000 && ucs <= 0x3fffd)
+#endif
+      ));
 }
 
 /*end*/

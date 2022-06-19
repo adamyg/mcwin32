@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.18 2022/03/05 08:28:01 cvsuser Exp $
+# $Id: Makefile.in,v 1.21 2022/06/14 02:19:58 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -62,7 +62,7 @@ endif
 D_INC=		$(ROOT)/include
 D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
 D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libw32
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libw32
 
 # Common flags
 
@@ -88,11 +88,11 @@ CEXTRA=		-DUTF8FILENAMES=1 @DEFS@
 
 ifeq ("$(BUILD_TYPE)","release")
 CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-CXXFLAGS+=	$(CXXRELEASE) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXRELEASE) $(CXXWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDRELEASE) @LDFLAGS@
 else
 CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
-CXXFLAGS+=	$(CXXDEBUG) $(CWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXDEBUG) $(CXXWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDDEBUG) @LDFLAGS@
 endif
 
@@ -113,8 +113,6 @@ VERSION=	1.2.0
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 
 CSOURCES=\
-	bsd_bsearch.c \
-	bsd_qsort.c \
 	w32_access.c \
 	w32_check.c \
 	w32_child.c \
@@ -137,6 +135,7 @@ CSOURCES=\
 	w32_gethostname.c \
 	w32_getopt.c \
 	w32_getopt_long.c \
+	w32_getrlimit.c \
 	w32_getrusage.c \
 	w32_getsubopt.c \
 	w32_getlocale.c \
@@ -162,6 +161,7 @@ CSOURCES=\
 	w32_rename.c \
 	w32_reparse.c \
 	w32_rwlock.c \
+	w32_setrlimit.c \
 	w32_select.c \
 	w32_shell.c \
 	w32_signal.c \
@@ -176,6 +176,7 @@ CSOURCES=\
 	w32_string.c \
 	w32_strlcat.c \
 	w32_strlcpy.c \
+	w32_strsep.c \
 	w32_strtoll.c \
 	w32_strtoull.c \
 	w32_sysdir.c \
@@ -194,10 +195,13 @@ LIBOBJS=\
 
 DLLOBJS=\
 	$(subst $(O),.lo,$(LIBOBJS))
-ifeq ("mingw32","@build_os@")
+
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 DLLOBJS+=	$(D_OBJ)/libw32_res.o
-else ifeq ("win32","@build_os@")
+else
 DLLOBJS+=	$(D_OBJ)/libw32.res
+endif
 endif
 
 OBJS=		$(LIBOBJS) $(DLLOBJS)

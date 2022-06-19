@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.9 2022/03/05 08:24:17 cvsuser Exp $
+# $Id: Makefile.in,v 1.11 2022/06/09 16:39:16 cvsuser Exp $
 # libmagic makefile
 #
 #
@@ -45,11 +45,11 @@ endif
 D_INC=		$(ROOT)/include
 D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
 D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libmagic
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libmagic
 
 # Common flags
 
-XFLAGS=		
+XFLAGS=
 
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
@@ -73,9 +73,8 @@ ARFLAGS=	rcv
 RMFLAGS=	-f
 
 
-############################################################
-
-# targets
+#########################################################################################
+# Targets
 
 MAGICLIB=	$(D_LIB)/$(LP)magic_static$(A)
 MAGICDLL=	$(D_LIB)/$(LP)magic.la
@@ -133,7 +132,8 @@ ifeq ($(VERSION),5.41)
 CSOURCES+=\
 	buffer.c \
 	is_csv.c \
-	is_json.c
+	is_json.c \
+	ioctl.c
 endif
 
 LIBOBJS=\
@@ -153,6 +153,7 @@ LIBS=		$(MAGICLIB) $(MAGICDLL)
 TSKS=		$(MAGICUTIL)
 INSTALLED=
 
+#########################################################################################
 # Rules
 
 .PHONY: 	build release debug
@@ -172,12 +173,13 @@ $(MAGICLIB):		$(D_OBJ)/.created $(LIBOBJS)
 
 INSTALLED+=	$(D_BIN)/libmagic.$(VERSION).dll
 $(MAGICDLL):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_DYNAMIC
+$(MAGICDLL):		MAPFILE=$(basename $@).map
 $(MAGICDLL):		$(DLLOBJS)
-		$(LIBTOOL) --mode=link $(CC) -o $@ $^ -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) $(LDFLAGS) $(LDLIBS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $^ $(LDLIBS) @LDMAPFILE@
 
 $(MAGICUTIL):		$(UTILOBJS)
-		$(CC) $(LDFLAGS) $^ -o $@ $(D_LIB)/libmagic$(A) $(LDLIBS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $^ -o $@ $(D_LIB)/libmagic$(A) $(LDLIBS)
 
 $(MAGICDB):		magic.mgc
 		@echo publishing magicdb $(MAGICDB) ...

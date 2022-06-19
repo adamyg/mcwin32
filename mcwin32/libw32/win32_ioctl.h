@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_IOCTL_H_INCLUDED
 #define LIBW32_WIN32_IOCTL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_ioctl_h,"$Id: win32_ioctl.h,v 1.4 2022/03/16 13:47:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_ioctl_h,"$Id: win32_ioctl.h,v 1.5 2022/06/08 09:51:44 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -40,14 +40,16 @@ __CPRAGMA_ONCE
 #if !defined(__WATCOMC__)
 #undef DEFINE_GUIDS
 #include <winioctl.h>                           /* DeviceIoControls */
-#endif
+#endif           
 
-#if defined(HAVE_NTIFS_H)
+#if defined(HAVE_NTIFS_H) 
 #include <ntifs.h>
+#elif defined(__MINGW64_VERSION_MAJOR)
+#include <ntdef.h>
 #endif
 
 #if !defined(HAVE_NTIFS_H) && !defined(__MINGW32__)
-    typedef struct _REPARSE_DATA_BUFFER {
+typedef struct _REPARSE_DATA_BUFFER {
     ULONG  ReparseTag;
     USHORT ReparseDataLength;
     USHORT Reserved;
@@ -76,7 +78,7 @@ __CPRAGMA_ONCE
 
 #define MAX_REPARSE_SIZE    (512+(16*1024))     /* Header + 16k */
 
-#ifdef  __WATCOMC__                             /* WC19 SDK has incorrect definitions */
+#if defined(__WATCOMC__)                        /* WC19 SDK has incorrect definitions */
 #undef  IsReparseTagMicrosoft
 #undef  IO_REPARSE_TAG_SYMLINK
 #undef  IO_REPARSE_TAG_MOUNT_POINT

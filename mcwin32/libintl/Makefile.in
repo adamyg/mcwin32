@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.6 2022/03/05 08:21:36 cvsuser Exp $
+# $Id: Makefile.in,v 1.9 2022/06/09 16:39:07 cvsuser Exp $
 # libintl makefile
 #
 #
@@ -44,7 +44,7 @@ endif
 D_INC=		$(ROOT)/include
 D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
 D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libintl
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libintl
 
 # Common flags
 
@@ -72,7 +72,8 @@ ARFLAGS=	rcv
 YFLAGS=		-d
 RMFLAGS=	-f
 
-############################################################
+
+#########################################################################################
 # Targets
 
 INTLLIB=	$(D_LIB)/$(LP)intl_static$(A)
@@ -97,10 +98,10 @@ LIBOBJS=\
 DLLOBJS=\
 	$(D_OBJ)/libintl.lo			\
 	$(subst $(O),.lo,$(LIBOBJS))		\
-	$(D_OBJ)/citrus_bcs$(O)			\
-	$(D_OBJ)/citrus_memstream$(O)		\
-	$(D_OBJ)/tfind$(O)			\
-	$(D_OBJ)/tsearch$(O)
+	$(D_OBJ)/citrus_bcs.lo			\
+	$(D_OBJ)/citrus_memstream.lo		\
+	$(D_OBJ)/tfind.lo			\
+	$(D_OBJ)/tsearch.lo
 
 OBJS=		$(LIBOBJS) $(DLLOBJS)
 LIBS=		$(INTLLIB) $(INTLDLL)
@@ -118,17 +119,18 @@ release:
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
-$(INTLLIB):		CEXTRA += -I$(INTLSRC) -DLIBINTL_STATIC -D__LIBINTL_BUILD -D_WIN32 -D_WIN32_WINNT=0X601
+$(INTLLIB):		CEXTRA += -I$(INTLSRC) -DLIBINTL_STATIC -D__LIBINTL_BUILD -D_WIN32
 $(INTLLIB):		$(LIBOBJS)
 		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
 		$(AR) $(ARFLAGS) $@ $(subst /,\,$^)
 		$(RANLIB) $@
 
 INSTALLED+=	$(D_BIN)/libintl.$(VERSION).dll
-$(INTLDLL):		CEXTRA += -I$(INTLSRC) -DLIBINTL_DYANMIC -D__LIBINTL_BUILD -D_WIN32 -D_WIN32_WINNT=0X601
+$(INTLDLL):		CEXTRA += -I$(INTLSRC) -DLIBINTL_DYANMIC -D__LIBINTL_BUILD -D_WIN32
+$(INTLDLL):		MAPFILE=$(basename $@).map
 $(INTLDLL):		$(DLLOBJS)
-		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) -o $@ $^ -L$(D_LIB) $(LDLIBS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $^ $(LDLIBS) @LDMAPFILE@
 
 .PHONY:		object
 object:			$(D_OBJ)/.created

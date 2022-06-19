@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_UTYPES_H_INCLUDED
 #define LIBW32_SYS_UTYPES_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_utypes_h,"$Id: utypes.h,v 1.18 2022/03/16 13:47:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_utypes_h,"$Id: utypes.h,v 1.20 2022/06/14 02:19:59 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -49,17 +49,17 @@ __CPRAGMA_ONCE
 #define _UNIXTYPES_T_DEFINED
 #if defined(_BSD_SOURCE)
 #if !defined(_BSDTYPES_DEFINED)
-typedef unsigned char   u_char;                 /* BSD compatibility */
-typedef unsigned short  u_short;
-typedef unsigned int    u_int;
-typedef unsigned long   u_long;
+typedef unsigned char u_char;                   /* BSD compatibility */
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+typedef unsigned long u_long;
 #define _BSDTYPES_DEFINED                       /* winsock[2].h and others */
 #endif /*_BSDTYPES_DEFINED*/
 #endif /*_BSD_SOURCE*/
-typedef unsigned char   uchar;                  /* Sys V compatibility */
-typedef unsigned short  ushort;
-typedef unsigned int    uint;
-typedef unsigned long   ulong;
+typedef unsigned char uchar;                    /* Sys V compatibility */
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
 #endif
 
 /* [u]int8_t, [u]int16_t, [u]int32_t optional [u]int64_t */
@@ -114,19 +114,43 @@ typedef unsigned long fixpt_t;                  /* fixed point number */
 #endif  /*BSD_SOURCE*/
 
 /* system identifiers */
+/* Note: MSDN - Interprocess Communication Between 32-bit and 64-bit Applications
+ *  64-bit versions of Windows use 32-bit handles for interoperability.
+ *  When sharing a handle between 32-bit and 64-bit applications, only the lower 32 bits are significant, 
+ *  so it is safe to truncate the handle (when passing it from 64-bit to 32-bit) or sign-extend the handle (when passing it from 32-bit to 64-bit).
+ *  Handles that can be shared include handles to user objects such as windows (HWND), handles to GDI objects such as pens and brushes (HBRUSH and HPEN),
+ *  and handles to named objects such as mutexes, semaphores, and file handles.
+ */
 #if !defined(HAVE_PID_T)
-#if !defined(__WATCOMC__) || \
-        (defined(__WATCOMC__) && (__WATCOMC__ < 1300 /*owc20*/))
+#if defined(_MSC_VER) || \
+        (defined(__WATCOMC__) && (__WATCOMC__ < 1300 /*owc20*/)) || \
+        (defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR))
 typedef int pid_t;                              /* process identifier */
 #endif
-#define HAVE_PID_T
+#define HAVE_PID_T 1
 #endif
 
-typedef long suseconds_t;                       /* sys/types.h */
+#if !defined(__MINGW32__) || \
+        (defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR))
+#if !defined(USECONDS_T)
+#define USECONDS_T 1
+#ifdef _WIN64
+typedef unsigned long long useconds_t;
+#else
+typedef unsigned long useconds_t;
+#endif
+#endif /*USECONDS_T*/
+#endif /*__MINHW32__*/
+
+#ifdef _WIN64
+typedef long long suseconds_t;
+#else
+typedef long suseconds_t;
+#endif
 
 #if defined(_MSC_VER) && \
-	!defined(__WATCOMC__)
-		/* check for !WATCOMC, at times we masquerade WC as MSVC */
+        !defined(__WATCOMC__)
+                /* check for !WATCOMC, at times we masquerade WC as MSVC */
 #if !defined(uid_t) && !defined(gid_t)
 typedef int uid_t;
 typedef int gid_t;
@@ -134,10 +158,17 @@ typedef int gid_t;
 #if !defined(id_t)
 typedef int id_t;                               /* used as a general identifier; can contain least a pid_t, uid_t, or gid_t. */
 #endif
-#if !defined(ssize_t)
-typedef int ssize_t;
-#define ssize_t ssize_t                         /* see libssh */
+
+#if !defined(ssize_t) && !defined(_SSIZE_T_DEFINED)
+#define _SSIZE_T_DEFINED_ 1
+#ifdef _WIN64
+typedef __int64 ssize_t;
+#else
+typedef signed ssize_t;
 #endif
+#define ssize_t ssize_t
+#endif
+
 #if !defined(mode_t)
 typedef unsigned short mode_t;
 #define mode_t mode_t
@@ -148,7 +179,11 @@ typedef unsigned short mode_t;
 typedef int uid_t;
 typedef int gid_t;
 #endif
+#if !defined(id_t)
+typedef int id_t;                               /* used as a general identifier; can contain least a pid_t, uid_t, or gid_t. */
 #endif
+
+#endif /*_MSC_VER || __MINGW32__*/
 
 #if !defined(HAVE_NLINK_T)
 #if !defined(__WATCOMC__) || \
@@ -170,3 +205,4 @@ typedef unsigned nlink_t;                       /* link count */
 #endif
 
 #endif /*LIBW32_SYS_UTYPES_H_INCLUDED*/
+

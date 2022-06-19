@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.11 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.12 2022/06/08 09:51:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -261,7 +261,7 @@ my_CreateHardLinkW(LPCWSTR lpFileName, LPCWSTR lpExistingFileName)
                         (CreateHardLinkW_t)GetProcAddress(hinst, "CreateHardLinkW"))) {
                                                 // XP+
             x_CreateHardLinkW = my_CreateHardLinkImpW;
-            (void)FreeLibrary(hinst);
+            if (hinst) FreeLibrary(hinst);
         }
     }
     return x_CreateHardLinkW(lpFileName, lpExistingFileName, NULL);
@@ -327,7 +327,7 @@ my_CreateHardLinkA(LPCSTR lpFileName, LPCSTR lpExistingFileName)
                         (CreateHardLinkA_t)GetProcAddress(hinst, "CreateHardLinkA"))) {
                                                 // XP+
             x_CreateHardLinkA = my_CreateHardLinkImpA;
-            (void)FreeLibrary(hinst);
+            if (hinst) FreeLibrary(hinst);
         }
     }
     return x_CreateHardLinkA(lpFileName, lpExistingFileName, NULL);

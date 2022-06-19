@@ -1,7 +1,7 @@
 /*
    Panel managing.
 
-   Copyright (C) 1994-2021
+   Copyright (C) 1994-2022
    Free Software Foundation, Inc.
 
    Written by:
@@ -455,8 +455,7 @@ string_file_name (file_entry_t * fe, int len)
 {
     (void) len;
 
-    g_string_set_size (string_file_name_buffer, 0);
-    g_string_append_len (string_file_name_buffer, fe->fname->str, fe->fname->len);
+    mc_g_string_copy (string_file_name_buffer, fe->fname);
 
     return string_file_name_buffer->str;
 }
@@ -2552,7 +2551,7 @@ panel_select_unselect_files (WPanel * panel, const char *title, const char *hist
         QUICK_END
         /* *INDENT-ON* */
     };
-#endif
+#endif //WIN32
 
     quick_dialog_t qdlg = {
         -1, -1, 50,
@@ -2571,7 +2570,7 @@ panel_select_unselect_files (WPanel * panel, const char *title, const char *hist
     qc = XQUICK_STOP_COLUMNS (qc);
     qc = XQUICK_END (qc);
     assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
-#endif
+#endif //WIN32
 
     if (quick_dialog (&qdlg) == B_CANCEL)
         return;
@@ -2595,7 +2594,7 @@ panel_select_unselect_files (WPanel * panel, const char *title, const char *hist
             continue;
 
         if (mc_search_run
-                (search, panel->dir.list[i].fname->str, 0, panel->dir.list[i].fname->len, NULL))
+            (search, panel->dir.list[i].fname->str, 0, panel->dir.list[i].fname->len, NULL))
             do_file_mark (panel, i, do_select ? 1 : 0);
     }
 
@@ -2780,7 +2779,6 @@ start_search (WPanel * panel)
         panel->quick_search.ch[0] = '\0';
         panel->quick_search.chpoint = 0;
         display_mini_info (panel);
-        mc_refresh ();
     }
 }
 
@@ -2789,6 +2787,9 @@ start_search (WPanel * panel)
 static void
 stop_search (WPanel * panel)
 {
+    if (!panel->quick_search.active)
+        return;
+
     panel->quick_search.active = FALSE;
 
     /* if user overrdied search string, we need to store it
@@ -4443,12 +4444,10 @@ panel_sized_with_dir_new (const char *panel_name, int y, int x, int lines, int c
     if (curdir != NULL)
     {
         vfs_path_t *tmp_vpath;
-        int err;
 
         tmp_vpath = vfs_path_from_str (curdir);
         mc_chdir (tmp_vpath);
         vfs_path_free (tmp_vpath, TRUE);
-        (void) err;
     }
     g_free (curdir);
 

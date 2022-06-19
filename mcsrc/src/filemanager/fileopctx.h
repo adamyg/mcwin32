@@ -171,7 +171,7 @@ typedef struct
     uintmax_t copied_bytes;
     size_t bps;
     size_t bps_count;
-    struct timeval transfer_start;
+    gint64 transfer_start;
     double eta_secs;
 
     gboolean ask_overwrite;

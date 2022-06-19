@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.11 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.14 2022/06/14 07:35:18 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -58,7 +58,7 @@ __CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.11 2022/03/16 13:47:00 cvsuser
 #include <time.h>
 #include <unistd.h>
 #include <assert.h>
-
+#include <errno.h>
 
 /*
 //  NAME
@@ -126,6 +126,50 @@ w32_sleep (unsigned int secs)
 }
 
 
+#if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" /*useconds_t*/
+#endif
+
+static void 
+sleepticks(__int64 ticks)
+{
+    HANDLE timer = 0;
+    LARGE_INTEGER due = {0};
+
+    if (ticks <= 0) return;
+    due.QuadPart = -ticks; // 100 nanosecond intervals, negative indicate relative time.
+    timer = CreateWaitableTimer(NULL, FALSE, NULL);
+    SetWaitableTimer(timer, &due, 0, NULL, NULL, FALSE);
+#if !defined(NDEBUG)
+    assert(0 == WaitForSingleObject(timer, INFINITE));
+#else
+    WaitForSingleObject(timer, INFINITE);
+#endif
+    CloseHandle(timer);
+}
+
+
+int
+usleep(useconds_t useconds)
+{
+    sleepticks(((__int64)useconds) * 10); // usec to 100-nanosecond interval.
+    return 0;
+}
+
+
+int
+nanosleep(const struct timespec *rqtp, struct timespec *rmtp /*notused*/)
+{
+    if (!rqtp || rqtp->tv_nsec > 999999999) {
+        errno = EINVAL;
+        return -1;
+    }
+    // 100 nanosecond intervals.
+    sleepticks((rqtp->tv_sec * 1000000 * 10) + (rqtp->tv_nsec / 100));
+    return 0;
+}
+
+
 /*
 //  NAME
 //
@@ -139,50 +183,54 @@ w32_sleep (unsigned int secs)
 //
 //  DESCRIPTION
 //
-//      The  gettimeofday()  function  shall  obtain  the  current  time,
-//      expressed  as  seconds  and  microseconds  since  the  Epoch, and
-//      store  it  in  the  timeval  structure  pointed  to  by  tp.  The
-//      resolution of the system clock is unspecified.
+//      The gettimeofday() function shall obtain the current time, expressed aa seconds and
+//      microseconds since the Epoch, and store it in the timeval structure pointed to by tp.
+//      The resolution of the system clock is unspecified.
 //
 //      If tzp is not a null pointer, the behavior is unspecified.
 //
 //  RETURN VALUE
-//
 //      The  gettimeofday()  function  shall  return 0 and no value shall
 //      be reserved to indicate an error.
 //
 //  ERRORS
-//
 //      No errors are defined.
 //
 */
 
+#if defined(__MINGW32__)
+#if !defined(__MINGW64_VERSION_MAJOR)
+extern int gettimeofday (struct timeval *p, void *z);
+#endif
+
+#else
+static inline long long
+filetime_to_hsec(const FILETIME *ft)
+{
+        // Returns the 100-nanoseconds ("hecto-nanoseconds") since the epoch.
+        const long long hsecs = ((long long)ft->dwHighDateTime << 32) + ft->dwLowDateTime;
+        return hsecs - 116444736000000000LL; // delta 01/01/1970 and 01/01/1601
+}
+#endif
+
+
 LIBW32_API int
-w32_gettimeofday(
-    struct timeval *tv, /*struct timezone*/ void *tz)
+w32_gettimeofday(struct timeval *tv, struct timezone *tz)
 {
     __CUNUSED(tz)
     if (tv) {
-#if defined(_MSC_VER) || defined(__WATCOMC__)
-        struct _timeb lt;
-
-        _ftime(&lt);
-        tv->tv_sec = (long)(lt.time + lt.timezone);
-        tv->tv_usec = lt.millitm * 1000;
-        assert(4 == sizeof(tv->tv_sec));
-
-#elif defined(__MINGW32__)
+#if defined(__MINGW32__)
 #undef gettimeofday
-        return gettimeofday(tv, tz)
+        return gettimeofday(tv, tz);
 
 #else //DEFAULT
         FILETIME ft;
-        long long hnsec;
+        long long hsec;
 
-        (void) GetSystemTimeAsFileTime(&ft);
-        hnsec = filetime_to_hnsec(&ft);
-        tv->tv_sec = hnsec / 10000000;
-        tv->tv_usec = (hnsec % 10000000) / 10;
+        (void) GetSystemTimeAsFileTime(&ft); //UTC
+        hsec = filetime_to_hsec(&ft);
+        tv->tv_sec = (long)(hsec / 10000000);
+        tv->tv_usec = (hsec % 10000000) / 10;
 #endif
         return 0;
     }
@@ -193,8 +241,7 @@ w32_gettimeofday(
 
 #if !defined(__MINGW32__)
 LIBW32_API int
-gettimeofday(
-    struct timeval *tv, struct timezone *tz)
+gettimeofday(struct timeval *tv, struct timezone *tz)
 {
     return w32_gettimeofday(tv, tz);
 }
@@ -319,24 +366,14 @@ w32_utime(const char *path, const struct utimbuf *times)
 LIBW32_API int
 w32_utimeA(const char *path, const struct utimbuf *times)
 {
-#if defined(__MINGW32__)
-#undef utime
-    return utime(path, (struct utimbuf *)times);
-#else
     return _utime(path, (struct _utimbuf *)times);
-#endif
 }
 
 
 LIBW32_API int
 w32_utimeW(const wchar_t *path, const struct utimbuf *times)
 {
-#if defined(__MINGW32__)
-#undef utime
-    return wutime(path, (struct utimbuf *)times);
-#else
     return _wutime(path, (struct _utimbuf *)times);
-#endif
 }
 
 /*end*/

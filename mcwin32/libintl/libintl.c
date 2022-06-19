@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+BOOL APIENTRY DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved);
 BOOL APIENTRY
 DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 {

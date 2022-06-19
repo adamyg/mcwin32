@@ -1,7 +1,7 @@
 /*
    Main dialog (file panels) of the Midnight Commander
 
-   Copyright (C) 1994-2021
+   Copyright (C) 1994-2022
    Free Software Foundation, Inc.
 
    Written by:
@@ -202,7 +202,7 @@ create_panel_menu (void)
     entries =
         g_list_prepend (entries,
                         menu_entry_create (_("&Listing format..."), CK_SetupListingFormat));
-    entries = g_list_prepend (entries, menu_entry_create (_("&Sort order..."), CK_Sort));
+    entries = g_list_prepend (entries, menu_entry_create (_("S&ort order..."), CK_Sort));
     entries = g_list_prepend (entries, menu_entry_create (_("&Filter..."), CK_Filter));
 #ifdef HAVE_CHARSET
     entries = g_list_prepend (entries, menu_entry_create (_("&Encoding..."), CK_SelectCodepage));
@@ -215,10 +215,7 @@ create_panel_menu (void)
     entries = g_list_prepend (entries, menu_entry_create (_("S&hell link..."), CK_ConnectFish));
 #endif
 #ifdef ENABLE_VFS_SFTP
-    entries = g_list_prepend (entries, menu_entry_create (_("S&FTP link..."), CK_ConnectSftp));
-#endif
-#ifdef ENABLE_VFS_SMB
-    entries = g_list_prepend (entries, menu_entry_create (_("SM&B link..."), CK_ConnectSmb));
+    entries = g_list_prepend (entries, menu_entry_create (_("&SFTP link..."), CK_ConnectSftp));
 #endif
     entries = g_list_prepend (entries, menu_entry_create (_("Paneli&ze"), CK_Panelize));
     entries = g_list_prepend (entries, menu_separator_create ());
@@ -1275,11 +1272,6 @@ midnight_execute_cmd (Widget * sender, long command)
         sftplink_cmd ();
         break;
 #endif
-#ifdef ENABLE_VFS_SMB
-    case CK_ConnectSmb:
-        smblink_cmd ();
-        break;
-#endif /* ENABLE_VFS_SMB */
     case CK_Panelize:
         cd_panelize_cmd ();
         break;
@@ -1728,19 +1720,18 @@ get_random_hint (gboolean force)
     /* hint files are stored in utf-8 */
     /* try convert hint file from utf-8 to terminal encoding */
     conv = str_crt_conv_from ("UTF-8");
-    if (conv != INVALID_CONV)
+    if (conv == INVALID_CONV)
+        result = g_strndup (data + start, len - start);
+    else
     {
         GString *buffer;
+        gboolean nok;
 
         buffer = g_string_sized_new (len - start);
-        if (str_convert (conv, &data[start], buffer) != ESTR_FAILURE)
-            result = g_string_free (buffer, FALSE);
-        else
-            g_string_free (buffer, TRUE);
+        nok = (str_convert (conv, data + start, buffer) == ESTR_FAILURE);
+        result = g_string_free (buffer, nok);
         str_close_conv (conv);
     }
-    else
-        result = g_strndup (data + start, len - start);
 
     g_free (data);
     return result;

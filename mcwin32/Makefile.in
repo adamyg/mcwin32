@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# Midnight command WIN32 builds 4.8.27, as at 21/12/22
+# Midnight command WIN32 builds 4.8.28
 #
 # Copyright (c) 2007, 2012 - 2022 Adam Young.
 #
@@ -37,7 +37,7 @@ PKG_TARNAME	= @PACKAGE_TARNAME@
 PKG_URL		= @PACKAGE_URL@
 PKG_VERSION	= @PACKAGE_VERSION@
 ifeq ("","$(PKG_VERSION)")
-PKG_VERSION	= 4.8.27
+PKG_VERSION	= 4.8.28
 endif
 PKG_VERSION_1	=$(word 1,$(subst ., ,$(PKG_VERSION)))
 PKG_VERSION_2	=$(word 2,$(subst ., ,$(PKG_VERSION)))
@@ -128,7 +128,8 @@ ifneq ("$(word 1,$(MAKECMDGOALS))","release")
 		|\n\
 		| make [release or debug] target \n\
 		|\n\
-		|	Build one or more of the following targets recursively within each sub-directory. \n\
+		|	Build one or more of the following targets recursively within each sub-directory\n\
+		|	for the toolchain @TOOLCHAIN@. \n\
 		|\n\
 		| Targets: \n\
 		|\n\
@@ -165,7 +166,7 @@ endif
 D_INC=		$(ROOT)/include
 D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
 D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)
 LW=		$(D_LIB)/$(LP)
 
 D_ETC=		$(D_BIN)/etc
@@ -179,11 +180,13 @@ D_LOCALE=	$(D_BIN)/locale
 CC=		@CC@
 CXX=		@CXX@
 AR=		@AR@
+RANLIB=		@RANLIB@
 RM=		@RM@
 RMDIR=		@RMDIR@
 CP=		@CP@
 RC=		@RC@
 PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
 TAR=		@TAR@
 INSTALL=	@INSTALL@
 INSTALL_PROGRAM=@INSTALL_PROGRAM@
@@ -205,6 +208,12 @@ MAN2HLP=	$(PERL) $(D_BIN)/man2hlp.pl
 XFLAGS=
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
+ifeq ("gcc","@CC@")
+#CWARN+=	-Wno-shadow -Wno-type-limits
+CWARN+=		-Wno-sign-compare -Wno-missing-prototypes
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function
+CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 LDDEBUG=	@LDDEBUG@
@@ -234,7 +243,7 @@ RMDFLAGS=	-rf
 #
 
 ifeq ("wcl386","$(CC)")
-ifeq ("@TOOLCHAIN@","owc20")
+ifeq ("owc20","@TOOLCHAIN@")
 CLBRNAME=	clbr20
 MT7RNAME=	mt7r20
 PLBRNAME=	plbr20
@@ -243,9 +252,18 @@ CLBRNAME=	clbr19
 MT7RNAME=	mt7r19
 PLBRNAME=	plbr19
 endif
+
+	# As path format is dependent on which variant,
+	# firstly resolve using WATCOM envvar, otherwise fallback to which.
+LIBCLBRPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(CLBRNAME).dll))
+ifeq ("","$(LIBCLBRPATH)")
 LIBCLBRPATH=	$(shell which $(CLBRNAME).dll)
 LIBMT7RPATH=	$(shell which $(MT7RNAME).dll)
 LIBPLBRPATH=	$(shell which $(PLBRNAME).dll)
+else
+LIBMT7RPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(MT7RNAME).dll))
+LIBPLBRPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(PLBRNAME).dll))
+endif
 endif
 
 MC_SRC=	\
@@ -493,8 +511,6 @@ MC_LIBMC+=$(MC_4_8_24)
 #	vfs/ftpfs
 #	vfs/sfs
 #	vfs/sftpfs
-#	vfs/smbfs
-#		- $(D_OBJVFS)/smbfs_smbfs$(O)
 #	vfs/tar
 #	vfs/undelfs	linux specific
 #		- $(D_OBJVFS)/undelfs_undelfs$(O)
@@ -506,10 +522,8 @@ MC_LIBVFS_SFTPFS=\
 	$(D_OBJVFS)/sftpfs_connection$(O)	\
 	$(D_OBJVFS)/sftpfs_dir$(O)		\
 	$(D_OBJVFS)/sftpfs_file$(O)		\
-	$(D_OBJVFS)/sftpfs_init$(O)		\
 	$(D_OBJVFS)/sftpfs_internal$(O)		\
-	$(D_OBJVFS)/sftpfs_vfs_class$(O)	\
-	$(D_OBJVFS)/sftpfs_vfs_subclass$(O)
+	$(D_OBJVFS)/sftpfs_sftpfs$(O)
 
 MC_LIBVFS=\
 	$(D_OBJVFS)/cpio_cpio$(O)		\
@@ -523,7 +537,12 @@ MC_LIBVFS=\
 	$(D_OBJVFS)/sfs_sfs$(O)			\
 	$(D_OBJVFS)/tar_tar$(O)
 
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+MC_RES=		$(D_OBJ)/mc_res.o
+else
 MC_RES=		$(D_OBJ)/mc.res
+endif
+
 
 OBJS=		$(MC_OBJS)
 
@@ -664,19 +683,31 @@ IMPORT+=\
 	$(D_BIN)/$(PLBRNAME).dll
 endif
 
+AUTOUPDATER=	no
+ifeq (vs,$(findstring vs,"@TOOLCHAIN@"))
+AUTOUPDATER=	yes
+else ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+AUTOUPDATER=	yes
+else ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+AUTOUPDATER=	yes
+endif
+
 LIBRARIES=\
 	$(LW)w32$(A)				\
-	$(LW)regex$(A)				\
 	$(LW)z$(A)				\
+	$(LW)regex$(A)				\
 	$(LW)magic$(A)				\
+	$(LW)intl$(A)				\
+	$(LW)gmodule-2.0$(A)			\
+	$(LW)glib-2.0$(A)			\
 	$(LW)mbedtls$(A)			\
 	$(LW)ssh2$(A)				\
-	$(LW)intl$(A)				\
-	$(LW)glib-2.0$(A)			\
-	$(LW)gmodule-2.0$(A)			\
 	$(LW)mcutil$(A)				\
-	$(LW)mcvfs$(A)				\
+	$(LW)mcvfs$(A)
+ifeq ("$(AUTOUPDATER)","yes")
+LIBRARIES+=\
 	$(LW)autoupdater$(A)
+endif
 
 reverse = $(if $1,$(call reverse,$(wordlist 2,999999,$1)) $(firstword $1))
 LDLIBRARIES = $(call reverse, $(LIBRARIES))
@@ -719,7 +750,8 @@ help:
 		|\n\
 		| make [release or debug] target \n\
 		|\n\
-		|	Build one or more of the following targets recursively within each sub-directory. \n\
+		|	Build one or more of the following targets recursively within each sub-directory\n\
+		|	for the toolchain @TOOLCHAIN@. \n\
 		|\n\
 		| Targets: \n\
 		|\n\
@@ -847,7 +879,7 @@ vclean:		clean
 
 $(D_BIN)/mc$(E):	MAPFILE=$(basename $@).map
 $(D_BIN)/mc$(E):		$(MC_OBJS) $(MC_RES) $(LDLIBRARIES)
-		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS) @LDMAPFILE@
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS) @LDMAPFILE@
 
 $(MC_RES):			config.h buildinfo.h
 
@@ -886,6 +918,7 @@ BUILDNUMBER:
 		@echo $(GITHUB_RUN_NUMBER)>$@
 endif
 
+.PHONY:			new_buildnumber
 new_buildnumber:
 		-@chmod +w BUILDNUMBER >nul 2>&1
 		@echo incrementing build number ...
@@ -895,8 +928,11 @@ new_buildnumber:
 			"
 		-@chmod -w BUILDNUMBER >/dev/null 2>&1
 
-$(D_OBJ)/%.res: %.rc
-		$(RC) -nologo -Fo$@ $<
+$(D_OBJ)/%.res:		%.rc
+		$(RC) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) -o $@ $<
 
 $(D_BIN)/man2hlp.pl:		$(MCSOURCE)/src/man2hlp/man2hlp.in
 		@$(PERL) ./support/sedin.pl -u $^ $@
@@ -1035,12 +1071,14 @@ $(D_LOCALE)/%/LC_MESSAGES/$(PACKAGE).mo: $(PO_SRC)/%.po
 # libraries
 
 $(LW)mcutil$(A):		$(D_OBJMC)/.created $(MC_LIBMC)
-		-@$(RM) -f $@ >nul 2>&1
-		$(AR) $(ARFLAGS) /OUT:$@ $(subst /,\,$(MC_LIBMC))
+		$(RM) $(RMFLAGS) $@
+		$(AR) $(ARFLAGS) $@ $(MC_LIBMC)
+		$(RANLIB) $@
 
 $(LW)mcvfs$(A):			$(D_OBJVFS)/.created $(MC_LIBVFS)
-		-@$(RM) -f $@ >nul 2>&1
-		$(AR) $(ARFLAGS) /OUT:$@ $(subst /,\,$(MC_LIBVFS))
+		$(RM) $(RMFLAGS) $@
+		$(AR) $(ARFLAGS) $@ $(MC_LIBVFS)
+		$(RANLIB) $@
 
 .PHONY:		$(LW)w32$(A)
 $(LW)w32$(A):
@@ -1073,10 +1111,12 @@ $(LW)intl$(A):
 .PHONY:		$(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A)
 $(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A):
 		$(MAKE) -C libglib
-
+   
+ifeq ("$(AUTOUPDATER)","yes")
 .PHONY:		$(LW)autoupdater$(A)
 $(LW)autoupdater$(A):
 		$(MAKE) -C autoupdater
+endif
 
 
 #########################################################################################
@@ -1180,4 +1220,3 @@ $(D_OBJVFS)/undelfs_%$(O) :	$(MCSOURCE)/src/vfs/undelfs/%.c
 #end
 
 endif	# BUILD_TYPE
-

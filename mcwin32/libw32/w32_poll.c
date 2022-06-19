@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.7 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.8 2022/06/08 09:51:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -61,7 +61,16 @@ __CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.7 2022/03/16 13:47:00 cvsuser 
 
 #pragma comment(lib, "Ws2_32.lib")
 
-static int w32_poll(int native, struct pollfd *fds, int cnt, int timeout);
+typedef int (*PollIf_t)(int native, struct pollfd *fds, int cnt, int timeout);
+typedef int (WINAPI *WSAPoll_t)(LPWSAPOLLFD fdArray, ULONG fds, INT timeout);
+
+static int          w32_poll(int native, struct pollfd *fds, int cnt, int timeout);
+static int          WSAPollIf(int native, struct pollfd *fds, int cnt, int timeout);
+static int          WSASelectIf(int native, struct pollfd *fds, int cnt, int timeout);
+
+static PollIf_t     x_PollIf;
+static WSAPoll_t    x_WSAPoll;
+
 
 /*
 //  NAME
@@ -206,41 +215,86 @@ w32_poll_native(struct pollfd *fds, int cnt, int timeout)
 static int
 w32_poll(int native, struct pollfd *fds, int cnt, int timeout)
 {
-    //  TODO -- dynamically load
-    //      WINSOCK_API_LINKAGE int WSAAPI WSAPoll(LPWSAPOLLFD, ULONG, INT);
-    //          ==> source: ws2_32.lib
-    //
+    if (NULL == x_PollIf) {
+        HMODULE hinst;
+
+        if (0 == (hinst = GetModuleHandleA("ws2_32")) ||
+                    0 == (x_WSAPoll = (WSAPoll_t) GetProcAddress(hinst, "WSAPoll"))) {
+            x_PollIf = WSASelectIf;
+            if (hinst) FreeLibrary(hinst);
+        } else {
+            x_PollIf = WSAPollIf; 
+        }
+    }
+
+    if (NULL == fds || cnt <= 0 || cnt > FD_SETSIZE) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    return (x_PollIf)(native, fds, cnt, timeout);
+}
+
+
+static int
+WSAPollIf(int native, struct pollfd *fds, int cnt, int timeout)
+{
+    WSAPOLLFD t_fds[FD_SETSIZE];
+    int i, ret = 0;
+
+    memset(t_fds, 0, sizeof(WSAPOLLFD) * cnt);
+
+    for (i = 0; i < cnt; ++i) {
+        fds[i].revents = 0;
+        if (native) {
+            t_fds[i].fd = fds[i].fd;
+
+        } else {
+            t_fds[i].fd = w32_sockhandle((int) fds[i].fd);
+            if (t_fds[i].fd == (SOCKET) INVALID_SOCKET) {
+                fds[i].revents = POLLNVAL;
+                ++ret;
+            }
+        }
+        t_fds[i].events = fds[i].events;
+    }
+
+    if (0 == ret) {
+        if ((ret = x_WSAPoll(t_fds, cnt, timeout)) > 0) {
+            for (i = 0; i < cnt; ++i) {
+                fds[i].revents = t_fds[i].revents;
+            }
+        }
+    }
+    return ret;
+}
+
+
+static int
+WSASelectIf(int native, struct pollfd *fds, int cnt, int timeout)
+{
     struct timeval tmval = {0};
     struct fd_set rfds;
     struct fd_set wfds;
     struct fd_set efds;
     SOCKET s[ FD_SETSIZE ];
-    int badcnt, wcnt, ret;
-    int i;
+    int i, wcnt = 0, ret = 0;
 
-    if (cnt <= 0 || cnt > FD_SETSIZE) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    /* Build fd set */
     FD_ZERO(&rfds);
     FD_ZERO(&wfds);
     FD_ZERO(&efds);
 
-    for (i = 0; i < cnt; ++i)
-        fds[i].revents = 0;
-
-    for (i = 0, badcnt = 0, wcnt = 0; i < cnt; ++i) {
+    for (i = 0; i < cnt; ++i) {
         SOCKET osf;
 
+        fds[i].revents = 0;
         if (native) {
             osf = fds[i].fd;
         } else {
             osf = w32_sockhandle((int)fds[i].fd);
             if (osf == (SOCKET)INVALID_SOCKET) {
                 fds[i].revents = POLLNVAL;
-                ++badcnt;
+                ++ret;
             }
         }
         s[i] = osf;
@@ -252,7 +306,8 @@ w32_poll(int native, struct pollfd *fds, int cnt, int timeout)
         FD_SET(s[i], &efds);
     }
 
-    if (badcnt) return badcnt;
+    if (ret) 
+        return ret;
 
     /* Select */
     if (timeout >= 0) {
@@ -271,14 +326,6 @@ w32_poll(int native, struct pollfd *fds, int cnt, int timeout)
         ret = -1;
 
         switch(nerr) {
-        case WSANOTINITIALISED:     /* stack not initialisated; should not occurr */
-            break;
-        case WSAEFAULT:             /* invalid address */
-            break;
-        case WSAENETDOWN:           /* network shutdown */
-            break;
-        case WSAEINTR:              /* interrupted system call */
-            break;
         case WSAENOTSOCK: {         /* invalid socket(s) */
                 int len, type;
 
@@ -295,7 +342,10 @@ w32_poll(int native, struct pollfd *fds, int cnt, int timeout)
                 }
             }
             break;
-
+        case WSANOTINITIALISED:     /* stack not initialisated; should not occurr */
+        case WSAEFAULT:             /* invalid address */
+        case WSAENETDOWN:           /* network shutdown */
+        case WSAEINTR:              /* interrupted system call */
         case WSAEINPROGRESS:        /* shouldn't happen */
         case WSAEINVAL:
         default:                    /* misc */

@@ -1,25 +1,25 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.9 2022/03/05 08:22:01 cvsuser Exp $
+# $Id: Makefile.in,v 1.11 2022/06/09 16:38:58 cvsuser Exp $
 # libglib makefile.
 #
 #
 # Copyright (c) 2016 - 2022 Adam Young.
-# 
+#
 # This file is part of the Midnight Commander.
-# 
+#
 # The Midnight Commander is free software: you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation, either version 3 of the License,
 # or (at your option) any later version.
-# 
+#
 # The Midnight Commander is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 # Notice: Portions of this text are reprinted and reproduced in electronic form. from
 # IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
 # 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
@@ -69,27 +69,33 @@ endif
 
 D_INC=		$(ROOT)/include
 D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_OBJ=		$(ROOT)/objects@TOOLCHAINEXT@/$(BUILD_TYPE)/libglib
 D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libglib
 
 # Common flags
 
-XFLAGS=		
+XFLAGS=
 
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
+ifeq ("gcc","@CC@")
+CWARN+=		-Wno-shadow -Wno-sign-compare -Wno-type-limits
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter
+CWARN+=		-Wno-unused-parameter -Wno-unused-function
+CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 LDDEBUG=	@LDDEBUG@
 LDRELEASE=	@LDRELEASE@
 
-CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
-CEXTRA=		@DEFS@
+CINCLUDE=	-I$(D_INC)
+CEXTRA=		$(filter-out -D_CRT_SECURE_NO_WARNINGS=1, @DEFS@)
 ifeq ("$(BUILD_TYPE)","release")
-CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CLOCAL) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDRELEASE) @LDFLAGS@
 else
-CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CLOCAL) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDDEBUG) @LDFLAGS@
 endif
 LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)intl$(A) @LIBS@ winmm.lib @EXTRALIBS@
@@ -117,8 +123,8 @@ GLIBSRC=	$(GLIBBASE)/glib
 GLIBINCLUDE=	$(GLIBBASE)/glib
 GMODULESRC=	$(GLIBBASE)/gmodule
 
-CINCLUDE+=	-I$(GLIBSRC) -I$(GLIBBASE) -I./sdk
-CEXTRA+=	-D_WIN32_WINNT=0x501 -DGLIB_COMPILATION -D_WIN32
+CINCLUDE+=	-I$(GLIBBASE) -I./sdk
+CEXTRA+=	-D_WIN32
 
 ###	glib
 
@@ -148,7 +154,7 @@ CEXTRA_PCRE = \
 
 CEXTRA_GTHREAD = \
 	-DG_LOG_DOMAIN="GThread"
-	
+
 CEXTRA_GMODULE = \
 	-DG_LOG_DOMAIN="GModule"
 
@@ -295,10 +301,12 @@ GLIBLIBOBJS=\
 
 GLIBDLLOBJS=\
 	$(subst $(O),.lo,$(GLIBLIBOBJS))
-ifeq ("mingw32","@build_os@")
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 GLIBDLLOBJS+=	$(D_OBJ)/glib_res.o
-else ifeq ("win32","@build_os@")
+else
 GLIBDLLOBJS+=	$(D_OBJ)/glib.res
+endif
 endif
 
 ###	gmodule
@@ -314,10 +322,12 @@ GMODULELIBOBJS=\
 
 GMODULEDLLOBJS=\
 	$(subst $(O),.lo,$(GMODULELIBOBJS))
-ifeq ("mingw32","@build_os@")
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 DLLOBJS+=	$(D_OBJ)/gmodule_res.o
-else ifeq ("win32","@build_os@")
+else
 DLLOBJS+=	$(D_OBJ)/gmodule.res
+endif
 endif
 
 ###
@@ -344,29 +354,35 @@ release:
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
-$(GLIBLIB):		CEXTRA += -DGLIB_STATIC_COMPILATION
+#see: gtypes.h (+ GLIB_COMPILATION above)
+
+$(GLIBLIB):		CLOCAL += -I. -I$(GLIBSRC)
+$(GLIBLIB):		CEXTRA += -DGLIB_COMPILATION -DGLIB_STATIC_COMPILATION -DPCRE_STATIC
 $(GLIBLIB):		$(GLIBLIBOBJS)
 		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
 INSTALLED+=	$(D_BIN)/libglib.$(VERSION).dll
-$(GLIBDLL):		CEXTRA += -DGLIB_DYNAMIC_COMPILATION -DDLL_EXPORT -DPCRE_STATIC
+$(GLIBDLL):		CLOCAL += -I. -I$(GLIBSRC)
+$(GLIBDLL):		CEXTRA += -DGLIB_COMPILATION -DDLL_EXPORT -DPCRE_STATIC
+$(GLIBDLL):		DLLDEF = -export-symbols libglib.def
 $(GLIBDLL):		$(GLIBDLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) -dlbase libglib -o $@ $^ $(LDLIBS)
+			-rpath $(D_LIB) -bindir $(D_BIN) -dlbase libglib -o $@ $^ $(DLLDEF) $(LDLIBS)
 
-$(GMODULELIB):		CEXTRA += -DGMODULE_STATIC_COMPILATION
+$(GMODULELIB):		CLOCAL += -I. -I$(GMODULESRC) -I$(GLIBSRC)
 $(GMODULELIB):		$(GMODULELIBOBJS)
 		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
-INSTALLED+=	$(D_BIN)/libmodule.$(VERSION).dll
-$(GMODULEDLL):		CEXTRA += -DGMODULE_DYNAMIC_COMPILATION -DDLL_EXPORT
+INSTALLED+=	$(D_BIN)/libgmodule.$(VERSION).dll
+$(GMODULEDLL):		CLOCAL += -I. -I$(GMODULESRC) -I$(GLIBSRC)
+$(GMODULEDLL):		CEXTRA += -DDLL_EXPORT
 $(GMODULEDLL):		$(GMODULEDLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
-			-rpath $(D_LIB) -bindir $(D_BIN) -dlbase libmodule -o $@ $^ $(D_LIB)/$(LP)glib-2.0.lib $(LDLIBS)
+			-rpath $(D_LIB) -bindir $(D_BIN) -dlbase libgmodule -o $@ $^ $(D_LIB)/$(LP)glib-2.0$(A) $(LDLIBS)
 
 source:			.unpacked.$(VERSION)
 		$(MAKE) unpacked

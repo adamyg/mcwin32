@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getsubopt_c,"$Id: w32_getsubopt.c,v 1.6 2021/04/13 15:49:34 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getsubopt_c,"$Id: w32_getsubopt.c,v 1.7 2022/06/08 09:51:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*-
@@ -45,7 +45,7 @@ __CIDENT_RCSID(gr_w32_getsubopt_c,"$Id: w32_getsubopt.c,v 1.6 2021/04/13 15:49:3
  *  tricky...  The extern variable suboptarg is a pointer to the token
  *  which didn't match.
  */
-LIBW32_API char *suboptarg = NULL;
+/*LIBW32_VAR*/ char *suboptarg = NULL;
 
 LIBW32_API int
 getsubopt(char **optionp, char * const *tokens, char **valuep)

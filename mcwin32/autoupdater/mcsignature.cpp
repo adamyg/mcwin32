@@ -1,4 +1,4 @@
-//  $Id: mcsignature.cpp,v 1.4 2021/12/07 16:58:05 cvsuser Exp $
+//  $Id: mcsignature.cpp,v 1.5 2022/06/09 02:57:03 cvsuser Exp $
 //
 //  AutoUpdater: Manifest generation tool.
 //
@@ -7,6 +7,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#include <stdio.h>
 #include <string>
 #include <iostream>
 #include <time.h>

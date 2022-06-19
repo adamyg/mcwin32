@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_ERRNO_H_INCLUDED
 #define LIBW32_WIN32_ERRNO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.8 2022/03/16 13:47:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.10 2022/06/14 02:19:59 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -32,79 +32,45 @@ __CPRAGMA_ONCE
  * ==end==
  */
 
-    /*
-     *  Verify that MSVC POSIX errno number are not active; if the case warn and undef clashing constants
-     *  Generally <sys/socket.h> is included before <errno.h> as such the following should not occur.
-     */
+/*
+ *  Verify that MSVC POSIX errno number are not active; if the case warn and undef clashing constants
+ *  Generally <sys/socket.h> is included before <errno.h> as such the following should not occur.
+ */
 #if !defined(__MAKEDEPEND__)
 #if defined(EADDRINUSE) && (EADDRINUSE != 10048)
-#if defined(_MSC_VER)
+
+#if defined(_MSC_VER) || \
+        (defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR))
 #if (EADDRINUSE == 100)
-#if !defined(_CRT_NO_POSIX_ERROR_CODES)
-#pragma message("_CRT_NO_POSIX_ERROR_CODES should be defined: EADDRINUSE (and others) are inconsistent with WinSock aliases; redefining")
-#else
-#pragma message("_CRT_NO_POSIX_ERROR_CODES is defined: yet EADDRINUSE (and others) are inconsistent with WinSock aliases as <errno.h> include order is incorrect; redefining")
+#if defined(_CRT_NO_POSIX_ERROR_CODES)
+#pragma message <system_error> is incompatible with _CRT_NO_POSIX_ERROR_CODES.
 #endif
+    /*
+     *  RETHINK, as the following are assumed by the MinGW pthread package:
+     *
+     *      #define ETIMEDOUT   138
+     *      #define ENOTSUP     129
+     *      #define EWOULDBLOCK 140
+     */
+#include "msvc_errno.h"                         /* undef error codes */
 #else
 #error unexpected EADDRINUSE value
 #endif
 #endif //_MSC_VER
+
 #endif //EADDRINUSE != 10048
 #endif //__MAKEDEPEND__
 
-#if defined(_MSC_VER) || defined(__MAKEDEPEND__)
-#undef EADDRINUSE           //100
-#undef EADDRNOTAVAIL        //101
-#undef EAFNOSUPPORT         //102
-#undef EALREADY             //103
-//#define EBADMSG           104
-//#define ECANCELED         105
-#undef ECONNABORTED         //106
-#undef ECONNREFUSED         //107
-#undef ECONNRESET           //108
-#undef EDESTADDRREQ         //109
-#undef EHOSTUNREACH         //110
-//#define EIDRM             111
-#undef EINPROGRESS          //112
-#undef EISCONN              //113
-#undef ELOOP                //114
-#undef EMSGSIZE             //115g
-#undef ENETDOWN             //116
-#undef ENETRESET            //117
-#undef ENETUNREACH          //118
-#undef ENOBUFS              //119
-//#define ENODATA           120
-//#define ENOLINK           121
-//#define ENOMSG            122
-#undef ENOPROTOOPT          //123
-//#define ENOSR             124
-//#define ENOSTR            125
-//#define ENOTCONN          126
-#undef ENOTCONN             //126
-#undef ENOTRECOVERABLE      //127
-#undef ENOTSOCK             //128
-//#define ENOTSUP           129
-#undef EOPNOTSUPP           //130
-//#define EOTHER            131
-//#define EOVERFLOW         132
-//#define EOWNERDEAD        133
-//#define EPROTO            134
-#undef EPROTONOSUPPORT      //135
-#undef EPROTOTYPE           //136
-//#define ETIME             137
-#undef ETIMEDOUT            //138
-//#define ETXTBSY           139
-#undef EWOULDBLOCK          //140
-#endif //EADDRINUSE
-
 /*
- *  System <errno.h>
+ *  import <errno.h>
  */
-#if defined(_MSC_VER) && \
-        !defined(_CRT_NO_POSIX_ERROR_CODES)
-#define _CRT_NO_POSIX_ERROR_CODES               /* disable POSIX error number, see <errno.h> (MSVC 2010+) */
-#endif //_MSC_VER
+#if !defined(_CRT_NO_POSIX_ERROR_CODES)
+#define  _CRT_NO_POSIX_ERROR_CODES              /* disable extended POSIX errno's */
 #include <errno.h>
+#undef   _CRT_NO_POSIX_ERROR_CODES
+#else
+#include <errno.h>
+#endif
 
 /*
  *  Addition UNIX style errno's, plus Windows Sockets errors redefined as regular Berkeley error constants.
@@ -114,8 +80,8 @@ __CPRAGMA_ONCE
      *  General use error codes,
      *      which utilise their defined value under MSVC POSIX definition, see <errno.h>
      *
-     *  MSVC: Their definitions are disabled using _CRT_NO_POSIX_ERROR_CODES,
-     *      as many conflict with the WinSock aliases below,
+     *  MSVC: Their definitions can be disabled using _CRT_NO_POSIX_ERROR_CODES, as many conflict with the
+     *      WinSock aliases below, but this generates complication errors within C++ code elements.
      */
 #define EBADMSG         104                     /* Bad message. */
 #define ECANCELED       105                     /* Operation canceled. */
@@ -145,7 +111,7 @@ __CPRAGMA_ONCE
      *  WinSock errors are aliased to their BSD/POSIX counter part.
      *
      *  Note: This works for *most* errors, yet the following result in conflicts and are
-     *      explicity remapped during i/o operations.
+     *      explicitly remapped during i/o operations: see w32_neterrno_map()
      *
 #define EINTR           WSAEINTR                // 10004 "Interrupted system call"
 #define EBADF           WSAEBADF                // 10009 "Bad file number"
@@ -394,34 +360,105 @@ __CPRAGMA_ONCE
      *  Map not socket specific errors.
      */
 
+#if defined(EWOULDBLOCK) && (EWOULDBLOCK != 10045)
+    #if (EWOULDBLOCK == 140)                    /* MSVC/MINGW64 extra */
+        #undef EWOULDBLOCK
+    #else
+        #error Inconsistent EWOULDBLOCK definition ....
+    #endif
+#endif
 #if !defined(EWOULDBLOCK)
 #define EWOULDBLOCK     10035                   /* 10035 "Operation would block" */
 #endif
 
+#if defined(EALREADY) && (EALREADY != 10037)
+    #if (EALREADY == 103)                       /* MSVC/MINGW64 extra */
+        #undef EALREADY
+    #else
+        #error Inconsistent EALREADY definition ....
+    #endif
+#endif
 #if !defined(EALREADY)
 #define EALREADY        10037                   /* 10037 "Operation already in progress" */
 #endif
 
+#if defined(EMSGSIZE) && (EMSGSIZE != 10040)
+    #if (EMSGSIZE == 115)                       /* MSVC/MINGW64 extra */
+        #undef EMSGSIZE
+    #else
+        #error Inconsistent EMSGSIZE definition ....
+    #endif
+#endif
 #if !defined(EMSGSIZE)
 #define EMSGSIZE        10040                   /* 10040 "Message too long" */
 #endif
 
+#if defined(EOPNOTSUPP) && (EOPNOTSUPP != 10045)
+    #if (EOPNOTSUPP == 130)                     /* MSVC/MINGW64 extra */
+        #undef EOPNOTSUPP
+    #else
+        #error Inconsistent EOPNOTSUPP definition ....
+    #endif
+#endif
 #if !defined(EOPNOTSUPP)
 #define EOPNOTSUPP      10045                   /* 10045 "Operation not supported on socket" */
 #endif
 
+#if defined(ENETUNREACH) && (ENETUNREACH != 10051)
+    #if (ENETUNREACH == 118)
+        #undef ENETUNREACH                      /* MSVC/MINGW64 */
+    #else
+        #error Inconsistent ENETUNREACH definition ....
+    #endif
+#endif
+#if !defined(ENETUNREACH)
+#define ENETUNREACH      10051                  /* 10051 "Network is unreachable" */
+#endif
+
+#if defined(ECONNRESET) && (ECONNRESET != 10054)
+    #if (ECONNRESET == 108)                     /* MSVC/MINGW64 */
+        #undef ECONNRESET
+    #else
+        #error Inconsistent ECONNRESET definition ....
+    #endif
+#endif
+#if !defined(ECONNRESET)
+#define ECONNRESET      10054                   /* 10054 "Connection reset by peer" */
+#endif
+
+#if defined(ENOBUFS) && (ENOBUFS != 10055)
+    #if (ENOBUFS == 119)                     /* MSVC/MINGW64 */
+        #undef ENOBUFS
+    #else
+        #error Inconsistent ENOBUFS definition ....
+    #endif
+#endif
 #if !defined(ENOBUFS)
 #define ENOBUFS         10055                   /* 10055 "No buffer space available" */
 #endif
 
+#if defined(ETIMEDOUT) && (ETIMEDOUT != 10060)
+#   if (ETIMEDOUT == 138)                       /* MSVC/MINGW64 */
+#       undef ETIMEDOUT
+#   else
+#       error Inconsistent ETIMEDOUT definition ....
+#   endif
+#endif
 #if !defined(ETIMEDOUT)
 #define ETIMEDOUT       10060                   /* 10060 "Connection timed out" */
 #endif
 
+#if defined(ELOOP) && (ELOOP != 10062)
+#   if (ELOOP == 114)                           /* MSVC/MINGW64 */
+#       undef ELOOP
+#   else
+#       error Inconsistent ELOOP definition ....
+#   endif
+#endif
 #if !defined(ELOOP)
 #define ELOOP           10062                   /* 10062 "Too many levels of symbolic links" */
 #endif
 
-#endif  //!LIBW32_ERRNO_WINSOCK
+#endif /*LIBW32_WIN32_ERRNO_H_INCLUDED*/
 
 /*end*/

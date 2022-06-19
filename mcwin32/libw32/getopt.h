@@ -1,7 +1,7 @@
 #ifndef LIBW32_GETOPT_H_INCLUDED
 #define LIBW32_GETOPT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.8 2022/03/16 13:46:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.9 2022/06/08 09:51:42 cvsuser Exp $")
 __CPRAGMA_ONCE
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -36,11 +36,11 @@ __CPRAGMA_ONCE
 
 __BEGIN_DECLS
 
-LIBW32_API extern int   opterr;                 /* if error message should be printed */
-LIBW32_API extern int   optind;                 /* index into parent argv vector */
-LIBW32_API extern int   optopt;                 /* character checked for validity */
-LIBW32_API extern int   optreset;               /* reset getopt */
-LIBW32_API extern char *optarg;
+LIBW32_VAR int          opterr;                 /* if error message should be printed */
+LIBW32_VAR int          optind;                 /* index into parent argv vector */
+LIBW32_VAR int          optopt;                 /* character checked for validity */
+LIBW32_VAR int          optreset;               /* reset getopt */
+LIBW32_VAR char         *optarg;
 
 /*
  *  GNU like getopt_long() and BSD4.4 getsubopt()/optreset extensions.

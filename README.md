@@ -1,8 +1,11 @@
-[![Website](https://img.shields.io/badge/View-Website-blue)](https://sourceforge.net/projects/mcwin32/) [![Build status](https://ci.appveyor.com/api/projects/status/4ckxapbwc3mt66x6?svg=true&passingText=MSVC%20Passing&failingText=MSVC%20Failing&pendingText=MSVC%20Pending)](https://ci.appveyor.com/project/adamyg/mcwin32-msvc)
+[![Website](https://img.shields.io/badge/View-Website-blue)](https://sourceforge.net/projects/mcwin32/)
+
+[![Workflow](https://github.com/adamyg/mcwin32/actions/workflows/build.yml/badge.svg)](https://github.com/adamyg/mcwin32/actions)]
+[![Build status](https://ci.appveyor.com/api/projects/status/4ckxapbwc3mt66x6?svg=true&passingText=MSVC%20Passing&failingText=MSVC%20Failing&pendingText=MSVC%20Pending)](https://ci.appveyor.com/project/adamyg/mcwin32-msvc)
 
 # Midnight Commander for Windows
 
-## Native Midnight Commander 4.8.27 for Windows/Win32
+## Native Midnight Commander 4.8.28 for Windows/Win32
 
 Windows XP+/32 bit native port of GNU Midnight Commander, based on the current 4.8.27 development stream.
 
@@ -45,6 +48,7 @@ winget install --id=GNU.MidnightCommander -e
 
 To utilise *Files transferred over Shell protocol* **(FISH)** over SSH, an ssh client is required, you can either install [Win32-OpenSSH](https://github.com/powershell/Win32-OpenSSH) or [WinXSH](https://github.com/adamyg/winxsh).  For legacy RSH based connections [WinXSH](https://github.com/adamyg/winxsh) is needed.
 
+Finally the internal editor has built-in spell enabled. To utilise aspell is required, you can optionally install [Win32-Aspell](https://github.com/adamyg/aspell-win32).
 
 ## Distributions
 
@@ -53,6 +57,11 @@ Latest builds:
    * https://github.com/adamyg/mcwin32/releases
    * https://sourceforge.net/projects/mcwin32
 
+Aspell:
+
+   * https://github.com/adamyg/aspell-win32/releases
+
 Source:
 
    * https://github.com/adamyg/mcwin32
+
