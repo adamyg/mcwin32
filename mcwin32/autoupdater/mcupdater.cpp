@@ -115,6 +115,7 @@ main(int argc, char *argv[])
     if (mode >= 1) {
         autoupdate_appversion_set(version);
         autoupdate_hosturl_set(hosturl);
+        autoupdate_appname_set("Midnight Commander"); // match installer
     }
 
     return autoupdate_execute(mode, interactive);
@@ -135,7 +136,7 @@ Usage()
 {
     std::cerr <<
         "\n"\
-        "Midnight Commander updater                                         version 1.01\n"\
+        "Midnight Commander updater                                         version 1.02\n"\
         "\n"\
         "   mcupdater [options] mode\n"\
         "\n"\
