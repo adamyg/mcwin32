@@ -234,5 +234,5 @@ $(D_OBJ)/%.res:		%.rc
 
 $(D_OBJ)/%_res.o:	%.rc
 		$(RC) -o $@ -I./libappupdater/src $(RCDEFS) $<
-		
+
 #end
