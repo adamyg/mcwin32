@@ -174,6 +174,19 @@ typedef unsigned short mode_t;
 #define mode_t mode_t
 #endif
 
+#if !defined(_FSBLKCNT_T_DEFINED)
+#define _FSBLKCNT_T_DEFINED
+#if !defined(fsblkcnt_t)
+typedef unsigned long fsblkcnt_t;
+#endif
+#endif
+#if !defined(_FSFILCNT_T_DEFINED)
+#define _FSFILCNT_T_DEFINED
+#if !defined(fsfilcnt_t)
+typedef unsigned long fsfilcnt_t;
+#endif
+#endif
+
 #elif defined(__MINGW32__)
 #if !defined(uid_t) && !defined(gid_t)
 typedef int uid_t;
