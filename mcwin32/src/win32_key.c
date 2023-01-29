@@ -1302,7 +1302,7 @@ key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned Asci
     if (-1 == ch && KEY_M_ALT == mod) {
         if (AsciiChar >= '0' && AsciiChar <= '9') {
             if (AsciiChar >= '1') {
-                ch = KEY_F(AsciiChar - '1');    /* F1..F9 */
+                ch = KEY_F(AsciiChar - '0');    /* F1..F9 */
             } else {
                 ch = KEY_F(10);                 /* F10 */
             }
