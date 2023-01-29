@@ -1123,6 +1123,9 @@ key_esc_special(void)
                         DWORD fnKeyCode = ('0' == wVirtualKeyCode ? VK_F10 : VK_F1 + (wVirtualKeyCode - '1'));
                         c = key_mapwin32(key->dwControlKeyState, fnKeyCode, 0);
 
+                    } else if (VK_RETURN == wVirtualKeyCode) {
+                        c = ALT('\n');          // Alt-Enter
+
                     } else if (VK_TAB == wVirtualKeyCode) {
                         c = ALT('\t');          // Alt-Tab
 
