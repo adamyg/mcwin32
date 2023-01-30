@@ -167,7 +167,7 @@ debug:
 
 $(MAGICLIB):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_STATIC -DBUILD_AS_WINDOWS_STATIC_LIBARAY
 $(MAGICLIB):		$(D_OBJ)/.created $(LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@
 		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
 		$(RANLIB) $@
 
@@ -211,9 +211,9 @@ installinc:		../include/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(MAGICDLL) $(OBJS) >nul 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1
-		-@$(RM) $(LIBOBJS) $(UTILOBJS) >nul 2>&1
+		-@$(LIBTOOL) --mode=clean $(RM) $(MAGICDLL) $(OBJS)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN)
+		-@$(RM) $(LIBOBJS) $(UTILOBJS)
 
 $(D_OBJ)/%$(O):		%$(C)
 		$(CC) $(CFLAGS) -D_CRT_SECURE_NO_DEPRECATE -o $@ -c $<

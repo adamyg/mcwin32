@@ -239,7 +239,7 @@ CEXTRA		+= -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 #######
 $(MBEDCRYPTOLIB):	CEXTRA += -DLIBMBED_STATIC -DLIBMBEDCRYPTO_SOURCE
 $(MBEDCRYPTOLIB):	$(CRYPTO_LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
@@ -254,7 +254,7 @@ $(MBEDCRYPTODLL):	$(CRYPTO_DLLOBJS)
 #######
 $(MBEDX509LIB):		CEXTRA += -DLIBMBED_STATIC -DLIBMBEDX509_SOURCE -DLIBMBEDX509
 $(MBEDX509LIB):		$(X509_LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
@@ -269,7 +269,7 @@ $(MBEDX509DLL):		$(X509_DLLOBJS)
 #######
 $(MBEDTLSLIB):		CEXTRA += -DLIBMBED_STATIC -DLIBMBEDTLS_SOURCE
 $(MBEDTLSLIB):		$(TLS_LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
@@ -310,10 +310,10 @@ installinc:		../include/.created ../include/mbedtls/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
-		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
-		-@$(RM) ../include/mbedtls/* >/dev/null 2>&1
+		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN)
+		-@$(RM) $(LIBOBJS)
+		-@$(RM) ../include/mbedtls/*
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

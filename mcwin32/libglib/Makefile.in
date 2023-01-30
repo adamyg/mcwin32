@@ -359,7 +359,7 @@ debug:
 $(GLIBLIB):		CLOCAL += -I. -I$(GLIBSRC)
 $(GLIBLIB):		CEXTRA += -DGLIB_COMPILATION -DGLIB_STATIC_COMPILATION -DPCRE_STATIC
 $(GLIBLIB):		$(GLIBLIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
@@ -373,7 +373,7 @@ $(GLIBDLL):		$(GLIBDLLOBJS)
 
 $(GMODULELIB):		CLOCAL += -I. -I$(GMODULESRC) -I$(GLIBSRC)
 $(GMODULELIB):		$(GMODULELIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
@@ -490,11 +490,11 @@ installheaders:		Makefile ../include/.created \
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GLIBDLL) $(GLIBDLLOBJS) >nul 2>&1)
-		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GMODULEDLL) $(GMODULEDLLOBJS) >nul 2>&1)
-		-@$(RM) $(subst /,\,$(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1)
-		-@$(RM) $(subst /,\,$(GLIBLIBOBJS) >nul 2>&1)
-		-@$(RM) $(subst /,\,$(GMODULELIBOBJS) >nul 2>&1)
+		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GLIBDLL) $(GLIBDLLOBJS))
+		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GMODULEDLL) $(GMODULEDLLOBJS))
+		-@$(RM) $(subst /,\,$(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN))
+		-@$(RM) $(subst /,\,$(GLIBLIBOBJS))
+		-@$(RM) $(subst /,\,$(GMODULELIBOBJS))
 
 
 ############################################################

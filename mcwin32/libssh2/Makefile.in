@@ -183,7 +183,7 @@ CEXTRA		+= -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 
 $(SSH2LIB):		CEXTRA += -DLIBSSH2_STATIC
 $(SSH2LIB):		$(LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
@@ -217,10 +217,10 @@ installinc:		../include/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
-		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
-		-@$(RM) ../include/libssh2/*.h >/dev/null 2>&1
+		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN)
+		-@$(RM) $(LIBOBJS)
+		-@$(RM) ../include/libssh2/*.h
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

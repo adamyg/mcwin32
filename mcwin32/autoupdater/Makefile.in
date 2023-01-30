@@ -215,7 +215,7 @@ installinc:		include/.created
 		@echo "do not delete, managed directory" > $@
 
 clean:
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN)
 
 $(D_OBJ)/%$(O):		%.cpp
 		$(CC) $(CXXFLAGS) -o $@ -c $<

@@ -239,9 +239,9 @@ $(D_OBJ)/.created:
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(W32DLL) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(W32LIB) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(LIBOBJS) >/dev/null 2>&1
+		-@$(LIBTOOL) --mode=clean $(RM) $(W32DLL) $(DLLOBJS)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(W32LIB) $(CLEAN) $(XCLEAN)
+		-@$(RM) $(RMFLAGS) $(LIBOBJS)
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

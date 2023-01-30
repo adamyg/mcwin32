@@ -112,7 +112,8 @@ installinc:		../include/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN)
+
 
 $(D_OBJ)/%$(O):		%$(C)
 		$(CC) $(CFLAGS) -D_CRT_SECURE_NO_DEPRECATE -o $@ -c $<

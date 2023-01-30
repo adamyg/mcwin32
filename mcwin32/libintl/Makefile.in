@@ -121,7 +121,7 @@ debug:
 
 $(INTLLIB):		CEXTRA += -I$(INTLSRC) -DLIBINTL_STATIC -D__LIBINTL_BUILD -D_WIN32
 $(INTLLIB):		$(LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@
 		$(AR) $(ARFLAGS) $@ $(subst /,\,$^)
 		$(RANLIB) $@
 
@@ -146,9 +146,9 @@ installinc:		../include/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(INTLDLL) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
-		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
+		-@$(LIBTOOL) --mode=clean $(RM) $(INTLDLL) $(DLLOBJS)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN)
+		-@$(RM) $(LIBOBJS)
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

@@ -115,7 +115,7 @@ XCLEAN=		$(D_BIN)/*.map
 
 BUSYBOX=	@BUSYBOX@
 ifeq ($(BUSYBOX),busybox)
-BUSYBOX=	$(shell which busybox 2>/dev/null)
+BUSYBOX=	$(shell which busybox)
 endif
 
 ifeq ("$(BUILD_TYPE)","")	#default
@@ -849,10 +849,10 @@ package:	packageinfo
 .PHONY:		clean
 clean:
 		@echo $(BUILD_TYPE) clean
-		-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN) >nul 2>&1
-		-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES)) >nul 2>&1
-		-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A) >nul 2>&1
-		-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A) >nul 2>&1
+		-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN)
+		-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES))
+		-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A)
+		-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A)
 		$(MAKE) -C libglib clean
 		$(MAKE) -C libintl clean
 		$(MAKE) -C libmbedtls clean
@@ -862,16 +862,16 @@ clean:
 		$(MAKE) -C libz clean
 		$(MAKE) -C libw32 clean
 		$(MAKE) -C autoupdater clean
-		-$(RM) $(MSGOBJS) $(MSGDIRS) >nul 2>&1
-		-$(RM) $(CONFIGURATION) >nul 2>&1
-		-$(RM) $(CONFIGURATION_WIN32) >nul 2>&1
-		-$(RM) $(DIRECTORIES) >nul 2>&1
-		-$(RMDIR) $(call reverse, $(dir $(DIRECTORIES)) $(BASEMSGDIRS) $(dir $(MSGDIRS)))) >nul 2>&1
-		-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) >nul 2>&1
+		-$(RM) $(MSGOBJS) $(MSGDIRS)
+		-$(RM) $(CONFIGURATION)
+		-$(RM) $(CONFIGURATION_WIN32)
+		-$(RM) $(DIRECTORIES)
+		-$(RMDIR) $(call reverse, $(dir $(DIRECTORIES)) $(BASEMSGDIRS) $(dir $(MSGDIRS))))
+		-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC)
 
 .PHONY:		vclean
 vclean:		clean
-		-$(RM) $(IMPORT) >nul 2>&1
+		-$(RM) $(IMPORT)
 
 
 #########################################################################################
@@ -920,13 +920,13 @@ endif
 
 .PHONY:			new_buildnumber
 new_buildnumber:
-		-@chmod +w BUILDNUMBER >nul 2>&1
+		-@chmod +w BUILDNUMBER
 		@echo incrementing build number ...
 		-@$(BUSYBOX) sh -c "\
 			if [ ! -f BUILDNUMBER ]; then echo 1 >BUILDNUMBER; fi;\
 			echo $$(($$(cat BUILDNUMBER) + 1)) >BUILDNUMBER;\
 			"
-		-@chmod -w BUILDNUMBER >/dev/null 2>&1
+		-@chmod -w BUILDNUMBER
 
 $(D_OBJ)/%.res:		%.rc
 		$(RC) -fo $@ $<
