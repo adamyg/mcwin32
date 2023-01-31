@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.11 2022/06/14 02:21:54 cvsuser Exp $
+# $Id: makelib.in,v 1.12 2023/01/31 17:07:13 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -31,7 +31,7 @@
 
 $PACKAGE	= 'mc';
 $PACKAGE_NAME	= 'Midnight Commander WIN32';
-$PACKAGE_VERSION= '4.8.28';
+$PACKAGE_VERSION= '4.8.29';
 
 $PACKAGE_URL	= 'https://github.com/adamyg/mcwin32';
 

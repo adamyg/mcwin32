@@ -36,7 +36,7 @@
         void        enable_bracketed_paste (void);
         void        disable_bracketed_paste (void);
 
-   Written by: Adam Young 2012 - 2022
+   Written by: Adam Young 2012 - 2023
 
    This file is part of the Midnight Commander.
 
@@ -55,7 +55,9 @@
 
  */
 
+#if !defined(_WIN32_WINNT)
 #define _WIN32_WINNT 0x500
+#endif
 #include <config.h>
 
 #include "libw32.h"
@@ -104,11 +106,7 @@ static  int __TryEnterDebugger()
 #include "lib/tty/win.h"
 
 #include "src/args.h"                           /* mc_args__nomouse */
-#if (VERSION_3 >= 27)
 #include "src/filemanager/filemanager.h"        /* left/right panel */
-#else
-#include "src/filemanager/midnight.h"
-#endif
 
 extern gboolean             quit_cmd_internal (int quiet);
 extern gboolean             confirm_exit;
@@ -464,11 +462,7 @@ key_shell_mode (void)
                     //   cmd seems to explicitly clear when executing in-built commands,
                     //   whereas apps this may not be the case; clear for consistency.
 
-#if (VERSION_3 >= 27)
                 if (tty_use_256colors(NULL)) {  /* enable VT100/ANSI */
-#else
-                if (tty_use_256colors()) {
-#endif
                     dwNewMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
                 }
                 if (dwNewMode != dwMode) {
@@ -1299,7 +1293,7 @@ key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned Asci
     if (-1 == ch && KEY_M_ALT == mod) {
         if (AsciiChar >= '0' && AsciiChar <= '9') {
             if (AsciiChar >= '1') {
-                ch = KEY_F(AsciiChar - '1');    /* F1..F9 */
+                ch = KEY_F(AsciiChar - '0');    /* F1..F9 */
             } else {
                 ch = KEY_F(10);                 /* F10 */
             }

@@ -84,7 +84,7 @@ sigintr_handler (int signo)
     got_interrupt = 1;
 }
 
-#if defined(_WIN32)
+#if defined(WIN32)
 void
 sigintr_set(int state)
 {
@@ -112,6 +112,7 @@ sigintr_set(int state)
  *         foot*
  *         screen*
  *         tmux*
+ *         contour*
  */
 gboolean
 tty_check_term (gboolean force_xterm)
@@ -135,7 +136,8 @@ tty_check_term (gboolean force_xterm)
         || strncmp (termvalue, "alacritty", 9) == 0
         || strncmp (termvalue, "foot", 4) == 0
         || strncmp (termvalue, "screen", 6) == 0
-        || strncmp (termvalue, "tmux", 4) == 0;
+        || strncmp (termvalue, "tmux", 4) == 0
+        || strncmp (termvalue, "contour", 7) == 0;
     /* *INDENT-ON* */
 }
 

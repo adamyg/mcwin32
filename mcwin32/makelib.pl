@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.24 2022/06/09 13:16:09 cvsuser Exp $
+# $Id: makelib.pl,v 1.25 2023/01/31 17:07:13 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
 #
 #
-# Copyright (c) 1998 - 2022, Adam Young.
+# Copyright (c) 1998 - 2023, Adam Young.
 # All rights reserved.
 #
 # The applications are free software: you can redistribute it

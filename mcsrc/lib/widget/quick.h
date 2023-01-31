@@ -330,8 +330,8 @@ struct quick_widget_t
 
 typedef struct
 {
-    int y, x;                   /* if -1, then center the dialog */
-    int cols;                   /* heigth is calculated automatically */
+    WRect rect;                 /* if rect.x == -1 or rect.y == -1, then dialog is centered;
+                                 * rect.lines is unused and ignored */
     const char *title;
     const char *help;
     quick_widget_t *widgets;
@@ -341,13 +341,30 @@ typedef struct
 
 /*** WIN32 ****/
 
-#if defined(WIN32) //WIN32, quick
-
 #if defined(__GNUC__)
 #define XQUICK_INLINE static inline
 #else
 #define XQUICK_INLINE inline
 #endif
+
+XQUICK_INLINE quick_dialog_t 
+QUICK_DIALOG_INIT(
+    const WRect *rect, const char *title, const char *help, quick_widget_t *widgets, widget_cb_fn callback, widget_mouse_cb_fn mouse_callback)
+{
+    quick_dialog_t qd;
+    memset(&qd, 0, sizeof(qd));
+    qd.rect = *rect;
+    qd.title = title;
+    qd.help = help;
+    qd.widgets = widgets;
+    qd.callback = NULL;
+    qd.mouse_callback = NULL;
+    qd.callback = callback;
+    qd.mouse_callback = mouse_callback;
+    return qd;
+}
+
+#if defined(WIN32) //WIN32, quick
 
 XQUICK_INLINE quick_widget_t *
 XQUICK_CHECKBOX(quick_widget_t *qc,

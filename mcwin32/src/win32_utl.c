@@ -21,7 +21,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2022
+   Written by: Adam Young 2012 - 2023
 
    Portions sourced from lib/utilunix.c, see for additional information.
 
@@ -1874,7 +1874,11 @@ current_drive(char *path)
 
 
 void
+#if !defined(CANON_PATH_FLAGS)
+canonicalize_pathname_custom(char *orgpath, canon_path_flags_t flags) // 4.8.29
+#else
 custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
+#endif
 {
     const size_t url_delim_len = strlen (VFS_PATH_URL_DELIMITER);
     char *lpath = orgpath;                      /* path without leading UNC part */
@@ -1936,8 +1940,8 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
             if (IS_PATH_SEP (p[0]) && IS_PATH_SEP (p[1]) && (p == lpath || *(p - 1) != ':'))
             {
                 s = p + 1;
-                while (IS_PATH_SEP (*(++s)))
-                    ;
+                while (*s && IS_PATH_SEP(*s))
+                    ++s;
                 str_move (p + 1, s);
             }
 
@@ -2135,7 +2139,11 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
 void
 canonicalize_pathname(char *path)
 {
+#if !defined(CANON_PATH_FLAGS)
+    canonicalize_pathname_custom (path, CANON_PATH_ALL);   
+#else
     custom_canonicalize_pathname (path, CANON_PATH_ALL);
+#endif
 }
 
 

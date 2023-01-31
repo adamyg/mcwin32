@@ -5,9 +5,9 @@
 
 # Midnight Commander for Windows
 
-## Native Midnight Commander 4.8.28 for Windows/Win32
+## Native Midnight Commander 4.8.29 for Windows/Win32
 
-Windows XP+/32 bit native port of GNU Midnight Commander, based on the current 4.8.27 development stream.
+Windows XP+/32 bit native port of GNU Midnight Commander, based on the current 4.8.29 development stream.
 
 Supports both the recent Windows 10 plus the prior legacy console, 16 and 256 colour modes are available within either.
 
@@ -43,7 +43,7 @@ mcupdater force
 Updating older distribution shall require you download from one of the sites listed below or alternatively winget and then update if requried.
 
 ```
-winget install --id=GNU.MidnightCommander -e	
+winget install --id=GNU.MidnightCommander -e
 ```
 
 To utilise *Files transferred over Shell protocol* **(FISH)** over SSH, an ssh client is required, you can either install [Win32-OpenSSH](https://github.com/powershell/Win32-OpenSSH) or [WinXSH](https://github.com/adamyg/winxsh).  For legacy RSH based connections [WinXSH](https://github.com/adamyg/winxsh) is needed.

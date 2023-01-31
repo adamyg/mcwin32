@@ -1,7 +1,7 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
 # Midnight command WIN32 builds 4.8.28
 #
-# Copyright (c) 2007, 2012 - 2022 Adam Young.
+# Copyright (c) 2007, 2012 - 2023 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -37,7 +37,7 @@ PKG_TARNAME	= @PACKAGE_TARNAME@
 PKG_URL		= @PACKAGE_URL@
 PKG_VERSION	= @PACKAGE_VERSION@
 ifeq ("","$(PKG_VERSION)")
-PKG_VERSION	= 4.8.28
+PKG_VERSION	= 4.8.29
 endif
 PKG_VERSION_1	=$(word 1,$(subst ., ,$(PKG_VERSION)))
 PKG_VERSION_2	=$(word 2,$(subst ., ,$(PKG_VERSION)))
@@ -571,7 +571,7 @@ WIN32_DOC_SRC=		./doc
 
 CFG_ETC=\
 	$(D_ETC)/filehighlight.ini		\
-	$(D_ETC)/mc.ext				\
+	$(D_ETC)/mc.ext.ini			\
 	$(D_ETC)/mc.keymap			\
 	$(D_ETC)/mc.default.keymap		\
 	$(D_ETC)/mc.emacs.keymap		\

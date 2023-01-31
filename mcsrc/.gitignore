@@ -5,7 +5,6 @@
 *~
 *.cache
 *.tar.gz
-*.orig
 ABOUT-NLS
 Make.common
 Makefile
@@ -50,4 +49,4 @@ tests/src/editor/test-data.txt
 tests/src/vfs/extfs/helpers-list/data/config.sh
 mc-version.h
 *.old
-
+*.orig

@@ -6,7 +6,7 @@
 
    Written by:
    Paul Sheer, 1996, 1997
-   Andrew Borodin <aborodin@vmail.ru>, 2012
+   Andrew Borodin <aborodin@vmail.ru>, 2012-2022
 
    This file is part of the Midnight Commander.
 
@@ -189,11 +189,12 @@ edit_options_dialog (WDialog * h)
         };
 #endif  //WIN32
 
-        quick_dialog_t qdlg = {
-            -1, -1, 74,
-            N_("Editor options"), "[Editor options]",
+        WRect r = { -1, -1, 0, 74 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Editor options"), "[Editor options]",
             quick_widgets, NULL, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_START_COLUMNS (qc),
@@ -244,7 +245,7 @@ edit_options_dialog (WDialog * h)
     if (!option_cursor_beyond_eol)
         g_list_foreach (GROUP (h)->widgets, edit_reset_over_col, NULL);
 
-    if (p != NULL)
+    if (p != NULL && *p != '\0')
     {
         option_word_wrap_line_length = atoi (p);
         if (option_word_wrap_line_length <= 0)
@@ -252,7 +253,7 @@ edit_options_dialog (WDialog * h)
         g_free (p);
     }
 
-    if (q != NULL)
+    if (q != NULL && *q != '\0')
     {
         option_tab_spacing = atoi (q);
         if (option_tab_spacing <= 0)

@@ -41,7 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
+#include <sys/time.h> //WIN32, defs
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -834,27 +834,25 @@ get_compression_type (int fd, const char *name)
         return COMPRESSION_NONE;
 
     /* GZIP_MAGIC and OLD_GZIP_MAGIC */
-    if (magic[0] == 037 && (magic[1] == 0213 || magic[1] == 0236))
+    if (magic[0] == 0x1F && (magic[1] == 0x8B || magic[1] == 0x9E))
         return COMPRESSION_GZIP;
 
     /* PKZIP_MAGIC */
-    if (magic[0] == 0120 && magic[1] == 0113 && magic[2] == 003 && magic[3] == 004)
+    if (magic[0] == 'P' && magic[1] == 'K' && magic[2] == 0x03 && magic[3] == 0x04)
     {
         /* Read compression type */
         mc_lseek (fd, 8, SEEK_SET);
         if (mc_read (fd, (char *) magic, 2) != 2)
             return COMPRESSION_NONE;
 
-        /* Gzip can handle only deflated (8) or stored (0) files */
         if ((magic[0] != 8 && magic[0] != 0) || magic[1] != 0)
             return COMPRESSION_NONE;
 
-        /* Compatible with gzip */
-        return COMPRESSION_GZIP;
+        return COMPRESSION_ZIP;
     }
 
     /* PACK_MAGIC and LZH_MAGIC and compress magic */
-    if (magic[0] == 037 && (magic[1] == 036 || magic[1] == 0240 || magic[1] == 0235))
+    if (magic[0] == 0x1F && (magic[1] == 0x1E || magic[1] == 0xA0 || magic[1] == 0x9D))
         /* Compatible with gzip */
         return COMPRESSION_GZIP;
 
@@ -915,6 +913,8 @@ decompress_extension (int type)
 {
     switch (type)
     {
+    case COMPRESSION_ZIP:
+        return "/uz" VFS_PATH_URL_DELIMITER;
     case COMPRESSION_GZIP:
         return "/ugz" VFS_PATH_URL_DELIMITER;
     case COMPRESSION_BZIP:
@@ -1432,7 +1432,7 @@ guess_message_value (void)
     }
 
 #if defined(WIN32) //WIN32, config
-    if (NULL == locale) {
+    if (NULL == locale || !*locale) {
         const char *lang = mc_get_locale();
         if (lang && *lang) {
             return g_strdup(lang);

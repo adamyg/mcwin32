@@ -1,0 +1,17 @@
+
+File Changes:
+
+	- xxx
+
+	+ xxx
+
+	! xxx ==> xxx
+
+
+Edits:
+	doc\hints\*
+	doc\man\*
+	doc\*
+	tests\*
+
+
