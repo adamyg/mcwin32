@@ -106,8 +106,8 @@ Configure()
 		add_define('_CRT_SECURE_NO_DEPRECATE');
 		add_define('_CRT_NONSTDC_NO_DEPRECATE');
 
-		add_xinclude('$(ROOT)/libw32'); 	# Extra includes; C and compiler tests.
-		add_xinclude('$(ROOT)/libw32/msvc');	# MSVC specials
+		add_xinclude('$(top_builddir)/libw32'); 	# Extra includes; C and compiler tests.
+		add_xinclude('$(top_builddir)/libw32/msvc');	# MSVC specials
 
 		add_application_library('libw32.lib');
 	}
@@ -122,7 +122,7 @@ Configure()
 		add_define('WIN32_WINNT=0x501');
 		add_define('__STDC_WANT_LIB_EXT1__');
 
-		add_xinclude('$(ROOT)/libw32');
+		add_xinclude('$(top_builddir)/libw32');
 		add_application_library('libw32.lib');
 	}
 
@@ -138,7 +138,7 @@ Configure()
 		add_define('_WIN32_WINNT=0x501');	# Windows SDK
 		add_define('_WIN32_VER=0x501');
 
-		add_xinclude('$(ROOT)/libw32');
+		add_xinclude('$(top_builddir)/libw32');
 		add_application_library('libw32.a');
 
 		if ($TOOLCHAIN =~ /^mingw(64|32)/) {	# newer libraries

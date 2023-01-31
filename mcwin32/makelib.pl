@@ -82,7 +82,7 @@ my %x_environment   = (
             CXX             => 'g++',
             AR              => 'ar',
             DEFS            => '-DHAVE_CONFIG_H',
-            CFLAGS          => '-fno-strength-reduce -I$(ROOT)/djgpp',
+            CFLAGS          => '-fno-strength-reduce -I$(top_builddir)/djgpp',
             CDEBUG          => '-g',
             CWARN           => '-W -Wall -Wshadow -Wmissing-prototypes',
             },
@@ -2013,7 +2013,7 @@ ExeRealpath($)
         $path =~ s/\.exe//;
 
     } elsif ($path =~ /^\.[\/\\]/) {        # ./xxxx; assume a generated artifact
-        $path =~ s/^\./\$(ROOT)/;
+        $path =~ s/^\./\$(top_builddir)/;
 
     } else {
         print "warning: unable to resolve path <${path}>\n";
@@ -2069,7 +2069,7 @@ LoadContrib($$$$$)      # (type, version, name, dir, refIncludes)
             } elsif ('inc' eq $parts[0]) {
                 $val = "${basepath}/".$parts[1]
                     if ($val !~ /^\//);
-                push @$refIncludes, '$(ROOT)/'.$val;
+                push @$refIncludes, '$(top_builddir)/'.$val;
                 print "\tinc: $val\n";
 
             } elsif ('lbl' eq $key) {
@@ -2256,7 +2256,7 @@ CheckCompiler($$)       # (type, env)
 
         foreach my $inc (@xincludes) {
             if ($inc) {
-                $inc =~ s/\$\(ROOT\)/${CWD}/;
+                $inc =~ s/\$\(top_builddir\)/${CWD}/;
                 $inc = realpath($inc)
                     if (-d $inc);
 

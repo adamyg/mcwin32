@@ -82,8 +82,8 @@ if ($TOOLCHAIN =~ /^vs/) {
         add_define('HAVE_CONFIG_H');
         add_define('WIN32_WINNT=0x501');
 
-        add_xinclude('$(ROOT)/libw32');         # Extra includes; C and compiler tests.
-        add_xinclude('$(ROOT)/libw32/msvc');    # MSVC specials
+        add_xinclude('$(top_builddir)/libw32');         # Extra includes; C and compiler tests.
+        add_xinclude('$(top_builddir)/libw32/msvc');    # MSVC specials
 
         add_application_library('libw32.lib');
 }
@@ -98,7 +98,7 @@ if ($TOOLCHAIN =~ /^owc/) {
         add_define('HAVE_CONFIG_H');
         add_define('WIN32_WINNT=0x501');
 
-        add_xinclude('$(ROOT)/libw32');         # Extra includes; C and compiler tests.
+        add_xinclude('$(top_builddir)/libw32');         # Extra includes; C and compiler tests.
 
         add_application_library('libw32.lib');
 }

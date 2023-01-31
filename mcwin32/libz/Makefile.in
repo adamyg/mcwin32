@@ -29,7 +29,6 @@
 #
 
 @SET_MAKE@
-ROOT=		@abs_top_builddir@
 top_builddir=	@top_builddir@
 
 # File extensions
@@ -65,10 +64,10 @@ endif
 
 # Directories
 
-D_INC=		$(ROOT)/include
-D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
-D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libz
+D_INC=		$(top_builddir)/include
+D_BIN=		$(top_builddir)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(top_builddir)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(top_builddir)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libz
 
 # Common flags
 
