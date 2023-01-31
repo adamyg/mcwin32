@@ -11,7 +11,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2022
+   Written by: Adam Young 2012 - 2023
 
    This file is part of the Midnight Commander.
 
@@ -52,11 +52,7 @@
 #include "lib/keybind.h"                        /* CK_Cancel etc */
 #include "src/filemanager/panel.h"
 #include "src/filemanager/cmd.h"                /* reread_cmd() */
-#if (VERSION_3 >= 27)
 #include "src/filemanager/filemanager.h"        /* left/right panel */
-#else
-#include "src/filemanager/midnight.h"
-#endif
 
 #include "drive.h"
 
@@ -197,8 +193,8 @@ drive_sel(WPanel *panel)
     }
 
     y_pos = ((LINES - 6) / 2) - 3;
-    x_pos = panel->widget.x +                   /* center relative to panel */
-                ((panel->widget.cols -
+    x_pos = panel->widget.rect.x +              /* center relative to panel */
+                ((panel->widget.rect.cols -
                     ((totaldrives > D_PERLINE ? D_PERLINE : totaldrives) * D_BUTWIDTH)) / 2) + 2;
 
     do_refresh ();
@@ -278,13 +274,9 @@ drive_sel(WPanel *panel)
                         if (get_panel_type (is_right) != view_listing) {
                             create_panel (is_right, view_listing);
                         }
-#if (VERSION_3 >= 27)
                         panel_do_cd (panel, cwd_vdir, cd_exact);
                         vfs_path_free (cwd_vdir, TRUE);
-#else
-                        do_cd (cwd_vdir, cd_exact);
-                        vfs_path_free (cwd_vdir);
-#endif
+
                     } else {
                         message (D_ERROR, MSG_ERROR, _("Cannot change drive to \"%s\"\n%s"), t_path,
                                     unix_error_string (errno));
