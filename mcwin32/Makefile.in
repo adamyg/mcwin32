@@ -849,10 +849,10 @@ package:	packageinfo
 .PHONY:		clean
 clean:
 		@echo $(BUILD_TYPE) clean
-		-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN) >nul 2>&1
-		-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES)) >nul 2>&1
-		-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A) >nul 2>&1
-		-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A) >nul 2>&1
+		-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES)) >/dev/null 2>&1
+		-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A) >/dev/null 2>&1
+		-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A) >/dev/null 2>&1
 		$(MAKE) -C libglib clean
 		$(MAKE) -C libintl clean
 		$(MAKE) -C libmbedtls clean
@@ -862,16 +862,16 @@ clean:
 		$(MAKE) -C libz clean
 		$(MAKE) -C libw32 clean
 		$(MAKE) -C autoupdater clean
-		-$(RM) $(MSGOBJS) $(MSGDIRS) >nul 2>&1
-		-$(RM) $(CONFIGURATION) >nul 2>&1
-		-$(RM) $(CONFIGURATION_WIN32) >nul 2>&1
-		-$(RM) $(DIRECTORIES) >nul 2>&1
-		-$(RMDIR) $(call reverse, $(dir $(DIRECTORIES)) $(BASEMSGDIRS) $(dir $(MSGDIRS)))) >nul 2>&1
-		-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) >nul 2>&1
+		-$(RM) $(MSGOBJS) $(MSGDIRS) >/dev/null 2>&1
+		-$(RM) $(CONFIGURATION) >/dev/null 2>&1
+		-$(RM) $(CONFIGURATION_WIN32) >/dev/null 2>&1
+		-$(RM) $(DIRECTORIES) >/dev/null 2>&1
+		-$(RMDIR) $(call reverse, $(dir $(DIRECTORIES)) $(BASEMSGDIRS) $(dir $(MSGDIRS)))) >/dev/null 2>&1
+		-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) >/dev/null 2>&1
 
 .PHONY:		vclean
 vclean:		clean
-		-$(RM) $(IMPORT) >nul 2>&1
+		-$(RM) $(IMPORT) >/dev/null 2>&1
 
 
 #########################################################################################
@@ -920,7 +920,7 @@ endif
 
 .PHONY:			new_buildnumber
 new_buildnumber:
-		-@chmod +w BUILDNUMBER >nul 2>&1
+		-@chmod +w BUILDNUMBER >/dev/null 2>&1
 		@echo incrementing build number ...
 		-@$(BUSYBOX) sh -c "\
 			if [ ! -f BUILDNUMBER ]; then echo 1 >BUILDNUMBER; fi;\
