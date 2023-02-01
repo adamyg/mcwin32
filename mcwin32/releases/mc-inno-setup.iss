@@ -98,7 +98,7 @@ Root: HKLM; Subkey: "Software\Midnight-Commander"; ValueType: dword;  ValueName:
 Source: "..\{#BinDir}\README.txt";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\ChangeLog.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; Flags: ignoreversion
-Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; DestName: "mcedit.exe" Flags: ignoreversion
+Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; DestName: "mcedit.exe"; Flags: ignoreversion
 Source: "..\{#BinDir}\mc.map";        DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcupdater.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
