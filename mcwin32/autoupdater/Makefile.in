@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.9 2023/01/31 17:08:48 cvsuser Exp $
+# $Id: Makefile.in,v 1.10 2023/02/03 17:10:09 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -38,6 +38,15 @@ MAKEFLAGS+=	BUILD_TYPE=debug
 endif
 ifneq ("$(BUILD_TYPE)","release")
 RTSUFFIX=d
+endif
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
 endif
 
 # Directories
@@ -215,7 +224,7 @@ installinc:		include/.created
 		@echo "do not delete, managed directory" > $@
 
 clean:
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
 
 $(D_OBJ)/%$(O):		%.cpp
 		$(CC) $(CXXFLAGS) -o $@ -c $<

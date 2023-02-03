@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.12 2023/02/01 13:50:25 cvsuser Exp $
+# $Id: Makefile.in,v 1.13 2023/02/03 17:10:09 cvsuser Exp $
 # libglib makefile.
 #
 #
-# Copyright (c) 2016 - 2022 Adam Young.
+# Copyright (c) 2016 - 2023 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -63,6 +63,15 @@ MAKEFLAGS+=	BUILD_TYPE=debug
 endif
 ifneq ("$(BUILD_TYPE)","release")
 RTSUFFIX=d
+endif
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
 endif
 
 # Directories
@@ -359,7 +368,7 @@ debug:
 $(GLIBLIB):		CLOCAL += -I. -I$(GLIBSRC)
 $(GLIBLIB):		CEXTRA += -DGLIB_COMPILATION -DGLIB_STATIC_COMPILATION -DPCRE_STATIC
 $(GLIBLIB):		$(GLIBLIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
@@ -373,7 +382,7 @@ $(GLIBDLL):		$(GLIBDLLOBJS)
 
 $(GMODULELIB):		CLOCAL += -I. -I$(GMODULESRC) -I$(GLIBSRC)
 $(GMODULELIB):		$(GMODULELIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
@@ -490,11 +499,11 @@ installheaders:		Makefile ../include/.created \
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GLIBDLL) $(GLIBDLLOBJS) >/dev/null 2>&1)
-		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GMODULEDLL) $(GMODULEDLLOBJS) >/dev/null 2>&1)
-		-@$(RM) $(subst /,\,$(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1)
-		-@$(RM) $(subst /,\,$(GLIBLIBOBJS) >/dev/null 2>&1)
-		-@$(RM) $(subst /,\,$(GMODULELIBOBJS) >/dev/null 2>&1)
+		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GLIBDLL) $(GLIBDLLOBJS) $(QUIETOUT))
+		-@$(LIBTOOL) --mode=clean $(RM) $(subst /,\,$(GMODULEDLL) $(GMODULEDLLOBJS) $(QUIETOUT))
+		-@$(RM) $(subst /,\,$(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT))
+		-@$(RM) $(subst /,\,$(GLIBLIBOBJS) $(QUIETOUT))
+		-@$(RM) $(subst /,\,$(GMODULELIBOBJS) $(QUIETOUT))
 
 
 ############################################################
