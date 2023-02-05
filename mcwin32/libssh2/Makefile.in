@@ -25,7 +25,7 @@
 #
 
 @SET_MAKE@
-ROOT=		@abs_top_builddir@
+ROOT=		@top_builddir@
 top_builddir=	@top_builddir@
 
 # File extensions

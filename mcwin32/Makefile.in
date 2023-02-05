@@ -27,7 +27,7 @@
 #
 
 @SET_MAKE@
-ROOT		= @abs_top_builddir@
+ROOT		= @top_builddir@
 
 PACKAGE		= mc
 PKG_BUGREPORT	= @PACKAGE_BUGREPORT@
