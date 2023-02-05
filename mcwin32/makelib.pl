@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.25 2023/01/31 17:07:13 cvsuser Exp $
+# $Id: makelib.pl,v 1.26 2023/02/05 08:33:07 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -148,6 +148,7 @@ my %x_environment   = (
             },
 
         'mingw64'       => {    # MingW64 (64-bit mode)
+            ISWIN64         => 'yes',
             TOOLCHAIN       => 'mingw64',
             TOOLCHAINEXT    => '.mingw64',
             CC              => 'gcc',
@@ -243,9 +244,10 @@ my %x_environment   = (
             LSWITCH         => '',
             XSWITCH         => '-Fe',
             AR              => 'lib',
+            RC              => 'rc',        # no, /nologo option
             CINCLUDE        => '',
             RTLIBRARY       => '-MDd',
-            CFLAGS          => '-nologo @RTLIBRARY@',
+            CFLAGS          => '-nologo @RTLIBRARY@ -Dinline=__inline',
             CXXFLAGS        => '-nologo @RTLIBRARY@ -EHsc',
             CDEBUG          => '-Zi -RTC1 -Od',
             CRELEASE        => '-O2 -DNDEBUG',
@@ -737,6 +739,7 @@ my %win_entries     = (
         RMDIR               => '@BINPATH@rmdir.exe',
 
         ISWIN32             => 'yes',
+        ISWIN64             => 'no',
         PATHSEP             => ';',
         DEFS                => '-DHAVE_CONFIG_H -DWIN32=0x501',
 
@@ -1173,6 +1176,7 @@ my $x_workdir       = '.makelib';
 my $x_tmpdir        = undef;
 my $x_compiler      = '';
 my $x_version       = '';
+
 my @x_include       = ();
 my @x_sysinclude    = ();
 my $x_command       = '';
@@ -3040,6 +3044,11 @@ Makefile($$$)           # (type, dir, file)
         }
     }
 
+    my $relpath = (File::Spec->file_name_is_absolute($dir) ? $CWD :
+                        dos2unix(File::Spec->abs2rel($CWD, "${CWD}/${dir}")));
+    print "relpath=${relpath}\n"
+        if ($o_verbose);
+
     my $continuation = 0;
     while (<MAKEFILE>) {
         $_ =~ s/\s*(\n|$)//;                    # kill trailing whitespace & nl
@@ -3179,8 +3188,8 @@ Makefile($$$)           # (type, dir, file)
     }
 
     # replace tags
-    $x_tokens{top_builddir} = ($dir eq '.' ? '.' : '..');
-    $x_tokens{top_srcdir} = ($dir eq '.' ? '.' : '..');
+    $x_tokens{top_builddir} = $relpath;
+    $x_tokens{top_srcdir} = $relpath;
     if ($type eq 'owc') {                      # OpenWatcom
        if ('-i=' eq $x_tokens{ISWITCH}) {
             $x_tokens{CINCLUDE} =~ s/-I([^\s]+)/-i=\$(subst \/,\\,$1)/g;
@@ -3382,7 +3391,7 @@ Config($$$)             # (type, dir, file)
 
 
 sub
-cannon_path($)
+cannon_path($)          #(name)
 {
     my $path  = shift;
     my ($volume, $directories, $file) = File::Spec->splitpath(File::Spec->canonpath($path));
@@ -3399,6 +3408,24 @@ cannon_path($)
     $path = File::Spec->catpath($volume, File::Spec->catdir(@dar), $file);
     $path =~ s/\\/\//g;
     return $path;
+}
+
+
+sub
+unix2dos($)             #(name)
+{
+    my $name = shift;
+    $name =~ s/\//\\/g;
+    return $name;
+}
+
+
+sub
+dos2unix($)             #(name)
+{
+    my $name = shift;
+    $name =~ s/\\/\//g;
+    return $name;
 }
 
 
