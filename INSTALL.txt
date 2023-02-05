@@ -30,8 +30,8 @@
 
         1. binutils
 
-              A unix style bintools must be available, plus the installation needs to be visible
-              within the current PATH.
+              A unix style bintools needs to be available, plus the installation should be
+              visible within the current PATH.
 
               Examples:
 
@@ -49,8 +49,8 @@
 
         2. Compiler installation
 
-              One of the following C/C++ toolchains needs to be installed, plus the installation
-              needs visible within the current PATH.
+              One of the following C/C++ toolchains needs to be available, plus the installation
+              should be visible within the current PATH.
 
               Suitable distributions include:
 
@@ -58,11 +58,13 @@
                 o Microsoft Visual Studio 2013 (or greater).
                 o mingw32/64 [ experimental ].
 
+              Note: OpenWatcom is currently utlised for releases.
+
 
         3. Perl installation
 
-              A perl installation needs be available plus the installation should visible within
-              the current PATH.
+              A perl installation needs to be available plus the installation should be visible
+              within the current PATH.
 
               Suitable perl distributions include:
 
@@ -73,12 +75,13 @@
         4. InnoSetup installation, optional
 
               Install InnoSetup 5.6.x within its default installation path; if modified the
-              arguments to the support scripts below shall need to tbe adjusted to match.
+              arguments to the support scripts below shall need to tbe adjusted to match,
+              set the envvar INNO="<install-path>" prior to priming the tree.
 
               This package is optional and only required if an installer is being built.
 
               6.x Inno and later is also an option, but the Installer will only function on Vista
-              or greater. Later versions of Inno on longer support Windows 2000, XP, and Server
+              or greater. 6.x and later versions of Inno no longer support Windows 2000, XP, and Server
               2003.
 
 
@@ -102,16 +105,34 @@
                  $ gmake release
               or $ support\gmake-42 release
 
+              Usage:
+
+                | make [VERBOSE=1] [release or debug] target
+                |
+                |       Build one or more of the following targets recursively within each sub-directory
+                |       for the toolchain <toolchains>.
+                |
+                | Options:
+                |       VERBOSE - increase run-time diagnostics; suppress stderr filtering.
+                |
+                | Targets:
+                |
+                |       build - build everything.
+                |       package - build package.
+                |       clean - delete everything which can be remade.
+                |       vclean - delete all.
+                |       help - command line usage.
+
 
         6. To create the installer.
 
                  $ support\gmake-42 release package
               or $ start mc-inno-setup.iss
-              
+
               Note:
-              Alternatively copy the bin tree your desired install location, as the application
-              is portable.
-w
+              Alternatively zip/copy the bin tree to your desired install location, as the
+              application is portable.
+
 
         7. Finally, please review the packaged example alternative configurations as win32
            development environments can be problematic, dependent on the host setup:
@@ -125,3 +146,4 @@ w
 
 Last Update: Feb/2022
 =end=
+
