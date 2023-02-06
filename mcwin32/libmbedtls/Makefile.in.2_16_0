@@ -280,8 +280,8 @@ object:			$(D_OBJ)/.created
 .PHONY:		installinc
 installinc:		../include/.created ../include/mbedtls/.created
 		@echo publishing headers ...
-		-cp $(MBEDINCLUDE)/mbedtls/*.h ../include/mbedtls
-		-cp ./win32/*.h ../include/mbedtls
+		cp -f $(MBEDINCLUDE)/mbedtls/*.h ../include/mbedtls
+		cp -f ./win32/*.h ../include/mbedtls
 
 %/.created:
 		-@mkdir $(@D)

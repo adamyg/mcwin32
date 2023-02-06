@@ -956,16 +956,16 @@ $(D_BIN)/man2hlp.pl:		$(MCSOURCE)/src/man2hlp/man2hlp.in
 # .. bin
 $(D_BIN)/ChangeLog.txt :	./ChangeLog.txt
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 
 $(D_BIN)/README.txt :		./doc/README.win32
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 
 # .. etc
 $(D_ETC)/% :			$(MISC_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 $(D_ETC)/% :			$(MISC_SRC)/%.in
@@ -974,12 +974,12 @@ $(D_ETC)/% :			$(MISC_SRC)/%.in
 # .. etc/magic
 $(D_ETC)/magic.mgc:		libmagic/magic.mgc
 		@echo importing $@ ..
-		@$(CP) $< $@
+		@$(CP) -f $< $@
 
 # .. plugin
 $(D_PLUGIN)/% :			$(EXTD_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 $(D_PLUGIN)/% :			$(EXTD_SRC)/%.in
@@ -988,7 +988,7 @@ $(D_PLUGIN)/% :			$(EXTD_SRC)/%.in
 # .. plugin/extfs.d
 $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%.in
@@ -997,18 +997,18 @@ $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%.in
 # .. plugin/fish
 $(D_PLUGIN)/fish/% :		$(FISH_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 # .. share
 $(D_SHARE)/mc.charsets :	$(MISC_SRC)/mc.charsets.in
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 $(D_SHARE)/% :			$(MISC_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 # .. share/help
@@ -1025,24 +1025,24 @@ $(D_SHARE)/help/mc.hlp.%:	$(MAN_SRC)/%/mc.1.in $(HLP_SRC)/%/xnc.hlp
 # .. share/hints
 $(D_SHARE)/hints/% :		$(HINTS_L10N_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 $(D_SHARE)/hints/% :		$(HINTS_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 # .. share/skins
 $(D_SHARE)/skins/% :		$(SKINS_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 # .. share/syntax
 $(D_SHARE)/syntax/%.syntax :	$(SYNTAX_SRC)/%.syntax
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 $(D_SHARE)/syntax/% :		$(SYNTAX_SRC)/%.in
@@ -1051,26 +1051,26 @@ $(D_SHARE)/syntax/% :		$(SYNTAX_SRC)/%.in
 # .. share/macro.d
 $(D_SHARE)/macros.d/% :		$(MACROSDATA_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) dos2unix $@
 
 # .. docs
 $(D_DOC)/AUTHORS :		$(MCSOURCE)/AUTHORS
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 
 $(D_DOC)/ADDITIONALSKINS :	$(WIN32_SKINS_SRC)/source.txt
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 
 $(D_DOC)/% :			$(WIN32_DOC_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) unix2dos $@
 
 $(D_DOC)/% :			$(DOC_SRC)/%
 		@echo importing $@ ..
-		@$(CP) $^ $@
+		@$(CP) -f $^ $@
 		@$(BUSYBOX) unix2dos $@
 
 # .. mo

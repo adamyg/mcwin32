@@ -147,7 +147,7 @@ object:			$(D_OBJ)/.created
 .PHONY:		installinc
 installinc:		../include/.created
 		@echo publishing headers ...
-		-cp $(INTLSRC)/libintl.h ../include
+		cp -f $(INTLSRC)/libintl.h ../include
 
 %/.created:
 		-@mkdir $(@D)

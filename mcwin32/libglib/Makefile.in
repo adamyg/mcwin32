@@ -410,88 +410,88 @@ installheaders:		Makefile ../include/.created \
 				../include/glib-2.0/glib/.created \
 				../include/glib-2.0/glib/deprecated/.created
 		@echo publishing glib headers ...
-		@$(CP) $(GLIBINCLUDE)/glib.h			../include/glib-2.0
-		@$(CP) $(GLIBINCLUDE)/glibconfig.h.win32	../include/glib-2.0/glibconfig.h
-		@$(CP) $(GLIBINCLUDE)/galloca.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/garray.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gasyncqueue.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gatomic.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gbacktrace.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gbase64.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gbitlock.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gbookmarkfile.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gbytes.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gcharset.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gchecksum.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gconvert.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gdataset.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gdate.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gdatetime.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gdir.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/genviron.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gerror.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gfileutils.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/ggettext.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/ghash.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/ghmac.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/ghook.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/ghostutils.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/giochannel.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gkeyfile.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/glist.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gmacros.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gmain.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gmappedfile.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gmarkup.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gmem.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gmessages.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gnode.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/goption.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gpattern.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gpoll.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gprimes.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gqsort.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gquark.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gqueue.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/grand.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gregex.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gscanner.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gsequence.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gshell.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gslice.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gslist.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gspawn.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gstrfuncs.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gstring.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gstringchunk.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gtestutils.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gthread.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gthreadpool.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gtimer.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gtimezone.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gtrashstack.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gtree.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gtypes.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gunicode.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gurifuncs.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gutils.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/guuid.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gvarianttype.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gvariant.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gversion.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gversionmacros.h		../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/gwin32.h			../include/glib-2.0/glib
-		@$(CP) $(GLIBINCLUDE)/glib-autocleanups.h	../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/glib.h			../include/glib-2.0
+		@$(CP) -f $(GLIBINCLUDE)/glibconfig.h.win32	../include/glib-2.0/glibconfig.h
+		@$(CP) -f $(GLIBINCLUDE)/galloca.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/garray.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gasyncqueue.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gatomic.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gbacktrace.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gbase64.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gbitlock.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gbookmarkfile.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gbytes.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gcharset.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gchecksum.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gconvert.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gdataset.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gdate.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gdatetime.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gdir.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/genviron.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gerror.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gfileutils.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/ggettext.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/ghash.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/ghmac.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/ghook.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/ghostutils.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/giochannel.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gkeyfile.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/glist.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gmacros.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gmain.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gmappedfile.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gmarkup.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gmem.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gmessages.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gnode.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/goption.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gpattern.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gpoll.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gprimes.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gqsort.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gquark.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gqueue.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/grand.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gregex.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gscanner.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gsequence.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gshell.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gslice.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gslist.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gspawn.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gstrfuncs.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gstring.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gstringchunk.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gtestutils.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gthread.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gthreadpool.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gtimer.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gtimezone.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gtrashstack.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gtree.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gtypes.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gunicode.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gurifuncs.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gutils.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/guuid.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gvarianttype.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gvariant.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gversion.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gversionmacros.h		../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/gwin32.h			../include/glib-2.0/glib
+		@$(CP) -f $(GLIBINCLUDE)/glib-autocleanups.h	../include/glib-2.0/glib
 		@echo publishing glib deprecated headers ...
-		@$(CP) $(GLIBINCLUDE)/deprecated/gallocator.h	../include/glib-2.0/glib/deprecated
-		@$(CP) $(GLIBINCLUDE)/deprecated/gcache.h	../include/glib-2.0/glib/deprecated
-		@$(CP) $(GLIBINCLUDE)/deprecated/gcompletion.h	../include/glib-2.0/glib/deprecated
-		@$(CP) $(GLIBINCLUDE)/deprecated/gmain.h	../include/glib-2.0/glib/deprecated
-		@$(CP) $(GLIBINCLUDE)/deprecated/grel.h		../include/glib-2.0/glib/deprecated
-		@$(CP) $(GLIBINCLUDE)/deprecated/gthread.h	../include/glib-2.0/glib/deprecated
+		@$(CP) -f $(GLIBINCLUDE)/deprecated/gallocator.h	../include/glib-2.0/glib/deprecated
+		@$(CP) -f $(GLIBINCLUDE)/deprecated/gcache.h	../include/glib-2.0/glib/deprecated
+		@$(CP) -f $(GLIBINCLUDE)/deprecated/gcompletion.h	../include/glib-2.0/glib/deprecated
+		@$(CP) -f $(GLIBINCLUDE)/deprecated/gmain.h	../include/glib-2.0/glib/deprecated
+		@$(CP) -f $(GLIBINCLUDE)/deprecated/grel.h		../include/glib-2.0/glib/deprecated
+		@$(CP) -f $(GLIBINCLUDE)/deprecated/gthread.h	../include/glib-2.0/glib/deprecated
 		@echo publishing gmodule headers ...
-		@$(CP) $(GMODULESRC)/gmoduleconf.h.win32	../include/glib-2.0/gmoduleconf.h
-		@$(CP) $(GMODULESRC)/gmodule.h			../include/glib-2.0
+		@$(CP) -f $(GMODULESRC)/gmoduleconf.h.win32	../include/glib-2.0/gmoduleconf.h
+		@$(CP) -f $(GMODULESRC)/gmodule.h			../include/glib-2.0
 
 %/.created:
 		-@mkdir $(@D)

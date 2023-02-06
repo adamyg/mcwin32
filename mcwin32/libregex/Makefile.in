@@ -113,7 +113,7 @@ $(REGEXLIB):		$(D_OBJ)/.created $(LIBOBJS)
 
 installinc:		../include/.created
 		@echo publishing headers ..
-		-cp regex.h ../include
+		cp -f regex.h ../include
 
 %/.created:
 		-@mkdir $(@D)

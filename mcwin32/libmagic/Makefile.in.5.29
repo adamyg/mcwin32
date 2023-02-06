@@ -169,13 +169,13 @@ $(MAGICUTIL):		$(UTILOBJS)
 
 $(MAGICDB):		magic.mgc
 		@echo publishing magicdb $(MAGICDB) ...
-		@cp magic.mgc $(MAGICDB)
+		@cp -f magic.mgc $(MAGICDB)
 
 magic.mgc:		MSRC=$(wildcard $(MAGDIR)/Magdir/*)
 magic.mgc:		$(MSRC) Makefile
 		@$(RM) -fr magic
 		-@mkdir magic
-		@cp $(MSRC) magic
+		@cp -f $(MSRC) magic
 		$(MAGICUTIL) -C -m magic
 		@$(RM) -fr magic
 
@@ -189,7 +189,7 @@ source:			.unpacked.$(VERSION)
 
 installinc:		../include/.created
 		@echo publishing headers 'magic.h' ...
-		@cp $(MAGICSRC)/magic.h ../include
+		@cp -f $(MAGICSRC)/magic.h ../include
 
 %/.created:
 		-@mkdir $(@D)

@@ -216,9 +216,9 @@ object:			$(D_OBJ)/.created
 .PHONY:		installinc
 installinc:		../include/.created
 		@echo publishing headers ...
-		-cp $(SSH2INCLUDE)/libssh2.h ../include
-		-cp $(SSH2INCLUDE)/libssh2_Sftp.h ../include
-		-cp libssh2_helper.h ../include
+		cp -f $(SSH2INCLUDE)/libssh2.h ../include
+		cp -f $(SSH2INCLUDE)/libssh2_Sftp.h ../include
+		cp -f libssh2_helper.h ../include
 
 %/.created:
 		-@mkdir $(@D)

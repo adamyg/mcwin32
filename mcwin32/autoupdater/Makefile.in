@@ -215,9 +215,9 @@ $(SIGNATURETSK):	$(SIGNATUREOBJS)
 
 installinc:		include/.created
 		@echo publishing headers ...
-		-cp $(UPDATERSRC)/magic.h include
+		cp -f $(UPDATERSRC)/magic.h include
 		@echo publishing magicdb ...
-		-cp magic.mgc $(D_BIN)
+		cp -f magic.mgc $(D_BIN)
 
 %/.created:
 		-@mkdir $(@D)
