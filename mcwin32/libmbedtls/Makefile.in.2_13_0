@@ -27,6 +27,7 @@
 #
 
 @SET_MAKE@
+MAKESHELL=	cmd.exe
 ROOT=		@abs_top_builddir@
 top_builddir=	@top_builddir@
 
