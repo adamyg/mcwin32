@@ -2,6 +2,7 @@ mbedtls-2.13.0
 mbedtls-2.16.6
 mbedtls-2.27.0
 mbedtls-3.2.1
+mbedtls-3.3.0
 .unpacked.*
 Makefile
 *.err

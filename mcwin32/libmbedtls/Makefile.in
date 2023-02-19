@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.11 2023/02/03 17:10:09 cvsuser Exp $
+# $Id: Makefile.in,v 1.12 2023/02/19 17:10:46 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
@@ -254,7 +254,7 @@ $(MBEDCRYPTOLIB):	$(CRYPTO_LIBOBJS)
 
 INSTALLED+=	$(D_BIN)/libmbedcrypto.$(VERSION).dll
 $(MBEDCRYPTODLL):	LIBNAME=libmbedcrypto
-$(MBEDCRYPTODLL):	LIBDEF=-export-symbols win32/libmbedcrypto.def
+$(MBEDCRYPTODLL):	LIBDEF=-export-symbols win32/libmbedcrypto.def.$(VERSION)
 $(MBEDCRYPTODLL):	CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDCRYPTO_SOURCE -D_WINDLL
 $(MBEDCRYPTODLL):	$(CRYPTO_DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
@@ -269,7 +269,7 @@ $(MBEDX509LIB):		$(X509_LIBOBJS)
 
 INSTALLED+=	$(D_BIN)/libmbedx509.$(VERSION).dll
 $(MBEDX509DLL):		LIBNAME=libmbedx509
-$(MBEDX509DLL):		LIBDEF=-export-symbols win32/libmbedx509.def
+$(MBEDX509DLL):		LIBDEF=-export-symbols win32/libmbedx509.def.$(VERSION)
 $(MBEDX509DLL):		CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDX509_SOURCE -D_WINDLL
 $(MBEDX509DLL):		$(X509_DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
@@ -284,7 +284,7 @@ $(MBEDTLSLIB):		$(TLS_LIBOBJS)
 
 INSTALLED+=	$(D_BIN)/libmbedtls.$(VERSION).dll
 $(MBEDTLSDLL):		LIBNAME=libmbedtls
-$(MBEDTLSDLL):		LIBDEF=-export-symbols win32/libmbedtls.def
+$(MBEDTLSDLL):		LIBDEF=-export-symbols win32/libmbedtls.def.$(VERSION)
 $(MBEDTLSDLL):		CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDTLS_SOURCE -DLIBMBEDTLS -D_WINDLL
 $(MBEDTLSDLL):		$(TLS_DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
