@@ -492,7 +492,7 @@ Link()
             Error("link: $_ $val, not a valid symbol file : $!")
                 if (! -f $val);
 
-            if ($val =~ /\.def$/i) {            # <name.def>
+            if ($val =~ /\.def$/i || $val =~ /\.def\./i) { # <name.def> or <name.def.xxx>
                 ParseDefFile($val, \@EXPORTS, \$DESCRIPTION);
             } else {                            # <name.sym>
                 ParseSymFile($val, \@EXPORTS);
