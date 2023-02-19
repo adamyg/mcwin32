@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.26 2023/02/05 08:33:07 cvsuser Exp $
+# $Id: makelib.pl,v 1.27 2023/02/08 17:44:24 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -575,7 +575,7 @@ my %x_environment   = (
                 #   (1) Use with caution, beta undocumented feature and not 100% stable.
                 #   (2) Avoid changing the call convention from #r/#s, otherwise runtime library issues.
                 #
-            CFLAGS          => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -aa -sg',
+            CFLAGS          => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -za99 -aa -sg',
             CXXFLAGS        => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -cc++ -xs -xr',
             CDEBUG          => '-d2 -hd -of+ ',
             CXXDEBUG        => '-d2 -hd -od',   #d2/d3 under hw generates invalid symbols
@@ -706,7 +706,7 @@ my %x_environment   = (
                 #   (1) Use with caution, beta undocumented feature and not 100% stable.
                 #   (2) Avoid changing the call convention from #r/#s, otherwise runtime library issues.
                 #
-            CFLAGS          => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -aa -sg',
+            CFLAGS          => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -za99 -aa -sg',
             CXXFLAGS        => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -cc++ -xs -xr',
             CDEBUG          => '-d2 -hd -of+',
         ##  CXXDEBUG        => '-d2i -hd -od',
