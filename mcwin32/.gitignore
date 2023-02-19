@@ -14,6 +14,7 @@ CVS/
 bin_shortcut.lnk
 Makefile
 buildinfo.h
+packageinfo.h
 BUILDNUMBER
 owcsetup.dbg
 testaccounts.txt
