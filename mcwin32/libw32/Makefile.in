@@ -243,7 +243,7 @@ $(W32DLL):		$(DLLOBJS)
 			-rpath $(D_LIB) -bindir $(D_BIN) $(DLLDEF) $^ $(LDLIBS)
 
 $(D_OBJ)/.created:
-		-@mkdir $(D_OBJ)
+		@$(PERL) $(top_builddir)/support/mkdir_p.pl $(D_OBJ)
 		@echo "do not create" > $@
 
 clean:

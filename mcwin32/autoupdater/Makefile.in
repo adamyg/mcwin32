@@ -220,7 +220,7 @@ installinc:		include/.created
 		-cp magic.mgc $(D_BIN)
 
 %/.created:
-		-@mkdir $(@D)
+		@$(PERL) $(top_builddir)/support/mkdir_p.pl $(@D)
 		@echo "do not delete, managed directory" > $@
 
 clean:

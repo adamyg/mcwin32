@@ -789,7 +789,7 @@ directories:			$(DIRECTORIES)
 artifacts:			buildinfo BUILDNUMBER
 
 %/.created:
-		-@$(PERL) ./support/mkdir_p.pl $(@D)
+		@$(PERL) $(top_builddir)/support/mkdir_p.pl $(@D)
 		@echo "++ do not delete, midnight commander managed content ++" > $@
 
 targets:			$(LIBRARIES) $(TARGETS)

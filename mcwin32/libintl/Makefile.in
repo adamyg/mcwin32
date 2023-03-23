@@ -150,7 +150,7 @@ installinc:		../include/.created
 		-cp $(INTLSRC)/libintl.h ../include
 
 %/.created:
-		-@mkdir $(@D)
+		@$(PERL) $(top_builddir)/support/mkdir_p.pl $(@D)
 		@echo "do not delete, managed directory" > $@
 
 clean:

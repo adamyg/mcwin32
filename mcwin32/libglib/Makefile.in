@@ -494,7 +494,7 @@ installheaders:		Makefile ../include/.created \
 		@$(CP) $(GMODULESRC)/gmodule.h			../include/glib-2.0
 
 %/.created:
-		-@mkdir $(@D)
+		@$(PERL) $(top_builddir)/support/mkdir_p.pl $(@D)
 		@echo "do not delete, managed directory" > $@
 
 clean:

@@ -197,7 +197,7 @@ $(MAGICDB):		magic.mgc
 magic.mgc:		MSRC=$(wildcard $(MAGDIR)/Magdir/*)
 magic.mgc:		$(MSRC) Makefile
 		@$(RM) -fr magic
-		-@mkdir magic
+		@$(PERL) $(top_builddir)/support/mkdir_p.pl magic
 		@cp $(MSRC) magic
 		$(MAGICUTIL) -C -m magic
 		@$(RM) -fr magic
@@ -215,7 +215,7 @@ installinc:		../include/.created
 		@cp $(MAGICSRC)/magic.h ../include
 
 %/.created:
-		-@mkdir $(@D)
+		@$(PERL) $(top_builddir)/support/mkdir_p.pl $(@D)
 		@echo "do not delete, managed directory" > $@
 
 clean:

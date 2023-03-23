@@ -221,7 +221,7 @@ installinc:		../include/.created
 		-cp libssh2_helper.h ../include
 
 %/.created:
-		-@mkdir $(@D)
+		@$(PERL) $(top_builddir)/support/mkdir_p.pl $(@D)
 		@echo "do not delete, managed directory" > $@
 
 clean:
