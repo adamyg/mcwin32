@@ -736,7 +736,6 @@ lookup_key_by_code (const int keycode)
         }
 
         if (mod & KEY_M_SHIFT) {
-//BUGFIX:   if (lookup_keycode (KEY_M_ALT, &idx)) {
             if (lookup_keycode (KEY_M_SHIFT, &idx)) {
                 use_shift = idx;
                 if (k < 127) {
