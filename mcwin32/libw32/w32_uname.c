@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.7 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.8 2023/01/31 17:44:09 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -69,18 +69,40 @@ __CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.7 2022/03/16 13:47:00 cvsuse
 //
 //      No errors are defined.
 */
+
+typedef BOOL (WINAPI *RtlGetVersion_t)(LPOSVERSIONINFOEX);
+typedef BOOL (WINAPI *IsWow64Process_t)(HANDLE, PBOOL);
+
+struct CurrentVersion {
+    char ProductName[32];
+    char DisplayVersion[16];
+    unsigned ubr;
+};
+
+static BOOL IsWow64(void);
+static void RegCurrentVersion(struct CurrentVersion *cv);
+
+#if _UTSNAME_LENGTH <= 64
+#define ULENGTH (64 + 1)
+#else
+#define ULENGTH _UTSNAME_LENGTH 
+#endif
+
+static char u_sysname[ULENGTH];
+static char u_version[ULENGTH];
+static char u_release[ULENGTH];
+static char u_machine[ULENGTH];
+
 LIBW32_API int
 uname(struct utsname *u)
 {
-    static char u_sysname[32], u_version[16], u_release[32], u_machine[32];
-
     if (u_sysname[0] == '\0') {
         unsigned        osmajor, osminor, osbuild;
         char            osname_unknown[ 32 ];
         const char *    osname = "unknown", *cpu = "unknown";
         DWORD           dwVersion;
-        OSVERSIONINFO   ovi;
-        OSVERSIONINFOEX oviex;
+        OSVERSIONINFO   ovi = {0};
+        OSVERSIONINFOEX oviex = {0};
         SYSTEM_INFO     si;
 
         ovi.dwOSVersionInfoSize = sizeof(ovi);
@@ -88,7 +110,6 @@ uname(struct utsname *u)
 
         /* osmajor, osminor, osbuild */
         if (FALSE == GetVersionEx(&ovi)) {
-                // TODO: replace with RtlGetVersion() as GetVersionEx() is now defunct; 8.1+
             /*
              *  Error ... try the old way
              */
@@ -147,6 +168,7 @@ uname(struct utsname *u)
                  *  The following table summarizes the most recent operating system version numbers.
                  *
                  *      Operating system            Version number
+                 *      Windows 11                  10.0 (build >= 22000)
                  *      Windows 10                  10.0
                  *      Windows 8.1                 6.3
                  *      Windows 8                   6.2
@@ -163,19 +185,39 @@ uname(struct utsname *u)
                  */
                 if (ovi.dwMajorVersion < 5) {
                     osname = "NT";              // NT 4 or 3.51
+
                 } else {
-                    if (FALSE == GetVersionEx ((OSVERSIONINFO *) &oviex)) {
+                    RtlGetVersion_t fnRtlGetVersion = NULL;
+
+                    if (FALSE == GetVersionEx((OSVERSIONINFO *) &oviex)) {
                         oviex.dwMajorVersion = 0;
                     }
 
-                    if (ovi.dwMajorVersion >= 10) {
-                        osname = "Windows 10";  // Windows 10
+                    fnRtlGetVersion = (RtlGetVersion_t) GetProcAddress(GetModuleHandleA("ntdll"), "RtlGetVersion");
+                    if (fnRtlGetVersion) {      // upgrade Version + BuildNumber
+                        fnRtlGetVersion(&oviex);
+                    }
 
-                        if (oviex.dwMinorVersion > 0) {
-                            osname = "Windows 10+";
+                    if (oviex.dwMajorVersion >= 10) {
+                        osmajor = (unsigned)oviex.dwMajorVersion;
+                        osminor = (unsigned)oviex.dwMinorVersion;
+                        osbuild = (unsigned)oviex.dwBuildNumber;
+
+                        if (VER_NT_WORKSTATION == oviex.wProductType) {
+                            osname = "Windows 10";  // Windows 10+
+                            if (osbuild >= 21996) {
+                                // Windows 11 is an extension of Windows 10,
+                                // it does not increment the major/minor version
+                                osname = "Windows 11";
+                            }
+                        } else {
+                            osname = "Windows Server 2019";
+                            if (osbuild >= 20348) {
+                                osname = "Windows Server 2022";
+                            }
                         }
 
-                    } else if (ovi.dwMajorVersion >= 6) {
+                    } else if (oviex.dwMajorVersion >= 6) {
                         osname = "Vista";       // vista or greater
 
                         if (0 == oviex.dwMinorVersion) { // 6.0
@@ -342,12 +384,12 @@ uname(struct utsname *u)
 
         case PROCESSOR_ARCHITECTURE_INTEL:
             switch (si.wProcessorLevel) {
-            case 3: cpu = "i386";   break;
-            case 4: cpu = "i486";   break;
-            case 5: cpu = "i586";   break;
-            case 6: cpu = "i686";   break;
+            case 3: cpu = "i386"; break;
+            case 4: cpu = "i486"; break;
+            case 5: cpu = "i586"; break;
+            case 6: cpu = "i686"; break;
             case 7:
-            case 15: cpu = "i786";  break;
+            case 15: cpu = "i786"; break;
             default:
                 cpu = "ix86";
             }
@@ -355,9 +397,9 @@ uname(struct utsname *u)
 
         case PROCESSOR_ARCHITECTURE_PPC:
             switch (si.wProcessorLevel) {
-            case 1: cpu = "PPC 601";  break;
-            case 3: cpu = "PPC 603";  break;
-            case 4: cpu = "PPC 604";  break;
+            case 1: cpu = "PPC 601"; break;
+            case 3: cpu = "PPC 603"; break;
+            case 4: cpu = "PPC 604"; break;
             case 6: cpu = "PPC 603+"; break;
             case 9: cpu = "PPC 604+"; break;
             case 20: cpu = "PPC 620"; break;
@@ -407,19 +449,37 @@ uname(struct utsname *u)
         case PROCESSOR_ARCHITECTURE_UNKNOWN:
         default:
             cpu = "unknown";
+            break;
         }
 
         /* publish */
-        sprintf(u_sysname, "Win%s", osname);
-        if (osbuild) {
-            sprintf(u_release, "%u.%u", osmajor, osminor);
-            sprintf(u_version, "Build_%u", osbuild);
+        {  
+            struct CurrentVersion cv = {0};
 
-        } else {
-            sprintf(u_release, "%u", osmajor);
-            sprintf(u_version, "%u", osminor);
+            RegCurrentVersion(&cv);
+
+            if (cv.ProductName[0]) {
+                snprintf(u_sysname, sizeof(u_sysname), "%s%s",
+                    cv.ProductName, cv.DisplayVersion);
+            } else {
+                if (0 == memcmp(osname, "Win", 3)) osname += 3;
+                snprintf(u_sysname, sizeof(u_sysname), "Win%s%s%s",
+                    osname, cv.DisplayVersion, (IsWow64() ? " (Wow64)" : ""));
+            }
+
+            if (osbuild) {
+                sprintf(u_release, "%u.%u", osmajor, osminor);
+                if (cv.ubr) {
+                    sprintf(u_version, "Build_%u.%u", osbuild, cv.ubr);
+                } else {
+                    sprintf(u_version, "Build_%u", osbuild);
+                }
+            } else {
+                sprintf(u_release, "%u", osmajor);
+                sprintf(u_version, "%u", osminor);
+            }
+            strcpy(u_machine, cpu);
         }
-        strcpy(u_machine, cpu);
     }
 
     /* populate */
@@ -433,6 +493,64 @@ uname(struct utsname *u)
         strncpy(u->machine, u_machine, sizeof(u->machine) - 1);
     }
     return 0;
+}
+
+
+/* Determine whether running under Wow64 */
+static BOOL
+IsWow64(void)
+{
+    IsWow64Process_t fnIsWow64Process = NULL;
+    BOOL bIsWow64 = FALSE;
+
+    fnIsWow64Process = (IsWow64Process_t) GetProcAddress(GetModuleHandleA("kernel32"),"IsWow64Process");
+    if (fnIsWow64Process) {
+        fnIsWow64Process(GetCurrentProcess(), &bIsWow64);
+    }
+    return bIsWow64;
+}
+
+
+/* Current version details, optional DisplayVersion and return Update Build Revision (UBR). */
+static void
+RegCurrentVersion(struct CurrentVersion *cv)
+{
+    const char *root = "Software\\Microsoft\\Windows NT\\CurrentVersion", *ubr = "UBR";
+    DWORD extra = 0;
+    HKEY key = 0;
+
+#ifndef KEY_WOW64_64KEY
+#define KEY_WOW64_64KEY (0x0100)
+#endif
+    if (IsWow64()) extra |= KEY_WOW64_64KEY; // enable 64-bit view; values can differ
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, root, 0, KEY_QUERY_VALUE|extra, &key) == ERROR_SUCCESS) {
+        DWORD size, type = REG_NONE;
+
+        if (RegQueryValueExA(key, ubr, NULL, &type, NULL, NULL) == ERROR_SUCCESS) {
+            if (REG_DWORD == type) {
+                DWORD buffer = 0;
+                size = (DWORD)sizeof(buffer);
+                if (RegQueryValueExA(key, ubr, NULL, NULL, (LPBYTE) &buffer, &size) == ERROR_SUCCESS) {
+                    cv->ubr = buffer;
+                }
+            }
+        }
+
+        if (cv) {
+            size = (DWORD)(sizeof(cv->ProductName) - 1);
+            if (RegQueryValueExA(key, "ProductName", NULL, NULL, (LPBYTE) cv->ProductName, &size) != ERROR_SUCCESS) {
+                cv->ProductName[0] = 0;
+            }
+
+            size = (DWORD)(sizeof(cv->DisplayVersion) - 1);
+            cv->DisplayVersion[0] = ' ';
+            if (RegQueryValueExA(key, "DisplayVersion", NULL, NULL, (LPBYTE) cv->DisplayVersion + 1, &size) != ERROR_SUCCESS) {
+                cv->DisplayVersion[0] = 0;
+            }
+        }
+
+        RegCloseKey(key);
+    }
 }
 
 /*end*/

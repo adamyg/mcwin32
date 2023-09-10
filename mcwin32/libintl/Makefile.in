@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.9 2022/06/09 16:39:07 cvsuser Exp $
+# $Id: Makefile.in,v 1.10 2023/02/03 17:10:09 cvsuser Exp $
 # libintl makefile
 #
 #
@@ -37,6 +37,15 @@ MAKEFLAGS+=	BUILD_TYPE=debug
 endif
 ifneq ("$(BUILD_TYPE)","release")
 RTSUFFIX=d
+endif
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
 endif
 
 # Directories
@@ -121,7 +130,7 @@ debug:
 
 $(INTLLIB):		CEXTRA += -I$(INTLSRC) -DLIBINTL_STATIC -D__LIBINTL_BUILD -D_WIN32
 $(INTLLIB):		$(LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
 		$(AR) $(ARFLAGS) $@ $(subst /,\,$^)
 		$(RANLIB) $@
 
@@ -146,9 +155,9 @@ installinc:		../include/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(INTLDLL) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
-		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
+		-@$(LIBTOOL) --mode=clean $(RM) $(INTLDLL) $(DLLOBJS) $(QUIETOUT)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
+		-@$(RM) $(LIBOBJS) $(QUIETOUT)
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

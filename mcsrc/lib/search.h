@@ -13,19 +13,6 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-typedef enum mc_search_cbret_t
-{
-    MC_SEARCH_CB_OK = 0,
-    MC_SEARCH_CB_INVALID = -1,
-    MC_SEARCH_CB_ABORT = -2,
-    MC_SEARCH_CB_SKIP = -3,
-    MC_SEARCH_CB_NOTFOUND = -4
-} mc_search_cbret_t;
-
-typedef mc_search_cbret_t (*mc_search_fn) (const void *user_data, gsize char_offset,
-                                           int *current_char);
-typedef mc_search_cbret_t (*mc_update_fn) (const void *user_data, gsize char_offset);
-
 #define MC_SEARCH__NUM_REPLACE_ARGS 64
 
 #ifdef SEARCH_TYPE_GLIB
@@ -55,6 +42,21 @@ typedef enum
     MC_SEARCH_T_HEX,
     MC_SEARCH_T_GLOB
 } mc_search_type_t;
+
+enum mc_search_cbret_t
+{
+    MC_SEARCH_CB_OK = 0,
+    MC_SEARCH_CB_INVALID = -1,
+    MC_SEARCH_CB_ABORT = -2,
+    MC_SEARCH_CB_SKIP = -3,
+    MC_SEARCH_CB_NOTFOUND = -4
+};
+
+typedef enum mc_search_cbret_t mc_search_cbret_t;
+
+typedef mc_search_cbret_t (*mc_search_fn) (const void *user_data, gsize char_offset,
+                                           int *current_char);
+typedef mc_search_cbret_t (*mc_update_fn) (const void *user_data, gsize char_offset);
 
 /*** structures declarations (and typedefs of structures)*****************************************/
 
@@ -105,15 +107,20 @@ typedef struct mc_search_struct
 
     /* private data */
 
-    /* prepared conditions */
-    GPtrArray *conditions;
+    struct
+    {
+        GPtrArray *conditions;
+        gboolean result;
+    } prepared;
 
     /* original search string */
-    gchar *original;
-    gsize original_len;
+    struct
+    {
+        GString *str;
 #ifdef HAVE_CHARSET
-    gchar *original_charset;
+        gchar *charset;
 #endif
+    } original;
 
     /* error code after search */
     mc_search_error_t error;

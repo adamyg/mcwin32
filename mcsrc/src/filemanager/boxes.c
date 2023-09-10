@@ -7,7 +7,7 @@
    Written by:
    Miguel de Icaza, 1994, 1995
    Jakub Jelinek, 1995
-   Andrew Borodin <aborodin@vmail.ru>, 2009-2015
+   Andrew Borodin <aborodin@vmail.ru>, 2009-2022
 
    This file is part of the Midnight Commander.
 
@@ -190,13 +190,11 @@ skin_dlg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void
     case MSG_RESIZE:
         {
             WDialog *d = DIALOG (w);
-            Widget *wd = WIDGET (d->data);
-            int y, x;
-            WRect r;
+            const WRect *wd = &WIDGET (d->data)->rect;
+            WRect r = w->rect;
 
-            y = wd->y + (wd->lines - w->lines) / 2;
-            x = wd->x + wd->cols / 2;
-            rect_init (&r, y, x, w->lines, w->cols);
+            r.y = wd->y + (wd->lines - r.lines) / 2;
+            r.x = wd->x + wd->cols / 2;
 
             return dlg_default_callback (w, NULL, MSG_RESIZE, 0, &r);
         }
@@ -406,15 +404,16 @@ tree_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *da
     {
     case MSG_RESIZE:
         {
-            WRect r;
+            WRect r = w->rect;
             Widget *bar;
 
-            rect_init (&r, w->y, w->x, LINES - 9, COLS - 20);
+            r.lines = LINES - 9;
+            r.cols = COLS - 20;
             dlg_default_callback (w, NULL, MSG_RESIZE, 0, &r);
 
             bar = WIDGET (find_buttonbar (h));
-            bar->x = 0;
-            bar->y = LINES - 1;
+            bar->rect.x = 0;
+            bar->rect.y = LINES - 1;
             return MSG_HANDLED;
         }
 
@@ -598,11 +597,12 @@ configure_box (void)
         };
 #endif  //WIN32
 
-        quick_dialog_t qdlg = {
-            -1, -1, 60,
-            N_("Configure options"), "[Configuration]",
+        WRect r = { -1, -1, 0, 60 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Configure options"), "[Configuration]",
             quick_widgets, configure_callback, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_START_COLUMNS (qc),
@@ -664,7 +664,12 @@ configure_box (void)
 #endif
 
         if (quick_dialog (&qdlg) == B_ENTER)
-            old_esc_mode_timeout = atoi (time_out_new);
+        {
+            if (time_out_new[0] == '\0')
+                old_esc_mode_timeout = 0;
+            else
+                old_esc_mode_timeout = atoi (time_out_new);
+        }
 
         g_free (time_out_new);
     }
@@ -701,11 +706,12 @@ appearance_box (void)
         };
 #endif
 
-        quick_dialog_t qdlg = {
-            -1, -1, 54,
-            N_("Appearance"), "[Appearance]",
+        WRect r = { -1, -1, 0, 54 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Appearance"), "[Appearance]",
             quick_widgets, appearance_box_callback, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_START_COLUMNS (qc),
@@ -800,11 +806,12 @@ panel_options_box (void)
         };
 #endif  //WIN32
 
-        quick_dialog_t qdlg = {
-            -1, -1, 60,
-            N_("Panel options"), "[Panel options]",
+        WRect r = { -1, -1, 0, 60 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Panel options"), "[Panel options]",
             quick_widgets, NULL, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_START_COLUMNS (qc),
@@ -923,11 +930,12 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, gboolean
         };
 #endif  //WIN32, quick
 
-        quick_dialog_t qdlg = {
-            -1, -1, 48,
-            N_("Listing format"), "[Listing Format...]",
+        WRect r = { -1, -1, 0, 48 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Listing format"), "[Listing Format...]",
             quick_widgets, panel_listing_callback, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_START_COLUMNS (qc),
@@ -1038,11 +1046,12 @@ sort_box (dir_sort_options_t * op, const panel_field_t * sort_field)
         };
 #endif  //WIN32, quick
 
-        quick_dialog_t qdlg = {
-            -1, -1, 40,
-            N_("Sort order"), "[Sort Order...]",
+        WRect r = { -1, -1, 0, 40 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Sort order"), "[Sort Order...]",
             quick_widgets, NULL, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_START_COLUMNS (qc),
@@ -1095,11 +1104,12 @@ confirm_box (void)
     };
 #endif  //WIN32
 
-    quick_dialog_t qdlg = {
-        -1, -1, 46,
-        N_("Confirmation"), "[Confirmation]",
+    WRect r = { -1, -1, 0, 46 };
+
+    quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+        &r, N_("Confirmation"), "[Confirmation]",
         quick_widgets, NULL, NULL
-    };
+    );
 
 #if defined(WIN32)  //WIN32, quick
     qc = XQUICK_CHECKBOX (qc, Q_("Confirmation|&Delete"), &confirm_delete, NULL),
@@ -1149,11 +1159,12 @@ display_bits_box (void)
     };
 #endif  //WIN32,quick
 
-    quick_dialog_t qdlg = {
-        -1, -1, 46,
-        _("Display bits"), "[Display bits]",
+    WRect r = { -1, -1, 0, 46 };
+
+    quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+        &r, _("Display bits"), "[Display bits]",
         quick_widgets, NULL, NULL
-    };
+    );
 
 #if defined(WIN32)  //WIN32, quick
     qc = XQUICK_RADIO (qc, 4, display_bits_str, &current_mode, NULL),
@@ -1299,20 +1310,20 @@ display_bits_box (void)
             QUICK_END
             /* *INDENT-ON* */
         };
-
-        quick_dialog_t qdlg = {
-            -1, -1, 46,
-            N_("Display bits"), "[Display bits]",
-            quick_widgets, NULL, NULL
-        };
 #endif  //WIN32,quick
 
-#if defined(WIN32)  //WIN32, quick/alert-options
-        quick_dialog_t qdlg = {
-            -1, -1, 46,
-            N_("Display bits"), "[Display bits]",
-            quick_widgets, display_bits_callback, NULL};
+        WRect r = { -1, -1, 0, 46 };
 
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Display bits"), "[Display bits]",
+#if defined(WIN32)  //WIN32, quick/alert-options
+            quick_widgets, display_bits_callback, NULL
+#else
+            quick_widgets, NULL, NULL
+#endif  //WIN32,quick
+        );
+
+#if defined(WIN32)  //WIN32, quick/alert-options
         const char *visible_options[] = {
             N_("Invisible"),
             N_("Flash window"),
@@ -1401,14 +1412,14 @@ tree_box (const char *current_dir)
     g = GROUP (dlg);
     wd = WIDGET (dlg);
 
-    mytree = tree_new (2, 2, wd->lines - 6, wd->cols - 5, FALSE);
+    mytree = tree_new (2, 2, wd->rect.lines - 6, wd->rect.cols - 5, FALSE);
     group_add_widget_autopos (g, mytree, WPOS_KEEP_ALL, NULL);
-    group_add_widget_autopos (g, hline_new (wd->lines - 4, 1, -1), WPOS_KEEP_BOTTOM, NULL);
+    group_add_widget_autopos (g, hline_new (wd->rect.lines - 4, 1, -1), WPOS_KEEP_BOTTOM, NULL);
     bar = buttonbar_new ();
     group_add_widget (g, bar);
     /* restore ButtonBar coordinates after add_widget() */
-    WIDGET (bar)->x = 0;
-    WIDGET (bar)->y = LINES - 1;
+    WIDGET (bar)->rect.x = 0;
+    WIDGET (bar)->rect.y = LINES - 1;
 
     if (dlg_run (dlg) == B_ENTER)
     {
@@ -1481,9 +1492,10 @@ configure_vfs_box (void)
         };
 #endif  //WIN32, quick
 
-        quick_dialog_t qdlg = {
-            -1, -1, 56,
-            N_("Virtual File System Setting"), "[Virtual FS]",
+        WRect r = { -1, -1, 0, 56 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Virtual File System Setting"), "[Virtual FS]",
             quick_widgets,
 #ifdef ENABLE_VFS_FTP
             confvfs_callback,
@@ -1491,7 +1503,7 @@ configure_vfs_box (void)
             NULL,
 #endif
             NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_LABELED_INPUT (qc, N_("Timeout for freeing VFSs (sec):"), input_label_left,
@@ -1527,7 +1539,10 @@ configure_vfs_box (void)
         if (quick_dialog (&qdlg) != B_CANCEL)
         {
             /* cppcheck-suppress uninitvar */
-            vfs_timeout = atoi (ret_timeout);
+            if (ret_timeout[0] == '\0')
+                vfs_timeout = 0;
+            else
+                vfs_timeout = atoi (ret_timeout);
             g_free (ret_timeout);
 
             if (vfs_timeout < 0 || vfs_timeout > 10000)
@@ -1540,7 +1555,10 @@ configure_vfs_box (void)
             /* cppcheck-suppress uninitvar */
             ftpfs_proxy_host = ret_ftp_proxy;
             /* cppcheck-suppress uninitvar */
-            ftpfs_directory_timeout = atoi (ret_directory_timeout);
+            if (ret_directory_timeout[0] == '\0')
+                ftpfs_directory_timeout = 0;
+            else
+                ftpfs_directory_timeout = atoi (ret_directory_timeout);
             g_free (ret_directory_timeout);
 #endif
         }
@@ -1568,15 +1586,16 @@ cd_box (const WPanel * panel)
     };
 #endif  //WIN32, quick
 
-    quick_dialog_t qdlg = {
-        w->y + w->lines - 6, w->x, w->cols,
-        N_("Quick cd"), "[Quick cd]",
+    WRect r = { w->rect.y + w->rect.lines - 6, w->rect.x, 0, w->rect.cols };
+
+    quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+        &r, N_("Quick cd"), "[Quick cd]",
         quick_widgets, NULL, NULL
-    };
+    );
 
 #if defined(WIN32)  //WIN32, quick
     qc = XQUICK_LABELED_INPUT (qc, N_("cd"), input_label_left, "", "input", &my_str, NULL, FALSE, TRUE,
-                             INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD),
+                                   INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD),
     qc = XQUICK_END (qc);
     assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif  //WIN32, quick
@@ -1609,11 +1628,12 @@ symlink_box (const vfs_path_t * existing_vpath, const vfs_path_t * new_vpath,
     };
 #endif  //WIN32, quick
 
-   quick_dialog_t qdlg = {
-        -1, -1, 64,
-        N_("Symbolic link"), "[File Menu]",
+    WRect r = { -1, -1, 0, 64 };
+
+    quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+        &r, N_("Symbolic link"), "[File Menu]",
         quick_widgets, NULL, NULL
-    };
+    );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_LABELED_INPUT (qc, N_("Existing filename (filename symlink will point to):"),
@@ -1705,72 +1725,5 @@ jobs_box (void)
     widget_destroy (WIDGET (jobs_dlg));
 }
 #endif /* ENABLE_BACKGROUND */
-
-/* --------------------------------------------------------------------------------------------- */
-
-#ifdef ENABLE_VFS_SMB
-struct smb_authinfo *
-vfs_smb_get_authinfo (const char *host, const char *share, const char *domain, const char *user)
-{
-    char *label;
-    struct smb_authinfo *return_value = NULL;
-
-    if (domain == NULL)
-        domain = "";
-    if (user == NULL)
-        user = "";
-
-    label = g_strdup_printf (_("Password for \\\\%s\\%s"), host, share);
-
-    {
-        char *ret_domain, *ret_user, *ret_password;
-
-#if defined(WIN32)  //WIN32, quick
-#error	Quick widget not implementated ...
-#endif
-
-        quick_widget_t quick_widgets[] = {
-            /* *INDENT-OFF* */
-            QUICK_LABEL (label, NULL),
-            QUICK_SEPARATOR (TRUE),
-            QUICK_START_COLUMNS,
-                QUICK_LABEL (N_("Domain:"), NULL),
-                QUICK_SEPARATOR (FALSE),
-                QUICK_LABEL (N_("Username:"), NULL),
-                QUICK_SEPARATOR (FALSE),
-                QUICK_LABEL (N_("Password:"), NULL),
-            QUICK_NEXT_COLUMN,
-                QUICK_INPUT (domain, "auth_domain", &ret_domain, NULL, FALSE, FALSE, INPUT_COMPLETE_HOSTNAMES),
-                QUICK_SEPARATOR (FALSE),
-                QUICK_INPUT (user, "auth_name", &ret_user, NULL, FALSE, FALSE, INPUT_COMPLETE_USERNAMES),
-                QUICK_SEPARATOR (FALSE),
-                QUICK_INPUT ("", "auth_password", &ret_password, NULL, TRUE, FALSE, INPUT_COMPLETE_NONE),
-            QUICK_STOP_COLUMNS,
-            QUICK_BUTTONS_OK_CANCEL,
-            QUICK_END
-            /* *INDENT-ON* */
-        };
-
-        quick_dialog_t qdlg = {
-            -1, -1, 40,
-            N_("SMB authentication"), "[Smb Authinfo]",
-            quick_widgets, NULL, NULL
-        };
-
-        if (quick_dialog (&qdlg) != B_CANCEL)
-        {
-            return_value = vfs_smb_authinfo_new (host, share, ret_domain, ret_user, ret_password);
-
-            g_free (ret_domain);
-            g_free (ret_user);
-            g_free (ret_password);
-        }
-    }
-
-    g_free (label);
-
-    return return_value;
-}
-#endif /* ENABLE_VFS_SMB */
 
 /* --------------------------------------------------------------------------------------------- */

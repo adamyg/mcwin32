@@ -9,6 +9,7 @@ objects.*
 obj.*
 Makefile
 buildinfo.h
+packageinfo.h
 BUILDNUMBER
 midnight-commander.org
 owcsetup.dbg
@@ -29,3 +30,4 @@ mc.aps
 *.sav
 *.bak
 *.orig
+

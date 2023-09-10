@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_UTYPES_H_INCLUDED
 #define LIBW32_SYS_UTYPES_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_utypes_h,"$Id: utypes.h,v 1.20 2022/06/14 02:19:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_utypes_h,"$Id: utypes.h,v 1.21 2023/01/31 17:14:13 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -184,6 +184,20 @@ typedef int id_t;                               /* used as a general identifier;
 #endif
 
 #endif /*_MSC_VER || __MINGW32__*/
+
+#if !defined(_FSBLKCNT_T_DEFINED)
+#define _FSBLKCNT_T_DEFINED
+#if !defined(fsblkcnt_t)
+typedef unsigned long fsblkcnt_t;
+#endif
+#endif
+
+#if !defined(_FSFILCNT_T_DEFINED)
+#define _FSFILCNT_T_DEFINED
+#if !defined(fsfilcnt_t)
+typedef unsigned long fsfilcnt_t;
+#endif
+#endif
 
 #if !defined(HAVE_NLINK_T)
 #if !defined(__WATCOMC__) || \

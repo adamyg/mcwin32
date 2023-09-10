@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.10 2022/06/09 16:39:29 cvsuser Exp $
+# $Id: Makefile.in,v 1.14 2023/09/10 10:00:42 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
-# Copyright (c) 2017 - 2022 Adam Young.
+# Copyright (c) 2017 - 2023 Adam Young.
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.
@@ -58,6 +58,15 @@ ifneq ("$(BUILD_TYPE)","release")
 RTSUFFIX=d
 endif
 
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
+endif
+
 # Directories
 
 D_INC=		$(ROOT)/include
@@ -103,7 +112,7 @@ MBEDX509DLL=	$(D_LIB)/$(LP)mbedx509.la
 MBEDTLSLIB=	$(D_LIB)/$(LP)mbedtls_static$(A)
 MBEDTLSDLL=	$(D_LIB)/$(LP)mbedtls.la
 
-VERSION=	2.27.0
+VERSION=	3.3.0
 VERSION_1	=$(word 1,$(subst ., ,$(VERSION)))
 VERSION_2	=$(word 2,$(subst ., ,$(VERSION)))
 VERSION_3	=$(word 3,$(subst ., ,$(VERSION)))
@@ -123,39 +132,112 @@ VPATH+=		$(MBEDBASE)/programs/test
 VPATH+=		./win32
 
 #see: library/CMakelists.txt
-CRYPTO_SOURCES=	aes.c			aesni.c			arc4.c		\
-		aria.c			asn1parse.c		asn1write.c	\
-		base64.c		bignum.c		blowfish.c	\
-		camellia.c		ccm.c			chacha20.c	\
-		chachapoly.c		cipher.c		cipher_wrap.c	\
-		cmac.c			ctr_drbg.c		des.c		\
-		dhm.c			ecdh.c			ecdsa.c		\
-		ecjpake.c		ecp.c					\
-		ecp_curves.c		entropy.c		entropy_poll.c	\
-		error.c			gcm.c			havege.c	\
-		hkdf.c								\
-		hmac_drbg.c		md.c			md2.c		\
-		md4.c			md5.c					\
-		memory_buffer_alloc.c				nist_kw.c	\
-		oid.c			padlock.c		pem.c		\
-		pk.c			pk_wrap.c		pkcs12.c	\
-		pkcs5.c			pkparse.c		pkwrite.c	\
-		platform.c		platform_util.c		poly1305.c	\
-		ripemd160.c		rsa_internal.c		rsa.c  		\
-		sha1.c			sha256.c		sha512.c	\
-		threading.c		timing.c		version.c	\
-		version_features.c	xtea.c
+CRYPTO_SOURCES=	\
+	aes.c				\
+	aesni.c				\
+	aria.c				\
+	asn1parse.c			\
+	asn1write.c			\
+	base64.c			\
+	bignum.c			\
+	bignum_core.c			\
+	bignum_mod.c			\
+	bignum_mod_raw.c		\
+	camellia.c			\
+	ccm.c				\
+	chacha20.c			\
+	chachapoly.c			\
+	cipher.c			\
+	cipher_wrap.c			\
+	constant_time.c			\
+	cmac.c				\
+	ctr_drbg.c			\
+	des.c				\
+	dhm.c				\
+	ecdh.c				\
+	ecdsa.c				\
+	ecjpake.c			\
+	ecp.c				\
+	ecp_curves.c			\
+	entropy.c			\
+	entropy_poll.c			\
+	error.c				\
+	gcm.c				\
+	hash_info.c			\
+	hkdf.c				\
+	hmac_drbg.c			\
+	lmots.c				\
+	lms.c				\
+	md.c				\
+	md5.c				\
+	memory_buffer_alloc.c		\
+	nist_kw.c			\
+	oid.c				\
+	padlock.c			\
+	pem.c				\
+	pk.c				\
+	pk_wrap.c			\
+	pkcs12.c			\
+	pkcs5.c				\
+	pkparse.c			\
+	pkwrite.c			\
+	platform.c			\
+	platform_util.c			\
+	poly1305.c			\
+	psa_crypto.c			\
+	psa_crypto_aead.c		\
+	psa_crypto_cipher.c		\
+	psa_crypto_client.c		\
+	psa_crypto_driver_wrappers.c	\
+	psa_crypto_ecp.c		\
+	psa_crypto_hash.c		\
+	psa_crypto_mac.c		\
+	psa_crypto_pake.c		\
+	psa_crypto_rsa.c		\
+	psa_crypto_se.c			\
+	psa_crypto_slot_management.c	\
+	psa_crypto_storage.c		\
+	psa_its_file.c			\
+	ripemd160.c			\
+	rsa.c				\
+	rsa_alt_helpers.c		\
+	sha1.c				\
+	sha256.c			\
+	sha512.c			\
+	threading.c			\
+	timing.c			\
+	version.c			\
+	version_features.c
 
-X509_SOURCES=	certs.c			pkcs11.c		x509.c		\
-		x509_create.c		x509_crl.c		x509_crt.c	\
-		x509_csr.c		x509write_crt.c		x509write_csr.c
+X509_SOURCES=\
+	pkcs7.c				\
+	x509.c				\
+	x509_create.c			\
+	x509_crl.c			\
+	x509_crt.c			\
+	x509_csr.c			\
+	x509write_crt.c			\
+	x509write_csr.c			\
 
-TLS_SOURCES=	debug.c			net_sockets.c		\
-		ssl_cache.c		ssl_ciphersuites.c	\
-		ssl_cli.c		ssl_cookie.c		\
-		ssl_msg.c					\
-		ssl_srv.c		ssl_ticket.c		\
-		ssl_tls.c		ssl_tls13_keys.c
+TLS_SOURCES=\
+	debug.c				\
+	mps_reader.c			\
+	mps_trace.c			\
+	net_sockets.c			\
+	ssl_cache.c			\
+	ssl_ciphersuites.c		\
+	ssl_client.c			\
+	ssl_cookie.c			\
+	ssl_debug_helpers_generated.c	\
+	ssl_msg.c			\
+	ssl_ticket.c			\
+	ssl_tls.c			\
+	ssl_tls12_client.c		\
+	ssl_tls12_server.c		\
+	ssl_tls13_keys.c		\
+	ssl_tls13_server.c		\
+	ssl_tls13_client.c		\
+	ssl_tls13_generic.c
 
 #######
 CRYPTO_LIBOBJS=\
@@ -239,13 +321,13 @@ CEXTRA		+= -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 #######
 $(MBEDCRYPTOLIB):	CEXTRA += -DLIBMBED_STATIC -DLIBMBEDCRYPTO_SOURCE
 $(MBEDCRYPTOLIB):	$(CRYPTO_LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
 INSTALLED+=	$(D_BIN)/libmbedcrypto.$(VERSION).dll
 $(MBEDCRYPTODLL):	LIBNAME=libmbedcrypto
-$(MBEDCRYPTODLL):	LIBDEF=-export-symbols win32/libmbedcrypto.def
+$(MBEDCRYPTODLL):	LIBDEF=-export-symbols win32/libmbedcrypto.def.$(VERSION)
 $(MBEDCRYPTODLL):	CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDCRYPTO_SOURCE -D_WINDLL
 $(MBEDCRYPTODLL):	$(CRYPTO_DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
@@ -254,13 +336,13 @@ $(MBEDCRYPTODLL):	$(CRYPTO_DLLOBJS)
 #######
 $(MBEDX509LIB):		CEXTRA += -DLIBMBED_STATIC -DLIBMBEDX509_SOURCE -DLIBMBEDX509
 $(MBEDX509LIB):		$(X509_LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
 INSTALLED+=	$(D_BIN)/libmbedx509.$(VERSION).dll
 $(MBEDX509DLL):		LIBNAME=libmbedx509
-$(MBEDX509DLL):		LIBDEF=-export-symbols win32/libmbedx509.def
+$(MBEDX509DLL):		LIBDEF=-export-symbols win32/libmbedx509.def.$(VERSION)
 $(MBEDX509DLL):		CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDX509_SOURCE -D_WINDLL
 $(MBEDX509DLL):		$(X509_DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
@@ -269,13 +351,13 @@ $(MBEDX509DLL):		$(X509_DLLOBJS)
 #######
 $(MBEDTLSLIB):		CEXTRA += -DLIBMBED_STATIC -DLIBMBEDTLS_SOURCE
 $(MBEDTLSLIB):		$(TLS_LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
 
 INSTALLED+=	$(D_BIN)/libmbedtls.$(VERSION).dll
 $(MBEDTLSDLL):		LIBNAME=libmbedtls
-$(MBEDTLSDLL):		LIBDEF=-export-symbols win32/libmbedtls.def
+$(MBEDTLSDLL):		LIBDEF=-export-symbols win32/libmbedtls.def.$(VERSION)
 $(MBEDTLSDLL):		CEXTRA += -DLIBMBED_DYNAMIC -DLIBMBEDTLS_SOURCE -DLIBMBEDTLS -D_WINDLL
 $(MBEDTLSDLL):		$(TLS_DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
@@ -310,10 +392,10 @@ installinc:		../include/.created ../include/mbedtls/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) >/dev/null 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
-		-@$(RM) $(LIBOBJS) >/dev/null 2>&1
-		-@$(RM) ../include/mbedtls/* >/dev/null 2>&1
+		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) $(QUIETOUT)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
+		-@$(RM) $(LIBOBJS) $(QUIETOUT)
+		-@$(RM) ../include/mbedtls/* $(QUIETOUT)
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

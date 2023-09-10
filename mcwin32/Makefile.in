@@ -1,7 +1,7 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# Midnight command WIN32 builds 4.8.28
+# Midnight command WIN32
 #
-# Copyright (c) 2007, 2012 - 2022 Adam Young.
+# Copyright (c) 2007, 2012 - 2023 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -37,7 +37,7 @@ PKG_TARNAME	= @PACKAGE_TARNAME@
 PKG_URL		= @PACKAGE_URL@
 PKG_VERSION	= @PACKAGE_VERSION@
 ifeq ("","$(PKG_VERSION)")
-PKG_VERSION	= 4.8.28
+PKG_VERSION	= 4.8.29
 endif
 PKG_VERSION_1	=$(word 1,$(subst ., ,$(PKG_VERSION)))
 PKG_VERSION_2	=$(word 2,$(subst ., ,$(PKG_VERSION)))
@@ -118,6 +118,15 @@ ifeq ($(BUSYBOX),busybox)
 BUSYBOX=	$(shell which busybox 2>/dev/null)
 endif
 
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
+endif
+
 ifeq ("$(BUILD_TYPE)","")	#default
 
 .PHONY:				help clean vclean build package
@@ -126,10 +135,13 @@ ifneq ("$(word 1,$(MAKECMDGOALS))","debug")
 ifneq ("$(word 1,$(MAKECMDGOALS))","release")
 	@$(BUSYBOX) echo -n -e '\
 		|\n\
-		| make [release or debug] target \n\
+		| make [VERBOSE=1] [release or debug] target \n\
 		|\n\
 		|	Build one or more of the following targets recursively within each sub-directory\n\
 		|	for the toolchain @TOOLCHAIN@. \n\
+		|\n\
+		| Options: \n\
+		|	VERBOSE - increase run-time diagnostics; suppress stderr filtering. \n\
 		|\n\
 		| Targets: \n\
 		|\n\
@@ -571,7 +583,7 @@ WIN32_DOC_SRC=		./doc
 
 CFG_ETC=\
 	$(D_ETC)/filehighlight.ini		\
-	$(D_ETC)/mc.ext				\
+	$(D_ETC)/mc.ext.ini			\
 	$(D_ETC)/mc.keymap			\
 	$(D_ETC)/mc.default.keymap		\
 	$(D_ETC)/mc.emacs.keymap		\
@@ -849,10 +861,10 @@ package:	packageinfo
 .PHONY:		clean
 clean:
 		@echo $(BUILD_TYPE) clean
-		-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN) >nul 2>&1
-		-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES)) >nul 2>&1
-		-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A) >nul 2>&1
-		-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A) >nul 2>&1
+		-$(RM) $(RMFLAGS) $(TARGETS) $(LIBRARIES) $(CLEAN) $(XCLEAN) $(QUIETOUT)
+		-$(RM) $(RMFLAGS) $(OBJS) $(MC_RES) $(subst $(O),.mbr,$(OBJS) $(MC_RES)) $(QUIETOUT)
+		-$(RM) $(RMFLAGS) $(MC_LIBMC) $(subst $(O),.mbr,$(MC_LIBMC)) $(LW)mcutil$(A) $(QUIETOUT)
+		-$(RM) $(RMFLAGS) $(MC_LIBVFS) $(subst $(O),.mbr,$(MC_LIBVFS)) $(LW)mcvfs$(A) $(QUIETOUT)
 		$(MAKE) -C libglib clean
 		$(MAKE) -C libintl clean
 		$(MAKE) -C libmbedtls clean
@@ -862,16 +874,16 @@ clean:
 		$(MAKE) -C libz clean
 		$(MAKE) -C libw32 clean
 		$(MAKE) -C autoupdater clean
-		-$(RM) $(MSGOBJS) $(MSGDIRS) >nul 2>&1
-		-$(RM) $(CONFIGURATION) >nul 2>&1
-		-$(RM) $(CONFIGURATION_WIN32) >nul 2>&1
-		-$(RM) $(DIRECTORIES) >nul 2>&1
-		-$(RMDIR) $(call reverse, $(dir $(DIRECTORIES)) $(BASEMSGDIRS) $(dir $(MSGDIRS)))) >nul 2>&1
-		-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) >nul 2>&1
+		-$(RM) $(MSGOBJS) $(MSGDIRS) $(QUIETOUT)
+		-$(RM) $(CONFIGURATION) $(QUIETOUT)
+		-$(RM) $(CONFIGURATION_WIN32) $(QUIETOUT)
+		-$(RM) $(DIRECTORIES) $(QUIETOUT)
+		-$(RMDIR) $(call reverse, $(dir $(DIRECTORIES)) $(BASEMSGDIRS) $(dir $(MSGDIRS)))) $(QUIETOUT)
+		-$(RMDIR) $(D_OBJ) $(D_LIB) $(D_BIN) $(D_ETC) $(QUIETOUT)
 
 .PHONY:		vclean
 vclean:		clean
-		-$(RM) $(IMPORT) >nul 2>&1
+		-$(RM) $(IMPORT) $(QUIETOUT)
 
 
 #########################################################################################
@@ -920,13 +932,13 @@ endif
 
 .PHONY:			new_buildnumber
 new_buildnumber:
-		-@chmod +w BUILDNUMBER >nul 2>&1
+		-@chmod +w BUILDNUMBER $(QUIETOUT)
 		@echo incrementing build number ...
 		-@$(BUSYBOX) sh -c "\
 			if [ ! -f BUILDNUMBER ]; then echo 1 >BUILDNUMBER; fi;\
 			echo $$(($$(cat BUILDNUMBER) + 1)) >BUILDNUMBER;\
 			"
-		-@chmod -w BUILDNUMBER >/dev/null 2>&1
+		-@chmod -w BUILDNUMBER $(QUIETOUT)
 
 $(D_OBJ)/%.res:		%.rc
 		$(RC) -fo $@ $<

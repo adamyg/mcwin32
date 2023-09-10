@@ -8,7 +8,11 @@ the current 4.8.x development stream.
 
         Version         Latest Build
 
-        4.8.27          226 (#21 - FISH enabled).
+        4.8.29          228 (mc merge/bugfixes)
+
+        4.8.28          227 (mc merge)
+
+        4.8.27          226 (#21 - FISH enabled)
 
                                 FISH requires either an external SSH and/or RSH client, possible solutions include:
 
@@ -121,7 +125,7 @@ Window native port for GNU Midnight Commander, the latest builds can be
 found at the links:
 
    https://github.com/adamyg/mcwin32/ (master)
-   
+
    https://sourceforge.net/projects/mcwin32/ (mirror)
 
 
@@ -143,7 +147,6 @@ Older information is available at
    www.gnu.org/software/mc
 
 
-
 Status
 ------
 
@@ -153,7 +156,7 @@ quickly. Please feel free to raise tickets on SourceForge when
 issues are encountered.
 
 adamy
-Mar/2022
+June/2022
 
 
 Other Resources

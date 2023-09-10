@@ -686,15 +686,15 @@ vfs_parse_ls_lga (const char *p, struct stat * s, char **filename, char **linkna
     char *t = NULL;
     const char *line = p;
     size_t skipped;
-    mode_t mode;
+    mode_t st_mode;
 
     if (strncmp (p, "total", 5) == 0)
         return FALSE;
 
-    mode = s->st_mode;          /* WIN32, st_mode type may not be mode_t */
-    if (!vfs_parse_filetype (p, &skipped, &mode))
+    st_mode = s->st_mode;       /* WIN32, st_mode type may not be mode_t */
+    if (!vfs_parse_filetype (p, &skipped, &st_mode))
         goto error;
-    s->st_mode = mode;
+    s->st_mode = st_mode;
 
     p += skipped;
     if (*p == ' ')              /* Notwell 4 */

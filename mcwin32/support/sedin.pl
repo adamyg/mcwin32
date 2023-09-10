@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: sedin.pl,v 1.5 2020/06/10 10:55:08 cvsuser Exp $
+# $Id: sedin.pl,v 1.6 2023/02/05 05:37:57 cvsuser Exp $
 # sed in processing tool, processing embedded @PERL@ @PYTHON@ etc
 #
-# Copyright Adam Young 2017 - 2020
+# Copyright Adam Young 2017 - 2023
 #
 # This file is part of the Midnight Commander.
 #
@@ -111,9 +111,9 @@ if ($line) {                # see: win32_utl.c
 
         } else {
                 if ($1 eq '@PERL@') {
-                    $busybox = '${ENV{MC_BUSYBOX}}';
+                        $busybox = '${ENV{MC_BUSYBOX}}';
                 } else {
-                    $busybox = 'os.environ.get(\'MC_BUSYBOX\')';
+                        $busybox = 'os.environ.get(\'MC_BUSYBOX\')';
                 }
         }
         chomp $line;
@@ -125,7 +125,7 @@ while ($line = <IN>) {
         if ($verbose) {
                 pos($line) = 1;
                 while ($line =~ /(\@[A-Za-z_]+\@)/g) {
-                    printf "${in} ($.): $1\n";
+                        printf "${in} ($.): $1\n";
                 }
         }
 
@@ -141,10 +141,10 @@ while ($line = <IN>) {
         $line =~ s/\@ZIP\@/${busybox} zip/g;
 
         if ($line =~ /(\@[A-Za-z_]+\@)/) {
-		    my $var = $1;
-		    if ($var ne '@EXTHELPERSDIR@') {
-			    printf "WARNING ${in} ($.): unknown variable (${var})\n";
-		    }
+                my $var = $1;
+                if ($var ne '@EXTHELPERSDIR@') {
+                        printf "WARNING ${in} ($.): unknown variable (${var})\n";
+                }
         }
 
         chomp $line;

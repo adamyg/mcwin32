@@ -1,4 +1,4 @@
-//  $Id: mcupdater.cpp,v 1.6 2022/06/09 16:46:04 cvsuser Exp $
+//  $Id: mcupdater.cpp,v 1.7 2023/01/31 17:08:48 cvsuser Exp $
 //
 //  Midnight Commander AutoUpdater command line.
 //
@@ -115,6 +115,7 @@ main(int argc, char *argv[])
     if (mode >= 1) {
         autoupdate_appversion_set(version);
         autoupdate_hosturl_set(hosturl);
+        autoupdate_appname_set("Midnight Commander"); // match installer
     }
 
     return autoupdate_execute(mode, interactive);
@@ -135,7 +136,7 @@ Usage()
 {
     std::cerr <<
         "\n"\
-        "Midnight Commander updater                                         version 1.01\n"\
+        "Midnight Commander updater                                         version 1.02\n"\
         "\n"\
         "   mcupdater [options] mode\n"\
         "\n"\

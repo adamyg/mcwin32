@@ -5,7 +5,7 @@
    Free Software Foundation, Inc.
 
    Written by:
-   Andrew Borodin <aborodin@vmail.ru>, 2021
+   Andrew Borodin <aborodin@vmail.ru>, 2021-2022
 
    This file is part of the Midnight Commander.
 
@@ -116,11 +116,12 @@ edit_dialog_search_show (WEdit * edit)
         };
 #endif  //WIN332
 
-        quick_dialog_t qdlg = {
-            -1, -1, 58,
-            N_("Search"), "[Input Line Keys]",
+        WRect r = { -1, -1, 0, 58 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Search"), "[Input Line Keys]",
             quick_widgets, NULL, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_LABELED_INPUT (qc, N_("Enter search string:"), input_label_above, INPUT_LAST_TEXT, 
@@ -226,11 +227,12 @@ edit_dialog_replace_show (WEdit * edit, const char *search_default, const char *
         };
 #endif  //WIN32
 
-        quick_dialog_t qdlg = {
-            -1, -1, 58,
-            N_("Replace"), "[Input Line Keys]",
+        WRect r = { -1, -1, 0, 58 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Replace"), "[Input Line Keys]",
             quick_widgets, NULL, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_LABELED_INPUT (qc, N_("Enter search string:"), input_label_above, search_default,
@@ -284,14 +286,14 @@ edit_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text, i
     int retval;
 
     if (xpos == -1)
-        xpos = w->x + option_line_state_width + 1;
+        xpos = w->rect.x + option_line_state_width + 1;
     if (ypos == -1)
-        ypos = w->y + w->lines / 2;
+        ypos = w->rect.y + w->rect.lines / 2;
     /* Sometimes menu can hide replaced text. I don't like it */
     if ((edit->curs_row >= ypos - 1) && (edit->curs_row <= ypos + dlg_height - 1))
         ypos -= dlg_height;
 
-    dlg_width = WIDGET (w->owner)->cols - xpos - 1;
+    dlg_width = WIDGET (w->owner)->rect.cols - xpos - 1;
 
     g_snprintf (tmp, sizeof (tmp), "\"%s\"", from_text);
     repl_from = g_strdup (str_trunc (tmp, dlg_width - 7));
@@ -319,11 +321,12 @@ edit_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text, i
         };
 #endif  //WIN32
 
-        quick_dialog_t qdlg = {
-            ypos, xpos, -1,
-            N_("Confirm replace"), NULL,
+        WRect r = { ypos, xpos, 0, -1 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Confirm replace"), NULL,
             quick_widgets, NULL, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_LABEL (qc, repl_from, NULL);
@@ -384,10 +387,10 @@ edit_get_search_line_type (mc_search_t * search)
     if (search->search_type != MC_SEARCH_T_REGEX)
         return search_line_type;
 
-    if (*search->original == '^')
+    if (search->original.str->str[0] == '^')
         search_line_type |= AT_START_LINE;
 
-    if (search->original[search->original_len - 1] == '$')
+    if (search->original.str->str[search->original.str->len - 1] == '$')
         search_line_type |= AT_END_LINE;
     return search_line_type;
 }
@@ -573,9 +576,9 @@ edit_find (edit_search_status_msg_t * esm, gsize * len)
         {
             gboolean ok;
 
-            if (search_end > (off_t) (search_start + edit->search->original_len)
+            if (search_end > (off_t) (search_start + edit->search->original.str->len)
                 && mc_search_is_fixed_search_str (edit->search))
-                search_end = search_start + edit->search->original_len;
+                search_end = search_start + edit->search->original.str->len;
 
             ok = mc_search_run (edit->search, (void *) esm, search_start, search_end, len);
 
@@ -827,12 +830,15 @@ edit_search_status_update_cb (status_msg_t * sm)
 
     if (esm->first)
     {
-        int wd_width;
         Widget *lw = WIDGET (ssm->label);
+        WRect r;
 
-        wd_width = MAX (wd->cols, lw->cols + 6);
-        widget_set_size (wd, wd->y, wd->x, wd->lines, wd_width);
-        widget_set_size (lw, lw->y, wd->x + (wd->cols - lw->cols) / 2, lw->lines, lw->cols);
+        r = wd->rect;
+        r.cols = MAX (r.cols, lw->rect.cols + 6);
+        widget_set_size_rect (wd, &r);
+        r = lw->rect;
+        r.x = wd->rect.x + (wd->rect.cols - r.cols) / 2;
+        widget_set_size_rect (lw, &r);
         esm->first = FALSE;
     }
 
@@ -1009,7 +1015,7 @@ edit_replace_cmd (WEdit * edit, gboolean again)
                 long l;
                 int prompt;
 
-                l = edit->curs_row - WIDGET (edit)->lines / 3;
+                l = edit->curs_row - WIDGET (edit)->rect.lines / 3;
                 if (l > 0)
                     edit_scroll_downward (edit, l);
                 if (l < 0)

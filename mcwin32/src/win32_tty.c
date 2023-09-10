@@ -5,7 +5,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2022
+   Written by: Adam Young 2012 - 2023
 
    This file is part of the Midnight Commander.
 
@@ -65,11 +65,7 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
     }
 
     if (NULL == getenv("COLORTERM")) {
-#if (VERSION_3 >= 27)
         if (tty_use_256colors(NULL)) {          /* TODO: command line, max colors. */
-#else
-        if (tty_use_256colors()) {
-#endif
             (void) putenv("COLORTERM=24bit");   /* allow true-color skins */
         } else {
             (void) putenv("COLORTERM=16");

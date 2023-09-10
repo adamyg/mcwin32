@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.14 2022/06/14 07:35:18 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_time_c,"$Id: w32_time.c,v 1.15 2023/01/31 17:44:09 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -204,12 +204,41 @@ extern int gettimeofday (struct timeval *p, void *z);
 #endif
 
 #else
-static inline long long
-filetime_to_hsec(const FILETIME *ft)
+typedef void (WINAPI *GetSystemTimePreciseAsFileTime_t)(LPFILETIME lpSystemTimeAsFileTime);
+
+static unsigned long long
+GetSystemTimeNS100(void)
 {
-        // Returns the 100-nanoseconds ("hecto-nanoseconds") since the epoch.
-        const long long hsecs = ((long long)ft->dwHighDateTime << 32) + ft->dwLowDateTime;
-        return hsecs - 116444736000000000LL; // delta 01/01/1970 and 01/01/1601
+    static GetSystemTimePreciseAsFileTime_t fGetSystemTimePreciseAsFileTime = NULL;
+    FILETIME ft = {0};
+    unsigned long long ns100;
+
+    /* 
+     *  GetSystemTime(Precise)AsFileTime returns the number of 100-nanosecond intervals since January 1, 1601 (UTC).
+     *
+     *  GetSystemTimeAsFileTime has a resolution of approximately the TimerResolution (~15.6ms) on Windows XP.
+     *  On Windows 7 it appears to have sub-millisecond resolution. GetSystemTimePreciseAsFileTime (available on
+     *  Windows 8) has sub-microsecond resolution.
+     */
+    if (NULL == fGetSystemTimePreciseAsFileTime) {
+        HINSTANCE hinst;
+
+        if (0 == (hinst = LoadLibraryA("Kernel32")) ||
+                NULL == (fGetSystemTimePreciseAsFileTime =
+                            (GetSystemTimePreciseAsFileTime_t)GetProcAddress(hinst, "GetSystemTimePreciseAsFileTime"))) {
+            fGetSystemTimePreciseAsFileTime =
+                (GetSystemTimePreciseAsFileTime_t)GetProcAddress(hinst, "GetSystemTimeAsFileTime"); /*fall-back*/
+        }
+    }
+     
+    fGetSystemTimePreciseAsFileTime(&ft);
+
+    ns100 = ft.dwHighDateTime;
+    ns100 <<= 32UL;
+    ns100 |= ft.dwLowDateTime;
+    ns100 -= 116444736000000000LL; /* 1601->1970 epoch */
+
+    return ns100;
 }
 #endif
 
@@ -224,13 +253,10 @@ w32_gettimeofday(struct timeval *tv, struct timezone *tz)
         return gettimeofday(tv, tz);
 
 #else //DEFAULT
-        FILETIME ft;
-        long long hsec;
+        const unsigned long long ns100 = GetSystemTimeNS100();
 
-        (void) GetSystemTimeAsFileTime(&ft); //UTC
-        hsec = filetime_to_hsec(&ft);
-        tv->tv_sec = (long)(hsec / 10000000);
-        tv->tv_usec = (hsec % 10000000) / 10;
+        tv->tv_sec = (long)(ns100 / 10000000);
+        tv->tv_usec = (ns100 % 10000000) / 10;
 #endif
         return 0;
     }

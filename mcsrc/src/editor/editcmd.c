@@ -6,7 +6,7 @@
 
    Written by:
    Paul Sheer, 1996, 1997
-   Andrew Borodin <aborodin@vmail.ru>, 2012-2021
+   Andrew Borodin <aborodin@vmail.ru>, 2012-2022
    Ilia Maslakov <il.smind@gmail.com>, 2012
 
    This file is part of the Midnight Commander.
@@ -416,11 +416,12 @@ edit_get_save_file_as (WEdit * edit)
     };
 #endif  //WIN32
 
-    quick_dialog_t qdlg = {
-        -1, -1, 64,
-        N_("Save As"), "[Save File As]",
+    WRect r = { -1, -1, 0, 64 };
+
+    quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+        &r, N_("Save As"), "[Save File As]",
         quick_widgets, NULL, NULL
-    };
+    );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_LABELED_INPUT (qc, N_("Enter file name:"), input_label_above,
@@ -478,23 +479,6 @@ edit_save_cmd (WEdit * edit)
     edit->force |= REDRAW_COMPLETELY;
 
     return TRUE;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Load file content
- *
- * @param h screen the owner of editor window
- * @param vpath vfs file path
- * @return TRUE if file content was successfully loaded, FALSE otherwise
- */
-
-static inline gboolean
-edit_load_file_from_filename (WDialog * h, const vfs_path_t * vpath)
-{
-    Widget *w = WIDGET (h);
-
-    return edit_add_window (h, w->y + 1, w->x, w->lines - 2, w->cols, vpath, 0);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -906,11 +890,12 @@ edit_save_mode_cmd (void)
         };
 #endif  //WIN32
 
-        quick_dialog_t qdlg = {
-            -1, -1, 38,
-            N_("Edit Save Mode"), "[Edit Save Mode]",
+        WRect r = { -1, -1, 0, 38 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("Edit Save Mode"), "[Edit Save Mode]",
             quick_widgets, edit_save_mode_callback, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         qc = XQUICK_RADIO (qc, 3, str, &option_save_mode, &edit_save_mode_radio_id),
@@ -1099,13 +1084,34 @@ edit_load_cmd (WDialog * h)
         vfs_path_t *exp_vpath;
 
         exp_vpath = vfs_path_from_str (exp);
-        ret = edit_load_file_from_filename (h, exp_vpath);
+        ret = edit_load_file_from_filename (h, exp_vpath, 0);
         vfs_path_free (exp_vpath, TRUE);
     }
 
     g_free (exp);
 
     return ret;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Load file content
+ *
+ * @param h screen the owner of editor window
+ * @param vpath vfs file path
+ * @param line line number
+ *
+ * @return TRUE if file content was successfully loaded, FALSE otherwise
+ */
+
+gboolean
+edit_load_file_from_filename (WDialog * h, const vfs_path_t * vpath, long line)
+{
+    WRect r = WIDGET (h)->rect;
+
+    rect_grow (&r, -1, 0);
+
+    return edit_add_window (h, &r, vpath, line);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1128,7 +1134,7 @@ edit_load_file_from_history (WDialog * h)
         vfs_path_t *exp_vpath;
 
         exp_vpath = vfs_path_from_str (exp);
-        ret = edit_load_file_from_filename (h, exp_vpath);
+        ret = edit_load_file_from_filename (h, exp_vpath, 0);
         vfs_path_free (exp_vpath, TRUE);
     }
 
@@ -1136,7 +1142,6 @@ edit_load_file_from_history (WDialog * h)
 
     return ret;
 }
-
 
 /* --------------------------------------------------------------------------------------------- */
 /**
@@ -1158,25 +1163,25 @@ edit_load_syntax_file (WDialog * h)
                             _("&User"), _("&System wide"));
 
     extdir_vpath =
-        vfs_path_build_filename (mc_global.sysconfig_dir, "syntax", "Syntax", (char *) NULL);
+        vfs_path_build_filename (mc_global.sysconfig_dir, EDIT_SYNTAX_FILE, (char *) NULL);
     if (!exist_file (vfs_path_get_last_path_str (extdir_vpath)))
     {
         vfs_path_free (extdir_vpath, TRUE);
         extdir_vpath =
-            vfs_path_build_filename (mc_global.share_data_dir, "syntax", "Syntax", (char *) NULL);
+            vfs_path_build_filename (mc_global.share_data_dir, EDIT_SYNTAX_FILE, (char *) NULL);
     }
 
     if (dir == 0)
     {
         vfs_path_t *user_syntax_file_vpath;
 
-        user_syntax_file_vpath = mc_config_get_full_vpath (EDIT_HOME_SYNTAX_FILE);
+        user_syntax_file_vpath = mc_config_get_full_vpath (EDIT_SYNTAX_FILE);
         check_for_default (extdir_vpath, user_syntax_file_vpath);
-        ret = edit_load_file_from_filename (h, user_syntax_file_vpath);
+        ret = edit_load_file_from_filename (h, user_syntax_file_vpath, 0);
         vfs_path_free (user_syntax_file_vpath, TRUE);
     }
     else if (dir == 1)
-        ret = edit_load_file_from_filename (h, extdir_vpath);
+        ret = edit_load_file_from_filename (h, extdir_vpath, 0);
 
     vfs_path_free (extdir_vpath, TRUE);
 
@@ -1241,7 +1246,7 @@ edit_load_menu_file (WDialog * h)
         return FALSE;
     }
 
-    ret = edit_load_file_from_filename (h, buffer_vpath);
+    ret = edit_load_file_from_filename (h, buffer_vpath, 0);
 
     vfs_path_free (buffer_vpath, TRUE);
     vfs_path_free (menufile_vpath, TRUE);
@@ -1759,7 +1764,7 @@ edit_goto_cmd (WEdit * edit)
     if (l < 0)
         l = edit->buffer.lines + l + 2;
 
-    edit_move_display (edit, l - WIDGET (edit)->lines / 2 - 1);
+    edit_move_display (edit, l - WIDGET (edit)->rect.lines / 2 - 1);
     edit_move_to_line (edit, l - 1);
     edit->force |= REDRAW_COMPLETELY;
 
@@ -1858,7 +1863,7 @@ edit_sort_cmd (WEdit * edit)
     g_free (tmp);
 
     exp = input_dialog (_("Run sort"),
-                        _("Enter sort options (see manpage) separated by whitespace:"),
+                        _("Enter sort options (see sort(1) manpage) separated by whitespace:"),
                         MC_HISTORY_EDIT_SORT, INPUT_LAST_TEXT, INPUT_COMPLETE_NONE);
 
     if (exp == NULL)
@@ -2005,11 +2010,12 @@ edit_mail_dialog (WEdit * edit)
     };
 #endif  //WIN32
 
-    quick_dialog_t qdlg = {
-        -1, -1, 50,
-        N_("Mail"), "[Input Line Keys]",
+    WRect r = { -1, -1, 0, 50 };
+
+    quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+        &r, N_("Mail"), "[Input Line Keys]",
         quick_widgets, NULL, NULL
-    };
+    );
 
 #if defined(WIN32)  //WIN32, quick
     qc = XQUICK_LABEL (qc, N_("mail -s <subject> -c <cc> <to>"), NULL),

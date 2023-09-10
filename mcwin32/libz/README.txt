@@ -1,16 +1,28 @@
 
-        Source: http://www.zlib.net/
+Source: http://www.zlib.net/
+   
+Copyright notice:
 
-        o zlib 1.2.8
+ (C) 1995-2022 Jean-loup Gailly and Mark Adler
 
-           patch
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-            _   #if defined(MSDOS) || (defined(WINDOWS) && !defined(WIN32))
-            +   #if (defined(MSDOS) && !defined(WIN32)) || (defined(WINDOWS) && !defined(WIN32))
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-        o zlib 1.2.11
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 
-           patch
+  Jean-loup Gailly        Mark Adler
+  jloup@gzip.org          madler@alumni.caltech.edu
+   
 
-                #if defined(WIN32) && !defined(__CYGWIN__)
-            +   #  undef OS_CODE
+

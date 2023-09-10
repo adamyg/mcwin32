@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.16 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.17 2023/01/31 17:44:09 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -532,8 +532,8 @@ w32_ostype(void)
     if (! platform) {
         OSVERSIONINFO ovi = {0};
         ovi.dwOSVersionInfoSize = sizeof(ovi);
-        GetVersionEx(&ovi);
-            // TODO: replace with RtlGetVersion() as GetVersionEx() is now defunct; 8.1+.
+
+        GetVersionEx(&ovi);             // dependent on app-manifest
         switch (ovi.dwPlatformId) {
         case VER_PLATFORM_WIN32s:
         case VER_PLATFORM_WIN32_WINDOWS:
@@ -573,7 +573,11 @@ w32_ostype(void)
             platform = OSTYPE_WIN_NT;           // or 2000
 
             if (ovi.dwMajorVersion >= 10) {
-                platform = OSTYPE_WIN_10;       // Windows 10+
+                if (ovi.dwBuildNumber >= 22000) {
+                    platform = OSTYPE_WIN_11;   // Windows 11
+                } else {
+                    platform = OSTYPE_WIN_10;   // Windows 10
+                }
 
             } else if (6 == ovi.dwMajorVersion) {
                 platform = OSTYPE_WIN_VISTA;

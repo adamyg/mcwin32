@@ -1,68 +1,149 @@
 
-   Midnight Commander Win32 Native
+   Midnight Commander Win32 Native build and installation tools.
 
       Requirements:
 
-           o gnu-win32.
+           o Suitable compiler chain, from one of the following
 
-           o Open Watcom 1.9
-                or Microsoft Visual Studio 2013 (or greater).
+                o Open Watcom 1.9 or the later 2.0.
+                o Microsoft Visual Studio 2013 (or greater).
+                o mingw32/64
 
-           o perl.
+           o Perl - Make system generation and run-time support.
 
-           o gtk-win32 (optional).
+           o Unix binary tools - Make system run-time support.
 
-           o Inno Setup.
+           o InnoSetup - Required for the creation of installation packages.
 
-                Required for the creation of installation packages.
 
       Components:
 
-           o mcsrc      Midnight Commander source (currently 4.8.21),
-                        mc-win32 changes enclosed within "if defined(WIN32)"
-                        and/or //WIN32 comment blocks.
+           o mcsrc - Midnight Commander source (currently 4.8.29).
 
-           o mcwin32    Windows specific code and build env.
+               mc-win32 changes enclosed within "ifdefined(WIN32)"
+               and/or are labelled with "//WIN32" comment blocks.
+
+           o mcwin32 - Windows specific code and build env.
+
 
       Build steps:
 
-        a. Install the gnuwin32 tool set or similar. (optional) set the
-            PATH environment variable to include the win32 sub-directory which
-            contains console versions of several GNU tools, including gmake.
+        1. binutils
 
-              Source: http://unxutils.sourceforge.net/
+              A unix style bintools needs to be available, plus the installation should be
+              visible within the current PATH.
 
-        b. Compiler installation
+              Examples:
 
-              Either Open-Watcom, install the current Open Watcom 1.9 installation
-              or MSVC 2013 or greater is required.  The installation should visible
+                o gnuwin32 [ http://unxutils.sourceforge.net/ ]
+
+                    Note:
+                    These set of tools are aging, for example the gmake bundled with gnuwin32 is
+                    an older 3.81 release, which wont function correctly. GNU make 4.0 or greater
+                    is required, advise replacing with the bundled 'mcwin32/support/gmake-42.exe'.
+
+                o msys2
+
+              Note: cygwin is not suitable nor supported.
+
+
+        2. Compiler installation
+
+              One of the following C/C++ toolchains needs to be available, plus the installation
+              should be visible within the current PATH.
+
+              Suitable distributions include:
+
+                o Open Watcom 1.9 or the later 2.0.
+                o Microsoft Visual Studio 2013 (or greater).
+                o mingw32/64 [ experimental ].
+
+              Note: OpenWatcom is currently utlised for releases.
+
+
+        3. Perl installation
+
+              A perl installation needs to be available plus the installation should be visible
               within the current PATH.
 
-        c. Perl installation
+              Suitable perl distributions include:
 
-              A perl installation must be available, examples include ActiveState Perl,
-              Strawberry Perl. The installation should visible within the current PATH.
+                o ActiveState Perl.
+                o Strawberry Perl.
 
-        d. For older builds (pre 4.8.19), install the 'all-in-one-bundle' within the
-            root under the directory 'gtk'.
 
-              Source: http://www.gtk.org/download/win32.php
+        4. InnoSetup installation, optional
 
-        e. Prime the tree; generate makefiles
+              Install InnoSetup 5.6.x within its default installation path; if modified the
+              arguments to the support scripts below shall need to tbe adjusted to match,
+              set the envvar INNO="<install-path>" prior to priming the tree.
 
-             cd mcwin32
-             
-             support\vc2015config.bat 
-          or support\vc2017config.bat 
-          or support\vc2019config.bat 
-          or support\owcconfig.bat
+              This package is optional and only required if an installer is being built.
 
-        f. Build,
+              6.x Inno and later is also an option, but the Installer will only function on Vista
+              or greater. 6.x and later versions of Inno no longer support Windows 2000, XP, and Server
+              2003.
 
-             [g]make [release]
 
-        g. To create the installer and/or copy the bin tree your install location.
+        4. Prime the build tree; generate makefiles
 
-             start mc-inno-setup.iss
+                 $ cd mcwin32
 
+                 $ support\vc2015config.bat
+              or $ support\vc2017config.bat
+              or $ support\vc2019config.bat
+              or $ support\owcconfig.bat
+              or $ support\owc20config.bat
+
+              Note:
+              These scripts execute the perl module makelib.pl which generates Makefiles targeted
+              for the specified toolchain.
+
+
+        5. Build the entire tree with:
+
+                 $ gmake release
+              or $ support\gmake-42 release
+
+              Usage:
+
+                | make [VERBOSE=1] [release or debug] target
+                |
+                |       Build one or more of the following targets recursively within each sub-directory
+                |       for the toolchain <toolchains>.
+                |
+                | Options:
+                |       VERBOSE - increase run-time diagnostics; suppress stderr filtering.
+                |
+                | Targets:
+                |
+                |       build - build everything.
+                |       package - build package.
+                |       clean - delete everything which can be remade.
+                |       vclean - delete all.
+                |       help - command line usage.
+
+
+        6. To create the installer.
+
+                 $ support\gmake-42 release package
+              or $ start mc-inno-setup.iss
+
+              Note:
+              Alternatively zip/copy the bin tree to your desired install location, as the
+              application is portable.
+
+
+        7. Finally, please review the packaged example alternative configurations as win32
+           development environments can be problematic, dependent on the host setup:
+
+             o .github/workflows, github build actions for latest OWC, MSVC abd MINGW toolchains.
+
+             o Appveyor CI integration notes under mcwin32/support.
+
+           plus other helper scripts under mcwin32/support.
+
+
+Last Update: Feb/2023
 =end=
+

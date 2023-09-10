@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.11 2022/06/09 16:39:16 cvsuser Exp $
+# $Id: Makefile.in,v 1.13 2023/02/03 17:10:09 cvsuser Exp $
 # libmagic makefile
 #
 #
@@ -38,6 +38,15 @@ MAKEFLAGS+=	BUILD_TYPE=debug
 endif
 ifneq ("$(BUILD_TYPE)","release")
 RTSUFFIX=d
+endif
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
 endif
 
 # Directories
@@ -167,7 +176,7 @@ debug:
 
 $(MAGICLIB):		CEXTRA += -D__LIBMAGIC_BUILD -DLIBMAGIC_STATIC -DBUILD_AS_WINDOWS_STATIC_LIBARAY
 $(MAGICLIB):		$(D_OBJ)/.created $(LIBOBJS)
-		$(RM) $(RMFLAGS) $@ >/dev/null 2>&1
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
 		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
 		$(RANLIB) $@
 
@@ -211,9 +220,9 @@ installinc:		../include/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(LIBTOOL) --mode=clean $(RM) $(MAGICDLL) $(OBJS) >nul 2>&1
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) >nul 2>&1
-		-@$(RM) $(LIBOBJS) $(UTILOBJS) >nul 2>&1
+		-@$(LIBTOOL) --mode=clean $(RM) $(MAGICDLL) $(OBJS) $(QUIETOUT)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
+		-@$(RM) $(LIBOBJS) $(UTILOBJS) $(QUIETOUT)
 
 $(D_OBJ)/%$(O):		%$(C)
 		$(CC) $(CFLAGS) -D_CRT_SECURE_NO_DEPRECATE -o $@ -c $<

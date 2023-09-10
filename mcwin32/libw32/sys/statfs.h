@@ -1,14 +1,14 @@
 #ifndef LIBW32_SYS_STATFS_H_INCLUDED
 #define LIBW32_SYS_STATFS_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_statfs_h,"$Id: statfs.h,v 1.8 2022/06/08 09:51:45 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_statfs_h,"$Id: statfs.h,v 1.9 2023/01/31 17:14:13 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 [f]statfs implementation
  *
- * Copyright (c) 2012 - 2022, Adam Young.
+ * Copyright (c) 2012 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -28,8 +28,8 @@ __CPRAGMA_ONCE
  * ==end==
  */
 
-#include <sys/cdefs.h>
-#include <sys/utypes.h>
+#include <sys/cdefs.h>          /* __BEGIN/__END/.. */
+#include <sys/utypes.h>         /* fsblkcnt_t and fsfilcnt_t */
 #include <sys/mount.h>
 #include <wchar.h>
 
@@ -43,14 +43,13 @@ typedef struct fsid {                           /* file system id type */
 } fsid_t;
 
 struct statfs {
-    long            f_spare2;                   /* placeholder */
-    long            f_bsize;                    /* fundamental file system block size */
-    long            f_iosize;                   /* optimal transfer block size */
-    long            f_blocks;                   /* total data blocks in file system */
-    long            f_bfree;                    /* free blocks in fs */
-    long            f_bavail;                   /* free blocks avail to non-superuser */
-    long            f_files;                    /* total file nodes in file system */
-    long            f_ffree;                    /* free file nodes in fs */
+    unsigned long   f_bsize;                    /* fundamental file system block size */
+    unsigned long   f_iosize;                   /* optimal transfer block size */
+    fsblkcnt_t      f_blocks;                   /* total data blocks in file system */
+    fsblkcnt_t      f_bfree;                    /* free blocks in fs */
+    fsblkcnt_t      f_bavail;                   /* free blocks avail to non-superuser */
+    fsfilcnt_t      f_files;                    /* total file nodes in file system */
+    fsfilcnt_t      f_ffree;                    /* free file nodes in fs */
     fsid_t          f_fsid;                     /* file system id */
     uid_t           f_owner;                    /* user that mounted the filesystem */
     int             f_type;                     /* type of filesystem (see below) */

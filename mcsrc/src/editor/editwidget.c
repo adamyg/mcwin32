@@ -6,7 +6,7 @@
 
    Written by:
    Paul Sheer, 1996, 1997
-   Andrew Borodin <aborodin@vmail.ru> 2012, 2013
+   Andrew Borodin <aborodin@vmail.ru> 2012-2022
 
    This file is part of the Midnight Commander.
 
@@ -164,20 +164,21 @@ edit_about (void)
         };
 #endif  //WIN32
 
-        quick_dialog_t qdlg = {
-            -1, -1, 40,
-            N_("About"), "[Internal File Editor]",
+        WRect r = { -1, -1, 0, 40 };
+
+        quick_dialog_t qdlg = QUICK_DIALOG_INIT (
+            &r, N_("About"), "[Internal File Editor]",
             quick_widgets, NULL, NULL
-        };
+        );
 
 #if defined(WIN32)  //WIN32, quick
         /* *INDENT-OFF* */
         qc = XQUICK_LABEL (qc, ver, NULL),
         qc = XQUICK_SEPARATOR (qc, TRUE),
         qc = XQUICK_LABEL (qc, N_("A user friendly text editor\n"
-                            "written for the Midnight Commander."), NULL),
+                                  "written for the Midnight Commander."), NULL),
         qc = XQUICK_SEPARATOR (qc, FALSE),
-        qc = XQUICK_LABEL (qc, N_("Copyright (C) 1996-2021 the Free Software Foundation"), NULL),
+        qc = XQUICK_LABEL (qc, N_("Copyright (C) 1996-2022 the Free Software Foundation"), NULL),
         qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE),
         qc = XQUICK_BUTTON (qc, N_("&OK"), B_ENTER, NULL, NULL),
         qc = XQUICK_END (qc);
@@ -236,8 +237,10 @@ edit_restore_size (WEdit * edit)
 static void
 edit_window_move (WEdit * edit, long command)
 {
-    Widget *w = WIDGET (edit);
-    Widget *wh = WIDGET (w->owner);
+    Widget *we = WIDGET (edit);
+    Widget *wo = WIDGET (we->owner);
+    WRect *w = &we->rect;
+    const WRect *wh = &wo->rect;
 
     switch (command)
     {
@@ -250,7 +253,7 @@ edit_window_move (WEdit * edit, long command)
             w->y++;
         break;
     case CK_Left:
-        if (w->x + w->cols > wh->x)
+        if (w->x + wh->cols > wh->x)
             w->x--;
         break;
     case CK_Right:
@@ -262,7 +265,7 @@ edit_window_move (WEdit * edit, long command)
     }
 
     edit->force |= REDRAW_PAGE;
-    widget_draw (WIDGET (w->owner));
+    widget_draw (wo);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -276,8 +279,10 @@ edit_window_move (WEdit * edit, long command)
 static void
 edit_window_resize (WEdit * edit, long command)
 {
-    Widget *w = WIDGET (edit);
-    Widget *wh = WIDGET (w->owner);
+    Widget *we = WIDGET (edit);
+    Widget *wo = WIDGET (we->owner);
+    WRect *w = &we->rect;
+    const WRect *wh = &wo->rect;
 
     switch (command)
     {
@@ -302,7 +307,7 @@ edit_window_resize (WEdit * edit, long command)
     }
 
     edit->force |= REDRAW_COMPLETELY;
-    widget_draw (WIDGET (w->owner));
+    widget_draw (wo);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -352,7 +357,8 @@ edit_window_list (const WDialog * h)
                                      vfs_path_as_str (e->filename_vpath));
 
             listbox_add_item (listbox->list, LISTBOX_APPEND_AT_END, get_hotkey (i++),
-                              str_term_trim (fname, WIDGET (listbox->list)->cols - 2), e, FALSE);
+                              str_term_trim (fname, WIDGET (listbox->list)->rect.cols - 2), e,
+                              FALSE);
             g_free (fname);
         }
 
@@ -411,13 +417,12 @@ static cb_ret_t
 edit_dialog_command_execute (WDialog * h, long command)
 {
     WGroup *g = GROUP (h);
-    Widget *wh = WIDGET (h);
     cb_ret_t ret = MSG_HANDLED;
 
     switch (command)
     {
     case CK_EditNew:
-        edit_add_window (h, wh->y + 1, wh->x, wh->lines - 2, wh->cols, NULL, 0);
+        edit_load_file_from_filename (h, NULL, 0);
         break;
     case CK_EditFile:
         edit_load_cmd (h);
@@ -901,7 +906,7 @@ edit_dialog_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
                     top = l;
 
             /* Handle fullscreen/close buttons in the top line */
-            x = w->cols - 6;
+            x = w->rect.cols - 6;
 
             if (top != NULL && event->x >= x)
             {
@@ -939,17 +944,10 @@ edit_dialog_bg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm
     switch (msg)
     {
     case MSG_INIT:
-        {
-            Widget *wo = WIDGET (w->owner);
-
-            w->y = wo->y + 1;
-            w->x = wo->x;
-            w->lines = wo->lines - 2;
-            w->cols = wo->cols;
-            w->pos_flags |= WPOS_KEEP_ALL;
-
-            return MSG_HANDLED;
-        }
+        w->rect = WIDGET (w->owner)->rect;
+        rect_grow (&w->rect, -1, 0);
+        w->pos_flags |= WPOS_KEEP_ALL;
+        return MSG_HANDLED;
 
     default:
         return background_callback (w, sender, msg, parm, data);
@@ -1035,7 +1033,8 @@ static void
 edit_mouse_handle_move_resize (Widget * w, mouse_msg_t msg, mouse_event_t * event)
 {
     WEdit *edit = (WEdit *) (w);
-    Widget *h = WIDGET (w->owner);
+    WRect *r = &w->rect;
+    const WRect *h = &CONST_WIDGET (w->owner)->rect;
     int global_x, global_y;
 
     if (msg == MSG_MOUSE_UP)
@@ -1057,8 +1056,8 @@ edit_mouse_handle_move_resize (Widget * w, mouse_msg_t msg, mouse_event_t * even
         return;
 
     /* Convert point to global coordinates for easier calculations. */
-    global_x = event->x + w->x;
-    global_y = event->y + w->y;
+    global_x = event->x + r->x;
+    global_y = event->y + r->y;
 
     /* Clamp the point to the dialog's client area. */
     global_y = CLAMP (global_y, h->y + 1, h->y + h->lines - 2); /* Status line, buttonbar */
@@ -1066,13 +1065,13 @@ edit_mouse_handle_move_resize (Widget * w, mouse_msg_t msg, mouse_event_t * even
 
     if (edit->drag_state == MCEDIT_DRAG_MOVE)
     {
-        w->y = global_y;
-        w->x = global_x - edit->drag_state_start;
+        r->y = global_y;
+        r->x = global_x - edit->drag_state_start;
     }
     else if (edit->drag_state == MCEDIT_DRAG_RESIZE)
     {
-        w->lines = MAX (WINDOW_MIN_LINES, global_y - w->y + 1);
-        w->cols = MAX (WINDOW_MIN_COLS, global_x - w->x + 1);
+        r->lines = MAX (WINDOW_MIN_LINES, global_y - r->y + 1);
+        r->cols = MAX (WINDOW_MIN_COLS, global_x - r->x + 1);
     }
 
     edit->force |= REDRAW_COMPLETELY;   /* Not really needed as WEdit's MSG_DRAW already does this. */
@@ -1099,7 +1098,7 @@ edit_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
     /* location of 'Close' and 'Toggle fullscreen' pictograms */
     int close_x, toggle_fullscreen_x;
 
-    close_x = (w->cols - 1) - dx - 1;
+    close_x = (w->rect.cols - 1) - dx - 1;
     toggle_fullscreen_x = close_x - 3;
 
     if (edit->drag_state != MCEDIT_DRAG_NONE)
@@ -1113,7 +1112,7 @@ edit_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
      * system channel it to the overlapping buttonbar instead. We have to do
      * this because a WEdit has the WOP_TOP_SELECT flag, which makes it above
      * the buttonbar in Z-order. */
-    if (msg == MSG_MOUSE_DOWN && (event->y + w->y == LINES - 1))
+    if (msg == MSG_MOUSE_DOWN && (event->y + w->rect.y == LINES - 1))
     {
         event->result.abort = TRUE;
         return;
@@ -1144,7 +1143,7 @@ edit_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
                 break;
             }
 
-            if (event->y == w->lines - 1 && event->x == w->cols - 1)
+            if (event->y == w->rect.lines - 1 && event->x == w->rect.cols - 1)
             {
                 /* bottom-right corner -- start window resize */
                 edit_execute_cmd (edit, CK_WindowResize, -1);
@@ -1275,7 +1274,8 @@ edit_files (const GList * files)
 
     edit_dlg->bg =
         WIDGET (background_new
-                (1, 0, wd->lines - 2, wd->cols, EDITOR_BACKGROUND, ' ', edit_dialog_bg_callback));
+                (1, 0, wd->rect.lines - 2, wd->rect.cols, EDITOR_BACKGROUND, ' ',
+                 edit_dialog_bg_callback));
     group_add_widget (g, edit_dlg->bg);
 
     menubar = menubar_new (NULL);
@@ -1291,8 +1291,7 @@ edit_files (const GList * files)
         mcedit_arg_t *f = (mcedit_arg_t *) file->data;
         gboolean f_ok;
 
-        f_ok = edit_add_window (edit_dlg, wd->y + 1, wd->x, wd->lines - 2, wd->cols, f->file_vpath,
-                                f->line_number);
+        f_ok = edit_load_file_from_filename (edit_dlg, f->file_vpath, f->line_number);
         /* at least one file has been opened succefully */
         ok = ok || f_ok;
     }
@@ -1372,9 +1371,7 @@ edit_update_screen (WEdit * e)
 void
 edit_save_size (WEdit * edit)
 {
-    Widget *w = WIDGET (edit);
-
-    rect_init (&edit->loc_prev, w->y, w->x, w->lines, w->cols);
+    edit->loc_prev = WIDGET (edit)->rect;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1393,12 +1390,12 @@ edit_save_size (WEdit * edit)
  */
 
 gboolean
-edit_add_window (WDialog * h, int y, int x, int lines, int cols, const vfs_path_t * f, long fline)
+edit_add_window (WDialog * h, const WRect * r, const vfs_path_t * f, long fline)
 {
     WEdit *edit;
     Widget *w;
 
-    edit = edit_init (NULL, y, x, lines, cols, f, fline);
+    edit = edit_init (NULL, r, f, fline);
     if (edit == NULL)
         return FALSE;
 
@@ -1450,7 +1447,7 @@ edit_handle_move_resize (WEdit * edit, long command)
              * make a subsequent mouse drag pull the frame from its middle.
              * (We can instead choose '0' to pull it from the corner.)
              */
-            edit->drag_state_start = w->cols / 2;
+            edit->drag_state_start = w->rect.cols / 2;
             ret = TRUE;
             break;
         case CK_WindowResize:
@@ -1555,10 +1552,12 @@ edit_toggle_fullscreen (WEdit * edit)
     }
     else
     {
-        Widget *h = WIDGET (w->owner);
+        WRect r;
 
         edit_save_size (edit);
-        widget_set_size (w, h->y + 1, h->x, h->lines - 2, h->cols);
+        r = WIDGET (w->owner)->rect;
+        rect_grow (&r, -1, 0);
+        widget_set_size_rect (w, &r);
         /* follow screen size on resize */
         w->pos_flags = WPOS_KEEP_ALL;
         edit->force |= REDRAW_PAGE;

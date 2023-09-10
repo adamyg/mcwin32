@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.8 2022/06/09 16:46:04 cvsuser Exp $
+# $Id: Makefile.in,v 1.12 2023/09/10 10:01:04 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -38,6 +38,15 @@ MAKEFLAGS+=	BUILD_TYPE=debug
 endif
 ifneq ("$(BUILD_TYPE)","release")
 RTSUFFIX=d
+endif
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
 endif
 
 # Directories
@@ -112,9 +121,13 @@ UPDATERDLL=	$(D_LIB)/$(LP)autoupdater.la
 UPDATERTSK=	$(D_BIN)/mcupdater$(E)
 SIGNATURETSK=	$(D_BIN)/mcsignature$(E)
 
-UPDATERSRC=		./libappupdater
-EXPATSRC=		./libappupdater/expat
-SIGNSRC=		./libappupdater/sign
+UPDATERSRC=	./libappupdater
+ifeq ("owc19","@TOOLCHAIN@")
+EXPATSRC=	./expat_legacy
+else
+EXPATSRC=	./libappupdater/expat
+endif
+SIGNSRC=	./libappupdater/sign
 
 VPATH=		$(UPDATERSRC) $(UPDATERSRC)/src $(UPDATERSRC)/localisation $(UPDATERSRC)/localisation/test $(EXPATSRC) $(SIGNSRC) ./sign
 
@@ -165,7 +178,8 @@ SIGNATUREOBJS=\
 	$(D_OBJ)/getopt$(O)
 
 OBJS=		$(DLLOBJS) $(UPDATEROBJS) $(SIGNATUREOBJS)
-LIBS=		$(UPDATERDLL)
+LIBS=		
+DLLS=		$(UPDATERDLL)
 TSKS=		$(UPDATERTSK) $(SIGNATURETSK)
 INSTALLED=
 
@@ -174,7 +188,7 @@ INSTALLED=
 # Rules
 
 .PHONY:			build release debug
-build:			$(LIBS) $(TSKS)
+build:			$(LIBS) $(DLLS) $(TSKS)
 
 release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
@@ -204,18 +218,15 @@ $(SIGNATURETSK):	MAPFILE=$(basename $@).map
 $(SIGNATURETSK):	$(SIGNATUREOBJS)
 		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(SIGNATUREOBJS) $(D_LIB)/libautoupdater$(A) $(LDLIBS) @LDMAPFILE@
 
-installinc:		include/.created
-		@echo publishing headers ...
-		-cp $(UPDATERSRC)/magic.h include
-		@echo publishing magicdb ...
-		-cp magic.mgc $(D_BIN)
-
 %/.created:
 		-@mkdir $(@D)
 		@echo "do not delete, managed directory" > $@
 
 clean:
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		@echo $(BUILD_TYPE) clean
+		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) $(QUIETOUT)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
+		-@$(RM) $(LIBOBJS) $(QUIETOUT)
 
 $(D_OBJ)/%$(O):		%.cpp
 		$(CC) $(CXXFLAGS) -o $@ -c $<
@@ -234,5 +245,5 @@ $(D_OBJ)/%.res:		%.rc
 
 $(D_OBJ)/%_res.o:	%.rc
 		$(RC) -o $@ -I./libappupdater/src $(RCDEFS) $<
-		
+
 #end

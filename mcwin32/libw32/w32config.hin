@@ -1,7 +1,7 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.19 2022/06/14 02:19:59 cvsuser Exp $
+/* $Id: w32config.hin,v 1.20 2023/01/31 17:44:09 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
@@ -51,7 +51,7 @@
 #pragma warning (disable : 4996)
 
 #if defined(_CRT_NO_POSIX_ERROR_CODES)
-#pragma message <system_error> is incompatible with _CRT_NO_POSIX_ERROR_CODES.
+#pragma message("<system_error> is incompatible with _CRT_NO_POSIX_ERROR_CODES.")
 #endif
 
 #elif defined(__WATCOMC__)

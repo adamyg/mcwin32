@@ -1,14 +1,14 @@
 #ifndef LIBW32_SYS_STATVFS_H
 #define LIBW32_SYS_STATVFS_H
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_statvfs_h,"$Id: statvfs.h,v 1.7 2022/02/24 15:33:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_statvfs_h,"$Id: statvfs.h,v 1.8 2023/01/31 17:14:13 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 [f]statvfs implementation
  *
- * Copyright (c) 2012 - 2022, Adam Young.
+ * Copyright (c) 2012 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -111,19 +111,20 @@ __CPRAGMA_ONCE
 //
 */
 
-#include <sys/cdefs.h>
+#include <sys/cdefs.h>          /* __BEGIN/__END/.. */
+#include <sys/utypes.h>         /* fsblkcnt_t and fsfilcnt_t */
 
 #define FSTYPSZ         16
 
 struct statvfs {
     unsigned long   f_bsize;                    /* File system block size. */
     unsigned long   f_frsize;                   /* Fundamental file system block size. */
-    unsigned long   f_blocks;                   /* Total number of blocks on file system in units of f_frsize. */
-    unsigned long   f_bfree;                    /* Total number of free blocks. */
-    unsigned long   f_bavail;                   /* Number of free blocks available to non-privileged process. */
-    unsigned long   f_files;                    /* Total number of file serial numbers. */
-    unsigned long   f_ffree;                    /* Total number of free file serial numbers. */
-    unsigned long   f_favail;                   /* Number of file serial numbers available to  non-privileged process. */
+    fsblkcnt_t      f_blocks;                   /* Total number of blocks on file system in units of f_frsize. */
+    fsblkcnt_t      f_bfree;                    /* Total number of free blocks. */
+    fsblkcnt_t      f_bavail;                   /* Number of free blocks available to non-privileged process. */
+    fsfilcnt_t      f_files;                    /* Total number of file serial numbers. */
+    fsfilcnt_t      f_ffree;                    /* Total number of free file serial numbers. */
+    fsfilcnt_t      f_favail;                   /* Number of file serial numbers available to  non-privileged process. */
     unsigned long   f_fsid;                     /* File system ID. */
     unsigned long   f_flag;                     /* Bit mask of f_flag values. */
 #define ST_RDONLY   0x01                        /* read-only file system. */

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.5 2022/06/09 16:39:37 cvsuser Exp $
+# $Id: Makefile.in,v 1.6 2023/02/03 17:10:09 cvsuser Exp $
 # libregex makefile
 #
 #
@@ -35,6 +35,15 @@ MAKEFLAGS+=	BUILD_TYPE=debug
 endif
 ifneq ("$(BUILD_TYPE)","release")
 RTSUFFIX=d
+endif
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
 endif
 
 # Directories
@@ -112,7 +121,7 @@ installinc:		../include/.created
 
 clean:
 		@echo $(BUILD_TYPE) clean
-		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) >/dev/null 2>&1
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(LIBS) $(OBJS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
 
 $(D_OBJ)/%$(O):		%$(C)
 		$(CC) $(CFLAGS) -D_CRT_SECURE_NO_DEPRECATE -o $@ -c $<
