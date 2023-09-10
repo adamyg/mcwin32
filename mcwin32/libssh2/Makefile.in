@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.20 2023/09/10 11:16:58 cvsuser Exp $
+# $Id: Makefile.in,v 1.21 2023/09/10 11:30:36 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -242,6 +242,6 @@ $(D_OBJ)/%.res:		%.rc
 		$(RC) -I $(SSH2INCLUDE) -fo $@ $<
 
 $(D_OBJ)/%_res.o:	%.rc
-		$(RC) -i $(SSH2INCLUDE) -o $@ $<
+		$(RC) -I $(SSH2INCLUDE) -o $@ $<
 
 #end
