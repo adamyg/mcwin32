@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.18 2023/02/03 17:10:09 cvsuser Exp $
+# $Id: Makefile.in,v 1.19 2023/09/10 10:35:00 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -108,7 +108,7 @@ RMFLAGS=	-f
 SSH2LIB=	$(D_LIB)/$(LP)ssh2_static$(A)
 SSH2DLL=	$(D_LIB)/$(LP)ssh2.la
 
-VERSION=	1.10.0
+VERSION=	1.11.0
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 VERPACKED=	libssh2-$(VERSION).gr.tgz
 
@@ -120,7 +120,8 @@ CINCLUDE+=	-I$(SSH2BASE)/win32 -I$(SSH2INCLUDE)
 ifneq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 CINCLUDE+=	-I./sdk
 endif
-CEXTRA+=	-DLIBSSH2_WIN32 -DLIBSSH2_HAVE_ZLIB
+CEXTRA+=	-DLIBSSH2_HAVE_ZLIB
+	# also see libssh2/win32/libssh2_config.h
 
 ##CEXTRA+=	-DLIBSSH2_WINOPENSSL
 ##CEXTRA+=	-DLIBSSH2_WINCNG
@@ -128,7 +129,7 @@ CEXTRA+=	-DLIBSSH2_MBEDTLS
 			# Crypto backends (see: crypto.h):
 			# LIBSSH2_OPENSSL lib openssl
 			# LIBSSH2_WINCNG Windows crypto;
-			#   Note: current Windows enc engine wont allow OpenSSH connections.
+			# Note: current Windows enc engine wont allow OpenSSH connections.
 			# LIBSSH2_MBEDTLS mbedtls
 			#
 LDLIBS+=	libmbedcrypto_static.lib
@@ -136,7 +137,7 @@ LDLIBS+=	libz_static.lib
 
 VPATH+=		$(SSH2SRC) $(SSH2BASE)/win32
 CRYPTO_CSOURCES=\
-	openssl.c wincng.c mbedtls.c
+	crypto.c userauth_kbd_packet.c
 			# os400qc3.c libgcrypt.c
 
 CSOURCES=\
@@ -197,7 +198,7 @@ $(SSH2LIB):		$(LIBOBJS)
 		$(RANLIB) $@
 
 INSTALLED+=	$(D_BIN)/libssh2.$(VERSION).dll
-$(SSH2DLL):		CEXTRA += -DLIBSSH2_DYANMIC -D_WINDLL
+$(SSH2DLL):		CEXTRA += -DLIBSSH2_DYNAMIC -DLIBSSH2_EXPORTS -D_WINDLL
 $(SSH2DLL):		$(DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) $(SSH2DEF) $^ $(LDLIBS)
@@ -238,7 +239,7 @@ $(D_OBJ)/%.lo:		%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJ)/%.res:		%.rc
-		$(RC) -fo $@ $<
+		$(RC) -I $(SSH2INCLUDE) -fo $@ $<
 
 $(D_OBJ)/%_res.o:	%.rc
 		$(RC) -o $@ $<
