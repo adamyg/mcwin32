@@ -1,4 +1,4 @@
-;$Id: libmbedcrypto.def.3.4.1,v 1.1 2023/09/12 15:00:39 cvsuser Exp $
+;$Id: libmbedcrypto.def.3.4.1,v 1.2 2023/09/12 15:30:40 cvsuser Exp $
 ;
 ;  libmbedcrypto library definition (3.4.1)
 ;
@@ -1000,6 +1000,7 @@ EXPORTS
     mbedtls_sha256_finish
     mbedtls_sha256
     mbedtls_sha256_self_test
+    mbedtls_sha224_self_test
 
 ; library\sha512.c
     mbedtls_sha512_init
@@ -1011,6 +1012,7 @@ EXPORTS
     mbedtls_sha512_finish
     mbedtls_sha512
     mbedtls_sha512_self_test
+    mbedtls_sha384_self_test
 
 ; library\timing.c
     mbedtls_timing_get_timer
