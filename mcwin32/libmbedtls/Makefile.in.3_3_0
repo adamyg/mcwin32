@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.11 2023/02/03 17:10:09 cvsuser Exp $
+# $Id: Makefile.in,v 1.14 2023/09/10 10:00:42 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
@@ -410,4 +410,3 @@ $(D_OBJ)/%_res.o:	%.rc
 		$(RC) -DLIBNAME=$(LIBNAME) -DVERSION=$(VERSION) -DVERSION_1=$(VERSION_1) -DVERSION_2=$(VERSION_2) -DVERSION_3=$(VERSION_3) -o $@ $<
 
 #end
-
