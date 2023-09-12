@@ -112,7 +112,7 @@ MBEDX509DLL=	$(D_LIB)/$(LP)mbedx509.la
 MBEDTLSLIB=	$(D_LIB)/$(LP)mbedtls_static$(A)
 MBEDTLSDLL=	$(D_LIB)/$(LP)mbedtls.la
 
-VERSION=	3.3.0
+VERSION=	3.4.1
 VERSION_1	=$(word 1,$(subst ., ,$(VERSION)))
 VERSION_2	=$(word 2,$(subst ., ,$(VERSION)))
 VERSION_3	=$(word 3,$(subst ., ,$(VERSION)))
@@ -198,6 +198,7 @@ CRYPTO_SOURCES=	\
 	psa_crypto_slot_management.c	\
 	psa_crypto_storage.c		\
 	psa_its_file.c			\
+	psa_util.c			\
 	ripemd160.c			\
 	rsa.c				\
 	rsa_alt_helpers.c		\
