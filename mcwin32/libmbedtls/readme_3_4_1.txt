@@ -13,14 +13,14 @@
 
                 libmbedcrypto.def, cloned 3.3.0
                         - md_process
+                        + mbedtls_sha224_self_test
+                        + mbedtls_sha384_self_test
 
                 libmbedtls.def, cloned 3.3.0
                         + mbedtls_ssl_cache_remove
                         + mbedtls_ssl_set_hs_ecjpake_password_opaque
 
                 libmbedx509.def, cloned 3.3.0
-                libmbedtls.rc, cloned 3.3.0
-
 
         Compiler tweaks:
 

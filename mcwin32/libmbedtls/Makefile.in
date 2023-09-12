@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.15 2023/09/12 15:00:39 cvsuser Exp $
+# $Id: Makefile.in,v 1.16 2023/09/12 16:54:39 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
@@ -244,7 +244,7 @@ TLS_SOURCES=\
 CRYPTO_LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CRYPTO_SOURCES)))
 CRYPTO_DLLOBJS=\
-	$(subst $(O),.lo,$(CRYPTO_LIBOBJS))			\
+	$(subst $(O),.lo,$(CRYPTO_LIBOBJS))	\
 	$(D_OBJ)/crypto_globals.lo
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
@@ -258,7 +258,8 @@ endif
 X509_LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(X509_SOURCES)))
 X509_DLLOBJS=\
-	$(subst $(O),.lo,$(X509_LIBOBJS))			\
+	$(subst $(O),.lo,$(X509_LIBOBJS))	\
+	$(D_OBJ)/alignment_linkage.lo		\
 	$(D_OBJ)/x509_globals.lo
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
@@ -272,7 +273,8 @@ endif
 TLS_LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(TLS_SOURCES)))
 TLS_DLLOBJS=\
-	$(subst $(O),.lo,$(TLS_LIBOBJS))
+	$(subst $(O),.lo,$(TLS_LIBOBJS))	\
+	$(D_OBJ)/alignment_linkage.lo
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 TLS_DLLOBJS+=	$(D_OBJ)/libmbedtls_res.o
