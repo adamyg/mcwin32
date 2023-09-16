@@ -1106,8 +1106,8 @@ $(LW)z$(A):
 $(LW)regex$(A):
 		$(MAKE) -C libregex
 
-.PHONY:		$(LW)pcre2$(A)
-$(LW)pcre2$(A):
+.PHONY:		$(LW)pcre2-8$(A)
+$(LW)pcre2-8$(A):
 		$(MAKE) -C libpcre2
 
 .PHONY:		$(LW)magic$(A)
