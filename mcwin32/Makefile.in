@@ -708,6 +708,7 @@ LIBRARIES=\
 	$(LW)w32$(A)				\
 	$(LW)z$(A)				\
 	$(LW)regex$(A)				\
+	$(LW)pcre2$(A)				\
 	$(LW)magic$(A)				\
 	$(LW)intl$(A)				\
 	$(LW)gmodule-2.0$(A)			\
@@ -870,6 +871,7 @@ clean:
 		$(MAKE) -C libmbedtls clean
 		$(MAKE) -C libssh2 clean
 		$(MAKE) -C libmagic clean
+		$(MAKE) -C libpcre2 clean
 		$(MAKE) -C libregex clean
 		$(MAKE) -C libz clean
 		$(MAKE) -C libw32 clean
@@ -1104,6 +1106,10 @@ $(LW)z$(A):
 $(LW)regex$(A):
 		$(MAKE) -C libregex
 
+.PHONY:		$(LW)pcre2$(A)
+$(LW)pcre2$(A):
+		$(MAKE) -C libpcre2
+
 .PHONY:		$(LW)magic$(A)
 $(LW)magic$(A):
 		$(MAKE) -C libmagic
@@ -1123,7 +1129,7 @@ $(LW)intl$(A):
 .PHONY:		$(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A)
 $(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A):
 		$(MAKE) -C libglib
-   
+
 ifeq ("$(AUTOUPDATER)","yes")
 .PHONY:		$(LW)autoupdater$(A)
 $(LW)autoupdater$(A):

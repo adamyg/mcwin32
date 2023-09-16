@@ -1,0 +1,4 @@
+pcre2-10*
+.unpacked.*
+Makefile
+*.err
