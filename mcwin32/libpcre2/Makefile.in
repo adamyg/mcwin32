@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.1 2023/09/16 17:26:27 cvsuser Exp $
+# $Id: Makefile.in,v 1.2 2023/09/17 03:33:06 cvsuser Exp $
 # libpcre2 makefile.
 #
 #
@@ -154,14 +154,13 @@ PCRE2LIB$(1)=	$$(D_LIB)/$$(LP)pcre2-$(1)_static$$(A)
 PCRE2DLL$(1)=	$$(D_LIB)/$$(LP)pcre2-$(1).la
 
 LIBOBJS$(1)=	$$(addprefix $$(D_OBJ)/$(1)/,$$(subst .c,$$(O),$$(CSOURCES)))
-
 DLLOBJS$(1)=	$$(subst $(O),.lo,$$(LIBOBJS$(1)))
 
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
-DLLOBJS$(1)+=	$$(D_OBJ)/libpcre2_res.o
+DLLOBJS$(1)+=	$$(D_OBJ)/$(1)/libpcre2_res.o
 else
-DLLOBJS$(1)+=	$$(D_OBJ)/libpcre2.res
+DLLOBJS$(1)+=	$$(D_OBJ)/$(1)/libpcre2.res
 endif
 endif
 
@@ -187,7 +186,6 @@ PCRE2LIBX=	$(D_LIB)/$(LP)pcre2posix_static$(A)
 PCRE2DLLX=	$(D_LIB)/$(LP)pcre2posix.la
 
 LIBOBJSX=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCESX)))
-
 DLLOBJSX=	$(subst $(O),.lo,$(LIBOBJSX))
 
 ifeq ("win32","@build_os@")
@@ -223,6 +221,7 @@ debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
 CEXTRA		+= -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
+RCEXTRA		= -DLIBNAME=$(LIBNAME) -DVERSION=$(VERSION) -DVERSION_1=$(VERSION_1) -DVERSION_2=$(VERSION_2) -DVERSION_3=$(VERSION_3)
 
 # libpcre2-8
 
@@ -247,6 +246,12 @@ $(D_OBJ)/8/%$(O):	%.c
 $(D_OBJ)/8/%.lo:	%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
 
+$(D_OBJ)/8/%.res:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=8 -I $(PCRE2INC) -fo $@ $<
+
+$(D_OBJ)/8/%_res.o:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=8 -I $(PCRE2INC) -o $@ $<
+
 # libpcre2-16
 
 $(PCRE2LIB16):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=16
@@ -270,6 +275,12 @@ $(D_OBJ)/16/%$(O):	%.c
 $(D_OBJ)/16/%.lo:	%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
 
+$(D_OBJ)/16/%.res:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=16 -I $(PCRE2INC) -fo $@ $<
+
+$(D_OBJ)/16/%_res.o:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=16 -I $(PCRE2INC) -o $@ $<
+
 # libpcre2-32
 
 $(PCRE2LIB32):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=32
@@ -292,6 +303,12 @@ $(D_OBJ)/32/%$(O):	%.c
 
 $(D_OBJ)/32/%.lo:	%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/32/%.res:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=32 -I $(PCRE2INC) -fo $@ $<
+
+$(D_OBJ)/32/%_res.o:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=32 -I $(PCRE2INC) -o $@ $<
 
 # libpce2posx (8-bit only)
 
@@ -364,8 +381,6 @@ $(D_OBJ)/%.lo:		%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
 
 ##
-
-RCEXTRA		= -DLIBNAME=$(LIBNAME) -DVERSION=$(VERSION) -DVERSION_1=$(VERSION_1) -DVERSION_2=$(VERSION_2) -DVERSION_3=$(VERSION_3)
 
 $(D_OBJ)/%.res:		%.rc
 		$(RC) $(RCEXTRA) -I $(PCRE2INC) -fo $@ $<

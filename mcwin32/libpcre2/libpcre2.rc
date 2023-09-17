@@ -1,4 +1,4 @@
-//$Id: libpcre2.rc,v 1.1 2023/09/16 17:26:27 cvsuser Exp $
+//$Id: libpcre2.rc,v 1.2 2023/09/17 03:33:06 cvsuser Exp $
 //
 //  WIN32 resource file
 //
@@ -31,12 +31,19 @@ BEGIN
     BLOCK "040904b0"
     BEGIN
       VALUE "CompanyName",      "University of Cambridge\0"
-      VALUE "FileDescription",  "PCRE2 (Perl-compatible regular expression library)\0"
+#if defined(PCRE2_CODE_UNIT_WIDTH)
+      VALUE "FileDescription",  "PCRE2 (Perl-compatible regular expression library), " STRINGIZE(PCRE2_CODE_UNIT_WIDTH) "-bit \0"
+#else
+      VALUE "FileDescription",  "PCRE2 (Perl-compatible regular expression library), posix\0"
+#endif
       VALUE "FileVersion",      STRINGIZE(VERSION) "\0"
       VALUE "InternalName",     STRINGIZE(LIBNAME) "\0"
       VALUE "OriginalFilename", STRINGIZE(LIBNAME) ".dll\0"
-      VALUE "ProductName",      "PCRE2\0"
-      VALUE "ProductVersion",   "PCRE2 " STRINGIZE(VERSION) "\0"
+#if defined(PCRE2_CODE_UNIT_WIDTH)
+      VALUE "ProductName",      "PCRE2-" STRINGIZE(PCRE2_CODE_UNIT_WIDTH) "\0"
+#else
+      VALUE "ProductVersion",   "PCRE2-posix\0"
+#endif
       VALUE "LegalCopyright",   "Copyright (c) 1997-2022 University of Cambridge\0"
       VALUE "License",          "https://github.com/PCRE2Project/pcre2/LICENSE\0"
     END
