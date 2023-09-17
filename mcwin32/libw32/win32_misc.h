@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_MISC_H_INCLUDED
 #define LIBW32_WIN32_MISC_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.13 2023/01/31 17:44:09 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.14 2023/09/17 13:05:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 public interface
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

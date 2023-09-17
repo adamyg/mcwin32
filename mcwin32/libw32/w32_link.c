@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.12 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.14 2023/09/17 13:04:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 link() system calls.
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -256,6 +256,10 @@ my_CreateHardLinkW(LPCWSTR lpFileName, LPCWSTR lpExistingFileName)
     if (NULL == x_CreateHardLinkW) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_CreateHardLinkW =
                         (CreateHardLinkW_t)GetProcAddress(hinst, "CreateHardLinkW"))) {
@@ -263,6 +267,9 @@ my_CreateHardLinkW(LPCWSTR lpFileName, LPCWSTR lpExistingFileName)
             x_CreateHardLinkW = my_CreateHardLinkImpW;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
     return x_CreateHardLinkW(lpFileName, lpExistingFileName, NULL);
 }
@@ -322,6 +329,10 @@ my_CreateHardLinkA(LPCSTR lpFileName, LPCSTR lpExistingFileName)
     if (NULL == x_CreateHardLinkA) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_CreateHardLinkA =
                         (CreateHardLinkA_t)GetProcAddress(hinst, "CreateHardLinkA"))) {
@@ -329,6 +340,9 @@ my_CreateHardLinkA(LPCSTR lpFileName, LPCSTR lpExistingFileName)
             x_CreateHardLinkA = my_CreateHardLinkImpA;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
     return x_CreateHardLinkA(lpFileName, lpExistingFileName, NULL);
 }

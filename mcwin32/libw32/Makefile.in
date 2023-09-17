@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.22 2023/02/03 17:10:09 cvsuser Exp $
+# $Id: Makefile.in,v 1.23 2023/09/10 11:17:15 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -23,7 +23,7 @@
 #
 
 @SET_MAKE@
-ROOT=		@abs_top_builddir@
+ROOT?=		@abs_top_builddir@
 top_builddir=	@top_builddir@
 
 # File extensions

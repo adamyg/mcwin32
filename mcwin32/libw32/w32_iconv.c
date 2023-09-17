@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.8 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.10 2023/09/17 13:04:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 iconv dynamic loader.
  *
- * Copyright (c) 1998 - 2022, Adam Young.
+ * Copyright (c) 1998 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -163,6 +163,10 @@ w32_iconv_connect(int verbose)
     }
 
     fullname[0] = 0;                            // resolve symbols, iconvctl() is optional
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
     GetModuleFileNameA(x_iconvdll, fullname, sizeof(fullname));
     if (NULL != (x_iconv = (iconvfn_t)GetProcAddress(x_iconvdll, "libiconv"))) {
         x_iconv_open = (iconvopenfn_t)GetProcAddress(x_iconvdll, "libiconv_open");
@@ -172,6 +176,9 @@ w32_iconv_connect(int verbose)
         x_iconv_open = (iconvopenfn_t)GetProcAddress(x_iconvdll, "iconv_open");
         x_iconv_close = (iconvclosefn_t)GetProcAddress(x_iconvdll, "iconv_close");
     }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
 
 //  x_iconvctl = (void *)GetProcAddress(x_iconvdll, "libiconvctl");
 //  x_iconv_errno = (void *)GetProcAddress(x_iconvdll, "libiconv_errno");

@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_INCLUDE_H_INCLUDED
 #define LIBW32_WIN32_INCLUDE_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_include_h,"$Id: win32_include.h,v 1.10 2022/06/14 02:19:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_include_h,"$Id: win32_include.h,v 1.12 2023/09/17 13:05:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * winsock2.h and windows.h include guard
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -37,11 +37,12 @@ __CPRAGMA_ONCE
  *  WinSock/Windows definitions
  */
 
+/* compiler tweaks */
+
 #if defined(_MSC_VER)
 #if !defined(_CRT_SECURE_NO_DEPRECATE)
 #define _CRT_SECURE_NO_DEPRECATE                /* disable deprecate warnings */
 #endif
-
     //#if !defined(_CRT_NO_POSIX_ERROR_CODES)
     //#define _CRT_NO_POSIX_ERROR_CODES             /* disable POSIX error number, see <errno.h> */
     //#endif
@@ -52,6 +53,10 @@ __CPRAGMA_ONCE
     //#define NTDDI_VERSION 0x06000000              /* iphlpapi.h requirement, inet_ntop .. */
     //#endif
     //#endif
+
+#if defined(__GNUC__)   /*BOOST_GCC_VERSION equiv*/
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#endif
 
 /* winsock and friends */
 

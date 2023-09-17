@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.11 2022/06/14 02:19:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.12 2023/09/17 13:04:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 gethostname
  *
- * Copyright (c) 1998 - 2022, Adam Young.
+ * Copyright (c) 1998 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

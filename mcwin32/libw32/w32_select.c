@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_select_c,"$Id: w32_select.c,v 1.10 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_select_c,"$Id: w32_select.c,v 1.12 2023/09/17 13:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  *  Windows 'select' compat interface
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -145,6 +145,10 @@ sel_build(
                 invalid++;
 
             } else {
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#endif
                 selfds[fd].s_handle = (HANDLE)osf;
 
                 switch (GetFileType((HANDLE)osf)) {
@@ -160,6 +164,9 @@ sel_build(
                         }
                     }
                     break;
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
 
                 case FILE_TYPE_DISK:            // disk file
                     selfds[fd].s_type = FD_BLOCK;

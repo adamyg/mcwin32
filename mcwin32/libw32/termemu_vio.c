@@ -2,7 +2,7 @@
 /*
  * libtermemu console driver
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -770,6 +770,10 @@ vio_profile(int rebuild)
     if (! vio.dynamic) {
         HMODULE hMod;
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 != (hMod = GetModuleHandleA("Kernel32.dll"))) {
                                                 // resolve
             vio.GetConsoleFontInfo =
@@ -796,6 +800,9 @@ vio_profile(int rebuild)
             TRACE_LOG(("  SetConsoleFont:               %p\n", vio.SetConsoleFont))
             TRACE_LOG(("  SetCurrentConsoleFontEx:      %p\n", vio.SetCurrentConsoleFontEx))
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
         vio.dynamic = TRUE;
     }
 
@@ -1003,8 +1010,15 @@ w32_GetParentProcessId()
     typedef LONG (WINAPI *NtQueryInformationProcess_t)(HANDLE ProcessHandle, ULONG ProcessInformationClass,
                         PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
     NtQueryInformationProcess_t NtQueryInformationProcess =
             (NtQueryInformationProcess_t)GetProcAddress(LoadLibraryA("NTDLL.DLL"), "NtQueryInformationProcess");
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
 
     if (NtQueryInformationProcess) {
         PROCESS_BASIC_INFORMATION pbi = {0};
@@ -1033,6 +1047,7 @@ typedef NTSTATUS (WINAPI *fnRtlGetVersion_t)(PRTL_OSVERSIONINFOW);
 DWORD WINAPI GetModuleFileNameExA(HANDLE hProcess,HMODULE hModule,LPSTR lpFilename,DWORD nSize);
 BOOL WINAPI EnumProcessModules(HANDLE hProcess, HMODULE *lphModule, DWORD cb, LPDWORD lpcbNeeded);
 
+
 static BOOL
 w32_RtlGetVersion(RTL_OSVERSIONINFOW *rovi)
 {
@@ -1040,6 +1055,10 @@ w32_RtlGetVersion(RTL_OSVERSIONINFOW *rovi)
 
     HMODULE hMod = GetModuleHandleA("ntdll.dll");
     if (hMod) {
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         fnRtlGetVersion_t cb = (fnRtlGetVersion_t)GetProcAddress(hMod, "RtlGetVersion");
         if (cb) {
             rovi->dwOSVersionInfoSize = sizeof(*rovi);
@@ -1047,6 +1066,9 @@ w32_RtlGetVersion(RTL_OSVERSIONINFOW *rovi)
                 return TRUE;
             }
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
     memset(rovi, 0, sizeof(*rovi));
     return FALSE;

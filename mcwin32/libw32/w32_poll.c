@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.8 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_poll_c,"$Id: w32_poll.c,v 1.10 2023/09/17 13:04:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 poll system calls
  *
- * Copyright (c) 1998 - 2022 Adam Young.
+ * Copyright (c) 1998 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -218,6 +218,10 @@ w32_poll(int native, struct pollfd *fds, int cnt, int timeout)
     if (NULL == x_PollIf) {
         HMODULE hinst;
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = GetModuleHandleA("ws2_32")) ||
                     0 == (x_WSAPoll = (WSAPoll_t) GetProcAddress(hinst, "WSAPoll"))) {
             x_PollIf = WSASelectIf;
@@ -225,6 +229,9 @@ w32_poll(int native, struct pollfd *fds, int cnt, int timeout)
         } else {
             x_PollIf = WSAPollIf; 
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
 
     if (NULL == fds || cnt <= 0 || cnt > FD_SETSIZE) {

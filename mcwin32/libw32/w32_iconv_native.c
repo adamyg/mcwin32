@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.6 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.7 2023/09/17 12:53:49 cvsuser Exp $")
 
 /*
  * iconv implementation using Win32 API to convert.
@@ -678,6 +678,7 @@ typedef HRESULT (WINAPI *RFC1766TOLCIDW)(
     LCID *pLocale,
     LPWSTR pszRfc1766
 );
+
 static CONVERTINETSTRING ConvertINetString;
 static CONVERTINETMULTIBYTETOUNICODE ConvertINetMultiByteToUnicode;
 static CONVERTINETUNICODETOMULTIBYTE ConvertINetUnicodeToMultiByte;
@@ -694,12 +695,19 @@ load_mlang(void)
     h = LoadLibrary(TEXT("mlang.dll"));
     if (!h)
         return FALSE;
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
     ConvertINetString = (CONVERTINETSTRING)GetProcAddressA(h, "ConvertINetString");
     ConvertINetMultiByteToUnicode = (CONVERTINETMULTIBYTETOUNICODE)GetProcAddressA(h, "ConvertINetMultiByteToUnicode");
     ConvertINetUnicodeToMultiByte = (CONVERTINETUNICODETOMULTIBYTE)GetProcAddressA(h, "ConvertINetUnicodeToMultiByte");
     IsConvertINetStringAvailable = (ISCONVERTINETSTRINGAVAILABLE)GetProcAddressA(h, "IsConvertINetStringAvailable");
     LcidToRfc1766A = (LCIDTORFC1766A)GetProcAddressA(h, "LcidToRfc1766A");
     Rfc1766ToLcidA = (RFC1766TOLCIDA)GetProcAddressA(h, "Rfc1766ToLcidA");
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     return TRUE;
 }
 

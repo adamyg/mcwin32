@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.4 2022/03/16 13:47:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.5 2023/09/17 13:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 writev() system calls,
  *
- * Copyright (c) 2018 - 2022, Adam Young.
+ * Copyright (c) 2018 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

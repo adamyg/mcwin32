@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rwlock_c,"$Id: w32_rwlock.c,v 1.5 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rwlock_c,"$Id: w32_rwlock.c,v 1.7 2023/09/17 13:04:59 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 rwlock functionality/emulation
  *
- * Copyright (c) 1998 - 2022, Adam Young.
+ * Copyright (c) 1998 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -95,6 +95,10 @@ initialisation(void)
         /*
          *  resolve
          */
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 != (library = LoadLibrary("Kernel32"))) {
             initialize_srw_lock         = (InitializeSRWLock_t) GetProcAddress(library, "InitializeSRWLock");
             acquire_srw_lock_shared     = (AcquireSRWLockShared_t) GetProcAddress(library, "AcquireSRWLockShared");
@@ -110,6 +114,9 @@ initialisation(void)
 
             FreeLibrary(library);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
 
         /*
          *  local implemenation

@@ -1,14 +1,14 @@
 #ifndef LIBW32_NETDB_H_INCLUDED
 #define LIBW32_NETDB_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_netdb_h,"$Id: netdb.h,v 1.8 2022/03/16 13:46:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_netdb_h,"$Id: netdb.h,v 1.9 2023/09/17 13:04:56 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <netdb.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.8 2023/01/31 17:44:09 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.10 2023/09/17 13:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 uname() system calls.
  *
- * Copyright (c) 1998 - 2022, Adam Young.
+ * Copyright (c) 1998 - 2023, Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -193,10 +193,17 @@ uname(struct utsname *u)
                         oviex.dwMajorVersion = 0;
                     }
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
                     fnRtlGetVersion = (RtlGetVersion_t) GetProcAddress(GetModuleHandleA("ntdll"), "RtlGetVersion");
                     if (fnRtlGetVersion) {      // upgrade Version + BuildNumber
                         fnRtlGetVersion(&oviex);
                     }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
 
                     if (oviex.dwMajorVersion >= 10) {
                         osmajor = (unsigned)oviex.dwMajorVersion;
@@ -503,10 +510,17 @@ IsWow64(void)
     IsWow64Process_t fnIsWow64Process = NULL;
     BOOL bIsWow64 = FALSE;
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
     fnIsWow64Process = (IsWow64Process_t) GetProcAddress(GetModuleHandleA("kernel32"),"IsWow64Process");
     if (fnIsWow64Process) {
         fnIsWow64Process(GetCurrentProcess(), &bIsWow64);
     }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     return bIsWow64;
 }
 

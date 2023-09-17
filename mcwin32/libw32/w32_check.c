@@ -1,12 +1,12 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.12 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.13 2023/09/17 13:04:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 system io functionality
  * Note: NOT CALLED -- purely a compile time check of the mode namespace
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.27 2022/06/14 02:19:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.29 2023/09/17 13:04:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.27 2022/06/14 02:19:58 cvsuser Ex
  *
  *      stat, lstat, fstat, readlink, symlink, open
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -738,6 +738,10 @@ my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR path, int length)
     if (NULL == x_GetFinalPathNameByHandleW) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_GetFinalPathNameByHandleW =
                             (GetFinalPathNameByHandleW_t)GetProcAddress(hinst, "GetFinalPathNameByHandleW"))) {
@@ -745,6 +749,9 @@ my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR path, int length)
             x_GetFinalPathNameByHandleW = my_GetFinalPathNameByHandleWImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
 
 #ifndef FILE_NAME_NORMALIZED
@@ -911,6 +918,10 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, int length)
     if (NULL == x_GetFinalPathNameByHandleA) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_GetFinalPathNameByHandleA =
                           (GetFinalPathNameByHandleA_t)GetProcAddress(hinst, "GetFinalPathNameByHandleA"))) {
@@ -918,6 +929,9 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, int length)
             x_GetFinalPathNameByHandleA = my_GetFinalPathNameByHandleAImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
 
 #ifndef FILE_NAME_NORMALIZED
@@ -1269,6 +1283,10 @@ my_CreateSymbolicLinkW(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWOR
     if (NULL == x_CreateSymbolicLinkW) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_CreateSymbolicLinkW =
                         (CreateSymbolicLinkW_t)GetProcAddress(hinst, "CreateSymbolicLinkW"))) {
@@ -1276,6 +1294,9 @@ my_CreateSymbolicLinkW(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWOR
             x_CreateSymbolicLinkW = my_CreateSymbolicLinkWImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
     return x_CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
 }
@@ -1301,6 +1322,10 @@ my_CreateSymbolicLinkA(const char *lpSymlinkFileName, const char *lpTargetFileNa
     if (NULL == x_CreateSymbolicLinkA) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_CreateSymbolicLinkA =
                         (CreateSymbolicLinkA_t)GetProcAddress(hinst, "CreateSymbolicLinkA"))) {
@@ -1308,6 +1333,9 @@ my_CreateSymbolicLinkA(const char *lpSymlinkFileName, const char *lpTargetFileNa
             x_CreateSymbolicLinkA = my_CreateSymbolicLinkAImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
     return x_CreateSymbolicLinkA(lpSymlinkFileName, lpTargetFileName, dwFlags);
 }
@@ -3298,6 +3326,10 @@ my_GetVolumeInformationByHandle(HANDLE handle, DWORD *serialno, DWORD *flags)
     if (NULL == x_GetVolumeInformationByHandleW) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_GetVolumeInformationByHandleW =
                         (GetVolumeInformationByHandleW_t)GetProcAddress(hinst, "GetVolumeInformationByHandleW"))) {
@@ -3305,6 +3337,9 @@ my_GetVolumeInformationByHandle(HANDLE handle, DWORD *serialno, DWORD *flags)
             x_GetVolumeInformationByHandleW = my_GetVolumeInformationByHandleImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
 
     return x_GetVolumeInformationByHandleW(handle, NULL, 0, serialno, NULL, flags, NULL, 0);

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.13 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.14 2023/09/17 13:04:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mkstemp() implementation
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
