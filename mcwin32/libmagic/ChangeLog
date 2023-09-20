@@ -1,5 +1,39 @@
 -*- encoding: utf-8; -*-
 
+Mon Sep 18 22:06:17 2023 adamy
+
+	* imported libmagic 5.45 (fossies.org) - changed marked <PORT>
+
+		- magic.h.in <via magic_header.pl>
+
+			+ #if ((defined __WIN32__) || (defined _WIN32) || defined(__CYGWIN__)) && (!defined LIBMAGIC_STATIC)
+				:
+			+ #endif /*__MAGIC_DECL*/
+
+			__MAGIC_DECL, public symbols
+
+		- print.c
+
+			- if (strftime(buf, bsize, "%T", &tm) == 0)
+			+ if (strftime(buf, bsize, "%H:%M:%S", &tm) == 0)
+
+		- readcdf.c
+
+			- c = cdf_ctime(&ts.tv_sec, tbuf);
+			+ { const time_t tv_sec = (time_t)(ts.tv_sec); c = cdf_ctime(&tv_sec, tbuf); }
+
+		- file.h
+
+			  #ifndef HAVE_STRLCPY
+			+ #define strlcpy file545_strlcpy //PORT
+				...
+
+		- file.c
+
+			- if ((progname = strrchr(argv[0], '/')) != NULL)
+			+ if ((progname = strrchr(argv[0], '/')) != NULL ||
+			+        (progname = strrchr(argv[0], '\\')) != NULL)
+
 Fri Nov 12 23:48:20 2021 adamy
 
 	* imported libmagic 5.41 (fossies.org)
@@ -12,13 +46,6 @@ Fri Nov 12 23:48:20 2021 adamy
 		- magic.h
 
 			+ __MAGIC_DECL; see below.
-
-		- functions localised,
-			strlcpy, strlcat, strcasestr,
-			getline, getdelim,
-			ctime_r, asctime_r, gmtime_r, localtime_r
-
-			eg + #define strlcpy f541_strlcpy /*PORT*/
 
 		- funcs.c
 
@@ -39,7 +66,7 @@ Fri Nov 12 23:48:20 2021 adamy
 
 		- magic.c
 
-			__MAGIC_DECL, publis symbols
+			__MAGIC_DECL, public symbols
 
 			+ #if defined(F_SETFD)
 				:
@@ -60,12 +87,6 @@ Fri Nov 12 23:48:20 2021 adamy
 
 			- fprintf(stderr, "indirect offs=%jd\n", off);
 			+ fprintf(stderr, "indirect offs=%u\n", (unsigned)off);
-
-		- additional modules
-
-			+ buffer.c
-			+ is_csc.c
-			+ is_json
 
 Sun Mar 12 18:53:27 2017 adamy
 

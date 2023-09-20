@@ -3,8 +3,11 @@ file-5.29/
 file-5.29.*/
 file-5.41/
 file-5.41.*/
+file-5.45/
+file-5.45.*/
 .unpacked.*
 Makefile
 magic.mgc
 magic
 *.err
+

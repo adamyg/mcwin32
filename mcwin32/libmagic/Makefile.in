@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.13 2023/02/03 17:10:09 cvsuser Exp $
+# $Id: Makefile.in,v 1.14 2023/09/20 16:02:47 cvsuser Exp $
 # libmagic makefile
 #
 #
@@ -62,6 +62,9 @@ XFLAGS=
 
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
+ifeq ("gcc","@CC@")
+CWARN+=		-Wno-unused-const-variable
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 LDDEBUG=	@LDDEBUG@
@@ -77,6 +80,8 @@ CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDDEBUG) @LDFLAGS@
 endif
 LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@ @LIBM@ @EXTRALIBS@
+
+## 
 
 ARFLAGS=	rcv
 RMFLAGS=	-f
@@ -96,13 +101,11 @@ MAGICDB=	$(D_BIN)/magic.mgc
 #MAGICSRC=	./file-511
 #MAGDIR=	./file-511/src/magic
 #VERSION=	5.29
-#MAGICPACKED=	file-5.29.gr.tgz
-#MAGICSRC=	./file-5.29/src
-#MAGDIR=	./file-5.29/magic
-VERSION=	5.41
-MAGICPACKED=	file-5.41.gr.tgz
-MAGICSRC=	./file-5.41/src
-MAGDIR=		./file-5.41/magic
+#VERSION=	5.41
+VERSION=	5.45
+MAGICPACKED=	file-$(VERSION).gr.tgz
+MAGICSRC=	./file-$(VERSION)/src
+MAGDIR=		./file-$(VERSION)/magic
 
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 
@@ -144,6 +147,14 @@ CSOURCES+=\
 	is_json.c \
 	ioctl.c
 endif
+ifeq ($(VERSION),5.45)
+CSOURCES+=\
+	buffer.c \
+	is_csv.c \
+	is_json.c \
+	is_simh.c \
+	ioctl.c
+endif
 
 LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
@@ -167,7 +178,7 @@ INSTALLED=
 
 .PHONY: 	build release debug
 build:			source unpacked
-unpacked:		$(LIBS) $(TSKS) $(MAGICDB) installinc
+unpacked:		generateinc $(LIBS) $(TSKS) $(MAGICDB) installinc
 
 release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
@@ -210,8 +221,25 @@ source:			.unpacked.$(VERSION)
 		@echo "unpacking source $(MAGICPACKED)"
 		@gzip -c -d $(MAGICPACKED) | tar -xvf -
 
+ifeq ($(VERSION),5.45)
+generateinc:		../include/.created config.h $(MAGICSRC)/magic.h
+
+$(MAGICSRC)/magic.h:	$(MAGICSRC)/magic.h.in
+		@echo generating header 'magic.h' ...
+		@$(PERL) magic_header.pl --type=magic --version=$(VERSION) --src=$(MAGICSRC) --output=$(MAGICSRC)
+
+else
+.PHONY:		generateinc
+generateinc:
+
+endif
+
+config.h:		config.h.in
+		@echo generating header 'config.h' ...
+		@$(PERL) magic_header.pl --type=config --version=$(VERSION) --src=. --output=.
+
 installinc:		../include/.created
-		@echo publishing headers 'magic.h' ...
+		@echo publishing header 'magic.h' ...
 		@cp $(MAGICSRC)/magic.h ../include
 
 %/.created:

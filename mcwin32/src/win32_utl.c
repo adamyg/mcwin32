@@ -134,9 +134,9 @@ static const char *     busybox_cmds[] = {      /* redirected commands (see vfs/
 //      unxz, unzip, uptime, usleep, uudecode, uuencode, vi, watch, wc, wget, which, whoami, whois, xargs, xxd, xz, xzcat, yes, zcat
 //
 
-        "ar", "ash", "awk", "base64", "bunzip2", "bzcat", "bzip2", "cat", "cksum", "cpio", "dd", "diff",
+        "ar", "ash", "awk", "base32", "base64", "bash", "bunzip2", "bzcat", "bzip2", "cat", "cksum", "cpio", "dd", "diff",
         "dos2unix", "echo", "ed", "gunzip", "gzip", "ls",
-        "lzcat", "lzma", "lzop", "lzopcat", "ps",
+        "lzcat", "lzma", "lzop", "lzopcat", "ps", "sed", "sh",
         "strings", "tar", "uncompress", "unexpand", "unix2dos", "unlzma", "unlzop",
         "unxz", "unzip", "uudecode", "uuencode", "xz", "xzcat", "zcat"
 
@@ -187,7 +187,7 @@ WIN32_Setup(void)
                 MessageBoxA(0, buffer, "Error", MB_OK);
             }
         }
-#endif  //ENABLE_VFS
+#endif //ENABLE_VFS
     set_shell();
     set_term();
     set_home();
@@ -545,7 +545,6 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
  *              SHGetFolderPath(CSIDL_COMMON_APPDATA)
  *              or getenv(ALLUSERSPROFILE)
  */
-
 const char *
 mc_SYSCONFDIR(void)
 {
@@ -1202,6 +1201,14 @@ system_impl (int flags, const char *shell, const char *cmd)
 
     ret = w32_shell(shell, cmd, NULL, NULL, NULL);
     return ret;
+}
+
+
+const char **
+mc_busybox_cmds(unsigned *count)
+{
+    if (count) *count = _countof(busybox_cmds);
+    return busybox_cmds;
 }
 
 

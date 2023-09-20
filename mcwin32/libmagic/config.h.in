@@ -34,10 +34,10 @@
 #define PACKAGE_TARNAME     "file"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION     "5.41"
+#define PACKAGE_VERSION     "X.YY"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING      "file 5.41"
+#define PACKAGE_STRING      "file X.YY"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT   "christos@astron.com"
@@ -102,7 +102,9 @@
     //#undef HAVE_FSEEKO
 
 /* Define to 1 if you have the `getline' function. */
-    //#define HAVE_GETLINE
+#if defined(__WATCOMC__)
+#undef HAVE_GETLINE
+#endif
 
 /* Define to 1 if you have the <getopt.h> header file. */
 #define HAVE_GETOPT_H 1
@@ -205,7 +207,9 @@
     //#define HAVE_STRNDUP
 
 /* Define to 1 if you have the `strtof' function. */
-    //#undef HAVE_STRTOF
+#if defined(__WATCOMC__)
+#undef HAVE_STRTOF
+#endif
 
 /* Define to 1 if you have the `strtoul' function. */
     //#define HAVE_STRTOUL
@@ -452,9 +456,6 @@
 #ifndef UINT32_MAX
 #define UINT32_MAX 0xffffffff
 #endif
-#ifndef intmax_t
-#define intmax_t int
-#endif
 
     /*function mappings*/
 
@@ -474,10 +475,30 @@
 #ifndef lstat
 #define lstat w32_lstat
 #endif
-#endif  /*MSC_VER || WATCOM*/
+#ifndef pipe
+int file_pipe(int fildes[2]);
+#define pipe(__a) file_pipe(__a)
+#endif //_MSC_VER || __WATCOMC__
 
-int w32_ioctl(int fd, unsigned long request, int *value);
-#define ioctl(__a,__b,__c) w32_ioctl(__a,__b,__c)
+#include <math.h>
+#if !defined(isgreater)
+#define isgreater(x,y)          (!isunordered(x,y) && (x >  y))
+#define isgreaterequal(x,y)     (!isunordered(x,y) && (x >= y))
+#define isless(x,y)             (!isunordered(x,y) && (x <  y))
+#define islessequal(x,y)        (!isunordered(x,y) && (x <= y))
+#define islessgreater(x,y)      (!isunordered(x,y) && (x <  y || x > y))
+#define isunordered(a,b)        (fpclassify(a) == FP_NAN || fpclassify(b) == FP_NAN)
+#endif
+
+#endif /*MSC_VER || WATCOM*/
+
+int file_ioctl(int fd, unsigned long request, int *value);
+#define ioctl(__a,__b,__c) file_ioctl(__a,__b,__c)
+
+size_t file_strlcpy(char *dst, const char *src, size_t siz);
+size_t file_strlcat(char *dst, const char *src, size_t siz);
+#define strlcpy file_strlcpy
+#define strlcat file_strlcat
 
 #if defined(__MINGW32__)
 #if !defined(lstat)
@@ -498,3 +519,4 @@ int w32_ioctl(int fd, unsigned long request, int *value);
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #endif /*LIBMAGIC_CONFIG_H_INCLUDED*/
+
