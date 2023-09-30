@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt_long.c,v 1.4 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt_long.c,v 1.6 2023/09/30 05:39:22 cvsuser Exp $")
 
 /*-
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -251,6 +251,7 @@ start:
 		if (PRINT_ERROR)
 			getopt_warn(buf, buflen, illoptchar, optchar);
 		optopt = optchar;
+		__w32_getopt_globals();         /* optind binding etc */
 		return BADCH;
 	}
 	if (optchar == 'W' && oli[1] == ';') {	/* -W long-option */
@@ -335,14 +336,6 @@ start:
 #endif  //REPLACE_GETOPT
 
 
-extern int __import_getopt(int nargc, char * const *nargv, const char *ostr);
-int
-__import_getopt(int nargc, char * const *nargv, const char *ostr)
-{
-	return getopt(nargc, nargv, ostr);
-}
-
-
 /*
  * getopt_long --
  *	Parse argc/argv argument vector.
@@ -352,7 +345,6 @@ getopt_long(int nargc, char * const *nargv, const char *options, const struct op
 {
 	return getopt_long2(nargc, nargv, options, long_options, idx, NULL, 0);
 }
-
 
 int
 getopt_long2(int nargc, char * const *nargv, const char *options, const struct option *long_options, int *idx, char *buf, int buflen)

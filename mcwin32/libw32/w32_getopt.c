@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt.c,v 1.9 2022/06/14 02:19:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt.c,v 1.11 2023/09/30 05:39:22 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -38,13 +38,6 @@ __CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt.c,v 1.9 2022/06/14 02:19:58 cvsu
 #include <string.h>
 #include "getopt.h"
 
-/*LIBW32_VAR*/ int  opterr = 1,                 /* if error message should be printed */
-                    optind = 1,                 /* index into parent argv vector */
-                    optopt = '?',               /* character checked for validity */
-                    optreset = 0;               /* reset getopt */
-
-/*LIBW32_VAR*/ char *optarg = NULL;             /* argument associated with option */
-
 static const char *__progname = "";             /* derived progname */
 
 #define	BADCH	(int)'?'
@@ -64,8 +57,10 @@ getopt(int nargc, char * const *nargv, const char *ostr)
 	int ret;
 
 #if defined(_WIN32) || defined(WIN32)
-	if (optind == 1 && (__progname == NULL || __progname[0] == '\0'))
+	if (optind == 1 && (__progname == NULL || __progname[0] == '\0')) {
+		__w32_getopt_globals();		/* optidx etc binding */
 		__progname = nargv[0];		/* WIN32 special */
+	}
 #endif
 
 	if (optreset || !*place) {		/* update scanning pointer */

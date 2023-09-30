@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.29 2023/09/17 13:04:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.30 2023/09/30 05:13:47 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -2026,17 +2026,15 @@ ConvertTime(const FILETIME *ft)
 static void
 ApplySize(struct stat *sb, const DWORD nFileSizeLow, const DWORD nFileSizeHigh)
 {
-    __CUNUSED(nFileSizeHigh)
-
 #if (HAVE_STRUCT_STAT_ST_BLKSIZE)
     sb->st_blksize = 512;
 #endif
 
-    sb->st_size = nFileSizeLow;
-/*TODO
- *  sb->st_size =
- *      (((__int64)nFileSizeHigh) << 32) + nFileSizeLow;
- */
+    if (nFileSizeHigh && sizeof(sb->st_size) == sizeof(uint64_t)) {
+        sb->st_size = (((uint64_t)nFileSizeHigh) << 32) + nFileSizeLow;
+    } else {
+        sb->st_size = nFileSizeLow;
+    }
 
 #if (HAVE_STRUCT_STAT_ST_BLOCKS)
     if (0 == sb->st_size) {
