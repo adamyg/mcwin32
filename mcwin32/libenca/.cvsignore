@@ -1,0 +1,5 @@
+enca-1.19
+.unpacked.*
+Makefile
+config.h
+*.err

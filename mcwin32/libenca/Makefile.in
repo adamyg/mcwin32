@@ -1,0 +1,255 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id: Makefile.in,v 1.1 2023/09/30 05:39:55 cvsuser Exp $
+# libenca makefile
+#
+#
+#
+
+@SET_MAKE@
+ROOT=		@abs_top_builddir@
+top_builddir=	@top_builddir@
+
+# File extensions
+
+C=		.c
+E=
+O=		.o
+H=		.h
+A=		.a
+LP=		lib
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+AR=		@AR@
+RANLIB=		@RANLIB@
+RM=		@RM@
+MV=		@MV@
+PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
+
+# Configuration
+
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
+endif
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
+endif
+
+# Directories
+
+D_INC=		$(ROOT)/include
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libenca
+
+# Common flags
+
+XFLAGS=
+
+CFLAGS=		@CFLAGS@
+CWARN=		@CWARN@
+ifeq ("gcc","@CC@")
+CWARN+=		-Wno-unused-const-variable
+endif
+CDEBUG=		@CDEBUG@
+CRELEASE=	@CRELEASE@
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
+
+CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@ -DWIN32=1
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@ @LIBM@ @EXTRALIBS@
+
+## 
+
+ARFLAGS=	rcv
+RMFLAGS=	-f
+
+
+#########################################################################################
+# Targets
+
+ENCALIB=	$(D_LIB)/$(LP)enca_static$(A)
+ENCADLL=	$(D_LIB)/$(LP)enca.la
+
+ENCAUTIL=	$(D_BIN)/enca$(E)
+
+VERSION=	1.19
+ENCAPACKED=	enca-$(VERSION).tgz
+ENCAROOT=	./enca-$(VERSION)
+LIBSRCDIR=	$(ENCAROOT)/lib
+SRCDIR=		$(ENCAROOT)/src
+
+VERSIONSPEC=	$(subst .,:,$(VERSION))
+       
+CLIBSOURCES=\
+	common.c \
+	ctype.c \
+	enca.c \
+	encnames.c \
+	filters.c \
+	guess.c \
+	lang.c \
+	lang_be.c \
+	lang_bg.c \
+	lang_cs.c \
+	lang_et.c \
+	lang_hr.c \
+	lang_hu.c \
+	lang_lt.c \
+	lang_lv.c \
+	lang_pl.c \
+	lang_ru.c \
+	lang_sk.c \
+	lang_sl.c \
+	lang_uk.c \
+	lang_zh.c \
+	multibyte.c \
+	pair.c \
+	unicodemap.c \
+	utf8_double.c
+
+LIBOBJS=	$(addprefix $(D_OBJ)/lib_,$(subst .c,$(O),$(CLIBSOURCES)))
+DLLOBJS=	$(subst $(O),.lo,$(LIBOBJS))
+
+VPATH=		$(SRCDIR)
+CUTILSOURCES=\
+	COPYING.c \
+	HELP.c \
+	convert.c \
+	convert_extern.c \
+	convert_recode.c \
+	convert_iconv.c \
+	enca.c \
+	filebuf.c \
+	locale_detect.c \
+	options.c
+
+UTILOBJS=	$(addprefix $(D_OBJ)/util_,$(subst .c,$(O),$(CUTILSOURCES)))
+
+GENERATE=\
+	config.h \
+	$(LIBSRCDIR)/enca.h \
+	$(LIBSRCDIR)/internal.h \
+	$(SRCDIR)/COPYING.c \
+	$(SRCDIR)/HELP.c
+
+XCLEAN+=	
+OBJS=		$(LIBOBJS) $(DLLOBJS) $(UTILOBJS)
+LIBS=		$(ENCALIB) $(ENCADLL)
+TSKS=		$(ENCAUTIL)
+INSTALLED=
+
+#########################################################################################
+# Rules
+
+.PHONY: 	build release debug
+build:			source unpacked
+unpacked:		generate $(LIBS) $(TSKS) installinc
+
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+$(ENCALIB):		CEXTRA += -D__LIBENCA_BUILD -DLIBENCA_STATIC -DBUILD_AS_WINDOWS_STATIC_LIBARAY
+$(ENCALIB):		CEXTRA += -I$(ENCAROOT)
+$(ENCALIB):		$(D_OBJ)/.created $(LIBOBJS)
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
+		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
+		$(RANLIB) $@
+
+INSTALLED+=	$(D_BIN)/libenca.$(VERSION).dll
+$(ENCADLL):		CEXTRA += -D__LIBENCA_BUILD -DLIBENCA_DYNAMIC
+$(ENCADLL):		CEXTRA += -I$(ENCAROOT)
+$(ENCADLL):		MAPFILE=$(basename $@).map
+$(ENCADLL):		$(DLLOBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $^ $(LDLIBS) @LDMAPFILE@
+
+$(ENCAUTIL):		CEXTRA += -DLIBENCA_DYNAMIC -DLIBW32_DYNAMIC
+$(ENCAUTIL):		$(UTILOBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $^ -o $@ $(D_LIB)/libenca$(A) $(LDLIBS)
+
+source:			.unpacked.$(VERSION)
+		$(MAKE) unpacked
+
+.unpacked.$(VERSION):	$(ENCAPACKED)
+		@echo "do not delete, managed file" > $@
+		@echo "unpacking source $(ENCAPACKED)"
+		@gzip -c -d $(ENCAPACKED) | tar -xvf -
+		@$(MV) $(LIBSRCDIR)/enca.h $(LIBSRCDIR)/enca.h.in
+		@$(MV) $(LIBSRCDIR)/internal.h $(LIBSRCDIR)/internal.h.in
+
+##
+
+generate:		../include/.created $(GENERATE)
+
+XCLEAN+=		$(GENERATE)
+
+config.h:			config.h.in enca_header.pl
+		@echo generating header 'config.h' ...
+		@$(PERL) enca_header.pl --type=config --src=. --output=. --version=$(VERSION)
+
+$(LIBSRCDIR)/enca.h:		$(LIBSRCDIR)/enca.h.in enca_header.pl
+		@echo generating header 'enca.h' ...
+		@$(PERL) enca_header.pl --type=enca --src=$(LIBSRCDIR) --output=$(LIBSRCDIR) --version=$(VERSION)
+
+$(LIBSRCDIR)/internal.h:	$(LIBSRCDIR)/internal.h.in enca_header.pl
+		@echo generating header 'internal.h' ...
+		@$(PERL) enca_header.pl --type=internal --src=$(LIBSRCDIR) --output=$(LIBSRCDIR) --version=$(VERSION)
+
+$(SRCDIR)/COPYING.c:		$(ENCAROOT)/COPYING text2c.pl
+		$(PERL) text2c.pl COPYING $(ENCAROOT)/COPYING >$(SRCDIR)/COPYING.c
+
+$(SRCDIR)/HELP.c:		$(SRCDIR)/HELP.in text2c.pl
+		$(PERL) text2c.pl HELP $(SRCDIR)/HELP.in >$(SRCDIR)/HELP.c
+
+installinc:		../include/.created
+		@echo publishing header 'enca.h' ...
+		@cp $(LIBSRCDIR)/enca.h ../include
+
+%/.created:
+		-@mkdir $(@D)
+		@echo "do not delete, managed directory" > $@
+
+##
+
+clean:
+		@echo $(BUILD_TYPE) clean
+		-@$(LIBTOOL) --mode=clean $(RM) $(ENCADLL) $(OBJS) $(QUIETOUT)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
+		-@$(RM) $(LIBOBJS) $(UTILOBJS) $(QUIETOUT)
+
+$(D_OBJ)/lib_%$(O):	$(LIBSRCDIR)/%$(C)
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/lib_%.lo:	$(LIBSRCDIR)/%$(C)
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/util_%$(O):	$(SRCDIR)/%$(C)
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+#end
