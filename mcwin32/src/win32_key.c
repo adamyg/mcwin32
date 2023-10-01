@@ -1107,6 +1107,7 @@ key_esc_special(void)
 
             if (KEY_EVENT == ir.EventType) {
                 const KEY_EVENT_RECORD *key = &ir.Event.KeyEvent;
+                (void) ReadConsoleInput(hConsoleIn, &ir, 1, &count);
                 if (ir.Event.KeyEvent.bKeyDown) {
                     WORD wVirtualKeyCode = key->wVirtualKeyCode;
                     int c = -1;
@@ -1116,6 +1117,9 @@ key_esc_special(void)
                         DWORD fnKeyCode = ('0' == wVirtualKeyCode ? VK_F10 : VK_F1 + (wVirtualKeyCode - '1'));
                         c = key_mapwin32(key->dwControlKeyState, fnKeyCode, 0);
 
+                    } else if (VK_RETURN == wVirtualKeyCode) {
+                        c = ALT('\n');          // Alt-Enter
+
                     } else if (VK_TAB == wVirtualKeyCode) {
                         c = ALT('\t');          // Alt-Tab
 
@@ -1123,16 +1127,17 @@ key_esc_special(void)
                         if (key->wRepeatCount) {
                             c = ESC_CHAR;       // ESC-ESC, surpress 2nd
                         }
+                    } else if (key->uChar.UnicodeChar >= ' ' && key->uChar.UnicodeChar <= '}') {
+                        c = ALT(key->uChar.UnicodeChar);  // ESC followed by an ASCII character
                     }
 
                     if (-1 != c) {
-                        (void) ReadConsoleInput(hConsoleIn, &ir, 1, &count);
                         check_winch(1);
                         return c;
                     }
+                    continue;                   // consume
 
                 } else {
-                    (void) ReadConsoleInput(hConsoleIn, &ir, 1, &count);
                     if (VK_ESCAPE == key->wVirtualKeyCode) {
                         timeoutms = 500;
                         if (old_esc_mode_timeout > 0) {
