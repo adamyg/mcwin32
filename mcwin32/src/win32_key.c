@@ -83,7 +83,7 @@ _WCRTLINK extern char volatile __WD_Present;    /* debugger present? */
 extern void                 EnterDebugger(void);
 #pragma aux EnterDebugger = "int 3"
 #define TryEnterDebugger()  __TryEnterDebugger()
-static  int __TryEnterDebugger() 
+static  int __TryEnterDebugger()
 {
     if (__WD_Present) {
         EnterDebugger();
@@ -346,8 +346,10 @@ static CancelSynchronousIo_t CancelSynchronousIoFn;
 static DWORD WINAPI     CancelSynchronousIoImp(HANDLE hThread);
 
 static BOOL __stdcall   CtrlHandler(DWORD fdwCtrlType);
+
+static int              key_next(int no_delay, unsigned *UnicodeChar);
 static int              key_esc_special(void);
-static int              key_mapwin32(unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned AsciiChar);
+static int              key_mapwin32(unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned UnicodeChar);
 
 
 /*
@@ -584,6 +586,7 @@ lookup_keycode (const long code, int *idx)
 /*
  *  Return the code associated with the symbolic name keyname
  */
+
 long
 lookup_key (const char *name, char **label)
 {
@@ -697,6 +700,13 @@ lookup_key (const char *name, char **label)
 }
 
 
+long // 4.8.30+
+tty_keyname_to_keycode (const char *name, char **label)
+{
+    return lookup_key(name, label);
+}
+
+
 char *
 lookup_key_by_code (const int keycode)
 {
@@ -763,6 +773,13 @@ lookup_key_by_code (const int keycode)
     }
 
     return g_string_free (s, s->len == 0);
+}
+
+
+char * // 4.8.30+
+tty_keycode_to_keyname (const int keycode)
+{
+    return lookup_key_by_code (keycode);
 }
 
 
@@ -874,23 +891,24 @@ check_winch (int check_type)
 int
 tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 {
-//  static int dirty = 2, clicks = 0;
+#if (MB_LEN_MAX < 16)
+#define UTF_BUFFER_LEN 16
+#else
+#define UTF_BUFFER_LEN MB_LEN_MAX
+#endif
+    static unsigned char utf8_buffer[UTF_BUFFER_LEN] = {0}, *utf8_cursor = utf8_buffer;
     static int clicks = 0;
+
+    if (*utf8_cursor) {                         /* unicode pending */
+        return *utf8_cursor++;
+    }
 
     assert(hConsoleIn);
     if (! hConsoleIn) {
         return 0;                               /* not active */
     }
 
-//  if (block || (dirty >= 3) || is_idle()) {   /* act on winch_flag, otherwise tty_refresh() */
-        // There seems to be a display update/key polling issue, whereby some interactive dialogs (copy/move etc)
-        // request input prior to dialog rendering is completed; underlying cause/conditions are unclear.
-        mc_refresh();
-//      dirty = 1;
-//  } else {
-//      ++dirty; /* update every 3rd poll */
-//  }
-
+    mc_refresh();
     if (mc_global.tty.winch_flag) {
         return EV_NONE;
     }
@@ -925,7 +943,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
             errno = EINTR;
             return EV_NONE;
 
-        } else if (ctrlbreak_triggered) {       /* required??? */
+        } else if (ctrlbreak_triggered) {
             ctrlbreak_triggered = 0;
             if (0 == ctrlbreak_running) {
                 const save_confirm_exit = confirm_exit;
@@ -942,13 +960,15 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 #define EV_VOID     -3                          // void event
 
         if (rc == WAIT_OBJECT_0 &&
-                PeekConsoleInput(hConsoleIn, &k, 1, &count) && 1 == count) {
+                PeekConsoleInputW(hConsoleIn, &k, 1, &count) && 1 == count) {
 
             c = EV_NONE;
             switch (k.EventType) {
             case KEY_EVENT:
                 if (k.Event.KeyEvent.bKeyDown) {
-                    c = get_key_code(1);        // read and translate key, nonblocking.
+                    unsigned unicode = 0;
+
+                    c = key_next(1, &unicode);  // read and translate key, nonblocking.
                     if (c == (KEY_M_SHIFT | '\n')) {
                         /*
                          *  <Shift-Return> - Toggle screen size.
@@ -957,15 +977,22 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                         SLsmg_togglesize();
                         c = EV_VOID;            // consume
                     }
+
+                    if (unicode) {              // unicode to utf-8
+                        assert(0 == *utf8_cursor);
+                        g_unichar_to_utf8(unicode, utf8_cursor = utf8_buffer);
+                        c = *utf8_cursor++ | c;
+                    }
+
                 } else {
-                    (void) ReadConsoleInput(hConsoleIn, &k, 1, &count);
+                    (void) ReadConsoleInputW(hConsoleIn, &k, 1, &count);
                     check_winch(1);
                     c = EV_VOID;                // consume
                 }
                 break;
 
             case MOUSE_EVENT:
-                (void) ReadConsoleInput(hConsoleIn, &k, 1, &count);
+                (void) ReadConsoleInputW(hConsoleIn, &k, 1, &count);
                 if (event && !mc_args__nomouse) {
                     /*
                      *  General mouse events:
@@ -1034,12 +1061,12 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                 break;
 
             case WINDOW_BUFFER_SIZE_EVENT:
-                (void) ReadConsoleInput(hConsoleIn, &k, 1, &count);
+                (void) ReadConsoleInputW(hConsoleIn, &k, 1, &count);
                 check_winch(2);
                 break;
 
             case FOCUS_EVENT:
-                (void) ReadConsoleInput(hConsoleIn, &k, 1, &count);
+                (void) ReadConsoleInputW(hConsoleIn, &k, 1, &count);
                 if (k.Event.FocusEvent.bSetFocus) {
 #if defined(_MSC_VER)
                     if (! IsDebuggerPresent()) {
@@ -1060,7 +1087,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                 /*FALLTHRU*/
 
             default:
-                (void) ReadConsoleInput(hConsoleIn, &k, 1, &count);
+                (void) ReadConsoleInputW(hConsoleIn, &k, 1, &count);
                 break;
             }
 
@@ -1091,6 +1118,65 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 
 
 static int
+key_next (int no_delay, unsigned *unicode)
+{
+    int retry = 0;
+
+    do {
+        INPUT_RECORD k = {0};
+        DWORD count = 0, rc;
+
+        retry = 0;
+        rc = WaitForSingleObject(hConsoleIn, no_delay ? 0 : INFINITE);
+        if (rc == WAIT_OBJECT_0 &&
+                ReadConsoleInputW(hConsoleIn, &k, 1, &count) && 1 == count) {
+            switch (k.EventType) {
+            case KEY_EVENT:
+                if (k.Event.KeyEvent.bKeyDown) {
+                    const KEY_EVENT_RECORD *pKey = &k.Event.KeyEvent;
+                    const unsigned UnicodeChar = pKey->uChar.UnicodeChar;
+                    int c;
+
+#if !defined(KEY_M_UNICODE)
+#define KEY_M_UNICODE 0x8000
+#endif
+                    if ((c = key_mapwin32(pKey->dwControlKeyState,
+                                pKey->wVirtualKeyCode, UnicodeChar)) != -1) {
+                        if (KEY_M_UNICODE & c) {
+#if defined(_DEBUG) && (0)
+                            OutputDebugPrintA ("%05u/0x%04x = unicode\n", UnicodeChar, UnicodeChar);
+#endif
+                            if (unicode) {
+                                *unicode = UnicodeChar; // character-code
+                                return (c & ~KEY_M_UNICODE); // modifiers, if any
+                            }
+                        } else {
+#if defined(_DEBUG) && (0)
+                            char *skeyname = lookup_key_by_code (c);
+                            OutputDebugPrintA ("%05u/0x%04x = %s\n", c, c, skeyname);
+                            g_free (skeyname);
+#endif
+                            return c;
+                        }
+                    }
+
+                } else {
+                    retry = 1;                  /* consume */
+                }
+                check_winch(1);
+                break;
+            default:
+                check_winch(1);
+                break;
+            }
+        }
+    } while (retry || no_delay == 0);
+
+    return -1;
+}
+
+
+static int
 key_esc_special(void)
 {
     DWORD timeoutms = INFINITE;                 // key-up wait.
@@ -1107,9 +1193,10 @@ key_esc_special(void)
 
             if (KEY_EVENT == ir.EventType) {
                 const KEY_EVENT_RECORD *key = &ir.Event.KeyEvent;
+
                 (void) ReadConsoleInput(hConsoleIn, &ir, 1, &count);
                 if (ir.Event.KeyEvent.bKeyDown) {
-                    WORD wVirtualKeyCode = key->wVirtualKeyCode;
+                    const WORD wVirtualKeyCode = key->wVirtualKeyCode;
                     int c = -1;
 
                     if (wVirtualKeyCode >= '0' && wVirtualKeyCode <= '9') {
@@ -1127,6 +1214,7 @@ key_esc_special(void)
                         if (key->wRepeatCount) {
                             c = ESC_CHAR;       // ESC-ESC, surpress 2nd
                         }
+
                     } else if (key->uChar.UnicodeChar >= ' ' && key->uChar.UnicodeChar <= '}') {
                         c = ALT(key->uChar.UnicodeChar);  // ESC followed by an ASCII character
                     }
@@ -1242,10 +1330,10 @@ CtrlHandler(DWORD fdwCtrlType)
 
 
 /*
- *  Translate the key press into a CRISP identifier.
+ *  Translate the key press into a keycode identifier.
  */
 static int
-key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned AsciiChar)
+key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned uChar)
 {
     int mod = 0, ch = -1;
     int i;
@@ -1279,11 +1367,11 @@ key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned Asci
                 if (key->mods == MOD_FUNC) {
                     // Convert Shift+Fn to F(n+10)
                     if (ch >= KEY_F(1) && ch <= KEY_F(10) && (mod & KEY_M_SHIFT) != 0) {
-                        ch += 10;               
+                        ch += 10;
                     }
 
                     // Apply ignoring Shift
-                    ch |= (mod & ~KEY_M_SHIFT); 
+                    ch |= (mod & ~KEY_M_SHIFT);
 
                 } else if (key->mods == MOD_ALL) {
                     ch |= mod;
@@ -1295,9 +1383,9 @@ key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned Asci
 
     /* Convert alt-digits to F-keys */
     if (-1 == ch && KEY_M_ALT == mod) {
-        if (AsciiChar >= '0' && AsciiChar <= '9') {
-            if (AsciiChar >= '1') {
-                ch = KEY_F(AsciiChar - '0');    /* F1..F9 */
+        if (uChar >= '0' && uChar <= '9') {
+            if (uChar >= '1') {
+                ch = KEY_F(uChar - '0');        /* F1..F9 */
             } else {
                 ch = KEY_F(10);                 /* F10 */
             }
@@ -1305,11 +1393,13 @@ key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned Asci
         }
     }
 
-    /* ascii */
-    if (-1 == ch && AsciiChar) {
-        if ((AsciiChar & 0xff) == AsciiChar) {
-            ch = AsciiChar;                     /* ASCII value */
-            ch |= (mod & ~KEY_M_SHIFT);         /* .. and modifiers (ignore shift) */
+    /* Character code, Unicode or Ascii */
+    if (-1 == ch && uChar) {
+        mod = (mod & ~KEY_M_SHIFT);             /* modifiers (ignore shift) */
+        if (uChar > 0x7f) {                     /* Unicode */
+            ch = KEY_M_UNICODE|mod;
+        } else {
+            ch = uChar|mod;                     /* Ascii */
         }
     }
 
@@ -1320,44 +1410,7 @@ key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned Asci
 int
 get_key_code (int no_delay)
 {
-    int retry = 0;
-
-    do {
-        INPUT_RECORD k = {0};
-        DWORD count = 0, rc;
-
-        retry = 0;
-        rc = WaitForSingleObject(hConsoleIn, no_delay ? 0 : INFINITE);
-        if (rc == WAIT_OBJECT_0 &&
-                ReadConsoleInput(hConsoleIn, &k, 1, &count) && 1 == count) {
-            switch (k.EventType) {
-            case KEY_EVENT:
-                if (k.Event.KeyEvent.bKeyDown) {
-                    const KEY_EVENT_RECORD *pKey = &k.Event.KeyEvent;
-                    int c;
-
-                    if ((c = key_mapwin32(pKey->dwControlKeyState,
-                                pKey->wVirtualKeyCode, pKey->uChar.AsciiChar)) != -1) {
-#if defined(_DEBUG)
-                        char *skeyname = lookup_key_by_code (c);
-                        OutputDebugPrintA ("%05u/0x%04x = %s\n", c, c, skeyname);
-                        g_free (skeyname);
-#endif
-                        return c;
-                    }
-                } else {
-                    retry = 1;                  /* consume */
-                }
-                check_winch(1);
-                break;
-            default:
-                check_winch(1);
-                break;
-            }
-        }
-    } while (retry || no_delay == 0);
-
-    return -1;
+    return key_next (no_delay, NULL);
 }
 
 
