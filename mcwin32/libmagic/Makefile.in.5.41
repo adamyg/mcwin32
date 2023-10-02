@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.13 2023/02/03 17:10:09 cvsuser Exp $
+# $Id: Makefile.in.5.41,v 1.1 2023/10/02 11:27:41 cvsuser Exp $
 # libmagic makefile
 #
 #
