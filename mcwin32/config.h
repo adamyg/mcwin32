@@ -133,7 +133,6 @@ extern void                 tty_set_title(const char *title);
 #undef  HAVE_LIBGPM
 
 /* XXX: libcompat */
-#undef  HAVE_REALPATH                           /* FIXME */
 #define HAVE_STRCASECMP 1
 #define HAVE_STRNCASECMP 1
 #define HAVE_GETOPT 1
@@ -183,7 +182,7 @@ extern void                 tty_set_title(const char *title);
     //#undef  ENABLE_VFS_SMB                    /* removed, 4.8.28 */
 #undef  ENABLE_VFS_UNDELFS
 
-#define SIG_ATOMIC_VOLATILE_T int               /* FIXME */
-#define PROMOTED_MODE_T int                     /* FIXME */
+#define SIG_ATOMIC_VOLATILE_T int volatile
+#define PROMOTED_MODE_T int
 
 #endif  /*CONFIG_H_INCLUDED*/

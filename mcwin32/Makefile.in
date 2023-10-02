@@ -712,6 +712,7 @@ LIBRARIES=\
 	$(LW)z$(A)				\
 	$(LW)regex$(A)				\
 	$(LW)pcre2-8$(A)			\
+	$(LW)enca$(A)				\
 	$(LW)magic$(A)				\
 	$(LW)intl$(A)				\
 	$(LW)gmodule-2.0$(A)			\

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.1 2023/09/30 05:39:55 cvsuser Exp $
+# $Id: Makefile.in,v 1.2 2023/10/02 12:11:28 cvsuser Exp $
 # libenca makefile
 #
 #

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.12 2023/09/12 14:41:02 cvsuser Exp $
+# $Id: Makefile.in,v 1.13 2023/10/02 12:11:29 cvsuser Exp $
 # libz makefile
 #
 #
