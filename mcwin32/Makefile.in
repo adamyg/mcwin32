@@ -547,7 +547,10 @@ MC_LIBVFS=\
 	$(D_OBJVFS)/plugins_init$(O)		\
 	$(MC_LIBVFS_SFTPFS)			\
 	$(D_OBJVFS)/sfs_sfs$(O)			\
-	$(D_OBJVFS)/tar_tar$(O)
+	$(D_OBJVFS)/tar_tar$(O)			\
+	$(D_OBJVFS)/tar_tar-internal$(O)	\
+	$(D_OBJVFS)/tar_tar-sparse$(O)		\
+	$(D_OBJVFS)/tar_tar-xheader$(O)
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 MC_RES=		$(D_OBJ)/mc_res.o

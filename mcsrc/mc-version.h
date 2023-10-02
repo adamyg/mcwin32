@@ -4,4 +4,3 @@
 #define MC_CURRENT_VERSION VERSION
 #endif
 
-

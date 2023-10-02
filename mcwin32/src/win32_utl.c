@@ -1277,7 +1277,7 @@ ScriptMagic(int fd)
                     script = "perl";
                 } else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1))) {
                     script = "python";
-                } else if (0 == strncmp(exec, "usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
+                } else if (0 == strncmp(exec, "/usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
                     //
                     //  Example:
                     //  #! /usr/bin/env python

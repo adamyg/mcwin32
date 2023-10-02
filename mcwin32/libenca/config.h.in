@@ -50,7 +50,7 @@
 #undef HAVE_DECL_LC_MESSAGES
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
-#undef HAVE_DLFCN_H
+    //#undef HAVE_DLFCN_H
 
 /* Define to 1 if you have the <errno.h> header file. */
     //#undef HAVE_ERRNO_H
@@ -98,13 +98,13 @@
 #undef HAVE_LOCALE_ALIAS
 
 /* Define to 1 if you have the <locale.h> header file. */
-#undef HAVE_LOCALE_H
+    //#undef HAVE_LOCALE_H
 
 /* Define to 1 if you have the <memory.h> header file. */
     //#undef HAVE_MEMORY_H
 
 /* Define to 1 if you have the `nl_langinfo' function. */
-#undef HAVE_NL_LANGINFO
+    //#undef HAVE_NL_LANGINFO
 
 /* Define if you have program_invocation_short_name variable. */
 #undef HAVE_PROGRAM_INVOCATION_SHORT_NAME

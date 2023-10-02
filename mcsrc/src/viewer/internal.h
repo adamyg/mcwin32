@@ -7,6 +7,9 @@
 #include <sys/types.h>
 
 #include "lib/global.h"
+#if defined(WIN32)
+#include "lib/util.h"
+#endif
 
 #include "lib/search.h"
 #include "lib/widget.h"

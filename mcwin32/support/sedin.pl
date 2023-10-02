@@ -131,6 +131,8 @@ while ($line = <IN>) {
 
         $line =~ s/\@AWK\@/${busybox} awk/g;
         $line =~ s/\@GREP\@/${busybox} grep/g;
+        $line =~ s/\@SED\@/${busybox} sed/g;
+
         $line =~ s/\@HAVE_ZIPINFO\@/0/g;
         $line =~ s/\@MANDOC\@/mandoc/g;
         $line =~ s/\@MAN_FLAGS\@//g;

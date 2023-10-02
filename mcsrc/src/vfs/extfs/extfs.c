@@ -1,7 +1,7 @@
 /*
    Virtual File System: External file system.
 
-   Copyright (C) 1995-2022
+   Copyright (C) 1995-2023
    Free Software Foundation, Inc.
 
    Written by:
@@ -95,6 +95,10 @@ typedef struct
     gboolean need_archive;
 } extfs_plugin_info_t;
 
+/*** forward declarations (file scope functions) *************************************************/
+
+static struct vfs_s_entry *extfs_resolve_symlinks_int (struct vfs_s_entry *entry, GSList * list);
+
 /*** file scope variables ************************************************************************/
 
 static GArray *extfs_plugins = NULL;
@@ -109,10 +113,6 @@ static int my_errno = 0;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
-/* --------------------------------------------------------------------------------------------- */
-
-static struct vfs_s_entry *extfs_resolve_symlinks_int (struct vfs_s_entry *entry, GSList * list);
-
 /* --------------------------------------------------------------------------------------------- */
 
 static struct extfs_super_t *
@@ -917,11 +917,11 @@ extfs_get_archive_name (const struct extfs_super_t *archive)
     {
         char *ret_str;
         vfs_path_t *vpath;
-        const vfs_path_element_t *path_element;
+        const char *path;
 
         vpath = vfs_path_from_str (archive_name);
-        path_element = vfs_path_get_by_index (vpath, -1);
-        ret_str = g_strdup (path_element->path);
+        path = vfs_path_get_last_path_str (vpath);
+        ret_str = g_strdup (path);
         vfs_path_free (vpath, TRUE);
         return ret_str;
     }
@@ -1071,7 +1071,7 @@ extfs_open (const vfs_path_t * vpath, int flags, mode_t mode)
         if (local_handle == -1)
             return NULL;
         close (local_handle);
-        local_filename = vfs_path_get_by_index (local_filename_vpath, -1)->path;
+        local_filename = vfs_path_get_last_path_str (local_filename_vpath);
 
         if (!created && ((flags & O_TRUNC) == 0)
             && extfs_cmd (" copyout ", archive, entry, local_filename))
@@ -1310,10 +1310,7 @@ extfs_readlink (const vfs_path_t * vpath, char *buf, size_t size)
         goto cleanup;
     if (!S_ISLNK (entry->ino->st.st_mode))
     {
-        const vfs_path_element_t *path_element;
-
-        path_element = vfs_path_get_by_index (vpath, -1);
-        path_element->class->verrno = EINVAL;
+        VFS_CLASS (vfs_path_get_last_path_vfs (vpath))->verrno = EINVAL;
         goto cleanup;
     }
     len = strlen (entry->ino->linkname);
@@ -1379,10 +1376,7 @@ extfs_unlink (const vfs_path_t * vpath)
         goto cleanup;
     if (S_ISDIR (entry->ino->st.st_mode))
     {
-        const vfs_path_element_t *path_element;
-
-        path_element = vfs_path_get_by_index (vpath, -1);
-        path_element->class->verrno = EISDIR;
+        VFS_CLASS (vfs_path_get_last_path_vfs (vpath))->verrno = EISDIR;
         goto cleanup;
     }
     if (extfs_cmd (" rm ", archive, entry, ""))
@@ -1405,18 +1399,18 @@ extfs_mkdir (const vfs_path_t * vpath, mode_t mode)
     const char *q;
     struct vfs_s_entry *entry;
     int result = -1;
-    const vfs_path_element_t *path_element;
+    struct vfs_class *me;
 
     (void) mode;
 
-    path_element = vfs_path_get_by_index (vpath, -1);
+    me = VFS_CLASS (vfs_path_get_last_path_vfs (vpath));
     q = extfs_get_path (vpath, &archive, FL_NONE);
     if (q == NULL)
         goto cleanup;
     entry = extfs_find_entry (VFS_SUPER (archive)->root, q, FL_NONE);
     if (entry != NULL)
     {
-        path_element->class->verrno = EEXIST;
+        me->verrno = EEXIST;
         goto cleanup;
     }
     entry = extfs_find_entry (VFS_SUPER (archive)->root, q, FL_MKDIR);
@@ -1427,7 +1421,7 @@ extfs_mkdir (const vfs_path_t * vpath, mode_t mode)
         goto cleanup;
     if (!S_ISDIR (entry->ino->st.st_mode))
     {
-        path_element->class->verrno = ENOTDIR;
+        me->verrno = ENOTDIR;
         goto cleanup;
     }
 
@@ -1463,10 +1457,7 @@ extfs_rmdir (const vfs_path_t * vpath)
         goto cleanup;
     if (!S_ISDIR (entry->ino->st.st_mode))
     {
-        const vfs_path_element_t *path_element;
-
-        path_element = vfs_path_get_by_index (vpath, -1);
-        path_element->class->verrno = ENOTDIR;
+        VFS_CLASS (vfs_path_get_last_path_vfs (vpath))->verrno = ENOTDIR;
         goto cleanup;
     }
 
@@ -1644,26 +1635,22 @@ extfs_get_plugins (const char *where, gboolean silent)
                 len = strlen (filename);
                 info.need_archive = (filename[len - 1] != '+');
                 info.path = g_strconcat (dirname, PATH_SEP_STR, (char *) NULL);
-                info.prefix = g_strdup (filename);
+                info.prefix = g_strndup (filename, len);
 
                 /* prepare to compare file names without trailing '+' */
                 if (!info.need_archive)
                     info.prefix[len - 1] = '\0';
 
                 /* don't overload already found plugin */
-                for (i = 0; i < extfs_plugins->len; i++)
+                for (i = 0; i < extfs_plugins->len && !found; i++)
                 {
                     extfs_plugin_info_t *p;
 
                     p = &g_array_index (extfs_plugins, extfs_plugin_info_t, i);
 
                     /* 2 files with same names cannot be in a directory */
-                    if ((strcmp (info.path, p->path) != 0)
-                        && (strcmp (info.prefix, p->prefix) == 0))
-                    {
-                        found = TRUE;
-                        break;
-                    }
+                    found = strcmp (info.path, p->path) != 0
+                        && strcmp (info.prefix, p->prefix) == 0;
                 }
 
                 if (found)

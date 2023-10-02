@@ -1,7 +1,7 @@
 /*
    Utilities for VFS modules.
 
-   Copyright (C) 1988-2022
+   Copyright (C) 1988-2023
    Free Software Foundation, Inc.
 
    Copyright (C) 1995, 1996 Miguel de Icaza
@@ -67,11 +67,13 @@
 
 /*** file scope type declarations ****************************************************************/
 
+/*** forward declarations (file scope functions) *************************************************/
+
 /*** file scope variables ************************************************************************/
 
+/* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
-
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
@@ -89,7 +91,8 @@ vfs_get_local_username (void)
 
     p_i = getpwuid (geteuid ());
 
-    return (p_i && p_i->pw_name) ? g_strdup (p_i->pw_name) : g_strdup ("anonymous");    /* Unknown UID, strange */
+    /* Unknown UID, strange */
+    return (p_i != NULL && p_i->pw_name != NULL) ? g_strdup (p_i->pw_name) : g_strdup ("anonymous");
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -99,8 +102,6 @@ vfs_get_local_username (void)
  * This file should be modified for non-unix systems to do something
  * reasonable.
  */
-
-/* --------------------------------------------------------------------------------------------- */
 
 int
 vfs_finduid (const char *uname)
@@ -119,10 +120,8 @@ vfs_finduid (const char *uname)
 
         g_strlcpy (saveuname, uname, TUNMLEN);
         pw = getpwnam (uname);
-        if (pw)
-        {
+        if (pw != NULL)
             saveuid = pw->pw_uid;
-        }
         else
         {
             static int my_uid = GUID_DEFAULT_CONST;
@@ -133,6 +132,7 @@ vfs_finduid (const char *uname)
             saveuid = my_uid;
         }
     }
+
     return saveuid;
 }
 
@@ -155,10 +155,8 @@ vfs_findgid (const char *gname)
 
         g_strlcpy (savegname, gname, TGNMLEN);
         gr = getgrnam (gname);
-        if (gr)
-        {
+        if (gr != NULL)
             savegid = gr->gr_gid;
-        }
         else
         {
             static int my_gid = GUID_DEFAULT_CONST;
@@ -169,6 +167,7 @@ vfs_findgid (const char *gname)
             savegid = my_gid;
         }
     }
+
     return savegid;
 }
 
@@ -177,7 +176,7 @@ vfs_findgid (const char *gname)
  * Create a temporary file with a name resembling the original.
  * This is needed e.g. for local copies requested by extfs.
  * Some extfs scripts may look at the extension.
- * We also protect stupid scripts agains dangerous names.
+ * We also protect stupid scripts against dangerous names.
  */
 
 int
@@ -257,7 +256,7 @@ vfs_url_split (const char *path, int default_port, vfs_url_flags_t flags)
         char *dir = pcopy;
 
         /* locate path component */
-        while (!IS_PATH_SEP (*dir) && *dir != '\0')
+        while (!IS_PATH_SEP (*dir) && *dir != '\0') //WIN32
             dir++;
         if (*dir == '\0')
             path_element->path = g_strdup (PATH_SEP_STR);

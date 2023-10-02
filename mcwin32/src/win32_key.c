@@ -323,17 +323,18 @@ static unsigned         ctrlbreak_triggered;
 static unsigned         ctrlbreak_running;
 static unsigned         ctrlc_triggered;
 
-int                     mou_auto_repeat     = 100;          /* setup.c */
-int                     double_click_speed  = 250;          /* setup.c */
-gboolean                old_esc_mode        = 0;            /* setup.c */
-int                     old_esc_mode_timeout = 1000000;     /* setup.c */
-int                     use_8th_bit_as_meta = 1;            /* setup.c */
-int                     console_alert_mode  = 1;            /* setup.c: legacy beep */
+/*setup.c*/
+int                     mou_auto_repeat     = 100; /* ms */
+int                     double_click_speed  = 250; /* msc */
+gboolean                old_esc_mode        = FALSE;
+int                     old_esc_mode_timeout = G_USEC_PER_SEC; /* usc */
+int                     use_8th_bit_as_meta = TRUE;
+int                     console_alert_mode  = TRUE; /* legacy beep */
 
 static enum { KEY_SORTNONE, KEY_SORTBYNAME, KEY_SORTBYCODE}
-                        key_conv_tab_order  = KEY_SORTNONE;
+                        key_conv_tab_order = KEY_SORTNONE;
 
-static const size_t     key_conv_tab_size   = G_N_ELEMENTS (key_name_conv_tab) - 1;
+static const size_t     key_conv_tab_size = G_N_ELEMENTS (key_name_conv_tab) - 1;
 
 static const key_code_name_t *
                         key_conv_tab_sorted[G_N_ELEMENTS (key_name_conv_tab) - 1];
@@ -898,6 +899,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 #endif
     static unsigned char utf8_buffer[UTF_BUFFER_LEN] = {0}, *utf8_cursor = utf8_buffer;
     static int clicks = 0;
+    static int dirty = 3; 
 
     if (*utf8_cursor) {                         /* unicode pending */
         return *utf8_cursor++;
@@ -908,7 +910,13 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
         return 0;                               /* not active */
     }
 
-    mc_refresh();
+    if ((dirty >= 3) || is_idle ()) {
+        mc_refresh ();
+        dirty = 1;
+    } else {
+        ++dirty;
+    }
+
     if (mc_global.tty.winch_flag) {
         return EV_NONE;
     }
@@ -1117,8 +1125,11 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 }
 
 
+/*
+ *  retrieve the next character code including any modiferes, unicode keycode are converted to their utf-8 representation.
+ */
 static int
-key_next (int no_delay, unsigned *unicode)
+key_next(int no_delay, unsigned *unicode)
 {
     int retry = 0;
 
@@ -1176,6 +1187,9 @@ key_next (int no_delay, unsigned *unicode)
 }
 
 
+/*
+ *  ESC delayed processing
+ */
 static int
 key_esc_special(void)
 {
@@ -1194,7 +1208,6 @@ key_esc_special(void)
             if (KEY_EVENT == ir.EventType) {
                 const KEY_EVENT_RECORD *key = &ir.Event.KeyEvent;
 
-                (void) ReadConsoleInput(hConsoleIn, &ir, 1, &count);
                 if (ir.Event.KeyEvent.bKeyDown) {
                     const WORD wVirtualKeyCode = key->wVirtualKeyCode;
                     int c = -1;
@@ -1215,10 +1228,21 @@ key_esc_special(void)
                             c = ESC_CHAR;       // ESC-ESC, surpress 2nd
                         }
 
-                    } else if (key->uChar.UnicodeChar >= ' ' && key->uChar.UnicodeChar <= '}') {
-                        c = ALT(key->uChar.UnicodeChar);  // ESC followed by an ASCII character
+                    } else if (VK_SPACE == wVirtualKeyCode) {
+                        c = ESC_CHAR;           // ESC
+
+                    } else {
+                        const WCHAR UnicodeChar = key->uChar.UnicodeChar;
+
+                        if (UnicodeChar > ' ' && UnicodeChar <= '}') {
+                            c = ALT(UnicodeChar); // ESC followed by an ASCII character
+
+                        } else if (UnicodeChar > 0x7f) {
+                            return ESC_CHAR;    // Unicode, short circuit rtn ESC
+                        }
                     }
 
+                    (void) ReadConsoleInputW(hConsoleIn, &ir, 1, &count);
                     if (-1 != c) {
                         check_winch(1);
                         return c;
@@ -1226,11 +1250,12 @@ key_esc_special(void)
                     continue;                   // consume
 
                 } else {
+                    (void) ReadConsoleInputW(hConsoleIn, &ir, 1, &count);
                     if (VK_ESCAPE == key->wVirtualKeyCode) {
-                        timeoutms = 500;
-                        if (old_esc_mode_timeout > 0) {
-                            timeoutms = (old_esc_mode_timeout / 1000000) * 1000;
-                            timeoutms += (old_esc_mode_timeout % 1000000) / 1000;
+                        timeoutms = 20*1000;    // upper limit, 20-seconds
+                        if (old_esc_mode_timeout > 0) { // microseconds to ms
+                            timeoutms =  (old_esc_mode_timeout / G_USEC_PER_SEC) * 1000;
+                            timeoutms += (old_esc_mode_timeout % G_USEC_PER_SEC) / 1000;
                         }
                     }
                     continue;                   // consume

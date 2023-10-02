@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Function for paint dialogs
 
-   Copyright (C) 1994-2022
+   Copyright (C) 1994-2023
    Free Software Foundation, Inc.
 
    Written by:
@@ -141,7 +141,7 @@ mcview_dialog_search (WView * view)
 
     g_strfreev (list_of_types);
 
-    if ((qd_result == B_CANCEL) || (exp == NULL) || (exp[0] == '\0'))
+    if (qd_result == B_CANCEL || exp[0] == '\0')
     {
         g_free (exp);
         return FALSE;
@@ -153,7 +153,10 @@ mcview_dialog_search (WView * view)
 
         tmp = str_convert_to_input (exp);
         g_free (exp);
-        exp = g_string_free (tmp, FALSE);
+        if (tmp != NULL)
+            exp = g_string_free (tmp, FALSE);
+        else
+            exp = g_strdup ("");
     }
 #endif
 

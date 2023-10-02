@@ -1,7 +1,7 @@
 #ifndef LIBW32_GETOPT_H_INCLUDED
 #define LIBW32_GETOPT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.10 2023/09/17 13:04:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.11 2023/09/30 05:39:22 cvsuser Exp $")
 __CPRAGMA_ONCE
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -63,6 +63,10 @@ struct option {
 LIBW32_API int          getopt(int nargc, char * const *nargv, const char *options);
 LIBW32_API int          getopt_long(int argvc, char * const *argv, const char *options, const struct option *long_options, int *idx);
 LIBW32_API int          getopt_long2(int argvc, char * const *argv, const char *options, const struct option *long_options, int *idx, char *buf, int buflen);
+
+#if defined(LIBW32_LIBRARY)
+extern void __w32_getopt_globals(void);
+#endif
 
 __END_DECLS
 

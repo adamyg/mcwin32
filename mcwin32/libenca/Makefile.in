@@ -222,10 +222,10 @@ $(LIBSRCDIR)/internal.h:	$(LIBSRCDIR)/internal.h.in enca_header.pl
 		@$(PERL) enca_header.pl --type=internal --src=$(LIBSRCDIR) --output=$(LIBSRCDIR) --version=$(VERSION)
 
 $(SRCDIR)/COPYING.c:		$(ENCAROOT)/COPYING text2c.pl
-		$(PERL) text2c.pl COPYING $(ENCAROOT)/COPYING >$(SRCDIR)/COPYING.c
+		@$(PERL) text2c.pl COPYING $(ENCAROOT)/COPYING >$(SRCDIR)/COPYING.c
 
 $(SRCDIR)/HELP.c:		$(SRCDIR)/HELP.in text2c.pl
-		$(PERL) text2c.pl HELP $(SRCDIR)/HELP.in >$(SRCDIR)/HELP.c
+		@$(PERL) text2c.pl HELP $(SRCDIR)/HELP.in >$(SRCDIR)/HELP.c
 
 installinc:		../include/.created
 		@echo publishing header 'enca.h' ...

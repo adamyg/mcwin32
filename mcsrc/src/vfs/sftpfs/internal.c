@@ -1,7 +1,7 @@
 /* Virtual File System: SFTP file system.
    The internal functions
 
-   Copyright (C) 2011-2022
+   Copyright (C) 2011-2023
    Free Software Foundation, Inc.
 
    Written by:
@@ -47,6 +47,8 @@ GString *sftpfs_filename_buffer = NULL;
 /*** file scope macro definitions ****************************************************************/
 
 /*** file scope type declarations ****************************************************************/
+
+/*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
 
@@ -107,32 +109,6 @@ sftpfs_internal_waitsocket (sftpfs_super_t * super, GError ** mcerror)
     }
 
     return ret;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static gboolean
-sftpfs_op_init (sftpfs_super_t ** super, const vfs_path_element_t ** path_element,
-                const vfs_path_t * vpath, GError ** mcerror)
-{
-    struct vfs_s_super *lc_super = NULL;
-
-    mc_return_val_if_error (mcerror, FALSE);
-
-    if (vfs_s_get_path (vpath, &lc_super, 0) == NULL)
-        return FALSE;
-
-    if (lc_super == NULL)
-        return FALSE;
-
-    *super = SFTP_SUPER (lc_super);
-
-    if ((*super)->sftp_session == NULL)
-        return FALSE;
-
-    *path_element = vfs_path_get_by_index (vpath, -1);
-
-    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -243,6 +219,31 @@ sftpfs_fix_filename (const char *file_name)
 {
     g_string_printf (sftpfs_filename_buffer, "%c%s", PATH_SEP, file_name);
     return sftpfs_filename_buffer;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+sftpfs_op_init (sftpfs_super_t ** super, const vfs_path_element_t ** path_element,
+                const vfs_path_t * vpath, GError ** mcerror)
+{
+    struct vfs_s_super *lc_super = NULL;
+
+    mc_return_val_if_error (mcerror, FALSE);
+
+    if (vfs_s_get_path (vpath, &lc_super, 0) == NULL)
+        return FALSE;
+
+    if (lc_super == NULL)
+        return FALSE;
+
+    *super = SFTP_SUPER (lc_super);
+    if ((*super)->sftp_session == NULL)
+        return FALSE;
+
+    *path_element = vfs_path_get_by_index (vpath, -1);
+
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -387,7 +388,6 @@ int
 sftpfs_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** mcerror)
 {
     sftpfs_super_t *super = NULL;
-    const vfs_path_element_t *path_element1;
     const vfs_path_element_t *path_element2 = NULL;
     const char *path1;
     size_t path1_len;
@@ -403,8 +403,7 @@ sftpfs_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** 
     tmp_path = g_strndup (ctmp_path->str, ctmp_path->len);
     tmp_path_len = ctmp_path->len;
 
-    path_element1 = vfs_path_get_by_index (vpath1, -1);
-    path1 = path_element1->path;
+    path1 = vfs_path_get_last_path_str (vpath1);
     path1_len = strlen (path1);
 
     do
@@ -585,7 +584,7 @@ int
 sftpfs_rename (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** mcerror)
 {
     sftpfs_super_t *super = NULL;
-    const vfs_path_element_t *path_element1;
+    const char *path1;
     const vfs_path_element_t *path_element2 = NULL;
     const GString *ctmp_path;
     char *tmp_path;
@@ -600,9 +599,8 @@ sftpfs_rename (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** m
     tmp_path = g_strndup (ctmp_path->str, ctmp_path->len);
     tmp_path_len = ctmp_path->len;
 
-    path_element1 = vfs_path_get_by_index (vpath1, -1);
-
-    fixfname = sftpfs_fix_filename (path_element1->path);
+    path1 = vfs_path_get_last_path_str (vpath1);
+    fixfname = sftpfs_fix_filename (path1);
 
     do
     {

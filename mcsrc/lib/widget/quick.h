@@ -330,7 +330,7 @@ struct quick_widget_t
 
 typedef struct
 {
-    WRect rect;                 /* if rect.x == -1 or rect.y == -1, then dialog is centered;
+    WRect rect;                 /* if rect.x == -1 or rect.y == -1, then dialog is ceneterd;
                                  * rect.lines is unused and ignored */
     const char *title;
     const char *help;

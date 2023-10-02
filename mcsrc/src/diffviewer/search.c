@@ -1,7 +1,7 @@
 /*
    Search functions for diffviewer.
 
-   Copyright (C) 2010-2022
+   Copyright (C) 2010-2023
    Free Software Foundation, Inc.
 
    Written by:
@@ -54,6 +54,8 @@ typedef struct mcdiffview_search_options_struct
     gboolean whole_words;
     gboolean all_codepages;
 } mcdiffview_search_options_t;
+
+/*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
 
@@ -143,7 +145,7 @@ mcdiffview_dialog_search (WDiff * dview)
 
     g_strfreev (list_of_types);
 
-    if ((qd_result == B_CANCEL) || (exp == NULL) || (exp[0] == '\0'))
+    if (qd_result == B_CANCEL || exp[0] == '\0')
     {
         g_free (exp);
         return FALSE;
@@ -155,7 +157,10 @@ mcdiffview_dialog_search (WDiff * dview)
 
         tmp = str_convert_to_input (exp);
         g_free (exp);
-        exp = g_string_free (tmp, FALSE);
+        if (tmp != NULL)
+            exp = g_string_free (tmp, FALSE);
+        else
+            exp = g_strdup ("");
     }
 #endif
 
