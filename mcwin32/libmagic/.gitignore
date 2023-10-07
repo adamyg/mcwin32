@@ -1,6 +1,7 @@
 file-511/
 file-5.29/
-file-5.29.*/
+file-5.29.*
+Makefile.in.5.29
 file-5.41/
 file-5.41.*/
 file-5.45/
