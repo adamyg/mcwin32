@@ -35,18 +35,18 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x86
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ${{ matrix.language }}
-        
+       
     - name: Generate
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox vc2022
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
        
     - name: Compile
       shell: cmd
