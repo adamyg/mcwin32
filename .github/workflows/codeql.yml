@@ -35,7 +35,6 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x86
-        toolset: 14.2
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
@@ -47,7 +46,7 @@ jobs:
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
-        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox vc19
+        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox vc2022
        
     - name: Compile
       shell: cmd
