@@ -115,32 +115,14 @@ static int              system_SET (int argc, const char **argv);
 
 static DWORD WINAPI     pipe_thread (void *data);
 
-static const char *     busybox_cmds[] = {      /* redirected commands (see vfs/sfs module) */
-//      
-//      BusyBox v1.36.0-FRP-4621-gf3c5e8bc3 (2022-02-28 07:16:31 GMT)
-//
-//      [, [[, ar, arch, ascii, ash, awk, base32, base64, basename, bash, bc, bunzip2, busybox, bzcat, bzip2, cal, cat, chattr,
-//      chmod, cksum, clear, cmp, comm, cp, cpio, crc32, cut, date, dc, dd, df, diff, dirname, dos2unix, dpkg, dpkg-deb, du, echo, ed,
-//
-//      egrep, env, expand, expr, factor, false, fgrep, find, fold, free, fsync, ftpget, ftpput, getopt, grep, groups, gunzip, gzip, hd,
-//      head, hexdump, httpd, iconv, id, inotifyd, install, ipcalc, kill, killall, less, link, ln, logname, ls, lsattr, lzcat,
-//
-//      lzma, lzop, lzopcat, man, md5sum, mkdir, mktemp, mv, nc, nl, nproc, od, paste, patch, pgrep, pidof, pipe_progress, pkill, printenv,
-//      printf, ps, pwd, readlink, realpath, reset, rev, rm, rmdir, rpm, rpm2cpio, sed, seq, sh, sha1sum, sha256sum,
-//
-//      sha3sum, sha512sum, shred, shuf, sleep, sort, split, ssl_client, stat, strings, su, sum, sync, tac, tail, tar, tee, test, time,
-//      timeout, touch, tr, true, truncate, ts, ttysize, uname, uncompress, unexpand, uniq, unix2dos, unlink, unlzma, unlzop,
-//
-//      unxz, unzip, uptime, usleep, uudecode, uuencode, vi, watch, wc, wget, which, whoami, whois, xargs, xxd, xz, xzcat, yes, zcat
-//
+#include "busyboxcmds.h"                       /* busyboxcmds */
 
+static const char *     busyboxexts[] = {      /* redirected commands (see vfs/sfs module) */
         "ar", "ash", "awk", "base32", "base64", "bash", "bunzip2", "bzcat", "bzip2", "cat", "cksum", "cpio", "dd", "diff",
         "dos2unix", "echo", "ed", "gunzip", "gzip", "ls",
         "lzcat", "lzma", "lzop", "lzopcat", "ps", "sed", "sh",
         "strings", "tar", "uncompress", "unexpand", "unix2dos", "unlzma", "unlzop",
         "unxz", "unzip", "uudecode", "uuencode", "xz", "xzcat", "zcat"
-
-// MISSING: lz4, ulz4
         };
 
 static const char *     busybox_path = NULL;    /* resolve path to busybox */
@@ -1096,8 +1078,8 @@ system_impl (int flags, const char *shell, const char *cmd)
                      const int cmdlen = space - cmd;
                      unsigned i;
 
-                     for (i = 0; i < _countof(busybox_cmds); ++i)  {
-                         if (0 == strncmp(busybox_cmds[i], cmd, cmdlen)) {
+                     for (i = 0; i < _countof(busyboxexts); ++i)  {
+                         if (0 == strncmp(busyboxexts[i], cmd, cmdlen)) {
                              char *t_cmd;
 
                              if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
@@ -1165,8 +1147,8 @@ system_impl (int flags, const char *shell, const char *cmd)
                 const size_t cmdlen = strlen(argv[0]);
                 unsigned i;
 
-                for (i = 0; i < _countof(busybox_cmds); ++i) {
-                    if (0 == strcmp(busybox_cmds[i], argv[0])) {
+                for (i = 0; i < _countof(busyboxcmds); ++i) {
+                    if (0 == strcmp(busyboxcmds[i], argv[0])) {
                         char *t_cmd;
 
                         if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
@@ -1205,10 +1187,10 @@ system_impl (int flags, const char *shell, const char *cmd)
 
 
 const char **
-mc_busybox_cmds(unsigned *count)
+mc_busybox_exts(unsigned *count)
 {
-    if (count) *count = _countof(busybox_cmds);
-    return busybox_cmds;
+    if (count) *count = _countof(busyboxexts);
+    return busyboxexts;
 }
 
 

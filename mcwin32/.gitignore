@@ -15,6 +15,7 @@ bin_shortcut.lnk
 Makefile
 buildinfo.h
 packageinfo.h
+busyboxcmds.h
 BUILDNUMBER
 owcsetup.dbg
 testaccounts.txt

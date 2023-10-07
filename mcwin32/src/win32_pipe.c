@@ -167,7 +167,7 @@ pipe_open (const char *xcommand, gboolean fdout, gboolean fderr, gboolean fdin, 
                  *  If busybox <cmd>, execute as <\"busybox\" sh -c `cmd` ...>
                  */
                 unsigned i, count = 0;
-                const char **busybox_cmds = mc_busybox_cmds(&count);
+                const char **busybox_cmds = mc_busybox_exts(&count);
                 const int commandlen = space - command;
 
                 for (i = 0; i < count; ++i)  {

@@ -791,7 +791,7 @@ new_release:			new_buildnumber
 
 directories:			$(DIRECTORIES)
 
-artifacts:			buildinfo BUILDNUMBER
+artifacts:			buildinfo busyboxcmds BUILDNUMBER
 
 %/.created:
 		-@$(PERL) ./support/mkdir_p.pl $(@D)
@@ -913,15 +913,21 @@ endif
 
 .PHONY: 			buildinfo
 buildinfo.h:			buildinfo
-buildinfo:
+buildinfo:			Makefile buildinfo.pl
 		@echo updating buildinfo.h ...
 		-@$(PERL) ./buildinfo.pl -o buildinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
 			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@"
 
 .PHONY:				packageinfo
-packageinfo:
+packageinfo:			Makefile buildinfo.pl
 		-@$(PERL) ./buildinfo.pl -o packageinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
 			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@" --type="$(BUILD_TYPE)"
+
+.PHONY:				busyboxcmds
+busyboxcmds.h:			busyboxcmds
+busyboxcmds:			Makefile busyboxcmds.pl
+		@echo updating busyboxcmds.h ...
+		-@$(PERL) ./busyboxcmds.pl -o busyboxcmds.h --busybox="$(BUSYBOX)"
 
 buildinfo.h:			BUILDNUMBER buildinfo.pl
 

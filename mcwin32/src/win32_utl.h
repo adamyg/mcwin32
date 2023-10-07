@@ -21,6 +21,6 @@
 
 extern char *my_unquote (const char *cmd, int quotews);
 extern const char *mc_isscript (const char *cmd);
-extern const char **mc_busybox_cmds (unsigned *count);
+extern const char **mc_busybox_exts (unsigned *count);
 
 /*end*/
