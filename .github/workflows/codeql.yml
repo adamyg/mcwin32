@@ -10,8 +10,8 @@ jobs:
     #   - https://gh.io/supported-runners-and-hardware-resources
     #   - https://gh.io/using-larger-runners
     # Consider using larger runners for possible analysis time improvements.
-    runs-on: ${{ windows-latest }}
-    timeout-minutes: ${{ 360 }}
+    runs-on: [ windows-latest ]
+    timeout-minutes: 360
     permissions:
       actions: read
       contents: read
@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'cpp' ]
+        language: [ 'c-cpp' ]
         
     steps:
     
@@ -31,22 +31,22 @@ jobs:
       run: |
         git submodule update --init --recursive
       
-    - name: MSVC setup
+    - name: Compiler setup
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x86
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ${{ matrix.language }}
-        
+       
     - name: Generate
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
-        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose vs2022
+        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox vc2022
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
        
     - name: Compile
       shell: cmd
@@ -59,4 +59,3 @@ jobs:
       uses: github/codeql-action/analyze@v2
       with:
         category: "/language:${{matrix.language}}"
-
