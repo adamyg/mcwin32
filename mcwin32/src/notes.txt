@@ -1,0 +1,6 @@
+
+       https://github.com/git/git/blob/master/compat/winansi.c#L537
+   and https://github.com/fusesource/jansi-native/issues/11
+   and https://github.com/fusesource/jansi-native/commit/461068c67a38647d2890e96250636fc0117074f5
+
+

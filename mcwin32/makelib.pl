@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.28 2023/10/02 05:35:43 cvsuser Exp $
+# $Id: makelib.pl,v 1.30 2023/11/26 15:07:32 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -176,6 +176,16 @@ my %x_environment   = (
             EXTRALIBS       => '-lshlwapi -lpsapi -lole32 -luuid -lgdi32 '.
                                     '-luserenv -lnetapi32 -ladvapi32 -lshell32 -lmpr -lWs2_32',
             LIBMALLOC       => '-ldlmalloc',
+                #
+                #    libgcc_s_dw2-1.dll [x86]
+                # or libgcc_s_seh-1.dll [x64]
+                #    libstdc++6.dll
+                #    libwinpthread-1.dll
+                #
+                # Alternatively:
+                #   -static-libgcc
+                #   -static-libstdc++
+                #
             },
 
         'vc1200'        => {    # Visual Studio 7
@@ -421,7 +431,7 @@ my %x_environment   = (
             MFCLIBS         => ''
             },
 
-       'vc1920'        => {    # 2019, Visual Studio 19.2x
+       'vc1920'        => {     # 2019, Visual Studio 19.2x
             TOOLCHAIN       => 'vs160',
             TOOLCHAINEXT    => '.vs160',
             CC              => 'cl',
@@ -459,7 +469,7 @@ my %x_environment   = (
             MFCLIBS         => ''
             },
 
-       'vc1930'        => {    # 2022, Visual Studio 19.3x
+       'vc1930'        => {     # 2022, Visual Studio 19.3x
             TOOLCHAIN       => 'vs170',
             TOOLCHAINEXT    => '.vs170',
             CC              => 'cl',
@@ -984,10 +994,12 @@ my @x_headers2      = (     #headers; check only
 
 my @x_predefines    = (
         '_MSC_VER|_MSC_FULL_VER',
+        '_WIN32|_WIN64',
         '__WATCOMC__',
         '__GNUC__|__GNUC_MINOR__',
         '__MINGW32__|__MINGW64__|__MINGW64_VERSION_MAJOR|__MINGW64_VERSION_MINOR',
         '__STDC__|__STDC_VERSION__',
+        '_M_IX86|_M_IA64|_M_X64',
         'cpp=__cplusplus',
         'cpp=__STDC_HOSTED__',
         'cpp=__STDC_NO_ATOMICS__',
@@ -1052,7 +1064,7 @@ my @x_types         = (     #stdint/inttypes/types.h
         'bool',
         '_Bool:C99BOOL',
         '_bool',
-        'ssize_t',
+        'ssize_t'
         );
 
 my @x_sizes         = (
@@ -1064,7 +1076,8 @@ my @x_sizes         = (
         'float',
         'double',
         'wchar_t',
-        'void_p'
+        'void_p',
+        'time_t'
         );
 
 my @x_functions     = (
@@ -1186,11 +1199,9 @@ my $o_makelib       = './makelib.in';
 my $o_keep          = 0;
 my $o_verbose       = 0;
 my $o_summary       = 1;
-my $o_version       = undef;
 my $o_gnuwin32      = 'auto';
 my $o_contrib       = 1;
 my $o_gnulibs       = 0;
-my $o_owcposix      = 0;
 
 my $o_icu           = 'auto';
 my $o_libhunspell   = undef;
@@ -1201,7 +1212,7 @@ my $o_libmagic      = undef;
 #   Main ---
 #       Mainline
 #
-sub Configure($$);
+sub Configure($$$);
 sub ExeRealpath($);
 sub LoadContrib($$$$$);
 sub CheckCompiler($$);
@@ -1229,8 +1240,10 @@ exit &main();
 sub
 main()
 {
+    my $o_version = undef;
     my $o_clean  = 0;
     my $o_help   = 0;
+
     my $ret
         = GetOptions(
                 'binpath=s'     => \$BINPATH,
@@ -1251,7 +1264,6 @@ main()
                 'libhunspell=s' => \$o_libhunspell,
                 'libarchive=s'  => \$o_libarchive,
                 'libmagic=s'    => \$o_libmagic,
-                'owcposix'      => \$o_owcposix,
                 'clean'         => \$o_clean,
                 'verbose'       => sub {++$o_verbose;},
                 'keep'          => \$o_keep,
@@ -1261,8 +1273,6 @@ main()
     Usage() if (!$ret || $o_help);
     Usage("expected command") if (scalar @ARGV < 1);
     Usage("unexpected arguments $ARGV[1] ...") if (scalar @ARGV > 1);
-
-    my $cmd = $ARGV[0];
 
     (-f $o_makelib) or
         Usage("missing makelib.in");
@@ -1278,6 +1288,9 @@ main()
     #   MSVC++ 14.2x _MSC_VER == 192x (Visual Studio 2019 version 16.x)
     #   MSVC++ 14.3x _MSC_VER == 193x (Visual Studio 2022 version 17.x)
     #
+    my ($cmd, $options)                         # posix,x64
+        = split(/-/, $ARGV[0], 2);
+
     if    ('vc12' eq $cmd)      { $o_version = 1200, $cmd = 'vc'  }
     elsif ('vc14' eq $cmd)      { $o_version = 1400; $cmd = 'vc'  } elsif ('vc2005' eq $cmd) { $o_version = 1400; $cmd = 'vc' }
     elsif ('vc15' eq $cmd)      { $o_version = 1400; $cmd = 'vc'  } elsif ('vc2008' eq $cmd) { $o_version = 1500; $cmd = 'vc' }
@@ -1300,6 +1313,9 @@ main()
         else { $o_version = 0; }
     }
 
+    $o_version .= '_x64'
+        if ($options && $options =~ /x64/);
+
     if ($cmd eq 'vc' ||
             $cmd eq 'owc' || $cmd eq 'wc' ||
             $cmd eq 'dj' ||  $cmd eq 'mingw') {
@@ -1314,7 +1330,7 @@ main()
         };
 
         #build
-        Configure($cmd, $o_version);
+        Configure($cmd, $o_version, $options);
         foreach (@{$config->{MAKEFILES}}) {
             Makefile($cmd, $_, 'Makefile');
         }
@@ -1418,9 +1434,6 @@ Configuration:
     --flex=<path>           flex installation path.
     --inno=<path>           inno-setup installation path.
 
-    --owcposix              Utilise alternative OpenWatcom posix driver (owcc).
-
-
 Toolchain / command:
 
     vc[20xx]               Visual Studio C/C++ Makefiles.
@@ -1438,9 +1451,9 @@ EOU
 #       Configuration.
 #
 sub
-Configure($$)           # (type, version)
+Configure($$$)          # (type, version, options)
 {
-    my ($type, $version) = @_;
+    my ($type, $version, $options) = @_;
     my @CONTRIBINCS = ();
     my @EXTERNINCS = ();
 
@@ -1505,13 +1518,24 @@ Configure($$)           # (type, version)
 
     # environment
     my $signature =                             # ie. vc1600
-            ($version ? sprintf("%s%d", $type, $version) : $type);
+        ($version ? sprintf("%s%s", $type, $version) : $type);
 
     $signature .= "_posix"
-        if ($type eq 'owc' && $o_owcposix);
+        if ($options && $options =~ /posix/);
+
+    if (! exists $x_environment{$signature}) {
+         if ($signature =~ /(.*)_x64(.*)/) {    # derive x64 profile
+            my $base  = $1.$2;
+            if (exists $x_environment{$base}) {
+                $x_environment{$signature} = $x_environment{$base};
+                $x_environment{$signature}->{TOOLCHAIN} .= '_x64';
+                $x_environment{$signature}->{TOOLCHAINEXT} .= '/x64';
+            }
+        }
+    }
 
     (exists $x_environment{$signature}) or
-        die "makelib: unknown environment $type, version $version\n";
+        die "makelib:  unknown environment ${type}, version ${version} <${signature}>\n";
 
     $x_signature = $signature;                  # active environment
     my $env = $x_environment{$signature};
@@ -2335,7 +2359,7 @@ EOT
             if ($cpp) {                         # __VA_ARGS__
                 $CONFIG_H{"CCX_VA_ARGS"} = 1;
             } else {
-                $CONFIG_H{"CC_VA_ARGS"} = 1;      
+                $CONFIG_H{"CC_VA_ARGS"} = 1;
             }
             $result .= "yes";
         } else {

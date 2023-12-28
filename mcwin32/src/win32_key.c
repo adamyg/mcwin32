@@ -988,7 +988,8 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 
                     if (unicode) {              // unicode to utf-8
                         assert(0 == *utf8_cursor);
-                        g_unichar_to_utf8(unicode, utf8_cursor = utf8_buffer);
+                        g_unichar_to_utf8(unicode, (gchar *)utf8_buffer);
+                        utf8_cursor = utf8_buffer;
                         c = *utf8_cursor++ | c;
                     }
 

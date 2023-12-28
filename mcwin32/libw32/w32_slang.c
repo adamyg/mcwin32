@@ -793,7 +793,7 @@ SLsmg_write_string(const char *s)
 {
     if (0 == vio.inited) return;                /* not initialised */
 
-    if (s) write_string(s, strlen(s));
+    if (s) write_string(s, (unsigned)strlen(s));
 }
 
 

@@ -1,4 +1,4 @@
-//  $Id: mcsignature.cpp,v 1.5 2022/06/09 02:57:03 cvsuser Exp $
+//  $Id: mcsignature.cpp,v 1.6 2023/12/03 16:16:13 cvsuser Exp $
 //
 //  AutoUpdater: Manifest generation tool.
 //
@@ -206,4 +206,3 @@ ExeVersion(const char *executable, char *version, size_t versize)
 }
 
 /*end*/
-

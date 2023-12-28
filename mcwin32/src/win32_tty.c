@@ -57,6 +57,25 @@ static wchar_t original_title[512];             /* original title */
 int reset_hp_softkeys = 0;                      /* command line argument */
 
 
+static int
+isconsole (int fd)
+{
+    HANDLE h = (HANDLE) _get_osfhandle(fd);
+    if (h == INVALID_HANDLE_VALUE || GetFileType(h) != FILE_TYPE_CHAR)
+        return 0;
+    if (STDIN_FILENO == fd) { // input
+        DWORD mode;
+        if (!GetConsoleMode(h, &mode))
+            return 0;
+    } else { // output
+        CONSOLE_SCREEN_BUFFER_INFO sbi = {0};
+        if (!GetConsoleScreenBufferInfo(h, &sbi))
+            return 0;
+    }
+    return 1;
+}
+
+
 void
 tty_init (gboolean mouse_enable, gboolean is_xterm)
 {
@@ -72,21 +91,21 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
         }
     }
 
-//  if (mc_global.tty.ugly_line_drawing) {
-//      SLtt_Has_Alt_Charset = 0;
-//  }
-
     key_mouse_mode (mouse_enable);
     SLsmg_init_smg ();
 
-    if ((COLS < 10) || (LINES < 5) || (COLS > VIO_MAXCOLS) || (LINES > VIO_MAXROWS)) {
-        fprintf (stderr,
-                 _("Screen size %dx%d is not supported; limit 500x500.\n"
-                   "Check console properties.\n"), COLS, LINES);
+    if (!isconsole(STDIN_FILENO)) {
+        fprintf(stderr, _("Console not detected.\n"));
         exit (EXIT_FAILURE);
     }
 
-//  SLtt_Blink_Mode = (0 != tty_use_256colors());
+    if ((COLS < 10) || (LINES < 5) || (COLS > VIO_MAXCOLS) || (LINES > VIO_MAXROWS)) {
+        fprintf (stderr,
+                 _("Screen size %dx%d is not supported; limit %dx%d.\n"
+                   "Check console properties.\n"), COLS, LINES, VIO_MAXCOLS, VIO_MAXROWS);
+        exit (EXIT_FAILURE);
+    }
+
     SLsmg_touch_screen();
 }
 
@@ -261,12 +280,8 @@ tty_draw_hline (int y, int x, int ch, int len)
 void
 tty_draw_vline (int y, int x, int ch, int len)
 {
-    int y1;
-
     if (x < 0 || x >= COLS || y >= LINES)
         return;
-
-    y1 = y;
 
     if (y < 0) {
         len += y;
@@ -430,7 +445,7 @@ mc_tty_normalize_lines_char (const char *str)
 {
     static const struct mc_tty_lines_struct {
         const char *line;
-        int         line_code;
+        int line_code;
     } lines_codes[] = {
         { "\342\224\214", SLSMG_ULCORN_CHAR },
         { "\342\224\220", SLSMG_URCORN_CHAR },
@@ -525,3 +540,4 @@ tty_destroy_winch_pipe (void)
 }
 
 /*end*/
+

@@ -1,9 +1,10 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.24 2023/09/30 05:13:47 cvsuser Exp $
+# $Id: Makefile.in,v 1.25 2023/12/28 17:30:51 cvsuser Exp $
 # libwin32 makefile.
 #
 #
 # Copyright (c) 2007, 2012 - 2023 Adam Young.
+# All rights reserved.
 #
 # This file is part of the Midnight Commander.
 #
@@ -229,6 +230,9 @@ release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+CEXTRA := $(CEXTRA:-DLIBW32_STATIC%=)
+CEXTRA := $(CEXTRA:-DLIBW32_DYNAMIC%=)
 
 $(W32LIB):		CEXTRA += -DLIBW32_STATIC -DLIBW32_LIBRARY
 $(W32LIB):		$(D_OBJ)/.created $(LIBOBJS)

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.4 2023/09/17 13:04:57 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.5 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -119,7 +119,7 @@ getrusage(int who, struct rusage *usage)
                 totimeval(&kerneltime, &usage->ru_stime);   // system CPU time used
                 totimeval(&usertime, &usage->ru_utime);     // user CPU time used
                 usage->ru_majflt = pmc.PageFaultCount;      // page faults (hard page faults)
-                usage->ru_maxrss = pmc.PeakWorkingSetSize / 1024; // maximum resident set size
+                usage->ru_maxrss = (long)(pmc.PeakWorkingSetSize / 1024); // maximum resident set size
                 ret = 0;
             }
 

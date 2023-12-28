@@ -1,11 +1,14 @@
-Mon Oct  2 13:20:09 2023 adamy
+Sun Nov 12 11:36:11 2023 adamy
 
 	* build-229
+
+	* x64 build (msvc/mingw)
 
 	* 4.8.30 merge
 
 	* package upgrades
 
+                o libappupdater 1.0.2
                 o pcre2 10.42
                 o mbedtls 3.4.1
                 o enca 1.19

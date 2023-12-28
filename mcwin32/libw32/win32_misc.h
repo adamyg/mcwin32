@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_MISC_H_INCLUDED
 #define LIBW32_WIN32_MISC_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.14 2023/09/17 13:05:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.15 2023/11/06 15:07:43 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -78,10 +78,10 @@ LIBW32_API const wchar_t *  w32_selectfolderW(const wchar_t *message, wchar_t *p
 LIBW32_API int              w32_IsElevated(void);
 LIBW32_API int              w32_IsAdministrator(void);
 
-LIBW32_API const char *     w32_syserrorA(DWORD dwError, char *buf, int bufien);
-LIBW32_API const char *     w32_vsyserrorA(DWORD dwError, char *buf, int bufien, ...);
-LIBW32_API const wchar_t *  w32_syserrorW(DWORD dwError, wchar_t *buf, int buflen);
-LIBW32_API const wchar_t *  w32_vsyserrorW(DWORD dwError, wchar_t *buf, int buflen, ...);
+LIBW32_API const char *     w32_syserrorA(DWORD dwError, char *buf, size_t bufien);
+LIBW32_API const char *     w32_vsyserrorA(DWORD dwError, char *buf, size_t bufien, ...);
+LIBW32_API const wchar_t *  w32_syserrorW(DWORD dwError, wchar_t *buf, size_t buflen);
+LIBW32_API const wchar_t *  w32_vsyserrorW(DWORD dwError, wchar_t *buf, size_t buflen, ...);
 
 __END_DECLS
 

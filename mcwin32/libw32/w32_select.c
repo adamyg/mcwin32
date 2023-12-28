@@ -1,11 +1,12 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_select_c,"$Id: w32_select.c,v 1.12 2023/09/17 13:04:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_select_c,"$Id: w32_select.c,v 1.14 2023/12/28 17:30:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  *  Windows 'select' compat interface
  *
  * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
@@ -119,7 +120,7 @@ sel_build(
     int type, fd_set *fds, u_int *selcnt, Select_t *selfds )
 {
     u_int invalid = 0, idx, fd;
-    long osf;
+    SOCKET osf = 0;
 
     if (fds == NULL) {
         return 0;
@@ -139,7 +140,7 @@ sel_build(
 
             selfds[fd].s_fd = (int)fds->fd_array[idx];
 
-            if ((osf = w32_sockhandle((int)fds->fd_array[idx])) == -1) {
+            if ((osf = w32_sockhandle((int)fds->fd_array[idx])) == INVALID_SOCKET) {
                 selfds[fd].s_handle = (HANDLE)0;
                 selfds[fd].s_type = FD_UNKNOWN;
                 invalid++;
@@ -155,7 +156,7 @@ sel_build(
                 case FILE_TYPE_CHAR: {          // char file
                         DWORD mode;
 
-                        if (GetConsoleMode( (HANDLE)osf, &mode ) == 0) {
+                        if (GetConsoleMode((HANDLE)osf, &mode ) == 0) {
                             selfds[fd].s_type = FD_CONSOLE;
                             selfds[fd].s_poll = sel_console;
                         } else {

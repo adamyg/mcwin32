@@ -1,18 +1,20 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.7 2023/09/17 12:53:49 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.8 2023/11/06 15:07:42 cvsuser Exp $")
 
 /*
  * iconv implementation using Win32 API to convert.
 
-	Win32 API does not support strict encoding conversion for some codepage. And
-	MLang function drops or replaces invalid bytes and does not return useful error
-	status as iconv does. This implementation cannot be used for encoding
-	validation purpose.
+        Win32 API does not support strict encoding conversion for some codepage. And
+        MLang function drops or replaces invalid bytes and does not return useful error
+        status as iconv does. This implementation cannot be used for encoding
+        validation purpose.
  *
  * This file was placed in the public domain.
  * Source: github::win-iconv/win_iconv.c
  * ==nonotice==
  */
+
+#include <sys/cdefs.h>
 
 #include <win32_include.h>
 
@@ -21,12 +23,6 @@ __CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.7 2023/09/17 1
 #include <stdlib.h>
 
 #include "win32_iconv.h"
-
-#ifdef __GNUC__
-#define UNUSED __attribute__((unused))
-#else
-#define UNUSED
-#endif
 
 /* WORKAROUND: */
 #ifndef UNDER_CE
@@ -395,8 +391,8 @@ static struct {
     {437, "IBM437"}, /* OEM United States */
     {500, "IBM500"}, /* IBM EBCDIC International */
     {708, "ASMO-708"}, /* Arabic (ASMO 708) */
-    /* 709 		Arabic (ASMO-449+, BCON V4) */
-    /* 710 		Arabic - Transparent Arabic */
+    /* 709              Arabic (ASMO-449+, BCON V4) */
+    /* 710              Arabic - Transparent Arabic */
     {720, "DOS-720"}, /* Arabic (Transparent ASMO); Arabic (DOS) */
     {737, "ibm737"}, /* OEM Greek (formerly 437G); Greek (DOS) */
     {775, "ibm775"}, /* OEM Baltic; Baltic (DOS) */
@@ -496,7 +492,7 @@ static struct {
     {20936, "x-cp20936"}, /* Simplified Chinese (GB2312); Chinese Simplified (GB2312-80) */
     {20949, "x-cp20949"}, /* Korean Wansung */
     {21025, "cp1025"}, /* IBM EBCDIC Cyrillic Serbian-Bulgarian */
-    /* 21027 		(deprecated) */
+    /* 21027            (deprecated) */
     {21866, "koi8-u"}, /* Ukrainian (KOI8-U); Cyrillic (KOI8-U) */
     {28591, "iso-8859-1"}, /* ISO 8859-1 Latin 1; Western European (ISO) */
     {28591, "iso8859-1"}, /* ISO 8859-1 Latin 1; Western European (ISO) */
@@ -553,18 +549,18 @@ static struct {
     {50225, "iso-2022-kr"}, /* ISO 2022 Korean */
     {50225, "iso2022-kr"}, /* ISO 2022 Korean */
     {50227, "x-cp50227"}, /* ISO 2022 Simplified Chinese; Chinese Simplified (ISO 2022) */
-    /* 50229 		ISO 2022 Traditional Chinese */
-    /* 50930 		EBCDIC Japanese (Katakana) Extended */
-    /* 50931 		EBCDIC US-Canada and Japanese */
-    /* 50933 		EBCDIC Korean Extended and Korean */
-    /* 50935 		EBCDIC Simplified Chinese Extended and Simplified Chinese */
-    /* 50936 		EBCDIC Simplified Chinese */
-    /* 50937 		EBCDIC US-Canada and Traditional Chinese */
-    /* 50939 		EBCDIC Japanese (Latin) Extended and Japanese */
+    /* 50229            ISO 2022 Traditional Chinese */
+    /* 50930            EBCDIC Japanese (Katakana) Extended */
+    /* 50931            EBCDIC US-Canada and Japanese */
+    /* 50933            EBCDIC Korean Extended and Korean */
+    /* 50935            EBCDIC Simplified Chinese Extended and Simplified Chinese */
+    /* 50936            EBCDIC Simplified Chinese */
+    /* 50937            EBCDIC US-Canada and Traditional Chinese */
+    /* 50939            EBCDIC Japanese (Latin) Extended and Japanese */
     {51932, "euc-jp"}, /* EUC Japanese */
     {51936, "EUC-CN"}, /* EUC Simplified Chinese; Chinese Simplified (EUC) */
     {51949, "euc-kr"}, /* EUC Korean */
-    /* 51950 		EUC Traditional Chinese */
+    /* 51950            EUC Traditional Chinese */
     {52936, "hz-gb-2312"}, /* HZ-GB2312 Simplified Chinese; Chinese Simplified (HZ) */
     {54936, "GB18030"}, /* Windows XP and later: GB18030 Simplified Chinese (4 byte); Chinese Simplified (GB18030) */
     {57002, "x-iscii-de"}, /* ISCII Devanagari */
@@ -757,7 +753,7 @@ _errno(void)
 {
     return &errno;
 }
-#endif	//__WATCOMC__
+#endif  //__WATCOMC__
 
 static int
 win_iconv_open(rec_iconv_t *cd, const char *tocode, const char *fromcode)
@@ -772,8 +768,9 @@ win_iconv_open(rec_iconv_t *cd, const char *tocode, const char *fromcode)
 }
 
 static int
-win_iconv_close(iconv_t cd UNUSED)
+win_iconv_close(iconv_t cd)
 {
+    __CUNUSED(cd);
     return 0;
 }
 
@@ -784,7 +781,6 @@ win_iconv(iconv_t _cd, const char **inbuf, size_t *inbytesleft, char **outbuf, s
     ushort wbuf[MB_CHAR_MAX]; /* enough room for one character */
     int insize;
     int outsize;
-    int wsize;
     DWORD frommode;
     DWORD tomode;
     uint wc;
@@ -796,7 +792,7 @@ win_iconv(iconv_t _cd, const char **inbuf, size_t *inbytesleft, char **outbuf, s
         if (outbuf != NULL && *outbuf != NULL && cd->to.flush != NULL)
         {
             tomode = cd->to.mode;
-            outsize = cd->to.flush(&cd->to, (uchar *)*outbuf, *outbytesleft);
+            outsize = cd->to.flush(&cd->to, (uchar *)*outbuf, (int)(*outbytesleft));
             if (outsize == -1)
             {
                 if ((cd->to.flags & FLAG_IGNORE) && errno != E2BIG)
@@ -821,9 +817,9 @@ win_iconv(iconv_t _cd, const char **inbuf, size_t *inbytesleft, char **outbuf, s
     {
         frommode = cd->from.mode;
         tomode = cd->to.mode;
-        wsize = MB_CHAR_MAX;
+        int wsize = MB_CHAR_MAX;
 
-        insize = cd->from.mbtowc(&cd->from, (const uchar *)*inbuf, *inbytesleft, wbuf, &wsize);
+        insize = cd->from.mbtowc(&cd->from, (const uchar *)*inbuf, (int)(*inbytesleft), wbuf, &wsize);
         if (insize == -1)
         {
             if (cd->to.flags & FLAG_IGNORE)
@@ -874,7 +870,7 @@ win_iconv(iconv_t _cd, const char **inbuf, size_t *inbytesleft, char **outbuf, s
             }
         }
 
-        outsize = cd->to.wctomb(&cd->to, wbuf, wsize, (uchar *)*outbuf, *outbytesleft);
+        outsize = cd->to.wctomb(&cd->to, wbuf, wsize, (uchar *)*outbuf, (int)(*outbytesleft));
         if (outsize == -1)
         {
             if ((cd->to.flags & FLAG_IGNORE) && errno != E2BIG)
@@ -936,7 +932,7 @@ make_csconv(const char *_name, csconv_t *cv)
         cv->wctomb = utf16_wctomb;
         if (_stricmp(name, "UTF-16") == 0 || _stricmp(name, "UTF16") == 0 ||
           _stricmp(name, "UCS-2") == 0 || _stricmp(name, "UCS2") == 0 ||
-	  _stricmp(name,"UCS-2-INTERNAL") == 0)
+          _stricmp(name,"UCS-2-INTERNAL") == 0)
             cv->flags |= FLAG_USE_BOM;
     }
     else if (cv->codepage == 12000 || cv->codepage == 12001)
@@ -966,7 +962,7 @@ make_csconv(const char *_name, csconv_t *cv)
         cv->mblen = eucjp_mblen;
     }
     else if (IsValidCodePage(cv->codepage)
-	     && GetCPInfo(cv->codepage, &cpinfo) != 0)
+             && GetCPInfo(cv->codepage, &cpinfo) != 0)
     {
         cv->mbtowc = kernel_mbtowc;
         cv->wctomb = kernel_wctomb;
@@ -975,7 +971,7 @@ make_csconv(const char *_name, csconv_t *cv)
         else if (cpinfo.MaxCharSize == 2)
             cv->mblen = dbcs_mblen;
         else
-	    cv->mblen = mbcs_mblen;
+            cv->mblen = mbcs_mblen;
     }
     else
     {
@@ -1007,7 +1003,7 @@ name_to_codepage(const char *name)
     int i;
 
     if (*name == '\0' ||
-	strcmp(name, "char") == 0)
+        strcmp(name, "char") == 0)
         return GetACP();
     else if (strcmp(name, "wchar_t") == 0)
         return 1200;
@@ -1067,11 +1063,11 @@ static int
 mbtowc_flags(int codepage)
 {
     return (codepage == 50220 || codepage == 50221 ||
-	    codepage == 50222 || codepage == 50225 ||
-	    codepage == 50227 || codepage == 50229 ||
-	    codepage == 52936 || codepage == 54936 ||
-	    (codepage >= 57002 && codepage <= 57011) ||
-	    codepage == 65000 || codepage == 42) ? 0 : MB_ERR_INVALID_CHARS;
+            codepage == 50222 || codepage == 50225 ||
+            codepage == 50227 || codepage == 50229 ||
+            codepage == 52936 || codepage == 54936 ||
+            (codepage >= 57002 && codepage <= 57011) ||
+            codepage == 65000 || codepage == 42) ? 0 : MB_ERR_INVALID_CHARS;
 }
 
 /*
@@ -1097,7 +1093,7 @@ must_use_null_useddefaultchar(int codepage)
 static char *
 strrstr(const char *str, const char *token)
 {
-    int len = strlen(token);
+    const size_t len = strlen(token);
     const char *p = str + strlen(str);
 
     while (str <= --p)
@@ -1127,8 +1123,11 @@ seterror(int err)
 }
 
 static int
-sbcs_mblen(csconv_t *cv UNUSED, const uchar *buf UNUSED, int bufsize UNUSED)
+sbcs_mblen(csconv_t *cv, const uchar *buf, int bufsize)
 {
+    __CUNUSED(cv);
+    __CUNUSED(buf);
+    __CUNUSED(bufsize);
     return 1;
 }
 
@@ -1147,26 +1146,28 @@ mbcs_mblen(csconv_t *cv, const uchar *buf, int bufsize)
     int len = 0;
 
     if (cv->codepage == 54936) {
-	if (buf[0] <= 0x7F) len = 1;
-	else if (buf[0] >= 0x81 && buf[0] <= 0xFE &&
-		 bufsize >= 2 &&
-		 ((buf[1] >= 0x40 && buf[1] <= 0x7E) ||
-		  (buf[1] >= 0x80 && buf[1] <= 0xFE))) len = 2;
-	else if (buf[0] >= 0x81 && buf[0] <= 0xFE &&
-		 bufsize >= 4 &&
-		 buf[1] >= 0x30 && buf[1] <= 0x39) len = 4;
-	else
-	    return seterror(EINVAL);
-	return len;
+        if (buf[0] <= 0x7F) len = 1;
+        else if (buf[0] >= 0x81 && buf[0] <= 0xFE &&
+                 bufsize >= 2 &&
+                 ((buf[1] >= 0x40 && buf[1] <= 0x7E) ||
+                  (buf[1] >= 0x80 && buf[1] <= 0xFE))) len = 2;
+        else if (buf[0] >= 0x81 && buf[0] <= 0xFE &&
+                 bufsize >= 4 &&
+                 buf[1] >= 0x30 && buf[1] <= 0x39) len = 4;
+        else
+            return seterror(EINVAL);
+        return len;
     }
     else
-	return seterror(EINVAL);
+        return seterror(EINVAL);
 }
 
 static int
-utf8_mblen(csconv_t *cv UNUSED, const uchar *buf, int bufsize)
+utf8_mblen(csconv_t *cv, const uchar *buf, int bufsize)
 {
     int len = 0;
+
+    __CUNUSED(cv);
 
     if (buf[0] < 0x80) len = 1;
     else if ((buf[0] & 0xE0) == 0xC0) len = 2;
@@ -1183,8 +1184,10 @@ utf8_mblen(csconv_t *cv UNUSED, const uchar *buf, int bufsize)
 }
 
 static int
-eucjp_mblen(csconv_t *cv UNUSED, const uchar *buf, int bufsize)
+eucjp_mblen(csconv_t *cv, const uchar *buf, int bufsize)
 {
+    __CUNUSED(cv);
+
     if (buf[0] < 0x80) /* ASCII */
         return 1;
     else if (buf[0] == 0x8E) /* JIS X 0201 */
@@ -1784,4 +1787,5 @@ iso2022jp_flush(csconv_t *cv, uchar *buf, int bufsize)
 }
 
 /*end*/
+
 

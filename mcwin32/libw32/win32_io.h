@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.25 2023/09/17 13:05:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.26 2023/11/06 15:07:43 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -116,13 +116,13 @@ LIBW32_API int          w32_rename (const char *ofile, const char *nfile);
 LIBW32_API int          w32_renameA (const char *ofile, const char *nfile);
 LIBW32_API int          w32_renameW (const wchar_t *ofile, const wchar_t *nfile);
 
-LIBW32_API char *       w32_getcwd (char *buffer, int size);
-LIBW32_API char *       w32_getcwdA (char *buffer, int size);
-LIBW32_API wchar_t *    w32_getcwdW (wchar_t *buffer, int size);
+LIBW32_API char *       w32_getcwd (char *buffer, size_t size);
+LIBW32_API char *       w32_getcwdA (char *buffer, size_t size);
+LIBW32_API wchar_t *    w32_getcwdW (wchar_t *buffer, size_t size);
 
-LIBW32_API char *       w32_getcwdd (char drive, char *path, int size);
-LIBW32_API char *       w32_getcwddA (char drive, char *path, int size);
-LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, int size);
+LIBW32_API char *       w32_getcwdd (char drive, char *path, size_t size);
+LIBW32_API char *       w32_getcwddA (char drive, char *path, size_t size);
+LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, size_t size);
 
 LIBW32_API int          w32_getdrive (void);
 LIBW32_API int          w32_getsystemdrive (void);

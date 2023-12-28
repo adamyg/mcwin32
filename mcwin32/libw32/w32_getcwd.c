@@ -1,11 +1,12 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.22 2023/09/17 13:04:57 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.25 2023/12/28 17:30:51 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getcwd() implementation
  *
  * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
@@ -91,7 +92,7 @@ __CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.22 2023/09/17 13:04:57 cvs
 */
 
 LIBW32_API char *
-w32_getcwd(char *path, int size)
+w32_getcwd(char *path, size_t size)
 {
     if (NULL == path || size <= 0) {
         errno = EINVAL;
@@ -127,14 +128,15 @@ w32_getcwd(char *path, int size)
             return NULL;
         }
 #endif  //UTF8FILENAMES
-    }
 
-    return w32_getcwdA(path, size);
+        return w32_getcwdA(path, size);
+    }
+    return NULL;
 }
 
 
 LIBW32_API char *
-w32_getcwdA(char *path, int size)
+w32_getcwdA(char *path, size_t size)
 {
     char t_path[WIN32_PATH_MAX];
 
@@ -186,7 +188,7 @@ w32_getcwdA(char *path, int size)
 
 
 LIBW32_API wchar_t *
-w32_getcwdW(wchar_t *path, int size)
+w32_getcwdW(wchar_t *path, size_t size)
 {
     wchar_t t_path[WIN32_PATH_MAX];
 

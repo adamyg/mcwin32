@@ -697,6 +697,17 @@ IMPORT+=\
 	$(D_BIN)/$(MT7RNAME).dll		\
 	$(D_BIN)/$(PLBRNAME).dll
 endif
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+ifeq (mingw64,$(findstring mingw64,"@TOOLCHAIN@"))
+LIBGCCDLL=libgcc_s_seh-1.dll
+else
+LIBGCCDLL=libgcc_s_dw2-1.dll
+endif
+IMPORT+=\
+	$(D_BIN)/$(LIBGCCDLL)			\
+	$(D_BIN)/libstdc++-6.dll		\
+	$(D_BIN)/libwinpthread-1.dll
+endif
 
 AUTOUPDATER=	no
 ifeq (vs,$(findstring vs,"@TOOLCHAIN@"))
@@ -855,6 +866,22 @@ $(D_BIN)/$(MT7RNAME).dll:	$(LIBMT7RPATH)
 
 $(D_BIN)/$(PLBRNAME).dll:	$(LIBPLBRPATH)
 		@echo importing $(LIBPLBRPATH)
+		@$(CP) -f $(subst /,\,$^) $@
+endif
+
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+GCCBIN=		$(dir $(shell which gcc 2>/dev/null))
+
+$(D_BIN)/$(LIBGCCDLL):		$(GCCBIN)/$(LIBGCCDLL)
+		@echo importing $^
+		@$(CP) -f $(subst /,\,$^) $@
+
+$(D_BIN)/libstdc++-6.dll:	$(GCCBIN)/libstdc++-6.dll
+		@echo importing $^
+		@$(CP) -f $^ $@
+
+$(D_BIN)/libwinpthread-1.dll:	$(GCCBIN)/libwinpthread-1.dll
+		@echo importing $^
 		@$(CP) -f $(subst /,\,$^) $@
 endif
 

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_timegm_c,"$Id: w32_timegm.c,v 1.1 2020/05/21 15:22:22 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_timegm_c,"$Id: w32_timegm.c,v 1.2 2023/12/28 17:30:53 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 8; -*- */
 
@@ -34,6 +34,7 @@ __CIDENT_RCSID(gr_w32_timegm_c,"$Id: w32_timegm.c,v 1.1 2020/05/21 15:22:22 cvsu
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ * ==native-notice==
  */
 
 #include <sys/cdefs.h>

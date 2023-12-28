@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.26 2023/09/17 13:04:57 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.28 2023/12/28 17:30:51 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -29,6 +29,13 @@ __CIDENT_RCSID(gr_w32_dirent_c,"$Id: w32_dirent.c,v 1.26 2023/09/17 13:04:57 cvs
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * license for more details.
  * ==end==
+ *
+ * Notice: Portions of this text are reprinted and reproduced in electronic form. from
+ * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
+ * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
+ * Group. Copyright remains with the authors and the original Standard can be obtained
+ * online at http://www.opengroup.org/unix/online.html.
+ * ==extra==
  */
 
 #ifndef _WIN32_WINNT
@@ -171,8 +178,9 @@ opendirA(const char *dirname)
     char fullpath[ MAX_PATH ], symlink[ MAX_PATH ], reparse[ MAX_PATH ],
         *path = fullpath;
     LPVOID OldValue = NULL;
-    DIR  *dp;
-    int  i, len;
+    DIR *dp;
+    size_t len;
+    int i;
 
     /* Copy to working buffer */
     if (NULL == dirname) {
@@ -313,8 +321,9 @@ opendirW(const wchar_t *dirname)
     wchar_t fullpath[ MAX_PATH ], symlink[ MAX_PATH ], reparse[ MAX_PATH ],
         *path = fullpath;
     LPVOID OldValue = NULL;
-    DIR  *dp;
-    int  i, len;
+    DIR *dp;
+    size_t len;
+    int i;
 
     /* Copy to working buffer */
     if (NULL == dirname) {

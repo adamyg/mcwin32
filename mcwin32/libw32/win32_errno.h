@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_ERRNO_H_INCLUDED
 #define LIBW32_WIN32_ERRNO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.11 2023/09/17 13:05:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.12 2023/12/28 17:30:53 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -43,7 +43,7 @@ __CPRAGMA_ONCE
         (defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR))
 #if (EADDRINUSE == 100)
 #if defined(_CRT_NO_POSIX_ERROR_CODES)
-#pragma message <system_error> is incompatible with _CRT_NO_POSIX_ERROR_CODES.
+#pragma message("<system_error.h> is incompatible with _CRT_NO_POSIX_ERROR_CODES.")
 #endif
     /*
      *  RETHINK, as the following are assumed by the MinGW pthread package:

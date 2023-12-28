@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.12 2023/09/10 10:01:04 cvsuser Exp $
+# $Id: Makefile.in,v 1.13 2023/11/12 04:38:09 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -141,7 +141,6 @@ DLLOBJS=\
 	$(D_OBJ)/AutoLogger.lo		\
 	$(D_OBJ)/AutoManifest.lo	\
 	$(D_OBJ)/AutoUpdater.lo		\
-	$(D_OBJ)/AutoUpdater.res	\
 	$(D_OBJ)/AutoVersion.lo		\
 	\
 	$(D_OBJ)/CProgressDialog.lo	\
@@ -162,6 +161,12 @@ DLLOBJS=\
 	$(D_OBJ)/xmlrole.lo		\
 	$(D_OBJ)/xmltok.lo
 
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+DLLOBJS+=	$(D_OBJ)/AutoUpdater_res.o
+else
+DLLOBJS+=	$(D_OBJ)/AutoUpdater.res
+endif
+
 UPDATEROBJS=\
 	$(D_OBJ)/mcupdater$(O)		\
 	$(D_OBJ)/getopt$(O)
@@ -178,7 +183,7 @@ SIGNATUREOBJS=\
 	$(D_OBJ)/getopt$(O)
 
 OBJS=		$(DLLOBJS) $(UPDATEROBJS) $(SIGNATUREOBJS)
-LIBS=		
+LIBS=
 DLLS=		$(UPDATERDLL)
 TSKS=		$(UPDATERTSK) $(SIGNATURETSK)
 INSTALLED=

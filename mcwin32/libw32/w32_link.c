@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.14 2023/09/17 13:04:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_link_c, "$Id: w32_link.c,v 1.15 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -288,7 +288,7 @@ my_CreateHardLinkImpW(LPCWSTR lpFileName, LPCWSTR lpExistingFileName, LPSECURITY
         WIN32_STREAM_ID wsi = { 0 };
         void *ctx = NULL;
         HANDLE handle;
-        int wlen;
+        DWORD wlen;
         DWORD cnt;
 
         if (INVALID_HANDLE_VALUE ==             /* source image */
@@ -299,7 +299,7 @@ my_CreateHardLinkImpW(LPCWSTR lpFileName, LPCWSTR lpExistingFileName, LPSECURITY
             return FALSE;
         }
 
-        wlen = wcslen(lpFileName);
+        wlen = (DWORD)wcslen(lpFileName);
         wsi.dwStreamId = BACKUP_LINK;
         wsi.dwStreamAttributes = 0;
         wsi.dwStreamNameSize = 0;
@@ -362,7 +362,7 @@ my_CreateHardLinkImpA(LPCSTR lpFileName, LPCSTR lpExistingFileName, LPSECURITY_A
         WIN32_STREAM_ID wsi = { 0 };
         void *ctx = NULL;
         HANDLE handle;
-        int wlen;
+        DWORD wlen;
         DWORD cnt;
 
         if (INVALID_HANDLE_VALUE ==             /* source image */
@@ -373,7 +373,7 @@ my_CreateHardLinkImpA(LPCSTR lpFileName, LPCSTR lpExistingFileName, LPSECURITY_A
             return FALSE;
         }
 
-        wlen = mbstowcs(wpath, lpFileName, MAX_PATH) * sizeof(WCHAR);
+        wlen = (DWORD)mbstowcs(wpath, lpFileName, MAX_PATH) * sizeof(WCHAR);
         wsi.dwStreamId = BACKUP_LINK;
         wsi.dwStreamAttributes = 0;
         wsi.dwStreamNameSize = 0;

@@ -63,6 +63,7 @@
 static void             drive_sel (WPanel *panel);
 static cb_ret_t         drive_dlg_callback (Widget * h, Widget * sender, widget_msg_t msg, int parm, void *data);
 
+#undef DO_NETWORK_DRIVES
 #if defined(DO_NETWORK_DRIVES)
 
 typedef DWORD (__stdcall *WNetOpenEnumA_t)(DWORD, DWORD, DWORD, NETRESOURCE *, HANDLE*);
@@ -85,7 +86,36 @@ struct NetworkDrive {
 
 static int              drive_network_names (int global, GQueue *result);
 static int              enumerate_disks (int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueue *result);
+
 #endif  //DO_NETWORK_DRIVES
+
+#if (XXX)
+static int
+IsRemovable(char drive)
+{
+    int RemovableMedia = 0;
+    char path[] = "\\\\?\\X:";
+    HANDLE handle;
+
+    assert(drive >= 'A' && drive <= 'Z');
+    
+    path[4] = drive;
+    handle = CreateFileA(path, 0 /*no-access*/, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+
+    if (INVALID_HANDLE_VALUE != handle) {
+        STORAGE_PROPERTY_QUERY spq = { StorageDeviceProperty, PropertyStandardQuery };
+        STORAGE_DEVICE_DESCRIPTOR sdd = { 0 };
+        ULONG rcb;
+
+        if (DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, &spq, sizeof(spq), &sdd, sizeof(sdd), &rcb, 0)) {
+            RemovableMedia = sdd.RemovableMedia;
+                // Indicates when TRUE that the device's media (if any) is removable.
+        }
+        CloseHandle(handle);
+    }
+    return RemovableMedia;
+}
+#endif
 
 
 void
@@ -152,8 +182,8 @@ drive_sel(WPanel *panel)
         assert(drive >= 'A' && drive <= 'Z');
 
         root[0] = drive;
-        if ((type = GetDriveType(root)) != DRIVE_UNKNOWN && type != DRIVE_NO_ROOT_DIR) {
-            if (drive < 'C' ||                  /* assume floppies; FIXME, shell32?? */
+        if ((type = GetDriveTypeA(root)) != DRIVE_UNKNOWN && type != DRIVE_NO_ROOT_DIR) {
+            if (DRIVE_REMOVABLE == type ||      /* assume floppies; FIXME */
                     GetDiskFreeSpaceExA(root, NULL, NULL, NULL)) {
                 (void) memcpy(cursor, path, length);
                 if (drive == currentdrive) {
@@ -164,7 +194,7 @@ drive_sel(WPanel *panel)
                 ++totaldrives;
             }
         }
-        path += length + 1;
+        path += length + 1 /*nul*/;
     }
     groupidx = totaldrives - groupidx;          /* flip */
 
@@ -172,11 +202,10 @@ drive_sel(WPanel *panel)
 #if defined(DO_NETWORK_DRIVES)
     {                                           /* test only */
         GQueue *network_drives = g_queue_new();
-        int elements = drive_network_names (TRUE, network_drives);
+        int elements = drive_network_names (TRUE, network_drives); // XXX: cache results           
         g_queue_free_full (network_drives, free);
     }
 #endif  //DO_NETWORK_DRIVES
-
 
     /* Create Dialog */
 #define D_PERLINE       12                      /* dynamic, based on screen width?? */
@@ -288,7 +317,6 @@ drive_sel(WPanel *panel)
         }
     }
 
-  //dlg_destroy (drive_dlg);
     widget_destroy (WIDGET (drive_dlg));
     repaint_screen ();
 }

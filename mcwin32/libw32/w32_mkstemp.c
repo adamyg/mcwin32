@@ -1,11 +1,12 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.14 2023/09/17 13:04:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.16 2023/12/28 17:30:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mkstemp() implementation
  *
  * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
@@ -383,7 +384,7 @@ gettempA_tmp(char *result, const char *path, int suffixlen, int *fildes, unsigne
      */
     if (path && 0 == memcmp(path, "/tmp/", 5)) {
         char t_path[MAX_PATH], *p;
-        int pathlen = strlen(path + 5),
+        size_t pathlen = strlen(path + 5),
             tmplen = (int)GetTempPathA(_countof(t_path), t_path);
                 // TMP, TEMP, USERPROFILE environment variables, default windows directory.
 
@@ -558,7 +559,7 @@ gettempW_tmp(wchar_t *result, const wchar_t *path, int suffixlen, int *fildes, u
      */
     if (path && 0 == wmemcmp(path, L"/tmp/", 5)) {
         wchar_t t_path[MAX_PATH], *p;
-        int pathlen = wcslen(path + 5),
+        size_t pathlen = wcslen(path + 5),
             tmplen = (int)GetTempPathW(_countof(t_path), t_path);
                 // TMP, TEMP, USERPROFILE environment variables, default windows directory.
 

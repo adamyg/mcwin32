@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.12 2023/09/17 13:04:57 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.13 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -107,10 +107,10 @@ w32_gethostname(char *name, size_t namelen)
 
 #undef gethostname
 retry:;
-    if (0 == (ret = gethostname(name, namelen))) {
+    if (0 == (ret = (int)gethostname(name, (int)namelen))) {
         return 0;
     } else {
-        DWORD dwSize = namelen;
+        DWORD dwSize = (DWORD)namelen;
 
         if (0 == done++) {                      /* WSAStartup call must occur before using this function. */
             if ((SOCKET_ERROR == ret && WSANOTINITIALISED == WSAGetLastError()) &&

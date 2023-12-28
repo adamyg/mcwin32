@@ -1,11 +1,12 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.16 2023/09/17 13:04:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.18 2023/12/28 17:30:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 pwd(2) implementation
  *
  * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
@@ -553,8 +554,8 @@ fill_passwds(void)
             if (x_passwds) {
                 struct passwd *t_passwds = (struct passwd *)realloc(x_passwds,
                                             (sizeof(struct passwd) * ntotal) + cbufsz + bufsz);
-                const int addrdiff = ((char *)t_passwds - (char *)x_passwds) +
-                                        (sizeof(struct passwd) * count);
+                const ptrdiff_t addrdiff = ((char *)t_passwds - (char *)x_passwds) +
+                                            (sizeof(struct passwd) * count);
 
                 if (NULL == t_passwds) {        // realloc failure
                     NetApiBufferFree(users);
@@ -720,11 +721,11 @@ fill_passwd(void)
 }
 
 
-static int
+static size_t
 pw_strlen(const char *s, size_t *total)
 {
     if (s && *s) {
-        const int slen = strlen(s);
+        const size_t slen = strlen(s);
         *total += (slen + 1);
         return slen;
     }

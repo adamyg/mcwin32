@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_proctitle_c,"$Id: w32_proctitle.c,v 1.2 2023/09/17 13:04:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_proctitle_c,"$Id: w32_proctitle.c,v 1.3 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -181,7 +181,7 @@ setproctitle_impl(const char *fmt, va_list ap)
                     if (0 != (ret = GetWindowTextLength(hWnd))) {
                         const size_t sz = (ret + 1) * sizeof(WCHAR);
                         if (NULL != (saved_window_title = (WCHAR *)calloc(sz, 1))) {
-                            if (! GetWindowTextW(hWnd, saved_window_title, sz)) {
+                            if (! GetWindowTextW(hWnd, saved_window_title, (int)sz)) {
                                 free(saved_window_title);
                                 saved_window_title = NULL;
                             }

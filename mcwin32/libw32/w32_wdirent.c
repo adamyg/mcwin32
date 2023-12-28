@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.6 2023/09/17 13:05:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.7 2023/11/06 15:07:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -98,7 +98,8 @@ _wopendir(const wchar_t *dirname)
         *path = fullpath;
     LPVOID OldValue = NULL;
     _WDIR *dp;
-    int i, len;
+    size_t len;
+    int i;
 
     /* Copy to working buffer */
     if (NULL == dirname) {

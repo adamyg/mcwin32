@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.19 2023/09/17 13:04:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.20 2023/11/06 15:07:41 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -1140,7 +1140,7 @@ BuildEnvA(const char **envv)
      *  strings with nulls between and two null bytes at the end
      */
     for (cursor = ret, vp = envp, len = 0; *vp; ++len, ++vp) {
-        const int slen = strlen(*vp) + 1 /*nul*/;
+        const size_t slen = strlen(*vp) + 1 /*nul*/;
         memcpy(cursor, *vp, slen * sizeof(char));
         cursor += slen;
     }
@@ -1283,7 +1283,7 @@ BuildEnvW(const wchar_t **envv)
      *  strings with nulls between and two null bytes at the end
      */
     for (cursor = ret, vp = envp, len = 0; *vp; ++len, ++vp) {
-        const int slen = wcslen(*vp) + 1 /*nul*/;
+        const size_t slen = wcslen(*vp) + 1 /*nul*/;
         memcpy(cursor, *vp, slen * sizeof(wchar_t));
         cursor += slen;
     }

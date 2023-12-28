@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rwlock_c,"$Id: w32_rwlock.c,v 1.7 2023/09/17 13:04:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rwlock_c,"$Id: w32_rwlock.c,v 1.8 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -47,6 +47,8 @@ __CIDENT_RCSID(gr_w32_rwlock_c,"$Id: w32_rwlock.c,v 1.7 2023/09/17 13:04:59 cvsu
 #include <sys/rwlock.h>
 
 #include "win32_include.h"
+
+#include <stdio.h>
 #include <assert.h>
 
 typedef void (WINAPI *InitializeSRWLock_t)(PSRWLOCK);

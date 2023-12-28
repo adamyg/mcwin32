@@ -735,7 +735,6 @@ mc_USERCONFIGDIR(const char *subdir)
 
         // new user, create
         if (! done) {
-            const char *env;
                                                 /* personal settings */
             if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, x_buffer)) &&
                                 (len = strlen(x_buffer)) > 0) {
@@ -983,10 +982,10 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
 
             for (idx = 0; NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
-                    const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+                    const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
 
                     slen += strlen(str) + 1 /*nul or space*/;
-                    if (quote) slen += 2; /*quotes*/
+                    if (isquote) slen += 2; /*quotes*/
                 }
             }
 
@@ -997,14 +996,14 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
             cursor = cmd;
             for (idx = 0; NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
-                    const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+                    const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
 
                     slen = strlen(str);
                     if (cursor != cmd) *cursor++ = ' ';
-                    if (quote) *cursor++ = '"';
+                    if (isquote) *cursor++ = '"';
                     memcpy(cursor, str, slen);
                     cursor += slen;
-                    if (quote) *cursor++ = '"';
+                    if (isquote) *cursor++ = '"';
                 }
             }
             *cursor = '\0';
@@ -1131,9 +1130,10 @@ system_impl (int flags, const char *shell, const char *cmd)
     }
 
     if ((flags & EXECUTE_AS_SHELL) && cmd) {    /* internal commands */
-    #define MAX_ARGV    128
-        const char *argv[MAX_ARGV + 1];
-        char cbuf[4 * 1048];
+#define MAX_ARGV    10
+#define MAX_CMDLINE (4 * 1024)
+        const char *argv[MAX_ARGV];
+        char cbuf[MAX_CMDLINE];
         int argc;
 
         (void) strncpy(cbuf, cmd, sizeof(cbuf));
@@ -1152,7 +1152,7 @@ system_impl (int flags, const char *shell, const char *cmd)
                         char *t_cmd;
 
                         if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
-                            ret = w32_shell(NULL, t_cmd, NULL, NULL, NULL);
+                            ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
                             g_free(t_cmd);
                         }
                         return ret;
