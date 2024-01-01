@@ -2820,11 +2820,12 @@ vtnormal(const int color)
  *  vio_save ---
  *      Save the buffer screen state; for later restoration via via_restore()
  **/
-void
+LIBVIO_API void
 vio_save(void)
 {
     HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
     CONSOLE_SCREEN_BUFFER_INFO sbinfo;
+    COORD iHome = {0,0};
     int rows, cols;
 
     /*
@@ -2855,7 +2856,9 @@ vio_save(void)
     vio_state.cursorcoord.X = sbinfo.dwCursorPosition.X;
     vio_state.cursorcoord.Y = sbinfo.dwCursorPosition.Y;
 
-    ImageSave(console, 0, rows * cols);
+    SetConsoleCursorPosition(console, iHome);   // home cursor.
+
+    ImageSave(console, 0, rows * cols);         // read image.
 }
 
 
@@ -2899,7 +2902,7 @@ ImageSave(HANDLE console, unsigned pos, unsigned cnt)
  *  vio_restore ---
  *      Restore the buffer; from a previous via_save()
  **/
-void
+LIBVIO_API void
 vio_restore(void)
 {
     HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
@@ -2984,7 +2987,7 @@ ImageRestore(HANDLE console, unsigned pos, unsigned cnt)
     rc = WriteConsoleOutputW(console, vio_state.image + pos, is, ic, &wr);
 
     if (0 == rc && ERROR_NOT_ENOUGH_MEMORY == GetLastError()) {
-        if (cnt > ((unsigned)cols * 2)) {      // sub-divide request.
+        if (cnt > ((unsigned)cols * 2)) {       // sub-divide request.
             const int cnt2 = (cnt / (cols * 2)) * cols;
 
             ImageRestore(console, pos, cnt2);
@@ -2998,7 +3001,7 @@ ImageRestore(HANDLE console, unsigned pos, unsigned cnt)
  *  vio_screenbuffersize ---
  *      Retrieve the size of the screen buffer in lines, which may differ from the window screen.
  **/
-int
+LIBVIO_API int
 vio_screenbuffersize(void)
 {
     HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
@@ -3016,7 +3019,7 @@ vio_screenbuffersize(void)
  *  vio_open ---
  *      Open the console driver.
  **/
-int
+LIBVIO_API int
 vio_open(int *rows, int *cols)
 {
     if (vio.inited) vio_reset();
@@ -3055,7 +3058,7 @@ vio_open(int *rows, int *cols)
  *  vio_close ---
  *      Close the console driver.
  **/
-void
+LIBVIO_API void
 vio_close(void)
 {
     if (0 == vio.inited) return;                /* uninitialised */
@@ -3087,7 +3090,7 @@ vio_close(void)
  *  vio_config_truecolor ---
  *      Configure whether true-color support should be available.
  **/
-void
+LIBVIO_API void
 vio_config_truecolor(int truecolor)
 {
     vio.notruecolor = (0 == truecolor);
@@ -3098,7 +3101,7 @@ vio_config_truecolor(int truecolor)
  *  vio_winch ---
  *      Determine whether there has been a change in screen-size.
  **/
-int
+LIBVIO_API int
 vio_winch(int *rows, int *cols)
 {
     CONSOLE_SCREEN_BUFFER_INFO scr = {0};
@@ -3124,7 +3127,7 @@ vio_winch(int *rows, int *cols)
  *  vio_get_size ---
  *      Retrieve the current terminal size, in rows and columns.
  **/
-void
+LIBVIO_API void
 vio_get_size(int *rows, int *cols)
 {
     if (rows) *rows = vio.rows;
@@ -3136,7 +3139,7 @@ vio_get_size(int *rows, int *cols)
  *  vio_togglesize ---
  *      Toggle display screen, between original and maximised.
  **/
-int
+LIBVIO_API int
 vio_toggle_size(int *rows, int *cols)
 {
     int ret = 0;
@@ -3182,7 +3185,7 @@ vio_toggle_size(int *rows, int *cols)
  *  vio_cursor_show ---
  *      Make the cursor visible.
  **/
-void
+LIBVIO_API void
 vio_cursor_show(void)
 {
     if (vio.c_state > 0) {
@@ -3198,7 +3201,7 @@ vio_cursor_show(void)
  *  vio_cursor_hide---
  *      Hide the cursor.
  **/
-void
+LIBVIO_API void
 vio_cursor_hide(void)
 {
     if (vio.c_state) {
@@ -3219,7 +3222,7 @@ vio_cursor_hide(void)
  *  vio_cursor_state---
  *      Retrieve the current cursor state.
  **/
-int
+LIBVIO_API int
 vio_cursor_state(void)
 {
     return vio.c_state;
@@ -3230,7 +3233,7 @@ vio_cursor_state(void)
  *  vio_goto ---
  *      Set the cursor position.
  **/
-void
+LIBVIO_API void
 vio_goto(int row, int col)
 {
     if (row >= vio.rows) row = vio.rows-1;
@@ -3245,7 +3248,7 @@ vio_goto(int row, int col)
  *  vio_row ---
  *      Retrieve the current cursor row.
  **/
-int
+LIBVIO_API int
 vio_row(void)
 {
     return vio.c_row;
@@ -3256,14 +3259,14 @@ vio_row(void)
  *  vio_col ---
  *      Retrieve the current cursor column.
  **/
-int
+LIBVIO_API int
 vio_column(void)
 {
     return vio.c_col;
 }
 
 
-int
+LIBVIO_API int
 vio_define_attr(int obj, const char *what, const char *fg, const char *bg)
 {
     COLORREF frgb = (COLORREF)-1, brgb = (COLORREF)-1;
@@ -3333,7 +3336,7 @@ vio_define_attr(int obj, const char *what, const char *fg, const char *bg)
 }
 
 
-void
+LIBVIO_API void
 vio_define_winattr_native(int obj, uint16_t attributes)
 {
     assert(obj >= 0 && obj < MAXOBJECTS);
@@ -3348,7 +3351,7 @@ vio_define_winattr_native(int obj, uint16_t attributes)
 }
 
 
-void
+LIBVIO_API void
 vio_define_winattr(int obj, int fg, int bg, uint16_t attributes)
 {
     assert(obj >= 0 && obj < MAXOBJECTS);
@@ -3379,7 +3382,7 @@ vio_define_winattr(int obj, int fg, int bg, uint16_t attributes)
 }
 
 
-void
+LIBVIO_API void
 vio_define_vtattr(int obj, int fg, int bg, uint16_t attributes)
 {
     assert(obj >= 0 && obj < MAXOBJECTS);
@@ -3406,7 +3409,7 @@ vio_define_vtattr(int obj, int fg, int bg, uint16_t attributes)
 }
 
 
-void
+LIBVIO_API void
 vio_define_rgbattr(int obj, int fg, int bg, uint16_t attributes)
 {
     assert(obj >= 0 && obj < MAXOBJECTS);
@@ -3430,7 +3433,7 @@ vio_define_rgbattr(int obj, int fg, int bg, uint16_t attributes)
 }
 
 
-void
+LIBVIO_API void
 vio_define_flags(int obj, uint16_t attributes)
 {
     assert(obj >= 0 && obj < MAXOBJECTS);
@@ -3444,7 +3447,7 @@ vio_define_flags(int obj, uint16_t attributes)
  *  vio_set_colorattr ---
  *      Set the current terminal color, to the specfied color-object.
  **/
-void
+LIBVIO_API void
 vio_set_colorattr(int obj)
 {
     assert(obj >= 0 && obj < MAXOBJECTS);
@@ -3460,7 +3463,7 @@ vio_set_colorattr(int obj)
  *  vio_set_wincolor_native ---
  *      Set the current terminal color, to the specfied native windows console color-attribute.
  **/
-void
+LIBVIO_API void
 vio_set_wincolor_native(uint16_t attributes)
 {
     vio.c_color.Flags = 0;                      // native
@@ -3476,7 +3479,7 @@ vio_set_wincolor_native(uint16_t attributes)
  *  vio_set_wincolor ---
  *      Set the current terminal color, foreground and background, to the specfied windows console enumerated values.
  **/
-void
+LIBVIO_API void
 vio_set_wincolor(int fg, int bg, uint16_t attributes)
 {
     assert(fg >= WIN_COLOR_MIN && fg < WIN_COLOR_NUM);
@@ -3509,7 +3512,7 @@ vio_set_wincolor(int fg, int bg, uint16_t attributes)
  *  vio_set_vtcolor ---
  *      Set the current terminal color, foreground and background, to the specfied vt/xterm color enumerated values.
  **/
-void
+LIBVIO_API void
 vio_set_vtcolor(int fg, int bg, uint16_t attributes)
 {
     assert(fg >= VT_COLOR_MIN && fg < MAXCOLORS);
@@ -3534,7 +3537,7 @@ vio_set_vtcolor(int fg, int bg, uint16_t attributes)
  *  vio_set_rgbcolor ---
  *      Set the current terminal color, foreground and background, to the specfied RGB color values.
  **/
-void
+LIBVIO_API void
 vio_set_rgbcolor(int32_t fg, int32_t bg, uint16_t attributes)
 {
     assert(fg >= 0 && fg <= 0xffffff);
@@ -3559,7 +3562,7 @@ vio_set_rgbcolor(int32_t fg, int32_t bg, uint16_t attributes)
  *  vio_set_winforeground ---
  *      Set the default terminal foreground color, to the specfied windows console color enumerated value.
  **/
-void
+LIBVIO_API void
 vio_set_winforeground(int color, int32_t rgb /*optional, otherwise -1*/)
 {
     assert(color >= 0 && color < WIN_COLOR_NUM);
@@ -3574,7 +3577,7 @@ vio_set_winforeground(int color, int32_t rgb /*optional, otherwise -1*/)
  *  vio_set_winbackground ---
  *      Set the default terminal background color, to the specfied windows console color enumerated value.
  **/
-void
+LIBVIO_API void
 vio_set_winbackground(int color, int32_t rgb /*optional, otherwise -1*/)
 {
     assert(color >= 0 && color < WIN_COLOR_NUM);
@@ -3589,7 +3592,7 @@ vio_set_winbackground(int color, int32_t rgb /*optional, otherwise -1*/)
  *  vio_set_vtforeground ---
  *      Set the default terminal foreground color, to the specified vt/xterm color enumerated value.
  **/
-void
+LIBVIO_API void
 vio_set_vtforeground(int color, int32_t rgb /*optional, otherwise -1*/)
 {
     assert(color >= 0 && color < 256);
@@ -3604,7 +3607,7 @@ vio_set_vtforeground(int color, int32_t rgb /*optional, otherwise -1*/)
  *  vio_set_vtbackground ---
  *      Set the default terminal background color, to the specified vt/xterm color enumerated value.
  **/
-void
+LIBVIO_API void
 vio_set_vtbackground(int color, int32_t rgb /*optional, otherwise -1*/)
 {
     assert(color >= 0 && color < 256);
@@ -3619,7 +3622,7 @@ vio_set_vtbackground(int color, int32_t rgb /*optional, otherwise -1*/)
  *  vio_normal_video ---
  *      Select the default terminal color.
  **/
-void
+LIBVIO_API void
 vio_normal_video(void)
 {
     vio.c_color.Flags = VIO_FNORMAL;
@@ -3635,7 +3638,7 @@ vio_normal_video(void)
  *  vio_flush ---
  *      Flush virtual display changes to the console.
  **/
-void
+LIBVIO_API void
 vio_flush(void)
 {
     copyoutctx_t ctx = {0};
@@ -3674,7 +3677,7 @@ vio_flush(void)
  *  vio_atputc ---
  *      Write the specified character at the given coordinates onto the virtual display.
  **/
-void
+LIBVIO_API void
 vio_atputc(int row, int col, unsigned ch, unsigned cnt)
 {
     WCHAR_INFO *cursor, *cend, text;
@@ -3714,7 +3717,7 @@ vio_atputc(int row, int col, unsigned ch, unsigned cnt)
  *  vio_atputs ---
  *      Write the specified character string at the given coordinates onto the virtual display.
  **/
-int
+LIBVIO_API int
 vio_atputs(int row, int col, const char *text)
 {
     int cnt = 0;
@@ -3728,7 +3731,7 @@ vio_atputs(int row, int col, const char *text)
 }
 
 
-int
+LIBVIO_API int
 vio_atputsn(int row, int col, const char *text, unsigned len)
 {
     int cnt = 0;
@@ -3742,7 +3745,7 @@ vio_atputsn(int row, int col, const char *text, unsigned len)
 }
 
 
-int
+LIBVIO_API int
 vio_atvprintf(int row, int col, const char *fmt, va_list ap)
 {
     char buf[1024];
@@ -3753,7 +3756,7 @@ vio_atvprintf(int row, int col, const char *fmt, va_list ap)
 }
 
 
-int
+LIBVIO_API int
 vio_atprintf(int row, int col, const char *fmt, ...)
 {
     va_list ap;
@@ -3770,7 +3773,7 @@ vio_atprintf(int row, int col, const char *fmt, ...)
  *  vio_putc ---
  *      Write the specified character at the current cursor position onto the virtual display.
  **/
-void
+LIBVIO_API void
 vio_putc(unsigned ch, unsigned cnt, int move)
 {
     WCHAR_INFO *cursor, *cend, text;

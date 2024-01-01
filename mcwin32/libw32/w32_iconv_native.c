@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.8 2023/11/06 15:07:42 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.9 2024/01/01 15:25:01 cvsuser Exp $")
 
 /*
  * iconv implementation using Win32 API to convert.
@@ -815,9 +815,9 @@ win_iconv(iconv_t _cd, const char **inbuf, size_t *inbytesleft, char **outbuf, s
 
     while (*inbytesleft != 0)
     {
+        int wsize = MB_CHAR_MAX;
         frommode = cd->from.mode;
         tomode = cd->to.mode;
-        int wsize = MB_CHAR_MAX;
 
         insize = cd->from.mbtowc(&cd->from, (const uchar *)*inbuf, (int)(*inbytesleft), wbuf, &wsize);
         if (insize == -1)

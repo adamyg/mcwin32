@@ -954,7 +954,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
         } else if (ctrlbreak_triggered) {
             ctrlbreak_triggered = 0;
             if (0 == ctrlbreak_running) {
-                const save_confirm_exit = confirm_exit;
+                const gboolean save_confirm_exit = confirm_exit;
                 ++ctrlbreak_running;
                 confirm_exit = TRUE;
                 (void) quit_cmd_internal (FALSE);

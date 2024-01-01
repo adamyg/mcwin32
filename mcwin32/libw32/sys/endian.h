@@ -1,7 +1,7 @@
 #ifndef GR_ENDIAN_H_INCLUDED
 #define GR_ENDIAN_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_endian_h,"$Id: endian.h,v 1.3 2023/11/06 15:06:06 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_endian_h,"$Id: endian.h,v 1.4 2024/01/01 15:15:13 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*-
@@ -29,6 +29,7 @@ __CPRAGMA_ONCE
  */
 
 #include <sys/types.h>
+#include <stdint.h>
 
 #define _LITTLE_ENDIAN      1234
 #define _BIG_ENDIAN         4321
@@ -43,9 +44,19 @@ __CPRAGMA_ONCE
 #elif defined(IS_BIG_ENDIAN)
 #define __BYTE_ORDER        _BIG_ENDIAN
 #else
-#error __BYTE_ORDER not defined ....
+#   if defined(_M_IX86)
+#       define IS_LITTLE_ENDIAN 1
+#   elif defined(_M_MRX000)
+#       define IS_LITTLE_ENDIAN 1
+#   elif defined(_M_ALPHA)
+#       define IS_LITTLE_ENDIAN 1
+#   elif defined(_M_PPC)
+#       define IS_LITTLE_ENDIAN 1
+#   else
+#       error unknown endian
+#   endif
 #endif
-#endif
+#endif /*__BYTE_ORDER*/
 #if defined(_BSD_SOURCE)
 #define BYTE_ORDER          __BYTE_ORDER
 #endif

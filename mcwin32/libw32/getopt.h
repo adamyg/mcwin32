@@ -1,8 +1,9 @@
 #ifndef LIBW32_GETOPT_H_INCLUDED
 #define LIBW32_GETOPT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.11 2023/09/30 05:39:22 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.12 2024/01/01 16:54:38 cvsuser Exp $")
 __CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win <getopt.h>
@@ -31,6 +32,12 @@ __CPRAGMA_ONCE
  * license for more details.
  * ==end==
  */
+
+#if defined(__MINGW32__)
+
+#include_next <getopt.h>                        /* native getopt.h */
+
+#else
 
 #include <sys/cdefs.h>
 
@@ -69,5 +76,7 @@ extern void __w32_getopt_globals(void);
 #endif
 
 __END_DECLS
+
+#endif  /*!__MINGW32__*/
 
 #endif /*LIBW32_GETOPT_H_INCLUDED*/

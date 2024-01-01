@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.25 2023/12/28 17:30:51 cvsuser Exp $
+# $Id: Makefile.in,v 1.26 2024/01/01 16:54:38 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -162,8 +162,10 @@ CSOURCES=\
 	w32_mkstemp.c \
 	w32_mmap.c \
 	w32_neterr.c \
+	w32_pipe.c \
 	w32_poll.c \
 	w32_popen.c \
+	w32_proctitle.c \
 	w32_progname.c \
 	w32_pwd.c \
 	w32_read.c \
@@ -187,6 +189,7 @@ CSOURCES=\
 	w32_string.c \
 	w32_strlcat.c \
 	w32_strlcpy.c \
+	w32_strptime.c \
 	w32_strsep.c \
 	w32_strtoll.c \
 	w32_strtoull.c \

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt.c,v 1.11 2023/09/30 05:39:22 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt.c,v 1.12 2024/01/01 16:54:38 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -30,6 +30,8 @@ __CIDENT_RCSID(gr_w32_getopt_c,"$Id: w32_getopt.c,v 1.11 2023/09/30 05:39:22 cvs
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#if !defined(__MINGW32__)
 
 #include <sys/cdefs.h>
 
@@ -117,6 +119,14 @@ getopt(int nargc, char * const *nargv, const char *ostr)
 	}
 	return (optopt);			/* dump back option letter */
 }
+
+#else
+
+extern void __stdlibrary_has_getopt(void);
+
+void __stdlibrary_has_getopt(void) {}
+
+#endif  /*!__MINGW32__*/
 
 /*end*/
 

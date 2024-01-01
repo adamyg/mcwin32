@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.30 2023/11/26 15:07:32 cvsuser Exp $
+# $Id: makelib.pl,v 1.31 2024/01/01 15:27:34 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -974,7 +974,7 @@ my @x_headers       = (     #headers
         'utime.h',
         'wait.h',
 
-      # 'getopt.h',
+        'getopt.h',
         'unistd.h',
         'dirent.h',
         'dlfcn.h',                              # dlopen()
@@ -1064,7 +1064,8 @@ my @x_types         = (     #stdint/inttypes/types.h
         'bool',
         '_Bool:C99BOOL',
         '_bool',
-        'ssize_t'
+        'ssize_t',
+        'struct option.name;getopt.h,unistd.h'
         );
 
 my @x_sizes         = (
@@ -1219,7 +1220,7 @@ sub CheckCompiler($$);
 sub CheckVAARGS();
 sub CheckHeader($$);
 sub CheckDecl($$$);
-sub CheckType($$);
+sub CheckType($$;$);
 sub CheckSize($$);
 sub CheckFunction($$;$);
 sub CheckICUFunction($);
@@ -1716,9 +1717,15 @@ Configure($$$)          # (type, version, options)
 
     # types
     foreach my $typespec (@x_types) {
+        my $field  = '';
+        if ($typespec =~ /^([^.]+)\.(.+)$/) {   # struct name.field
+            $typespec = $1;
+            $field = $2;
+        }
         my $name   = $typespec;
         my $define = uc($typespec);
-        $define =~ s/ /_/g;
+
+        $define =~ s/ /_/g;                     # eg. "struct option" ==> STRUCT_OPTION
         if ($typespec =~ /^(.+):(.+)$/) {
             $name   = $1;
             $define = $2;                       # optional explicit #define
@@ -1731,7 +1738,7 @@ Configure($$$)          # (type, version, options)
         print " " x (28 - length($name));
 
         if (1 == $status ||
-                (-1 == $status && 0 == CheckType($type, $name))) {
+                (-1 == $status && 0 == CheckType($type, $name, $field))) {
             $TYPES{$name} = 1;
             $CONFIG_H{"HAVE_${define}"} = 1;
             print ($cached ? "[yes, cached]" : "[yes]");
@@ -2465,9 +2472,9 @@ EOT
 #       Determine whether the stated 'type' exists.
 #
 sub
-CheckType($$)           # (type, name)
+CheckType($$;$)         # (type, name, [field])
 {
-    my ($type, $name) = @_;
+    my ($type, $name, $field) = @_;
 
     my $t_name = $name;
     $t_name =~ s/ /_/g;
@@ -2477,6 +2484,19 @@ CheckType($$)           # (type, name)
     my ($cmd, $cmdparts)
             = CheckCommand($BASE, $SOURCE);
     my $config = CheckConfig();
+
+    if ($name =~ /^struct /) {
+        if ($field =~ /([^;]+);(.+)$/) {        # field;header[,...]
+            $field = $1;
+            my @headers = split(/,/, $2);
+            foreach my $header (@headers) {
+                my $have_header_h = "HAVE_".uc($header);
+                $have_header_h =~ s/[\\\/\. ]/_/g;
+                $config .= "#include <${header}>\n"
+                    if (exists $CONFIG_H{"${have_header_h}"});
+            }
+        }
+    }
 
     my $asctime = asctime(localtime());
     chop($asctime);
@@ -2490,13 +2510,22 @@ $cmdparts
 ${config}
 EOT
 
-    if ($t_name =~ /inline/) {
+    if ($name =~ /inline/) {
         print TMP<<EOT;
 static ${name} function(void) {
     return 1;
 }
 int main(int argc, char **argv) {
     return function();
+}
+EOT
+
+    } elsif ($name =~ /^struct /) {
+        print TMP<<EOT;
+static ${name} var;
+int main(int argc, char **argv) {
+    var.${field};
+    return 1;
 }
 EOT
 
