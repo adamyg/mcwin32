@@ -697,16 +697,31 @@ IMPORT+=\
 	$(D_BIN)/$(MT7RNAME).dll		\
 	$(D_BIN)/$(PLBRNAME).dll
 endif
+
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
-ifeq (mingw64,$(findstring mingw64,"@TOOLCHAIN@"))
+GCCBIN=		$(dir $(shell which gcc 2>/dev/null))
+# mingw32 default to dw2 exception handling while mingw64 default to seh.
+   ifneq ("$(wildcard $(GCCBIN)/libstdc++-6.dll)","")
+      ifeq (mingw64,$(findstring mingw64,"@TOOLCHAIN@"))
 LIBGCCDLL=libgcc_s_seh-1.dll
-else
+      else
 LIBGCCDLL=libgcc_s_dw2-1.dll
-endif
+      endif
 IMPORT+=\
-	$(D_BIN)/$(LIBGCCDLL)			\
 	$(D_BIN)/libstdc++-6.dll		\
-	$(D_BIN)/libwinpthread-1.dll
+	$(D_BIN)/libwinpthread-1.dll		\
+	$(D_BIN)/$(LIBGCCDLL)
+   else
+      ifeq (mingw64,$(findstring mingw64,"@TOOLCHAIN@"))
+LIBGCCDLL=msys-gcc_s_seh-1.dll
+      else
+LIBGCCDLL=msys-gcc_s_dw2-1.dll
+      endif
+IMPORT+=\
+	$(D_BIN)/msys-stdc++-6.dll		\
+	$(D_BIN)/msys-winpthread-1.dll		\
+	$(D_BIN)/$(LIBGCCDLL)
+   endif
 endif
 
 AUTOUPDATER=	no
@@ -870,11 +885,9 @@ $(D_BIN)/$(PLBRNAME).dll:	$(LIBPLBRPATH)
 endif
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
-GCCBIN=		$(dir $(shell which gcc 2>/dev/null))
-
 $(D_BIN)/$(LIBGCCDLL):		$(GCCBIN)/$(LIBGCCDLL)
 		@echo importing $^
-		@$(CP) -f $(subst /,\,$^) $@
+		-@$(CP) -f $(subst /,\,$^) $@
 
 $(D_BIN)/libstdc++-6.dll:	$(GCCBIN)/libstdc++-6.dll
 		@echo importing $^

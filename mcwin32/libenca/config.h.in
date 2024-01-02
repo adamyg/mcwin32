@@ -65,10 +65,10 @@
     //#undef HAVE_FTRUNCATE
 
 /* Define to 1 if you have the <getopt.h> header file. */
-#define HAVE_GETOPT_H
+    //#define HAVE_GETOPT_H
 
 /* Define to 1 if you have the `getopt_long' function. */
-#define HAVE_GETOPT_LONG
+    //#define HAVE_GETOPT_LONG
 
 /* Define to 1 if you have the `gettimeofday' function. */
     //#undef HAVE_GETTIMEOFDAY
