@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.31 2024/01/01 15:27:34 cvsuser Exp $
+# $Id: makelib.pl,v 1.32 2024/01/02 11:56:52 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -3190,6 +3190,9 @@ Makefile($$$)           # (type, dir, file)
                         s/(\$\(CFLAGS\).*) -o \$\@/$1 -Fo=\$(subst \/,\\,\$@)/;
                         s/(\$\(CXXFLAGS\).*) -o \$\@/$1 -Fo=\$(subst \/,\\,\$@)/;
                         s/(\$\(LDFLAGS\).*) -o \$@/$1 -Fe=\$(subst \/,\\,\$@)/;
+
+                        s/ -fo \$@/ -fo=\$(subst \/,\\,\$@)/
+                            if (/\(RC\)/);      # resource compiler
 
                         s/-Fe(.*) \$\(([A-Z_]*OBJS)\)/-Fe$1 \$(subst \/,\\,\$($2))/;
                         s/-Fe(.*) \$\^/-Fe$1 \$(subst \/,\\,\$^)/;
