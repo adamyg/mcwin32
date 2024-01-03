@@ -700,6 +700,8 @@ endif
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 GCCBIN=		$(dir $(shell which gcc 2>/dev/null))
+$(info GCCBIN:  ${GCCBIN})
+$(info GCCDLL:  $(wildcard $(GCCBIN)/*.dll))
   ifneq ("$(wildcard $(GCCBIN)/libstdc++-6.dll)","")
     # mingw32 default to dw2 exception handling while mingw64 default to seh.
     ifeq (mingw64,$(findstring mingw64,"@TOOLCHAIN@"))

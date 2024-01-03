@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.4 2024/01/02 15:37:17 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2024/01/03 16:03:03 cvsuser Exp $
 # libpcre2 makefile.
 #
 #
@@ -153,18 +153,18 @@ define pcre2_defines	#(width)
 PCRE2LIB$(1)=	$$(D_LIB)/$$(LP)pcre2-$(1)_static$$(A)
 PCRE2DLL$(1)=	$$(D_LIB)/$$(LP)pcre2-$(1).la
 
-LIBOBJS$(1)=	$$(addprefix $$(D_OBJ)/w$(1)/,$$(subst .c,$$(O),$$(CSOURCES)))
+LIBOBJS$(1)=	$$(addprefix $$(D_OBJ)/W$(1)/,$$(subst .c,$$(O),$$(CSOURCES)))
 DLLOBJS$(1)=	$$(subst $(O),.lo,$$(LIBOBJS$(1)))
 
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
-DLLOBJS$(1)+=	$$(D_OBJ)/w$(1)/libpcre2_res.o
+DLLOBJS$(1)+=	$$(D_OBJ)/W$(1)/libpcre2_res.o
 else
-DLLOBJS$(1)+=	$$(D_OBJ)/w$(1)/libpcre2.res
+DLLOBJS$(1)+=	$$(D_OBJ)/W$(1)/libpcre2.res
 endif
 endif
 
-OBJDIRS+=	$$(D_OBJ)/w$(1)/.created
+OBJDIRS+=	$$(D_OBJ)/W$(1)/.created
 LIBOBJS+=	$$(LIBOBJS$(1))
 DLLOBJS+=	$$(DLLOBJS$(1))
 
@@ -240,16 +240,16 @@ $(PCRE2DLL8):	$(DLLOBJS8)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) $(PCRE2DEF) $^ $(LDLIBS)
 
-$(D_OBJ)/w8/%$(O):	%.c
+$(D_OBJ)/W8/%$(O):	%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
-$(D_OBJ)/w8/%.lo:	%.c
+$(D_OBJ)/W8/%.lo:	%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
 
-$(D_OBJ)/w8/%.res:	%.rc
+$(D_OBJ)/W8/%.res:	%.rc
 		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=8 -I $(PCRE2INC) -fo $@ $<
 
-$(D_OBJ)/w8/%_res.o:	%.rc
+$(D_OBJ)/W8/%_res.o:	%.rc
 		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=8 -I $(PCRE2INC) -o $@ $<
 
 # libpcre2-16
@@ -269,16 +269,16 @@ $(PCRE2DLL16):		$(DLLOBJS16)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) $(PCRE2DEF) $^ $(LDLIBS)
 
-$(D_OBJ)/w16/%$(O):	%.c
+$(D_OBJ)/W16/%$(O):	%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
-$(D_OBJ)/w16/%.lo:	%.c
+$(D_OBJ)/W16/%.lo:	%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
 
-$(D_OBJ)/w16/%.res:	%.rc
+$(D_OBJ)/W16/%.res:	%.rc
 		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=16 -I $(PCRE2INC) -fo $@ $<
 
-$(D_OBJ)/w16/%_res.o:	%.rc
+$(D_OBJ)/W16/%_res.o:	%.rc
 		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=16 -I $(PCRE2INC) -o $@ $<
 
 # libpcre2-32
@@ -298,16 +298,16 @@ $(PCRE2DLL32):		$(DLLOBJS32)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) $(PCRE2DEF) $^ $(LDLIBS)
 
-$(D_OBJ)/w32/%$(O):	%.c
+$(D_OBJ)/W32/%$(O):	%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
-$(D_OBJ)/w32/%.lo:	%.c
+$(D_OBJ)/W32/%.lo:	%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
 
-$(D_OBJ)/w32/%.res:	%.rc
+$(D_OBJ)/W32/%.res:	%.rc
 		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=32 -I $(PCRE2INC) -fo $@ $<
 
-$(D_OBJ)/w32/%_res.o:	%.rc
+$(D_OBJ)/W32/%_res.o:	%.rc
 		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=32 -I $(PCRE2INC) -o $@ $<
 
 # libpce2posx (8-bit only)
