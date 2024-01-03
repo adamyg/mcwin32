@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.33 2024/01/03 16:03:03 cvsuser Exp $
+# $Id: makelib.pl,v 1.35 2024/01/03 16:35:54 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
 #
 #
-# Copyright (c) 1998 - 2023, Adam Young.
+# Copyright (c) 1998 - 2024, Adam Young.
 # All rights reserved.
 #
 # The applications are free software: you can redistribute it
@@ -254,7 +254,7 @@ my %x_environment   = (
             LSWITCH         => '',
             XSWITCH         => '-Fe',
             AR              => 'lib',
-            RC              => 'rc',        # no, /nologo option
+            RC              => 'rc',            # no, /nologo option
             CINCLUDE        => '',
             RTLIBRARY       => '-MDd',
             CFLAGS          => '-nologo @RTLIBRARY@ -Dinline=__inline',
@@ -443,6 +443,7 @@ my %x_environment   = (
             LSWITCH         => '',
             XSWITCH         => '-Fe',
             AR              => 'lib',
+            RC              => 'rc -nologo',    # -nologo option, not /nologo
             CINCLUDE        => '',
             RTLIBRARY       => '-MDd',
             CFLAGS          => '-nologo @RTLIBRARY@ -fp:precise',
@@ -540,6 +541,7 @@ my %x_environment   = (
             LSWITCH         => '',
             XSWITCH         => '-fe=',
             AR              => 'lib',
+            RC              => 'rc -nologo',    # -nologo option, not /nologo
             CINCLUDE        => '',
 
                 # -q        Operate quietly.
@@ -619,6 +621,7 @@ my %x_environment   = (
             LSWITCH         => '-l',
             XSWITCH         => '-o',
             AR              => 'lib',
+            RC              => 'rc -nologo',    # -nologo option, not /nologo
             CINCLUDE        => '',
 
                 # -zq                           Operate quietly.
@@ -672,6 +675,7 @@ my %x_environment   = (
             LSWITCH         => '',
             XSWITCH         => '-fe=',
             AR              => 'lib',
+            RC              => 'rc -nologo',
             CINCLUDE        => '',
 
                 # -q        Operate quietly.

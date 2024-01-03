@@ -269,9 +269,9 @@ endif
 	# firstly resolve using WATCOM envvar, otherwise fallback to which.
 LIBCLBRPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(CLBRNAME).dll))
 ifeq ("","$(LIBCLBRPATH)")
-LIBCLBRPATH=	$(shell which $(CLBRNAME).dll)
-LIBMT7RPATH=	$(shell which $(MT7RNAME).dll)
-LIBPLBRPATH=	$(shell which $(PLBRNAME).dll)
+LIBCLBRPATH=	$(shell $(BUSYBOX) which $(CLBRNAME).dll)
+LIBMT7RPATH=	$(shell $(BUSYBOX) which $(MT7RNAME).dll)
+LIBPLBRPATH=	$(shell $(BUSYBOX) which $(PLBRNAME).dll)
 else
 LIBMT7RPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(MT7RNAME).dll))
 LIBPLBRPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(PLBRNAME).dll))
@@ -699,7 +699,7 @@ IMPORT+=\
 endif
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
-GCCBIN=		$(dir $(shell which gcc 2>/dev/null))
+GCCBIN=		$(dir $(shell $(BUSYBOX) which gcc 2>/dev/null))
 $(info GCCBIN:  ${GCCBIN})
 $(info GCCDLL:  $(wildcard $(GCCBIN)/*.dll))
   ifneq ("$(wildcard $(GCCBIN)/libstdc++-6.dll)","")
