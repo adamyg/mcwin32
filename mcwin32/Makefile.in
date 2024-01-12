@@ -701,29 +701,19 @@ endif
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 GCCBIN=		$(dir $(shell $(BUSYBOX) which gcc 2>/dev/null))
 $(info GCCBIN:  ${GCCBIN})
-$(info GCCDLL:  $(wildcard $(GCCBIN)/*.dll))
-  ifneq ("$(wildcard $(GCCBIN)/libstdc++-6.dll)","")
-    # mingw32 default to dw2 exception handling while mingw64 default to seh.
-    ifeq (mingw64,$(findstring mingw64,"@TOOLCHAIN@"))
+$(info GCCDLL:  $(wildcard $(GCCBIN)/lib*.dll))
+  # mingw32 default to dw2 exception handling while mingw64 default to seh.
+  ifeq (mingw64,$(findstring mingw64,"@TOOLCHAIN@"))
 GCCEXPDLL=libgcc_s_seh-1.dll
-    else
+  else
 GCCEXPDLL=libgcc_s_dw2-1.dll
-    endif
+  endif
 GCCSTDDLL=libstdc++-6.dll
 GCCTHRDLL=libwinpthread-1.dll
 IMPORT+=\
 	$(D_BIN)/$(GCCEXPDLL)			\
 	$(D_BIN)/$(GCCSTDDLL)			\
 	$(D_BIN)/$(GCCTHRDLL)
-  else
-    # XXX
-GCCEXPDLL=msys-gcc_s-seh-1.dll
-GCCSTDDLL=msys-stdc++-6.dll
-GCCTHRDLL=msys-pthread-1.dll
-IMPORT+=\
-	$(D_BIN)/$(GCCEXPDLL)			\
-	$(D_BIN)/$(GCCSTDDLL)
-  endif
 endif
 
 AUTOUPDATER=	no
