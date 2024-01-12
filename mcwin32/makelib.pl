@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.36 2024/01/12 17:08:12 cvsuser Exp $
+# $Id: makelib.pl,v 1.37 2024/01/12 18:20:32 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -3195,8 +3195,10 @@ Makefile($$$)           # (type, dir, file)
                         s/(\$\(CXXFLAGS\).*) -o \$\@/$1 -Fo=\$(subst \/,\\,\$@)/;
                         s/(\$\(LDFLAGS\).*) -o \$@/$1 -Fe=\$(subst \/,\\,\$@)/;
 
-                        s/ -fo \$@/ -fo="\$(subst \/,\\,\$@)"/
-                            if (/\(RC\)/);      # resource compiler
+                        if (/\(RC\)/) {         # resource compiler
+                            s/ -fo \$@/ -fo="\$(subst \/,\\,\$@)"/;
+                            s/ \$</ "\$<"/;
+                        }
 
                         s/-Fe(.*) \$\(([A-Z_]*OBJS)\)/-Fe$1 \$(subst \/,\\,\$($2))/;
                         s/-Fe(.*) \$\^/-Fe$1 \$(subst \/,\\,\$^)/;
@@ -3221,8 +3223,8 @@ Makefile($$$)           # (type, dir, file)
                         s/-I ([^\s]+)/-i=\$(subst \/,\\,$1)/g;
                     }
 
-                    s/\$</"\$(subst \/,\\,\$<)"/;
-                    s/\$\^/"\$(subst \/,\\,\$^)"/;
+                    s/\$</\$(subst \/,\\,\$<)/;
+                    s/\$\^/\$(subst \/,\\,\$^)/;
 
                 } elsif (/[\\]$/) {
                     $continuation = 1;          # LIBTOOL, continuation?
