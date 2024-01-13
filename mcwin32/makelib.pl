@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.37 2024/01/12 18:20:32 cvsuser Exp $
+# $Id: makelib.pl,v 1.38 2024/01/13 15:52:38 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -3219,8 +3219,13 @@ Makefile($$$)           # (type, dir, file)
                         # s/-I ([^\s]+)/-i="$1"/g;
                             # gnuwin32 (gmake 3.x) quotes would be retained;
                             # this can not be guaranteed under an alt instance, for example gmake (4.x).
-                        s/-I([^\s]+)/-i=\$(subst \/,\\,$1)/g;
-                        s/-I ([^\s]+)/-i=\$(subst \/,\\,$1)/g;
+                        if (/\(RC\)/) {         # resource compiler (2024/01)
+                            s/-I([^\s]+)/-i="\$(subst \/,\\,$1)"/g;
+                            s/-I ([^\s]+)/-i="\$(subst \/,\\,$1)"/g;
+                        } else {
+                            s/-I([^\s]+)/-i=\$(subst \/,\\,$1)/g;
+                            s/-I ([^\s]+)/-i=\$(subst \/,\\,$1)/g;
+                        }
                     }
 
                     s/\$</\$(subst \/,\\,\$<)/;
