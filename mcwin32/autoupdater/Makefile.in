@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.13 2023/11/12 04:38:09 cvsuser Exp $
+# $Id: Makefile.in,v 1.14 2024/01/13 16:27:53 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -246,7 +246,7 @@ $(D_OBJ)/%.lo:		%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJ)/%.res:		%.rc
-		$(RC) -fo$@ -I./libappupdater/src $(RCDEFS) $<
+		$(RC) -fo $@ -I./libappupdater/src $(RCDEFS) $<
 
 $(D_OBJ)/%_res.o:	%.rc
 		$(RC) -o $@ -I./libappupdater/src $(RCDEFS) $<
