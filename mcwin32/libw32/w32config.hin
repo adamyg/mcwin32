@@ -1,13 +1,13 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.20 2023/01/31 17:44:09 cvsuser Exp $
+/* $Id: w32config.hin,v 1.22 2023/10/24 16:48:46 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
  * Windows targets (see makelib.pl for details).
  *
- * Copyright (c) 1998 - 2022, Adam Young.
+ * Copyright (c) 1998 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -307,7 +307,8 @@
 #undef SIZEOF_LONG_LONG 4
 #undef SIZEOF_VOID_P 4
 #define SIZEOF_VOIDP SIZEOF_VOID_P
-#undef SIZEOF_WCHAR_T
+#undef SIZEOF_WCHAR_T 2
+#undef SIZEOF_TIME_T 4
 
 #undef HAVE_INLINE
 #undef HAVE___INLINE
@@ -601,6 +602,21 @@
 
 #undef CLOSEDIR_VOID
 #undef GETPGRP_VOID
+
+#undef CCX_VA_ARGS
+#undef CC_VA_ARGS
+#undef HAVE_VA_ARGS
+#if !defined(HAVE_VA_ARGS)
+#if defined(__cplusplus)
+#if defined(CCX_VA_ARGS)
+#define HAVE_VA_ARGS 1
+#endif
+#else
+#if defined(CC_VA_ARGS)
+#define HAVE_VA_ARGS 1
+#endif
+#endif /*__cplusplus*/
+#endif /*!HAVE_VA_ARGS*/
 
 #undef HAVE_VA_COPY
 #undef HAVE___VA_COPY

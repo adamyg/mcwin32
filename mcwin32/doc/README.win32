@@ -8,9 +8,21 @@ the current 4.8.x development stream.
 
         Version         Latest Build
 
-        4.8.29          228 (mc merge/bugfixes)
+        4.8.30          229 (mc merge 4.8.30)
 
-        4.8.28          227 (mc merge)
+                                 - pcre2 10.42
+                                 - mbedtls 3.4.1
+                                 - enca 1.19
+                                 - file 5.45
+                                 - zlib 1.2.13
+
+        4.8.29          228 (mc merge 4.8.29)
+
+                                 - libssh2 1.11.0
+                                 - mbedtls 3.3.0
+                                 - zlib 1.2.11
+
+        4.8.28          227 (mc merge, 4.8.27)
 
         4.8.27          226 (#21 - FISH enabled)
 
@@ -90,7 +102,6 @@ line option, the installation directory maybe be changed at your option:
    User data:
        C:/Documents and Settings/<user>/Application Data/Midnight Commander/
 
-
 Once installed place the installation directory into your PATH. As an
 alternative keeping your PATH and dll's namespace clean, create a simple
 batch mc.bat which points to the true installation image.
@@ -152,11 +163,12 @@ Status
 
 I would consider this port stable, yet not all things may work as designed;
 yet as this package is in use day-to-day expect issues to be addressed
-quickly. Please feel free to raise tickets on SourceForge when
-issues are encountered.
+quickly.
+
+Please feel free to raise tickets on GitHub (preferred) or SourceForge when issues are encountered.
 
 adamy
-June/2022
+Sept/2023
 
 
 Other Resources

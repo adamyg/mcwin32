@@ -1,11 +1,12 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.12 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.15 2023/12/28 17:30:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 statfs()/statvfs() and getmntinfo() system calls.
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
@@ -125,10 +126,10 @@ statfs(const char *path, struct statfs *buf)
 int
 statfsA(const char *path, struct statfs *sb)
 {
-    char    volName[MNAMELEN], fsName[MFSNAMELEN];
-    DWORD   SectorsPerCluster, BytesPerSector, FreeClusters, Clusters;
-    DWORD   MaximumComponentLength, FileSystemFlags;
-    int     mnamelen;
+    char   volName[MNAMELEN], fsName[MFSNAMELEN];
+    DWORD  SectorsPerCluster, BytesPerSector, FreeClusters, Clusters;
+    DWORD  MaximumComponentLength, FileSystemFlags;
+    size_t mnamelen;
 
     if (NULL == path || NULL == sb) {
         errno = EFAULT;
@@ -203,7 +204,7 @@ statfsW(const wchar_t *path, struct statfs *sb)
     wchar_t volName[MNAMELEN], fsName[MFSNAMELEN];
     DWORD   SectorsPerCluster, BytesPerSector, FreeClusters, Clusters;
     DWORD   MaximumComponentLength, FileSystemFlags;
-    int     mnamelen;
+    size_t  mnamelen;
 
     if (NULL == path || NULL == sb) {
         errno = EFAULT;
@@ -453,7 +454,7 @@ enum_volumes(struct statfs *result, long resultsize, int *mnts)
                 if (names && *names) {          // associated path(s)
                     PWCHAR cursor, end;
                     for (cursor = names, end = cursor + count; cursor < end && *cursor; ++cursor) {
-                        const unsigned len = wcslen(cursor);
+                        const unsigned len = (unsigned)wcslen(cursor);
                         if (sbcnt >= sballoc) {
                             struct statfs *t_sb =
                                     (NULL == result ? realloc(sb, (sballoc += 32) * sizeof(*sb)) : NULL);

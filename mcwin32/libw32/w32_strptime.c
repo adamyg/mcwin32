@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_strptime_c,"$Id: w32_strptime.c,v 1.2 2022/06/14 07:35:17 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_strptime_c,"$Id: w32_strptime.c,v 1.3 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -851,7 +851,7 @@ _find_string(const unsigned char *bp, int *tgt, const char * const *n1,
 	/* check full name - then abbreviated ones */
 	for (; n1 != NULL; n1 = n2, n2 = NULL) {
 		for (i = 0; i < c; i++, n1++) {
-			len = strlen(*n1);
+			len = (int)strlen(*n1);
 			if (strncasecmp(*n1, (const char *)bp, len) == 0) {
 				*tgt = i;
 				return bp + len;

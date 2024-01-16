@@ -1,4 +1,4 @@
-//  $Id: mcupdater.cpp,v 1.7 2023/01/31 17:08:48 cvsuser Exp $
+//  $Id: mcupdater.cpp,v 1.8 2023/10/08 17:25:11 cvsuser Exp $
 //
 //  Midnight Commander AutoUpdater command line.
 //
@@ -158,6 +158,7 @@ Usage()
         "   -H <host>           Host URL.\n"\
         "   -L <logpath>        Diagnostics log path.\n"\
         "   -i                  Interactive ('auto' only).\n"\
+        "   -c                  Console mode.\n"\
         "   -v                  Verbose diagnostice.\n"\
         "\n" << std::endl;
     std::exit(99);

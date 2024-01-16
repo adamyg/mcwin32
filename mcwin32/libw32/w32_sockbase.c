@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.8 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.10 2023/12/28 17:30:52 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
  * Base functionality.
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -97,6 +97,7 @@ w32_getaddrinfo(const char *nodename, const char *servname,
 {
     int done = 0, ret;
 
+#undef getaddrinfo
 retry:;
     if (0 != (ret = getaddrinfo(nodename, servname, hints, res))) {
         if (0 == done++) {

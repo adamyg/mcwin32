@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_proctitle_c,"$Id: w32_proctitle.c,v 1.1 2022/06/14 04:53:32 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_proctitle_c,"$Id: w32_proctitle.c,v 1.3 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 setproctitle
  *
- * Copyright (c) 2020 - 2022, Adam Young.
+ * Copyright (c) 2020 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -181,7 +181,7 @@ setproctitle_impl(const char *fmt, va_list ap)
                     if (0 != (ret = GetWindowTextLength(hWnd))) {
                         const size_t sz = (ret + 1) * sizeof(WCHAR);
                         if (NULL != (saved_window_title = (WCHAR *)calloc(sz, 1))) {
-                            if (! GetWindowTextW(hWnd, saved_window_title, sz)) {
+                            if (! GetWindowTextW(hWnd, saved_window_title, (int)sz)) {
                                 free(saved_window_title);
                                 saved_window_title = NULL;
                             }

@@ -2,7 +2,7 @@
 /*
  * win32 Slang Screen Management (SLsmg) function emulation.
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -793,7 +793,7 @@ SLsmg_write_string(const char *s)
 {
     if (0 == vio.inited) return;                /* not initialised */
 
-    if (s) write_string(s, strlen(s));
+    if (s) write_string(s, (unsigned)strlen(s));
 }
 
 

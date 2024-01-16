@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_langinfo_c,"$Id: w32_langinfo.c,v 1.9 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_langinfo_c,"$Id: w32_langinfo.c,v 1.11 2023/12/28 17:30:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 langinfo() implementation
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -27,6 +27,13 @@ __CIDENT_RCSID(gr_w32_langinfo_c,"$Id: w32_langinfo.c,v 1.9 2022/03/16 13:46:59 
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * license for more details.
  * ==end==
+ *
+ * Notice: Portions of this text are reprinted and reproduced in electronic form. from
+ * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
+ * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
+ * Group. Copyright remains with the authors and the original Standard can be obtained
+ * online at http://www.opengroup.org/unix/online.html.
+ * ==extra==
  */
 
 #include "win32_internal.h"

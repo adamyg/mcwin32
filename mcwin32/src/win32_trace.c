@@ -33,7 +33,16 @@ OutputDebugPrintA(const char *fmt, ...)
 
     va_start(ap, fmt);
     w32_gettimeofday(&tv, NULL);
-    prefix = sprintf(out, "%lu.%03u: ", tv.tv_sec, tv.tv_usec / 1000);
+#if !defined(SIZEOF_TIME_T)
+#error SIZEOF_TIME_T missing
+#endif
+#if (SIZEOF_TIME_T == SIZEOF_LONG_LONG)
+    prefix = sprintf(out, "%lld.%03u: ", (long long)tv.tv_sec, (unsigned)(tv.tv_usec / 1000));
+#elif (SIZEOF_TIME_T == SIZEOF_LONG)
+    prefix = sprintf(out, "%ld.%03u: ", (long)tv.tv_sec, (unsigned)(tv.tv_usec / 1000));
+#else
+    prefix = sprintf(out, "%d.%03u: ", tv.tv_sec, (unsigned)(tv.tv_usec / 1000));
+#endif
     vsprintf_s(out + prefix, _countof(out) - prefix, fmt, ap);
     va_end(ap); 
     OutputDebugStringA(out);

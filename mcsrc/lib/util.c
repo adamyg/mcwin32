@@ -1,7 +1,7 @@
 /*
    Various utilities
 
-   Copyright (C) 1994-2022
+   Copyright (C) 1994-2023
    Free Software Foundation, Inc.
 
    Written by:
@@ -72,6 +72,8 @@
 #define ASCII_z (0x60 + 26)
 
 /*** file scope type declarations ****************************************************************/
+
+/*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
 
@@ -385,7 +387,7 @@ size_trunc_sep (uintmax_t size, gboolean use_si)
     d = x + sizeof (x) - 1;
     *d-- = '\0';
     /* @size format is "size unit", i.e. "[digits][space][letters]".
-       Copy all charactes after digits. */
+       Copy all characters after digits. */
     while (p >= y && !g_ascii_isdigit (*p))
         *d-- = *p--;
     for (count = 0; p >= y; count++)
@@ -452,8 +454,10 @@ size_trunc_len (char *buffer, unsigned int len, uintmax_t size, int units, gbool
 #endif
     };
     /* *INDENT-ON* */
-    static const char *const suffix[] = { "", "K", "M", "G", "T", "P", "E", "Z", "Y", NULL };
-    static const char *const suffix_lc[] = { "", "k", "m", "g", "t", "p", "e", "z", "y", NULL };
+    static const char *const suffix[] =
+        { "", "K", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q", NULL };
+    static const char *const suffix_lc[] =
+        { "", "k", "m", "g", "t", "p", "e", "z", "y", "r", "q", NULL };
 
     const char *const *sfx = use_si ? suffix_lc : suffix;
     int j = 0;
@@ -898,7 +902,7 @@ get_compression_type (int fd, const char *name)
         return COMPRESSION_ZSTD;
 
     str_len = strlen (name);
-    /* HACK: we must belive to extension of LZMA file :) ... */
+    /* HACK: we must believe to extension of LZMA file :) ... */
     if ((str_len > 5 && strcmp (&name[str_len - 5], ".lzma") == 0) ||
         (str_len > 4 && strcmp (&name[str_len - 4], ".tlz") == 0))
         return COMPRESSION_LZMA;
@@ -1414,8 +1418,8 @@ guess_message_value (void)
         /* Last possibility is the LANG environment variable.  */
         "LANG",
 #if defined(WIN32) //WIN32, config
-		/* GNU gettext extension.  */
-		"LANGUAGE",
+	/* GNU gettext extension.  */
+	"LANGUAGE",
 #endif
         /* NULL exit loops */
         NULL

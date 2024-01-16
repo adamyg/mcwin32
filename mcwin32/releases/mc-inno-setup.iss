@@ -2,7 +2,6 @@
 ; Midnight Commander - Inno Setup
 ;
 ; Adam Young, 2012 - 2023
-;
 ; This file is part of the Midnight Commander.
 ;
 ; The Midnight Commander is free software: you can redistribute it
@@ -45,8 +44,8 @@ AppName=GNU Midnight Commander
 AppVersion={#VERSION} (build: {#BUILD_DATE}-{#BUILD_NUMBER})
 AppPublisher=The Free Software Foundation, Inc.
 AppPublisherURL=https://www.midnight-commander.org/
-AppSupportURL=https://www.midnight-commander.org/
-AppUpdatesURL=https://www.midnight-commander.org/
+AppSupportURL=https://github/adamyg/mcwin32/
+AppUpdatesURL=https://github/adamyg/mcwin32/
 
 DefaultDirName={pf}\Midnight Commander
 DefaultGroupName=Midnight Commander
@@ -99,10 +98,11 @@ Source: "..\{#BinDir}\README.txt";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\ChangeLog.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; DestName: "mcedit.exe"; Flags: ignoreversion
-Source: "..\{#BinDir}\mc.map";        DestDir: "{app}"; Flags: ignoreversion
+;;Source: "..\{#BinDir}\mc.map";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcupdater.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\file.exe";      DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\enca.exe";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\*.dll";         DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\man2hlp.pl";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\etc\*";         Excludes: ".created"; DestDir: "{app}\etc";    Flags: ignoreversion recursesubdirs createallsubdirs

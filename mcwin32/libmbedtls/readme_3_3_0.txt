@@ -29,7 +29,7 @@
 
                 - [MBEDTLS_SSL_HELLO_REQUEST] = "MBEDTLS_SSL_HELLO_REQUEST",
 
-                Note: language feature not supported, comverted to switch ().
+                Note: language feature not supported, converted to switch ().
 
                 + switch( value ) ...
 
@@ -148,4 +148,3 @@
                 +  #endif
 
 //end
-

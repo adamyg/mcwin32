@@ -1,4 +1,4 @@
-;$Id: libmbedx509.def.3.3.0,v 1.1 2023/03/05 03:34:27 cvsuser Exp $
+;$Id: libmbedx509.def.3.3.0,v 1.2 2023/09/12 15:00:39 cvsuser Exp $
 ;
 ;  libmbedx509 library definition (3.3.0)
 ;
@@ -53,7 +53,7 @@ EXPORTS
     mbedtls_x509_crt_verify_info
     mbedtls_x509_crt_verify_with_profile
     mbedtls_x509_crt_verify_restartable
-    
+
 ; library\x509_csr.c
     mbedtls_x509_csr_free
     mbedtls_x509_csr_info
@@ -93,6 +93,6 @@ EXPORTS
     mbedtls_x509write_csr_set_md_alg
     mbedtls_x509write_csr_set_ns_cert_type
     mbedtls_x509write_csr_set_subject_name
-    
-;;end    
+
+;;end
 

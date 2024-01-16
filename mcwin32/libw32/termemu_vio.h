@@ -1,14 +1,14 @@
 #ifndef TERMEMU_VIO_H_INCLUDED
 #define TERMEMU_VIO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.7 2022/06/08 09:51:43 cvsuser Exp $")
+__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.9 2024/01/01 15:24:07 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * libtermemu console driver
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -121,8 +121,10 @@ typedef struct WCHAR_INFO {                     // extended CHAR_INFO
 
 __BEGIN_DECLS
 
-#if defined(TERMEMU_VIO_STATIC)
-#define LIBVIO_API static   /*private*/
+#if defined(TERMEMU_VIO_LOCAL)
+#define LIBVIO_API /*local*/
+#elif defined(TERMEMU_VIO_STATIC)
+#define LIBVIO_API static /*private*/
 #else
 #define LIBVIO_API LIBW32_API /*otherwise inherit libw32 */
 #endif
@@ -173,7 +175,9 @@ LIBVIO_API void             vio_flush(void);
 
 int vio_wcwidth(wchar_t ucs);
 
+#if !defined(TERMEMU_VIO_SOURCE)
 #undef LIBVIO_API
+#endif
 
 __END_DECLS
 

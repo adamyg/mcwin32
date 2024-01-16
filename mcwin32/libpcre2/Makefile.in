@@ -1,0 +1,391 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id: Makefile.in,v 1.5 2024/01/03 16:03:03 cvsuser Exp $
+# libpcre2 makefile.
+#
+#
+# Copyright (c) 2023, Adam Young.
+# All rights reserved.
+#
+# ==end==
+#
+
+@SET_MAKE@
+ROOT=		@abs_top_builddir@
+top_builddir=	@top_builddir@
+
+# File extensions
+
+E=
+O=		.o
+H=		.h
+A=		.a
+LP=		lib
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+AR=		@AR@
+RANLIB=		@RANLIB@
+RM=		@RM@
+PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
+RC=		@RC@
+
+# Configuration
+
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
+endif
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
+endif
+
+# Directories
+
+D_INC=		$(ROOT)/include
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libpcre2
+
+# Common flags
+
+XFLAGS=
+
+CFLAGS=		@CFLAGS@
+CWARN=		@CWARN@
+CDEBUG=		@CDEBUG@
+CRELEASE=	@CRELEASE@
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
+
+CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
+
+ARFLAGS=	rcv
+YFLAGS=		-d
+RMFLAGS=	-f
+
+
+#########################################################################################
+# Targets
+
+
+VERSION=	10.42
+VERSION_1	=$(word 1,$(subst ., ,$(VERSION)))
+VERSION_2	=$(word 2,$(subst ., ,$(VERSION)))
+VERSION_3	=$(word 3,$(subst ., ,$(VERSION)))
+ifeq ($(strip $(VERSION_3)),)
+VERSION_3	=0
+endif
+VERSIONSPEC=	$(subst .,:,$(VERSION))
+VERPACKED=	pcre2-$(VERSION).tgz
+
+CEXTRA+=	-DHAVE_CONFIG_H=1
+CEXTRA+=	-DSUPPORT_UNICODE=1
+
+PCRE2BASE=	./pcre2-$(VERSION)
+PCRE2SRC=	$(PCRE2BASE)/src
+PCRE2INC=	$(PCRE2BASE)/src
+
+CINCLUDE+=	-I$(PCRE2INC)
+
+VPATH+=		$(PCRE2SRC)
+
+LIBS=
+DLLS=
+TSKS=
+INSTALL=
+
+	# libpcre2-<width>
+
+CSOURCES=\
+	pcre2_auto_possess.c		\
+	pcre2_chartables.c		\
+	pcre2_compile.c			\
+	pcre2_config.c			\
+	pcre2_context.c			\
+	pcre2_convert.c			\
+	pcre2_dfa_match.c		\
+	pcre2_error.c			\
+	pcre2_extuni.c			\
+	pcre2_find_bracket.c		\
+	pcre2_jit_compile.c		\
+	pcre2_maketables.c		\
+	pcre2_match.c			\
+	pcre2_match_data.c		\
+	pcre2_newline.c			\
+	pcre2_ord2utf.c			\
+	pcre2_pattern_info.c		\
+	pcre2_script_run.c		\
+	pcre2_serialize.c		\
+	pcre2_string_utils.c		\
+	pcre2_study.c			\
+	pcre2_substitute.c		\
+	pcre2_substring.c		\
+	pcre2_tables.c			\
+	pcre2_ucd.c			\
+	pcre2_valid_utf.c		\
+	pcre2_xclass.c
+
+define pcre2_defines	#(width)
+
+PCRE2LIB$(1)=	$$(D_LIB)/$$(LP)pcre2-$(1)_static$$(A)
+PCRE2DLL$(1)=	$$(D_LIB)/$$(LP)pcre2-$(1).la
+
+LIBOBJS$(1)=	$$(addprefix $$(D_OBJ)/W$(1)/,$$(subst .c,$$(O),$$(CSOURCES)))
+DLLOBJS$(1)=	$$(subst $(O),.lo,$$(LIBOBJS$(1)))
+
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+DLLOBJS$(1)+=	$$(D_OBJ)/W$(1)/libpcre2_res.o
+else
+DLLOBJS$(1)+=	$$(D_OBJ)/W$(1)/libpcre2.res
+endif
+endif
+
+OBJDIRS+=	$$(D_OBJ)/W$(1)/.created
+LIBOBJS+=	$$(LIBOBJS$(1))
+DLLOBJS+=	$$(DLLOBJS$(1))
+
+LIBS+=		$$(PCRE2LIB$(1))
+DLLS+=		$$(PCRE2DLL$(1))
+
+endef	#pcre2_defines
+
+$(eval $(call pcre2_defines,8))
+$(eval $(call pcre2_defines,16))
+$(eval $(call pcre2_defines,32))
+
+	# libpcre2posix
+
+CSOURCESX=\
+	pcre2posix.c
+
+PCRE2LIBX=	$(D_LIB)/$(LP)pcre2posix_static$(A)
+PCRE2DLLX=	$(D_LIB)/$(LP)pcre2posix.la
+
+LIBOBJSX=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCESX)))
+DLLOBJSX=	$(subst $(O),.lo,$(LIBOBJSX))
+
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+DLLOBJSX+=	$(D_OBJ)/libpcre2_res.o
+else
+DLLOBJSX+=	$(D_OBJ)/libpcre2.res
+endif
+endif
+
+LIBOBJS+=	$(LIBOBJSX)
+DLLOBJS+=	$(DLLOBJSX)
+
+LIBS+=		$(PCRE2LIBX)
+DLLS+=		$(PCRE2DLLX)
+
+	# support
+
+PCRE2DFTABLES=	$(D_BIN)/pcre2_dftables$(E)
+
+TSKS+=		$(PCRE2DFTABLES)
+
+#########################################################################################
+# Rules
+
+.PHONY:		build release debug
+build:		source unpacked
+unpacked:		generate object $(LIBS) $(DLLS) $(TSKS) installinc
+
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+CEXTRA		+= -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
+RCEXTRA		= -DLIBNAME=$(LIBNAME) -DVERSION=$(VERSION) -DVERSION_1=$(VERSION_1) -DVERSION_2=$(VERSION_2) -DVERSION_3=$(VERSION_3)
+
+# libpcre2-8
+
+$(PCRE2LIB8):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=8
+$(PCRE2LIB8):		CEXTRA += -DPCRE2_STATIC
+$(PCRE2LIB8):		$(LIBOBJS8)
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
+		$(AR) $(ARFLAGS) $@ $^
+		$(RANLIB) $@
+
+INSTALLED+=	$(D_BIN)/libpcre2-8.$(VERSION).dll
+$(PCRE2DLL8):		LIBNAME=libpcre2-8
+$(PCRE2DLL8):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=8
+$(PCRE2DLL8):		CEXTRA += -DPCRE2_DYNAMIC -D_WINDLL
+$(PCRE2DLL8):	$(DLLOBJS8)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(PCRE2DEF) $^ $(LDLIBS)
+
+$(D_OBJ)/W8/%$(O):	%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/W8/%.lo:	%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/W8/%.res:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=8 -I $(PCRE2INC) -fo $@ $<
+
+$(D_OBJ)/W8/%_res.o:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=8 -I $(PCRE2INC) -o $@ $<
+
+# libpcre2-16
+
+$(PCRE2LIB16):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=16
+$(PCRE2LIB16):		CEXTRA += -DPCRE2_STATIC
+$(PCRE2LIB16):		$(LIBOBJS16)
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
+		$(AR) $(ARFLAGS) $@ $^
+		$(RANLIB) $@
+
+INSTALLED+=		$(D_BIN)/libpcre2-16.$(VERSION).dll
+$(PCRE2DLL16):		LIBNAME=libpcre2-16
+$(PCRE2DLL16):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=16
+$(PCRE2DLL16):		CEXTRA += -DPCRE2_DYNAMIC -D_WINDLL
+$(PCRE2DLL16):		$(DLLOBJS16)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(PCRE2DEF) $^ $(LDLIBS)
+
+$(D_OBJ)/W16/%$(O):	%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/W16/%.lo:	%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/W16/%.res:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=16 -I $(PCRE2INC) -fo $@ $<
+
+$(D_OBJ)/W16/%_res.o:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=16 -I $(PCRE2INC) -o $@ $<
+
+# libpcre2-32
+
+$(PCRE2LIB32):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=32
+$(PCRE2LIB32):		CEXTRA += -DPCRE2_STATIC
+$(PCRE2LIB32):		$(LIBOBJS32)
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
+		$(AR) $(ARFLAGS) $@ $^
+		$(RANLIB) $@
+
+INSTALLED+=	$(D_BIN)/libpcre2-32.$(VERSION).dll
+$(PCRE2DLL32):		LIBNAME=libpcre2-32
+$(PCRE2DLL32):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=32
+$(PCRE2DLL32):		CEXTRA += -DPCRE2_DYNAMIC -D_WINDLL
+$(PCRE2DLL32):		$(DLLOBJS32)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $(PCRE2DEF) $^ $(LDLIBS)
+
+$(D_OBJ)/W32/%$(O):	%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/W32/%.lo:	%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/W32/%.res:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=32 -I $(PCRE2INC) -fo $@ $<
+
+$(D_OBJ)/W32/%_res.o:	%.rc
+		$(RC) $(RCEXTRA) -DPCRE2_CODE_UNIT_WIDTH=32 -I $(PCRE2INC) -o $@ $<
+
+# libpce2posx (8-bit only)
+
+$(PCRE2LIBX):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=8
+$(PCRE2LIBX):		CEXTRA += -DPCRE2_STATIC
+$(PCRE2LIBX):		$(LIBOBJSX)
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
+		$(AR) $(ARFLAGS) $@ $^
+		$(RANLIB) $@
+
+INSTALLED+=	$(D_BIN)/libpcre2posix.$(VERSION).dll
+$(PCRE2DLLX):		LIBNAME=libpcre2posix
+$(PCRE2DLLX):		CEXTRA += -DPCRE2_CODE_UNIT_WIDTH=8
+$(PCRE2DLLX):		CEXTRA += -DPCRE2_DYNAMIC -D_WINDLL
+$(PCRE2DLLX):		$(DLLOBJSX)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
+			-rpath $(D_LIB) -bindir $(D_BIN) $^ $(PCRE2DLL8) $(LDLIBS)
+
+# general
+
+source:			.unpacked.$(VERSION)
+		$(MAKE) unpacked
+
+.unpacked.$(VERSION):	$(VERPACKED)
+		@echo "do not delete, managed file" > $@
+		@echo "unpacking source $(VERPACKED)"
+		@gzip -c -d $(VERPACKED) | tar -xvf -
+
+.PHONY:		object
+object:			$(D_OBJ)/.created $(OBJDIRS)
+
+.PHONY:		generate
+generate:		$(PCRE2INC)/config.h $(PCRE2INC)/pcre2.h $(PCRE2SRC)/pcre2_chartables.c
+
+$(PCRE2INC)/config.h:		$(PCRE2INC)/config.h.generic
+		cp $(PCRE2INC)/config.h.generic $(PCRE2INC)/config.h
+      
+$(PCRE2INC)/pcre2.h:		$(PCRE2INC)/pcre2.h.generic
+		cp $(PCRE2INC)/pcre2.h.generic $(PCRE2INC)/pcre2.h
+
+$(PCRE2SRC)/pcre2_chartables.c: $(PCRE2INC)/pcre2_chartables.c.dist
+		cp $(PCRE2INC)/pcre2_chartables.c.dist $(PCRE2SRC)/pcre2_chartables.c
+
+$(PCRE2DFTABLES):		$(D_OBJ)/pcre2_dftables$(O)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
+
+.PHONY:		installinc
+installinc:		../include/.created
+		@echo publishing headers ...
+		cp $(PCRE2INC)/pcre2.h ../include
+		cp $(PCRE2INC)/pcre2posix.h ../include
+
+%/.created:
+		-@mkdir $(@D)
+		@echo "do not delete, managed directory" > $@
+
+clean:
+		@echo $(BUILD_TYPE) clean
+		-@$(LIBTOOL) --mode=clean $(RM) $(DLLS) $(DLLOBJS) $(QUIETOUT)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
+		-@$(RM) $(LIBOBJS) $(QUIETOUT)
+		-@$(RM) $(subst /,\,../include/pcre2.h $(QUIETOUT))
+		-@$(RM) $(subst /,\,../include/pcre2posix.h $(QUIETOUT))
+
+$(D_OBJ)/%$(O):		%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+##
+
+$(D_OBJ)/%.res:		%.rc
+		$(RC) $(RCEXTRA) -I $(PCRE2INC) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) $(RCEXTRA) -I $(PCRE2INC) -o $@ $<
+
+#end

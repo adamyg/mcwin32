@@ -1,13 +1,14 @@
 #ifndef LIBW32_GETOPT_H_INCLUDED
 #define LIBW32_GETOPT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.9 2022/06/08 09:51:42 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_getopt_h,"$Id: getopt.h,v 1.12 2024/01/01 16:54:38 cvsuser Exp $")
 __CPRAGMA_ONCE
+
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win <getopt.h>
  *
- * Copyright (c) 1998 - 2022, Adam Young.
+ * Copyright (c) 1998 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -31,6 +32,12 @@ __CPRAGMA_ONCE
  * license for more details.
  * ==end==
  */
+
+#if defined(__MINGW32__)
+
+#include_next <getopt.h>                        /* native getopt.h */
+
+#else
 
 #include <sys/cdefs.h>
 
@@ -64,6 +71,12 @@ LIBW32_API int          getopt(int nargc, char * const *nargv, const char *optio
 LIBW32_API int          getopt_long(int argvc, char * const *argv, const char *options, const struct option *long_options, int *idx);
 LIBW32_API int          getopt_long2(int argvc, char * const *argv, const char *options, const struct option *long_options, int *idx, char *buf, int buflen);
 
+#if defined(LIBW32_LIBRARY)
+extern void __w32_getopt_globals(void);
+#endif
+
 __END_DECLS
+
+#endif  /*!__MINGW32__*/
 
 #endif /*LIBW32_GETOPT_H_INCLUDED*/

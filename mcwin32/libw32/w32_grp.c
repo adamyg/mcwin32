@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.15 2022/06/14 02:19:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.17 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 pwd() implementation
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -538,8 +538,8 @@ fill_groups(void)
             if (x_groups) {
                 struct group *t_groups = (struct group *)realloc(x_groups,
                                             (sizeof(struct group) * ntotal) + cbufsz + bufsz);
-                const int addrdiff = ((char *)t_groups - (char *)x_groups) +
-                                        (sizeof(struct group) * count);
+                const ptrdiff_t addrdiff = ((char *)t_groups - (char *)x_groups) +
+                                            (sizeof(struct group) * count);
 
                 if (NULL == t_groups) {         // realloc failure
                     NetApiBufferFree(groups);
@@ -643,11 +643,11 @@ fill_group(void)
 }
 
 
-static int
+static size_t
 gr_strlen(const char *s, size_t *total)
 {
     if (s && *s) {
-        const int slen = strlen(s);
+        const size_t slen = strlen(s);
         *total += (slen + 1);
         return slen;
     }

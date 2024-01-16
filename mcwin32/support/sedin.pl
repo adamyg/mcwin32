@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: sedin.pl,v 1.6 2023/02/05 05:37:57 cvsuser Exp $
+# $Id: sedin.pl,v 1.7 2023/10/02 08:13:36 cvsuser Exp $
 # sed in processing tool, processing embedded @PERL@ @PYTHON@ etc
 #
 # Copyright Adam Young 2017 - 2023
@@ -131,6 +131,8 @@ while ($line = <IN>) {
 
         $line =~ s/\@AWK\@/${busybox} awk/g;
         $line =~ s/\@GREP\@/${busybox} grep/g;
+        $line =~ s/\@SED\@/${busybox} sed/g;
+
         $line =~ s/\@HAVE_ZIPINFO\@/0/g;
         $line =~ s/\@MANDOC\@/mandoc/g;
         $line =~ s/\@MAN_FLAGS\@//g;

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.14 2023/09/10 10:00:42 cvsuser Exp $
+# $Id: Makefile.in,v 1.17 2023/10/02 12:11:28 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
@@ -112,7 +112,7 @@ MBEDX509DLL=	$(D_LIB)/$(LP)mbedx509.la
 MBEDTLSLIB=	$(D_LIB)/$(LP)mbedtls_static$(A)
 MBEDTLSDLL=	$(D_LIB)/$(LP)mbedtls.la
 
-VERSION=	3.3.0
+VERSION=	3.4.1
 VERSION_1	=$(word 1,$(subst ., ,$(VERSION)))
 VERSION_2	=$(word 2,$(subst ., ,$(VERSION)))
 VERSION_3	=$(word 3,$(subst ., ,$(VERSION)))
@@ -198,6 +198,7 @@ CRYPTO_SOURCES=	\
 	psa_crypto_slot_management.c	\
 	psa_crypto_storage.c		\
 	psa_its_file.c			\
+	psa_util.c			\
 	ripemd160.c			\
 	rsa.c				\
 	rsa_alt_helpers.c		\
@@ -243,7 +244,7 @@ TLS_SOURCES=\
 CRYPTO_LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CRYPTO_SOURCES)))
 CRYPTO_DLLOBJS=\
-	$(subst $(O),.lo,$(CRYPTO_LIBOBJS))			\
+	$(subst $(O),.lo,$(CRYPTO_LIBOBJS))	\
 	$(D_OBJ)/crypto_globals.lo
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
@@ -257,7 +258,8 @@ endif
 X509_LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(X509_SOURCES)))
 X509_DLLOBJS=\
-	$(subst $(O),.lo,$(X509_LIBOBJS))			\
+	$(subst $(O),.lo,$(X509_LIBOBJS))	\
+	$(D_OBJ)/alignment_linkage.lo		\
 	$(D_OBJ)/x509_globals.lo
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
@@ -271,7 +273,8 @@ endif
 TLS_LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(TLS_SOURCES)))
 TLS_DLLOBJS=\
-	$(subst $(O),.lo,$(TLS_LIBOBJS))
+	$(subst $(O),.lo,$(TLS_LIBOBJS))	\
+	$(D_OBJ)/alignment_linkage.lo
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 TLS_DLLOBJS+=	$(D_OBJ)/libmbedtls_res.o
@@ -374,7 +377,7 @@ source:			.unpacked.$(VERSION)
 
 .unpacked.$(VERSION):	$(VERPACKED)
 		@echo "do not delete, managed file" > $@
-		@echo "unpacking source $VERPACKED"
+		@echo "unpacking source $(VERPACKED)"
 		@gzip -c -d $(VERPACKED) | tar -xvf -
 
 .PHONY:		object

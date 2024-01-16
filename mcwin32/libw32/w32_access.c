@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_access_c,"$Id: w32_access.c,v 1.3 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_access_c,"$Id: w32_access.c,v 1.4 2023/09/17 13:04:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win2 access() system calls
  *
- * Copyright (c) 2021 - 2022 Adam Young.
+ * Copyright (c) 2021 - 2023 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

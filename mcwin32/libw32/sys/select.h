@@ -1,12 +1,12 @@
 #ifndef LIBW32_SYS_SELECT_H_INCLUDED
 #define LIBW32_SYS_SELECT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_select_h,"$Id: select.h,v 1.7 2022/06/08 09:51:45 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_select_h,"$Id: select.h,v 1.9 2023/12/28 17:31:16 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * Copyright (c) 2012 - 2022 Adam Young.
+ * Copyright (c) 2012 - 2023 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -35,4 +35,3 @@ __CPRAGMA_ONCE
 #endif
 
 #endif /*LIBW32_SYS_SELECT_H_INCLUDED*/
-

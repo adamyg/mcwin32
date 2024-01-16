@@ -1,7 +1,7 @@
 /*
    Provides a functions for working with shell.
 
-   Copyright (C) 2006-2022
+   Copyright (C) 2006-2023
    Free Software Foundation, Inc.
 
    Written by:
@@ -37,17 +37,19 @@
 #include "global.h"
 #include "util.h"
 
-
 /*** global variables ****************************************************************************/
 
 /*** file scope macro definitions ****************************************************************/
 
 /*** file scope type declarations ****************************************************************/
 
+/*** forward declarations (file scope functions) *************************************************/
+
 /*** file scope variables ************************************************************************/
 
 static char rp_shell[PATH_MAX];
 
+/* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 /**
@@ -187,8 +189,6 @@ mc_shell_recognize_real_path (mc_shell_t * mc_shell)
         mc_shell->type = SHELL_ASH_BUSYBOX;
         mc_shell->name = mc_shell->path;
     }
-#if defined(WIN32) //WIN32, TODO
-#endif
     else
         mc_shell->type = SHELL_NONE;
 }
@@ -214,7 +214,7 @@ mc_shell_recognize_path (mc_shell_t * mc_shell)
         mc_shell->type = SHELL_ASH_BUSYBOX;
         mc_shell->name = "ash";
     }
-#if defined(WIN32) //WIN32, TODO
+#if defined(WIN32) //WIN32, TODO/XXX
 #endif
     else
         mc_shell->type = SHELL_NONE;

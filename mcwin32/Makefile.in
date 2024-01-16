@@ -269,9 +269,9 @@ endif
 	# firstly resolve using WATCOM envvar, otherwise fallback to which.
 LIBCLBRPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(CLBRNAME).dll))
 ifeq ("","$(LIBCLBRPATH)")
-LIBCLBRPATH=	$(shell which $(CLBRNAME).dll)
-LIBMT7RPATH=	$(shell which $(MT7RNAME).dll)
-LIBPLBRPATH=	$(shell which $(PLBRNAME).dll)
+LIBCLBRPATH=	$(shell $(BUSYBOX) which $(CLBRNAME).dll)
+LIBMT7RPATH=	$(shell $(BUSYBOX) which $(MT7RNAME).dll)
+LIBPLBRPATH=	$(shell $(BUSYBOX) which $(PLBRNAME).dll)
 else
 LIBMT7RPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(MT7RNAME).dll))
 LIBPLBRPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(PLBRNAME).dll))
@@ -547,7 +547,10 @@ MC_LIBVFS=\
 	$(D_OBJVFS)/plugins_init$(O)		\
 	$(MC_LIBVFS_SFTPFS)			\
 	$(D_OBJVFS)/sfs_sfs$(O)			\
-	$(D_OBJVFS)/tar_tar$(O)
+	$(D_OBJVFS)/tar_tar$(O)			\
+	$(D_OBJVFS)/tar_tar-internal$(O)	\
+	$(D_OBJVFS)/tar_tar-sparse$(O)		\
+	$(D_OBJVFS)/tar_tar-xheader$(O)
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 MC_RES=		$(D_OBJ)/mc_res.o
@@ -695,6 +698,24 @@ IMPORT+=\
 	$(D_BIN)/$(PLBRNAME).dll
 endif
 
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+GCCBIN=		$(dir $(shell $(BUSYBOX) which gcc 2>/dev/null))
+$(info GCCBIN:  ${GCCBIN})
+$(info GCCDLL:  $(wildcard $(GCCBIN)/lib*.dll))
+  # mingw32 default to dw2 exception handling while mingw64 default to seh.
+  ifeq (mingw64,$(findstring mingw64,"@TOOLCHAIN@"))
+GCCEXPDLL=libgcc_s_seh-1.dll
+  else
+GCCEXPDLL=libgcc_s_dw2-1.dll
+  endif
+GCCSTDDLL=libstdc++-6.dll
+GCCTHRDLL=libwinpthread-1.dll
+IMPORT+=\
+	$(D_BIN)/$(GCCEXPDLL)			\
+	$(D_BIN)/$(GCCSTDDLL)			\
+	$(D_BIN)/$(GCCTHRDLL)
+endif
+
 AUTOUPDATER=	no
 ifeq (vs,$(findstring vs,"@TOOLCHAIN@"))
 AUTOUPDATER=	yes
@@ -708,6 +729,8 @@ LIBRARIES=\
 	$(LW)w32$(A)				\
 	$(LW)z$(A)				\
 	$(LW)regex$(A)				\
+	$(LW)pcre2-8$(A)			\
+	$(LW)enca$(A)				\
 	$(LW)magic$(A)				\
 	$(LW)intl$(A)				\
 	$(LW)gmodule-2.0$(A)			\
@@ -786,7 +809,7 @@ new_release:			new_buildnumber
 
 directories:			$(DIRECTORIES)
 
-artifacts:			buildinfo BUILDNUMBER
+artifacts:			buildinfo busyboxcmds BUILDNUMBER
 
 %/.created:
 		-@$(PERL) ./support/mkdir_p.pl $(@D)
@@ -853,6 +876,20 @@ $(D_BIN)/$(PLBRNAME).dll:	$(LIBPLBRPATH)
 		@$(CP) -f $(subst /,\,$^) $@
 endif
 
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+$(D_BIN)/$(GCCEXPDLL):		$(GCCBIN)/$(GCCEXPDLL)
+		@echo importing $^
+		-@$(CP) -f $(subst /,\,$^) $@
+
+$(D_BIN)/$(GCCSTDDLL):		$(GCCBIN)/$(GCCSTDDLL)
+		@echo importing $^
+		@$(CP) -f $^ $@
+
+$(D_BIN)/$(GCCTHRDLL):		$(GCCBIN)/$(GCCTHRDLL)
+		@echo importing $^
+		@$(CP) -f $(subst /,\,$^) $@
+endif
+
 .PHONY:		package
 package:	packageinfo
 	$(INNO) ./releases/mc-inno-setup.iss
@@ -869,7 +906,9 @@ clean:
 		$(MAKE) -C libintl clean
 		$(MAKE) -C libmbedtls clean
 		$(MAKE) -C libssh2 clean
+		$(MAKE) -C libenca clean
 		$(MAKE) -C libmagic clean
+		$(MAKE) -C libpcre2 clean
 		$(MAKE) -C libregex clean
 		$(MAKE) -C libz clean
 		$(MAKE) -C libw32 clean
@@ -906,15 +945,21 @@ endif
 
 .PHONY: 			buildinfo
 buildinfo.h:			buildinfo
-buildinfo:
+buildinfo:			Makefile buildinfo.pl
 		@echo updating buildinfo.h ...
 		-@$(PERL) ./buildinfo.pl -o buildinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
 			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@"
 
 .PHONY:				packageinfo
-packageinfo:
+packageinfo:			Makefile buildinfo.pl
 		-@$(PERL) ./buildinfo.pl -o packageinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
 			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@" --type="$(BUILD_TYPE)"
+
+.PHONY:				busyboxcmds
+busyboxcmds.h:			busyboxcmds
+busyboxcmds:			Makefile busyboxcmds.pl
+		@echo updating busyboxcmds.h ...
+		-@$(PERL) ./busyboxcmds.pl -o busyboxcmds.h --busybox="$(BUSYBOX)"
 
 buildinfo.h:			BUILDNUMBER buildinfo.pl
 
@@ -1104,6 +1149,14 @@ $(LW)z$(A):
 $(LW)regex$(A):
 		$(MAKE) -C libregex
 
+.PHONY:		$(LW)pcre2-8$(A)
+$(LW)pcre2-8$(A):
+		$(MAKE) -C libpcre2
+
+.PHONY:		$(LW)enca$(A)
+$(LW)enca$(A):
+		$(MAKE) -C libenca
+
 .PHONY:		$(LW)magic$(A)
 $(LW)magic$(A):
 		$(MAKE) -C libmagic
@@ -1123,7 +1176,7 @@ $(LW)intl$(A):
 .PHONY:		$(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A)
 $(LW)glib-2.0$(A) $(LW)gmodule-2.0$(A):
 		$(MAKE) -C libglib
-   
+
 ifeq ("$(AUTOUPDATER)","yes")
 .PHONY:		$(LW)autoupdater$(A)
 $(LW)autoupdater$(A):

@@ -1,14 +1,14 @@
 #ifndef LIBW32_DIRENT_H_INCLUDED
 #define LIBW32_DIRENT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.15 2022/06/14 02:19:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.16 2023/09/17 13:04:55 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <dirent.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

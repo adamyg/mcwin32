@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.17 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.19 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 user identification functionality
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -310,7 +310,7 @@ getlogin_r (char *name, size_t namesize)
     }
 
     initialise_user();
-    length = strlen(x_passwd_name);
+    length = (int)strlen(x_passwd_name);
     if (namesize <= (size_t)length) {
         errno = ERANGE;
         return -1;

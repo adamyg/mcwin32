@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_ERRNO_H_INCLUDED
 #define LIBW32_WIN32_ERRNO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.10 2022/06/14 02:19:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.12 2023/12/28 17:30:53 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * <errno.h>
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -43,7 +43,7 @@ __CPRAGMA_ONCE
         (defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR))
 #if (EADDRINUSE == 100)
 #if defined(_CRT_NO_POSIX_ERROR_CODES)
-#pragma message <system_error> is incompatible with _CRT_NO_POSIX_ERROR_CODES.
+#pragma message("<system_error.h> is incompatible with _CRT_NO_POSIX_ERROR_CODES.")
 #endif
     /*
      *  RETHINK, as the following are assumed by the MinGW pthread package:

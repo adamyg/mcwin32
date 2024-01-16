@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.11 2022/06/14 02:19:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_gethostname_c,"$Id: w32_gethostname.c,v 1.13 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 gethostname
  *
- * Copyright (c) 1998 - 2022, Adam Young.
+ * Copyright (c) 1998 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -107,10 +107,10 @@ w32_gethostname(char *name, size_t namelen)
 
 #undef gethostname
 retry:;
-    if (0 == (ret = gethostname(name, namelen))) {
+    if (0 == (ret = (int)gethostname(name, (int)namelen))) {
         return 0;
     } else {
-        DWORD dwSize = namelen;
+        DWORD dwSize = (DWORD)namelen;
 
         if (0 == done++) {                      /* WSAStartup call must occur before using this function. */
             if ((SOCKET_ERROR == ret && WSANOTINITIALISED == WSAGetLastError()) &&

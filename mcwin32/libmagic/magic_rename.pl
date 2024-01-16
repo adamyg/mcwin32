@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: magic_rename.pl,v 1.4 2021/12/01 12:58:46 cvsuser Exp $
+# $Id: magic_rename.pl,v 1.5 2023/09/20 16:02:47 cvsuser Exp $
 # libmagic import tool
 # Rename global libmagic symbols, prefixing with library version number.
 #
@@ -72,9 +72,9 @@ main()
     my $ret
         = GetOptions(
                 'keep'      => \$o_keep,
-                'version'   => \$o_version,
+                'version=s' => \$o_version,
                 'original'  => \$o_original,
-                'src'       => \$o_src,
+                'src=s'     => \$o_src,
                 'help'      => \$o_help
                 );
 
@@ -88,14 +88,14 @@ main()
 sub
 Usage                   # (message)
 {
-    print "\nmakelib @_\n\n" if (@_);
+    print "\nmagic_rename @_\n\n" if (@_);
     print <<EOU;
 
 Usage: perl magic_rename.pl [options]
 
 Options:
     --help                  Help.
-    --src <path>            libmagic source directory.
+    --src=<path>            libmagic source directory (./file-5.41/src).
     --version=<version>     Magic lib version prefix (eg. 541).
     --original              Reprocess original file images, if they exist.
     --keep                  Keep temporary file images.
@@ -161,25 +161,25 @@ ProcessFile($$;$)       # (dir, file, outfile)
     }
     close FILE;
 
-    $text =~ s/file_fmtcheck/softmagic${o_version}_fmtcheck/g;
+    $text =~ s/file_fmtcheck/file${o_version}_fmtcheck/g;
     $text =~ s/fmtcheck/file${o_version}_fmtcheck/g;
 
     $text =~ s/ file_/ file${o_version}_/g;
     $text =~ s/ cdf_/ file${o_version}_cdf_/g;
 
-    if ($o_version eq '511') { #5.29 via define's
+    if ($o_version eq '511') {                  # 5.29+ via define's
         $text =~ s/sread/file${o_version}_sread/g;
         $text =~ s/getdelim/file${o_version}_getdelim/g;
         $text =~ s/getline/file${o_version}_getline/g;
         $text =~ s/strlcpy/file${o_version}_strlcpy/g;
-        $text =~ s/strlcat/file{o_version}_strlcat/g;
+        $text =~ s/strlcat/file${o_version}_strlcat/g;
     }
 
     $text =~ s/file${o_version}_opts\.h/file_opts.h/g;
-    $text =~ s/file{o_version}_file{o_version}/file{o_version}/g;
+    $text =~ s/file${o_version}_file${o_version}/file${o_version}/g;
 
     $text =~ s/X\.YY/${o_version}/
-        if ($outfile eq 'magic.h');
+        if ($outfile eq 'magic.h');             # <= 5.29
 
     rename($filename, $filenameorg)             # save original
         if (($filename eq $outfilename) && ! -f $filenameorg);
@@ -193,17 +193,3 @@ ProcessFile($$;$)       # (dir, file, outfile)
 }
 
 #end
-
-
-
-
-
-
-
-
-
-
-
-
-
-

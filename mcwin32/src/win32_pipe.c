@@ -161,6 +161,28 @@ pipe_open (const char *xcommand, gboolean fdout, gboolean fderr, gboolean fdin, 
                     goto error;
                 }
                 cmd = t_cmd;                    // replacement command.
+
+            } else if (space) {
+                /*
+                 *  If busybox <cmd>, execute as <\"busybox\" sh -c `cmd` ...>
+                 */
+                unsigned i, count = 0;
+                const char **busybox_cmds = mc_busybox_exts(&count);
+                const int commandlen = space - command;
+
+                for (i = 0; i < count; ++i)  {
+                    if (0 == strncmp(busybox_cmds[i], command, commandlen)) {
+                        char *t_cmd = NULL;
+
+                        if (NULL == (t_cmd = g_strconcat("\"", busybox, "\" sh -c \"", command, "\"", NULL))) {
+                           free((void *)command);
+                           x_errno = ENOMEM;
+                           goto error;
+                        }
+                        cmd = t_cmd;            // replacement command.
+                        break;
+                    }
+                }
             }
         }
 

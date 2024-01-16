@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.18 2022/06/14 02:19:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.20 2023/11/06 15:07:41 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 sub-process support
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -1140,7 +1140,7 @@ BuildEnvA(const char **envv)
      *  strings with nulls between and two null bytes at the end
      */
     for (cursor = ret, vp = envp, len = 0; *vp; ++len, ++vp) {
-        const int slen = strlen(*vp) + 1 /*nul*/;
+        const size_t slen = strlen(*vp) + 1 /*nul*/;
         memcpy(cursor, *vp, slen * sizeof(char));
         cursor += slen;
     }
@@ -1283,7 +1283,7 @@ BuildEnvW(const wchar_t **envv)
      *  strings with nulls between and two null bytes at the end
      */
     for (cursor = ret, vp = envp, len = 0; *vp; ++len, ++vp) {
-        const int slen = wcslen(*vp) + 1 /*nul*/;
+        const size_t slen = wcslen(*vp) + 1 /*nul*/;
         memcpy(cursor, *vp, slen * sizeof(wchar_t));
         cursor += slen;
     }

@@ -1,14 +1,14 @@
-#ifndef GR_SYS_RWLOCK_H_INCLUDED
-#define GR_SYS_RWLOCK_H_INCLUDED
+#ifndef LIBW32_SYS_RWLOCK_H_INCLUDED
+#define LIBW32_SYS_RWLOCK_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_rwlock_h,"$Id: rwlock.h,v 1.3 2022/06/08 09:51:45 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_rwlock_h,"$Id: rwlock.h,v 1.5 2023/12/28 17:31:16 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <rwlock.h> implementation
  *
- * Copyright (c) 1998 - 2022, Adam Young.
+ * Copyright (c) 1998 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -31,7 +31,11 @@ __CPRAGMA_ONCE
 #include <sys/cdefs.h>
 
 typedef struct rwlock {
-    unsigned int        opaque[16];
+#if defined(_WIN64)
+    unsigned char       opaque[128];
+#else
+    unsigned char       opaque[64];
+#endif
 } rwlock_t;
 
 #define RWLOCK_INITIALIZER      {0xffff}
@@ -49,5 +53,4 @@ LIBW32_API int          rwlock_status(struct rwlock *rw);
 
 __END_DECLS
 
-#endif /*GR_SYS_RWLOCK_H_INCLUDED*/
-
+#endif /*WIN32_SYS_RWLOCK_H_INCLUDED*/

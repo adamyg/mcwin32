@@ -1,11 +1,12 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.10 2022/06/14 02:19:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_signal_c,"$Id: w32_signal.c,v 1.12 2023/12/28 17:30:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 signal support
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *

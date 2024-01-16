@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.3 2022/03/16 13:46:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.5 2023/11/06 15:07:42 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getrusage() system calls
  *
- * Copyright (c) 2020 - 2022, Adam Young.
+ * Copyright (c) 2020 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -119,7 +119,7 @@ getrusage(int who, struct rusage *usage)
                 totimeval(&kerneltime, &usage->ru_stime);   // system CPU time used
                 totimeval(&usertime, &usage->ru_utime);     // user CPU time used
                 usage->ru_majflt = pmc.PageFaultCount;      // page faults (hard page faults)
-                usage->ru_maxrss = pmc.PeakWorkingSetSize / 1024; // maximum resident set size
+                usage->ru_maxrss = (long)(pmc.PeakWorkingSetSize / 1024); // maximum resident set size
                 ret = 0;
             }
 

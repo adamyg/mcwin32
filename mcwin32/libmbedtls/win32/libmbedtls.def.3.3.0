@@ -1,4 +1,4 @@
-;$Id: libmbedtls.def.3.3.0,v 1.1 2023/03/05 03:34:27 cvsuser Exp $
+;$Id: libmbedtls.def.3.3.0,v 1.2 2023/09/12 15:00:39 cvsuser Exp $
 ;
 ;  libmbedtls library definition (3.3.0)
 ;
@@ -431,5 +431,4 @@ EXPORTS
     mbedtls_ssl_conf_preference_order
 
 ;end
-
 

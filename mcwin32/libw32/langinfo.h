@@ -1,14 +1,14 @@
 #ifndef LIBW32_LANGINFO_H_INCLUDED
 #define LIBW32_LANGINFO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_langinfo_h,"$Id: langinfo.h,v 1.6 2022/03/16 13:46:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_langinfo_h,"$Id: langinfo.h,v 1.7 2023/09/17 13:04:56 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <langinfo.h> implementation
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

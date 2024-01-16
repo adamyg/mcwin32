@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.11 2023/03/05 04:06:36 cvsuser Exp $
+# $Id: Makefile.in,v 1.13 2023/10/02 12:11:29 cvsuser Exp $
 # libz makefile
 #
 #
@@ -130,7 +130,8 @@ ZDLL=		$(D_LIB)/$(LP)z.la
 #VERSION=	1.2.7
 #VERSION=	1.2.8
 #VERSION=	1.2.11
-VERSION=	1.2.13
+#VERSION=	1.2.13
+VERSION=	1.3
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 VERPACKED=	zlib-$(VERSION).tgz
 
@@ -207,7 +208,7 @@ source:			.unpacked.$(VERSION)
 
 .unpacked.$(VERSION):	$(VERPACKED)
 		@echo "do not delete, managed file" > $@
-		@echo "unpacking source $VERPACKED"
+		@echo "unpacking source $(VERPACKED)"
 		@gzip -c -d $(VERPACKED) | tar -xvf -
 
 .PHONY:		object
@@ -242,4 +243,3 @@ $(D_OBJ)/%_res.o:	%1.rc
 		$(RC) -o $@ $<
 
 #end
-

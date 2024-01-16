@@ -22,23 +22,24 @@
 #define KEY_M_ALT   0x2000
 #define KEY_M_CTRL  0x4000
 #define KEY_M_MASK  0x7000
+#define KEY_M_UNICODE 0x8000
 
 #define XCTRL(x) (KEY_M_CTRL | ((x) & 0x1F))
 #define ALT(x) (KEY_M_ALT | (unsigned int)(x))
 
 /* To define sequences and return codes */
-#define MCKEY_NOACTION  0
-#define MCKEY_ESCAPE    1
+#define MCKEY_NOACTION 0
+#define MCKEY_ESCAPE 1
 
 /* Return code for the mouse sequence */
-#define MCKEY_MOUSE     -2
+#define MCKEY_MOUSE -2
 
 /* Return code for the extended mouse sequence */
-#define MCKEY_EXTENDED_MOUSE     -3
+#define MCKEY_EXTENDED_MOUSE -3
 
 /* Return code for brackets of bracketed paste mode */
 #define MCKEY_BRACKETED_PASTING_START -4
-#define MCKEY_BRACKETED_PASTING_END   -5
+#define MCKEY_BRACKETED_PASTING_END -5
 
 /*** enums ***************************************************************************************/
 
@@ -77,8 +78,8 @@ void init_key (void);
 void init_key_input_fd (void);
 void done_key (void);
 
-long lookup_key (const char *name, char **label);
-char *lookup_key_by_code (const int keycode);
+long tty_keyname_to_keycode (const char *name, char **label);
+char *tty_keycode_to_keyname (const int keycode);
 /* mouse support */
 int tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block);
 gboolean is_idle (void);

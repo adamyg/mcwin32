@@ -1,8 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_strlcpy_c,"$Id: w32_strlcpy.c,v 1.9 2022/06/08 09:51:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_strlcpy_c,"$Id: w32_strlcpy.c,v 1.10 2023/12/28 17:30:53 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
+ * Copyright (c) 1998 - 2022, Adam Young.
+ * All rights reserved.
+ *
  * This file is part of the Midnight Commander.
  *
  * The applications are free software: you can redistribute it
@@ -22,7 +25,7 @@ __CIDENT_RCSID(gr_w32_strlcpy_c,"$Id: w32_strlcpy.c,v 1.9 2022/06/08 09:51:44 cv
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * license for more details.
- * ==extra==
+ * ==end==
  *
  * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
  *

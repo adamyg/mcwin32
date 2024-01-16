@@ -1,9 +1,10 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.22 2023/02/03 17:10:09 cvsuser Exp $
+# $Id: Makefile.in,v 1.26 2024/01/01 16:54:38 cvsuser Exp $
 # libwin32 makefile.
 #
 #
 # Copyright (c) 2007, 2012 - 2023 Adam Young.
+# All rights reserved.
 #
 # This file is part of the Midnight Commander.
 #
@@ -23,7 +24,7 @@
 #
 
 @SET_MAKE@
-ROOT=		@abs_top_builddir@
+ROOT?=		@abs_top_builddir@
 top_builddir=	@top_builddir@
 
 # File extensions
@@ -144,6 +145,7 @@ CSOURCES=\
 	w32_gethostname.c \
 	w32_getopt.c \
 	w32_getopt_long.c \
+	w32_getopt_vars.c \
 	w32_getrlimit.c \
 	w32_getrusage.c \
 	w32_getsubopt.c \
@@ -160,8 +162,10 @@ CSOURCES=\
 	w32_mkstemp.c \
 	w32_mmap.c \
 	w32_neterr.c \
+	w32_pipe.c \
 	w32_poll.c \
 	w32_popen.c \
+	w32_proctitle.c \
 	w32_progname.c \
 	w32_pwd.c \
 	w32_read.c \
@@ -185,6 +189,7 @@ CSOURCES=\
 	w32_string.c \
 	w32_strlcat.c \
 	w32_strlcpy.c \
+	w32_strptime.c \
 	w32_strsep.c \
 	w32_strtoll.c \
 	w32_strtoull.c \
@@ -228,6 +233,9 @@ release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+CEXTRA := $(CEXTRA:-DLIBW32_STATIC%=)
+CEXTRA := $(CEXTRA:-DLIBW32_DYNAMIC%=)
 
 $(W32LIB):		CEXTRA += -DLIBW32_STATIC -DLIBW32_LIBRARY
 $(W32LIB):		$(D_OBJ)/.created $(LIBOBJS)

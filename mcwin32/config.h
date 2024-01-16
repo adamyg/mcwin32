@@ -3,7 +3,7 @@
 /*
  *  win32 Midnight Commander -- config.h
  *
- *  Written by: Adam Young 2012 - 2022
+ *  Written by: Adam Young 2012 - 2023
  *
  *  This file is part of the Midnight Commander.
  *
@@ -121,8 +121,9 @@ extern void                 tty_set_title(const char *title);
 #define MOUNTED_GETMNTINFO 1
 #endif
 
-#define HAVE_LIBMAGIC
-#define HAVE_ASPELL
+#define HAVE_LIBMAGIC 1
+    //#define HAVE_LIBENCA 1
+#define HAVE_ASPELL 1
 #define ASPELL_DLLPATH mc_aspell_dllpath()
 #define ASPELL_DLLNAME "libaspell-0.60"
 #undef  HAVE_SUBSHELL_SUPPORT
@@ -132,27 +133,35 @@ extern void                 tty_set_title(const char *title);
 #undef  HAVE_LIBGPM
 
 /* XXX: libcompat */
-#undef  HAVE_REALPATH                           /* FIXME */
 #define HAVE_STRCASECMP 1
 #define HAVE_STRNCASECMP 1
 #define HAVE_GETOPT 1
 #if defined(__WATCOMC__) //WIN32/c11
 #define HAVE_STRLCPY 1
 #define HAVE_STRLCAT 1
-#define HAVE_LOCALE_H  1
+#define HAVE_LOCALE_H 1
 #endif
 
 /*
  *  configuration options
  */
-#undef  SEARCH_TYPE_PCRE
-#define SEARCH_TYPE_GLIB 1
+    //#define SEARCH_TYPE_GLIB 1
+    //#undef  SEARCH_TYPE_PCRE
+#undef  SEARCH_TYPE_GLIB
+#define SEARCH_TYPE_PCRE 1                      /* 4.8.30+ */
+#define HAVE_PCRE2 1                            /* PCRE or PCRE2 */
 
     //#define LISTMODE_EDITOR 1                 /* removed, 4.8.24 */
-#define USE_INTERNAL_EDIT 1
-#define USE_DIFF_VIEW 1
-#define USE_LIBMAGIC 1
+
+    // configure.ac
+#undef  USE_NLS
 #undef  USE_MAINTAINER_MODE                     /* see: ../lib/logging.c/.h */
+#define USE_FILE_CMD 1
+#define USE_LIBMAGIC 1                          /* file replacement/WIN32 */
+#define USE_INTERNAL_EDIT 1
+#define USE_ASPELL 1
+#define USE_DIFF 1
+#define USE_DIFF_VIEW 1
 #define USE_SLANG 1
 #undef  USE_NCURSES
 #undef  USE_NCURSESW
@@ -173,7 +182,7 @@ extern void                 tty_set_title(const char *title);
     //#undef  ENABLE_VFS_SMB                    /* removed, 4.8.28 */
 #undef  ENABLE_VFS_UNDELFS
 
-#define SIG_ATOMIC_VOLATILE_T int               /* FIXME */
-#define PROMOTED_MODE_T int                     /* FIXME */
+#define SIG_ATOMIC_VOLATILE_T int volatile
+#define PROMOTED_MODE_T int
 
 #endif  /*CONFIG_H_INCLUDED*/

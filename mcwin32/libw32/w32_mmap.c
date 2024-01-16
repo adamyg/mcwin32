@@ -1,11 +1,12 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mmap_c,"$Id: w32_mmap.c,v 1.11 2022/03/16 13:47:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mmap_c,"$Id: w32_mmap.c,v 1.13 2023/12/28 17:30:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mmap() system calls.
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *

@@ -1,13 +1,13 @@
 #ifndef LIBW32_SYS_MMAN_H_INCLUDED
 #define LIBW32_SYS_MMAN_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_mman_h,"$Id: mman.h,v 1.8 2022/06/14 02:19:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_mman_h,"$Id: mman.h,v 1.10 2023/12/28 17:31:16 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mmap implementation
- * Copyright (c) 2012 - 2022, Adam Young.
+ * Copyright (c) 2012 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -83,4 +83,3 @@ LIBW32_API int          munlock __P((const void *, size_t));
 __END_DECLS
 
 #endif /*LIBW32_SYS_MMAN_H_INCLUDED*/
-

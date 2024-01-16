@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.12 2023/01/31 17:07:13 cvsuser Exp $
+# $Id: makelib.in,v 1.14 2023/10/02 12:11:28 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -31,7 +31,7 @@
 
 $PACKAGE	= 'mc';
 $PACKAGE_NAME	= 'Midnight Commander WIN32';
-$PACKAGE_VERSION= '4.8.29';
+$PACKAGE_VERSION= '4.8.30';
 
 $PACKAGE_URL	= 'https://github.com/adamyg/mcwin32';
 
@@ -47,9 +47,19 @@ $PACKAGE_FILE	= 'package.h';
 	'libw32_static',
 	'libz',
 	'libz_static',
+	'libpcre2-8',
+	'libpcre2-8_static',
+	'libpcre2-16',
+	'libpcre2-16_static',
+	'libpcre2-32',
+	'libpcre2-32_static',
+	'libpcre2posix',
+	'libpcre2posix_static',
 	'libregex',
 	'libmagic',
 	'libmagic_static',
+	'libenca',
+	'libenca_static',
 	'libmbedcrypto',
 	'libmbedcrypto_static',
 	'libmbedtls',
@@ -76,8 +86,10 @@ $PACKAGE_FILE	= 'package.h';
 	'libw32',
 	'libregex',
 	'libz',
+	'libpcre2',
 	'libmbedtls',
 	'libssh2',
+	'libenca',
 	'libmagic',
 	'libintl',
 	'libglib',

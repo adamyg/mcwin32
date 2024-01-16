@@ -1,14 +1,14 @@
 #ifndef LIBW32_SYS_SOCKET_H_INCLUDED
 #define LIBW32_SYS_SOCKET_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_socket_h,"$Id: socket.h,v 1.13 2022/06/17 15:40:45 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_socket_h,"$Id: socket.h,v 1.15 2023/12/28 17:31:16 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <sys/socket.h>
  *
- * Copyright (c) 2012 - 2022, Adam Young.
+ * Copyright (c) 2012 - 2023, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -283,4 +283,3 @@ ULONG WINAPI if_nametoindex(PCSTR InterfaceName);
 #endif
 
 #endif /*LIBW32_SYS_SOCKET_H_INCLUDED*/
-

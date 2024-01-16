@@ -1,7 +1,7 @@
 /*
    Extension dependent execution.
 
-   Copyright (C) 1994-2022
+   Copyright (C) 1994-2023
    Free Software Foundation, Inc.
 
    Written by:
@@ -38,11 +38,15 @@
 #include <string.h>
 #include <unistd.h>
 
-#if defined(USE_LIBMAGIC) //WIN32, libmagic
+#if defined(HAVE_LIBMAGIC) //WIN32, libmagic
 #include <magic.h>
 #elif defined(WIN32) //WIN32, libmagic
 #error libmagic not defined ...
 #endif
+#if defined(HAVE_LIBENCA) //WIN32, libenca
+#include <enca.h>
+#endif
+
 #include "lib/global.h"
 #include "lib/tty/tty.h"
 #include "lib/search.h"
@@ -89,6 +93,8 @@
 /*** file scope type declarations ****************************************************************/
 
 typedef char *(*quote_func_t) (const char *name, gboolean quote_percent);
+
+/*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
 
@@ -607,7 +613,11 @@ get_popen_information (const char *cmd_file, const char *args, char *buf, int bu
     char *command;
     FILE *f;
 
+#if defined(WIN32)
+    command = g_strconcat (cmd_file, args, " 2>nul", (char *) NULL);
+#else
     command = g_strconcat (cmd_file, args, " 2>/dev/null", (char *) NULL);
+#endif
     f = popen (command, "r");
     g_free (command);
 
@@ -635,6 +645,7 @@ get_popen_information (const char *cmd_file, const char *args, char *buf, int bu
 
     return read_bytes ? 1 : 0;
 }
+
 
 /* --------------------------------------------------------------------------------------------- */
 /**
@@ -688,8 +699,34 @@ get_file_type_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
 
 #ifdef HAVE_CHARSET
 static int
-get_file_encoding_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
+get_file_encoding_local (const vfs_path_t * filename_vpath, char *encoding_id, int encoding_id_len)
 {
+#if defined(HAVE_LIBENCA)
+    unsigned char sample[4096];
+    size_t sample_len;
+    FILE *file;
+
+    if (NULL == (file = fopen (vfs_path_get_last_path_str (filename_vpath), "rb")))
+        return -1;
+    sample_len = fread (sample, 1, sizeof(sample), file);
+    fclose (file);
+
+    if (sample_len)
+    {
+        const char *lang = name_quote (autodetect_codeset, FALSE);
+        EncaAnalyser analyser;
+
+        if (lang && NULL != (analyser = enca_analyser_alloc (lang)))
+        {
+            EncaEncoding encoding = enca_analyse (analyser, sample, sample_len);
+            snprintf (encoding_id, encoding_id_len-1, "%s", enca_charset_name (encoding.charset, ENCA_NAME_STYLE_HUMAN));
+            enca_analyser_free(analyser);
+            return 1;
+        }
+    }
+    return 0;
+
+#else
     char *tmp, *lang, *args;
     int ret;
 
@@ -697,13 +734,14 @@ get_file_encoding_local (const vfs_path_t * filename_vpath, char *buf, int bufle
     lang = name_quote (autodetect_codeset, FALSE);
     args = g_strconcat (" -L", lang, " -i ", tmp, (char *) NULL);
 
-    ret = get_popen_information ("enca", args, buf, buflen);
+    ret = get_popen_information ("enca", args, encoding_id, encoding_id_len);
 
     g_free (args);
     g_free (lang);
     g_free (tmp);
 
     return ret;
+#endif
 }
 #endif /* HAVE_CHARSET */
 
@@ -747,7 +785,6 @@ regex_check_type (const vfs_path_t * filename_vpath, const char *ptr, gboolean c
                                 vfs_path_as_str (filename_vpath));
             return FALSE;
         }
-
 
 #ifdef HAVE_CHARSET
         got_encoding_data = is_autodetect_codeset_enabled
@@ -900,15 +937,11 @@ load_extension_file (void)
 
         if (!mc_user_ext)
         {
-            char *title;
-
-            title = g_strdup_printf (_(" %s%s file error"), mc_global.sysconfig_dir, MC_EXT_FILE);
-            message (D_ERROR, title,
-                     _("The format of the %s%s file has changed with version 4.0. "
-                       "It seems that the installation has failed. Please fetch a fresh copy "
+            message (D_ERROR, MSG_ERROR,
+                     _("The format of the\n%s%s\nfile has changed with version 4.0.\n"
+                       "It seems that the installation has failed.\nPlease fetch a fresh copy "
                        "from the Midnight Commander package."),
                      mc_global.sysconfig_dir, MC_EXT_FILE);
-            g_free (title);
             return FALSE;
         }
 
@@ -918,16 +951,12 @@ load_extension_file (void)
 
     if (home_error)
     {
-        char *title;
-
         extension_file = mc_config_get_full_path (MC_EXT_FILE);
-        title = g_strdup_printf (_("%s file error"), extension_file);
-        message (D_ERROR, title,
-                 _("The format of the %s file has changed with version 4.0. You may either want "
-                   "to copy it from %s%s or use that file as an example of how to write it."),
+        message (D_ERROR, MSG_ERROR,
+                 _("The format of the\n%s\nfile has changed with version 4.0.\nYou may either want "
+                   "to copy it from\n%s%s\nor use that file as an example of how to write it."),
                  extension_file, mc_global.sysconfig_dir, MC_EXT_FILE);
         g_free (extension_file);
-        g_free (title);
     }
 
     return TRUE;

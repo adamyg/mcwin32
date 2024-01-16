@@ -115,32 +115,14 @@ static int              system_SET (int argc, const char **argv);
 
 static DWORD WINAPI     pipe_thread (void *data);
 
-static const char *     busybox_cmds[] = {      /* redirected commands (see vfs/sfs module) */
-//      
-//      BusyBox v1.36.0-FRP-4621-gf3c5e8bc3 (2022-02-28 07:16:31 GMT)
-//
-//      [, [[, ar, arch, ascii, ash, awk, base32, base64, basename, bash, bc, bunzip2, busybox, bzcat, bzip2, cal, cat, chattr,
-//      chmod, cksum, clear, cmp, comm, cp, cpio, crc32, cut, date, dc, dd, df, diff, dirname, dos2unix, dpkg, dpkg-deb, du, echo, ed,
-//
-//      egrep, env, expand, expr, factor, false, fgrep, find, fold, free, fsync, ftpget, ftpput, getopt, grep, groups, gunzip, gzip, hd,
-//      head, hexdump, httpd, iconv, id, inotifyd, install, ipcalc, kill, killall, less, link, ln, logname, ls, lsattr, lzcat,
-//
-//      lzma, lzop, lzopcat, man, md5sum, mkdir, mktemp, mv, nc, nl, nproc, od, paste, patch, pgrep, pidof, pipe_progress, pkill, printenv,
-//      printf, ps, pwd, readlink, realpath, reset, rev, rm, rmdir, rpm, rpm2cpio, sed, seq, sh, sha1sum, sha256sum,
-//
-//      sha3sum, sha512sum, shred, shuf, sleep, sort, split, ssl_client, stat, strings, su, sum, sync, tac, tail, tar, tee, test, time,
-//      timeout, touch, tr, true, truncate, ts, ttysize, uname, uncompress, unexpand, uniq, unix2dos, unlink, unlzma, unlzop,
-//
-//      unxz, unzip, uptime, usleep, uudecode, uuencode, vi, watch, wc, wget, which, whoami, whois, xargs, xxd, xz, xzcat, yes, zcat
-//
+#include "busyboxcmds.h"                       /* busyboxcmds */
 
-        "ar", "ash", "awk", "base64", "bunzip2", "bzcat", "bzip2", "cat", "cksum", "cpio", "dd", "diff",
+static const char *     busyboxexts[] = {      /* redirected commands (see vfs/sfs module) */
+        "ar", "ash", "awk", "base32", "base64", "bash", "bunzip2", "bzcat", "bzip2", "cat", "cksum", "cpio", "dd", "diff",
         "dos2unix", "echo", "ed", "gunzip", "gzip", "ls",
-        "lzcat", "lzma", "lzop", "lzopcat", "ps",
+        "lzcat", "lzma", "lzop", "lzopcat", "ps", "sed", "sh",
         "strings", "tar", "uncompress", "unexpand", "unix2dos", "unlzma", "unlzop",
         "unxz", "unzip", "uudecode", "uuencode", "xz", "xzcat", "zcat"
-
-// MISSING: lz4, ulz4
         };
 
 static const char *     busybox_path = NULL;    /* resolve path to busybox */
@@ -187,7 +169,7 @@ WIN32_Setup(void)
                 MessageBoxA(0, buffer, "Error", MB_OK);
             }
         }
-#endif  //ENABLE_VFS
+#endif //ENABLE_VFS
     set_shell();
     set_term();
     set_home();
@@ -545,7 +527,6 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
  *              SHGetFolderPath(CSIDL_COMMON_APPDATA)
  *              or getenv(ALLUSERSPROFILE)
  */
-
 const char *
 mc_SYSCONFDIR(void)
 {
@@ -754,7 +735,6 @@ mc_USERCONFIGDIR(const char *subdir)
 
         // new user, create
         if (! done) {
-            const char *env;
                                                 /* personal settings */
             if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, x_buffer)) &&
                                 (len = strlen(x_buffer)) > 0) {
@@ -1002,10 +982,10 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
 
             for (idx = 0; NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
-                    const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+                    const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
 
                     slen += strlen(str) + 1 /*nul or space*/;
-                    if (quote) slen += 2; /*quotes*/
+                    if (isquote) slen += 2; /*quotes*/
                 }
             }
 
@@ -1016,14 +996,14 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
             cursor = cmd;
             for (idx = 0; NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
-                    const int quote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+                    const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
 
                     slen = strlen(str);
                     if (cursor != cmd) *cursor++ = ' ';
-                    if (quote) *cursor++ = '"';
+                    if (isquote) *cursor++ = '"';
                     memcpy(cursor, str, slen);
                     cursor += slen;
-                    if (quote) *cursor++ = '"';
+                    if (isquote) *cursor++ = '"';
                 }
             }
             *cursor = '\0';
@@ -1097,8 +1077,8 @@ system_impl (int flags, const char *shell, const char *cmd)
                      const int cmdlen = space - cmd;
                      unsigned i;
 
-                     for (i = 0; i < _countof(busybox_cmds); ++i)  {
-                         if (0 == strncmp(busybox_cmds[i], cmd, cmdlen)) {
+                     for (i = 0; i < _countof(busyboxexts); ++i)  {
+                         if (0 == strncmp(busyboxexts[i], cmd, cmdlen)) {
                              char *t_cmd;
 
                              if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
@@ -1150,9 +1130,10 @@ system_impl (int flags, const char *shell, const char *cmd)
     }
 
     if ((flags & EXECUTE_AS_SHELL) && cmd) {    /* internal commands */
-    #define MAX_ARGV    128
-        const char *argv[MAX_ARGV + 1];
-        char cbuf[4 * 1048];
+#define MAX_ARGV    10
+#define MAX_CMDLINE (4 * 1024)
+        const char *argv[MAX_ARGV];
+        char cbuf[MAX_CMDLINE];
         int argc;
 
         (void) strncpy(cbuf, cmd, sizeof(cbuf));
@@ -1166,12 +1147,12 @@ system_impl (int flags, const char *shell, const char *cmd)
                 const size_t cmdlen = strlen(argv[0]);
                 unsigned i;
 
-                for (i = 0; i < _countof(busybox_cmds); ++i) {
-                    if (0 == strcmp(busybox_cmds[i], argv[0])) {
+                for (i = 0; i < _countof(busyboxcmds); ++i) {
+                    if (0 == strcmp(busyboxcmds[i], argv[0])) {
                         char *t_cmd;
 
                         if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
-                            ret = w32_shell(NULL, t_cmd, NULL, NULL, NULL);
+                            ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
                             g_free(t_cmd);
                         }
                         return ret;
@@ -1202,6 +1183,14 @@ system_impl (int flags, const char *shell, const char *cmd)
 
     ret = w32_shell(shell, cmd, NULL, NULL, NULL);
     return ret;
+}
+
+
+const char **
+mc_busybox_exts(unsigned *count)
+{
+    if (count) *count = _countof(busyboxexts);
+    return busyboxexts;
 }
 
 
@@ -1270,7 +1259,7 @@ ScriptMagic(int fd)
                     script = "perl";
                 } else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1))) {
                     script = "python";
-                } else if (0 == strncmp(exec, "usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
+                } else if (0 == strncmp(exec, "/usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
                     //
                     //  Example:
                     //  #! /usr/bin/env python

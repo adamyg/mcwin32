@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.27 2022/06/14 02:19:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.32 2023/12/28 17:30:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,8 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.27 2022/06/14 02:19:58 cvsuser Ex
  *
  *      stat, lstat, fstat, readlink, symlink, open
  *
- * Copyright (c) 2007, 2012 - 2022 Adam Young.
+ * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
@@ -149,10 +150,10 @@ static const wchar_t *      HasExtensionW(const wchar_t *name);
 static BOOL                 IsExtensionA(const char *name, const char *ext);
 static BOOL                 IsExtensionW(const wchar_t *name, const char *ext);
 
-static int                  ReadlinkA(const char *path, const char **suffixes, char *buf, int maxlen);
-static int                  ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, int maxlen);
-static int                  ReadShortcutA(const char *name, char *buf, int maxlen);
-static int                  ReadShortcutW(const wchar_t *name, wchar_t *buf, int maxlen);
+static int                  ReadlinkA(const char *path, const char **suffixes, char *buf, size_t maxlen);
+static int                  ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxlen);
+static int                  ReadShortcutA(const char *name, char *buf, size_t maxlen);
+static int                  ReadShortcutW(const wchar_t *name, wchar_t *buf, size_t maxlen);
 
 static int                  CreateShortcutA(const char *link, const char *name, const char *working, const char *desc);
 
@@ -232,7 +233,9 @@ w32_HTOI(HANDLE handle)
 #pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
 #endif
 #if defined(_WIN32)
+    // note: sage to convert HANDLES 64 to 32; only lower 32-bits are used.
     assert((0xffffffff00000000LLU & (uint64_t)handle) == 0 || handle == INVALID_HANDLE_VALUE);
+#pragma warning(disable:4311)
 #endif
     if (INVALID_HANDLE_VALUE == handle) return -1;
     return (int)handle;
@@ -738,6 +741,10 @@ my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR path, int length)
     if (NULL == x_GetFinalPathNameByHandleW) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_GetFinalPathNameByHandleW =
                             (GetFinalPathNameByHandleW_t)GetProcAddress(hinst, "GetFinalPathNameByHandleW"))) {
@@ -745,6 +752,9 @@ my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR path, int length)
             x_GetFinalPathNameByHandleW = my_GetFinalPathNameByHandleWImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
 
 #ifndef FILE_NAME_NORMALIZED
@@ -911,6 +921,10 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, int length)
     if (NULL == x_GetFinalPathNameByHandleA) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_GetFinalPathNameByHandleA =
                           (GetFinalPathNameByHandleA_t)GetProcAddress(hinst, "GetFinalPathNameByHandleA"))) {
@@ -918,6 +932,9 @@ my_GetFinalPathNameByHandleA(HANDLE handle, char *path, int length)
             x_GetFinalPathNameByHandleA = my_GetFinalPathNameByHandleAImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
 
 #ifndef FILE_NAME_NORMALIZED
@@ -1067,7 +1084,7 @@ my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR path, DWORD length, DWORD f
 //      the symblic link are null-terminated.
 */
 LIBW32_API int
-w32_readlink(const char *path, char *buf, int maxlen)
+w32_readlink(const char *path, char *buf, size_t maxlen)
 {
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
@@ -1087,7 +1104,7 @@ w32_readlink(const char *path, char *buf, int maxlen)
 
 
 LIBW32_API int
-w32_readlinkW(const wchar_t *path, wchar_t *buf, int maxlen)
+w32_readlinkW(const wchar_t *path, wchar_t *buf, size_t maxlen)
 {
     int ret = 0;
 
@@ -1105,7 +1122,7 @@ w32_readlinkW(const wchar_t *path, wchar_t *buf, int maxlen)
 
 
 LIBW32_API int
-w32_readlinkA(const char *path, char *buf, int maxlen)
+w32_readlinkA(const char *path, char *buf, size_t maxlen)
 {
     int ret = 0;
 
@@ -1269,6 +1286,10 @@ my_CreateSymbolicLinkW(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWOR
     if (NULL == x_CreateSymbolicLinkW) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_CreateSymbolicLinkW =
                         (CreateSymbolicLinkW_t)GetProcAddress(hinst, "CreateSymbolicLinkW"))) {
@@ -1276,6 +1297,9 @@ my_CreateSymbolicLinkW(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWOR
             x_CreateSymbolicLinkW = my_CreateSymbolicLinkWImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
     return x_CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
 }
@@ -1301,6 +1325,10 @@ my_CreateSymbolicLinkA(const char *lpSymlinkFileName, const char *lpTargetFileNa
     if (NULL == x_CreateSymbolicLinkA) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_CreateSymbolicLinkA =
                         (CreateSymbolicLinkA_t)GetProcAddress(hinst, "CreateSymbolicLinkA"))) {
@@ -1308,6 +1336,9 @@ my_CreateSymbolicLinkA(const char *lpSymlinkFileName, const char *lpTargetFileNa
             x_CreateSymbolicLinkA = my_CreateSymbolicLinkAImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
     return x_CreateSymbolicLinkA(lpSymlinkFileName, lpTargetFileName, dwFlags);
 }
@@ -1998,17 +2029,15 @@ ConvertTime(const FILETIME *ft)
 static void
 ApplySize(struct stat *sb, const DWORD nFileSizeLow, const DWORD nFileSizeHigh)
 {
-    __CUNUSED(nFileSizeHigh)
-
 #if (HAVE_STRUCT_STAT_ST_BLKSIZE)
     sb->st_blksize = 512;
 #endif
 
-    sb->st_size = nFileSizeLow;
-/*TODO
- *  sb->st_size =
- *      (((__int64)nFileSizeHigh) << 32) + nFileSizeLow;
- */
+    if (nFileSizeHigh && sizeof(sb->st_size) == sizeof(uint64_t)) {
+        sb->st_size = (((uint64_t)nFileSizeHigh) << 32) + nFileSizeLow;
+    } else {
+        sb->st_size = nFileSizeLow;
+    }
 
 #if (HAVE_STRUCT_STAT_ST_BLOCKS)
     if (0 == sb->st_size) {
@@ -2241,11 +2270,11 @@ IsExtensionW(const wchar_t *name, const char *ext)
 
 
 static int
-ReadlinkA(const char *path, const char **suffixes, char *buf, int maxlen)
+ReadlinkA(const char *path, const char **suffixes, char *buf, size_t maxlen)
 {
     DWORD attrs;
     const char *suffix;
-    int length;
+    size_t length;
     int ret = -ENOENT;
 
     (void) strncpy( buf, path, maxlen );        // prime working buffer
@@ -2260,7 +2289,7 @@ ReadlinkA(const char *path, const char **suffixes, char *buf, int maxlen)
 
     while ((suffix = *suffixes++) != NULL) {
         /* Concat suffix */
-        if (length + (int)strlen(suffix) >= maxlen) {
+        if (length + strlen(suffix) >= maxlen) {
             ret = -ENAMETOOLONG;
             continue;
         }
@@ -2353,7 +2382,7 @@ ReadlinkA(const char *path, const char **suffixes, char *buf, int maxlen)
                 } else if ((attrs & CYGWIN_ATTRS) && got == sizeof(cookie) &&
                                 0 == memcmp(cookie, CYGWIN_COOKIE, sizeof(cookie))) {
 
-                    if (! ReadFile(fh, buf, maxlen, &got, 0)) {
+                    if (! ReadFile(fh, buf, (DWORD)maxlen, &got, 0)) {
                         ret = -EIO;
                     } else {
                         char *end;
@@ -2386,11 +2415,11 @@ ReadlinkA(const char *path, const char **suffixes, char *buf, int maxlen)
 
 
 static int
-ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, int maxlen)
+ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxlen)
 {
     DWORD attrs;
     const char *suffix;
-    int length;
+    size_t length;
     int ret = -ENOENT;
 
     wcsncpy(buf, path, maxlen);                 // prime working buffer
@@ -2405,7 +2434,7 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, int maxlen)
 
     while ((suffix = *suffixes++) != NULL) {
         /* Concat suffix */
-        if (length + (int)strlen(suffix) >= maxlen) {
+        if (length + strlen(suffix) >= maxlen) {
             ret = -ENAMETOOLONG;
             continue;
         }
@@ -2505,7 +2534,7 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, int maxlen)
                 } else if ((attrs & CYGWIN_ATTRS) && got == sizeof(cookie) &&
                                 0 == memcmp(cookie, CYGWIN_COOKIE, sizeof(cookie))) {
 
-                    if (! ReadFile(fh, buf, maxlen, &got, 0)) {
+                    if (! ReadFile(fh, buf, (DWORD)maxlen, &got, 0)) {
                         ret = -EIO;
                     } else {
                         wchar_t *end;
@@ -2572,7 +2601,7 @@ static const IID    x_IID_IPersistFile  =
  *      Resolve(), GetWorkingDirectory(), and so on.
  */
 static int
-ReadShortcutA(const char *name, char *buf, int maxlen)
+ReadShortcutA(const char *name, char *buf, size_t maxlen)
 {
     HRESULT hres = FALSE;
     WIN32_FIND_DATA wfd;
@@ -2600,13 +2629,13 @@ ReadShortcutA(const char *name, char *buf, int maxlen)
                  -                  pShLink, 0, SLR_NOUPDATE | SLR_ANY_MATCH | SLR_NO_UI);
                  -  }
                  */
-                hres = pShLink->lpVtbl->GetPath(pShLink, buf, maxlen, &wfd, 0);
+                hres = pShLink->lpVtbl->GetPath(pShLink, buf, (int)maxlen, &wfd, 0);
                 if (!SUCCEEDED(hres) || 0 == buf[0]) {
                     /*
                      *  A document shortcut may only have a description ...
                      *  Also CYGWIN generates this style of link.
                      */
-                    hres = pShLink->lpVtbl->GetDescription(pShLink, buf, maxlen);
+                    hres = pShLink->lpVtbl->GetDescription(pShLink, buf, (int)maxlen);
                     if (SUCCEEDED(hres) && 0 == buf[0]) {
                         hres = -1;
                     }
@@ -2623,7 +2652,7 @@ ReadShortcutA(const char *name, char *buf, int maxlen)
 
 
 static int
-ReadShortcutW(const wchar_t *name, wchar_t *buf, int maxlen)
+ReadShortcutW(const wchar_t *name, wchar_t *buf, size_t maxlen)
 {
     HRESULT hres = FALSE;
     WIN32_FIND_DATA wfd;
@@ -3298,6 +3327,10 @@ my_GetVolumeInformationByHandle(HANDLE handle, DWORD *serialno, DWORD *flags)
     if (NULL == x_GetVolumeInformationByHandleW) {
         HINSTANCE hinst;                        // Vista+
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hinst = LoadLibraryA("Kernel32")) ||
                 0 == (x_GetVolumeInformationByHandleW =
                         (GetVolumeInformationByHandleW_t)GetProcAddress(hinst, "GetVolumeInformationByHandleW"))) {
@@ -3305,6 +3338,9 @@ my_GetVolumeInformationByHandle(HANDLE handle, DWORD *serialno, DWORD *flags)
             x_GetVolumeInformationByHandleW = my_GetVolumeInformationByHandleImp;
             if (hinst) FreeLibrary(hinst);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
 
     return x_GetVolumeInformationByHandleW(handle, NULL, 0, serialno, NULL, flags, NULL, 0);
