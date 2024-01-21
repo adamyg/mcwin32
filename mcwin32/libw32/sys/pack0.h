@@ -1,10 +1,10 @@
 /* -*- mode: c; indent-width: 4; -*-
- * $Id: pack0.h,v 1.4 2023/11/06 15:06:06 cvsuser Exp $
+ * $Id: pack0.h,v 1.5 2024/01/16 15:17:52 cvsuser Exp $
  * ==noguard==
  *
  * win32 declaration helpers
  *
- * Copyright (c) 1998 - 2023, Adam Young.
+ * Copyright (c) 1998 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

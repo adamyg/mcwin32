@@ -151,7 +151,14 @@ load($$)                # (file)
         chomp(); chomp();
         if ($result < 0) {
             if (/Copyright \(C\) 20/i) {
+                s/- 2023/- 2024/;
+                s/-2023/-2024/;
                 s/-2022/-2023/;
+                $result = scalar @lines;
+
+            } elsif (/Copyright \(C\) 19/i) {
+                s/- 2023/- 2024/;
+                s/- 2022/- 2024/;
                 $result = scalar @lines;
             }
         }

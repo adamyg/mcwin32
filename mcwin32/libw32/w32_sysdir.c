@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.11 2023/09/17 13:04:59 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.12 2024/01/16 15:17:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 interface support
  *
- * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * Copyright (c) 2007, 2012 - 2024 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

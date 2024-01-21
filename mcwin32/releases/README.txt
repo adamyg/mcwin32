@@ -14,7 +14,7 @@ the current 4.8.x development stream.
                                  - mbedtls 3.4.1
                                  - enca 1.19
                                  - file 5.45
-                                 - zlib 1.2.13
+                                 - zlib 1.3
 
         4.8.29          228 (mc merge 4.8.29)
 

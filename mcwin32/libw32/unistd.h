@@ -1,14 +1,14 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.41 2024/01/01 16:54:38 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.42 2024/01/16 15:17:51 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <unistd.h> header (_MSC_VER, __WATCOMC__ and __MINGW32__)
  *
- * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * Copyright (c) 2007, 2012 - 2024 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

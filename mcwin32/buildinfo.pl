@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: buildinfo.pl,v 1.9 2023/01/31 17:07:13 cvsuser Exp $
+# $Id: buildinfo.pl,v 1.10 2024/01/16 15:18:03 cvsuser Exp $
 # buildinfo generation
 #
-# Copyright Adam Young 2018-2023
+# Copyright Adam Young 2018 - 2024
 # All rights reserved.
 #
 # The applications are free software: you can redistribute it

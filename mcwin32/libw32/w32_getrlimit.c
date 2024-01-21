@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getrlimit_c,"$Id: w32_getrlimit.c,v 1.3 2023/09/17 13:04:57 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getrlimit_c,"$Id: w32_getrlimit.c,v 1.4 2024/01/16 15:17:51 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getrlimit() system calls
  *
- * Copyright (c) 2020 - 2023, Adam Young.
+ * Copyright (c) 2020 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
