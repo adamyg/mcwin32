@@ -36,7 +36,7 @@
         void        enable_bracketed_paste (void);
         void        disable_bracketed_paste (void);
 
-   Written by: Adam Young 2012 - 2023
+   Written by: Adam Young 2012 - 2024
 
    This file is part of the Midnight Commander.
 
@@ -1204,7 +1204,7 @@ key_esc_special(void)
         DWORD count = 0;
 
         if (WaitForSingleObject(hConsoleIn, timeoutms) == WAIT_OBJECT_0 &&
-                PeekConsoleInput(hConsoleIn, &ir, 1, &count) && 1 == count) {
+                PeekConsoleInputW(hConsoleIn, &ir, 1, &count) && 1 == count) {
 
             if (KEY_EVENT == ir.EventType) {
                 const KEY_EVENT_RECORD *key = &ir.Event.KeyEvent;
@@ -1464,7 +1464,7 @@ is_idle (void)
     INPUT_RECORD k;
 
     while (hConsoleIn && WaitForSingleObject(hConsoleIn, 0 /*NONBLOCKING*/) == WAIT_OBJECT_0 &&
-                PeekConsoleInput(hConsoleIn, &k, 1, &count) && count == 1) {
+                PeekConsoleInputW(hConsoleIn, &k, 1, &count) && count == 1) {
         if (KEY_EVENT == k.EventType) {
             if (!k.Event.KeyEvent.bKeyDown) {
                 //

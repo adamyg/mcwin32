@@ -1,3 +1,6 @@
+test/
+old/
+new/
 Makefile
 *.err
 

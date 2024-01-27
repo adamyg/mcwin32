@@ -124,7 +124,7 @@ static int iso2022jp_mbtowc(csconv_t *cv, const uchar *buf, int bufsize, ushort 
 static int iso2022jp_wctomb(csconv_t *cv, ushort *wbuf, int wbufsize, uchar *buf, int bufsize);
 static int iso2022jp_flush(csconv_t *cv, uchar *buf, int bufsize);
 
-static struct {
+static const struct {
     int codepage;
     const char *name;
 } codepage_alias[] = {
