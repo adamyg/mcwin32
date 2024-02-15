@@ -36,6 +36,10 @@ __RCSID("$NetBSD: gettext.c,v 1.28 2012/07/30 23:04:42 yamt Exp $");
 #ifndef WINDOWS_MEAN_AND_LEAN
 #define WINDOWS_MEAN_AND_LEAN
 #endif
+#if !defined(WINVER) || (WINVER < 0x500)
+#undef WINVER
+#define WINVER WIN32_WINNT /* GetThreadLocale, 2000+ */
+#endif
 #include <windows.h>
 #pragma comment(lib, "Kernel32.lib")
 #endif	//WIN32
