@@ -1,7 +1,7 @@
 /*
    File management.
 
-   Copyright (C) 1994-2023
+   Copyright (C) 1994-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -556,7 +556,11 @@ make_symlink (file_op_context_t * ctx, const vfs_path_t * src_vpath, const vfs_p
     {
         const char *r;
 
+#if defined(WIN32) //WIN32, path
+        r = strrchr2 (src_path, PATH_SEP, PATH_SEP2);
+#else
         r = strrchr (src_path, PATH_SEP);
+#endif
         if (r != NULL)
         {
             size_t slen;
@@ -1521,7 +1525,7 @@ recursive_erase (file_op_total_context_t * tctx, file_op_context_t * ctx, const 
   *
   * ATTENTION! Be careful when modifying this function (like commit 25e419ba0886f)!
   * Some implementations of readdir() in MC VFS (for example, vfs_s_readdir(), which is used
-  * in FISH) don't return "." and ".." entries.
+  * in SHELL) don't return "." and ".." entries.
   */
 static int
 check_dir_is_empty (const vfs_path_t * vpath)
@@ -2765,9 +2769,12 @@ copy_file_file (file_op_total_context_t * tctx, file_op_context_t * ctx,
         /* Query to remove short file */
         if (query_dialog (Q_ ("DialogTitle|Copy"), _("Incomplete file was retrieved"),
                           D_ERROR, 2, _("&Delete"), _("&Keep")) == 0)
-            mc_unlink (dst_vpath);
+            dst_status = DEST_SHORT_DELETE;
+        else
+            dst_status = DEST_SHORT_KEEP;
     }
-    else if (dst_status == DEST_SHORT_DELETE)
+
+    if (dst_status == DEST_SHORT_DELETE)
         mc_unlink (dst_vpath);
     else if (dst_status == DEST_FULL && !appending)
     {
@@ -2812,9 +2819,11 @@ copy_file_file (file_op_total_context_t * tctx, file_op_context_t * ctx,
             src_mode = 0100666 & ~src_mode;
             mc_chmod (dst_vpath, (src_mode & ctx->umask_kill));
         }
-
-        mc_utime (dst_vpath, &times);
     }
+
+    /* Always sync timestamps */
+    if (dst_status == DEST_FULL || dst_status == DEST_SHORT_KEEP)
+        mc_utime (dst_vpath, &times);
 
     if (return_status == FILE_CONT)
         return_status = progress_update_one (tctx, ctx, file_size);

@@ -540,7 +540,7 @@ MC_LIBVFS_SFTPFS=\
 MC_LIBVFS=\
 	$(D_OBJVFS)/cpio_cpio$(O)		\
 	$(D_OBJVFS)/extfs_extfs$(O)		\
-	$(D_OBJVFS)/fish_fish$(O)		\
+	$(D_OBJVFS)/shell_shell$(O)		\
 	$(D_OBJVFS)/ftpfs_ftpfs$(O)		\
 	$(D_OBJVFS)/ftpfs_ftpfs_parse_ls$(O)	\
 	$(D_OBJVFS)/local_local$(O)		\
@@ -571,7 +571,7 @@ MAN_SRC=		$(MCSOURCE)/doc/man
 HLP_SRC=		$(MCSOURCE)/doc/hlp
 EXTD_SRC=		$(MCSOURCE)/misc/ext.d
 EXTFS_SRC=		$(MCSOURCE)/src/vfs/extfs/helpers
-FISH_SRC=		$(MCSOURCE)/src/vfs/fish/helpers
+SHELL_SRC=		$(MCSOURCE)/src/vfs/shell/helpers
 MISC_SRC=		$(MCSOURCE)/misc
 SKINS_SRC=		$(MCSOURCE)/misc/skins
 SYNTAX_SRC=		$(MCSOURCE)/misc/syntax
@@ -636,8 +636,8 @@ CFG_PLUGIN:=		$(addprefix $(D_PLUGIN)/, \
 CFG_PLUGIN_EXTFS_D:=	$(addprefix $(D_PLUGIN)/extfs.d/, \
 				$(subst .in,,$(filter-out Makefile.am sfs.ini CVS, $(notdir $(wildcard $(EXTFS_SRC)/*.in)))))
 
-CFG_PLUGIN_FISH:=	$(addprefix $(D_PLUGIN)/fish/, \
-				$(filter-out Makefile.am CVS, $(notdir $(wildcard $(FISH_SRC)/*))))
+CFG_PLUGIN_SHELL:=	$(addprefix $(D_PLUGIN)/shell/, \
+				$(filter-out Makefile.am CVS, $(notdir $(wildcard $(SHELL_SRC)/*))))
 
 CFG_WIN32_PLUGIN:=	$(filter-out CVS extfs.d, $(notdir $(wildcard $(WIN32_PLUGIN_SRC)/*)))
 CFG_WIN32_PLUGIN_EXTFS_D:=$(filter-out CVS, $(notdir $(wildcard $(WIN32_PLUGIN_SRC)/extfs.d/*.in)))
@@ -678,7 +678,7 @@ CONFIGURATION=\
 	$(CFG_SHARE_MACROS_D)			\
 	$(CFG_PLUGIN)				\
 	$(CFG_PLUGIN_EXTFS_D)			\
-	$(CFG_PLUGIN_FISH)			\
+	$(CFG_PLUGIN_SHELL)			\
 	$(CFG_DOC)
 
 
@@ -761,7 +761,7 @@ DIRECTORIES:=\
 		$(D_LOCALE)/.created		\
 		$(D_PLUGIN)/.created		\
 		$(D_PLUGIN)/extfs.d/.created	\
-		$(D_PLUGIN)/fish/.created	\
+		$(D_PLUGIN)/shell/.created	\
 		$(D_SHARE)/.created		\
 		$(D_SHARE)/help/.created	\
 		$(D_SHARE)/hints/.created	\
@@ -1039,8 +1039,8 @@ $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%
 $(D_PLUGIN)/extfs.d/% :		$(EXTFS_SRC)/%.in
 		@$(PERL) ./support/sedin.pl -u $^ $@
 
-# .. plugin/fish
-$(D_PLUGIN)/fish/% :		$(FISH_SRC)/%
+# .. plugin/shell
+$(D_PLUGIN)/shell/% :		$(SHELL_SRC)/%
 		@echo importing $@ ..
 		@$(CP) $^ $@
 		@$(BUSYBOX) dos2unix $@
@@ -1258,7 +1258,7 @@ $(D_OBJVFS)/cpio_%$(O) :	$(MCSOURCE)/src/vfs/cpio/%.c
 $(D_OBJVFS)/extfs_%$(O) :	$(MCSOURCE)/src/vfs/extfs/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
-$(D_OBJVFS)/fish_%$(O) :	$(MCSOURCE)/src/vfs/fish/%.c
+$(D_OBJVFS)/shell_%$(O) :	$(MCSOURCE)/src/vfs/shell/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJVFS)/ftpfs_%$(O) :	$(MCSOURCE)/src/vfs/ftpfs/%.c

@@ -50,14 +50,11 @@ ScreenList = alt-prime
 # EditExtensionsFile =
 # EditFileHighlightFile =
 # Filter =
-# ConnectFish =
+# ConnectShell =
 # ConnectFtp =
 # Undelete =
 EditorViewerHistory = alt-shift-e
 ExtendedKeyMap = ctrl-x
-DriveChange = alt-d
-DriveChangeA = alt-f1
-DriveChangeB = alt-f2
 
 [filemanager:xmap]
 ChangeMode = c
@@ -133,8 +130,6 @@ Bottom = alt-gt; end; c1
 # Filter =
 # ScrollLeft =
 # ScrollRight =
-DriveChangeA = alt-f1
-DriveChangeB = alt-f2
 
 [dialog]
 Ok = enter

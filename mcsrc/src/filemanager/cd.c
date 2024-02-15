@@ -1,7 +1,7 @@
 /*
    cd_to() function.
 
-   Copyright (C) 1995-2023
+   Copyright (C) 1995-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -182,13 +182,13 @@ handle_cdpath (const char *path)
 
         cdpath = g_strdup (getenv ("CDPATH"));
         p = cdpath;
-        c = (p == NULL) ? '\0' : PATH_ENV_SEP;
+        c = (p == NULL) ? '\0' : ':';
 
-        while (!result && c == PATH_ENV_SEP)
+        while (!result && c == ':')
         {
             char *s;
 
-            s = strchr (p, PATH_ENV_SEP);
+            s = strchr (p, ':');
             if (s == NULL)
                 s = strchr (p, '\0');
             c = *s;

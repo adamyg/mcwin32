@@ -1,7 +1,7 @@
 /*
    Return a list of mounted file systems
 
-   Copyright (C) 1991-2023
+   Copyright (C) 1991-2024
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -1353,6 +1353,7 @@ get_fs_usage (char const *file, char const *disk, struct fs_usage *fsp)
         fsp->fsu_blocksize = (vfsd.f_frsize
                               ? PROPAGATE_ALL_ONES (vfsd.f_frsize)
                               : PROPAGATE_ALL_ONES (vfsd.f_bsize));
+
         fsp->fsu_blocks = PROPAGATE_ALL_ONES (vfsd.f_blocks);
         fsp->fsu_bfree = PROPAGATE_ALL_ONES (vfsd.f_bfree);
         fsp->fsu_bavail = PROPAGATE_TOP_BIT (vfsd.f_bavail);
