@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.10 2023/09/17 13:04:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.11 2024/02/04 10:39:25 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 iconv dynamic loader.
  *
- * Copyright (c) 1998 - 2023, Adam Young.
+ * Copyright (c) 1998 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

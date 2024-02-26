@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: updateyear.pl,v 1.1 2023/10/02 08:13:36 cvsuser Exp $
+# $Id: updateyear.pl,v 1.2 2024/02/02 15:19:01 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # Update the copyright year within the specified files
 #
