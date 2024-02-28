@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(kblayout_c, "$Id: kbdump.c,v 1.4 2024/02/17 08:23:13 cvsuser Exp $")
+__CIDENT_RCSID(kblayout_c, "$Id: kbdump.c,v 1.6 2024/02/28 15:55:21 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -44,6 +44,8 @@ __CIDENT_RCSID(kblayout_c, "$Id: kbdump.c,v 1.4 2024/02/17 08:23:13 cvsuser Exp 
 #include "kbdump.h"
 #include "kbdefinition.h"
 #include "kbmap.h"
+#include "kbconsole.h"
+#include "kbutil.h"
 
 
 /*
@@ -64,9 +66,9 @@ KBDump(const struct KBDefinition *def)
 		WITH_SHIFT|WITH_CONTROL|WITH_MENU
 		};
 
-	printf("\n");
-	printf(" SC      VK                                  TEXT                           _       s       C       sC      c       sc      ca      sca\n");
-	printf(" ==========================================================================================================================================\n");
+	cprinta("\n");
+	cprinta(" SC      VK                                  TEXT                           _       s       C       sC      c       sc      ca      sca\n");
+	cprinta(" ==========================================================================================================================================\n");
 	    //   1234567 12 - 123456789012345678901234567890 123456789012345678901234567890 1234567 1234567 1234567 1234567 1234567 1234567 1234567 1234567
 
 	for (const PhysicalKey *pk = def->PhysicalKeys, *end = pk + def->PhysicalKeysCount; pk != end; ++pk) {
@@ -88,30 +90,30 @@ KBDump(const struct KBDefinition *def)
 		}
 
 		if (0xE000 & sc) {
-			printf(" %04x    ", sc);
+			cprinta(" %04x    ", sc);
 		} else {
-			printf(" %02x      ", sc);
+			cprinta(" %02x      ", sc);
 		}
 
-		printf("%02x - %-30.30s ", vk, KBVirtualKeyName(vk));
-		wprintf(L"%-30.30s ", pk->Name);
+		cprinta("%02x - %-30.30s ", vk, KBVirtualKeyName(vk));
+		cprintw(L"%-30.30s ", pk->Name);
 
 		for (unsigned v = 0; v < _countof(values); ++v) {
 			const wchar_t value = values[v];
 			if (value) {
 				if (value & 0xff00) {
-					printf("%04x    ", value);
+					cprinta("%04x    ", value);
 				} else {
-					printf("%02x      ", value);
+					cprinta("%02x      ", value);
 				}
 			} else {
-				printf("-1      ");
+				cprinta("-1      ");
 			}
 		}
 
-		printf("\n");
+		cprinta("\n");
 	}
-	printf("\n");
+	cprinta("\n");
 }
 
 //end

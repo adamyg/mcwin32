@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.1 2024/02/15 18:21:36 cvsuser Exp $
+# $Id: Makefile.in,v 1.2 2024/02/27 17:18:08 cvsuser Exp $
 # kbtest
 #
 #
@@ -137,7 +137,7 @@ RMDFLAGS=	-rf
 KBTESTTSK=	$(D_BIN)/kbtest$(E)
 KBTESTSRC=	.
 ifeq ("owc19","@TOOLCHAIN@")
-EXPATSRC=	../../autoupdater/libappupdater/expat_legacy
+EXPATSRC=	../../autoupdater/expat_legacy
 else
 EXPATSRC=	../../autoupdater/libappupdater/expat
 endif

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(kbmap_c,"$Id: kbmap.c,v 1.8 2024/02/25 16:45:12 cvsuser Exp $")
+__CIDENT_RCSID(kbmap_c,"$Id: kbmap.c,v 1.9 2024/02/27 17:18:08 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -43,6 +43,7 @@ __CIDENT_RCSID(kbmap_c,"$Id: kbmap.c,v 1.8 2024/02/25 16:45:12 cvsuser Exp $")
 
 #include "kbvirtualextra.h"
 #include "kbmap.h"
+#include "kbutil.h"
 
 struct xkb {
 #define VK_VOID                         0xffff

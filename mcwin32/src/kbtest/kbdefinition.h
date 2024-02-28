@@ -1,7 +1,7 @@
 #ifndef KBDEFINITION_H_INCLUDED
 #define KBDEFINITION_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(kbdefinition_h,"$Id: kbdefinition.h,v 1.4 2024/02/17 08:23:13 cvsuser Exp $")
+__CIDENT_RCSID(kbdefinition_h,"$Id: kbdefinition.h,v 1.5 2024/02/27 17:18:08 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -69,3 +69,4 @@ void KBDefinitionFree(KBDefinition *);
 #endif //KBDEFINITION_H_INCLUDED
 
 //end
+

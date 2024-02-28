@@ -1,7 +1,7 @@
-#ifndef KBCONSOLE_H_INCLUDED
-#define KBCONSOLE_H_INCLUDED
+#ifndef KBUTIL_H_INCLUDED
+#define KBUTIL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(kbconsole_h,"$Id: kbconsole.h,v 1.4 2024/02/28 15:55:21 cvsuser Exp $")
+__CIDENT_RCSID(kbutil_h,"$Id: kbutil.h,v 1.1 2024/02/27 17:18:08 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -32,24 +32,11 @@ __CPRAGMA_ONCE
  * ==end==
  */
 
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
+#if !defined(_countof)
+#define _countof(a) (sizeof(a)/sizeof(a[0]))
 #endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
 
-void ConsoleClear(HANDLE console);
-void ConsoleCEOS(HANDLE console);
-void ConsoleCEOL(HANDLE console);
-
-void ConsoleHome(HANDLE console);
-int  ConsoleSizeSet(HANDLE console, int width, int height);
-
-void cprinta(const char *fmt, ...);
-void cprintw(const wchar_t *fmt, ...);
-
-#endif //KBCONSOLE_H_INCLUDED
+#endif //KBUTIL_H_INCLUDED
 
 //end
+

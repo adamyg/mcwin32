@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(btest_c,"$Id: kbtest.c,v 1.7 2024/02/25 16:45:12 cvsuser Exp $")
+__CIDENT_RCSID(btest_c,"$Id: kbtest.c,v 1.9 2024/02/28 15:55:21 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -57,11 +57,7 @@ __CIDENT_RCSID(btest_c,"$Id: kbtest.c,v 1.7 2024/02/25 16:45:12 cvsuser Exp $")
 #include "kbdump.h"
 
 #include "kbbuildinfo.h"
-
-#ifndef XKB_KEY_NoSymbol
-#define XKB_KEY_NoSymbol 0
-#define XKB_VoidSymbol 0xffffff
-#endif
+#include "kbutil.h"
 
 struct iobuf {
 	unsigned length;
@@ -94,7 +90,7 @@ struct record {
 #define VKS_PRESS	0x40
 #define VKS_ON		0x80
 
-static void EnvironmentStatus(HANDLE console);
+static void EnvironmentStatus(void);
 
 static void KeyboardPush(HANDLE console, const struct KBRow **rows, BYTE *status, const key_event_t *evt);
 static void KeyboardStatus(HANDLE console, const struct KBRow **rows, BYTE *status);
@@ -191,7 +187,7 @@ main(int argc, char *argv[])
 
 	// execute
 	if (0 == strcmp(cmd, "dump")) {
-		EnvironmentStatus(oconsole);
+		EnvironmentStatus();
 		KBDump(layout);
 		return 0;
 	}
@@ -208,8 +204,8 @@ main(int argc, char *argv[])
 
 	ConsoleClear(oconsole); // prime display
 	KeyboardStatus(oconsole, rows, vkstatus);
-	EnvironmentStatus(oconsole);
-	printf("Press <ESC> consecutively 3 times to exit.\n");
+	EnvironmentStatus();
+	cprinta("Press <ESC> consecutively 3 times to exit.\n");
 
 	while (! ctrl_break && esc < 3) { // foreach(key)
 		const KEY_EVENT_RECORD *key = &ir.Event.KeyEvent;
@@ -228,7 +224,7 @@ main(int argc, char *argv[])
 		if (WINDOW_BUFFER_SIZE_EVENT == ir.EventType) {
 			ConsoleClear(oconsole);
 			KeyboardStatus(oconsole, rows, vkstatus);
-			EnvironmentStatus(oconsole);
+			EnvironmentStatus();
 			continue;
 		} else if (!count || ir.EventType != KEY_EVENT || !key->bKeyDown) {
 			continue; // ignore non-key down events
@@ -244,29 +240,26 @@ main(int argc, char *argv[])
 		scanCode = key->wVirtualScanCode | (key->dwControlKeyState & ENHANCED_KEY ? 0xE000 : 0);
 		KBPrintModifiers(key->dwControlKeyState, modifiers, sizeof(modifiers), TRUE);
 		if (key->uChar.AsciiChar >= 0x20 && key->uChar.AsciiChar < 0x7f /*isprint*/) { // ASCII
-			printf("%sVK:%u/0x%x SCAN:0x%04x/0x%04X Ascii(0x%x/%c) ",
+			cprinta("%sVK:%u/0x%x SCAN:0x%04x/0x%04X Ascii(0x%x/%c) ",
 			    modifiers, key->wVirtualKeyCode, key->wVirtualKeyCode, key->wVirtualScanCode, scanCode, key->uChar.AsciiChar, key->uChar.AsciiChar);
 		} else { // UNICODE
-			printf("%sVK:%u/0x%x SCAN:0x%04x/0x%04X Unicode(0x%x) ",
+			cprinta("%sVK:%u/0x%x SCAN:0x%04x/0x%04X Unicode(0x%x) ",
 			    modifiers, key->wVirtualKeyCode, key->wVirtualKeyCode, key->wVirtualScanCode, scanCode, key->uChar.UnicodeChar);
 		}
 		XKBTranslation(&evt);
-		ConsoleClearEOL(oconsole);
 
 		// decode KEY_EVENT
 		if (cio) {
 			KBPrintModifiers(evt.vkmodifiers, modifiers, sizeof(modifiers), FALSE);
-			printf("\n => %sVK(%u) ASCII(0x%x/%c)",
+			cprinta("\n => %sVK(%u) ASCII(0x%x/%c)",
 			    modifiers, evt.vkkey, evt.ascii, (evt.ascii >= 0x20 && evt.ascii <= 0x7f ? evt.ascii : ' '));
 			if (evt.unicode != KEY_INVALID) {
-				fflush(stdout);
-				ConsolePrintW(oconsole, L" UNICODE(U+%0*x/%c)", (evt.unicode & 0xff0000 ? 6 : 4), (unsigned)evt.unicode, (unsigned)evt.unicode);
+				cprintw(L" UNICODE(U+%0*x/%c)", (evt.unicode & 0xff0000 ? 6 : 4), (unsigned)evt.unicode, (unsigned)evt.unicode);
 			}
 		} else {
-			printf("\n => <dead>");
+			cprinta("\n => <dead>");
 		}
-		ConsoleClearEOL(oconsole);
-		EnvironmentStatus(oconsole);
+		EnvironmentStatus();
 	}
 
 	if (szKLID[0]) LoadKeyboardLayoutA(szKLID, KLF_ACTIVATE);
@@ -334,11 +327,12 @@ KeyboardPush(HANDLE console, const struct KBRow **rows, BYTE *status, const key_
 	KeyboardStatus(console, rows, status);
 }
 
+
 /*
  * EnvironmentStatus
  */
 static void
-EnvironmentStatus(HANDLE oconsole)
+EnvironmentStatus(void)
 {
 	wchar_t klid[KL_NAMELENGTH] = { 0 };
 	wchar_t iso639[16] = { 0 }, iso3166[16] = { 0 }, displayname[256] = { 0 };
@@ -346,46 +340,39 @@ EnvironmentStatus(HANDLE oconsole)
 	const LCID ulcid = GetUserDefaultLCID();
 	const LCID tlcid = GetThreadLocale();
 
-	ConsoleClearEOL(oconsole);
-	wprintf(L"\n");
+	cprintw(L"\n");
 
-	ConsoleClearEOL(oconsole);
 	GetKeyboardLayoutNameW(klid);
-	wprintf(L"\nKLID: <%s>, type=0x%x/0x%x, fns=%u", klid, GetKeyboardType(0), GetKeyboardType(1), GetKeyboardType(2));
+	cprintw(L"\nKLID: <%s>, type=0x%x/0x%x, fns=%u", klid, GetKeyboardType(0), GetKeyboardType(1), GetKeyboardType(2));
 
-	ConsoleClearEOL(oconsole);
-	wprintf(L"\nLCID:");
-	wprintf(L" sys=%u/0x%x", slcid, slcid);
+	cprintw(L"\nLCID:");
+	cprintw(L" sys=%u/0x%x", slcid, slcid);
 	if (GetLocaleInfoW(slcid, LOCALE_SISO639LANGNAME, iso639, _countof(iso639)) &&
 		  GetLocaleInfoW(slcid, LOCALE_SISO3166CTRYNAME, iso3166, _countof(iso3166))) {
 		  GetLocaleInfoW(slcid, LOCALE_SLOCALIZEDCOUNTRYNAME, displayname, _countof(displayname));
-		wprintf(L" <%s_%s> (%s)", iso639, iso3166, displayname); // "9_9 (displayname)"
+		cprintw(L" <%s_%s> (%s)", iso639, iso3166, displayname); // "9_9 (displayname)"
 	}
 
-	wprintf(L", user=%u/0x%x", ulcid, ulcid);
+	cprintw(L", user=%u/0x%x", ulcid, ulcid);
 	if (GetLocaleInfoW(ulcid, LOCALE_SISO639LANGNAME, iso639, _countof(iso639)) &&
 		  GetLocaleInfoW(ulcid, LOCALE_SISO3166CTRYNAME, iso3166, _countof(iso3166))) {
 		  GetLocaleInfoW(ulcid, LOCALE_SLOCALIZEDCOUNTRYNAME, displayname, _countof(displayname));
-		wprintf(L" <%s_%s> (%s)", iso639, iso3166, displayname); // "9_9 (displayname)"
+		cprintw(L" <%s_%s> (%s)", iso639, iso3166, displayname); // "9_9 (displayname)"
 	}
 
-	wprintf(L", thr=%u/0x%x", tlcid, tlcid);
+	cprintw(L", thr=%u/0x%x", tlcid, tlcid);
 	if (GetLocaleInfoW(tlcid, LOCALE_SISO639LANGNAME, iso639, _countof(iso639)) &&
 		  GetLocaleInfoW(tlcid, LOCALE_SISO3166CTRYNAME, iso3166, _countof(iso3166))) {
 		  GetLocaleInfoW(tlcid, LOCALE_SLOCALIZEDCOUNTRYNAME, displayname, _countof(displayname));
-		wprintf(L" <%s_%s> (%s)", iso639, iso3166, displayname); // "9_9 (displayname)"
+		cprintw(L" <%s_%s> (%s)", iso639, iso3166, displayname); // "9_9 (displayname)"
 	}
 
-	ConsoleClearEOL(oconsole);
-	wprintf(L"\nCP:   oem=%u/0x%x, acp=%u/0x%x, cin=%u/0x%x, cout=%u/0x%x",
+	cprintw(L"\nCP:   oem=%u/0x%x, acp=%u/0x%x, cin=%u/0x%x, cout=%u/0x%x",
 	    GetOEMCP(), GetOEMCP(), GetACP(), GetACP(), GetConsoleCP(), GetConsoleCP(), GetConsoleOutputCP(), GetConsoleOutputCP());
 
-	ConsoleClearEOL(oconsole);
-	wprintf(L"\n");
-
-	ConsoleClearEOL(oconsole);
-	wprintf(L"\n");
+	cprintw(L"\n\n");
 }
+
 
 /*
  * KeyboardStatus ---
@@ -404,6 +391,7 @@ KeyboardStatus(HANDLE console, const struct KBRow **rows, BYTE *status)
 			SetConsoleCursorPosition(console, coord);
 			c += KeyboardKey(console, 2, key, status);
 		}
+                ConsoleCEOL(console);
 		coord.Y += 1;
 
 		for (c = 0, key = rows[r]; key->vk; ++key) {
@@ -411,6 +399,7 @@ KeyboardStatus(HANDLE console, const struct KBRow **rows, BYTE *status)
 			SetConsoleCursorPosition(console, coord);
 			c += KeyboardKey(console, 1, key, status);
 		}
+                ConsoleCEOL(console);
 		coord.Y += 2;
 	}
 	coord.X = 0;
@@ -578,7 +567,7 @@ XKBTranslation(const key_event_t *evt)
 	}
 
 	assert(cursor < (text + sizeof(text)));
-	printf("XKB: %s", text);
+	cprinta("XKB: %s", text);
 }
 
 

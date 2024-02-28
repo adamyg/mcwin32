@@ -49,11 +49,7 @@
 #include "kbdefinition.h"
 #include "kbvirtualextra.h"
 #include "kbmap.h"
-
-
-#if !defined(_countof)
-#define _countof(a) (sizeof(a)/sizeof(a[0]))
-#endif
+#include "kbutil.h"
 
 typedef enum Element {
 	elmNone			= 0,
@@ -75,7 +71,7 @@ typedef struct {
 	PhysicalKey	*current;
 } ParserContext;
 
-static int __cdecl PhysicalKeysCompare(const void *a, const void *b);
+static int /*_cdecl*/ PhysicalKeysCompare(const void *a, const void *b);
 static void XMLCALL OnStartElement(void *data, const char *name, const char **attrs);
 static void XMLCALL OnEndElement(void *data, const char *name);
 static void XMLCALL OnTextElement(void *data, const char *s, int len);
@@ -145,7 +141,7 @@ KBDefinitionLoad(const char *source)
 }
 
 
-static int __cdecl
+static int /*__cdecl*/
 PhysicalKeysCompare(const void *a, const void *b)
 {
 	const PhysicalKey *v1 = (const PhysicalKey *)(a), *v2 = (const PhysicalKey *)(b);
@@ -468,3 +464,4 @@ AttributeWITH(const char *value)
 }
 
 //end
+

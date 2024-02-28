@@ -1,7 +1,7 @@
 #ifndef KBMAP_H_INCLUDED
 #define KBMAP_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(kbmap_h,"$Id: kbmap.h,v 1.5 2024/02/17 08:23:14 cvsuser Exp $")
+__CIDENT_RCSID(kbmap_h,"$Id: kbmap.h,v 1.6 2024/02/27 17:18:08 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -80,3 +80,4 @@ __END_DECLS
 #endif // KBMAP_H_INCLUDED
 
 //end
+

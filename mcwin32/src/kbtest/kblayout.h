@@ -1,7 +1,7 @@
 #ifndef KBLAYOUT_H_INCLUDED
 #define KBLAYOUT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(kblayout_h,"$Id: kblayout.h,v 1.2 2024/02/17 08:23:13 cvsuser Exp $")
+__CIDENT_RCSID(kblayout_h,"$Id: kblayout.h,v 1.3 2024/02/27 17:18:08 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -49,3 +49,4 @@ const struct KBRow **KBLayoutBuild(const struct KBDefinition *def);
 #endif //KBLAYOUT_H_INCLUDED
 
 //end
+

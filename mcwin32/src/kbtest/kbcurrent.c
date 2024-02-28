@@ -39,6 +39,7 @@
 #include <assert.h>
 
 #include "kbdefinition.h"
+#include "kbutil.h"
 
 static unsigned VirtualKeys(const HKL hkl, unsigned *vk2sc);
 
@@ -193,3 +194,4 @@ VirtualKeys(const HKL hkl, unsigned *vk2sc)
 }
 
 //end
+
