@@ -29,6 +29,11 @@
 
 #include <config.h>
 
+#if defined(WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #include <ctype.h>
 #include <errno.h>
 #include <stddef.h>             /* ptrdiff_t */
