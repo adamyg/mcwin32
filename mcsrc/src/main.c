@@ -269,60 +269,8 @@ main (int argc, char *argv[])
 
     mc_global.run_from_parent_mc = !check_sid ();
 
-#if (0)
-    {
-        extern void OutputDebugPrintA(const char *, ...);   
-        extern void OutputDebugPrintW(const wchar_t *, ...);
-        wchar_t iso639[16] = { 0 }, iso3166[16] = { 0 }, displayname[256] = { 0 };
-        LCID lcid;
-        
-        lcid = GetSystemDefaultLCID();
-        OutputDebugPrintA("LCID: system %u/0x%x\n", lcid, lcid);
-        lcid = GetUserDefaultLCID();
-        OutputDebugPrintA("LCID: user   %u/0x%x\n", lcid, lcid);
-        lcid = GetThreadLocale();
-        OutputDebugPrintA("LCID: thread %u/0x%x\n", lcid, lcid);
-        if (GetLocaleInfoW(lcid, LOCALE_SISO639LANGNAME, iso639, _countof(iso639)) &&
-                GetLocaleInfoW(lcid, LOCALE_SISO3166CTRYNAME, iso3166, _countof(iso3166))) {
-            GetLocaleInfoW(lcid, LOCALE_SLOCALIZEDCOUNTRYNAME, displayname, _countof(displayname));
-            OutputDebugPrintW(L"LCID: name   %s_%s (%s)\n", iso639, iso3166, displayname); // "9_9 (displayname)"
-        }
-        OutputDebugPrintA("OEMCP:       %u/0x%x\n", GetOEMCP(), GetOEMCP());
-        OutputDebugPrintA("ACP:         %u/0x%x\n", GetACP(), GetACP());
-        OutputDebugPrintA("ICP:         %u/0x%x\n", GetConsoleCP(), GetConsoleCP());
-        OutputDebugPrintA("OCP:         %u/0x%x\n", GetConsoleOutputCP(), GetConsoleOutputCP());
-
-        ////////////////////////////
-
-        SetThreadLocale(MAKELCID(MAKELANGID(LANG_ITALIAN, SUBLANG_ITALIAN), SORT_DEFAULT)); // or SUBLANG_ITALIAN_SWISS
-        SetThreadUILanguage(MAKELANGID(LANG_ITALIAN, SUBLANG_ITALIAN));
-        OutputDebugPrintA("LCID: set    LANG_ITALIAN, SUBLANG_ITALIAN\n");
-
-        lcid = GetUserDefaultLCID();
-        OutputDebugPrintA("LCID: user   %u/0x%x\n", lcid, lcid);
-        lcid = GetThreadLocale();
-        OutputDebugPrintA("LCID: thread %u/0x%x\n", lcid, lcid);
-        if (GetLocaleInfoW(lcid, LOCALE_SISO639LANGNAME, iso639, _countof(iso639)) &&
-                GetLocaleInfoW(lcid, LOCALE_SISO3166CTRYNAME, iso3166, _countof(iso3166))) {
-            GetLocaleInfoW(lcid, LOCALE_SLOCALIZEDCOUNTRYNAME, displayname, _countof(displayname));
-            OutputDebugPrintW(L"LCID: name   %s_%s (%s)\n", iso639, iso3166, displayname); // "9_9 (displayname)"
-        }
-        OutputDebugPrintA("OEMCP:       %u/0x%x\n", GetOEMCP(), GetOEMCP());
-        OutputDebugPrintA("ACP:         %u/0x%x\n", GetACP(), GetACP());
-
-        SetConsoleCP(GetACP());
-        SetConsoleOutputCP(GetACP());
-        OutputDebugPrintA("IP:          %u/0x%x\n", GetConsoleCP(), GetConsoleCP());
-        OutputDebugPrintA("OCP:         %u/0x%x\n", GetConsoleOutputCP(), GetConsoleOutputCP());
-    }
-
-#ifdef HAVE_SETLOCALE
-    (void) setlocale (LC_ALL, "it-IT");
-#endif
-#else   
 #ifdef HAVE_SETLOCALE
     (void) setlocale (LC_ALL, "");  /* We had LC_CTYPE before, LC_ALL includs LC_TYPE as well */
-#endif
 #endif
 
     (void) bindtextdomain (PACKAGE, LOCALEDIR);
