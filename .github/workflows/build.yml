@@ -41,11 +41,6 @@ jobs:
     - name: Checkout submodules
       run: |
         git submodule update --init --recursive
-        
-    - name: vcpkg packages
-      if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')
-      run: |
-        vcpkg install --triplet x64-windows gettext
 
     - name: MSVC setup
       uses: ilammy/msvc-dev-cmd@v1
@@ -70,6 +65,11 @@ jobs:
       with:
         version: "2.0"
         location: "C:\\Watcom"
+        
+    - name: Windows extra
+      if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')
+      run: |
+        c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gettext-tools
 
     - name: Generate
       if: startsWith(matrix.config.name, 'Windows Latest')
@@ -77,7 +77,7 @@ jobs:
       run: |
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
-        @if "${{ matrix.config.toolchain }}"=="owc20"  call .\mcwin32\support\owc20setenv.bat C:\Watcom
+        @if "${{ matrix.config.toolchain }}"=="owc20"   call .\mcwin32\support\owc20setenv.bat C:\Watcom
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose "${{ matrix.config.toolchain }}"
@@ -88,7 +88,9 @@ jobs:
       run: |
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
-        @if "${{ matrix.config.toolchain }}"=="owc20"  call .\mcwin32\support\owc20setenv.bat C:\Watcom
+        @if "${{ matrix.config.toolchain }}"=="owc20"   call .\mcwin32\support\owc20setenv.bat C:\Watcom
+        @if "${{ matrix.config.toolchain }}"=="owc20"   set PATH=%PATH%;c:\msys64\mingw64\bin
+        @if "${{ matrix.config.toolchain }}"=="vs2022"  set PATH=%PATH%;c:\msys64\mingw64\bin
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         .\support\gmake-42 release build
