@@ -36,7 +36,7 @@ jobs:
     steps:
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Checkout submodules
       run: |
@@ -96,7 +96,7 @@ jobs:
         .\support\gmake-42 release build
 
     - name: Package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: package-${{ matrix.config.toolchain }}
         path: mcwin32/bin.${{ matrix.config.toolversion }}/release/*
