@@ -59,8 +59,9 @@ jobs:
       run: |
         c:\msys64\usr\bin\pacman --noconfirm -S base-devel
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gcc
+        c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gettext-tools
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-i686-gcc
-        c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gettext
+        c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-i686-gettext-tools
         dir c:\msys64\usr\bin
 
     - name: OpenWatcom setup
