@@ -558,7 +558,6 @@ else
 MC_RES=		$(D_OBJ)/mc.res
 endif
 
-
 OBJS=		$(MC_OBJS)
 
 
@@ -687,6 +686,8 @@ CONFIGURATION=\
 
 TARGETS=\
 	$(D_BIN)/mc$(E)				\
+	$(D_BIN)/mcdiff$(E)			\
+	$(D_BIN)/kbtest$(E)			\
 	$(D_BIN)/man2hlp.pl
 
 IMPORT=\
@@ -912,6 +913,8 @@ clean:
 		$(MAKE) -C libregex clean
 		$(MAKE) -C libz clean
 		$(MAKE) -C libw32 clean
+		$(MAKE) -C diff clean
+		$(MAKE) -C kbtest clean
 		$(MAKE) -C autoupdater clean
 		-$(RM) $(MSGOBJS) $(MSGDIRS) $(QUIETOUT)
 		-$(RM) $(CONFIGURATION) $(QUIETOUT)
@@ -931,6 +934,12 @@ vclean:		clean
 $(D_BIN)/mc$(E):	MAPFILE=$(basename $@).map
 $(D_BIN)/mc$(E):		$(MC_OBJS) $(MC_RES) $(LDLIBRARIES)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS) @LDMAPFILE@
+
+$(D_BIN)/mcdiff$(E):
+		$(MAKE) -C diff
+
+$(D_BIN)/kbtest$(E):
+		$(MAKE) -C src/kbtest
 
 $(MC_RES):			config.h buildinfo.h
 

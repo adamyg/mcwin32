@@ -1,0 +1,260 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id: Makefile.in,v 1.2 2024/03/03 06:56:44 cvsuser Exp $
+# mcdiff
+#
+#
+#
+
+@SET_MAKE@
+ROOT=		@abs_top_builddir@
+top_builddir=	@top_builddir@
+
+# Configuration
+
+PACKAGE=	"mc"
+PKG_NAME=	"mcdiff"
+PKG_VERSION=	1.0.2
+
+# File extensions
+
+E=
+O=		.o
+A=		.a
+LP=		lib
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+CXX=		@CXX@
+AR=		@AR@
+RANLIB=		@RANLIB@
+RM=		@RM@
+PERL=		@PERL@
+LIBTOOL=	@LIBTOOL@
+RC=		@RC@
+
+BUSYBOX=	@BUSYBOX@
+ifeq ($(BUSYBOX),busybox)
+BUSYBOX=	$(shell which busybox 2>/dev/null)
+endif
+
+BUILD_DATE=	$(shell $(BUSYBOX) date +'%Y%m%d')
+ifneq ($(APPVEYOR_BUILD_NUMBER),)
+BUILD_NUMBER=	$(APPVEYOR_BUILD_NUMBER)
+else ifneq ($(GITHUB_RUN_NUMBER),)
+BUILD_NUMBER=	$(GITHUB_RUN_NUMBER)
+else
+BUILD_NUMBER=	$(shell $(BUSYBOX) cat ../BUILDNUMBER)
+endif
+
+# Configuration
+
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
+endif
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
+endif
+
+# Directories
+
+D_INC=		$(ROOT)/include
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/mcdiff
+
+# Common flags
+
+XFLAGS=
+CFLAGS=		@CFLAGS@
+CWARN=		@CWARN@ $(CWALL)
+ifeq ("gcc","@CC@")
+#CWARN+=	-Wno-shadow -Wno-sign-compare -Wno-type-limits
+#CWARN+=	-Wno-unused-variable -Wno-unused-parameter
+#CWARN+=	-Wno-unused-parameter -Wno-unused-function
+#CWARN+=	-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
+CDEBUG=		@CDEBUG@
+CRELEASE=	@CRELEASE@
+CXXFLAGS=	@CXXFLAGS@
+ifeq ("gcc","@CC@")
+CXXFLAGS+=	-fpermissive
+endif
+CXXDEBUG=	@CXXDEBUG@
+ifeq ("$(CXXDEBUG)","")
+CXXDEBUG=	$(CDEBUG)
+endif
+CXXRELEASE=	@CXXRELEASE@
+ifeq ("$(CXXRELEASE)","")
+CXXRELEASE=	$(CRELEASE)
+endif
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
+
+CINCLUDE=	-I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@ @LIBCURL_CPPFLAGS@ -DLIBTRE_DLL
+ifdef PURIFY
+CEXTRA+=	-DUSING_PURIFY
+endif
+ifeq ("win32","@build_os@")
+CEXTRA+=	-DWIN32
+endif
+CDEPFLAGS=	$(CEXTRA) $(CINCLUDE)
+
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXRELEASE) $(CXXWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXDEBUG) $(CXXWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+LDLIBS=		-L$(D_LIB) $(D_LIB)/$(LP)regex$(A) @LIBS@ @EXTRALIBS@
+
+YFLAGS=		-d
+ARFLAGS=	rcv
+RMFLAGS=	-f
+RMDFLAGS=	-rf
+
+
+#########################################################################################
+# Targets
+
+MCDIFFLIB=	$(D_LIB)/$(LP)mcdiff$(A)
+
+MCDIFFTSK=	$(D_BIN)/mcdiff$(E)
+MCDIFFSRC=	.
+
+VPATH+=		./compat
+LIBCSOURCES=\
+	bcopy.c			\
+	bzero.c			\
+	explicit_bzero.c	\
+	fgetln.c		\
+	getline.c		\
+	fnmatch.c		\
+	localtime_r.c		\
+	mktemp.c		\
+	qsort_r.c		\
+	scandir.c		\
+	strndup.c		\
+	strtonum.c		\
+	\
+	reallocarray.c		\
+	recallocarray.c		\
+	\
+	asprintf.c		\
+	vasprintf.c
+
+VPATH+=		$(MCDIFFSRC)
+CSOURCES=\
+	diff.c			\
+	diffdir.c		\
+	diffreg.c		\
+	diffwin.c		\
+	xmalloc.c
+
+##	$(D_OBJ)/pr.c
+
+LIBOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(LIBCSOURCES)))
+
+TSKOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
+
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+TSKOBJS+=	$(D_OBJ)/mcdiff_res.o
+else
+TSKOBJS+=	$(D_OBJ)/mcdiff.res
+endif
+
+OBJS=		$(LIBOBJS) $(TSKOBJS)
+LIBS=		$(MCDIFFLIB)
+DLLS=
+TSKS=		$(MCDIFFTSK)
+INSTALLED=
+GENERATED=
+
+
+#########################################################################################
+# Rules
+
+.PHONY:			headers build release debug
+build:			headers buildinfo $(LIBS) $(DLLS) $(TSKS)
+
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+headers:		diff_license.h diff_usage.h
+
+GENERATED+=		diff_license.h
+diff_license.h:		LICENSE ../support/mklicense.pl
+		@$(PERL) ../support/mklicense.pl $< $@ diff_license
+
+GENERATED+=		diff_usage.h
+diff_usage.h:		man.txt ../support/mklicense.pl
+		@$(PERL) ../support/mklicense.pl $< $@ diff_usage
+
+$(MCDIFFLIB):		CEXTRA += -I./compat -DLIBCOMPAT_SOURCE
+$(MCDIFFLIB):		CEXTRA += -DLIBW32_DYNAMIC
+$(MCDIFFLIB):		$(D_OBJ)/.created $(LIBOBJS)
+		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
+		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
+		$(RANLIB) $@
+
+$(MCDIFFTSK):		CEXTRA += -I. -I./compat
+$(MCDIFFTSK):		CEXTRA += -DLIBW32_DYNAMIC
+$(MCDIFFTSK):		MAPFILE=$(basename $@).map
+$(MCDIFFTSK):		$(D_OBJ)/.created $(TSKOBJS)
+		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(TSKOBJS) $(MCDIFFLIB) $(LDLIBS) -MAP:$(MAPFILE)
+
+.PHONY:		buildinfo
+mcdiffinfo.h:		buildinfo
+buildinfo:	Makefile ../buildinfo.pl
+		@echo updating mcdiffinfo.h ...
+		-@$(PERL) ..//buildinfo.pl -o mcdiffinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
+			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@"
+
+%/.created:
+		-@mkdir $(@D)
+		@echo "do not delete, managed directory" > $@
+
+clean:
+		@echo $(BUILD_TYPE) clean
+		-@$(LIBTOOL) --mode=clean $(RM) $(OBJS) $(DLLS) $(DLLOBJS) $(QUIETOUT)
+		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
+		-@$(RM) $(LIBOBJS) $(QUIETOUT)
+
+$(D_OBJ)/%$(O):		%.cpp
+		$(CC) $(CXXFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%$(O):		%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		%.cpp
+		$(LIBTOOL) --mode=compile $(CC) $(CXXFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.lo:		%.c
+		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJ)/%.res:		%.rc
+		$(RC) -fo $@ $(RCDEFS) $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) -o $@ $(RCDEFS) $<
+
+#end

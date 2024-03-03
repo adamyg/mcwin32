@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.14 2023/10/02 12:11:28 cvsuser Exp $
+# $Id: makelib.in,v 1.16 2024/03/03 07:32:03 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -93,6 +93,8 @@ $PACKAGE_FILE	= 'package.h';
 	'libmagic',
 	'libintl',
 	'libglib',
+	'src/kbtest',
+	'diff',
 	'autoupdater'
 	);
 
