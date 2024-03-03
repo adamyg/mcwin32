@@ -90,7 +90,7 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="owc20"   call .\mcwin32\support\owc20setenv.bat C:\Watcom
         @if "${{ matrix.config.toolchain }}"=="owc20"   set PATH=%PATH%;c:\msys64\mingw64\bin
-        @if "${{ matrix.config.toolchain }}"=="vs2022"  set PATH=%PATH%;c:\msys64\mingw64\bin
+        @if "${{ matrix.config.toolchain }}"=="vc2022"  set PATH=%PATH%;c:\msys64\mingw64\bin
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         .\support\gmake-42 release build

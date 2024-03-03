@@ -1,7 +1,7 @@
 ;
 ; Midnight Commander - Inno Setup
 ;
-; Adam Young, 2012 - 2023
+; Adam Young, 2012 - 2024
 ; This file is part of the Midnight Commander.
 ;
 ; The Midnight Commander is free software: you can redistribute it
@@ -100,6 +100,7 @@ Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; DestName: "mcedit.exe"; Flags: ignoreversion
 ;;Source: "..\{#BinDir}\mc.map";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcupdater.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mcdiff.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\file.exe";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\enca.exe";      DestDir: "{app}"; Flags: ignoreversion
