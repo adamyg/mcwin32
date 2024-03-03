@@ -230,9 +230,9 @@ LIBW32_API void         _wseekdir __P((_WDIR *, long));
 LIBW32_API long         _wtelldir __P((_WDIR *));
 LIBW32_API int          _wreaddir_r __P((_WDIR *, struct _wdirent *, struct _wdirent **)); /*deprecated*/
 
-LIBW32_API int          alphasort __P((const void *, const void *));
-LIBW32_API int          scandir __P((void));
-LIBW32_API int          getdirentries __P((int, char *, int, long *));
+//LIBW32_API int          alphasort __P((const void *, const void *));
+//LIBW32_API int          scandir __P((void));
+//LIBW32_API int          getdirentries __P((int, char *, int, long *));
 #endif  /*_POSIX_SOURCE*/
 
 __END_DECLS

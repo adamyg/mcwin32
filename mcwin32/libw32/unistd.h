@@ -632,9 +632,9 @@ LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, size_t size);
 LIBW32_API int          w32_mkstemp (char *path);
 LIBW32_API int          w32_mkstempA (char *path);
 LIBW32_API int          w32_mkstempW (wchar_t *path);
-#if defined(_MSC_VER)
-LIBW32_API int          mkstemp (char *path);
-#endif
+//#if defined(_MSC_VER)
+//LIBW32_API int          mkstemp (char *path);
+//#endif
 
 LIBW32_API int          w32_mkstemps (char *path, int suffixlen);
 LIBW32_API int          w32_mkstempsA (char *path, int suffixlen);
