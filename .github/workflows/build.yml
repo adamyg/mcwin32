@@ -41,6 +41,11 @@ jobs:
     - name: Checkout submodules
       run: |
         git submodule update --init --recursive
+        
+    - name: vcpkg packages
+      if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')
+      run: |
+        vcpkg install --triplet x64-windows gettext
 
     - name: MSVC setup
       uses: ilammy/msvc-dev-cmd@v1
