@@ -529,6 +529,14 @@ dview_popen (const char *cmd, int flags)
     f = popen (cmd, type);
     if (f == NULL)
     {
+#if defined(WIN32) && (0) //TODO: expand error reporting
+        const char *t_cmd = strstr(cmd, "mcdiff ");
+        char *errmsg;
+
+        errmsg = g_strdup_printf (_("Cannot open pipe for reading: %s"), t_cmd ? t_cmd : cmd);
+        query_dialog (_("Error"), errmsg, D_ERROR, 1, _("&Dismiss"));
+        g_free (errmsg);
+#endif //WIN32
         dview_ffree (fs);
         return NULL;
     }
@@ -804,15 +812,36 @@ scan_diff (FBUF * f, GArray * ops)
  * @return positive number indicating number of hunks, otherwise negative
  */
 
+#if defined(WIN32)
+const char *
+mcdiff(void)
+{
+    static char mcdiff[1024] = {0};
+    if (0 == mcdiff[0]) {
+        char *end = NULL;
+        if (GetModuleFileNameA(NULL, mcdiff, sizeof(mcdiff) - 6)) {
+            end = (char *)strrchr(mcdiff, '\\');
+        }
+        strcpy(end ? (end + 1) : mcdiff, "mcdiff");
+    }
+    return mcdiff;
+}
+#endif //WIN32
+
 static int
 dff_execute (const char *args, const char *extra, const char *file1, const char *file2,
              GArray * ops)
 {
+#if defined(WIN32)
+    static const char *opt =
+        " --mc-format";
+#else
     static const char *opt =
         " --old-group-format='%df%(f=l?:,%dl)d%dE\n'"
         " --new-group-format='%dea%dF%(F=L?:,%dL)\n'"
         " --changed-group-format='%df%(f=l?:,%dl)c%dF%(F=L?:,%dL)\n'"
         " --unchanged-group-format=''";
+#endif
 
     int rv;
     FBUF *f;
@@ -823,7 +852,11 @@ dff_execute (const char *args, const char *extra, const char *file1, const char 
     /* escape potential $ to avoid shell variable substitutions in popen() */
     file1_esc = strutils_shell_escape (file1);
     file2_esc = strutils_shell_escape (file2);
+#if defined(WIN32)
+    cmd = g_strdup_printf ("%s %s %s %s %s %s", mcdiff(), args, extra, opt, file1_esc, file2_esc);
+#else
     cmd = g_strdup_printf ("diff %s %s %s %s %s", args, extra, opt, file1_esc, file2_esc);
+#endif
     g_free (file1_esc);
     g_free (file2_esc);
 
@@ -3419,7 +3452,7 @@ diff_view (const char *file1, const char *file2, const char *label1, const char 
 
     dview_dlg->get_title = dview_get_title;
 
-    error = dview_init (dview, "-a", file1, file2, label1, label2, DATA_SRC_MEM);       /* XXX binary diff? */
+    error = dview_init (dview, "-a", file1, file2, label1, label2, DATA_SRC_MEM); /* XXX binary diff? */
 
     if (error == 0)
         dlg_run (dview_dlg);
