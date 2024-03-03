@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.9 2024/01/01 15:25:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.10 2024/02/02 15:18:41 cvsuser Exp $")
 
 /*
  * iconv implementation using Win32 API to convert.

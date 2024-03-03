@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.15 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.16 2024/03/03 11:29:13 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -280,22 +280,30 @@ PipeA(const char *cmd, const char *mode)
     assert('r' == p->readOrWrite || 'w' == p->readOrWrite);
 
     if ('r' == p->readOrWrite) {
+        const int fd = 
+            _open_osfhandle((OSFHANDLE)out_read, _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT) | _O_RDONLY);
+
+        if (-1 == fd) 
+            goto pipe_error;
+        out_read = INVALID_HANDLE_VALUE;        // fd has ownership
         if (NULL == (p->file = _fdopen(         // readable end of the pipe
-                _open_osfhandle((OSFHANDLE)out_read,
-                    _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
-                    'b' == textOrBinary ? "rb" : "rt"))) {
+                        fd, 'b' == textOrBinary ? "rb" : "rt"))) {
+            _close(fd);
             goto pipe_error;
         }
-        out_read = INVALID_HANDLE_VALUE;
 
     } else {
+        const int fd =
+            _open_osfhandle((OSFHANDLE)in_write, _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT));
+
+        if (-1 == fd) 
+            goto pipe_error;
+        in_write = INVALID_HANDLE_VALUE;        // fd has ownership
         if (NULL == (p->file = _fdopen(         // writeable end of the pipe
-                _open_osfhandle((OSFHANDLE)in_write,
-                    _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
-                    'b' == textOrBinary ? "wb" : "wt"))) {
+                        fd, 'b' == textOrBinary ? "wb" : "wt"))) {
+            _close(fd);
             goto pipe_error;
         }
-        in_write = INVALID_HANDLE_VALUE;
     }
     setvbuf(p->file, NULL, _IONBF, 0);          // non-buffered
 
@@ -433,22 +441,30 @@ PipeW(const wchar_t *cmd, const char *mode)
     }
 
     if ('r' == p->readOrWrite) {
+        const int fd = 
+            _open_osfhandle((OSFHANDLE)out_read, _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT) | _O_RDONLY);
+
+        if (-1 == fd) 
+            goto pipe_error;
+        out_read = INVALID_HANDLE_VALUE;        // fd has ownership
         if (NULL == (p->file = _fdopen(         // readable end of the pipe
-                _open_osfhandle((OSFHANDLE)out_read,
-                    _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
-                    'b' == textOrBinary ? "rb" : "rt"))) {
+                        fd, 'b' == textOrBinary ? "rb" : "rt"))) {
+            _close(fd);
             goto pipe_error;
         }
-        out_read = INVALID_HANDLE_VALUE;
 
     } else {
+        const int fd =
+            _open_osfhandle((OSFHANDLE)in_write, _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT));
+
+        if (-1 == fd) 
+            goto pipe_error;
+        in_write = INVALID_HANDLE_VALUE;        // fd has ownership
         if (NULL == (p->file = _fdopen(         // writeable end of the pipe
-                _open_osfhandle((OSFHANDLE)in_write,
-                    _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT)),
-                    'b' == textOrBinary ? "wb" : "wt"))) {
+                        fd, 'b' == textOrBinary ? "wb" : "wt"))) {
+            _close(fd);
             goto pipe_error;
         }
-        in_write = INVALID_HANDLE_VALUE;
     }
     setvbuf(p->file, NULL, _IONBF, 0);          // non-buffered
 

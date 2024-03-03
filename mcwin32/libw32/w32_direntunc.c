@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.11 2024/01/16 15:17:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.12 2024/03/03 11:29:13 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -106,7 +106,7 @@ w32_unc_iterateW(const wchar_t *servername, unc_push_t push, void *data)
             // build directory ..
             for (e = 0, ent = buffer; e < entries; ++e, ++ent) {
                 if (STYPE_DISKTREE == ent->shi502_type) {
-                    const WCHAR *filename = ent->shi502_netname;
+                    const wchar_t *filename = ent->shi502_netname;
 
                     if ('p' == filename[0]) {   // prnproc$ or print$
                         if (0 == wcscmp(filename, L"prnproc$") ||
