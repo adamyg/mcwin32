@@ -1295,7 +1295,7 @@ display_bits_box (void)
         gboolean new_meta;
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[19+2] = {0},
+        quick_widget_t quick_widgets[20 + 2] = {0},
             *qc = quick_widgets;
 #else
         quick_widget_t quick_widgets[] = {
@@ -1333,6 +1333,7 @@ display_bits_box (void)
 
         const int visible_num = G_N_ELEMENTS (visible_options);
         int visible_option, audible_beep, legacy_beep;
+        int altgr = (mc_global.tty.altgr_enabled != 0);
 
         alert_options_decode (&visible_option, &audible_beep, &legacy_beep);
 
@@ -1351,6 +1352,7 @@ display_bits_box (void)
         qc = XQUICK_NEXT_COLUMN (qc),
         qc =    XQUICK_START_GROUPBOX (qc, N_("Other Options")),
         qc =        XQUICK_CHECKBOX (qc, N_("F&ull 8 bits input"), &new_meta, NULL),
+        qc =        XQUICK_CHECKBOX (qc, N_("AltGr input"), &altgr, NULL),
         qc =    XQUICK_STOP_GROUPBOX (qc),
         qc = XQUICK_STOP_COLUMNS (qc),
         qc = XQUICK_BUTTONS_OK_CANCEL (qc),
@@ -1375,8 +1377,9 @@ display_bits_box (void)
                 g_free (errmsg);
             }
 
-#if defined(WIN32)  //WIN32, alert-options
+#if defined(WIN32) //WIN32, alert-options/AltGr
             alert_options_apply (visible_option, audible_beep, legacy_beep);
+            mc_global.tty.altgr_enabled = altgr;
 #endif
 
 #ifdef HAVE_SLANG

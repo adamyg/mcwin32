@@ -5,7 +5,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2023
+   Written by: Adam Young 2012 - 2024
 
    This file is part of the Midnight Commander.
 
