@@ -52,7 +52,11 @@ DefaultGroupName=Midnight Commander
 LicenseFile=..\{#BinDir}\doc\COPYING
 
 OutputDir=.
+#if defined(BUILD_TOOLCHAIN)
+OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-{#BUILD_TOOLCHAIN}-setup
+#else
 OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
+#endif
 Compression=lzma
 SolidCompression=yes
 ChangesEnvironment=true
@@ -104,6 +108,7 @@ Source: "..\{#BinDir}\mcdiff.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\file.exe";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\enca.exe";      DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\kbtest.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\*.dll";         DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\man2hlp.pl";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\etc\*";         Excludes: ".created"; DestDir: "{app}\etc";    Flags: ignoreversion recursesubdirs createallsubdirs
