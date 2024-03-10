@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <unistd.h>
 
 #include "diff.h"
@@ -514,10 +515,16 @@ checked_regcomp(char const *pattern, regex_t *comp)
 static void
 set_argstr(char **av, char **ave)
 {
-	size_t argsize;
+	size_t argsize = 5; // "diff\0"
 	char **ap;
 
-	argsize = 4 + *ave - *av + 1;
+//WIN32	argsize = 4 + *ave - *av + 1;
+	for (ap = av + 1; ap < ave; ap++) {
+		if (strcmp(*ap, "--") != 0) {
+			argsize += 1 + strlen(*ap);
+		}
+	}
+
 	diffargs = xmalloc(argsize);
 	strlcpy(diffargs, "diff", argsize);
 	for (ap = av + 1; ap < ave; ap++) {
@@ -687,7 +694,7 @@ do_color(void)
 		p2 = getenv("COLORTERM");
 		if ((p != NULL && *p != '\0') || (p2 != NULL && *p2 != '\0')) {
 			return (bool)isatty(STDOUT_FILENO);
-                }
+		}
 #endif
 		break;
 	case COLORFLAG_ALWAYS:
