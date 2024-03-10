@@ -140,6 +140,20 @@ fill_by_space (char *buf, size_t n, gboolean zero_terminate)
 
 /* --------------------------------------------------------------------------------------------- */
 
+#if defined(WIN32)
+static FILE *
+fopen_binary(const char *path, const char *mode)
+{
+    if ('r' == mode[0])
+        return fopen(path, "rb");
+    if ('w' == mode[0])
+        return fopen(path, "wb");
+    return NULL;
+}
+
+#define fopen(__a,__b) fopen_binary(__a,__b) 
+#endif
+
 static gboolean
 rewrite_backup_content (const vfs_path_t * from_file_name_vpath, const char *to_file_name)
 {
@@ -306,7 +320,11 @@ dview_fopen (const char *filename, int flags)
     if (fs == NULL)
         return NULL;
 
+#if defined(WIN32)
+    fd = open (filename, flags|O_BINARY);
+#else
     fd = open (filename, flags);
+#endif
     if (fd < 0)
     {
         dview_ffree (fs);
@@ -2651,7 +2669,16 @@ dview_display_file (const WDiff * dview, diff_place_t ord, int r, int c, int hei
 
 #ifdef HAVE_CHARSET
                     if (dview->utf8)
-                        k = dview_str_utf8_offset_to_pos (p->p, width);
+                    {
+//WIN32                 k = dview_str_utf8_offset_to_pos (p->p, width);
+                        if (width > p->u.len)
+                        {
+                            k = dview_str_utf8_offset_to_pos (p->p, p->u.len);
+                            k += width - p->u.len;
+                        }
+                        else
+                            k = dview_str_utf8_offset_to_pos (p->p, width);
+                    }
                     else
 #endif
                         k = width;
@@ -2710,7 +2737,16 @@ dview_display_file (const WDiff * dview, diff_place_t ord, int r, int c, int hei
 
 #ifdef HAVE_CHARSET
                 if (dview->utf8)
-                    k = dview_str_utf8_offset_to_pos (p->p, width);
+                {
+//WIN32             k = dview_str_utf8_offset_to_pos (p->p, width);
+                    if (width > p->u.len)
+                    {
+                        k = dview_str_utf8_offset_to_pos (p->p, p->u.len);
+                        k += width - p->u.len;
+                    }
+                    else
+                        k = dview_str_utf8_offset_to_pos (p->p, width);
+                }
                 else
 #endif
                     k = width;
