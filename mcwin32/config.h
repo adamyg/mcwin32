@@ -80,6 +80,8 @@ const char *                mc_EXTHELPERSDIR(void);
 #define LIBEXECDIR          mc_LIBEXECDIR()     /* /lib/mc */
 #define EXTHELPERSDIR       mc_EXTHELPERSDIR()  /* ???, 4.8.7 */
 
+extern void                 WIN32_Setup(void);
+
 extern FILE *               win32_popen(const char *cmd, const char *mode);
 extern int                  win32_pclose(FILE *file);
 

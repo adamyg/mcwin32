@@ -257,10 +257,6 @@ check_sid (void)
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
-#if defined(WIN32) //WIN32, config
-extern void WIN32_Setup(void);
-#endif //WIN32
-
 int
 main (int argc, char *argv[])
 {
