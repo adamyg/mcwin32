@@ -238,6 +238,20 @@ static char lastbuf[FUNCTION_CONTEXT_SIZE];
 static int lastline;
 static int lastmatchline;
 
+#if defined(WIN32)
+static FILE *
+fopen_binary(const char *path, const char *mode)
+{
+	if ('r' == mode[0])
+		return fopen(path, "rb");
+	if ('w' == mode[0])
+		return fopen(path, "wb");
+	return NULL;
+}
+
+#define fopen(__a,__b) fopen_binary(__a,__b) 
+#endif
+
 static int
 clow2low(int c)
 {
@@ -309,11 +323,7 @@ diffreg(char *file1, char *file2, int flags, int capsicum)
 		} else if (strcmp(file1, "-") == 0) {
 			f1 = stdin;
 		} else {
-#if defined(WIN32)
-			f1 = fopen(file1, "rb");
-#else
 			f1 = fopen(file1, "r");
-#endif
 		}
 	}
 	if (f1 == NULL) {
@@ -337,11 +347,7 @@ diffreg(char *file1, char *file2, int flags, int capsicum)
 		} else if (strcmp(file2, "-") == 0) {
 			f2 = stdin;
 		} else {
-#if defined(WIN32)
-			f2 = fopen(file2, "rb");
-#else
 			f2 = fopen(file2, "r");
-#endif
 		}
 	}
 	if (f2 == NULL) {
@@ -498,7 +504,11 @@ opentemp(const char *f)
 
 	if (strcmp(f, "-") == 0)
 		ifd = STDIN_FILENO;
+#if defined(WIN32)
+	else if ((ifd = open(f, O_RDONLY|O_BINARY, 0644)) == -1)
+#else
 	else if ((ifd = open(f, O_RDONLY, 0644)) == -1)
+#endif
 		return (NULL);
 
 	(void)strlcpy(tempfile, _PATH_TMP "/diff.XXXXXXXX", sizeof(tempfile));
