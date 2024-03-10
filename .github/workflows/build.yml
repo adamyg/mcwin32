@@ -109,7 +109,7 @@ jobs:
         choco install innosetup --version=5.6.1 --force
         cd mcwin32
         @rem .\support\gmake-42 release package
-        "%programfiles(x86)%\Inno Setup 5\ISCC" -DBUILD_INFO=1 -DBUILD_TYPE=release -DBUILD_TOOLCHAIN=${{ matrix.config.toolchain }} ".\releases\mc-inno-setup.iss"
+        "%programfiles(x86)%\Inno Setup 5\ISCC" -DBUILD_INFO=1 -DBUILD_TYPE=release ".\releases\mc-inno-setup.iss"
 
     - name: Release artifacts
       if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')

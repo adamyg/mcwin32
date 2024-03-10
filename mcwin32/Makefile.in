@@ -914,7 +914,7 @@ clean:
 		$(MAKE) -C libz clean
 		$(MAKE) -C libw32 clean
 		$(MAKE) -C diff clean
-		$(MAKE) -C kbtest clean
+		$(MAKE) -C src/kbtest clean
 		$(MAKE) -C autoupdater clean
 		-$(RM) $(MSGOBJS) $(MSGDIRS) $(QUIETOUT)
 		-$(RM) $(CONFIGURATION) $(QUIETOUT)

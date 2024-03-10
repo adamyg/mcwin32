@@ -52,8 +52,8 @@ DefaultGroupName=Midnight Commander
 LicenseFile=..\{#BinDir}\doc\COPYING
 
 OutputDir=.
-#if defined(BUILD_TOOLCHAIN)
-OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-{#BUILD_TOOLCHAIN}-setup
+#if defined(BUILD_TOOLNAME)
+OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-{#BUILD_TOOLNAME}-setup
 #else
 OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
 #endif
