@@ -84,6 +84,8 @@ extern void                 WIN32_Setup(void);
 
 extern FILE *               win32_popen(const char *cmd, const char *mode);
 extern int                  win32_pclose(FILE *file);
+extern void                 win32_ptrace(void);
+extern int                  win32_perror(int error, const char *msg);
 
 #ifndef popen
 #define popen(__cmd,__mode) win32_popen(__cmd, __mode)
