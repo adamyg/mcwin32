@@ -1317,7 +1317,7 @@ mc_isscript(const char *cmd)
 
 
 /**
- *  unquote an excaped command line; yet retain any existing quoted elements.
+ *  unquote an escaped command line; yet retain any existing quoted elements.
  */
 char *
 my_unquote(const char *cmd, int quotews)
@@ -1537,16 +1537,15 @@ win32_pclose(FILE *file)
  *  text is prepended to the error message from the pipe
  */
 void
-error_pipe_open(void)
+win32_ptrace(void)
 {
-    pe_open = 0;                                // open stream
+    pe_open = 0;                                /* open stream */
 }
 
 
 int
-error_pipe_close(int error, const char *text)
+win32_perror(int error, const char *msg)
 {
-    const char *title;
     int len;
 
     EnterCriticalSection(&pe_guard);
@@ -1554,42 +1553,32 @@ error_pipe_close(int error, const char *text)
     pe_open = -1;
     pe_stream = NULL;
     LeaveCriticalSection(&pe_guard);
-    if (len < 0) {
-        return 0;
+    if (len <= 0) {
+        return 0;                               /* nothing to show */
     }
 
-    if (error < 0 || (error > 0 && (error & D_ERROR) != 0)) {
-        title = MSG_ERROR;
-    } else {
-        title = _("Warning");
-    }
-
-    if (error < 0) {
-        return 0;                               /* just ignore error message */
-    }
-
-    /* Show message from pipe */
-    if (text == NULL) {
-        if (len <= 0) {
-            return 0;                           /* Nothing to show */
-        }
+    if (NULL == msg) {
         pe_buffer[len] = 0;
-        text = pe_buffer;
+        msg = pe_buffer;
 
-    } else {                                    /* Show given text and possible message from pipe */
-        const size_t textlen = strlen(text);
+    } else {                                    /* show given text and possible message from pipe */
+        const size_t textlen = strlen(msg);
 
         if (textlen + len < sizeof(pe_buffer)) {
             memmove(pe_buffer + textlen + 1, (const char *)pe_buffer, len);
-            memmove(pe_buffer, text, textlen);
-            len  += textlen + 1;
+            memmove(pe_buffer, msg, textlen);
+            len += textlen + 1;
             pe_buffer[textlen] = '\n';
             pe_buffer[len] = 0;
-            text = pe_buffer;
+            msg = pe_buffer;
         }
     }
 
-    query_dialog(title, text, D_NORMAL, 1, _("&Ok"));
+    if (error) {
+        query_dialog(MSG_ERROR, msg, D_ERROR, 1, _("&Dismiss"));
+    } else {
+        query_dialog(_("Warning"), msg, D_NORMAL, 1, _("&Ok"));
+    }
     return 1;
 }
 
