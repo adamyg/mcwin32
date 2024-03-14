@@ -549,17 +549,12 @@ dview_popen (const char *cmd, int flags)
     if (fs == NULL)
         return NULL;
 
+#if defined(WIN32)
+    win32_ptrace ();
+#endif
     f = popen (cmd, type);
     if (f == NULL)
     {
-#if defined(WIN32) && (0) //TODO: expand error reporting
-        const char *t_cmd = strstr(cmd, "mcdiff ");
-        char *errmsg;
-
-        errmsg = g_strdup_printf (_("Cannot open pipe for reading: %s"), t_cmd ? t_cmd : cmd);
-        query_dialog (_("Error"), errmsg, D_ERROR, 1, _("&Dismiss"));
-        g_free (errmsg);
-#endif //WIN32
         dview_ffree (fs);
         return NULL;
     }
@@ -579,13 +574,16 @@ dview_popen (const char *cmd, int flags)
  */
 
 static int
-dview_pclose (FBUF * fs)
+dview_pclose (FBUF * fs, const char *cmd)
 {
     int rv = -1;
 
     if (fs != NULL)
     {
         rv = pclose (fs->data);
+#if defined(WIN32)
+        win32_perror (rv != 0, cmd);
+#endif
         dview_ffree (fs);
     }
 
@@ -855,10 +853,7 @@ static int
 dff_execute (const char *args, const char *extra, const char *file1, const char *file2,
              GArray * ops)
 {
-#if defined(WIN32)
-    static const char *opt =
-        " --mc-format";
-#else
+#if !defined(WIN32)
     static const char *opt =
         " --old-group-format='%df%(f=l?:,%dl)d%dE\n'"
         " --new-group-format='%dea%dF%(F=L?:,%dL)\n'"
@@ -876,7 +871,8 @@ dff_execute (const char *args, const char *extra, const char *file1, const char 
     file1_esc = strutils_shell_escape (file1);
     file2_esc = strutils_shell_escape (file2);
 #if defined(WIN32)
-    cmd = g_strdup_printf ("%s %s %s %s %s %s", mcdiff(), args, extra, opt, file1_esc, file2_esc);
+    cmd = g_strdup_printf ("\"%s\"%s%s%s%s --mc-format \"%s\" \"%s\"", mcdiff(),
+                (*args ? " " : ""), args, (*extra ? " " : ""), extra, file1_esc, file2_esc);
 #else
     cmd = g_strdup_printf ("diff %s %s %s %s %s", args, extra, opt, file1_esc, file2_esc);
 #endif
@@ -887,13 +883,34 @@ dff_execute (const char *args, const char *extra, const char *file1, const char 
         return -1;
 
     f = dview_popen (cmd, O_RDONLY);
-    g_free (cmd);
-
+#if defined(WIN32)
     if (f == NULL)
+    {
+        const char *arg0 = strstr(cmd + 1, "\" ");
+        char *errmsg;
+
+        if (arg0) {
+            errmsg = g_strdup_printf (_("Cannot open pipe for reading: %s\n%s"), mcdiff(), arg0 + 2);
+        } else {
+            errmsg = g_strdup_printf (_("Cannot open pipe for reading: %s"), cmd);
+        }
+        query_dialog (_("Error"), errmsg, D_ERROR, 1, _("&Dismiss"));
+        g_free (errmsg);
+        g_free (cmd);
+        return -2; // command errpr
+    }
+
+#else
+    if (f == NULL) 
+    {
+        g_free (cmd);
         return -1;
+    }
+#endif
 
     rv = scan_diff (f, ops);
-    code = dview_pclose (f);
+    code = dview_pclose (f, cmd);
+    g_free (cmd);
 
     if (rv < 0 || code == -1 || !WIFEXITED (code) || WEXITSTATUS (code) == 2)
         rv = -1;
