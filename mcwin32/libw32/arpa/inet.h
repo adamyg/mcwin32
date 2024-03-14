@@ -1,12 +1,12 @@
 #ifndef LIBW32_ARPA_INET_H_INCLUDED
 #define LIBW32_ARPA_INET_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_arpa_inet_h,"$Id: inet.h,v 1.4 2023/11/06 15:08:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_arpa_inet_h,"$Id: inet.h,v 1.5 2024/03/14 18:54:32 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * Copyright (c) 1998 - 2023, Adam Young.
+ * Copyright (c) 1998 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
