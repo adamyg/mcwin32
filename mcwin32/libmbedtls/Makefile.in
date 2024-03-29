@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.18 2024/03/29 11:25:59 cvsuser Exp $
+# $Id: Makefile.in,v 1.19 2024/03/29 11:55:58 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
@@ -409,9 +409,10 @@ source:			.unpacked.$(VERSION)
 object:			$(D_OBJ)/.created
 
 .PHONY:		installinc
-installinc:		../include/.created ../include/mbedtls/.created
+installinc:		../include/.created ../include/mbedtls/.created ../include/psa/.created
 		@echo publishing headers ...
 		-cp $(MBEDINCLUDE)/mbedtls/*.h ../include/mbedtls
+		-cp $(MBEDINCLUDE)/psa/*.h ../include/psa
 		-cp ./win32/*.h ../include/mbedtls
 
 %/.created:
@@ -424,6 +425,7 @@ clean:
 		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
 		-@$(RM) $(LIBOBJS) $(QUIETOUT)
 		-@$(RM) ../include/mbedtls/* $(QUIETOUT)
+		-@$(RM) ../include/psa/* $(QUIETOUT)
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
