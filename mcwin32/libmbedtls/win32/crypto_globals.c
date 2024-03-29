@@ -1,10 +1,18 @@
-//$Id: crypto_globals.c,v 1.5 2021/11/08 14:40:45 cvsuser Exp $
+//$Id: crypto_globals.c,v 1.6 2024/03/29 09:45:57 cvsuser Exp $
 //
 //  libmbedcrypto support -
 //      retrieve the dynamic fprintf/snprintf/printf implementations (if required)
 //
 
 #include "crypto_globals.h"
+
+#if defined(_MSC_VER) || defined(__WATCOMC__)
+#pragma comment(lib, "BCrypt.lib") // BCryptGenRandom()
+#endif
+
+/*
+ *  Global instances
+ */
 
 #if defined(MBEDTLS_PLATFORM_FPRINTF_ALT)
 CRYPTO_MBEDAPI mbedtls_fprintf_t

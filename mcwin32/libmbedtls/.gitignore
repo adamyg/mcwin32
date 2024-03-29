@@ -5,6 +5,7 @@ mbedtls-2.16.6*/
 mbedtls-3.2.1*/
 mbedtls-3.3.0/
 mbedtls-3.4.1/
+mbedtls-3.5.2/
 ref/
 .unpacked.*
 Makefile

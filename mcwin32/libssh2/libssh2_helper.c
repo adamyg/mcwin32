@@ -7,6 +7,11 @@
 #include <libssh2_helper.h>
 
 
+#if defined(_MSC_VER) || defined(__WATCOMC__)
+#pragma comment(lib, "BCrypt.lib") // BCryptGenRandom(), +3.5.0
+#endif
+
+
 LIBSSH2_API int
 libssh2_helper_trace(void)
 {

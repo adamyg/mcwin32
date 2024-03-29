@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: rmdir_p.pl,v 1.1 2020/10/17 18:35:26 cvsuser Exp $
+# $Id: rmdir_p.pl,v 1.1 2024/03/15 13:49:24 cvsuser Exp $
 #
 # "rmdir -p" emulation.
 #
