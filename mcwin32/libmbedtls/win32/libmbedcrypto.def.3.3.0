@@ -1,4 +1,4 @@
-;$Id: libmbedcrypto.def.3.3.0,v 1.2 2024/03/29 13:08:57 cvsuser Exp $
+;$Id: libmbedcrypto.def.3.3.0,v 1.3 2024/03/29 13:51:55 cvsuser Exp $
 ;
 ;  libmbedcrypto library definition (3.3.0)
 ;
@@ -610,9 +610,9 @@ EXPORTS
 
 ; library\platform.c
     mbedtls_platform_win32_snprintf
-    ;mbedtls_platform_set_snprintf
+    mbedtls_platform_set_snprintf
     mbedtls_platform_win32_vsnprintf
-    ;mbedtls_platform_set_vsnprintf
+    mbedtls_platform_set_vsnprintf
     mbedtls_platform_setup
     mbedtls_platform_teardown
 
