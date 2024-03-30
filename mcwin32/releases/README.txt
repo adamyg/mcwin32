@@ -8,6 +8,13 @@ the current 4.8.x development stream.
 
         Version         Latest Build
 
+        4.8.31          230 (mc merge 4.8.31)
+
+                                 - mbedtls 3.5.2 (#67)
+                                 - AltGr detection (#71, #52)
+                                 - mcdiff integration (#74)
+                                 - cd/cdpath (#72)
+
         4.8.30          229 (mc merge 4.8.30)
 
                                  - pcre2 10.42
