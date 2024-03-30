@@ -220,6 +220,13 @@ strutils_shell_unescape (const char *text)
     return strutils_unescape (text, -1, ESCAPE_SHELL_CHARS, TRUE);
 }
 
+
+char *
+strutils_shell_unescape_special (const char *text)
+{
+    return strutils_unescape (text, -1, ESCAPE_SHELL_CHARS, FALSE);
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 char *

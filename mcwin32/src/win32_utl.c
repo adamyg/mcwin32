@@ -1750,14 +1750,15 @@ tilde_expand(const char *directory)
         ++directory;
     }
 
-    if (PATH_SEP == *directory) {               /* / ==> x:/ */
+    if (IS_PATH_SEP(*directory)) {              /* '/xxx' ==> 'x:/xxx' */
+        const char slash = *directory;
 
-        if (PATH_SEP != directory[1] ||         /* preserve URL's (//<server) */
-                0 == directory[2] || PATH_SEP == directory[2]) {
+        if (slash != directory[1] ||            /* preserve URL's (//<server) */
+                0 == directory[2] || slash == directory[2]) { /* and neither "//" or "///" */
             const char *cwd = vfs_get_current_dir ();
             char path[WIN32_PATH_MAX];
 
-            if ('/' == cwd[0] && 0 == cwd[1]) { /* vfs, possible ftp/sftp */
+            if (PATH_SEP == cwd[0] && 0 == cwd[1]) { /* vfs, possible ftp/sftp */
                 if (w32_getcwd (path, sizeof(path))) {
                     cwd = path;  /* apply underlying cwd */
                 }
