@@ -1,6 +1,6 @@
 /* -*- mode: c; indent-width: 4; -*- */
 /*
-   Adam Young 2021 - 2023
+   Adam Young 2021 - 2024
 
    This file is part of the Midnight Commander.
 

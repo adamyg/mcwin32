@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_CHILD_H_INCLUDED
 #define LIBW32_WIN32_CHILD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.13 2023/09/17 13:05:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.15 2024/03/03 11:29:14 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * child process support
  *
- * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * Copyright (c) 2007, 2012 - 2024 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -40,7 +40,8 @@ __CPRAGMA_ONCE
 __BEGIN_DECLS
 
 typedef struct win32_spawn {
-    const char *        cmd;
+    const char *        cmd;                    /* command, or [arg0,]argv */
+    const char *        arg0;
     const char **       argv;
     const char **       envv;
     const char *        dir;
@@ -52,7 +53,8 @@ typedef struct win32_spawn {
 } win32_spawn_t;
 
 typedef struct win32_spawnw {
-    const wchar_t *     cmd;
+    const wchar_t *     cmd;                    /* command, or [arg0,]argv */
+    const wchar_t *     arg0;
     const wchar_t **    argv;
     const wchar_t **    envv;
     const wchar_t *     dir;

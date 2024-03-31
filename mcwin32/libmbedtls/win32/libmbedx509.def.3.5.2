@@ -1,0 +1,98 @@
+;$Id: libmbedx509.def.3.5.2,v 1.1 2024/03/29 11:26:50 cvsuser Exp $
+;
+;  libmbedx509 library definition (3.4.1)
+;
+DESCRIPTION "libmbedx509"
+EXPORTS
+
+; library\x509.c
+    mbedtls_x509_dn_gets
+    mbedtls_x509_get_alg
+    mbedtls_x509_get_alg_null
+    mbedtls_x509_get_ext
+    mbedtls_x509_get_name
+    mbedtls_x509_get_rsassa_pss_params
+    mbedtls_x509_get_serial
+    mbedtls_x509_get_sig
+    mbedtls_x509_get_sig_alg
+    mbedtls_x509_get_time
+    mbedtls_x509_key_size_helper
+    ;mbedtls_x509_self_test
+    mbedtls_x509_serial_gets
+    mbedtls_x509_sig_alg_gets
+    mbedtls_x509_time_is_future
+    mbedtls_x509_time_is_past
+
+; library\x509_create.c
+    mbedtls_x509_set_extension
+    mbedtls_x509_string_to_names
+    mbedtls_x509_write_extensions
+    mbedtls_x509_write_names
+    mbedtls_x509_write_sig
+
+; library\x509_crl.c
+    mbedtls_x509_crl_free
+    mbedtls_x509_crl_info
+    mbedtls_x509_crl_init
+    mbedtls_x509_crl_parse
+    mbedtls_x509_crl_parse_der
+    mbedtls_x509_crl_parse_file
+
+; library\x509_crt.c
+    mbedtls_x509_crt_check_extended_key_usage
+    mbedtls_x509_crt_check_key_usage
+    mbedtls_x509_crt_free
+    mbedtls_x509_crt_info
+    mbedtls_x509_crt_init
+    mbedtls_x509_crt_is_revoked
+    mbedtls_x509_crt_parse
+    mbedtls_x509_crt_parse_der
+    mbedtls_x509_crt_parse_file
+    mbedtls_x509_crt_parse_path
+    mbedtls_x509_crt_verify
+    mbedtls_x509_crt_verify_info
+    mbedtls_x509_crt_verify_with_profile
+    mbedtls_x509_crt_verify_restartable
+
+; library\x509_csr.c
+    mbedtls_x509_csr_free
+    mbedtls_x509_csr_info
+    mbedtls_x509_csr_init
+    mbedtls_x509_csr_parse
+    mbedtls_x509_csr_parse_der
+    mbedtls_x509_csr_parse_file
+
+; library\x509write_crt.c
+    mbedtls_x509write_crt_der
+    mbedtls_x509write_crt_free
+    mbedtls_x509write_crt_init
+    mbedtls_x509write_crt_pem
+    mbedtls_x509write_crt_set_authority_key_identifier
+    mbedtls_x509write_crt_set_basic_constraints
+    mbedtls_x509write_crt_set_extension
+    mbedtls_x509write_crt_set_issuer_key
+    mbedtls_x509write_crt_set_issuer_name
+    mbedtls_x509write_crt_set_key_usage
+    mbedtls_x509write_crt_set_md_alg
+    mbedtls_x509write_crt_set_ns_cert_type
+    mbedtls_x509write_crt_set_serial
+    mbedtls_x509write_crt_set_subject_key
+    mbedtls_x509write_crt_set_subject_key_identifier
+    mbedtls_x509write_crt_set_subject_name
+    mbedtls_x509write_crt_set_validity
+    mbedtls_x509write_crt_set_version
+
+; library\x509write_csr.c
+    mbedtls_x509write_csr_der
+    mbedtls_x509write_csr_free
+    mbedtls_x509write_csr_init
+    mbedtls_x509write_csr_pem
+    mbedtls_x509write_csr_set_extension
+    mbedtls_x509write_csr_set_key
+    mbedtls_x509write_csr_set_key_usage
+    mbedtls_x509write_csr_set_md_alg
+    mbedtls_x509write_csr_set_ns_cert_type
+    mbedtls_x509write_csr_set_subject_name
+
+;;end
+

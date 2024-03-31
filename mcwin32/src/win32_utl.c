@@ -21,7 +21,7 @@
    Copyright (C) 2012
    The Free Software Foundation, Inc.
 
-   Written by: Adam Young 2012 - 2023
+   Written by: Adam Young 2012 - 2024
 
    Portions sourced from lib/utilunix.c, see for additional information.
 
@@ -271,7 +271,7 @@ static void
 set_tmpdir(void)
 {
     const char *tmpdir = NULL;
-    
+
     if (NULL != (tmpdir = getenv("MC_TMPDIR")) && *tmpdir)  {
         return;
     }
@@ -392,7 +392,7 @@ mc_get_locale(void)
 {
     static char x_lang[64] = {0};
 
-    if (0 == x_lang[0]) 
+    if (0 == x_lang[0])
     {
         char iso639[16] = {0}, iso3166[16] = {0};
         LCID lcid = GetThreadLocale();
@@ -666,9 +666,9 @@ mc_USERCONFIGDIR(const char *subdir)
         const char *env;
         int len, done = FALSE;
 
-#if defined(MC_HOMEDIR_XDG) 
+#if defined(MC_HOMEDIR_XDG)
         /* <XDG_CONFIG_HOME>/mc */
-        if (NULL != (env = getenv("XDG_CONFIG_HOME")) && *env) { 
+        if (NULL != (env = getenv("XDG_CONFIG_HOME")) && *env) {
             if (0 == _access(env, 0)) {
                 _snprintf(x_buffer, sizeof(x_buffer), "%s/mc", env);
                 mkdir(x_buffer, S_IRWXU);       /* auto create */
@@ -680,7 +680,7 @@ mc_USERCONFIGDIR(const char *subdir)
 
         /* <HOME>/.config/mc */
         if (!done) { //
-            if (NULL != (env = getenv("HOME")) && *env) { 
+            if (NULL != (env = getenv("HOME")) && *env) {
                 _snprintf(x_buffer, sizeof(x_buffer), "%s/.config", env);
                 if (0 == _access(x_buffer, 0)) {
                     _snprintf(x_buffer, sizeof(x_buffer), "%s/.config/mc", env);
@@ -1077,7 +1077,7 @@ system_impl (int flags, const char *shell, const char *cmd)
                      const int cmdlen = space - cmd;
                      unsigned i;
 
-                     for (i = 0; i < _countof(busyboxexts); ++i)  {
+                     for (i = 0; i < _countof(busyboxexts); ++i) {
                          if (0 == strncmp(busyboxexts[i], cmd, cmdlen)) {
                              char *t_cmd;
 
@@ -1111,7 +1111,7 @@ system_impl (int flags, const char *shell, const char *cmd)
             } else {
                  /*
                   *  If <cmd> </bin/sh ...>
-                  *  execute as <shell> <busybox sh ...>
+                  *  execute as <busybox sh ...>
                   */
                  const char *space;
 
@@ -1120,7 +1120,7 @@ system_impl (int flags, const char *shell, const char *cmd)
                     char *t_cmd;
 
                     if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" sh", space, NULL))) {
-                        ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
+                        ret = w32_shell(busybox, t_cmd, NULL, NULL, NULL);
                         g_free(t_cmd);
                     }
                     return ret;
@@ -1149,12 +1149,7 @@ system_impl (int flags, const char *shell, const char *cmd)
 
                 for (i = 0; i < _countof(busyboxcmds); ++i) {
                     if (0 == strcmp(busyboxcmds[i], argv[0])) {
-                        char *t_cmd;
-
-                        if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
-                            ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
-                            g_free(t_cmd);
-                        }
+                        ret = w32_shell(busybox, cmd, NULL, NULL, NULL);
                         return ret;
                     }
                 }
@@ -1322,7 +1317,7 @@ mc_isscript(const char *cmd)
 
 
 /**
- *  unquote an excaped command line; yet retain any existing quoted elements.
+ *  unquote an escaped command line; yet retain any existing quoted elements.
  */
 char *
 my_unquote(const char *cmd, int quotews)
@@ -1404,7 +1399,7 @@ my_unquote(const char *cmd, int quotews)
             default: // non-whitespace
                 if (NULL == start) {
                     start = cursor;  // first non-whitespace
-                }               
+                }
                 break;
             case ' ': case '\t': // whitespace
                 if (!instring) {
@@ -1502,7 +1497,7 @@ win32_popen(const char *cmd, const char *mode)
 
     if (pe_open >= 0) {
         if (NULL == file) {
-            pe_open += _snprintf(pe_buffer, PE_BUFFER_SIZE, "popen ; %s", strerror(errno));
+            pe_open += _snprintf(pe_buffer, PE_BUFFER_SIZE, "popen : %s", strerror(errno));
 
         } else {
             HANDLE hThread;
@@ -1542,16 +1537,15 @@ win32_pclose(FILE *file)
  *  text is prepended to the error message from the pipe
  */
 void
-open_error_pipe(void)
+win32_ptrace(void)
 {
-    pe_open = 0;                                // open stream
+    pe_open = 0;                                /* open stream */
 }
 
 
 int
-close_error_pipe(int error, const char *text)
+win32_perror(int error, const char *msg)
 {
-    const char *title;
     int len;
 
     EnterCriticalSection(&pe_guard);
@@ -1559,42 +1553,32 @@ close_error_pipe(int error, const char *text)
     pe_open = -1;
     pe_stream = NULL;
     LeaveCriticalSection(&pe_guard);
-    if (len < 0) {
-        return 0;
+    if (len <= 0) {
+        return 0;                               /* nothing to show */
     }
 
-    if (error < 0 || (error > 0 && (error & D_ERROR) != 0)) {
-        title = MSG_ERROR;
-    } else {
-        title = _("Warning");
-    }
-
-    if (error < 0) {
-        return 0;                               /* just ignore error message */
-    }
-
-    /* Show message from pipe */
-    if (text == NULL) {
-        if (len <= 0) {
-            return 0;                           /* Nothing to show */
-        }
+    if (NULL == msg) {
         pe_buffer[len] = 0;
-        text = pe_buffer;
+        msg = pe_buffer;
 
-    } else {                                    /* Show given text and possible message from pipe */
-        const size_t textlen = strlen(text);
+    } else {                                    /* show given text and possible message from pipe */
+        const size_t textlen = strlen(msg);
 
         if (textlen + len < sizeof(pe_buffer)) {
             memmove(pe_buffer + textlen + 1, (const char *)pe_buffer, len);
-            memmove(pe_buffer, text, textlen);
-            len  += textlen + 1;
+            memmove(pe_buffer, msg, textlen);
+            len += textlen + 1;
             pe_buffer[textlen] = '\n';
             pe_buffer[len] = 0;
-            text = pe_buffer;
+            msg = pe_buffer;
         }
     }
 
-    query_dialog(title, text, D_NORMAL, 1, _("&Ok"));
+    if (error) {
+        query_dialog(MSG_ERROR, msg, D_ERROR, 1, _("&Dismiss"));
+    } else {
+        query_dialog(_("Warning"), msg, D_NORMAL, 1, _("&Ok"));
+    }
     return 1;
 }
 
@@ -1757,19 +1741,24 @@ system_bustargs(char *cmd, const char **argv, int cnt)
 char *
 tilde_expand(const char *directory)
 {
+    if (0 == directory[0]) {
+        return g_strdup ("");                   /* empty */
+    }
+
     if (PATH_SEP == directory[0] &&             /* fix '/X:', vfs work around */
-            isalpha((unsigned char)directory[1]) && ':' == directory[2]) {
+            directory[1] && ':' == directory[2] && isalpha((unsigned char)directory[1])) {
         ++directory;
     }
 
-    if (PATH_SEP == *directory) {               /* / ==> x:/ */
+    if (IS_PATH_SEP(*directory)) {              /* '/xxx' ==> 'x:/xxx' */
+        const char slash = *directory;
 
-        if (PATH_SEP != directory[1] ||         /* preserve URL's (//<server) */
-                0 == directory[2] || PATH_SEP == directory[2]) {
+        if (slash != directory[1] ||            /* preserve URL's (//<server) */
+                0 == directory[2] || slash == directory[2]) { /* and neither "//" or "///" */
             const char *cwd = vfs_get_current_dir ();
-            char path[1024];
+            char path[WIN32_PATH_MAX];
 
-            if ('/' == cwd[0] && 0 == cwd[1]) { /* vfs, possible ftp/sftp */
+            if (PATH_SEP == cwd[0] && 0 == cwd[1]) { /* vfs, possible ftp/sftp */
                 if (w32_getcwd (path, sizeof(path))) {
                     cwd = path;  /* apply underlying cwd */
                 }
@@ -1787,6 +1776,14 @@ tilde_expand(const char *directory)
         char *cwd = vfs_get_current_dir_n ();
         if (cwd) {                              /* . ==> <cwd> */
             return cwd;
+        }
+
+    } else if (':' == directory[1] && isalpha((unsigned char)directory[0]) &&
+                    (0 == directory[2] || ('.'== directory[2] && 0 == directory[3]))) {
+        char path[WIN32_PATH_MAX];
+
+        if (w32_getcwdd(directory[0], path, sizeof(path))) {
+            return g_strdup (path);             /* X: and X:. ==> <drive><cwd> */
         }
 
     } else if ('~' == *directory) {
@@ -1888,7 +1885,7 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
         for (p = lpath + 2; p[0] != '\0' && !IS_PATH_SEP (p[0]); p++)
             ;
 
-        if (p[0] == PATH_SEP && p > (orgpath + 2)) 
+        if (p[0] == PATH_SEP && p > (orgpath + 2))
         {
             if (0 == strcmp(p + 1, ".."))
             {                                   /* "//servername/.." --> "X:/" */
@@ -1907,7 +1904,7 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
      *  o standardize seperator
      *  o preserve leading drive
      */
-    if (!unc) 
+    if (!unc)
     {
         if (PATH_SEP == lpath[0] &&
                 ':' == lpath[2] && isalpha((unsigned char)lpath[1])) {
@@ -2129,7 +2126,7 @@ void
 canonicalize_pathname(char *path)
 {
 #if !defined(CANON_PATH_FLAGS)
-    canonicalize_pathname_custom (path, CANON_PATH_ALL);   
+    canonicalize_pathname_custom (path, CANON_PATH_ALL);
 #else
     custom_canonicalize_pathname (path, CANON_PATH_ALL);
 #endif
@@ -2183,7 +2180,7 @@ mc_build_filenamev(const char *first_element, va_list args)
 
             canonicalize_pathname (tmp_element);
             len = strlen (tmp_element);
-            start = IS_PATH_SEP (tmp_element[0]) ? tmp_element + 1 : tmp_element; 
+            start = IS_PATH_SEP (tmp_element[0]) ? tmp_element + 1 : tmp_element;
 
             g_string_append (path, start);
             if (!IS_PATH_SEP (tmp_element[len - 1]) && element != NULL)
@@ -2193,7 +2190,7 @@ mc_build_filenamev(const char *first_element, va_list args)
     }
     while (element != NULL);
 
-    if (absolute) 
+    if (absolute)
     {
         if (! path->len || ':' != path->str[1] /*not-drive*/)
         {
@@ -2206,7 +2203,7 @@ mc_build_filenamev(const char *first_element, va_list args)
                 if (driveno <= 0) driveno = w32_getlastdrive();
 
                 // see: vfs_canon() generally when we are returning from a ftp/sftp or UNC reference.
-                if (driveno > 0) 
+                if (driveno > 0)
                 {
                     char drive[3] = "X:";
                     drive[0] = driveno + ('A' - 1);

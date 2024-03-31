@@ -154,7 +154,7 @@ enum
     CK_LinkSymbolicEdit,
     CK_ExternalPanelize,
     CK_Filter,
-    CK_ConnectFish,
+    CK_ConnectShell,
     CK_ConnectFtp,
     CK_ConnectSftp,
     CK_PanelInfo,
@@ -345,7 +345,7 @@ enum
     CK_MergeOther,
 
     /* Change drive support (WIN32/APY) */
-    CK_DriveChange = 800,
+    CK_DriveChange = 800L,
     CK_DriveChangeA,
     CK_DriveChangeB
 };

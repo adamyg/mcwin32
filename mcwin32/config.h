@@ -3,7 +3,7 @@
 /*
  *  win32 Midnight Commander -- config.h
  *
- *  Written by: Adam Young 2012 - 2023
+ *  Written by: Adam Young 2012 - 2024
  *
  *  This file is part of the Midnight Commander.
  *
@@ -80,8 +80,12 @@ const char *                mc_EXTHELPERSDIR(void);
 #define LIBEXECDIR          mc_LIBEXECDIR()     /* /lib/mc */
 #define EXTHELPERSDIR       mc_EXTHELPERSDIR()  /* ???, 4.8.7 */
 
+extern void                 WIN32_Setup(void);
+
 extern FILE *               win32_popen(const char *cmd, const char *mode);
 extern int                  win32_pclose(FILE *file);
+extern void                 win32_ptrace(void);
+extern int                  win32_perror(int error, const char *msg);
 
 #ifndef popen
 #define popen(__cmd,__mode) win32_popen(__cmd, __mode)
@@ -177,9 +181,8 @@ extern void                 tty_set_title(const char *title);
 #define ENABLE_VFS_SFS 1
 #define ENABLE_VFS_EXTFS 1
 #define ENABLE_VFS_FTP 1
-#define ENABLE_VFS_FISH 1                       /* build-225+ */
+#define ENABLE_VFS_SHELL 1                      /* build-225+ */
 #define ENABLE_VFS_SFTP 1                       /* libssh2 */
-    //#undef  ENABLE_VFS_SMB                    /* removed, 4.8.28 */
 #undef  ENABLE_VFS_UNDELFS
 
 #define SIG_ATOMIC_VOLATILE_T int volatile

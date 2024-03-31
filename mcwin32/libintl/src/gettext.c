@@ -36,6 +36,10 @@ __RCSID("$NetBSD: gettext.c,v 1.28 2012/07/30 23:04:42 yamt Exp $");
 #ifndef WINDOWS_MEAN_AND_LEAN
 #define WINDOWS_MEAN_AND_LEAN
 #endif
+#if defined(_MSC_VER) && (!defined(WINVER) || (WINVER < 0x500))
+#undef WINVER
+#define WINVER WIN32_WINNT /* GetThreadLocale, SDK 10+ */
+#endif
 #include <windows.h>
 #pragma comment(lib, "Kernel32.lib")
 #endif	//WIN32
@@ -823,6 +827,9 @@ lookup(const char *msgid, struct domainbinding *db, size_t *rlen)
 static const char *
 get_lang_env(const char *category_name)
 {
+#if defined(_WIN32)
+	char winlocale[64] = {0};
+#endif
 	const char *lang;
 
 	/*
@@ -848,12 +855,27 @@ get_lang_env(const char *category_name)
 
 #if defined(_WIN32)
 	if (!lang)
-	{	static char ISO639_LanguageName[32]; //FIXME: tls
+	{
+		char iso639[16] = {0}, iso3166[16] = {0};
+		const char *isocs = NULL; // TODO (GetACP() to codeset)
+		const LCID lcid = GetThreadLocale(); // Active application locale.
 
-		ISO639_LanguageName[0] = 0;
-		if (GetLocaleInfoA(GetUserDefaultLCID(), LOCALE_SISO639LANGNAME,
-				ISO639_LanguageName, sizeof(ISO639_LanguageName)) && ISO639_LanguageName[0]) {
-			lang = ISO639_LanguageName;
+		if (GetLocaleInfoA(lcid, LOCALE_SISO639LANGNAME, iso639, sizeof(iso639))) {
+			if (GetLocaleInfoA(lcid, LOCALE_SISO3166CTRYNAME, iso3166, sizeof(iso3166)) && iso3166[0]) {
+				if (isocs) {
+					snprintf(winlocale, sizeof(winlocale), "%s_%s.%s", iso639, iso3166, isocs); // language_territory.codeset
+				} else {
+					snprintf(winlocale, sizeof(winlocale), "%s_%s", iso639, iso3166); // language_territory
+				}
+			} else {
+				if (isocs) {
+					snprintf(winlocale, sizeof(winlocale), "%s.%s", iso639, isocs); // language.codeset
+				} else {
+					snprintf(winlocale, sizeof(winlocale), "%s", iso639); // language
+				}
+			}
+			winlocale[sizeof(winlocale) - 1] = '\0';
+			lang = winlocale;
 		}
 	}
 #endif	//WIN32

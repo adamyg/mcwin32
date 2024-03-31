@@ -36,7 +36,7 @@ jobs:
     steps:
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Checkout submodules
       run: |
@@ -54,7 +54,9 @@ jobs:
       run: |
         c:\msys64\usr\bin\pacman --noconfirm -S base-devel
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gcc
+        c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gettext-tools
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-i686-gcc
+        c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-i686-gettext-tools
         dir c:\msys64\usr\bin
 
     - name: OpenWatcom setup
@@ -64,16 +66,23 @@ jobs:
         version: "2.0"
         location: "C:\\Watcom"
 
+    - name: Windows extra
+      if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')
+      run: |
+        c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gettext-tools
+
     - name: Generate
       if: startsWith(matrix.config.name, 'Windows Latest')
       shell: cmd
       run: |
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
-        @if "${{ matrix.config.toolchain }}"=="owc20"  call .\mcwin32\support\owc20setenv.bat C:\Watcom
+        @if "${{ matrix.config.toolchain }}"=="owc20"   call .\mcwin32\support\owc20setenv.bat C:\Watcom
+        @set BUSYBOX=./support/busybox
+        @if "${{ matrix.config.toolchain }}"=="mingw64" set BUSYBOX=./support/busybox64
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
-        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose "${{ matrix.config.toolchain }}"
+        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=%BUSYBOX% --verbose "${{ matrix.config.toolchain }}"
 
     - name: Compile
       if: startsWith(matrix.config.name, 'Windows Latest')
@@ -81,19 +90,21 @@ jobs:
       run: |
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
-        @if "${{ matrix.config.toolchain }}"=="owc20"  call .\mcwin32\support\owc20setenv.bat C:\Watcom
+        @if "${{ matrix.config.toolchain }}"=="owc20"   call .\mcwin32\support\owc20setenv.bat C:\Watcom
+        @if "${{ matrix.config.toolchain }}"=="owc20"   set PATH=%PATH%;c:\msys64\mingw64\bin
+        @if "${{ matrix.config.toolchain }}"=="vc2022"  set PATH=%PATH%;c:\msys64\mingw64\bin
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         .\support\gmake-42 release build
 
     - name: Package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: package-${{ matrix.config.toolchain }}
         path: mcwin32/bin.${{ matrix.config.toolversion }}/release/*
 
     - name: Installer
-      if: startsWith(matrix.config.name, 'Windows Latest MSVC')
+      if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
@@ -103,9 +114,9 @@ jobs:
         "%programfiles(x86)%\Inno Setup 5\ISCC" -DBUILD_INFO=1 -DBUILD_TYPE=release ".\releases\mc-inno-setup.iss"
 
     - name: Release artifacts
-      if: startsWith(matrix.config.name, 'Windows Latest MSVC')
+      if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')
       uses: softprops/action-gh-release@v1
       with:
         files: ./mcwin32/releases/mcwin32-build*-setup.exe
         draft: true
-        
+

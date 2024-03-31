@@ -3,7 +3,7 @@
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
- * Copyright (c) 2021 - 2023, Adam Young.
+ * Copyright (c) 2021 - 2024, Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

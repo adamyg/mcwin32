@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.10 2023/11/06 15:07:41 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.12 2024/03/03 11:29:13 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 unc directory access services ...
  *
- * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * Copyright (c) 2007, 2012 - 2024 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -106,7 +106,7 @@ w32_unc_iterateW(const wchar_t *servername, unc_push_t push, void *data)
             // build directory ..
             for (e = 0, ent = buffer; e < entries; ++e, ++ent) {
                 if (STYPE_DISKTREE == ent->shi502_type) {
-                    const WCHAR *filename = ent->shi502_netname;
+                    const wchar_t *filename = ent->shi502_netname;
 
                     if ('p' == filename[0]) {   // prnproc$ or print$
                         if (0 == wcscmp(filename, L"prnproc$") ||

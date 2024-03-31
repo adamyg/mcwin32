@@ -2,7 +2,7 @@
 /*
  * libtermemu console driver
  *
- * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * Copyright (c) 2007, 2012 - 2024 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -2560,7 +2560,11 @@ consolefontcreate(int height, int width, int weight, int italic, const char *fac
     const BOOL isTerminal =                     // special terminal/raster support.
         (0 == strcmp(facename, "Terminal"));
 
-    HFONT hFont = CreateFontA(
+    wchar_t wfacename[64] = {0};
+    for (unsigned i = 0; i < (_countof(wfacename)-1) && facename[i]; ++i)
+        wfacename[i] = (wchar_t)(facename[i]);
+
+    HFONT hFont = CreateFontW(
         height, width -                         // logic (device dependent pixels) height and width.
             (italic ? 3 : (FW_BOLD == weight ? 1 : 0)),
         0, 0, weight,
@@ -2576,7 +2580,7 @@ consolefontcreate(int height, int width, int weight, int italic, const char *fac
         CLIP_DEFAULT_PRECIS,                    // default clipping behavior.
         (italic ? PROOF_QUALITY : ANTIALIASED_QUALITY),
         FIXED_PITCH | FF_MODERN,                // DECORATIVE, DONTCARE, MODERN, ROMAN, SCRIPT, SWISS
-        facename);
+        wfacename);
 
     TRACE_LOG(("Create Font: <%s> %dx%d, Weight:%d, Italic:%d (%p)\n", \
         facename, width, height, weight, italic, hFont))

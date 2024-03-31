@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.17 2023/10/02 12:11:28 cvsuser Exp $
+# $Id: Makefile.in,v 1.19 2024/03/29 11:55:58 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
-# Copyright (c) 2017 - 2023 Adam Young.
+# Copyright (c) 2017 - 2024 Adam Young.
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.
@@ -79,6 +79,9 @@ D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libmbedtls
 XFLAGS=
 
 CFLAGS=		@CFLAGS@
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+CFLAGS+=	-mpclmul -msse2 -maes
+endif
 CWARN=		@CWARN@
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
@@ -86,6 +89,9 @@ LDDEBUG=	@LDDEBUG@
 LDRELEASE=	@LDRELEASE@
 
 CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
+ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+CINCLUDE+=	-I.\owc
+endif
 CEXTRA=		@DEFS@
 ifeq ("$(BUILD_TYPE)","release")
 CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
@@ -94,7 +100,7 @@ else
 CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDDEBUG) @LDFLAGS@
 endif
-LDLIBS=		-L$(D_LIB) @LIBS@ @LIBM@ @EXTRALIBS@
+LDLIBS=		-L$(D_LIB) BCrypt.lib @LIBS@ @LIBM@ @EXTRALIBS@
 
 ARFLAGS=	rcv
 RMFLAGS=	-f
@@ -112,7 +118,7 @@ MBEDX509DLL=	$(D_LIB)/$(LP)mbedx509.la
 MBEDTLSLIB=	$(D_LIB)/$(LP)mbedtls_static$(A)
 MBEDTLSDLL=	$(D_LIB)/$(LP)mbedtls.la
 
-VERSION=	3.4.1
+VERSION=	3.5.2
 VERSION_1	=$(word 1,$(subst ., ,$(VERSION)))
 VERSION_2	=$(word 2,$(subst ., ,$(VERSION)))
 VERSION_3	=$(word 3,$(subst ., ,$(VERSION)))
@@ -132,120 +138,134 @@ VPATH+=		$(MBEDBASE)/programs/test
 VPATH+=		./win32
 
 #see: library/CMakelists.txt
-CRYPTO_SOURCES=	\
-	aes.c				\
-	aesni.c				\
-	aria.c				\
-	asn1parse.c			\
-	asn1write.c			\
-	base64.c			\
-	bignum.c			\
-	bignum_core.c			\
-	bignum_mod.c			\
-	bignum_mod_raw.c		\
-	camellia.c			\
-	ccm.c				\
-	chacha20.c			\
-	chachapoly.c			\
-	cipher.c			\
-	cipher_wrap.c			\
-	constant_time.c			\
-	cmac.c				\
-	ctr_drbg.c			\
-	des.c				\
-	dhm.c				\
-	ecdh.c				\
-	ecdsa.c				\
-	ecjpake.c			\
-	ecp.c				\
-	ecp_curves.c			\
-	entropy.c			\
-	entropy_poll.c			\
-	error.c				\
-	gcm.c				\
-	hash_info.c			\
-	hkdf.c				\
-	hmac_drbg.c			\
-	lmots.c				\
-	lms.c				\
-	md.c				\
-	md5.c				\
-	memory_buffer_alloc.c		\
-	nist_kw.c			\
-	oid.c				\
-	padlock.c			\
-	pem.c				\
-	pk.c				\
-	pk_wrap.c			\
-	pkcs12.c			\
-	pkcs5.c				\
-	pkparse.c			\
-	pkwrite.c			\
-	platform.c			\
-	platform_util.c			\
-	poly1305.c			\
-	psa_crypto.c			\
-	psa_crypto_aead.c		\
-	psa_crypto_cipher.c		\
-	psa_crypto_client.c		\
-	psa_crypto_driver_wrappers.c	\
-	psa_crypto_ecp.c		\
-	psa_crypto_hash.c		\
-	psa_crypto_mac.c		\
-	psa_crypto_pake.c		\
-	psa_crypto_rsa.c		\
-	psa_crypto_se.c			\
-	psa_crypto_slot_management.c	\
-	psa_crypto_storage.c		\
-	psa_its_file.c			\
-	psa_util.c			\
-	ripemd160.c			\
-	rsa.c				\
-	rsa_alt_helpers.c		\
-	sha1.c				\
-	sha256.c			\
-	sha512.c			\
-	threading.c			\
-	timing.c			\
-	version.c			\
+COMMON_SOURCES=\
+	constant_time.c
+
+CRYPTO_SOURCES=\
+	aes.c					\
+	aesce.c 				\
+	aria.c					\
+	asn1parse.c				\
+	asn1write.c				\
+	base64.c				\
+	bignum.c				\
+	bignum_core.c				\
+	bignum_mod.c				\
+	bignum_mod_raw.c			\
+	camellia.c				\
+	ccm.c					\
+	chacha20.c				\
+	chachapoly.c				\
+	cipher.c				\
+	cipher_wrap.c				\
+	cmac.c					\
+	ctr_drbg.c				\
+	des.c					\
+	dhm.c					\
+	ecdh.c					\
+	ecdsa.c					\
+	ecjpake.c				\
+	ecp.c					\
+	ecp_curves.c				\
+	ecp_curves_new.c			\
+	entropy.c				\
+	entropy_poll.c				\
+	error.c					\
+	gcm.c					\
+	hkdf.c					\
+	hmac_drbg.c				\
+	lmots.c					\
+	lms.c					\
+	md.c					\
+	md5.c					\
+	memory_buffer_alloc.c			\
+	nist_kw.c				\
+	oid.c					\
+	padlock.c				\
+	pem.c					\
+	pk.c					\
+	pk_wrap.c				\
+	pkcs12.c				\
+	pkcs5.c					\
+	pkparse.c				\
+	pkwrite.c				\
+	platform.c				\
+	platform_util.c				\
+	poly1305.c				\
+	psa_crypto.c				\
+	psa_crypto_aead.c			\
+	psa_crypto_cipher.c			\
+	psa_crypto_client.c			\
+	psa_crypto_driver_wrappers_no_static.c	\
+	psa_crypto_ecp.c			\
+	psa_crypto_ffdh.c			\
+	psa_crypto_hash.c			\
+	psa_crypto_mac.c			\
+	psa_crypto_pake.c			\
+	psa_crypto_rsa.c			\
+	psa_crypto_se.c				\
+	psa_crypto_slot_management.c		\
+	psa_crypto_storage.c			\
+	psa_its_file.c				\
+	psa_util.c				\
+	ripemd160.c				\
+	rsa.c					\
+	rsa_alt_helpers.c			\
+	sha1.c					\
+	sha256.c				\
+	sha512.c				\
+	sha3.c					\
+	threading.c				\
+	timing.c				\
+	version.c				\
 	version_features.c
 
+ifneq (owc,$(findstring owc,"@TOOLCHAIN@"))
+CRYPTO_SOURCES+=\
+	aesni.c
+endif
+
 X509_SOURCES=\
-	pkcs7.c				\
-	x509.c				\
-	x509_create.c			\
-	x509_crl.c			\
-	x509_crt.c			\
-	x509_csr.c			\
-	x509write_crt.c			\
-	x509write_csr.c			\
+	pkcs7.c					\
+	x509.c					\
+	x509_create.c				\
+	x509_crl.c				\
+	x509_crt.c				\
+	x509_csr.c				\
+	x509write.c				\
+	x509write_crt.c				\
+	x509write_csr.c
 
 TLS_SOURCES=\
-	debug.c				\
-	mps_reader.c			\
-	mps_trace.c			\
-	net_sockets.c			\
-	ssl_cache.c			\
-	ssl_ciphersuites.c		\
-	ssl_client.c			\
-	ssl_cookie.c			\
-	ssl_debug_helpers_generated.c	\
-	ssl_msg.c			\
-	ssl_ticket.c			\
-	ssl_tls.c			\
-	ssl_tls12_client.c		\
-	ssl_tls12_server.c		\
-	ssl_tls13_keys.c		\
-	ssl_tls13_server.c		\
-	ssl_tls13_client.c		\
+	debug.c					\
+	mps_reader.c				\
+	mps_trace.c				\
+	net_sockets.c				\
+	ssl_cache.c				\
+	ssl_ciphersuites.c			\
+	ssl_client.c				\
+	ssl_cookie.c				\
+	ssl_debug_helpers_generated.c		\
+	ssl_msg.c				\
+	ssl_ticket.c				\
+	ssl_tls.c				\
+	ssl_tls12_client.c			\
+	ssl_tls12_server.c			\
+	ssl_tls13_keys.c			\
+	ssl_tls13_server.c			\
+	ssl_tls13_client.c			\
 	ssl_tls13_generic.c
 
 #######
-CRYPTO_LIBOBJS=\
-	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CRYPTO_SOURCES)))
-CRYPTO_DLLOBJS=\
+CRYPTO_LIBOBJS:=\
+	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CRYPTO_SOURCES) $(COMMON_SOURCES)))
+CRYPTO_DLLOBJS:=\
 	$(subst $(O),.lo,$(CRYPTO_LIBOBJS))	\
 	$(D_OBJ)/crypto_globals.lo
+ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+CRYPTO_LIBOBJS+=$(D_OBJ)/owc_aesni.obj
+CRYPTO_DLLOBJS+=$(D_OBJ)/owc_aesni.obj
+endif
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 CRYPTO_DLLOBJS+=$(D_OBJ)/libmbedtls_res.o
@@ -256,7 +276,7 @@ endif
 
 #######
 X509_LIBOBJS=\
-	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(X509_SOURCES)))
+	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(X509_SOURCES) $(COMMON_SOURCES)))
 X509_DLLOBJS=\
 	$(subst $(O),.lo,$(X509_LIBOBJS))	\
 	$(D_OBJ)/alignment_linkage.lo		\
@@ -271,7 +291,7 @@ endif
 
 #######
 TLS_LIBOBJS=\
-	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(TLS_SOURCES)))
+	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(TLS_SOURCES) $(COMMON_SOURCES)))
 TLS_DLLOBJS=\
 	$(subst $(O),.lo,$(TLS_LIBOBJS))	\
 	$(D_OBJ)/alignment_linkage.lo
@@ -327,6 +347,11 @@ $(MBEDCRYPTOLIB):	$(CRYPTO_LIBOBJS)
 		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
 		$(AR) $(ARFLAGS) $@ $^
 		$(RANLIB) $@
+ 
+ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+$(D_OBJ)/owc_aesni.obj:		owc\aesni.obj
+		@cp owc\aesni.obj $(D_OBJ)\owc_aesni.obj
+endif
 
 INSTALLED+=	$(D_BIN)/libmbedcrypto.$(VERSION).dll
 $(MBEDCRYPTODLL):	LIBNAME=libmbedcrypto
@@ -384,9 +409,10 @@ source:			.unpacked.$(VERSION)
 object:			$(D_OBJ)/.created
 
 .PHONY:		installinc
-installinc:		../include/.created ../include/mbedtls/.created
+installinc:		../include/.created ../include/mbedtls/.created ../include/psa/.created
 		@echo publishing headers ...
 		-cp $(MBEDINCLUDE)/mbedtls/*.h ../include/mbedtls
+		-cp $(MBEDINCLUDE)/psa/*.h ../include/psa
 		-cp ./win32/*.h ../include/mbedtls
 
 %/.created:
@@ -399,6 +425,7 @@ clean:
 		-@$(RM) $(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT)
 		-@$(RM) $(LIBOBJS) $(QUIETOUT)
 		-@$(RM) ../include/mbedtls/* $(QUIETOUT)
+		-@$(RM) ../include/psa/* $(QUIETOUT)
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

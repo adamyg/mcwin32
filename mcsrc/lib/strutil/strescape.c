@@ -1,7 +1,7 @@
 /*
    Functions for escaping and unescaping strings
 
-   Copyright (C) 2009-2023
+   Copyright (C) 2009-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -218,6 +218,13 @@ char *
 strutils_shell_unescape (const char *text)
 {
     return strutils_unescape (text, -1, ESCAPE_SHELL_CHARS, TRUE);
+}
+
+
+char *
+strutils_shell_unescape_special (const char *text)
+{
+    return strutils_unescape (text, -1, ESCAPE_SHELL_CHARS, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */

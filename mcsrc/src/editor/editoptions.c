@@ -1,7 +1,7 @@
 /*
    Editor options dialog box
 
-   Copyright (C) 1996-2023
+   Copyright (C) 1996-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -174,7 +174,8 @@ edit_options_dialog (WDialog * h)
                     QUICK_CHECKBOX (N_("&Visible trailing spaces"), &edit_options.visible_tws, NULL),
                     QUICK_CHECKBOX (N_("Visible &tabs"), &edit_options.visible_tabs, NULL),
                     QUICK_CHECKBOX (N_("Synta&x highlighting"), &edit_options.syntax_highlighting, NULL),
-                    QUICK_CHECKBOX (N_("C&ursor after inserted block"), &edit_options.cursor_after_inserted_block, NULL),
+                    QUICK_CHECKBOX (N_("C&ursor after inserted block"),
+                                    &edit_options.cursor_after_inserted_block, NULL),
                     QUICK_CHECKBOX (N_("Pers&istent selection"), &edit_options.persistent_selections, NULL),
                     QUICK_CHECKBOX (N_("Cursor be&yond end of line"), &edit_options.cursor_beyond_eol, NULL),
                     QUICK_CHECKBOX (N_("&Group undo"), &edit_options.group_undo, NULL),

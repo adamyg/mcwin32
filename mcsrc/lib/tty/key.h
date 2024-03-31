@@ -28,18 +28,18 @@
 #define ALT(x) (KEY_M_ALT | (unsigned int)(x))
 
 /* To define sequences and return codes */
-#define MCKEY_NOACTION 0
-#define MCKEY_ESCAPE 1
+#define MCKEY_NOACTION  0
+#define MCKEY_ESCAPE    1
 
 /* Return code for the mouse sequence */
-#define MCKEY_MOUSE -2
+#define MCKEY_MOUSE     -2
 
 /* Return code for the extended mouse sequence */
-#define MCKEY_EXTENDED_MOUSE -3
+#define MCKEY_EXTENDED_MOUSE     -3
 
 /* Return code for brackets of bracketed paste mode */
 #define MCKEY_BRACKETED_PASTING_START -4
-#define MCKEY_BRACKETED_PASTING_END -5
+#define MCKEY_BRACKETED_PASTING_END   -5
 
 /*** enums ***************************************************************************************/
 

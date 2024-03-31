@@ -1,7 +1,7 @@
 /*
    Main program for the Midnight Commander
 
-   Copyright (C) 1994-2023
+   Copyright (C) 1994-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -260,18 +260,15 @@ check_sid (void)
 int
 main (int argc, char *argv[])
 {
-#if defined(WIN32) //WIN32, config
-    extern void WIN32_Setup(void);
-#endif //WIN32
     GError *mcerror = NULL;
     int exit_code = EXIT_FAILURE;
 
     mc_global.run_from_parent_mc = !check_sid ();
 
-    /* We had LC_CTYPE before, LC_ALL includs LC_TYPE as well */
 #ifdef HAVE_SETLOCALE
-    (void) setlocale (LC_ALL, "");
+    (void) setlocale (LC_ALL, "");  /* We had LC_CTYPE before, LC_ALL includs LC_TYPE as well */
 #endif
+
     (void) bindtextdomain (PACKAGE, LOCALEDIR);
     (void) textdomain (PACKAGE);
 
@@ -294,6 +291,13 @@ main (int argc, char *argv[])
         str_uninit_strings ();
         return exit_code;
     }
+
+    /* check terminal type
+     * $TERM must be set and not empty
+     * mc_global.tty.xterm_flag is used in init_key() and tty_init()
+     * Do this after mc_args_parse() where mc_args__force_xterm is set up.
+     */
+    mc_global.tty.xterm_flag = tty_check_term (mc_args__force_xterm);
 
     /* do this before mc_args_show_info () to view paths in the --datadir-info output */
     OS_Setup ();
@@ -361,13 +365,6 @@ main (int argc, char *argv[])
             g_free (buffer);
         vfs_path_free (vpath, TRUE);
     }
-
-    /* check terminal type
-     * $TERM must be set and not empty
-     * mc_global.tty.xterm_flag is used in init_key() and tty_init()
-     * Do this after mc_args_handle() where mc_args__force_xterm is set up.
-     */
-    mc_global.tty.xterm_flag = tty_check_term (mc_args__force_xterm);
 
     /* NOTE: This has to be called before tty_init or whatever routine
        calls any define_sequence */

@@ -1,14 +1,14 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.41 2024/01/01 16:54:38 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.44 2024/03/03 15:03:10 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 <unistd.h> header (_MSC_VER, __WATCOMC__ and __MINGW32__)
  *
- * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * Copyright (c) 2007, 2012 - 2024 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -41,8 +41,8 @@ __CPRAGMA_ONCE
 #if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
 #if (_MSC_VER <  1910 || _MSC_VER > 1916)       /* MSVC 2017: 19.10 .. 16 */
 #if (_MSC_VER > 1929)                           /* MSVC 2019: 19.20 .. 29 */
-#if (_MSC_VER > 1937)                           /* MSVC 2022: 19.30 .. 37*/
-#error unistd.h: untested MSVC Version (2005 -- 2019.37)
+#if (_MSC_VER > 1939)                           /* MSVC 2022: 19.30 .. 39 */
+#error unistd.h: untested MSVC Version (2005 -- 2022 19.39)
 	//see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 #endif //2022
 #endif //2019
@@ -632,9 +632,9 @@ LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, size_t size);
 LIBW32_API int          w32_mkstemp (char *path);
 LIBW32_API int          w32_mkstempA (char *path);
 LIBW32_API int          w32_mkstempW (wchar_t *path);
-#if defined(_MSC_VER)
-LIBW32_API int          mkstemp (char *path);
-#endif
+//#if defined(_MSC_VER)
+//LIBW32_API int          mkstemp (char *path);
+//#endif
 
 LIBW32_API int          w32_mkstemps (char *path, int suffixlen);
 LIBW32_API int          w32_mkstempsA (char *path, int suffixlen);

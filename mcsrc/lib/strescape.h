@@ -20,6 +20,7 @@ char *strutils_escape (const char *src, gsize src_len, const char *escaped_chars
 char *strutils_unescape (const char *src, gsize src_len, const char *unescaped_chars,
                          gboolean unescape_non_printable);
 char *strutils_shell_unescape (const char *text);
+char *strutils_shell_unescape_special (const char *text); //WIN32
 char *strutils_shell_escape (const char *text);
 
 char *strutils_glob_escape (const char *text);

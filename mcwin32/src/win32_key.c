@@ -36,7 +36,7 @@
         void        enable_bracketed_paste (void);
         void        disable_bracketed_paste (void);
 
-   Written by: Adam Young 2012 - 2023
+   Written by: Adam Young 2012 - 2024
 
    This file is part of the Midnight Commander.
 
@@ -72,6 +72,8 @@
 #include <unistd.h>
 
 #include "win32_trace.h"
+
+//#define KEY_TRACE
 
 #if defined(__WATCOMC__)
 #if (__WATCOMC__ >= 1300)
@@ -348,9 +350,12 @@ static DWORD WINAPI     CancelSynchronousIoImp(HANDLE hThread);
 
 static BOOL __stdcall   CtrlHandler(DWORD fdwCtrlType);
 
+static void             key_config(void);
 static int              key_next(int no_delay, unsigned *UnicodeChar);
 static int              key_esc_special(void);
+static DWORD            key_normalizeAltGr(const KEY_EVENT_RECORD *key);
 static int              key_mapwin32(unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned UnicodeChar);
+
 
 
 /*
@@ -362,6 +367,8 @@ init_key (void)
     hConsoleIn = GetStdHandle (STD_INPUT_HANDLE);
     hConsoleOut = GetStdHandle (STD_OUTPUT_HANDLE);
     hWindow = GetConsoleWindow();
+
+    key_config();
 
     mc_global.tty.console_flag = '\001';        /* console save/restore, toggle available */
     tty_reset_prog_mode ();
@@ -380,6 +387,26 @@ init_key (void)
             if (hKernel32) FreeLibrary(hKernel32);
         }
     }
+}
+
+
+static void
+key_config(void)
+{
+    char *buffer;
+
+    mc_global.tty.altgr_enabled = -1;           /* default; auto */
+
+    buffer = mc_config_get_string (mc_global.main_config, CONFIG_MISC_SECTION, "altgr_enabled", "");
+    if (buffer[0]) {
+        if (0 == strcmp(buffer, "off")) {       /* "off" or "on" */
+            mc_global.tty.altgr_enabled = 0;
+        } else if (0 == strcmp(buffer, "on")) {
+            mc_global.tty.altgr_enabled = 1;
+        }
+    }
+
+    g_free (buffer);
 }
 
 
@@ -1146,16 +1173,17 @@ key_next(int no_delay, unsigned *unicode)
             case KEY_EVENT:
                 if (k.Event.KeyEvent.bKeyDown) {
                     const KEY_EVENT_RECORD *pKey = &k.Event.KeyEvent;
+                    const DWORD dwControlKeyState = key_normalizeAltGr(pKey);
                     const unsigned UnicodeChar = pKey->uChar.UnicodeChar;
                     int c;
 
 #if !defined(KEY_M_UNICODE)
 #define KEY_M_UNICODE 0x8000
 #endif
-                    if ((c = key_mapwin32(pKey->dwControlKeyState,
+                    if ((c = key_mapwin32(dwControlKeyState,
                                 pKey->wVirtualKeyCode, UnicodeChar)) != -1) {
                         if (KEY_M_UNICODE & c) {
-#if defined(_DEBUG) && (0)
+#if defined(KEY_TRACE)
                             OutputDebugPrintA ("%05u/0x%04x = unicode\n", UnicodeChar, UnicodeChar);
 #endif
                             if (unicode) {
@@ -1163,7 +1191,7 @@ key_next(int no_delay, unsigned *unicode)
                                 return (c & ~KEY_M_UNICODE); // modifiers, if any
                             }
                         } else {
-#if defined(_DEBUG) && (0)
+#if defined(KEY_TRACE)
                             char *skeyname = lookup_key_by_code (c);
                             OutputDebugPrintA ("%05u/0x%04x = %s\n", c, c, skeyname);
                             g_free (skeyname);
@@ -1204,7 +1232,7 @@ key_esc_special(void)
         DWORD count = 0;
 
         if (WaitForSingleObject(hConsoleIn, timeoutms) == WAIT_OBJECT_0 &&
-                PeekConsoleInput(hConsoleIn, &ir, 1, &count) && 1 == count) {
+                PeekConsoleInputW(hConsoleIn, &ir, 1, &count) && 1 == count) {
 
             if (KEY_EVENT == ir.EventType) {
                 const KEY_EVENT_RECORD *key = &ir.Event.KeyEvent;
@@ -1356,11 +1384,73 @@ CtrlHandler(DWORD fdwCtrlType)
 
 
 /*
- *  Translate the key press into a keycode identifier.
- */
+ *  key_normalizeAltGr ---
+ *      Filter AtrGr events from modifiers; attempt to allow:
+ *
+ *          Left-Alt + AltGr,
+ *          Right-Ctrl + AltGr,
+ *          Left-Alt + Right-Ctrl + AltGr.
+ **/
+static DWORD
+key_normalizeAltGr (const KEY_EVENT_RECORD *key)
+{
+    DWORD state = key->dwControlKeyState;
+
+    // Enabled?
+    if (0 == mc_global.tty.altgr_enabled)
+        return state;
+
+    // AltGr condition (LCtrl + RAlt)
+    if (0 == (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
+        return state;
+
+    if (0 == (state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)))
+        return state;
+
+    if (0 == key->uChar.UnicodeChar)
+        return state;
+
+    if (state & RIGHT_ALT_PRESSED) {
+        // Remove Right-Alt.
+        state &= ~RIGHT_ALT_PRESSED;
+
+        // As a character was presented, Left-Ctrl is almost always set,
+        // except if the user presses Right-Ctrl, then AltGr (in that specific order) for whatever reason.
+        // At any rate, make sure the bit is not set.
+        state &= ~LEFT_CTRL_PRESSED;
+
+    } else if (state & LEFT_ALT_PRESSED) {
+        // Remove Left-Alt.
+        state &= ~LEFT_ALT_PRESSED;
+
+        // Whichever Ctrl key is down, remove it from the state.
+        // We only remove one key, to improve our chances of detecting the corner-case of Left-Ctrl + Left-Alt + Right-Ctrl.
+        if ((state & LEFT_CTRL_PRESSED) != 0) {
+            // Remove Left-Ctrl.
+            state &= ~LEFT_CTRL_PRESSED;
+
+       } else if ((state & RIGHT_CTRL_PRESSED) != 0) {
+            // Remove Right-Ctrl.
+            state &= ~RIGHT_CTRL_PRESSED;
+       }
+    }
+
+#if defined(KEY_TRACE)
+    OutputDebugPrintA ("AltGr: 0x%04x = 0x%04x\n", key->dwControlKeyState, state);
+#endif
+
+    return state;
+}
+
+
+/*
+ *  key_mapwin32 ---
+ *      Translate the key press into a keycode identifier.
+ **/
 static int
 key_mapwin32 (unsigned long dwCtrlKeyState, unsigned wVirtKeyCode, unsigned uChar)
 {
+
     int mod = 0, ch = -1;
     int i;
 
@@ -1464,7 +1554,7 @@ is_idle (void)
     INPUT_RECORD k;
 
     while (hConsoleIn && WaitForSingleObject(hConsoleIn, 0 /*NONBLOCKING*/) == WAIT_OBJECT_0 &&
-                PeekConsoleInput(hConsoleIn, &k, 1, &count) && count == 1) {
+                PeekConsoleInputW(hConsoleIn, &k, 1, &count) && count == 1) {
         if (KEY_EVENT == k.EventType) {
             if (!k.Event.KeyEvent.bKeyDown) {
                 //

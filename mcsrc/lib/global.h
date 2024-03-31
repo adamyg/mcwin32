@@ -306,6 +306,9 @@ typedef struct
 #if defined(WIN32)
         /* Set if the window has changed it's size */
         SIG_ATOMIC_VOLATILE_T winch_flag;
+
+        /* ALtGr map; If true filter AltGr control states */
+        int altgr_enabled;
 #endif //WIN32
     } tty;
 

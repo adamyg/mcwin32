@@ -1,7 +1,7 @@
 /*
    Various utilities
 
-   Copyright (C) 1994-2023
+   Copyright (C) 1994-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -257,6 +257,9 @@ name_quote (const char *s, gboolean quote_percent)
 {
     GString *ret;
 
+    if (s == NULL || *s == '\0')
+        return NULL;
+
     ret = g_string_sized_new (64);
 
     if (*s == '-')
@@ -306,7 +309,7 @@ name_quote (const char *s, gboolean quote_percent)
         g_string_append_c (ret, *s);
     }
 
-    return g_string_free (ret, FALSE);
+    return g_string_free (ret, ret->len == 0);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -315,7 +318,8 @@ char *
 fake_name_quote (const char *s, gboolean quote_percent)
 {
     (void) quote_percent;
-    return g_strdup (s);
+
+    return (s == NULL || *s == '\0' ? NULL : g_strdup (s));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -892,6 +896,11 @@ get_compression_type (int fd, const char *name)
         && magic[2] == 'Z' && magic[3] == 'M' && magic[4] == 'A' && magic[5] == 0x00)
         return COMPRESSION_LZMA;
 
+    /* LZO format - \x89\x4c\x5a\x4f\x00\x0d\x0a\x1a\x0a    lzop compressed data */
+    if (magic[0] == 0x89 && magic[1] == 0x4c &&
+        magic[2] == 0x5a && magic[3] == 0x4f && magic[4] == 0x00 && magic[5] == 0x0d)
+        return COMPRESSION_LZO;
+
     /* XZ compression magic */
     if (magic[0] == 0xFD
         && magic[1] == 0x37
@@ -931,6 +940,8 @@ decompress_extension (int type)
         return "/ulz4" VFS_PATH_URL_DELIMITER;
     case COMPRESSION_LZMA:
         return "/ulzma" VFS_PATH_URL_DELIMITER;
+    case COMPRESSION_LZO:
+        return "/ulzo" VFS_PATH_URL_DELIMITER;
     case COMPRESSION_XZ:
         return "/uxz" VFS_PATH_URL_DELIMITER;
     case COMPRESSION_ZSTD:
@@ -1418,8 +1429,8 @@ guess_message_value (void)
         /* Last possibility is the LANG environment variable.  */
         "LANG",
 #if defined(WIN32) //WIN32, config
-	/* GNU gettext extension.  */
-	"LANGUAGE",
+        /* GNU gettext extension.  */
+        "LANGUAGE",
 #endif
         /* NULL exit loops */
         NULL

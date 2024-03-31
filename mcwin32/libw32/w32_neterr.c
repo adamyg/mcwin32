@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_neterr_c,"$Id: w32_neterr.c,v 1.10 2023/12/28 17:30:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_neterr_c,"$Id: w32_neterr.c,v 1.11 2024/01/16 15:17:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 network errno mapping support
  *
- * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * Copyright (c) 2007, 2012 - 2024 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

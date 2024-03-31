@@ -1,14 +1,14 @@
 #ifndef LIBW32_MSVCVERSIONS_H_INCLUDED
 #define LIBW32_MSVCVERSIONS_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_msvcversions_h,"$Id: msvcversions.h,v 1.2 2023/09/17 13:04:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_msvcversions_h,"$Id: msvcversions.h,v 1.3 2024/01/16 15:17:51 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
-/* $Id: msvcversions.h,v 1.2 2023/09/17 13:04:56 cvsuser Exp $
+/* $Id: msvcversions.h,v 1.3 2024/01/16 15:17:51 cvsuser Exp $
  * _MSC_VER definitions
  *
- * Copyright (c) 2017 - 2023, Adam Young.
+ * Copyright (c) 2017 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of inetd-win32.

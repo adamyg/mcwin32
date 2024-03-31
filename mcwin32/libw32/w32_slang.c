@@ -2,7 +2,7 @@
 /*
  * win32 Slang Screen Management (SLsmg) function emulation.
  *
- * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * Copyright (c) 2007, 2012 - 2024 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

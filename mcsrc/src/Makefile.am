@@ -1,128 +1,75 @@
-SUBDIRS = filemanager man2hlp vfs viewer
-
-if USE_INTERNAL_EDIT
-SUBDIRS += editor
-endif
-
-if USE_DIFF
-SUBDIRS += diffviewer
-endif
-
-if ENABLE_SUBSHELL
-SUBDIRS += subshell
-endif
-
-noinst_LTLIBRARIES = libinternal.la
-
-AM_CPPFLAGS = \
-	-DSYSCONFDIR=\""$(sysconfdir)/@PACKAGE@/"\" \
-	-DLIBEXECDIR=\""$(libexecdir)/@PACKAGE@/"\" \
-	-DDATADIR=\""$(pkgdatadir)/"\" \
-	-DLOCALEDIR=\""$(localedir)"\" \
-	-DEXTHELPERSDIR=\""@EXTHELPERSDIR@/"\"
-
-if CONS_SAVER
-SUBDIRS += consaver
-AM_CPPFLAGS += -DSAVERDIR=\""$(pkglibexecdir)"\"
-endif
-
-AM_CPPFLAGS += -I$(top_srcdir) $(GLIB_CFLAGS)
-
-localedir = $(datadir)/locale
-pkglibexecdir = $(libexecdir)/@PACKAGE@
-
-bin_PROGRAMS = mc
-
-if USE_INTERNAL_EDIT
-EDITLIB = editor/libedit.la
-endif
-
-if USE_DIFF
-DIFFLIB = diffviewer/libdiffviewer.la
-endif
-
-if ENABLE_SUBSHELL
-SUBSHELLLIB = subshell/libsubshell.la
-endif
-
-libinternal_la_LIBADD = \
-	filemanager/libmcfilemanager.la \
-	vfs/libmc-vfs.la \
-	viewer/libmcviewer.la \
-	$(DIFFLIB) $(EDITLIB) $(SUBSHELLLIB)
-
-mc_LDADD = \
-	libinternal.la
+SUBDIRS = event filehighlight mcconfig search skin tty vfs strutil widget .
 
 if ENABLE_MCLIB
-libinternal_la_LIBADD += \
-	$(top_builddir)/lib/libmc.la
+    LIB_VERSION=`echo $(LIBMC_VERSION) | \
+	tr '.' ' '| \
+	while read v1 v2 v3; do echo $$v2':'$$v3':'$$v1; done`
+
+    AM_LDFLAGS=-no-undefined -version-info $(LIB_VERSION) -release $(LIBMC_RELEASE)
+
+    lib_LTLIBRARIES = libmc.la
 else
-mc_LDADD += \
-	$(top_builddir)/lib/libmc.la
+    noinst_LTLIBRARIES = libmc.la
 endif
 
-SRC_mc_conssaver = \
-	cons.handler.c consaver/cons.saver.h
 
-mc_SOURCES = \
-	main.c
+SUBLIB_includes = \
+	event.h event-types.h \
+	filehighlight.h \
+	mcconfig.h \
+	search.h \
+	skin.h \
+	strescape.h \
+	strutil.h \
+	widget.h
 
-libinternal_la_SOURCES = \
-	$(SRC_mc_conssaver) \
-	args.c args.h \
-	clipboard.c clipboard.h \
-	events_init.c events_init.h \
-	execute.c execute.h \
-	file_history.c file_history.h \
-	help.c help.h \
-	history.h \
-	keymap.c keymap.h \
-	learn.c learn.h \
-	setup.c setup.h \
-	textconf.c textconf.h \
-	usermenu.c usermenu.h \
+SRC_mc_utils = \
+	utilunix.c utilunix.h \
+	unixcompat.h \
 	util.c util.h
 
+
+libmc_la_SOURCES = \
+	$(SUBLIB_includes) \
+	$(SRC_mc_utils) \
+	file-entry.h \
+	fileloc.h \
+	fs.h \
+	hook.c hook.h \
+	glibcompat.c glibcompat.h \
+	global.c global.h \
+	keybind.c keybind.h \
+	lock.c lock.h \
+	serialize.c serialize.h \
+	shell.c shell.h \
+	stat-size.h \
+	timefmt.c timefmt.h
+
+if USE_MAINTAINER_MODE
+libmc_la_SOURCES += logging.c logging.h
+endif
+
 if CHARSET
-    libinternal_la_SOURCES += selcodepage.c selcodepage.h
+libmc_la_SOURCES += charsets.c charsets.h
 endif
 
+AM_CPPFLAGS = $(GLIB_CFLAGS) -I$(top_srcdir)
 
-if ENABLE_BACKGROUND
-    libinternal_la_SOURCES += background.c background.h
-endif
+libmc_la_LIBADD = \
+	event/libmcevent.la \
+	filehighlight/libmcfilehighlight.la \
+	mcconfig/libmcconfig.la \
+	search/libsearch.la \
+	strutil/libmcstrutil.la \
+	skin/libmcskin.la \
+	tty/libmctty.la \
+	vfs/libmcvfs.la \
+	widget/libmcwidget.la
 
-EXTRA_DIST = $(SRC_maintainer) $(SRC_charset)
+libmc_la_LIBADD += $(MCLIBS) $(SLANGLIB)
 
-# end of automated testing
-
-install-exec-hook:
-	$(MAKE) install_mcview
-if USE_INTERNAL_EDIT
-	$(MAKE) install_mcedit
-endif
-if USE_DIFF
-	$(MAKE) install_mcdiff
-endif
-
-#
-# Make relative symlinks, but do the right thing if LN_S is `ln' or `cp'.
-#
-install_mcview:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcview && $(LN_S) mc mcview
-
-install_mcedit:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcedit && $(LN_S) mc mcedit
-
-install_mcdiff:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcdiff && $(LN_S) mc mcdiff
-
-uninstall-hook:
-	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcview
-if USE_INTERNAL_EDIT
-	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcedit
-endif
-if USE_DIFF
-	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcdiff
+if HAVE_GMODULE
+    libmc_la_LIBADD += $(GMODULE_LIBS)
+else
+    libmc_la_LIBADD += $(GLIB_LIBS)
 endif

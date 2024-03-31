@@ -1,14 +1,14 @@
 #ifndef LIBW32_NETINET_TCP_H_INCLUDED
 #define LIBW32_NETINET_TCP_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_netinet_tcp_h,"$Id: tcp.h,v 1.6 2023/11/06 15:08:35 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_netinet_tcp_h,"$Id: tcp.h,v 1.7 2024/03/14 18:54:57 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  *  netinet/tcp.h
  *
- * Copyright (c) 1998 - 2023, Adam Young.
+ * Copyright (c) 1998 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
