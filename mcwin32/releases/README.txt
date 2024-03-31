@@ -10,9 +10,10 @@ the current 4.8.x development stream.
 
         4.8.31          230 (mc merge 4.8.31)
 
+                                 - 4.8.31 (#74)
                                  - mbedtls 3.5.2 (#67)
                                  - AltGr detection (#71, #52)
-                                 - mcdiff integration (#74)
+                                 - mcdiff integration (#70)
                                  - cd/cdpath (#72)
 
         4.8.30          229 (mc merge 4.8.30)

@@ -78,9 +78,11 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="owc20"   call .\mcwin32\support\owc20setenv.bat C:\Watcom
+        @set BUSYBOX=./support/busybox
+        @if "${{ matrix.config.toolchain }}"=="mingw64" set BUSYBOX=./support/busybox64
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
-        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=./support/busybox --verbose "${{ matrix.config.toolchain }}"
+        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=%BUSYBOX% --verbose "${{ matrix.config.toolchain }}"
 
     - name: Compile
       if: startsWith(matrix.config.name, 'Windows Latest')
