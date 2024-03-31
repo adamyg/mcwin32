@@ -1,7 +1,7 @@
 /*
    cd_to() function.
 
-   Copyright (C) 1995-2023
+   Copyright (C) 1995-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -90,7 +90,11 @@ examine_cd (const char *_path)
     char *p;
 
     /* Tilde expansion */
+#if defined(WIN32)
+    path = strutils_shell_unescape_special (_path); //only escape specials
+#else
     path = strutils_shell_unescape (_path);
+#endif
     path_tilde = tilde_expand (path);
     g_free (path);
 

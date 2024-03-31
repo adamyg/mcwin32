@@ -1,10 +1,10 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockpair_c,"$Id: w32_sockpair.c,v 1.12 2023/11/06 15:07:42 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockpair_c,"$Id: w32_sockpair.c,v 1.13 2024/01/16 15:17:52 cvsuser Exp $")
 
 /*
  * win32 socket file-descriptor support
  *
- * Copyright (c) 2007, 2012 - 2023 Adam Young.
+ * Copyright (c) 2007, 2012 - 2024 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

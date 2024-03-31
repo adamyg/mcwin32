@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.22 2023/11/26 15:06:58 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.23 2024/01/16 15:18:03 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -18,7 +18,7 @@
 #       $(D_LIB)/%.lo:      %.cpp
 #               $(LIBTOOL) --mode=compile $(CXX) $(CXXFLAGS) -o $(D_OBJ)/$@ -c $<
 #
-# Copyright Adam Young 2012 - 2023
+# Copyright Adam Young 2012 - 2024
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.9 2024/01/01 15:25:01 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_native_c,"$Id: w32_iconv_native.c,v 1.10 2024/02/02 15:18:41 cvsuser Exp $")
 
 /*
  * iconv implementation using Win32 API to convert.
@@ -124,7 +124,7 @@ static int iso2022jp_mbtowc(csconv_t *cv, const uchar *buf, int bufsize, ushort 
 static int iso2022jp_wctomb(csconv_t *cv, ushort *wbuf, int wbufsize, uchar *buf, int bufsize);
 static int iso2022jp_flush(csconv_t *cv, uchar *buf, int bufsize);
 
-static struct {
+static const struct {
     int codepage;
     const char *name;
 } codepage_alias[] = {

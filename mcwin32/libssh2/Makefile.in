@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.22 2023/10/02 12:11:29 cvsuser Exp $
+# $Id: Makefile.in,v 1.23 2024/03/29 09:08:33 cvsuser Exp $
 # libssh2 makefile.
 #
 #
-# Copyright (c) 2015 - 2023, Adam Young.
+# Copyright (c) 2015 - 2024, Adam Young.
 # All rights reserved.
 #
 #
@@ -95,7 +95,7 @@ else
 CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDDEBUG) @LDFLAGS@
 endif
-LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
+LDLIBS=		-L$(D_LIB) $(CRYPTOLIBS) @LIBS@ @EXTRALIBS@
 
 ARFLAGS=	rcv
 YFLAGS=		-d
@@ -132,8 +132,8 @@ CEXTRA+=	-DLIBSSH2_MBEDTLS
 			# Note: current Windows enc engine wont allow OpenSSH connections.
 			# LIBSSH2_MBEDTLS mbedtls
 			#
-LDLIBS+=	libmbedcrypto_static.lib
-LDLIBS+=	libz_static.lib
+CRYPTOLIBS +=	libmbedcrypto_static.lib
+CRYPTOLIBS +=	libz_static.lib
 
 VPATH+=		$(SSH2SRC) $(SSH2BASE)/win32
 CRYPTO_CSOURCES=\

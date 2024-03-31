@@ -1,7 +1,7 @@
 /*
    Utilities for VFS modules.
 
-   Copyright (C) 1988-2023
+   Copyright (C) 1988-2024
    Free Software Foundation, Inc.
 
    Copyright (C) 1995, 1996 Miguel de Icaza
@@ -188,7 +188,11 @@ vfs_mkstemps (vfs_path_t ** pname_vpath, const char *prefix, const char *param_b
     int fd;
 
     /* Strip directories */
+#if defined(WIN32) //WIN32, path
+    p = strrchr2 (param_basename, PATH_SEP, PATH_SEP2);
+#else
     p = strrchr (param_basename, PATH_SEP);
+#endif
     if (p == NULL)
         p = param_basename;
     else
@@ -253,12 +257,11 @@ vfs_url_split (const char *path, int default_port, vfs_url_flags_t flags)
 
     if ((flags & URL_NOSLASH) == 0)
     {
-        char *dir = pcopy;
+        char *dir;
 
         /* locate path component */
-        while (!IS_PATH_SEP (*dir) && *dir != '\0') //WIN32
-            dir++;
-        if (*dir == '\0')
+        dir = strchr (pcopy, PATH_SEP);
+        if (dir == NULL)
             path_element->path = g_strdup (PATH_SEP_STR);
         else
         {

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.7 2023/11/06 15:07:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.8 2024/01/16 15:17:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.7 2023/11/06 15:07:43 cv
  *
  *      _wopendir, _wclosedir, _wreaddir, _wseekdir, _wrewindir, _wtelldir
  *
- * Copyright (c) 2021 - 2023 Adam Young.
+ * Copyright (c) 2021 - 2024 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

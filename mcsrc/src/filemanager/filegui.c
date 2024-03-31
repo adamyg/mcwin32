@@ -10,7 +10,7 @@
    Janne Kukonlehto added much error recovery to them for being used
    in an interactive program.
 
-   Copyright (C) 1994-2023
+   Copyright (C) 1994-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -1496,7 +1496,11 @@ file_mask_dialog (file_op_context_t * ctx, gboolean only_one, const char *format
         g_free (tmp);
         vpath = vfs_path_from_str (dest_dir);
 
+#if defined(WIN32) //WIN32, path
+        ctx->dest_mask = strrchr2 (dest_dir, PATH_SEP, PATH_SEP2);
+#else
         ctx->dest_mask = strrchr (dest_dir, PATH_SEP);
+#endif
         if (ctx->dest_mask == NULL)
             ctx->dest_mask = dest_dir;
         else

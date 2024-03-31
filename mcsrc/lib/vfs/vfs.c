@@ -1,7 +1,7 @@
 /*
    Virtual File System switch code
 
-   Copyright (C) 1995-2023
+   Copyright (C) 1995-2024
    Free Software Foundation, Inc.
 
    Written by: 1995 Miguel de Icaza
@@ -363,7 +363,11 @@ vfs_strip_suffix_from_filename (const char *filename)
         char *vfs_prefix;
 
         *semi = '\0';
+#if defined(WIN32) //WIN32, path
+        vfs_prefix = strrchr2 (p, PATH_SEP, PATH_SEP2);
+#else
         vfs_prefix = strrchr (p, PATH_SEP);
+#endif
         if (vfs_prefix == NULL)
             *semi = *VFS_PATH_URL_DELIMITER;
         else

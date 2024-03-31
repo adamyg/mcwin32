@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.5 2023/11/06 15:07:42 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.6 2024/01/16 15:17:51 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getrusage() system calls
  *
- * Copyright (c) 2020 - 2023, Adam Young.
+ * Copyright (c) 2020 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

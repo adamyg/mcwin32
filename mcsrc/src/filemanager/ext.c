@@ -1,7 +1,7 @@
 /*
    Extension dependent execution.
 
-   Copyright (C) 1994-2023
+   Copyright (C) 1994-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -340,15 +340,19 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t * filename_vpath)
                                 }
                             }
 
-                            if (!is_cd)
-                                g_string_append (shell_string, text);
-                            else
+                            if (text != NULL)
                             {
-                                strcpy (pbuffer, text);
-                                pbuffer = strchr (pbuffer, 0);
+                                if (!is_cd)
+                                    g_string_append (shell_string, text);
+                                else
+                                {
+                                    strcpy (pbuffer, text);
+                                    pbuffer = strchr (pbuffer, '\0');
+                                }
+
+                                g_free (text);
                             }
 
-                            g_free (text);
                             written_nonspace = TRUE;
                         }
                     }
@@ -680,14 +684,18 @@ get_file_type_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
     return 1;
 
 #else
-    int ret;
-    char *tmp;
+    char *filename_quoted;
+    int ret = 0;
 
-    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), FALSE);
-    ret = get_popen_information (FILE_CMD, tmp, buf, buflen);
-    g_free (tmp);
+    filename_quoted = name_quote (vfs_path_get_last_path_str (filename_vpath), FALSE);
+    if (filename_quoted != NULL)
+    {
+        ret = get_popen_information (FILE_CMD, filename_quoted, buf, buflen);
+        g_free (filename_quoted);
+    }
 
     return ret;
+
 #endif
 }
 
@@ -699,7 +707,7 @@ get_file_type_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
 
 #ifdef HAVE_CHARSET
 static int
-get_file_encoding_local (const vfs_path_t * filename_vpath, char *encoding_id, int encoding_id_len)
+get_file_encoding_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
 {
 #if defined(HAVE_LIBENCA)
     unsigned char sample[4096];
@@ -719,7 +727,7 @@ get_file_encoding_local (const vfs_path_t * filename_vpath, char *encoding_id, i
         if (lang && NULL != (analyser = enca_analyser_alloc (lang)))
         {
             EncaEncoding encoding = enca_analyse (analyser, sample, sample_len);
-            snprintf (encoding_id, encoding_id_len-1, "%s", enca_charset_name (encoding.charset, ENCA_NAME_STYLE_HUMAN));
+            snprintf (buf, buflen-1, "%s", enca_charset_name (encoding.charset, ENCA_NAME_STYLE_HUMAN));
             enca_analyser_free(analyser);
             return 1;
         }
@@ -727,18 +735,28 @@ get_file_encoding_local (const vfs_path_t * filename_vpath, char *encoding_id, i
     return 0;
 
 #else
-    char *tmp, *lang, *args;
-    int ret;
+    char *filename_quoted;
+    int ret = 0;
 
-    tmp = name_quote (vfs_path_get_last_path_str (filename_vpath), FALSE);
-    lang = name_quote (autodetect_codeset, FALSE);
-    args = g_strconcat (" -L", lang, " -i ", tmp, (char *) NULL);
+    filename_quoted = name_quote (vfs_path_get_last_path_str (filename_vpath), FALSE);
+    if (filename_quoted != NULL)
+    {
+        char *lang;
 
-    ret = get_popen_information ("enca", args, encoding_id, encoding_id_len);
+        lang = name_quote (autodetect_codeset, FALSE);
+        if (lang != NULL)
+        {
+            char *args;
 
-    g_free (args);
-    g_free (lang);
-    g_free (tmp);
+            args = g_strdup_printf (" -L %s -i %s", lang, filename_quoted);
+            g_free (lang);
+
+            ret = get_popen_information ("enca", args, buf, buflen);
+            g_free (args);
+        }
+
+        g_free (filename_quoted);
+    }
 
     return ret;
 #endif
@@ -785,6 +803,7 @@ regex_check_type (const vfs_path_t * filename_vpath, const char *ptr, gboolean c
                                 vfs_path_as_str (filename_vpath));
             return FALSE;
         }
+
 
 #ifdef HAVE_CHARSET
         got_encoding_data = is_autodetect_codeset_enabled

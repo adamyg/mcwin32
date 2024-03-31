@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_proctitle_c,"$Id: w32_proctitle.c,v 1.3 2023/11/06 15:07:42 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_proctitle_c,"$Id: w32_proctitle.c,v 1.4 2024/01/16 15:17:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 setproctitle
  *
- * Copyright (c) 2020 - 2023, Adam Young.
+ * Copyright (c) 2020 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

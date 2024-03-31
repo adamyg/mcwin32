@@ -1,7 +1,7 @@
 /*
    Provides a functions for working with shell.
 
-   Copyright (C) 2006-2023
+   Copyright (C) 2006-2024
    Free Software Foundation, Inc.
 
    Written by:
@@ -189,6 +189,8 @@ mc_shell_recognize_real_path (mc_shell_t * mc_shell)
         mc_shell->type = SHELL_ASH_BUSYBOX;
         mc_shell->name = mc_shell->path;
     }
+#if defined(WIN32) //WIN32, TODO/XXX
+#endif
     else
         mc_shell->type = SHELL_NONE;
 }

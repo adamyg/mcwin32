@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_pipe_c,"$Id: w32_pipe.c,v 1.2 2023/09/17 13:04:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_pipe_c,"$Id: w32_pipe.c,v 1.3 2024/01/16 15:17:52 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 pipe() system calls,
  *
- * Copyright (c) 2018 - 2023, Adam Young.
+ * Copyright (c) 2018 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

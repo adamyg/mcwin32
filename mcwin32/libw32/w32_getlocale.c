@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getlocale_c,"$Id: w32_getlocale.c,v 1.4 2023/09/17 13:04:57 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getlocale_c,"$Id: w32_getlocale.c,v 1.5 2024/02/04 10:38:35 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getlocale() system calls
  *
- * Copyright (c) 1998 - 2023, Adam Young.
+ * Copyright (c) 1998 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
