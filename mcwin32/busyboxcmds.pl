@@ -3,7 +3,7 @@
 # $Id: busyboxcmds.pl,v 1.4 2024/01/16 15:18:03 cvsuser Exp $
 # busybox command line generation
 #
-# Copyright Adam Young 2023 - 2024
+# Copyright Adam Young 2023 - 2025
 # All rights reserved.
 #
 # The applications are free software: you can redistribute it
@@ -60,6 +60,7 @@ Generate	#()
 	}
 
 	$cmdhash{'busybox'} = 1;
+	$cmdhash{'make'} = 1;
 	$cmdhash{'link'} = 1;
 
 	# busybox, version
