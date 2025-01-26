@@ -5,7 +5,7 @@
 # Automake emulation for non-unix environments.
 #
 #
-# Copyright (c) 1998 - 2024, Adam Young.
+# Copyright (c) 1998 - 2025, Adam Young.
 # All rights reserved.
 #
 # The applications are free software: you can redistribute it
@@ -24,6 +24,9 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ==end==
 #
 # MSYS/MINGW install
@@ -56,6 +59,7 @@ use Getopt::Long;
 use File::Spec;
 use File::Copy;                                 # copy()
 use File::Basename;
+use File::Which;
 use POSIX 'asctime';
 use Data::Dumper;
 use Text::ParseWords;
@@ -587,7 +591,9 @@ my %x_environment   = (
                 #   (1) Use with caution, beta undocumented feature and not 100% stable.
                 #   (2) Avoid changing the call convention from #r/#s, otherwise runtime library issues.
                 #
-            CFLAGS          => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -za99 -aa -sg',
+                # stdbool:  za99 mode _Bool use within C modules causes crashes, remap
+                #
+            CFLAGS          => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -za99 -aa -sg -D_Bool=char',
             CXXFLAGS        => '-q -6r -j -ei -db -zlf -bt=nt -bm -br -cc++ -xs -xr',
             CDEBUG          => '-d2 -hd -of+ ',
             CXXDEBUG        => '-d2 -hd -od',   #d2/d3 under hw generates invalid symbols
@@ -750,6 +756,7 @@ my %win_entries     = (
         CP                  => '@BINPATH@cp.exe',
         TAR                 => '@BINPATH@tar.exe',
         MKDIR               => '@BINPATH@mkdir.exe',
+        MKDIR_P             => '@PERLPATH@perl '."${CWD}/support/mkdir_p.pl",
         RMDIR               => '@BINPATH@rmdir.exe',
 
         ISWIN32             => 'yes',
@@ -842,6 +849,7 @@ my %x_tokens        = (
         MV                  => 'mv',
         TAR                 => 'tar',
         MKDIR               => 'mkdir',
+        MKDIR_P             => 'mkdir -p',
         RMDIR               => 'rmdir',
 
         INSTALL             => 'install.pl',
@@ -886,6 +894,8 @@ my %x_tokens        = (
     #   EXTRA_CXXFLAGS      => '',
 
         LIBCURL_CPPFLAGS    => '',
+
+        CURSES_CFLAGS       => '',
 
         LIBICU_CFLAGS       => '',
         LIBICU_CXXFLAGS     => '',
@@ -955,6 +965,7 @@ my @x_headers       = (     #headers
         'stdbool.h',                            # c99
         'stdatomic.h',                          # c11
         'stdalign.h',                           # c11
+        'stdckdint.h', 'intsafe.h',             # integer maths (gnu/win32)
         'threads.h',                            # c11
         'pthread.h',                            # MINGW
         'string.h', 'strings.h',
@@ -1003,7 +1014,8 @@ my @x_predefines    = (
         '__GNUC__|__GNUC_MINOR__',
         '__MINGW32__|__MINGW64__|__MINGW64_VERSION_MAJOR|__MINGW64_VERSION_MINOR',
         '__STDC__|__STDC_VERSION__',
-        '_M_IX86|_M_IA64|_M_X64',
+        '_M_IX86|_M_IA64|_M_X64|_M_AMD64|_M_ARM',
+        '_WIN32_WINNT',
         'cpp=__cplusplus',
         'cpp=__STDC_HOSTED__',
         'cpp=__STDC_NO_ATOMICS__',
@@ -1097,14 +1109,14 @@ my @x_functions     = (
         'index', 'rindex',                      # bsd
         'strcasecmp', '__strcasecmp', 'stricmp',
         'strncasecmp', '__strncasecmp', 'strnicmp',
-        'strtoul',
         'strnlen',
         'strerror',
         'strftime',
         'strchr', 'strrchr', 'strdup',
         'strlcpy', 'strlcat',                   # bsd/linux
             'strsep', 'strnstr', 'strcasestr', 'strcasestr_l', 'strtonum',
-        'strtof', 'strtold', 'strtoll',
+        'strtof', 'strtold',
+        'strtoll', 'strtoul', 'strtoull',
         'strtok_r',
         'sprintf_s', 'wsprintf_s',
         'strverscmp', '__strverscmp',
@@ -1213,6 +1225,8 @@ my $o_libhunspell   = undef;
 my $o_libarchive    = undef;
 my $o_libmagic      = undef;
 
+my $o_help          = 0;
+
 
 #   Main ---
 #       Mainline
@@ -1246,8 +1260,7 @@ sub
 main()
 {
     my $o_version = undef;
-    my $o_clean  = 0;
-    my $o_help   = 0;
+    my $o_clean = 0;
 
     my $ret
         = GetOptions(
@@ -1272,7 +1285,8 @@ main()
                 'clean'         => \$o_clean,
                 'verbose'       => sub {++$o_verbose;},
                 'keep'          => \$o_keep,
-                'help'          => \$o_help
+                'help'          => \$o_help,
+                'help-options'  => sub {$o_help = 2;}
                 );
 
     Usage() if (!$ret || $o_help);
@@ -1401,22 +1415,27 @@ ProgramFiles
 sub
 Usage                   # (message)
 {
-    print "\nmakelib @_\n\n" if (@_);
-    print <<EOU;
+    if ($o_help != 2) {
+        print "\nmakelib @_\n\n" if (@_);
+        print <<EOU;
 
 Usage: perl makelib.pl [options] <command>
 
 Options:
+EOU
+    }
+
+    print <<EOU;
 
     --help                  Command line help.
 
     --libtool=<path>        Path to libtool_win32.pl.
 
-    --binpath=<path>        path of support binaries (gmake etc), otherwise these are assumed to be in the path.
+    --binpath=<path>        Path to coreutils, otherwise these are assumed to be in the path.
 
-    --perlpath=<path>       PERL binary path, otherwise assumed in the path.
+    --perlpath=<path>       Perl binary path, otherwise assumed in the path.
 
-    --gnuwin32=<path>       gnuwin32 g++ tool installation path.
+    --gnuwin32=<path>       gnuwin32 g++ tool installation path; see --gnulibs
 
     --contib                Enable local contrib libraries (default).
     or --gnulibs            Search and enable gnuwin32 libraries, using gnuwin32 path.
@@ -1427,7 +1446,6 @@ Options:
 
     --keep                  keep temporary file images.
 
-
 Configuration:
 
     --libarchive=<path>     libarchive installation path.
@@ -1435,17 +1453,17 @@ Configuration:
     --icu=<path>            ICU installation path.
 
     --busybox=<path>        busybox-w32 installation path.
-    --bison=<path>          bison installation path.
+    --bison=<path>          yacc/bison installation path.
     --flex=<path>           flex installation path.
     --inno=<path>           inno-setup installation path.
 
 Toolchain / command:
 
-    vc[20xx]               Visual Studio C/C++ Makefiles.
-    wc                     Watcom C/C++, using 'cl' interface.
-    owc                    Open Watcom C/C++, using a direct interface.
-    dj                     DJGPP.
-    clean                  Clean.
+    vc[20xx]                Visual Studio C/C++ Makefiles.
+    wc                      Watcom C/C++, using 'cl' interface.
+    owc                     Open Watcom C/C++, using a direct interface.
+    dj                      DJGPP.
+    clean                   Clean.
 
 EOU
     exit(42);
@@ -1494,15 +1512,20 @@ Configure($$$)          # (type, version, options)
 
     if ($INNO) {
         $INNO = ExeRealpath($INNO)
-            if ($INNO ne 'wget');
-        print "wget:     ${INNO}\n";
+            if ($INNO ne 'inno');
+        print "inno:     ${INNO}\n";
         $win_entries{INNO} = $INNO;
     }
 
     if ($BISON) {                               # override
         $BISON = ExeRealpath($BISON);
-        print "bison:    ${BISON}\n";
-        $win_entries{YACC} = "${BISON} -y";
+        if ($BISON =~ /bison$/i) {
+            print "bison:    ${BISON}\n";
+            $win_entries{YACC} = "${BISON} -y";
+        } else {
+            print "YACC:     ${BISON}\n";
+            $win_entries{YACC} = "${BISON}";
+        }
     }
 
     if ($FLEX) {                                # override
@@ -1535,6 +1558,8 @@ Configure($$$)          # (type, version, options)
                 $x_environment{$signature} = $x_environment{$base};
                 $x_environment{$signature}->{TOOLCHAIN} .= '_x64';
                 $x_environment{$signature}->{TOOLCHAINEXT} .= '/x64';
+                $x_environment{$signature}->{ISWIN64} .= 'yes';
+                $x_environment{$signature}->{ISWIN32} .= 'no';
             }
         }
     }
@@ -1869,6 +1894,19 @@ Configure($$$)          # (type, version, options)
                     }
                 }
             }
+
+            if (exists $config->{CONTRIBEXTRA}) {
+                foreach (@{$config->{CONTRIBEXTRA}}) {
+                    my $dir = MakefileDir($_);
+
+                    if (-f "${dir}/makelib.def") {
+                        my $name = basename($dir);
+                        if (LoadContrib($type, $version, $name, $dir, \@CONTRIBINCS)) {
+                            $contribs{$name} = 1;
+                        }
+                    }
+                }
+            }
         }
 
         #libarchive
@@ -2057,7 +2095,8 @@ ExeRealpath($)
         $path =~ s/^\./\$(ROOT)/;
 
     } else {
-        print "warning: unable to resolve path <${path}>\n";
+        print "warning: unable to resolve path <${path}>\n"
+            if ($path !~ /\$/);             # variable; assume a generated artifact
     }
 
     $path = "\"${path}\""                   # quote; contains spaces
@@ -2127,13 +2166,38 @@ LoadContrib($$$$$)      # (type, version, name, dir, refIncludes)
                 $ext .= ExportPath($val);
                 print "\text: $val (\@$lbl\@)\n";
 
-            } elsif ('def' eq $key) {
+            } elsif ('def' eq $key) { # Makefile.in HAVE_xxx, default=1
                 if ($val =~ /^(.+)=(.*)$/) {
-                    $CONFIG_H{$1} = ($2 ? $2 : '1');
+                    my ($tkn, $def) = ($1, $2 ? $2 : '1');
+                    if (exists $CONFIG_H{$tkn}) {
+                        print "warning: redefinition of \@$tkn\@ encountered\n"
+                            if ($CONFIG_H{$tkn} ne $def);
+                    }
+                    $CONFIG_H{$tkn} = $def;
                 } else {
+                    if (exists $CONFIG_H{$val}) {
+                        print "warning: redefinition of \@$val\@ encountered\n"
+                            if ($CONFIG_H{$val} ne '1');
+                    }
                     $CONFIG_H{$val} = '1';
                 }
                 print "\tdef: $val\n";
+
+            } elsif ('var' eq $key) { # Makefile.in variable, empty allowed
+                if ($val =~ /^(.+)=(.*)$/) {
+                    my ($tkn, $def) = ($1, $2 ? $2 : '');
+                    if (exists $x_tokens{$tkn}) {
+                        print "warning: redefinition of \@$tkn\@ encountered\n"
+                            if ($x_tokens{$tkn} ne $def);
+                    }
+                    $x_tokens{$tkn} = $def;
+
+                } else {
+                    print "warning: redefinition of \@$val\@ encountered\n"
+                        if (exists $x_tokens{$val});
+                    $x_tokens{$val} = '';
+                }
+                print "\tvar: $val\n";
             }
         }
     }
@@ -2200,12 +2264,23 @@ CheckCompiler($$)       # (type, env)
 
     if (!defined $$env{COMPILERPATH} || $$env{COMPILERPATH} eq '') {
         if (exists $$env{COMPILERPATHS}) {
-            my @PATHS = split(/\|/, $$env{COMPILERPATHS});
-            foreach (@PATHS) {
-                my $path = ExpandENV($_);
-                if (-e $path && -d $path) {
-                    $$env{COMPILERPATH} = realpath($path);
-                    last;
+            my $compilerpath = which $$env{CC};
+            if ($compilerpath) {                # resolved path
+                $$env{COMPILERPATH} = dirname($compilerpath);
+
+            } else {
+                my @PATHS = split(/\|/, $$env{COMPILERPATHS});
+                foreach (@PATHS) {
+                    my $path = ExpandENV($_);
+                    if (-e $path && -d $path) {
+                        $compilerpath = realpath($path);
+                        my $ccpath = "${compilerpath}/".$$env{CC};
+
+                        if (-f $ccpath || -f "${ccpath}.exe") {
+                            $$env{COMPILERPATH} = $compilerpath;
+                            last;
+                        }
+                    }
                 }
             }
         }
@@ -2216,9 +2291,6 @@ CheckCompiler($$)       # (type, env)
         $x_compiler  = ExpandENV($$env{COMPILERPATH}).'/'
             if (exists $$env{COMPILERPATH});
     }
-
-    $x_compiler  = ExpandENV($$env{COMPILERPATH}).'/'
-        if (exists $$env{COMPILERPATH});
 
     $x_compiler .= $$env{CC};
     $x_compiler =~ s/\//\\/g;
