@@ -18,7 +18,7 @@
 #       $(D_LIB)/%.lo:      %.cpp
 #               $(LIBTOOL) --mode=compile $(CXX) $(CXXFLAGS) -o $(D_OBJ)/$@ -c $<
 #
-# Copyright Adam Young 2012 - 2024
+# Copyright Adam Young 2012 - 2025
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.
@@ -362,8 +362,8 @@ Link()
     my $cl_ltcg = 0;
     my $cl_debug = undef;
     my $cl_runtime = 'MT';
+    my $targetarch = '';
     my $gcc_debugger = 0;
-    my $x64 = 0;
     my @OBJECTS;
     my @RESOURCES;
     my @EXPORTS;
@@ -374,9 +374,9 @@ Link()
     my @STUFF;
 
     $cc = 'gcc' if ('g++' eq $cc);              # alises
-    if ('cl' eq $cc) {
-        if (defined $ENV{'LIB'}) {              # x64 toolchain selection (TODO: option)
-            $x64 = 1 if ($ENV{'LIB'} =~ /amd64/);
+    if ($cc eq 'cl') {
+        if (defined $ENV{'VSCMD_ARG_TGT_ARCH'} && $ENV{'VSCMD_ARG_TGT_ARCH'} eq "x64") {
+            $targetarch = 'x64';
         }
     }
 
@@ -773,7 +773,7 @@ Link()
         }
 
     MSVCRuntimeX64($cl_runtime, \@LIBRARIES)
-        if ($x64 && $cl_runtime);
+        if ($targetarch eq 'x64' && $cl_runtime);
 
     Verbose "libraries:";
         foreach(@LIBRARIES) { Verbose "\t$_"; }
@@ -869,35 +869,31 @@ print "*** non-libtool objects @BAD_OBJECTS is not portable!\n";
         #
         if (defined $ENV{'VCToolsInstallDir'}) { # 2010 plus
             my $toolbase = $ENV{'VCToolsInstallDir'};
-            if ($x64) {
-                Error("link: x64 linker needed");
-            } else {
-                $cmd = "\"${toolbase}\\bin\\Hostx86\\x86\\link\" @STUFF \@$cmdfile";
-            }
+            my $toolarch = "Hostx86\\x86";
+
+            $toolarch = "Hostx64\\x64"          # x86 or x64
+                if ($targetarch eq 'x64');
+
+            $cmd = "\"${toolbase}\\bin\\${toolarch}\\link\" \@$cmdfile";
 
         } elsif (defined $ENV{'VCINSTALLDIR'}) { # 2008
             my $toolbase = $ENV{'VCINSTALLDIR'};
-            if ($x64) {
-                $cmd = "\"${toolbase}\\bin\\amd64\\link\" @STUFF \@$cmdfile";
-            } else {
-                $cmd = "\"${toolbase}\\bin\\link\" @STUFF \@$cmdfile";
-            }
+            $cmd = "\"${toolbase}\\bin\\link\" \@$cmdfile";
 
-        } else {                                 # default
-            if ($x64) {
-                Error("link: x64 linker needed");
-            } else {
-                $cmd = "link @STUFF \@$cmdfile";
-            }
+        } else {                                # default
+            $cmd = "link \@$cmdfile";
         }
 
         open(CMD, ">${cmdfile}") or
             die "cannot create <${$cmdfile}>: $!\n";
 
+        print CMD "/MACHINE:${targetarch}\n"
+            if ($targetarch);                   # ARM|ARM64|ARM64X|EBC|X64|X86
+
         if ($linktype eq 'dll') {
             print CMD "/DLL\n";
             print CMD "/SUBSYSTEM:WINDOWS\n";
-            if ($x64) {                         # cdecl
+            if ($targetarch eq 'x64') {         # cdecl
               print CMD "/ENTRY:_DllMainCRTStartup"."\n";
             } else {                            # STDCALL
               print CMD "/ENTRY:_DllMainCRTStartup\@12"."\n";
@@ -908,9 +904,6 @@ print "*** non-libtool objects @BAD_OBJECTS is not portable!\n";
             print CMD "/SUBSYSTEM:CONSOLE\n";
             print CMD "/OUT:${output}\n";
         }
-
-        print CMD "/MACHINE:X64\n"
-            if ($x64);
         print CMD "/MANIFEST\n";
         print CMD "/NXCOMPAT\n";
         print CMD "/DYNAMICBASE\n";
@@ -929,7 +922,7 @@ print "*** non-libtool objects @BAD_OBJECTS is not portable!\n";
         print CMD "/LTCG\n"
             if ($cl_ltcg);
         print CMD "/IGNORE:4197\n"              # FIXME: warning LNK4197: export 'XXXe' specified multiple times; using first specification
-            if ($x64);
+            if ($targetarch eq 'x64');
 
       foreach(@OBJECTS) {
         print CMD true_object($_)."\n";
@@ -1130,6 +1123,7 @@ print "*** non-libtool objects @BAD_OBJECTS is not portable!\n";
         print LA "dll=${dllpath}\n";
         print LA "pdb=${pdbpath}\n" if ($pdbpath);
         print LA "manifest=${manifestpath}\n" if ($manifestpath);
+        print LA "targetarch=${targetarch}\n" if ($targetarch);
         print LA "[objects]\n";
         foreach(@OBJECTS) {
             print LA true_object($_)."\n";

@@ -3,7 +3,7 @@
 # $Id: buildinfo.pl,v 1.11 2024/03/09 17:58:47 cvsuser Exp $
 # buildinfo generation
 #
-# Copyright Adam Young 2018 - 2024
+# Copyright Adam Young 2018 - 2025
 # All rights reserved.
 #
 # The applications are free software: you can redistribute it
@@ -42,6 +42,9 @@ my $packagename = undef;
 my $version = "0.0.1";
 
 my $builddate = undef;
+my $buildyear = undef;
+my $buildmonth = undef;
+my $buildmday = undef;
 my $buildnumber = "1";
 my $buildtype = undef;
 my $buildtoolchain = undef;
@@ -102,6 +105,12 @@ $version = "0.0.1"
 $builddate = strftime('%Y%m%d', localtime)
 	if (! $builddate);
 
+($buildyear, $buildmonth, $buildmday) = ($1,$2,$3)
+	if ($builddate =~ /^(\d\d\d\d)(\d\d)(\d\d)$/);
+
+die "buildinfo: BUILD_DATE invalid"
+	if (! $buildyear);
+
 Generate();
 
 sub
@@ -128,6 +137,9 @@ Generate	#()
 #define ${prefix}VERSION_3 ${version3}
 #define ${prefix}VERSION_4 ${buildnumber}
 #define ${prefix}BUILD_DATE "${builddate}"
+#define ${prefix}BUILD_YEAR "${buildyear}"
+#define ${prefix}BUILD_MONTH "${buildmonth}"
+#define ${prefix}BUILD_MDAY "${buildmday}"
 #define ${prefix}BUILD_NUMBER "${buildnumber}"
 EOT
 
@@ -137,6 +149,8 @@ EOT
 
 		print FILE "#define BUILD_TOOLCHAIN \"${buildtoolchain}\"\n";
 		print FILE "#define BUILD_TOOLNAME \"${buildtoolname}\"\n";
+		print FILE "#define BUILD_ARCHITECTURE \"x64\"\n"
+			if ($buildtoolname =~ /64$/);
 	}
 
 	if ($buildtype) {
@@ -165,6 +179,9 @@ EOT
 
 	print FILE "#define ${prefix}BUILD_LIBEXECDIR \"${libexecdir}\"\n"
 		if ($libexecdir);
+
+	print FILE "#define ${prefix}BUILD_DATADIR \"${datadir}\"\n"
+		if ($datadir);
 
 	close(FILE);
 }
