@@ -86,7 +86,7 @@
 #define HAVE_ISATTY
 
 /* Define to 1 if you have the <langinfo.h> header file. */
-#undef HAVE_LANGINFO_H
+    //#undef HAVE_LANGINFO_H
 
 /* Define if you have the recode library (-lrecode). */
 #undef HAVE_LIBRECODE
@@ -104,7 +104,9 @@
     //#undef HAVE_MEMORY_H
 
 /* Define to 1 if you have the `nl_langinfo' function. */
-    //#undef HAVE_NL_LANGINFO
+#if defined(HAVE_LANGINFO_H) && !defined(HAVE_NL_LANGINFO)
+#define HAVE_NL_LANGINFO
+#endif
 
 /* Define if you have program_invocation_short_name variable. */
 #undef HAVE_PROGRAM_INVOCATION_SHORT_NAME
