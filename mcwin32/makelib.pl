@@ -994,7 +994,8 @@ my @x_headers       = (     #headers
         'dirent.h',
         'dlfcn.h',                              # dlopen()
         'pwd.h',
-        'grp.h'
+        'grp.h',
+        'langinfo.h'
         );
 
 my @x_headers2      = (     #headers; check only
@@ -1163,7 +1164,8 @@ my @x_functions     = (
         'opendir',
         'mktemp', 'mkstemp',
         'findfirst', '_findfirst',              # msvc
-        'getopt', 'getopt_long'                 # bsd/compat
+        'getopt', 'getopt_long',                # bsd/compat
+        'nl_langinfo'
         );
 
 my @x_commands     = (     # commands explicity converted to <cmd>.exe

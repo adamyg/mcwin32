@@ -1,7 +1,7 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.23 2024/02/03 17:22:14 cvsuser Exp $
+/* $Id: w32config.hin,v 1.24 2025/01/26 19:23:23 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
@@ -139,6 +139,9 @@
 #undef HAVE_WINCRYPT_H
 #undef HAVE_WINIOCTL_H
 #undef HAVE_BCRYPT_H
+#undef HAVE_AFUNIX_H
+#undef HAVE_INTRIN_H
+#undef HAVE_INTSAFE_H
 
 /* Explicit header checks */
 #undef HAVE_SYS_TYPES_H
@@ -202,6 +205,7 @@
 #undef HAVE_STRING_H
 #undef HAVE_UNISTD_H
 #undef HAVE_MATH_H
+#undef HAVE_LANGINFO_H
 
 #undef HAVE_ARGZ_H
 #undef HAVE_LIBGEN_H
@@ -499,6 +503,7 @@
 #undef HAVE_STRTOF
 #undef HAVE_STRTOLD
 #undef HAVE_STRTOLL
+#undef HAVE_STRTOULL
 #undef HAVE_STRVERSCMP
 #undef HAVE___STRVERSCMP
 #undef HAVE_STRNLEN
@@ -631,11 +636,13 @@
 #undef HAVE__VSNPRINTF
 #undef HAVE_ASPRINTF
 #undef HAVE_VASPRINTF
+#undef HAVE_SPRINTF_S
 
 #undef HAVE_LOCALE_H
 #undef HAVE_SETLOCALE
 #undef HAVE_LANGINFO_CODESET
 #undef HAVE_LOCALE_CHARSET
+#undef HAVE_NL_LANGINFO
 
 #undef HAVE_VFORK_H
 #undef HAVE_FORK
