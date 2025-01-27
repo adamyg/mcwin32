@@ -1,8 +1,31 @@
+Mon Jan 27 23:25:17 2025 adamy
+
+	* build-231
+
+	* 4.8.33 merge (#94) - in-progress/unpublished
+
+	* upgrades/bugfixes
+
+	        o glib 2.54.3 (#103)
+
+Wed Mar 20 20:30:50 2024 adamy
+
+	* build-230
+
+	* 4.8.31 merge (#70)
+
+	* upgrades/bugfixes
+
+	        o mbedtls 3.5.2 (#67)
+		o AltGr detection (#71, #52)
+		o mcdiff integration (#74)
+		o cd/cdpath (#72)
+
+	* x64 binary (Beta)
+
 Sun Nov 12 11:36:11 2023 adamy
 
 	* build-229
-
-	* x64 build (msvc/mingw)
 
 	* 4.8.30 merge
 
