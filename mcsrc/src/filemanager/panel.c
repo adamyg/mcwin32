@@ -2760,7 +2760,7 @@ panel_do_set_filter (WPanel * panel)
 {
     /* *INDENT-OFF* */
 #if defined(__WATCOMC__)
-    file_filter_t ff = {NULL, NULL, 0); ff.flags = panel->filter.flags;
+    file_filter_t ff = {NULL, NULL, 0}; ff.flags = panel->filter.flags;
 #else
     file_filter_t ff = { .value = NULL, .handler = NULL, .flags = panel->filter.flags };
 #endif
