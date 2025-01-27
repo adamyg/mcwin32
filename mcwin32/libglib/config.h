@@ -10,39 +10,41 @@
      */
 #define _MSC_VER 1200
 #if !defined(__STDC_WANT_LIB_EXT1__)
-#define __STDC_WANT_LIB_EXT1__ 1        /*extended library prototypes*/
+#define __STDC_WANT_LIB_EXT1__ 1        /* extended library prototypes */
 #endif
-
-    /*
-     *  WINAPI_FAMILY should be set to be one of these (8.1 greater):
-     *      WINAPI_FAMILY_APP           1
-     *      WINAPI_FAMILY_DESKTOP_APP   2
-     *      WINAPI_FAMILY_PHONE_APP     3
-     */
-#endif  //__WATCOMC__
-
-#if defined(__MINGW32__) && !defined(__MINGW64__)
-#undef  _WIN32_WINNT                    /* see: gmessages.c */
-#undef  _WIN32_VER
-#define _WIN32_WINNT 0x501
-#define _WIN32_VER 0x501
-#endif
+#endif //__WATCOMC__
 
     /*
      *  Public Glib configuration
      */
-#include "config.h.win32"
+#undef  _WIN32_WINNT                    /* package dependent */
+#undef  _WIN32_VER
+
+#include "config.h.win32"               /* see: include-xx.xx.xx */
+#undef HAVE_DIRENT_H
 
     /*
      *  Toolchain specific
      */
+     
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+#pragma GCC diagnostic ignored "-Wempty-body"
+#pragma GCC diagnostic ignored "-Wmemset-elt-size"
+#pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#pragma GCC diagnostic ignored "-Wint-conversion"
+#pragma GCC diagnostic ignored "-Wformat"
+#endif //__GNUC__
 
 #if defined(__WATCOMC__)
     /*
      *  --- WATCOMC 1.9+
      */
 #if (__WATCOMC__ >= 1300)
-#define HAVE_STDINT_H 1                 /*uintptr_t*/
+#define HAVE_STDINT_H 1                 /* uintptr_t */
 #endif
 
 #define G_VA_COPY(dest,src) ((dest)[0]=(src)[0],(void)0)
@@ -52,7 +54,7 @@ extern void MemoryBarrier(void);
 
 #define _O_RANDOM       0
 #define _O_SEQUENTIAL   0
-#define _O_TEMPORARY    0               /*FIXME*/
+#define _O_TEMPORARY    0               /* FIXME */
 
 #if !defined(__cplusplus)
 #pragma disable_message(124)            /* Comparison result always 0 */
@@ -92,7 +94,6 @@ extern void MemoryBarrier(void);
 #  endif /* GLIB_STATIC_COMPILATION */
 
 #endif  /*WATCOMC || MSC_VER || MINGW32 */
-
 
 #if defined(GPCRE_COMPILATION)
 #define DG_LOG_DOMAIN   "GLib-GRegex"
