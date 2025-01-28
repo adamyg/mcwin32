@@ -313,6 +313,7 @@ MC_FILEMANAGER=\
 	$(D_OBJFM)/filegui$(O)			\
 	$(D_OBJFM)/filemanager$(O)		\
 	$(D_OBJFM)/filenot$(O)			\
+	$(D_OBJFM)/fileopctx$(O)		\
 	$(D_OBJFM)/find$(O)			\
 	$(D_OBJFM)/hotlist$(O)			\
 	$(D_OBJFM)/info$(O)			\
