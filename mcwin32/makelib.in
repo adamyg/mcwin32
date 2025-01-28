@@ -160,6 +160,7 @@ Configure()
 
 		remove_define('WIN32');
 		add_define('HAVE_CONFIG_H');
+                add_define('WIN32_WINNT=0x501');
 ##  		add_define('_WIN32_WINNT=0x501');	# Windows SDK
 ##  		add_define('WINVER=0x501');
 
