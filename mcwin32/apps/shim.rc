@@ -22,7 +22,7 @@
 #include "winver.h"
 #endif
 
-#include "mcdiffinfo.h"
+#include "../buildinfo.h"
 
 #define RC_PRODUCTVERSION	VERSION_1 , VERSION_2 , VERSION_3 , VERSION_4
 #define RC_FILEVERSION		VERSION_1 , VERSION_2 , VERSION_3 , VERSION_4
@@ -82,26 +82,32 @@ VS_VERSION_INFO VERSIONINFO
 		BEGIN
 			BLOCK	"040904E4"
 			BEGIN
-				VALUE "CompanyName",		""
+                                VALUE "CompanyName",            ""
 
-				VALUE "FileDescription",	"mcdiff"
+                                VALUE "FileDescription",        "Midnight Commander"
 
-				VALUE "FileVersion",		VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER /* match mc.rc */
+                                VALUE "FileVersion",            VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER
 
-				VALUE "InternalName",		"mcdiff"
+                                VALUE "InternalName",           "WIN32 Midnight Commander"
 
 				VALUE "Copyright",
 					"Copyright (C) 2024 - " BUILD_YEAR ", Adam Young. \n"
 					"[bsd-diff] Copyright (c) 2003, 2010 Todd C. Miller <Todd.Miller@courtesan.com>. \n"
 					"There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \n"
 
-				VALUE "Maintainers",		"https://github.com/adamyg/mcwin32"
+                                VALUE "LegalTrademarks",        "see GNU General Public License"
 
-				VALUE "LegalTrademarks",	"SPDX-License-Identifier: BSD-4-Clause"
+                                VALUE "Maintainers",
+                                        "Port: https://github.com/adamyg/mcwin32 \n"
+                                        "Original: mc-devel@gnome.org"
 
-				VALUE "OriginalFilename",	"mcdiff.exe"
+                                VALUE "OriginalFilename",       APPNAME
 
-				VALUE "ProductName",		"MCDiff"
+                                VALUE "ProductName",            "GNU Midnight Commander"
+
+                                VALUE "ProductVersion",         VERSION ", Win32"
+
+                                VALUE "SpecialBuild",           "mc-win32-native"
 			END
 		END
 

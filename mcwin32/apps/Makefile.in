@@ -1,6 +1,6 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.2 2024/03/03 06:56:44 cvsuser Exp $
-# mc[bsd]diff
+# $Id: Makefile.in,v 1.1 2025/01/28 09:25:30 cvsuser Exp $
+# mcdiff/mcedit/mcdiff, application shims
 #
 #
 #
@@ -8,12 +8,6 @@
 @SET_MAKE@
 ROOT=		@abs_top_builddir@
 top_builddir=	@top_builddir@
-
-# Configuration
-
-PACKAGE=	"mc"
-PKG_NAME=	"mcdiff"
-PKG_VERSION=	1.0.2
 
 # File extensions
 
@@ -134,56 +128,54 @@ RMDFLAGS=	-rf
 #########################################################################################
 # Targets
 
-MCDIFFLIB=	$(D_LIB)/$(LP)mcbsddiff$(A)
+MCSHIMLIB=	$(D_LIB)/$(LP)libshim$(A)
+MCSHIMSRC=	.
 
-MCDIFFTSK=	$(D_BIN)/mcbsddiff$(E)
-MCDIFFSRC=	.
+MCDIFFTSK=	$(D_BIN)/mcdiff$(E)
+MCEDITTSK=	$(D_BIN)/mcedit$(E)
+MCVIEWTSK=	$(D_BIN)/mcview$(E)
 
-VPATH+=		./compat
+VPATH+=		$(MCSHIMSRC)
 LIBCSOURCES=\
-	bcopy.c			\
-	bzero.c			\
-	explicit_bzero.c	\
-	fgetln.c		\
-	getline.c		\
-	fnmatch.c		\
-	localtime_r.c		\
-	mktemp.c		\
-	qsort_r.c		\
-	scandir.c		\
-	strndup.c		\
-	strtonum.c		\
-	\
-	reallocarray.c		\
-	recallocarray.c		\
-	\
-	asprintf.c		\
-	vasprintf.c
+	shim.c
 
-VPATH+=		$(MCDIFFSRC)
-CSOURCES=\
-	diff.c			\
-	diffdir.c		\
-	diffreg.c		\
-	diffwin.c		\
-	xmalloc.c
+DIFFCSOURCES=\
+	mcdiff.c
 
-##	$(D_OBJ)/pr.c
+EDITCSOURCES=\
+	mcedit.c
+
+VIEWCSOURCES=\
+	mcdiff.c
 
 LIBOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(LIBCSOURCES)))
 
-TSKOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
+MCDIFFOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(DIFFCSOURCES)))
+MCEDITOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(EDITCSOURCES)))
+MCVIEWOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(VIEWCSOURCES)))
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
-TSKOBJS+=	$(D_OBJ)/mcdiff_res.o
+MCDIFFOBJS+=	$(D_OBJ)/mcdiff_res.o
 else
-TSKOBJS+=	$(D_OBJ)/mcdiff.res
+MCDIFFOBJS+=	$(D_OBJ)/mcdiff.res
+endif
+
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+MCEDITOBJS+=	$(D_OBJ)/mcedit_res.o
+else
+MCEDITOBJS+=	$(D_OBJ)/mcedit.res
+endif
+
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+MCVIEWOBJS+=	$(D_OBJ)/mcview_res.o
+else
+MCVIEWOBJS+=	$(D_OBJ)/mcview.res
 endif
 
 OBJS=		$(LIBOBJS) $(TSKOBJS)
-LIBS=		$(MCDIFFLIB)
+LIBS=		$(MCSHIMLIB)
 DLLS=
-TSKS=		$(MCDIFFTSK)
+TSKS=		$(MCDIFFTSK) $(MCEDITTSK) $(MCVIEWTSK)
 INSTALLED=
 GENERATED=
 
@@ -191,43 +183,32 @@ GENERATED=
 #########################################################################################
 # Rules
 
-.PHONY:			headers build release debug
-build:			headers buildinfo $(LIBS) $(DLLS) $(TSKS)
+.PHONY:			build release debug
+build:			$(LIBS) $(DLLS) $(TSKS)
 
 release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
-headers:		diff_license.h diff_usage.h
-
-GENERATED+=		diff_license.h
-diff_license.h:		LICENSE ../support/mklicense.pl
-		@$(PERL) ../support/mklicense.pl $< $@ diff_license
-
-GENERATED+=		diff_usage.h
-diff_usage.h:		man.txt ../support/mklicense.pl
-		@$(PERL) ../support/mklicense.pl $< $@ diff_usage
-
-$(MCDIFFLIB):		CEXTRA += -I./compat -DLIBCOMPAT_SOURCE
-$(MCDIFFLIB):		CEXTRA += -DLIBW32_DYNAMIC
-$(MCDIFFLIB):		$(D_OBJ)/.created $(LIBOBJS)
+$(MCSHIMLIB):		$(D_OBJ)/.created $(LIBOBJS)
 		$(RM) $(RMFLAGS) $@ $(QUIETOUT)
 		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
 		$(RANLIB) $@
 
-$(MCDIFFTSK):		CEXTRA += -I. -I./compat
-$(MCDIFFTSK):		CEXTRA += -DLIBW32_DYNAMIC
-$(MCDIFFTSK):		MAPFILE=$(basename $@).map
-$(MCDIFFTSK):		$(D_OBJ)/.created $(TSKOBJS)
-		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(TSKOBJS) $(MCDIFFLIB) $(LDLIBS) -MAP:$(MAPFILE)
+$(MCDIFFTSK) $(MCEDITTSK) $(MCVIEWTSK): $(MCSHIMLIB)
 
-.PHONY:		buildinfo
-mcdiffinfo.h:		buildinfo
-buildinfo:	Makefile ../buildinfo.pl
-		@echo updating mcdiffinfo.h ...
-		-@$(PERL) ..//buildinfo.pl -o mcdiffinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
-			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@"
+$(MCDIFFTSK):		MAPFILE=$(basename $@).map
+$(MCDIFFTSK):		$(D_OBJ)/.created $(MCDIFFOBJS)
+		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(MCDIFFOBJS) $(MCSHIMLIB) $(LDLIBS) -MAP:$(MAPFILE)
+
+$(MCEDITTSK):		MAPFILE=$(basename $@).map
+$(MCEDITTSK):		$(D_OBJ)/.created $(MCEDITOBJS)
+		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(MCEDITOBJS) $(MCSHIMLIB) $(LDLIBS) -MAP:$(MAPFILE)
+
+$(MCVIEWTSK):		MAPFILE=$(basename $@).map
+$(MCVIEWTSK):		$(D_OBJ)/.created $(MCVIEWOBJS)
+		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(MCVIEWOBJS) $(MCSHIMLIB) $(LDLIBS) -MAP:$(MAPFILE)
 
 %/.created:
 		-@mkdir $(@D)
