@@ -279,6 +279,20 @@ main (int argc, char *argv[])
     /* do this before args parsing */
     str_init_strings (NULL);
 
+#if defined(WIN32)
+    { // tool-chain independent wide-char/utf8 conversion command-line parser.
+        int uargc = 0;
+        char **uargv;
+
+        assert(g_path_is_absolute("c:\\"));
+        assert(g_path_is_absolute("D:/"));
+        uargv = GetUTF8Arguments(&uargc);
+        assert(uargc == argc);
+        argv = uargv;
+        argc = uargc;
+    }
+#endif //WIN32
+
     mc_setup_run_mode (argv);   /* are we mc? editor? viewer? etc... */
 
     if (!mc_args_parse (&argc, &argv, "mc", &mcerror))

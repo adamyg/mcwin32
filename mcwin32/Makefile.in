@@ -396,6 +396,7 @@ MC_OBJS=\
 #		- $(D_OBJMC)/tty_key$(O)
 #		- $(D_OBJMC)/tty_win$(O)
 #
+#		+ $(D_OBJ)/win32_argv$(O)
 #		+ $(D_OBJ)/win32_glib$(O)
 #		+ $(D_OBJ)/win32_key$(O)
 #		+ $(D_OBJ)/win32_pipe$(O)
@@ -465,6 +466,7 @@ MC_LIBMC=\
 	\
 	$(D_OBJMC)/compat_strtok_r$(O)		\
 	$(D_OBJMC)/strchr2$(O)			\
+	$(D_OBJMC)/win32_argv$(O)		\
 	$(D_OBJMC)/win32_key$(O)		\
 	$(D_OBJMC)/win32_tty$(O)		\
 	$(D_OBJMC)/win32_win$(O)		\

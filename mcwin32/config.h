@@ -2,8 +2,8 @@
 #define CONFIG_H_INCLUDED
 /*
  *  win32 Midnight Commander -- config.h
- *
- *  Written by: Adam Young 2012 - 2024
+ *  
+ *  Copyright (c) 2012 - 2025 Adam Young.
  *
  *  This file is part of the Midnight Commander.
  *
@@ -97,6 +97,8 @@ extern const char *         mc_inet_ntop(int af, const void *src, char *dst, siz
 extern char *               strtok_r(char *s, const char *delim, char **lasts);
 #endif
 
+extern char **              GetUTF8Arguments(int *pargc);
+
 extern void                 tty_set_title(const char *title);
 
 /*
@@ -184,6 +186,7 @@ extern void                 tty_set_title(const char *title);
 #define ENABLE_VFS_SHELL 1                      /* build-225+ */
 #define ENABLE_VFS_SFTP 1                       /* libssh2 */
 #undef  ENABLE_VFS_UNDELFS
+#define ENABLE_VFS_NET 1                        /* 4.8.33+ */
 
 #define SIG_ATOMIC_VOLATILE_T int volatile
 #define PROMOTED_MODE_T int
