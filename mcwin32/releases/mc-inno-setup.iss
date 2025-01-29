@@ -1,7 +1,7 @@
 ;
 ; Midnight Commander - Inno Setup
 ;
-; Adam Young, 2012 - 2024
+; Copyright (c) 2012 - 2025 Adam Young.
 ; This file is part of the Midnight Commander.
 ;
 ; The Midnight Commander is free software: you can redistribute it
@@ -56,6 +56,9 @@ OutputDir=.
 OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-{#BUILD_TOOLNAME}-setup
 #else
 OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
+#endif
+#if defined(BUILD_ISWIN64)
+ArchitecturesInstallIn64BitMode=x64
 #endif
 Compression=lzma
 SolidCompression=yes
