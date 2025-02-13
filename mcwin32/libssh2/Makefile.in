@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.23 2024/03/29 09:08:33 cvsuser Exp $
+# $Id: Makefile.in,v 1.24 2025/02/13 17:55:07 cvsuser Exp $
 # libssh2 makefile.
 #
 #
-# Copyright (c) 2015 - 2024, Adam Young.
+# Copyright (c) 2015 - 2025, Adam Young.
 # All rights reserved.
 #
 #
@@ -80,6 +80,9 @@ D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libssh2
 XFLAGS=
 
 CFLAGS=		@CFLAGS@
+ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+CFLAGS+=	-wcd=124 -wcd=125 -wcd=136
+endif
 CWARN=		@CWARN@
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
@@ -108,7 +111,8 @@ RMFLAGS=	-f
 SSH2LIB=	$(D_LIB)/$(LP)ssh2_static$(A)
 SSH2DLL=	$(D_LIB)/$(LP)ssh2.la
 
-VERSION=	1.11.0
+#VERSION=	1.11.0
+VERSION=	1.11.1
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 VERPACKED=	libssh2-$(VERSION).gr.tgz
 
@@ -147,13 +151,17 @@ CSOURCES=\
 	$(CRYPTO_CSOURCES) \
 	libssh2_helper.c
 
-#+1.9.0
+#1.9.0+
 CSOURCES+=\
 	blowfish.c bcrypt_pbkdf.c
 
-#+1.10.0
+#1.10.0+
 CSOURCES+=\
 	agent_win.c
+
+#1.11.1+
+CSOURCES+=\
+	cipher-chachapoly.c chacha.c poly1305.c
 
 LIBOBJS=\
 	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(CSOURCES)))
