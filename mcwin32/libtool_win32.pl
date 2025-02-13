@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.23 2024/01/16 15:18:03 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.24 2025/02/13 17:54:23 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -988,6 +988,8 @@ print "*** non-libtool objects @BAD_OBJECTS is not portable!\n";
         print CMD "option   static\n";          # export statics within the map file.
         print CMD "option   artificial\n";      # export internal symbols.
         print CMD "sort\n";                     # sort symbol by address.
+
+        print CMD "option   stack=1m\n";        # MSVC default
 
         print CMD "option   quiet\n"
             if ($o_quiet || $o_silent);
