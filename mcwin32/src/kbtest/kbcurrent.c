@@ -72,7 +72,7 @@ KBDefinitionCurrent(void)
 	unsigned vk2sc[512] = { 0 };
 	BYTE keyState[256] = { 0 };
 
-	if (NULL == (def = (KBDefinition *)calloc(sizeof(KBDefinition), 1))) {
+	if (NULL == (def = (KBDefinition *)calloc(1, sizeof(KBDefinition)))) {
 		return NULL;
 	}
 

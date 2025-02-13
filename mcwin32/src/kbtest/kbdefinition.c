@@ -93,10 +93,10 @@ KBDefinitionLoad(const char *source)
 		return NULL;
 	}
 
-	if (NULL == (ctx = (ParserContext *)calloc(sizeof(ParserContext), 1))) {
+	if (NULL == (ctx = (ParserContext *)calloc(1, sizeof(ParserContext)))) {
 		printf("XML parser error: alloc context\n");
 
-	} else if (NULL == (ctx->layout = (KBDefinition *)calloc(sizeof(KBDefinition), 1))) {
+	} else if (NULL == (ctx->layout = (KBDefinition *)calloc(1, sizeof(KBDefinition)))) {
 		printf("XML parser error: alloc context\n");
 
 	} else {
