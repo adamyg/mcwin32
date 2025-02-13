@@ -1,14 +1,14 @@
 #ifndef KBCONSOLE_H_INCLUDED
 #define KBCONSOLE_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(kbconsole_h,"$Id: kbconsole.h,v 1.4 2024/02/28 15:55:21 cvsuser Exp $")
+__CIDENT_RCSID(kbconsole_h,"$Id: kbconsole.h,v 1.5 2025/01/29 13:33:04 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * console keyboard test application
  *
- * Copyright (c) 2024, Adam Young.
+ * Copyright (c) 2024 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the WinXSH project.

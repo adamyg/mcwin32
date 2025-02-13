@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(btest_c,"$Id: kbconsole.c,v 1.5 2024/02/28 15:55:21 cvsuser Exp $")
+__CIDENT_RCSID(btest_c,"$Id: kbconsole.c,v 1.6 2025/01/29 13:33:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * console keyboard test application
  *
- * Copyright (c) 2015 - 2024, Adam Young.
+ * Copyright (c) 2015 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the WinXSH project.

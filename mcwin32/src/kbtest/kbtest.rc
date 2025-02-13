@@ -91,7 +91,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "InternalName",		"Console keyboard tester"
 
 				VALUE "Copyright",
-					"Copyright (C) 2024, Adam Young. All rights reserved. \n"
+					"Copyright (C) 2024-2025, Adam Young. All rights reserved. \n"
 					"Copyright (c) 1998-2000 Thai Open Source Software Center Ltd and Clark Cooper. \n"
 					"Copyright (c) 2001-2019 Expat maintainers. \n"
 					"This is free software; see the source for copying conditions. \n"
