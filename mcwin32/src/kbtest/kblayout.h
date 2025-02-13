@@ -1,14 +1,14 @@
 #ifndef KBLAYOUT_H_INCLUDED
 #define KBLAYOUT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(kblayout_h,"$Id: kblayout.h,v 1.3 2024/02/27 17:18:08 cvsuser Exp $")
+__CIDENT_RCSID(kblayout_h,"$Id: kblayout.h,v 1.4 2025/01/29 13:33:04 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * console keyboard test application
  *
- * Copyright (c) 2024, Adam Young.
+ * Copyright (c) 2024 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the WinXSH project.
