@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.17 2024/03/14 13:52:42 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.19 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 popen implementation
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -254,9 +254,10 @@ PipeA(const char *cmd, const char *mode)
 
         // redirect stderr to stdout
         if (NULL != strstr(arg, "2>&1")) {
+            char *o, *i;
             if (NULL == (cmd2 = WIN32_STRDUP(arg)))
                 goto enomem;
-            for (char *o = strstr(cmd2, "2>&1"), *i = o + 4;; ++i, ++o) {
+            for (o = strstr(cmd2, "2>&1"), i = o + 4;; ++i, ++o) {
                 if (0 == (*o = *i))             // remove 2>&1
                     break;
             }
@@ -454,9 +455,10 @@ PipeW(const wchar_t *cmd, const char *mode)
 
         // redirect stderr to stdout
         if (NULL != wcsstr(arg, L"2>&1")) {
+            wchar_t *o, *i;
             if (NULL == (cmd2 = WIN32_STRDUPW(arg)))
                 goto enomem;
-            for (wchar_t *o = wcsstr(cmd2, L"2>&1"), *i = o + 4;; ++i, ++o) {
+            for (o = wcsstr(cmd2, L"2>&1"), i = o + 4;; ++i, ++o) {
                 if (0 == (*o = *i))             // remove 2>&1
                     break;
             }
@@ -742,7 +744,7 @@ Dup(HANDLE old, HANDLE *dup, BOOL inherit)
 
     if (dup == NULL || old == INVALID_HANDLE_VALUE ||
             !DuplicateHandle(self, old, self, dup, 0, inherit, DUPLICATE_SAME_ACCESS)) {
-        *dup = INVALID_HANDLE_VALUE;
+        if (dup) *dup = INVALID_HANDLE_VALUE;
         return (FALSE);
     }
     return (TRUE);

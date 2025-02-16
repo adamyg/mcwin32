@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.16 2024/03/03 07:32:03 cvsuser Exp $
+# $Id: makelib.in,v 1.18 2025/02/16 12:03:54 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -95,6 +95,7 @@ $PACKAGE_FILE	= 'package.h';
 	'libintl',
 	'libglib',
 	'src/kbtest',
+	'src/coninfo',
 	'diff',
 	'apps',
 	'autoupdater'
@@ -160,9 +161,8 @@ Configure()
 
 		remove_define('WIN32');
 		add_define('HAVE_CONFIG_H');
-                add_define('WIN32_WINNT=0x501');
-##  		add_define('_WIN32_WINNT=0x501');	# Windows SDK
-##  		add_define('WINVER=0x501');
+		add_define('_WIN32_WINNT=0x501');	# Windows SDK
+		add_define('WINVER=0x501');
 
 		add_define('_CRT_SECURE_NO_WARNINGS');
 		add_define('_CRT_SECURE_NO_DEPRECATE');
@@ -181,7 +181,7 @@ Configure()
 
 		remove_define('WIN32');
 		add_define('HAVE_CONFIG_H');
-##  		add_define('_WIN32_WINNT=0x501');
+		add_define('_WIN32_WINNT=0x501');
 		add_define('__STDC_WANT_LIB_EXT1__');
 
 		add_xinclude('$(ROOT)/libw32');
@@ -197,8 +197,13 @@ Configure()
 
 		remove_define('WIN32');
 		add_define('HAVE_CONFIG_H');
-		add_define('_WIN32_WINNT=0x501');	# Windows SDK
-		add_define('_WIN32_VER=0x501');
+		if ($TOOLCHAIN =~ /64/) {
+			add_define('_WIN32_WINNT=0x601');	# Windows SDK/7
+			add_define('_WIN32_VER=0x601');
+		} else {
+			add_define('_WIN32_WINNT=0x501');	# Windows SDK/XP
+			add_define('_WIN32_VER=0x501');
+		}
 
 		add_xinclude('$(ROOT)/libw32');
 		add_application_library('libw32.a');

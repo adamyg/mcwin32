@@ -18,10 +18,7 @@
             my_build_filenamev
             my_build_filename
 
-   Copyright (C) 2012
-   The Free Software Foundation, Inc.
-
-   Written by: Adam Young 2012 - 2024
+   Adam Young 2015 - 2025
 
    Portions sourced from lib/utilunix.c, see for additional information.
 
@@ -75,13 +72,12 @@
 #include "lib/global.h"
 #include "lib/vfs/vfs.h"                        /* VFS_ENCODING_PREFIX */
 #include "lib/strutil.h"                        /* str_move() */
-#include "lib/util.h"
+#include "lib/util.h"                           /* my_xxx() definitions */ 
 #include "lib/widget.h"                         /* message() */
 #include "lib/vfs/xdirentry.h"
 #ifdef HAVE_CHARSET
 #include "lib/charsets.h"
 #endif
-#include "lib/utilunix.h"
 
 #include "src/setup.h"                          /* use_internal_busybox */
 
@@ -756,7 +752,7 @@ mc_USERCONFIGDIR(const char *subdir)
             } else {
                 x_buffer[sizeof(x_buffer) - 1] = 0;
                 mkdir(x_buffer, S_IRWXU);
-                x_buffer[len+1] = 0;            /* remove trailing subdirectory, leave seperator */
+                x_buffer[len+1] = 0;            /* remove trailing subdirectory, leave separator */
             }
         }
 
@@ -764,7 +760,7 @@ mc_USERCONFIGDIR(const char *subdir)
     }
 
     if (subdir && *subdir) {
-        const int dirlen = strlen(x_buffer) + strlen(subdir) + 2;
+        const int dirlen = strlen(x_buffer) + strlen(subdir) + 2 /* '/' and NUL */;
         char *dir = g_malloc(dirlen);
 
         if (dir) {
@@ -790,7 +786,7 @@ my_setenv(const char *name, const char *value, int overwrite)
         char buf[1024];
         snprintf(buf, sizeof(buf), "%s=%s", name, value);
         buf[sizeof(buf)-1] = 0;
-        putenv(strdup(buf));
+        (void) putenv(strdup(buf));
 #endif
     }
 }
@@ -799,7 +795,7 @@ my_setenv(const char *name, const char *value, int overwrite)
 static void
 my_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
 {
-    char path[1204]={0}, buf[1024]={0};
+    char path[1024]={0}, buf[1024 + 80]={0};
 
     if ((1 == overwrite) || NULL == getenv(name)) {
         strncpy(path, value, sizeof(path)-1);
@@ -819,7 +815,7 @@ my_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
         } else {
             snprintf(buf, sizeof(buf)-1, "%s=%s", name, path);
         }
-        putenv(buf);
+        (void) putenv(buf);
 #endif
     }
 }
@@ -941,6 +937,40 @@ save_stop_handler(void)
 }
 
 
+
+/** 4.8.33+
+ * Wrapper for signal() system call.
+ */
+
+sighandler_t
+my_signal (int signum, sighandler_t handler)
+{
+    return signal (signum, handler);
+}
+
+
+/** 4.8.33+
+ * Wrapper for sigaction() system call.
+ */
+
+int
+my_sigaction (int signum, const struct sigaction *act, struct sigaction *oldact)
+{
+    return sigaction (signum, (struct sigaction *)act, oldact);
+}
+
+
+/** 4.8.33+
+ * Wrapper for g_get_current_dir() library function.
+ */
+
+char *
+my_get_current_dir (void)
+{
+    return g_get_current_dir ();
+}
+
+
 /**
  * Call external programs with flags and with array of strings as parameters.
  *
@@ -949,12 +979,13 @@ save_stop_handler(void)
  *                    Shell (or command) will be found in paths described in PATH variable
  *                    (if shell parameter doesn't begin from path delimiter)
  * @parameter argv    Array of strings (NULL-terminated) with parameters for command
- * @return 0 if successfull, -1 otherwise
+ * @return 0 if successful, -1 otherwise
  */
 
 int
 my_systemv_flags (int flags, const char *command, char *const xargv[])
 {
+    unsigned argc = 0;
     const char **argv = NULL;
     char *cmd = NULL;
     unsigned idx;
@@ -970,17 +1001,19 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
             size_t slen = 0;
             char *cursor;
 
-            for (idx = 0; xargv[idx]; ++idx) continue;
-            if (NULL == (argv = calloc(idx + 1, sizeof(void *)))) {
+            for (argc = 0; xargv[argc]; ++argc)
+                continue;
+            if (NULL == (argv = calloc(argc + 1, sizeof(const char *)))) {
                 return -1;
             }
-            for (idx = 0; NULL != (str = xargv[idx]); ++idx) {
+
+            for (idx = 0; idx < argc && NULL != (str = xargv[idx]); ++idx) {
                 if (NULL == (argv[idx] = my_unquote (str, FALSE))) {
                     goto error;
                 }
             }
 
-            for (idx = 0; NULL != (str = argv[idx]); ++idx) {
+            for (idx = 0; idx < argc && NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
                     const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
 
@@ -994,7 +1027,7 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
             }
 
             cursor = cmd;
-            for (idx = 0; NULL != (str = argv[idx]); ++idx) {
+            for (idx = 0; idx < argc && NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
                     const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
 
@@ -1015,7 +1048,7 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
 
 error:;
     if (argv) {
-        for (idx = 0; argv[idx]; ++idx) {
+        for (idx = 0; idx < argc && argv[idx]; ++idx) {
             free((void *)argv[idx]);
         }
         free ((void *)argv);
@@ -1196,7 +1229,9 @@ static int
 system_SET(int argc, const char **argv)
 {
     if (argc == 1) {
-        extern char **environ;                  /* MSVC/WATCOM */
+#if defined(_MSC_VER) || defined(__WATCOMC__)
+        extern char **environ;
+#endif
         char **env = environ;
 
         if (env) {

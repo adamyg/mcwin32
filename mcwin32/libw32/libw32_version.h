@@ -1,7 +1,7 @@
 #ifndef LIBW32_VERSION_H_INCLUDED
 #define LIBW32_VERSION_H_INCLUDED
 /*
- * Copyright (c) 2016 - 2024 Adam Young.
+ * Copyright (c) 2016 - 2025 Adam Young.
  * 
  * This file is part of the Midnight Commander.
  *

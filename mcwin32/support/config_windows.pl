@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: config_windows.pl,v 1.6 2024/05/28 11:18:48 cvsuser Exp $
+# $Id: config_windows.pl,v 1.1 2025/02/13 17:56:42 cvsuser Exp $
 # Configure front-end for native windows targets.
 #
 

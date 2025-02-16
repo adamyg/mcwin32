@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_CHILD_H_INCLUDED
 #define LIBW32_WIN32_CHILD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.15 2024/03/03 11:29:14 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.16 2025/02/16 12:04:05 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * child process support
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

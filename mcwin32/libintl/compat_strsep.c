@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_strsep_c,"$Id: compat_strsep.c,v 1.1 2017/03/06 11:09:23 cvsuser Exp $")
+__CIDENT_RCSID(libintl_compat_strsep_c,"$Id: compat_strsep.c,v 1.2 2025/02/14 05:49:41 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*-
@@ -34,6 +34,8 @@ __CIDENT_RCSID(gr_w32_strsep_c,"$Id: compat_strsep.c,v 1.1 2017/03/06 11:09:23 c
 #include <sys/param.h>
 #include <unistd.h>
 
+#include "namespace.h"
+
 /*
  * Get next token from string *stringp, where tokens are possibly-empty
  * strings separated by characters from delim.
@@ -45,6 +47,7 @@ __CIDENT_RCSID(gr_w32_strsep_c,"$Id: compat_strsep.c,v 1.1 2017/03/06 11:09:23 c
  *
  * If *stringp is NULL, strsep returns NULL.
  */
+#ifndef HAVE_STRSEP
 char *
 libintl_strsep(char **stringp, const char *delim)
 {
@@ -71,4 +74,16 @@ libintl_strsep(char **stringp, const char *delim)
 	}
 	/* NOTREACHED */
 }
+
+#else
+
+extern void libintl_strsep_libc(void);
+
+void
+libintl_strsep_libc(void)
+{
+}
+
+#endif  //HAVE_STRSEP
+
 /*end*/

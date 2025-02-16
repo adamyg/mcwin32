@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_chmod_c,"$Id: w32_chmod.c,v 1.7 2024/01/16 15:17:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_chmod_c,"$Id: w32_chmod.c,v 1.8 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 chmod() system calls.
  *
- * Copyright (c) 2020 - 2024 Adam Young.
+ * Copyright (c) 2020 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

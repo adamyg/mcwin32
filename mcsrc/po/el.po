@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2024-01-20 20:51+0100\n"
+"POT-Creation-Date: 2025-01-23 10:30+0100\n"
 "PO-Revision-Date: 2010-12-29 10:19+0000\n"
 "Last-Translator: Efstathios Iosifidis <iefstathios@gmail.com>, 2015\n"
 "Language-Team: Greek (http://app.transifex.com/mc/mc/language/el/)\n"
@@ -543,28 +543,10 @@ msgid "Changes to file lost"
 msgstr "Οι αλλαγές στο αρχείο χάθηκαν"
 
 #, c-format
-msgid "%s is not a directory\n"
-msgstr "%s δεν είναι κατάλογος\n"
-
-#, c-format
-msgid "Directory %s is not owned by you\n"
-msgstr "Ο κατάλογος %s δε σας ανήκει\n"
-
-#, c-format
-msgid "Cannot set correct permissions for directory %s\n"
+msgid ""
+"Cannot create temporary directory %s: %s.\n"
+"Temporary files will not be created\n"
 msgstr ""
-
-#, c-format
-msgid "Cannot create temporary directory %s: %s\n"
-msgstr "Αδύνατη η δημιουργία προσωρινού καταλόγου %s: %s\n"
-
-#, c-format
-msgid "Temporary files will be created in %s\n"
-msgstr "Τα προσωρινά αρχεία θα δημιουργηθούν στο %s\n"
-
-#, c-format
-msgid "Temporary files will not be created\n"
-msgstr "Δε θα δημιουργηθούν προσωρινά αρχεία\n"
 
 msgid "Press any key to continue..."
 msgstr "Πατήστε οποιοδήποτε κουμπί για να συνεχίσετε..."
@@ -773,6 +755,9 @@ msgstr "Επιλογές τερματικού"
 msgid "Arguments parse error!"
 msgstr ""
 
+msgid "MC is built without builtin editor."
+msgstr ""
+
 msgid "No arguments given to the viewer."
 msgstr "Δεν έχουν δοθεί ορίσματα στον προβολέα."
 
@@ -929,6 +914,9 @@ msgstr ""
 msgid "Diff:"
 msgstr ""
 
+msgid "File name is empty!"
+msgstr ""
+
 #, c-format
 msgid "\"%s\" is a directory"
 msgstr "\"%s\" είναι κατάλογος"
@@ -1048,9 +1036,6 @@ msgstr "Έλεγχος για νέα γραμμή &POSIX"
 msgid "Edit Save Mode"
 msgstr "Επεξεργασία λειτουργίας αποθήκευσης"
 
-msgid "Save as"
-msgstr "Αποθήκευση ως"
-
 msgid "Cannot save: destination is not a regular file"
 msgstr "Αδυναμία αποθήκευση: ο προορισμός είναι ένα ασυνήθιστο αρχείο"
 
@@ -1122,19 +1107,16 @@ msgstr ""
 msgid "This function is not implemented"
 msgstr "Αυτή η λειτουργία δεν έχει υλοποιηθεί"
 
-msgid "Copy to clipboard"
-msgstr "Αντιγραφή στο πρόχειρο"
-
 msgid "Unable to save to file"
 msgstr "Αδυναμία αποθήκευσης του αρχείου"
-
-msgid "Cut to clipboard"
-msgstr "Αποκοπή στο πρόχειρο"
 
 msgid "Goto line"
 msgstr "Μετακίνηση στη γραμμή"
 
 msgid "Save block"
+msgstr ""
+
+msgid "Cannot save block"
 msgstr ""
 
 msgid "Insert file"
@@ -1143,9 +1125,6 @@ msgstr "Εισαγωγή αρχείου"
 msgid "Cannot insert file"
 msgstr "Αδυναμία εισαγωγής αρχείου"
 
-msgid "Sort block"
-msgstr ""
-
 msgid "You must first highlight a block of text"
 msgstr ""
 
@@ -1153,9 +1132,6 @@ msgid "Run sort"
 msgstr ""
 
 msgid "Enter sort options (see sort(1) manpage) separated by whitespace:"
-msgstr ""
-
-msgid "Sort"
 msgstr ""
 
 msgid "Cannot execute sort command"
@@ -1171,11 +1147,8 @@ msgstr "Επικόλληση εξόδου της εξωτερικής εντολ
 msgid "Enter shell command(s):"
 msgstr "Εισάγετε εντολή(-ές) κελύφους:"
 
-msgid "External command"
-msgstr "Εξωτερική εντολή"
-
-msgid "Cannot execute command"
-msgstr "Αδυναμία εκτέλεσης εντολής"
+msgid "Cannot execute external command"
+msgstr ""
 
 msgid "mail -s <subject> -c <cc> <to>"
 msgstr "mail -s <θέμα> -c <cc> <προς>"
@@ -1565,7 +1538,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2024 the Free Software Foundation"
+msgid "Copyright (C) 1996-2025 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -2191,7 +2164,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot get flags of \"%s\"\n"
+"Cannot get ext2 attributes of \"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2554,8 +2527,8 @@ msgstr ""
 "\"%s\"\n"
 "είναι το ίδιο αρχείο"
 
-msgid "Ski&p all"
-msgstr "&Παράβλεψη όλων"
+msgid "Ignore a&ll"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2609,6 +2582,12 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot enter into directory \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
 msgstr ""
@@ -2637,6 +2616,18 @@ msgstr "Αδυναμία λειτουργίας σε \"..\"!"
 #, c-format
 msgid ""
 "Cannot stat source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot set ext2 attributes of target file \"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2745,7 +2736,19 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot set ext2 attributes for target file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot stat source directory \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source directory \"%s\"\n"
 "%s"
 msgstr ""
 
@@ -3727,12 +3730,11 @@ msgstr ""
 "Αν θέλετε να φύγετε, πατήστε το πλήκτρο Escape\n"
 "και περιμένετε."
 
-msgid "Cannot accept this key"
-msgstr "Το κουμπί δεν μπορεί να γίνει δεκτό"
-
 #, c-format
-msgid "You have entered \"%s\""
-msgstr "Εισάγατε \"%s\""
+msgid ""
+"Cannot accept this key.\n"
+"You have entered \"%s\""
+msgstr ""
 
 #. TRANSLATORS: This label appears near learned keys.  Keep it short.
 msgid "OK"
@@ -3809,20 +3811,20 @@ msgstr ""
 "%s"
 
 #, c-format
+msgid "Warning: Cannot change to %s.\n"
+msgstr "Προειδοποίηση: Αδυναμία αλλαγής σε %s.\n"
+
+#, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr ""
 
 msgid "The shell is still active. Quit anyway?"
 msgstr "Το κέλυφος είναι ακόμα ενεργό. Έξοδος παρόλα αυτά;"
 
-#, c-format
-msgid "Warning: Cannot change to %s.\n"
-msgstr "Προειδοποίηση: Αδυναμία αλλαγής σε %s.\n"
-
-msgid "With builtin Editor and Aspell support"
+msgid "With builtin editor and aspell support"
 msgstr ""
 
-msgid "With builtin Editor"
+msgid "With builtin editor"
 msgstr ""
 
 msgid "With optional subshell support"
@@ -3992,6 +3994,12 @@ msgstr ""
 "%s"
 
 msgid "Inconsistent archive"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot open %s archive\n"
+"%s"
 msgstr ""
 
 #, c-format

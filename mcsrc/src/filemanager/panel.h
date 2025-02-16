@@ -20,7 +20,6 @@
 /*** typedefs(not structures) and defined constants **********************************************/
 
 #define PANEL(x) ((WPanel *)(x))
-#define DEFAULT_USER_FORMAT "half type name | size | perm"
 
 #define LIST_FORMATS 4
 
@@ -68,7 +67,7 @@ typedef struct panel_field_struct
     const char *title_hotkey;
     gboolean is_user_choice;
     gboolean use_in_user_format;
-    const char *(*string_fn) (file_entry_t *, int);
+    const char *(*string_fn) (const file_entry_t * fe, int len);
     GCompareFunc sort_routine;  /* used by mouse_sort_col() */
 } panel_field_t;
 
@@ -152,8 +151,8 @@ extern mc_fhl_t *mc_filehighlight;
 
 /*** declarations of public functions ************************************************************/
 
-WPanel *panel_sized_empty_new (const char *panel_name, int y, int x, int lines, int cols);
-WPanel *panel_sized_with_dir_new (const char *panel_name, int y, int x, int lines, int cols,
+WPanel *panel_sized_empty_new (const char *panel_name, const WRect * r);
+WPanel *panel_sized_with_dir_new (const char *panel_name, const WRect * r,
                                   const vfs_path_t * vpath);
 
 void panel_clean_dir (WPanel * panel);
@@ -172,6 +171,7 @@ int set_panel_formats (WPanel * p);
 
 void panel_set_filter (WPanel * panel, const file_filter_t * filter);
 
+file_entry_t *panel_current_entry (const WPanel *panel);
 void panel_set_current_by_name (WPanel * panel, const char *name);
 
 void unmark_files (WPanel * panel);
@@ -180,9 +180,12 @@ void select_item (WPanel * panel);
 void recalculate_panel_summary (WPanel * panel);
 void file_mark (WPanel * panel, int idx, int val);
 void do_file_mark (WPanel * panel, int idx, int val);
+const GString *panel_find_marked_file (const WPanel *panel, int *current_file);
+const GString *panel_get_marked_file (const WPanel *panel, int *current_file);
 
 gboolean panel_do_cd (WPanel * panel, const vfs_path_t * new_dir_vpath, enum cd_enum cd_type);
-gboolean panel_cd (WPanel * panel, const vfs_path_t * new_dir_vpath, enum cd_enum cd_type);
+MC_MOCKABLE gboolean panel_cd (WPanel * panel, const vfs_path_t * new_dir_vpath,
+                               enum cd_enum cd_type);
 
 gsize panel_get_num_of_sortable_fields (void);
 char **panel_get_sortable_fields (gsize * array_size);
@@ -217,7 +220,9 @@ static inline WPanel *
 panel_empty_new (const char *panel_name)
 {
     /* Unknown sizes of the panel at startup */
-    return panel_sized_empty_new (panel_name, 0, 0, 1, 1);
+    WRect r = { 0, 0, 1, 1 };
+
+    return panel_sized_empty_new (panel_name, &r);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -231,10 +236,12 @@ panel_empty_new (const char *panel_name)
  */
 
 static inline WPanel *
-panel_with_dir_new (const char *panel_name, const vfs_path_t * vpath)
+panel_with_dir_new (const char *panel_name, const vfs_path_t *vpath)
 {
     /* Unknown sizes of the panel at startup */
-    return panel_sized_with_dir_new (panel_name, 0, 0, 1, 1, vpath);
+    WRect r = { 0, 0, 1, 1 };
+
+    return panel_sized_with_dir_new (panel_name, &r, vpath);
 }
 
 
@@ -258,26 +265,15 @@ panel_new (const char *panel_name)
  * Panel creation with specified size.
  *
  * @param panel_name name of panel for setup retrieving
- * @param y y coordinate of top-left corner
- * @param x x coordinate of top-left corner
- * @param lines vertical size
- * @param cols horizontal size
+ * @param r panel area
  *
  * @return new instance of WPanel
  */
 
 static inline WPanel *
-panel_sized_new (const char *panel_name, int y, int x, int lines, int cols)
+panel_sized_new (const char *panel_name, const WRect *r)
 {
-    return panel_sized_with_dir_new (panel_name, y, x, lines, cols, NULL);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static inline file_entry_t *
-panel_current_entry (const WPanel * panel)
-{
-    return &(panel->dir.list[panel->current]);
+    return panel_sized_with_dir_new (panel_name, r, NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */

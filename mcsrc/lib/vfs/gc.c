@@ -1,7 +1,7 @@
 /*
    Virtual File System garbage collection code
 
-   Copyright (C) 2003-2024
+   Copyright (C) 2003-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -191,7 +191,7 @@ vfs_rmstamp (struct vfs_class *v, vfsid id)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-vfs_stamp_path (const vfs_path_t * vpath)
+vfs_stamp_path (const vfs_path_t *vpath)
 {
     vfsid id;
     struct vfs_class *me;
@@ -321,7 +321,7 @@ vfs_timeout_handler (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-vfs_release_path (const vfs_path_t * vpath)
+vfs_release_path (const vfs_path_t *vpath)
 {
     vfsid id;
     struct vfs_class *me;

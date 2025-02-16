@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Authors:
@@ -59,7 +59,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-hline_adjust_cols (WHLine * l)
+hline_adjust_cols (WHLine *l)
 {
     if (l->auto_adjust_cols)
     {
@@ -84,7 +84,7 @@ hline_adjust_cols (WHLine * l)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-hline_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+hline_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     WHLine *l = HLINE (w);
 
@@ -164,7 +164,7 @@ hline_new (int y, int x, int width)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-hline_set_text (WHLine * l, const char *text)
+hline_set_text (WHLine *l, const char *text)
 {
     g_free (l->text);
 
@@ -179,7 +179,7 @@ hline_set_text (WHLine * l, const char *text)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-hline_set_textv (WHLine * l, const char *format, ...)
+hline_set_textv (WHLine *l, const char *format, ...)
 {
     va_list args;
     char buf[BUF_1K];           /* FIXME: is it enough? */

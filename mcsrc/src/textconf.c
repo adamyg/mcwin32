@@ -1,7 +1,7 @@
 /*
    Print features specific for this build
 
-   Copyright (C) 2000-2024
+   Copyright (C) 2000-2025
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -29,9 +29,13 @@
 #include <limits.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <stdint.h>             /* uintmax_t */
 
 #if defined (ENABLE_VFS) && defined(ENABLE_VFS_SFTP)
 #include <libssh2.h>
+#if defined(_WIN32)
+#include <libssh2_helper.h>
+#endif
 #endif /* ENABLE_VFS_SFTP && ENABLE_VFS */
 
 #include "lib/global.h"
@@ -86,9 +90,9 @@ static const char *const features[] = {
 
 #ifdef USE_INTERNAL_EDIT
 #ifdef HAVE_ASPELL
-    N_("With builtin Editor and Aspell support"),
+    N_("With builtin editor and aspell support"),
 #else
-    N_("With builtin Editor"),
+    N_("With builtin editor"),
 #endif /* HAVE_ASPELL */
 #endif /* USE_INTERNAL_EDIT */
 
@@ -147,7 +151,11 @@ show_version (void)
             GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION);
 
 #ifdef HAVE_SLANG
+#if defined(WIN32)
+    printf (_("Built with S-Lang %s emulation\n"), SLANG_VERSION_STRING);
+#else
     printf (_("Built with S-Lang %s with terminfo database\n"), SLANG_VERSION_STRING);
+#endif
 #elif defined(USE_NCURSES)
 #ifdef NCURSES_VERSION
     printf (_("Built with ncurses %s\n"), NCURSES_VERSION);
@@ -167,6 +175,9 @@ show_version (void)
 #if defined (ENABLE_VFS) && defined(ENABLE_VFS_SFTP)
     printf (_("Built with libssh2 %d.%d.%d\n"),
             LIBSSH2_VERSION_MAJOR, LIBSSH2_VERSION_MINOR, LIBSSH2_VERSION_PATCH);
+#if defined(WIN32)
+    printf (_("using %s encryption library\n"), libssh2_helper_engine());
+#endif
 #endif /* ENABLE_VFS_SFTP && ENABLE_VFS */
 
     for (i = 0; features[i] != NULL; i++)
@@ -188,6 +199,7 @@ show_version (void)
     TYPE_INFO (void *);
     TYPE_INFO (size_t);
     TYPE_INFO (off_t);
+    TYPE_INFO (uintmax_t);
 #undef TYPE_INFO
     (void) puts ("");
 }

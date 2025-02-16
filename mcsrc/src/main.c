@@ -1,7 +1,7 @@
 /*
    Main program for the Midnight Commander
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -62,6 +62,11 @@
 #include "filemanager/ext.h"    /* flush_extension_file() */
 #include "filemanager/command.h"        /* cmdline */
 #include "filemanager/panel.h"  /* panalized_panel */
+#include "filemanager/filenot.h"        /* my_rmdir() */
+
+#ifdef USE_INTERNAL_EDIT
+#include "editor/edit.h"        /* edit_arg_free() */
+#endif
 
 #include "vfs/plugins_init.h"
 
@@ -207,7 +212,7 @@ init_sigchld (void)
     sigchld_action.sa_flags = SA_RESTART;
 #endif /* !SA_RESTART */
 
-    if (sigaction (SIGCHLD, &sigchld_action, NULL) == -1)
+    if (my_sigaction (SIGCHLD, &sigchld_action, NULL) == -1)
     {
 #ifdef ENABLE_SUBSHELL
         /*
@@ -262,13 +267,14 @@ main (int argc, char *argv[])
 {
     GError *mcerror = NULL;
     int exit_code = EXIT_FAILURE;
+    const char *tmpdir = NULL;
 
     mc_global.run_from_parent_mc = !check_sid ();
 
+    /* We had LC_CTYPE before, LC_ALL includes LC_TYPE as well */
 #ifdef HAVE_SETLOCALE
-    (void) setlocale (LC_ALL, "");  /* We had LC_CTYPE before, LC_ALL includs LC_TYPE as well */
+    (void) setlocale (LC_ALL, "");
 #endif
-
     (void) bindtextdomain (PACKAGE, LOCALEDIR);
     (void) textdomain (PACKAGE);
 
@@ -284,10 +290,8 @@ main (int argc, char *argv[])
         int uargc = 0;
         char **uargv;
 
-        assert(g_path_is_absolute("c:\\"));
-        assert(g_path_is_absolute("D:/"));
         uargv = GetUTF8Arguments(&uargc);
-        assert(uargc == argc);
+        assert(uargv && uargc == argc);
         argv = uargv;
         argc = uargc;
     }
@@ -349,12 +353,17 @@ main (int argc, char *argv[])
     vfs_setup_work_dir ();
 
     /* Set up temporary directory after VFS initialization */
-    mc_tmpdir ();
+    tmpdir = mc_tmpdir ();
 
     /* do this after vfs initialization and vfs working directory setup
        due to mc_setctl() and mcedit_arg_vpath_new() calls in mc_setup_by_args() */
     if (!mc_setup_by_args (argc, argv, &mcerror))
     {
+        /* At exit, do this before vfs_shut():
+           normally, temporary directory should be empty */
+        vfs_expire (TRUE);
+        (void) my_rmdir (tmpdir);
+
         vfs_shut ();
         done_setup ();
         g_free (saved_other_dir);
@@ -493,6 +502,11 @@ main (int argc, char *argv[])
 
     keymap_free ();
 
+    /* At exit, do this before vfs_shut():
+       normally, temporary directory should be empty */
+    vfs_expire (TRUE);
+    (void) my_rmdir (tmpdir);
+
     /* Virtual File System shutdown */
     vfs_shut ();
 
@@ -510,7 +524,7 @@ main (int argc, char *argv[])
     if (mc_global.tty.alternate_plus_minus)
         numeric_keypad_mode ();
 
-    (void) signal (SIGCHLD, SIG_DFL);   /* Disable the SIGCHLD handler */
+    (void) my_signal (SIGCHLD, SIG_DFL);        /* Disable the SIGCHLD handler */
 
     if (mc_global.tty.console_flag != '\0')
         handle_console (CONSOLE_DONE);
@@ -520,8 +534,7 @@ main (int argc, char *argv[])
     {
         int last_wd_fd;
 
-        last_wd_fd = open (mc_args__last_wd_file, O_WRONLY | O_CREAT | O_TRUNC | O_EXCL,
-                           S_IRUSR | S_IWUSR);
+        last_wd_fd = open (mc_args__last_wd_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         if (last_wd_fd != -1)
         {
             ssize_t ret1;
@@ -559,8 +572,10 @@ main (int argc, char *argv[])
 
     if (mc_global.mc_run_mode != MC_RUN_EDITOR)
         g_free (mc_run_param0);
+#ifdef USE_INTERNAL_EDIT
     else
-        g_list_free_full ((GList *) mc_run_param0, (GDestroyNotify) mcedit_arg_free);
+        g_list_free_full ((GList *) mc_run_param0, (GDestroyNotify) edit_arg_free);
+#endif /* USE_INTERNAL_EDIT */
 
     g_free (mc_run_param1);
     g_free (saved_other_dir);

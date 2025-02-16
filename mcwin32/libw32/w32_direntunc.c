@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.12 2024/03/03 11:29:13 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.14 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 unc directory access services ...
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -199,7 +199,7 @@ struct dirent *
 w32_unc_readdirA(DIR *dp)
 {
     DWORD bufsize = 4 * 1024;
-    DWORD result, count;
+    DWORD result, count = 0;
     void *buffer;
     char *cursor;
 
@@ -244,7 +244,7 @@ struct dirent *
 w32_unc_readdirW(DIR *dp)
 {
     DWORD bufsize = 4 * 1024;
-    DWORD result, count;
+    DWORD result, count = 0;
     void *buffer;
     wchar_t *cursor;
 

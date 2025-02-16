@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# Midnight command WIN32
+# Midnight command Win32/64
 #
 # Copyright (c) 2007, 2012 - 2025 Adam Young.
 #
@@ -105,7 +105,7 @@ top_srcdir	= @top_srcdir@
 A=		.a
 O=		.o
 LP=		lib
-E=		
+E=
 
 CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
 XCLEAN=		$(D_BIN)/*.map
@@ -193,6 +193,7 @@ CXX=		@CXX@
 AR=		@AR@
 RANLIB=		@RANLIB@
 RM=		@RM@
+MKDIR_P=	@MKDIR_P@
 RMDIR=		@RMDIR@
 CP=		@CP@
 RC=		@RC@
@@ -220,9 +221,8 @@ XFLAGS=
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
 ifeq ("gcc","@CC@")
-#CWARN+=	-Wno-shadow -Wno-type-limits
 CWARN+=		-Wno-sign-compare -Wno-missing-prototypes
-CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function -Wno-unused-label
 CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
 endif
 CDEBUG=		@CDEBUG@
@@ -277,25 +277,27 @@ LIBPLBRPATH=	$(subst \,/,$(wildcard $(WATCOM)/binnt/$(PLBRNAME).dll))
 endif
 endif
 
-MC_SRC=	\
-	$(D_OBJ)/args$(O)			\
-	$(D_OBJ)/clipboard$(O)			\
-	$(D_OBJ)/cons.handler$(O)		\
-	$(D_OBJ)/events_init$(O)		\
-	$(D_OBJ)/execute$(O)			\
-	$(D_OBJ)/help$(O)			\
-	$(D_OBJ)/keymap$(O)			\
-	$(D_OBJ)/learn$(O)			\
-	$(D_OBJ)/main$(O)			\
-	$(D_OBJ)/selcodepage$(O)		\
-	$(D_OBJ)/setup$(O)			\
-	$(D_OBJ)/textconf$(O)			\
-	$(D_OBJ)/util$(O)			\
-	$(D_OBJ)/usermenu$(O)
+D_OBJRT=	$(D_OBJ)/root
 
-#	$(D_OBJ)/background$(O)
-#	$(D_OBJ)/subshell/common$(O)
-#	$(D_OBJ)/subshell/proxyfunc$(O)
+MC_ROOTSRC=	\
+	$(D_OBJRT)/args$(O)			\
+	$(D_OBJRT)/clipboard$(O)		\
+	$(D_OBJRT)/cons.handler$(O)		\
+	$(D_OBJRT)/events_init$(O)		\
+	$(D_OBJRT)/execute$(O)			\
+	$(D_OBJRT)/help$(O)			\
+	$(D_OBJRT)/keymap$(O)			\
+	$(D_OBJRT)/learn$(O)			\
+	$(D_OBJRT)/main$(O)			\
+	$(D_OBJRT)/selcodepage$(O)		\
+	$(D_OBJRT)/setup$(O)			\
+	$(D_OBJRT)/textconf$(O)			\
+	$(D_OBJRT)/util$(O)			\
+	$(D_OBJRT)/usermenu$(O)
+
+#	$(D_OBJRT)/background$(O)
+#	$(D_OBJRT)/subshell/common$(O)
+#	$(D_OBJRT)/subshell/proxyfunc$(O)
 
 D_OBJFM=	$(D_OBJ)/filemanager
 
@@ -313,7 +315,6 @@ MC_FILEMANAGER=\
 	$(D_OBJFM)/filegui$(O)			\
 	$(D_OBJFM)/filemanager$(O)		\
 	$(D_OBJFM)/filenot$(O)			\
-	$(D_OBJFM)/fileopctx$(O)		\
 	$(D_OBJFM)/find$(O)			\
 	$(D_OBJFM)/hotlist$(O)			\
 	$(D_OBJFM)/info$(O)			\
@@ -326,6 +327,7 @@ MC_FILEMANAGER=\
 	\
 	$(D_OBJFM)/drive$(O)
 
+##	$(D_OBJFM)/fileopctx$(O)
 #No longer maintained
 #	$(D_OBJFM)/listmode$(O)
 
@@ -370,7 +372,7 @@ MC_DIFFVIEWER=\
 	$(D_OBJVW)/diffviewer_search$(O)
 
 MC_OBJS=\
-	$(MC_SRC)				\
+	$(MC_ROOTSRC)				\
 	$(MC_FILEMANAGER)			\
 	$(MC_VIEWER)				\
 	$(MC_EDITOR)				\
@@ -506,7 +508,7 @@ MC_LIBMC=\
 	$(D_OBJMC)/widget_wtools$(O)
 
 MC_4_8_24=\
-	$(D_OBJ)/file_history$(O)		\
+	$(D_OBJRT)/file_history$(O)		\
 	$(D_OBJMC)/mcconfig_history$(O) 	\
 	$(D_OBJMC)/strutil_filevercmp$(O)	\
 	$(D_OBJMC)/widget_background$(O)	\
@@ -691,6 +693,7 @@ TARGETS=\
 	$(D_BIN)/mcview$(E)			\
 	$(D_BIN)/mcbsddiff$(E)			\
 	$(D_BIN)/kbtest$(E)			\
+	$(D_BIN)/coninfo$(E)			\
 	$(D_BIN)/man2hlp.pl
 
 IMPORT=\
@@ -754,6 +757,7 @@ LDLIBRARIES = $(call reverse, $(LIBRARIES))
 DIRECTORIES:=\
 	$(D_LIB)/.created			\
 	$(D_OBJ)/.created			\
+		$(D_OBJRT)/.created		\
 		$(D_OBJMC)/.created		\
 		$(D_OBJVFS)/.created		\
 		$(D_OBJFM)/.created		\
@@ -919,6 +923,7 @@ clean:
 		$(MAKE) -C apps clean
 		$(MAKE) -C diff clean
 		$(MAKE) -C src/kbtest clean
+		$(MAKE) -C src/coninfo clean
 		$(MAKE) -C autoupdater clean
 		-$(RM) $(MSGOBJS) $(MSGDIRS) $(QUIETOUT)
 		-$(RM) $(CONFIGURATION) $(QUIETOUT)
@@ -948,6 +953,9 @@ $(D_BIN)/mcbsddiff$(E):
 $(D_BIN)/kbtest$(E):
 		$(MAKE) -C src/kbtest
 
+$(D_BIN)/coninfo$(E):
+		$(MAKE) -C src/coninfo
+
 $(MC_RES):			config.h buildinfo.h
 
 BUILD_DATE=			$(shell $(BUSYBOX) date +'%Y%m%d')
@@ -964,12 +972,12 @@ buildinfo.h:			buildinfo
 buildinfo:			Makefile buildinfo.pl
 		@echo updating buildinfo.h ...
 		-@$(PERL) ./buildinfo.pl -o buildinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
-			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@"
+			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@" --iswin64="@ISWIN64@"
 
 .PHONY:				packageinfo
 packageinfo:			Makefile buildinfo.pl
 		-@$(PERL) ./buildinfo.pl -o packageinfo.h --package="$(PACKAGE)" --name="$(PKG_NAME)" --version="$(PKG_VERSION)" \
-			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@" --type="$(BUILD_TYPE)"
+			--date="$(BUILD_DATE)" --build="$(BUILD_NUMBER)" --toolchain="@TOOLCHAINEXT@" --iswin64="@ISWIN64@" --type="$(BUILD_TYPE)"
 
 .PHONY:				busyboxcmds
 busyboxcmds.h:			busyboxcmds
@@ -1209,7 +1217,7 @@ endif
 $(D_OBJ)/%$(O) :		./%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
-$(D_OBJ)/%$(O) :		$(MCSOURCE)/src/%.c
+$(D_OBJRT)/%$(O) :		$(MCSOURCE)/src/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJMC)/%$(O) :		$(MCSOURCE)/src/file/%.c

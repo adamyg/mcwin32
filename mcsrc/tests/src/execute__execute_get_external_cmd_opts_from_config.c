@@ -1,7 +1,7 @@
 /*
    src - tests for execute_external_editor_or_viewer() function
 
-   Copyright (C) 2013-2024
+   Copyright (C) 2013-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -49,8 +49,8 @@ static GPtrArray *mc_config_get_string__return_value;
 
 /* @Mock */
 gchar *
-mc_config_get_string_raw (mc_config_t * config_ignored, const gchar * group,
-                          const gchar * param, const gchar * default_value)
+mc_config_get_string_raw (mc_config_t *config_ignored, const gchar *group,
+                          const gchar *param, const gchar *default_value)
 {
     char *return_value;
     (void) config_ignored;

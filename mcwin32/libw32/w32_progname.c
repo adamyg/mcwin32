@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.11 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_progname_c,"$Id: w32_progname.c,v 1.13 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 set/getprogname
  *
- * Copyright (c) 2016 - 2024, Adam Young.
+ * Copyright (c) 2016 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -90,7 +90,7 @@ setprognameW(const wchar_t *name)
     }
 
     for (p = (wchar_t *)wprogname; *p; ++p) { //hide case issues.
-        if (*p < 0x7f) *p = tolower((char)*p);
+        if (*p < 0x7f) *p = (wchar_t)tolower((char)*p);
     }
 }
 

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.16 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.19 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 statfs()/statvfs() and getmntinfo() system calls.
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -185,7 +185,7 @@ statfsA(const char *path, struct statfs *sb)
     }
 
     sb->f_type = MOUNT_PC;
-    strncat(sb->f_fstypename, "unknown", MFSNAMELEN);
+    strncpy(sb->f_fstypename, "unknown", MFSNAMELEN);
     if (GetVolumeInformationA(path,
             volName, MNAMELEN,                  /* VolumeName and size */
             NULL, &MaximumComponentLength, &FileSystemFlags, fsName, MNAMELEN)) /* filesystem type */
@@ -260,7 +260,7 @@ statfsW(const wchar_t *path, struct statfs *sb)
     }
 
     sb->f_type = MOUNT_PC;
-    strncat(sb->f_fstypename, "unknown", MFSNAMELEN);
+    strncpy(sb->f_fstypename, "unknown", MFSNAMELEN);
     if (GetVolumeInformationW(path,
             volName, MNAMELEN,                  /* VolumeName and size */
             NULL, &MaximumComponentLength, &FileSystemFlags, fsName, MNAMELEN)) /* filesystem type */
@@ -392,7 +392,7 @@ getmntinfo(struct statfs **psb, int flags)
     }
 
     if (cnt > 0) {                              // drives
-        if (NULL == (sb = calloc(sizeof(struct statfs), cnt)))  {
+        if (NULL == (sb = (struct statfs *)calloc(cnt, sizeof(struct statfs))))  {
             cnt = -1;
         } else {
             for (cnt = 0, p = szDrivesAvail; *p; p += 4) {

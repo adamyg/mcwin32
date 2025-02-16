@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.8 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.10 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,7 +7,7 @@ __CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.8 2024/01/16 15:17:52 cv
  *
  *      _wopendir, _wclosedir, _wreaddir, _wseekdir, _wrewindir, _wtelldir
  *
- * Copyright (c) 2021 - 2024 Adam Young.
+ * Copyright (c) 2021 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -367,8 +367,8 @@ dir_alloc(void)
 #endif
     assert(DIRBLKSIZ > MAXNAMLEN);
 
-    if (NULL == (dp = (_WDIR *)calloc(sizeof(_WDIR), 1)) ||
-            NULL == (dp->dd_buf = (void *)calloc(dd_len, 1))) {
+    if (NULL == (dp = (_WDIR *)calloc(1, sizeof(_WDIR))) ||
+            NULL == (dp->dd_buf = (void *)calloc(dd_len, sizeof(char)))) {
         free(dp);
         return (_WDIR *)NULL;
     }

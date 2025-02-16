@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.39 2024/01/13 16:27:53 cvsuser Exp $
+# $Id: makelib.pl,v 1.41 2025/02/13 18:56:45 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -1041,6 +1041,7 @@ my @x_predefines    = (
 
 my @x_decls         = (     #stdint/intypes.h
         'SIZE_MAX',
+        'RSIZE_MAX',
         'SSIZE_MAX',
         'INT16_C',
         'INT16_MIN',
@@ -1093,11 +1094,13 @@ my @x_types         = (     #stdint/inttypes/types.h
         'uint_fast32_t',
         'uint_fast64_t',
         'wchar_t',
+        'mbstate_t',
         'char16_t',
         'char32_t',
         'bool',
         '_Bool:C99BOOL',
         '_bool',
+        'rsize_t',
         'ssize_t',
         'struct option.name;getopt.h,unistd.h'
         );
@@ -1157,7 +1160,8 @@ my @x_functions     = (
         'strrchr', 'strdup',
         'asnprintf', 'vasnprintf',
         'setlocale',
-        'mbrtowc', 'wcrtomb', 'wcscmp', 'wcscpy', 'wcslen', 'wctomb', 'wmemcmp', 'wmemmove', 'wmemcpy',
+        'mbrtowc', 'wcrtomb', 'wcsrtombs', 'wcstombs', 'wcscmp', 'wcscpy', 'wcslen', 'wctomb', 
+                'wmemcmp', 'wmemmove', 'wmemcpy',
         'wcwidth',
         '_tzset',                               # msvc
         'fgetpos', 'fsetpos',
@@ -2155,11 +2159,16 @@ LoadContrib($$$$$)      # (type, version, name, dir, refIncludes)
                 (0 == $cnt++) or
                     die "$def: toolchain must be first element\n";
 
+                $version =~ /^(\d+)/;       # version[_x64]
+                my $version1 = $1;
+
                 if ($val !~ /(^${type}|,${type})(\d*)/) {
                     print "$def: $val [no], toolchain ${type} not supported\n";
                     return 0;
                 }
-                if ($2 && int($version) < int($2)) {
+                my $version2 = $2;
+
+                if ($version2 && int($version1) < int($version2)) {
                     print "$def: $val [no], toolchain version ${version} not supported\n";
                     return 0;
                 }

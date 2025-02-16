@@ -1,7 +1,7 @@
 /*
    Hypertext file browser.
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -96,7 +96,7 @@ typedef struct Link_Area
 
 static char *fdata = NULL;      /* Pointer to the loaded data file */
 static int help_lines;          /* Lines in help viewer */
-static int history_ptr;         /* For the history queue */
+static int history_ptr = 0;     /* For the history queue */
 static const char *main_node;   /* The main node */
 static const char *last_shown = NULL;   /* Last byte shown in a screen */
 static gboolean end_of_node = FALSE;    /* Flag: the last character of the node shown? */
@@ -403,7 +403,7 @@ clear_link_areas (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-help_print_word (WDialog * h, GString * word, int *col, int *line, gboolean add_space)
+help_print_word (WDialog *h, GString *word, int *col, int *line, gboolean add_space)
 {
     if (*line >= help_lines)
         g_string_set_size (word, 0);
@@ -447,7 +447,7 @@ help_print_word (WDialog * h, GString * word, int *col, int *line, gboolean add_
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-help_show (WDialog * h, const char *paint_start)
+help_show (WDialog *h, const char *paint_start)
 {
     gboolean painting = TRUE;
     gboolean repeat_paint;
@@ -612,7 +612,7 @@ help_show (WDialog * h, const char *paint_start)
 /** show help */
 
 static void
-help_help (WDialog * h)
+help_help (WDialog *h)
 {
     const char *p;
 
@@ -632,7 +632,7 @@ help_help (WDialog * h)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-help_index (WDialog * h)
+help_index (WDialog *h)
 {
     const char *new_item;
 
@@ -655,7 +655,7 @@ help_index (WDialog * h)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-help_back (WDialog * h)
+help_back (WDialog *h)
 {
     currentpoint = history[history_ptr].page;
     selected_item = history[history_ptr].link;
@@ -854,7 +854,7 @@ help_execute_cmd (long command)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-help_handle_key (WDialog * h, int key)
+help_handle_key (WDialog *h, int key)
 {
     Widget *w = WIDGET (h);
     long command;
@@ -869,7 +869,7 @@ help_handle_key (WDialog * h, int key)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-help_bg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+help_bg_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     switch (msg)
     {
@@ -886,7 +886,7 @@ help_bg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-help_resize (WDialog * h)
+help_resize (WDialog *h)
 {
     Widget *w = WIDGET (h);
     WButtonBar *bb;
@@ -905,7 +905,7 @@ help_resize (WDialog * h)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-help_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+help_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     WDialog *h = DIALOG (w);
 
@@ -970,7 +970,7 @@ translate_file (char *filedata)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-md_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+md_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     switch (msg)
     {
@@ -987,7 +987,7 @@ md_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-help_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
+help_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 {
     int x, y;
     GSList *current_area;
@@ -1055,7 +1055,7 @@ help_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
 /* --------------------------------------------------------------------------------------------- */
 
 static Widget *
-mousedispatch_new (const WRect * r)
+mousedispatch_new (const WRect *r)
 {
     Widget *w;
 
@@ -1072,7 +1072,7 @@ mousedispatch_new (const WRect * r)
 
 /* event callback */
 gboolean
-help_interactive_display (const gchar * event_group_name, const gchar * event_name,
+help_interactive_display (const gchar *event_group_name, const gchar *event_name,
                           gpointer init_data, gpointer data)
 {
     const dlg_colors_t help_colors = {
@@ -1091,6 +1091,7 @@ help_interactive_display (const gchar * event_group_name, const gchar * event_na
     char *filedata;
     ev_help_t *event_data = (ev_help_t *) data;
     WRect r = { 1, 1, 1, 1 };
+    int i;
 
     (void) event_group_name;
     (void) event_name;
@@ -1150,10 +1151,10 @@ help_interactive_display (const gchar * event_group_name, const gchar * event_na
     selected_item = search_string_node (main_node, STRING_LINK_START) - 1;
     currentpoint = main_node + 1;       /* Skip the newline following the start of the node */
 
-    for (history_ptr = HISTORY_SIZE - 1; history_ptr >= 0; history_ptr--)
+    for (i = HISTORY_SIZE - 1; i >= 0; i--)
     {
-        history[history_ptr].page = currentpoint;
-        history[history_ptr].link = selected_item;
+        history[i].page = currentpoint;
+        history[i].link = selected_item;
     }
 
     help_bar = buttonbar_new ();
