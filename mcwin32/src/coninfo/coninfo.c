@@ -23,9 +23,6 @@
 #define _countof(__type) (sizeof(__type)/sizeof(__type[0]))
 #endif
 
-static void OutputA(const char *, ...);
-static void OutputW(const wchar_t *, ...);
-
 static const struct {
         const char *dispname;
         const char *cilocale;
@@ -139,6 +136,10 @@ static const struct {
         { "Zulu",                           "zu",               MAKELANGID(LANG_ZULU, SUBLANG_DEFAULT) },
 };
 
+static void Usage(void);
+static void OutputA(const char *, ...);
+static void OutputW(const wchar_t *, ...);
+
 
 static const char *
 isoption(const char *argv, const char *option)
@@ -154,7 +155,7 @@ int
 main(int argc, char *argv[])
 {
         CONSOLE_SCREEN_BUFFER_INFOEX csbi = {0};
-        wchar_t iso639[16] = {0}, iso3166[16] = {0}, 
+        wchar_t iso639[16] = {0}, iso3166[16] = {0},
             countryname[256], abbrevcountryname[10] = {0},
             displayname[256] = {0};
         LCID lcid, setlcid = 0;
@@ -184,6 +185,9 @@ main(int argc, char *argv[])
                         if (errno || endptr == NULL || *endptr != 0) {
                                 setlcid = 0;
                         }
+                } else if ((val = isoption(option, "--help")) != NULL) {
+                        Usage();
+                        return EXIT_FAILURE;
                 } else {
                         fprintf(stderr, "coninfo: invalid option <%s>\n", option);
                         return EXIT_FAILURE;
@@ -223,7 +227,7 @@ main(int argc, char *argv[])
                 GetLocaleInfoW(lcid, LOCALE_SLOCALIZEDCOUNTRYNAME, countryname, _countof(countryname));
                 GetLocaleInfoW(lcid, LOCALE_SABBREVCTRYNAME, abbrevcountryname, _countof(abbrevcountryname));
                 GetLocaleInfoW(lcid, LOCALE_SLOCALIZEDDISPLAYNAME, displayname, _countof(displayname));
-                OutputW(L"LCID: name   %s_%s (%s - %s) <%s>\n", 
+                OutputW(L"LCID: name   %s_%s (%s - %s) <%s>\n",
                     iso639, iso3166, countryname, abbrevcountryname, displayname); // "9_9 (countryname - abbrevcountryname) <displayname>"
         }
 
@@ -254,7 +258,7 @@ main(int argc, char *argv[])
                 GetLocaleInfoW(lcid, LOCALE_SLOCALIZEDCOUNTRYNAME, countryname, _countof(countryname));
                 GetLocaleInfoW(lcid, LOCALE_SABBREVCTRYNAME, abbrevcountryname, _countof(abbrevcountryname));
                 GetLocaleInfoW(lcid, LOCALE_SLOCALIZEDDISPLAYNAME, displayname, _countof(displayname));
-                OutputW(L"LCID: name   %s_%s (%s - %s) <%s>\n", 
+                OutputW(L"LCID: name   %s_%s (%s - %s) <%s>\n",
                     iso639, iso3166, countryname, abbrevcountryname, displayname); // "9_9 (countryname - abbrevcountryname) <displayname>"
         }
 
@@ -267,6 +271,23 @@ main(int argc, char *argv[])
         OutputA("OCP:         %u/0x%x\n", GetConsoleOutputCP(), GetConsoleOutputCP());
         return 0;
 }
+
+
+static void
+Usage(void)
+{
+        fprintf(stderr,
+            "\n" \
+            "coninfo [option]\n" \
+            "\n" \
+            "options:\n" \
+            "   --dispname=<displayname>\n" \
+            "   --cilocale=<cilocale>\n" \
+            "   --lcid=<lcid>\n" \
+            "   --help\n" \
+            "\n");
+}
+
 
 
 static void
@@ -302,6 +323,4 @@ OutputW(const wchar_t *fmt, ...)
         va_end(ap);
 }
 
-//end
-
-
+//end

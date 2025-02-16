@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.1 2025/02/14 07:55:32 cvsuser Exp $
+# $Id: Makefile.in,v 1.2 2025/02/16 12:30:46 cvsuser Exp $
 # coninfo
 #
 #
@@ -163,7 +163,7 @@ release:
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
 
-$(CONINFOTSK):		CEXTRA += -I$(CONINFOSRC) -I$(EXPATSRC)
+$(CONINFOTSK):		CEXTRA += -I$(CONINFOSRC)
 $(CONINFOTSK):		CEXTRA += -DXML_STATIC -DLIBW32_DYNAMIC -DCOMPILED_FROM_DSP
 $(CONINFOTSK):		MAPFILE=$(basename $@).map
 $(CONINFOTSK):		$(D_OBJ)/.created $(CONINFOOBJS)
