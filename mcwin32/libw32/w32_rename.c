@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.7 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.9 2025/02/16 08:58:51 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 rename() system calls.
  *
- * Copyright (c) 2020 - 2024 Adam Young.
+ * Copyright (c) 2020 - 2024, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -46,6 +46,8 @@ __CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.7 2024/01/16 15:17:52 cvsu
 #endif
 #include <unistd.h>
 
+static BOOL FileStatA(const char* path, BY_HANDLE_FILE_INFORMATION* fi, DWORD flags);
+static BOOL FileStatW(const wchar_t *path, BY_HANDLE_FILE_INFORMATION *fi, DWORD flags);
 
 /*
 //  NAME
@@ -139,15 +141,119 @@ w32_rename(const char *ofile, const char *nfile)
 LIBW32_API int
 w32_renameA(const char *ofile, const char *nfile)
 {
+    BY_HANDLE_FILE_INFORMATION oft = {0};
+    int ret;
+
+    if (FileStatA(ofile, &oft, FILE_FLAG_OPEN_REPARSE_POINT) &&
+            (oft.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+        BY_HANDLE_FILE_INFORMATION t_oft;
+
+        if (!FileStatA(ofile, &t_oft, 0)) {
+            if (GetLastError() == ERROR_CANT_RESOLVE_FILENAME) {
+                // ELOOP - A loop exists in symbolic links encountered during resolution of the path argument.
+                errno = ELOOP;
+                return -1;
+            }
+        }
+    }
+
 #undef rename
-    return rename(ofile, nfile);
+    ret = rename(ofile, nfile);
+        // MoveFileA
+
+    if (-1 == ret && errno == EACCES) {
+        if (GetLastError() == ERROR_ACCESS_DENIED) {
+            if (oft.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                BY_HANDLE_FILE_INFORMATION nft = {0};
+
+                (void)FileStatA(nfile, &nft, 0);
+                if (oft.dwVolumeSerialNumber != nft.dwVolumeSerialNumber) {
+                    // EXDEV - The links named by new and old are on different file systems 
+                    //  and the implementation does not support links between file systems.
+                    errno = EXDEV;
+                }
+            }
+        }
+    }
+    return ret;
 }
 
 
 LIBW32_API int
 w32_renameW(const wchar_t *ofile, const wchar_t *nfile)
 {
-    return _wrename(ofile, nfile);
+    BY_HANDLE_FILE_INFORMATION oft = {0};
+    int ret;
+
+    if (FileStatW(ofile, &oft, FILE_FLAG_OPEN_REPARSE_POINT) && 
+            (oft.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+        BY_HANDLE_FILE_INFORMATION t_oft;
+
+        if (! FileStatW(ofile, &t_oft, 0)) {
+            if (GetLastError() == ERROR_CANT_RESOLVE_FILENAME) {
+                // ELOOP - A loop exists in symbolic links encountered during resolution of the path argument.
+                errno = ELOOP;
+                return -1;
+            }
+        }
+    }
+
+    ret = _wrename(ofile, nfile); 
+        // MoveFileW
+
+    if (-1 == ret && errno == EACCES) {
+        if (GetLastError() == ERROR_ACCESS_DENIED) {
+            if (oft.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                BY_HANDLE_FILE_INFORMATION nft = {0};
+
+                (void) FileStatW(nfile, &nft, 0);
+                if (oft.dwVolumeSerialNumber != nft.dwVolumeSerialNumber) {
+                    // EXDEV - The links named by new and old are on different file systems
+                    //  and the implementation does not support links between file systems.
+                    errno = EXDEV;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+
+static BOOL
+FileStatA(const char *path, BY_HANDLE_FILE_INFORMATION* fi, DWORD flags)
+{
+    const DWORD dwShareMode =
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    HANDLE handle = CreateFileA(path, 0, dwShareMode, NULL, OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | flags, NULL);
+    BOOL ret = FALSE;
+
+    if (handle != INVALID_HANDLE_VALUE) {
+        if (GetFileInformationByHandle(handle, fi)) {
+            ret = TRUE;
+        }
+        CloseHandle(handle);
+    }
+    return ret;
+}
+
+
+static BOOL
+FileStatW(const wchar_t *path, BY_HANDLE_FILE_INFORMATION *fi, DWORD flags)
+{
+    const DWORD dwShareMode =
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    HANDLE handle = CreateFileW(path, 0, dwShareMode, NULL, OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | flags, NULL);
+    BOOL ret = FALSE;
+
+    if (handle != INVALID_HANDLE_VALUE) {
+        if (GetFileInformationByHandle(handle, fi)) {
+            ret = TRUE;
+        }
+        CloseHandle(handle);
+    }
+    return ret;
 }
 
 /*end*/
