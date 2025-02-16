@@ -1,10 +1,10 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.13 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.16 2025/02/16 12:04:05 cvsuser Exp $")
 
 /*
  * win32 socket file-descriptor support
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -69,7 +69,7 @@ w32_sockfd_init(void)
     if (0 == x_fdhard) {
         unsigned s;
 
-        if (NULL != (x_fdsockets = calloc(sizeof(SOCKET), WIN32_FILDES_MAX))) {
+        if (NULL != (x_fdsockets = (SOCKET *)calloc(WIN32_FILDES_MAX, sizeof(SOCKET)))) {
             for (s = 0; s < WIN32_FILDES_MAX; ++s) {
                 x_fdsockets[s] = INVALID_SOCKET;
             }

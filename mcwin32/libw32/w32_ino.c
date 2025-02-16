@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_ino_c,"$Id: w32_ino.c,v 1.14 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_ino_c,"$Id: w32_ino.c,v 1.15 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 ino implementation
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

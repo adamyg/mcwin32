@@ -1,7 +1,7 @@
 /*
    lib/vfs - test vfs_s_get_path() function
 
-   Copyright (C) 2011-2024
+   Copyright (C) 2011-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -37,7 +37,7 @@
 #define ETALON_VFS_NAME "#test2:user:pass@host.net"
 #define ETALON_VFS_URL_NAME "test2://user:pass@host.net"
 
-struct vfs_s_subclass test_subclass1, test_subclass2, test_subclass3;
+static struct vfs_s_subclass test_subclass1, test_subclass2, test_subclass3;
 static struct vfs_class *vfs_test_ops1 = VFS_CLASS (&test_subclass1);
 static struct vfs_class *vfs_test_ops2 = VFS_CLASS (&test_subclass2);
 static struct vfs_class *vfs_test_ops3 = VFS_CLASS (&test_subclass3);
@@ -45,8 +45,8 @@ static struct vfs_class *vfs_test_ops3 = VFS_CLASS (&test_subclass3);
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-test1_mock_open_archive (struct vfs_s_super *super, const vfs_path_t * vpath,
-                         const vfs_path_element_t * vpath_element)
+test1_mock_open_archive (struct vfs_s_super *super, const vfs_path_t *vpath,
+                         const vfs_path_element_t *vpath_element)
 {
     struct vfs_s_inode *root;
 
@@ -61,8 +61,8 @@ test1_mock_open_archive (struct vfs_s_super *super, const vfs_path_t * vpath,
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-test1_mock_archive_same (const vfs_path_element_t * vpath_element, struct vfs_s_super *super,
-                         const vfs_path_t * vpath, void *cookie)
+test1_mock_archive_same (const vfs_path_element_t *vpath_element, struct vfs_s_super *super,
+                         const vfs_path_t *vpath, void *cookie)
 {
     const char *path;
 

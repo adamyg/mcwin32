@@ -1,7 +1,7 @@
 /*
    Virtual File System switch code
 
-   Copyright (C) 1995-2024
+   Copyright (C) 1995-2025
    Free Software Foundation, Inc.
 
    Written by: 1995 Miguel de Icaza
@@ -80,10 +80,10 @@ extern vfs_class *current_vfs;
 
 /*** global variables ****************************************************************************/
 
-struct vfs_dirent *mc_readdir_result = NULL;
-GPtrArray *vfs__classes_list = NULL;
-GString *vfs_str_buffer = NULL;
-vfs_class *current_vfs = NULL;
+MC_MOCKABLE struct vfs_dirent *mc_readdir_result = NULL;
+MC_MOCKABLE GPtrArray *vfs__classes_list = NULL;
+MC_MOCKABLE GString *vfs_str_buffer = NULL;
+MC_MOCKABLE vfs_class *current_vfs = NULL;
 
 /*** file scope macro definitions ****************************************************************/
 
@@ -121,7 +121,7 @@ static long vfs_free_handle_list = -1;
  */
 
 static estr_t
-_vfs_translate_path (const char *path, int size, GIConv defcnv, GString * buffer)
+_vfs_translate_path (const char *path, int size, GIConv defcnv, GString *buffer)
 {
     estr_t state = ESTR_SUCCESS;
 #ifdef HAVE_CHARSET
@@ -213,10 +213,8 @@ vfs_get_openfile (int handle)
         return NULL;
 
     h = (struct vfs_openfile *) g_ptr_array_index (vfs_openfiles, handle - VFS_FIRST_HANDLE);
-    if (h == NULL)
-        return NULL;
-
-    g_assert (h->handle == handle);
+    if (h != NULL)
+        g_assert (h->handle == handle);
 
     return h;
 }
@@ -224,7 +222,7 @@ vfs_get_openfile (int handle)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-vfs_test_current_dir (const vfs_path_t * vpath)
+vfs_test_current_dir (const vfs_path_t *vpath)
 {
     struct stat my_stat, my_stat2;
 
@@ -232,7 +230,6 @@ vfs_test_current_dir (const vfs_path_t * vpath)
             && mc_stat (vfs_get_raw_current_dir (), &my_stat2) == 0
             && my_stat.st_ino == my_stat2.st_ino && my_stat.st_dev == my_stat2.st_dev);
 }
-
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
@@ -254,7 +251,6 @@ vfs_free_handle (int handle)
         vfs_free_handle_list = idx;
     }
 }
-
 
 /* --------------------------------------------------------------------------------------------- */
 /** Find VFS class by file handle */
@@ -313,17 +309,17 @@ vfs_new_handle (struct vfs_class *vclass, void *fsinfo)
 int
 vfs_ferrno (struct vfs_class *vfs)
 {
-    return vfs->ferrno ? (*vfs->ferrno) (vfs) : E_UNKNOWN;
+    return vfs->ferrno != NULL ? vfs->ferrno (vfs) : E_UNKNOWN;
     /* Hope that error message is obscure enough ;-) */
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-vfs_register_class (struct vfs_class * vfs)
+vfs_register_class (struct vfs_class *vfs)
 {
     if (vfs->init != NULL)      /* vfs has own initialization function */
-        if (!vfs->init (vfs))   /* but it failed */
+        if (vfs->init (vfs) == 0)       /* but it failed */
             return FALSE;
 
     g_ptr_array_add (vfs__classes_list, vfs);
@@ -446,7 +442,7 @@ vfs_get_raw_current_dir (void)
  * @param vpath new path
  */
 void
-vfs_set_raw_current_dir (const vfs_path_t * vpath)
+vfs_set_raw_current_dir (const vfs_path_t *vpath)
 {
     vfs_path_free (current_path, TRUE);
     current_path = (vfs_path_t *) vpath;
@@ -465,7 +461,7 @@ vfs_current_is_local (void)
 /* Return flags of the VFS class of the given filename */
 
 vfs_flags_t
-vfs_file_class_flags (const vfs_path_t * vpath)
+vfs_file_class_flags (const vfs_path_t *vpath)
 {
     const vfs_path_element_t *path_element;
 
@@ -581,6 +577,7 @@ vfs_dirent_assign (struct vfs_dirent *d, const char *fname, ino_t ino)
 {
     g_string_assign (d->d_name_str, fname);
     d->d_name = d->d_name_str->str;
+    d->d_len = d->d_name_str->len;
     d->d_ino = ino;
 }
 
@@ -622,7 +619,7 @@ vfs_fill_names (fill_names_f func)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-vfs_file_is_local (const vfs_path_t * vpath)
+vfs_file_is_local (const vfs_path_t *vpath)
 {
     return (vfs_file_class_flags (vpath) & VFSF_LOCAL) != 0;
 }
@@ -657,7 +654,7 @@ vfs_setup_cwd (void)
 
     if (vfs_get_raw_current_dir () == NULL)
     {
-        current_dir = g_get_current_dir ();
+        current_dir = my_get_current_dir ();
         vfs_set_raw_current_dir (vfs_path_from_str (current_dir));
         g_free (current_dir);
 
@@ -676,7 +673,7 @@ vfs_setup_cwd (void)
     me = vfs_path_get_last_path_vfs (vfs_get_raw_current_dir ());
     if ((me->flags & VFSF_LOCAL) != 0)
     {
-        current_dir = g_get_current_dir ();
+        current_dir = my_get_current_dir ();
         tmp_vpath = vfs_path_from_str (current_dir);
         g_free (current_dir);
 

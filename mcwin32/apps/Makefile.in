@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.1 2025/01/28 09:25:30 cvsuser Exp $
+# $Id: Makefile.in,v 1.2 2025/02/13 17:53:33 cvsuser Exp $
 # mcdiff/mcedit/mcdiff, application shims
 #
 #

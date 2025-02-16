@@ -16,15 +16,17 @@ endif
 SUBLIB_includes = \
 	event.h event-types.h \
 	filehighlight.h \
+	idx.h \
+	intprops-internal.h \
+	intprops.h \
 	mcconfig.h \
 	search.h \
 	skin.h \
-	strescape.h \
 	strutil.h \
 	widget.h
 
 SRC_mc_utils = \
-	utilunix.c utilunix.h \
+	utilunix.c \
 	unixcompat.h \
 	util.c util.h
 
@@ -52,6 +54,9 @@ endif
 if CHARSET
 libmc_la_SOURCES += charsets.c charsets.h
 endif
+
+EXTRA_DIST = \
+	stdckdint.in.h
 
 AM_CPPFLAGS = $(GLIB_CFLAGS) -I$(top_srcdir)
 

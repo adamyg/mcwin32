@@ -4,7 +4,7 @@
 /*
  * internal definitions
  *
- * Copyright (c) 2016 - 2024 Adam Young.
+ * Copyright (c) 2016 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

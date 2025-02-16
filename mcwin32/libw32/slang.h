@@ -4,7 +4,7 @@
 /*
  * win32 <slang.h> partial implementation
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *

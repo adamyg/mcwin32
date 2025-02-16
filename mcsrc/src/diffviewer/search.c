@@ -1,7 +1,7 @@
 /*
    Search functions for diffviewer.
 
-   Copyright (C) 2010-2024
+   Copyright (C) 2010-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -72,7 +72,7 @@ static mcdiffview_search_options_t mcdiffview_search_options = {
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-mcdiffview_dialog_search (WDiff * dview)
+mcdiffview_dialog_search (WDiff *dview)
 {
     char *exp = NULL;
     int qd_result;
@@ -84,9 +84,9 @@ mcdiffview_dialog_search (WDiff * dview)
     {
 #if defined(WIN32)  //WIN32, quick
 #ifdef HAVE_CHARSET
-        quick_widget_t quick_widgets[12] = {0},
+        quick_widget_t quick_widgets[12+2] = {0},
 #else
-        quick_widget_t quick_widgets[11] = {0},
+        quick_widget_t quick_widgets[11+2] = {0},
 #endif
             *qc = quick_widgets;
 #else
@@ -174,7 +174,7 @@ mcdiffview_dialog_search (WDiff * dview)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-mcdiffview_do_search_backward (WDiff * dview)
+mcdiffview_do_search_backward (WDiff *dview)
 {
     ssize_t ind;
 
@@ -209,7 +209,7 @@ mcdiffview_do_search_backward (WDiff * dview)
 
 
 static gboolean
-mcdiffview_do_search_forward (WDiff * dview)
+mcdiffview_do_search_forward (WDiff *dview)
 {
     size_t ind;
 
@@ -221,7 +221,7 @@ mcdiffview_do_search_forward (WDiff * dview)
         return FALSE;
     }
 
-    for (ind = (size_t)++ dview->search.last_accessed_num_line; ind < dview->a[dview->ord]->len;
+    for (ind = (size_t) ++dview->search.last_accessed_num_line; ind < dview->a[dview->ord]->len;
          ind++)
     {
         DIFFLN *p;
@@ -243,7 +243,7 @@ mcdiffview_do_search_forward (WDiff * dview)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcdiffview_do_search (WDiff * dview)
+mcdiffview_do_search (WDiff *dview)
 {
     gboolean present_result = FALSE;
 
@@ -272,7 +272,7 @@ mcdiffview_do_search (WDiff * dview)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-dview_search_cmd (WDiff * dview)
+dview_search_cmd (WDiff *dview)
 {
     if (dview->dsrc != DATA_SRC_MEM)
     {
@@ -306,7 +306,7 @@ dview_search_cmd (WDiff * dview)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-dview_continue_search_cmd (WDiff * dview)
+dview_continue_search_cmd (WDiff *dview)
 {
     if (dview->dsrc != DATA_SRC_MEM)
         error_dialog (_("Search"), _("Search is disabled"));

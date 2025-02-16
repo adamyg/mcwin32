@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_select_c,"$Id: w32_select.c,v 1.15 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_select_c,"$Id: w32_select.c,v 1.18 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  *  Windows 'select' compat interface
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -94,7 +94,7 @@ w32_select(
     selcnt = (readfds ? readfds->fd_count : 0) + (writefds ? writefds->fd_count : 0) +
                 (exceptfds ? exceptfds->fd_count : 0);
 
-    if ((selfds = calloc(sizeof(Select_t), selcnt + 1)) == NULL) {
+    if ((selfds = calloc(selcnt + 1, sizeof(Select_t))) == NULL) {
         return -1;
     }
 
@@ -212,7 +212,7 @@ static int
 sel_wait(u_int cnt, Select_t *selfds, DWORD timeout)
 {
     DWORD  stick, ret;
-    HANDLE waitfor[MAXIMUM_WAIT_OBJECTS];       // system limit
+    HANDLE waitfor[MAXIMUM_WAIT_OBJECTS] = {0}; // system limit
     u_int i = 0;
 
     if (cnt > sizeof(waitfor)/sizeof(waitfor[0]))

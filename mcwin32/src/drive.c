@@ -8,10 +8,7 @@
         |
         +----------------------------+
 
-   Copyright (C) 2012
-   The Free Software Foundation, Inc.
-
-   Written by: Adam Young 2012 - 2024
+   Adam Young 2015 - 2025
 
    This file is part of the Midnight Commander.
 
@@ -455,7 +452,7 @@ enumerate_disks(int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueu
         }
 
         if (NO_ERROR != fns->fnWNetCloseEnum(hEnum) || NULL == pnr) {
-            elements = -1;                  // WNetCloseEnum failure/or memory.
+            elements = -1;                      // WNetCloseEnum failure/or memory.
         }
         free((void *)pnr);
     }

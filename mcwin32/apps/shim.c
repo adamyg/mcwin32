@@ -172,7 +172,7 @@ ApplicationShim(const wchar_t *name, const wchar_t *alias)
     }
     wmemcpy(base, alias, aliassz + 1 /*NUL*/);
 
-        //wmemcpy(newpath, L".\\app.exe", 9 + 1);
+        //wmemcpy(newpath, L".\\testapp.exe", 13 + 1);
     if (diagositics) {
         wprintf(L"NEW: %s\n", newpath);
     }

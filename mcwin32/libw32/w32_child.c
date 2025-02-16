@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.22 2024/03/03 11:29:13 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.24 2025/02/16 12:04:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 sub-process support
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
@@ -995,6 +995,9 @@ w32_child_wait(HANDLE hProc, int *status, int nowait)
                 case STATUS_ACCESS_VIOLATION:           // 0xC0000005L
                 case STATUS_IN_PAGE_ERROR:              // 0xC0000006L
                 case STATUS_INVALID_HANDLE:             // 0xC0000008L
+#if !defined(STATUS_INVALID_PARAMETER)
+#define STATUS_INVALID_PARAMETER 0xC000000DL
+#endif
                 case STATUS_INVALID_PARAMETER:          // 0xC000000DL
                 case STATUS_NO_MEMORY:                  // 0xC0000017L
                     *status = SIGSEGV;
@@ -1039,6 +1042,9 @@ w32_child_wait(HANDLE hProc, int *status, int nowait)
             //  case STATUS_HEAP_CORRUPTION:            // 0xC0000374L
             //  case STATUS_STACK_BUFFER_OVERRUN:       // 0xC0000409L
             //  case STATUS_INVALID_CRUNTIME_PARAMETER: // 0xC0000417L
+#if !defined(STATUS_ASSERTION_FAILURE)
+#define STATUS_ASSERTION_FAILURE 0xC0000420L
+#endif
                 case STATUS_ASSERTION_FAILURE:          // 0xC0000420L
                     *status = SIGABRT;
                     break;

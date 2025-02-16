@@ -1,7 +1,7 @@
 /*
    Functions for escaping and unescaping strings
 
-   Copyright (C) 2009-2024
+   Copyright (C) 2009-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -27,7 +27,7 @@
 #include <config.h>
 
 #include "lib/global.h"
-#include "lib/strescape.h"
+#include "lib/strutil.h"
 
 /*** global variables ****************************************************************************/
 
@@ -52,8 +52,8 @@ static const char ESCAPE_GLOB_CHARS[] = "$*\\?";
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-strutils_escape (const char *src, gsize src_len, const char *escaped_chars,
-                 gboolean escape_non_printable)
+str_escape (const char *src, gsize src_len, const char *escaped_chars,
+            gboolean escape_non_printable)
 {
     GString *ret;
     gsize curr_index;
@@ -103,8 +103,8 @@ strutils_escape (const char *src, gsize src_len, const char *escaped_chars,
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-strutils_unescape (const char *src, gsize src_len, const char *unescaped_chars,
-                   gboolean unescape_non_printable)
+str_unescape (const char *src, gsize src_len, const char *unescaped_chars,
+              gboolean unescape_non_printable)
 {
     GString *ret;
     gsize curr_index;
@@ -182,25 +182,25 @@ strutils_unescape (const char *src, gsize src_len, const char *unescaped_chars,
  */
 
 char *
-strutils_shell_escape (const char *src)
+str_shell_escape (const char *src)
 {
-    return strutils_escape (src, -1, ESCAPE_SHELL_CHARS, FALSE);
+    return str_escape (src, -1, ESCAPE_SHELL_CHARS, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-strutils_glob_escape (const char *src)
+str_glob_escape (const char *src)
 {
-    return strutils_escape (src, -1, ESCAPE_GLOB_CHARS, TRUE);
+    return str_escape (src, -1, ESCAPE_GLOB_CHARS, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-strutils_regex_escape (const char *src)
+str_regex_escape (const char *src)
 {
-    return strutils_escape (src, -1, ESCAPE_REGEX_CHARS, TRUE);
+    return str_escape (src, -1, ESCAPE_REGEX_CHARS, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -215,31 +215,34 @@ strutils_regex_escape (const char *src)
  */
 
 char *
-strutils_shell_unescape (const char *text)
+str_shell_unescape (const char *text)
 {
-    return strutils_unescape (text, -1, ESCAPE_SHELL_CHARS, TRUE);
+    return str_unescape (text, -1, ESCAPE_SHELL_CHARS, TRUE);
 }
 
 
-char *
-strutils_shell_unescape_special (const char *text)
+#if defined(WIN32)
+char*
+str_shell_unescape_special (const char* text)
 {
-    return strutils_unescape (text, -1, ESCAPE_SHELL_CHARS, FALSE);
+    return str_unescape(text, -1, ESCAPE_SHELL_CHARS, FALSE);
 }
+#endif
+
 
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-strutils_glob_unescape (const char *text)
+str_glob_unescape (const char *text)
 {
-    return strutils_unescape (text, -1, ESCAPE_GLOB_CHARS, TRUE);
+    return str_unescape (text, -1, ESCAPE_GLOB_CHARS, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 char *
-strutils_regex_unescape (const char *text)
+str_regex_unescape (const char *text)
 {
-    return strutils_unescape (text, -1, ESCAPE_REGEX_CHARS, TRUE);
+    return str_unescape (text, -1, ESCAPE_REGEX_CHARS, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -254,7 +257,7 @@ strutils_regex_unescape (const char *text)
  */
 
 gboolean
-strutils_is_char_escaped (const char *start, const char *current)
+str_is_char_escaped (const char *start, const char *current)
 {
     int num_esc = 0;
 

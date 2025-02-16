@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_readv_c,"$Id: w32_readv.c,v 1.6 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_readv_c,"$Id: w32_readv.c,v 1.7 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 readv() implementation
  *
- * Copyright (c) 2018 - 2024, Adam Young.
+ * Copyright (c) 2018 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

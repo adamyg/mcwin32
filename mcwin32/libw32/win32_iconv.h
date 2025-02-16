@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_ICONV_H_INCLUDED
 #define LIBW32_WIN32_ICONV_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_iconv_h,"$Id: win32_iconv.h,v 1.10 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_iconv_h,"$Id: win32_iconv.h,v 1.12 2025/02/16 12:04:05 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 iconv dynamic loader.
  *
- * Copyright (c) 2007, 2012 - 2024, Adam Young.
+ * Copyright (c) 2007, 2012 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -44,7 +44,7 @@ LIBW32_API int              w32_iconv_connect(int verbose);
 LIBW32_API void             w32_iconv_shutdown(void);
 
 LIBW32_API void *           w32_iconv_open(const char *to, const char *from);
-LIBW32_API int              w32_iconv(void *fd, const char **from, size_t *fromlen, char **to, size_t *tolen);
+LIBW32_API size_t           w32_iconv(void *fd, const char **from, size_t *fromlen, char **to, size_t *tolen);
 LIBW32_API void             w32_iconv_close(void *fd);
 
 LIBW32_API void *           w32native_iconv_open(const char *tocode, const char *fromcode);

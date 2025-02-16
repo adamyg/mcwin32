@@ -2,7 +2,7 @@
 
 /* Background support.
 
-   Copyright (C) 1996-2024
+   Copyright (C) 1996-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -49,8 +49,7 @@
 #include "lib/tty/key.h"        /* add_select_channel(), delete_select_channel() */
 #include "lib/widget.h"         /* message() */
 #include "lib/event-types.h"
-
-#include "filemanager/fileopctx.h"      /* file_op_context_t */
+#include "lib/util.h"           /* my_fork() */
 
 #include "background.h"
 
@@ -87,7 +86,7 @@ TaskList *task_list = NULL;
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-register_task_running (file_op_context_t * ctx, pid_t pid, int fd, int to_child, char *info)
+register_task_running (file_op_context_t *ctx, pid_t pid, int fd, int to_child, char *info)
 {
     TaskList *new;
 
@@ -404,7 +403,7 @@ background_attention (int fd, void *closure)
  */
 
 static void
-parent_call_header (void *routine, int argc, enum ReturnType type, file_op_context_t * ctx)
+parent_call_header (void *routine, int argc, enum ReturnType type, file_op_context_t *ctx)
 {
     int have_ctx;
     ssize_t ret;
@@ -518,7 +517,7 @@ unregister_task_with_pid (pid_t pid)
  * -1 on failure
  */
 int
-do_background (file_op_context_t * ctx, char *info)
+do_background (file_op_context_t *ctx, char *info)
 {
     int comm[2];                /* control connection stream */
     int back_comm[2];           /* back connection */
@@ -535,7 +534,7 @@ do_background (file_op_context_t * ctx, char *info)
         return (-1);
     }
 
-    pid = fork ();
+    pid = my_fork ();
     if (pid == -1)
     {
         int saved_errno = errno;
@@ -594,7 +593,7 @@ do_background (file_op_context_t * ctx, char *info)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-parent_call (void *routine, file_op_context_t * ctx, int argc, ...)
+parent_call (void *routine, file_op_context_t *ctx, int argc, ...)
 {
     int ret;
     va_list ap;
@@ -625,7 +624,7 @@ parent_call_string (void *routine, int argc, ...)
 
 /* event callback */
 gboolean
-background_parent_call (const gchar * event_group_name, const gchar * event_name,
+background_parent_call (const gchar *event_group_name, const gchar *event_name,
                         gpointer init_data, gpointer data)
 {
     ev_background_parent_call_t *event_data = (ev_background_parent_call_t *) data;
@@ -644,7 +643,7 @@ background_parent_call (const gchar * event_group_name, const gchar * event_name
 
 /* event callback */
 gboolean
-background_parent_call_string (const gchar * event_group_name, const gchar * event_name,
+background_parent_call_string (const gchar *event_group_name, const gchar *event_name,
                                gpointer init_data, gpointer data)
 {
     ev_background_parent_call_t *event_data = (ev_background_parent_call_t *) data;

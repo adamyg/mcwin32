@@ -1,14 +1,14 @@
 #ifndef GR_DLFCN_H_INCLUDED
 #define GR_DLFCN_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_dlfcn_h,"$Id: dlfcn.h,v 1.5 2024/02/03 17:22:14 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_dlfcn_h,"$Id: dlfcn.h,v 1.6 2025/02/13 17:55:24 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * <dlfcn.h> for windows
  *
- * Copyright (c) 1998 - 2024, Adam Young.
+ * Copyright (c) 1998 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

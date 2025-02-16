@@ -1,7 +1,7 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.24 2025/01/26 19:23:23 cvsuser Exp $
+/* $Id: w32config.hin,v 1.26 2025/02/13 18:56:15 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
@@ -175,6 +175,7 @@
 #undef HAVE_FEATURES_H
 #undef HAVE_STDALIGN_H
 #undef HAVE_STDATOMIC_H
+#undef HAVE_STDCKDINT_H
 #undef HAVE_THREADS_H
 #undef HAVE_XTHREADS_H
 #undef HAVE_LIBPTHREAD
@@ -319,6 +320,7 @@
 #undef HAVE___FORCEINLINE
 
 #undef HAVE_DECL_SIZE_MAX
+#undef HAVE_DECL_RSIZE_MAX
 #undef HAVE_DECL_SSIZE_MAX
 #undef HAVE_DECL_INT16_C
 #undef HAVE_DECL_INT16_MIN
@@ -366,6 +368,8 @@
 #undef HAVE___INT32
 #undef HAVE___INT8
 #undef HAVE_WCHAR_T
+#undef HAVE_MBSTATE_T
+#undef HAVE_RSIZE_T
 #undef HAVE_SSIZE_T
 #undef HAVE_C99BOOL
 #undef HAVE_BOOL
@@ -461,6 +465,7 @@
 #undef HAVE_FGETPOS
 #undef HAVE_FSETPOS
 #undef HAVE_FGETLN
+#undef HAVE_FSEEKO
 
 #undef HAVE_TRUNCATE
 #undef HAVE_FTRUNCATE
@@ -575,6 +580,8 @@
 #undef HAVE_WCWIDTH
 #undef HAVE_MBRTOWC
 #undef HAVE_WCRTOMB
+#undef HAVE_WCSRTOMBS
+#undef HAVE_WCSTOMBS
 #undef HAVE_WCSCMP
 #undef HAVE_WCSCPY
 #undef HAVE_WCSLEN
@@ -823,11 +830,11 @@
         /* Target specific */
 
 #if defined(__MINGW32__)
-#define MSDOS
+#define MSDOS 1
 
 #elif (defined(WIN32) || defined(_WIN32))
 #if !defined(MSDOS)
-#define MSDOS                                   /* assumed */
+#define MSDOS 1                                  /* assumed */
 #endif
 
 #elif defined(__EMX__) && !defined(__OS2__)

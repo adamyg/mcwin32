@@ -1,7 +1,7 @@
 /*
    Virtual File System: GNU Tar file system.
 
-   Copyright (C) 1995-2024
+   Copyright (C) 1995-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -59,8 +59,8 @@
 
 /* Size of each record, once in blocks, once in bytes. Those two variables are always related,
    the second being BLOCKSIZE times the first. */
-const int blocking_factor = DEFAULT_BLOCKING;
-const size_t record_size = DEFAULT_BLOCKING * BLOCKSIZE;
+const idx_t blocking_factor = DEFAULT_BLOCKING;
+const idx_t record_size = DEFAULT_BLOCKING * BLOCKSIZE;
 
 /* As we open one archive at a time, it is safe to have these static */
 union block *record_end;        /* last+1 block of archive record */
@@ -201,7 +201,7 @@ minor_from_header (const char *p, size_t s)
  * Set *hbits if there are any unrecognized bits.
  * */
 static inline mode_t
-mode_from_header (const char *p, size_t s, gboolean * hbits)
+mode_from_header (const char *p, size_t s, gboolean *hbits)
 {
     unsigned int u;
     mode_t mode;
@@ -268,7 +268,7 @@ tar_calc_sparse_offsets (struct vfs_s_inode *inode)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-tar_skip_member (tar_super_t * archive, struct vfs_s_inode *inode)
+tar_skip_member (tar_super_t *archive, struct vfs_s_inode *inode)
 {
     char save_typeflag;
 
@@ -327,39 +327,42 @@ tar_available_space_after (const union block *pointer)
 static read_header
 tar_checksum (const union block *header)
 {
-    size_t i;
+    unsigned int i;
     int unsigned_sum = 0;       /* the POSIX one :-) */
     int signed_sum = 0;         /* the Sun one :-( */
     int recorded_sum;
-    int parsed_sum;
-    const char *p = header->buffer;
 
-    for (i = sizeof (*header); i-- != 0;)
+    for (i = 0; i < sizeof (*header); i++)
     {
-        unsigned_sum += (unsigned char) *p;
-        signed_sum += (signed char) (*p++);
+        unsigned char uc = header->buffer[i];
+        signed char sc = header->buffer[i];
+
+        unsigned_sum += uc;
+        signed_sum += sc;
     }
 
     if (unsigned_sum == 0)
         return HEADER_ZERO_BLOCK;
 
     /* Adjust checksum to count the "chksum" field as blanks.  */
-    for (i = sizeof (header->header.chksum); i-- != 0;)
+    for (i = 0; i < sizeof (header->header.chksum); i++)
     {
-        unsigned_sum -= (unsigned char) header->header.chksum[i];
-        signed_sum -= (signed char) (header->header.chksum[i]);
+        unsigned char uc = header->header.chksum[i];
+        signed char sc = header->header.chksum[i];
+
+        unsigned_sum -= uc;
+        signed_sum -= sc;
     }
 
     unsigned_sum += ' ' * sizeof (header->header.chksum);
     signed_sum += ' ' * sizeof (header->header.chksum);
 
-    parsed_sum =
+    recorded_sum =
         tar_from_header (header->header.chksum, sizeof (header->header.chksum), NULL, 0,
                          INT_MAX, TRUE);
-    if (parsed_sum < 0)
-        return HEADER_FAILURE;
 
-    recorded_sum = parsed_sum;
+    if (recorded_sum < 0)
+        return HEADER_FAILURE;
 
     if (unsigned_sum != recorded_sum && signed_sum != recorded_sum)
         return HEADER_FAILURE;
@@ -370,7 +373,7 @@ tar_checksum (const union block *header)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-tar_decode_header (union block *header, tar_super_t * arch)
+tar_decode_header (union block *header, tar_super_t *arch)
 {
     gboolean hbits = FALSE;
 
@@ -636,8 +639,10 @@ tar_read_header (struct vfs_class *me, struct vfs_s_super *archive)
         if (header->header.typeflag == GNUTYPE_LONGNAME
             || header->header.typeflag == GNUTYPE_LONGLINK)
         {
+#if defined(WIN32) //WIN32: stdckdint.h
             size_t name_size = current_stat_info.stat.st_size;
             size_t n;
+#endif
             off_t size;
             union block *header_copy;
             char *bp;
@@ -646,16 +651,22 @@ tar_read_header (struct vfs_class *me, struct vfs_s_super *archive)
             if (arch->type == TAR_UNKNOWN)
                 arch->type = TAR_GNU;
 
+#if defined(WIN32) //WIN32: stdckdint.h
             n = name_size % BLOCKSIZE;
             size = name_size + BLOCKSIZE;
             if (n != 0)
                 size += BLOCKSIZE - n;
-            if ((off_t) name_size != current_stat_info.stat.st_size || size < (off_t) name_size)
+            if ((off_t)name_size != current_stat_info.stat.st_size || size < (off_t)name_size)
+#else
+            if (ckd_add (&size, current_stat_info.stat.st_size, 2 * BLOCKSIZE - 1))
+#endif
             {
                 message (D_ERROR, MSG_ERROR, _("Inconsistent tar archive"));
                 status = HEADER_FAILURE;
                 goto ret;
             }
+
+            size -= size % BLOCKSIZE;
 
             header_copy = g_malloc (size + 1);
 
@@ -681,7 +692,6 @@ tar_read_header (struct vfs_class *me, struct vfs_s_super *archive)
                 data_block = tar_find_next_block (arch);
                 if (data_block == NULL)
                 {
-                    g_free (header_copy);
                     message (D_ERROR, MSG_ERROR, _("Unexpected EOF on archive file"));
                     status = HEADER_FAILURE;
                     goto ret;
@@ -773,7 +783,6 @@ tar_read_header (struct vfs_class *me, struct vfs_s_super *archive)
         }
 
         tar_assign_string_dup (&current_stat_info.orig_file_name, file_name);
-        canonicalize_pathname (file_name);
         tar_assign_string (&current_stat_info.file_name, file_name);
 
         g_free (recent_long_link);
@@ -816,6 +825,9 @@ tar_read_header (struct vfs_class *me, struct vfs_s_super *archive)
                 || current_stat_info.dumpdir != NULL)
                 current_stat_info.is_dumpdir = TRUE;
         }
+
+        /* Do this after decoding of all headers occupied with long file/directory name. */
+        canonicalize_pathname (current_stat_info.file_name);
 
         status = tar_insert_entry (me, archive, header, &inode);
         if (status != HEADER_SUCCESS)
@@ -897,7 +909,7 @@ tar_free_archive (struct vfs_class *me, struct vfs_s_super *archive)
 
 /* Returns status of the tar archive open */
 static gboolean
-tar_open_archive_int (struct vfs_class *me, const vfs_path_t * vpath, struct vfs_s_super *archive)
+tar_open_archive_int (struct vfs_class *me, const vfs_path_t *vpath, struct vfs_s_super *archive)
 {
     tar_super_t *arch = TAR_SUPER (archive);
     int result, type;
@@ -965,8 +977,8 @@ tar_open_archive_int (struct vfs_class *me, const vfs_path_t * vpath, struct vfs
  * Returns 0 on success, -1 on error.
  */
 static int
-tar_open_archive (struct vfs_s_super *archive, const vfs_path_t * vpath,
-                  const vfs_path_element_t * vpath_element)
+tar_open_archive (struct vfs_s_super *archive, const vfs_path_t *vpath,
+                  const vfs_path_element_t *vpath_element)
 {
     tar_super_t *arch = TAR_SUPER (archive);
     /* Initial status at start of archive */
@@ -1046,7 +1058,7 @@ tar_open_archive (struct vfs_s_super *archive, const vfs_path_t * vpath,
 /* --------------------------------------------------------------------------------------------- */
 
 static void *
-tar_super_check (const vfs_path_t * vpath)
+tar_super_check (const vfs_path_t *vpath)
 {
     static struct stat stat_buf;
     int stat_result;
@@ -1059,8 +1071,8 @@ tar_super_check (const vfs_path_t * vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-tar_super_same (const vfs_path_element_t * vpath_element, struct vfs_s_super *parc,
-                const vfs_path_t * vpath, void *cookie)
+tar_super_same (const vfs_path_element_t *vpath_element, struct vfs_s_super *parc,
+                const vfs_path_t *vpath, void *cookie)
 {
     struct stat *archive_stat = cookie; /* stat of main archive */
 
@@ -1083,12 +1095,12 @@ tar_super_same (const vfs_path_element_t * vpath_element, struct vfs_s_super *pa
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/* Get indes of current data chunk in a sparse file.
+/* Get index of current data chunk in a sparse file.
  *
  * @param sparse_map map of the sparse file
  * @param offset offset in the sparse file
  *
- * @return an index of ahole or a data chunk
+ * @return an index of a hole or a data chunk
  *      positive: pointer to the data chunk;
  *      negative: pointer to the hole before data chunk;
  *      zero: pointer to the hole after last data chunk
@@ -1100,7 +1112,7 @@ tar_super_same (const vfs_path_element_t * vpath_element, struct vfs_s_super *pa
  */
 
 static ssize_t
-tar_get_sparse_chunk_idx (const GArray * sparse_map, off_t offset)
+tar_get_sparse_chunk_idx (const GArray *sparse_map, off_t offset)
 {
     size_t k;
 
@@ -1126,7 +1138,7 @@ tar_get_sparse_chunk_idx (const GArray * sparse_map, off_t offset)
 /* --------------------------------------------------------------------------------------------- */
 
 static ssize_t
-tar_read_sparse (vfs_file_handler_t * fh, char *buffer, size_t count)
+tar_read_sparse (vfs_file_handler_t *fh, char *buffer, size_t count)
 {
     int fd = TAR_SUPER (fh->ino->super)->fd;
     const GArray *sm = (const GArray *) fh->ino->user_data;
@@ -1169,7 +1181,7 @@ tar_read_sparse (vfs_file_handler_t * fh, char *buffer, size_t count)
 /* --------------------------------------------------------------------------------------------- */
 
 static off_t
-tar_lseek_sparse (vfs_file_handler_t * fh, off_t offset)
+tar_lseek_sparse (vfs_file_handler_t *fh, off_t offset)
 {
     off_t saved_offset = offset;
     int fd = TAR_SUPER (fh->ino->super)->fd;
@@ -1260,7 +1272,7 @@ tar_read (void *fh, char *buffer, size_t count)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-tar_fh_open (struct vfs_class *me, vfs_file_handler_t * fh, int flags, mode_t mode)
+tar_fh_open (struct vfs_class *me, vfs_file_handler_t *fh, int flags, mode_t mode)
 {
     (void) fh;
     (void) mode;
@@ -1289,8 +1301,6 @@ vfs_init_tarfs (void)
     tarfs_subclass.free_inode = tar_free_inode;
     tarfs_subclass.fh_open = tar_fh_open;
     vfs_register_class (vfs_tarfs_ops);
-
-    tar_base64_init ();
 }
 
 /* --------------------------------------------------------------------------------------------- */

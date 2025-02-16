@@ -1,7 +1,7 @@
 /*
    Common strings utilities
 
-   Copyright (C) 2007-2024
+   Copyright (C) 2007-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -57,18 +57,16 @@ static const char *const str_utf8_encodings[] = {
 
 /* standard 8bit encodings, no wide or multibytes characters */
 static const char *const str_8bit_encodings[] = {
-    /* Solaris has different names of Windows 1251 encoding */
-#ifdef __sun
-    "ansi-1251",
-    "ansi1251",
-#else
     "cp-1251",
     "cp1251",
-#endif
+    /* solaris */
+    "ansi-1251",
+    "ansi1251",
     "cp-1250",
     "cp1250",
     "cp-866",
     "cp866",
+    /* glibc */
     "ibm-866",
     "ibm866",
     "cp-850",
@@ -101,7 +99,7 @@ str_test_not_convert (const char *enc)
 /* --------------------------------------------------------------------------------------------- */
 
 static estr_t
-_str_convert (GIConv coder, const char *string, int size, GString * buffer)
+_str_convert (GIConv coder, const char *string, int size, GString *buffer)
 {
     estr_t state = ESTR_SUCCESS;
     gssize left;
@@ -153,9 +151,7 @@ _str_convert (GIConv coder, const char *string, int size, GString * buffer)
             case G_CONVERT_ERROR_NO_CONVERSION:
                 /* Conversion between the requested character sets is not supported. */
                 g_free (tmp_buff);
-                tmp_buff = g_strnfill (strlen (string), '?');
-                g_string_append (buffer, tmp_buff);
-                g_free (tmp_buff);
+                mc_g_string_append_c_len (buffer, '?', strlen (string));
                 return ESTR_FAILURE;
 
             case G_CONVERT_ERROR_ILLEGAL_SEQUENCE:
@@ -186,12 +182,7 @@ _str_convert (GIConv coder, const char *string, int size, GString * buffer)
                 g_string_append (buffer, tmp_buff);
                 g_free (tmp_buff);
                 if ((int) bytes_read < left)
-                {
-                    left = left - bytes_read;
-                    tmp_buff = g_strnfill (left, '?');
-                    g_string_append (buffer, tmp_buff);
-                    g_free (tmp_buff);
-                }
+                    mc_g_string_append_c_len (buffer, '?', left - bytes_read);
                 return ESTR_PROBLEM;
 
             case G_CONVERT_ERROR_BAD_URI:      /* Don't know how handle this error :( */
@@ -281,14 +272,14 @@ str_crt_conv_from (const char *from_enc)
 void
 str_close_conv (GIConv conv)
 {
-    if (conv != str_cnv_not_convert)
+    if (conv != INVALID_CONV && conv != str_cnv_not_convert)
         g_iconv_close (conv);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 estr_t
-str_convert (GIConv coder, const char *string, GString * buffer)
+str_convert (GIConv coder, const char *string, GString *buffer)
 {
     return _str_convert (coder, string, -1, buffer);
 }
@@ -296,7 +287,7 @@ str_convert (GIConv coder, const char *string, GString * buffer)
 /* --------------------------------------------------------------------------------------------- */
 
 estr_t
-str_nconvert (GIConv coder, const char *string, int size, GString * buffer)
+str_nconvert (GIConv coder, const char *string, int size, GString *buffer)
 {
     return _str_convert (coder, string, size, buffer);
 }
@@ -304,7 +295,7 @@ str_nconvert (GIConv coder, const char *string, int size, GString * buffer)
 /* --------------------------------------------------------------------------------------------- */
 
 gchar *
-str_conv_gerror_message (GError * mcerror, const char *def_msg)
+str_conv_gerror_message (GError *mcerror, const char *def_msg)
 {
     return used_class.conv_gerror_message (mcerror, def_msg);
 }
@@ -312,7 +303,7 @@ str_conv_gerror_message (GError * mcerror, const char *def_msg)
 /* --------------------------------------------------------------------------------------------- */
 
 estr_t
-str_vfs_convert_from (GIConv coder, const char *string, GString * buffer)
+str_vfs_convert_from (GIConv coder, const char *string, GString *buffer)
 {
     estr_t result = ESTR_SUCCESS;
 
@@ -327,7 +318,7 @@ str_vfs_convert_from (GIConv coder, const char *string, GString * buffer)
 /* --------------------------------------------------------------------------------------------- */
 
 estr_t
-str_vfs_convert_to (GIConv coder, const char *string, int size, GString * buffer)
+str_vfs_convert_to (GIConv coder, const char *string, int size, GString *buffer)
 {
     return used_class.vfs_convert_to (coder, string, size, buffer);
 }
@@ -335,7 +326,7 @@ str_vfs_convert_to (GIConv coder, const char *string, int size, GString * buffer
 /* --------------------------------------------------------------------------------------------- */
 
 void
-str_printf (GString * buffer, const char *format, ...)
+str_printf (GString *buffer, const char *format, ...)
 {
     va_list ap;
     va_start (ap, format);
@@ -347,7 +338,7 @@ str_printf (GString * buffer, const char *format, ...)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-str_insert_replace_char (GString * buffer)
+str_insert_replace_char (GString *buffer)
 {
     used_class.insert_replace_char (buffer);
 }
@@ -756,7 +747,7 @@ str_isdigit (const char *ch)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-str_toupper (const char *ch, char **out, size_t * remain)
+str_toupper (const char *ch, char **out, size_t *remain)
 {
     return used_class.char_toupper (ch, out, remain);
 }
@@ -764,7 +755,7 @@ str_toupper (const char *ch, char **out, size_t * remain)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-str_tolower (const char *ch, char **out, size_t * remain)
+str_tolower (const char *ch, char **out, size_t *remain)
 {
     return used_class.char_tolower (ch, out, remain);
 }
@@ -994,7 +985,7 @@ strrstr_skip_count (const char *haystack, const char *needle, size_t skip_count)
  */
 
 uintmax_t
-parse_integer (const char *str, gboolean * invalid)
+parse_integer (const char *str, gboolean *invalid)
 {
     uintmax_t n;
     char *suffix;

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getdomainname_c,"$Id: w32_domainname.c,v 1.5 2024/01/16 15:17:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getdomainname_c,"$Id: w32_domainname.c,v 1.6 2025/02/16 12:04:05 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getdomainname()
  *
- * Copyright (c) 2017 - 2024 Adam Young.
+ * Copyright (c) 2017 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
