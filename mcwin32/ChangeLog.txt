@@ -1,4 +1,4 @@
-Sat Feb 15 22:34:40 2025 adamy
+Wed Feb 19 17:46:57 2025 adamy
 
 	* build-231
 
@@ -16,6 +16,7 @@ Sat Feb 15 22:34:40 2025 adamy
 		o zlib-1.3.1 (#102)
 		o mbedtls-3.6.2 (#100)
 		o libssh2-1.11.1 (#95)
+		o enhanced utf8 support, directory plus username (#97)
 		o EXDEV on rename failure (#85)
 		o x64 installer path (#79)
 

@@ -108,6 +108,7 @@ extern struct vfs_dirent *mc_readdir_result;
 #define MKDIR           w32_mkdir
 #define LINK            w32_link
 #define UNLINK          w32_unlink
+#define STAT            w32_stat
 #define LSTAT           w32_lstat
 #define WRITE           w32_write
 #define READ            w32_read
@@ -116,6 +117,7 @@ extern struct vfs_dirent *mc_readdir_result;
 #define MKDIR           mkdir
 #define LINK            link
 #define UNLINK          unlink
+#define stat            stat
 #define LSTAT           lstat
 #define WRITE           write
 #define READ            read
@@ -851,7 +853,7 @@ mc_tmpdir (void)
 #if defined(WIN32)
     if (MKDIR (buffer, S_IRWXU) != 0)
     {
-        if (errno != EEXIST || stat (buffer, &st) != 0)
+        if (errno != EEXIST || STAT (buffer, &st) != 0)
         {
             fprintf (stderr,
                      _("Cannot create temporary directory %s: %s\n"),
@@ -899,7 +901,7 @@ mc_tmpdir (void)
         if (test_fd != -1)
         {
             close (test_fd);
-            test_fd = open (vfs_path_as_str (test_vpath), O_RDONLY);
+            test_fd = OPEN (vfs_path_as_str (test_vpath), O_RDONLY);
             if (test_fd != -1)
             {
                 close (test_fd);

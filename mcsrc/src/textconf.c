@@ -219,8 +219,21 @@ show_version (void)
 void
 show_datadirs_extended (void)
 {
+#if defined(WIN32)
+#ifndef CP_UTF8
+#define CP_UTF8 65001 /* UTF-8 translation */
+#endif
+    DWORD codepage;
+    if (CP_UTF8 != (codepage = GetConsoleOutputCP())) {
+        (void) SetConsoleOutputCP(CP_UTF8);
+    }
+#endif
+
     (void) printf ("%s %s\n", _("Home directory:"), mc_config_get_home_dir ());
     (void) printf ("%s %s\n", _("Profile root directory:"), mc_get_profile_root ());
+#if defined(WIN32)
+    (void) printf ("%s %s\n", _("Temporary directory:"), mc_tmpdir ());
+#endif
     (void) puts ("");
 
     PRINTF_GROUP (_("System data"));
@@ -279,6 +292,12 @@ show_datadirs_extended (void)
 #endif  //WIN32, conf
 #endif
     PRINTF_SECTION2 (_("Cache directory:"), mc_config_get_cache_path ());
+
+#if defined(WIN32)
+    if (CP_UTF8 != codepage) {
+        (void) SetConsoleOutputCP(codepage);
+    }
+#endif
 }
 
 #undef PRINTF

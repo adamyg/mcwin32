@@ -227,5 +227,3 @@ GetUTF8Argument0(void)
 }
 
 //end
-
-
