@@ -230,7 +230,7 @@ ugetenv(const char *varname)
             char *utf8env;
 
             if (NULL != (utf8env = calloc(utf8sz + 1 /*NUL*/, sizeof(char)))) {
-                (void) WideCharToMultiByte(CP_UTF8, 0, wenv, (int)wenv, utf8env, utf8sz, NULL, NULL);
+                (void) WideCharToMultiByte(CP_UTF8, 0, wenv, (int)wenvsz, utf8env, utf8sz, NULL, NULL);
                 utf8env[utf8sz] = 0;
 
                 // when values differ, return utf8
@@ -393,14 +393,15 @@ mc_TMPDIR(void)
         char sysdir[MAX_PATH] = {0};
         const char *tmpdir;
 
-        // determine accessible temp directory
+        // explicit
         tmpdir = ugetenv("MC_TMPDIR");          // 4.8.27
+
+        // accessible temp directory
         if (!tmpdir) tmpdir = ugetdir("TMP");
         if (!tmpdir) tmpdir = ugetdir("TEMP");
         if (!tmpdir) tmpdir = ugetdir("TMPDIR");
 
         if (!tmpdir) {
-            const char *tmpdir;
             if (NULL != (tmpdir = ugetenv("USERPROFILE"))) {
                 //
                 //  "%USERPROFILE%\AppData\Local\Temp": see #97

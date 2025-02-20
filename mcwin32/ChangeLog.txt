@@ -1,13 +1,13 @@
-Wed Feb 19 17:46:57 2025 adamy
+Thu Feb 20 12:11:28 2025 adamy
 
 	* build-231
 
 	* 4.8.33 merge (#94)
 
-	* internal tools, externalized (#78)
+	* internal tools front-ends, externalized (#78)
 
 		o mcedit
-		o mddiff
+		o mcdiff and mcbsddiff (diff backend)
 		o mcview
 
 	* upgrades/bugfixes
@@ -17,8 +17,8 @@ Wed Feb 19 17:46:57 2025 adamy
 		o zlib-1.3.1 (#102)
 		o mbedtls-3.6.2 (#100)
 		o libssh2-1.11.1 (#95)
-		o enhanced utf8 support, directory plus username (#97)
-		o EXDEV on rename failure (#85)
+		o enhanced utf8 support, directory plus username; non-ascii user name support (#97)
+		o EXDEV, cross-device link on rename failure; allowing alt move logic (#85)
 		o x64 installer path (#79)
 
 Wed Mar 20 20:30:50 2024 adamy
