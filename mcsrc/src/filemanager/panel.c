@@ -4714,12 +4714,10 @@ panel_sized_with_dir_new (const char *panel_name, const WRect *r, const vfs_path
     if (curdir != NULL)
     {
         vfs_path_t *tmp_vpath;
-        int err;
 
         tmp_vpath = vfs_path_from_str (curdir);
         mc_chdir (tmp_vpath);
         vfs_path_free (tmp_vpath, TRUE);
-        (void) err;
     }
     g_free (curdir);
 
