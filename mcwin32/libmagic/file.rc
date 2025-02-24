@@ -1,0 +1,51 @@
+//$Id: file.rc,v 1.1 2025/02/24 11:28:24 cvsuser Exp $
+//
+//  file - resource file
+//
+
+#include <winver.h>
+
+#include "../buildinfo.h"
+
+LANGUAGE 0x09,0x01
+
+#define RC_VERSION MAGIC_VERSION_1, MAGIC_VERSION_2, MAGIC_VERSION_3, 0
+
+#define __STRINGIZE(__x)        #__x
+#define STRINGIZE(__x)          __STRINGIZE(__x)
+
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION                   RC_VERSION
+  PRODUCTVERSION                RC_VERSION
+  FILEFLAGSMASK                 0x3fL
+#if defined(DEBUGBUILD) || defined(_DEBUG)
+  FILEFLAGS                     1
+#else
+  FILEFLAGS                     0
+#endif
+  FILEOS                        VOS__WINDOWS32
+  FILETYPE                      VFT_DLL
+  FILESUBTYPE                   0x0L
+
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904b0"
+    BEGIN
+      VALUE "FileDescription",  "mcfile - determine file type\0"
+      VALUE "FileVersion",      STRINGIZE(MAGIC_VERSION) "\0"
+      VALUE "InternalName",     "mcfile.exe\0"
+      VALUE "OriginalFilename", "file\0"
+      VALUE "ProductVersion",   "mcwin32 - " VERSION "\0"
+      VALUE "LegalCopyright",
+        "Copyright (c) Ian F. Darwin 1986, 1987, 1989, 1990, 1991, 1992, 1994, 1995 \n"
+        "Software written by Ian F. Darwin and others; maintained 1994- Christos Zoulas.\0"
+      VALUE "License",          "2-Clause BSD License\0"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END
