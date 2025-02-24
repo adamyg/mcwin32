@@ -4,6 +4,7 @@ mbedtls-2.*/
 mbedtls-3.*/
 ref/
 .unpacked.*
+Makefile.in.*
 Makefile
 *.err
 
