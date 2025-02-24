@@ -1,6 +1,6 @@
-//$Id: libenca.rc,v 1.2 2025/02/24 14:09:04 cvsuser Exp $
+//$Id: enca.rc,v 1.1 2025/02/24 14:09:04 cvsuser Exp $
 //
-//  libenca - resource file
+// enca - resource file
 //
 
 #include <winver.h>
@@ -34,7 +34,7 @@ BEGIN
     BEGIN
       VALUE "FileDescription",  "ENCA - Extremely Naive Charset Analyser\0"
       VALUE "FileVersion",      STRINGIZE(VERSION) "\0"
-      VALUE "InternalName",     "libenca" STRINGIZE(ENCA_VERSION) ".dll\0"
+      VALUE "InternalName",     "enca.exe\0"
       VALUE "OriginalFilename", "enca\0"
       VALUE "ProductVersion",   "mcwin32 - " VERSION "\0"
       VALUE "LegalCopyright",  
