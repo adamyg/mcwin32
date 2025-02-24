@@ -225,6 +225,9 @@ CWARN+=		-Wno-sign-compare -Wno-missing-prototypes
 CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function -Wno-unused-label
 CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
 endif
+ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+CWARN+=		-wcd=118 -wcd=135
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 LDDEBUG=	@LDDEBUG@
