@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.47 2025/03/06 17:15:29 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.48 2025/03/06 17:39:04 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -40,8 +40,8 @@ __CPRAGMA_ONCE
 #if (_MSC_VER != 1900)                          /* MSVC 19/2015 */
 #if (_MSC_VER <  1910 || _MSC_VER > 1916)       /* MSVC 2017: 19.10 .. 16 */
 #if (_MSC_VER > 1929)                           /* MSVC 2019: 19.20 .. 29 */
-#if (_MSC_VER > 1942)                           /* MSVC 2022: 19.30 .. 42 */
-#error unistd.h: untested MSVC Version (2005 -- 2022 19.42)
+#if (_MSC_VER > 1943)                           /* MSVC 2022: 19.30 .. 43 */
+#error unistd.h: untested MSVC Version (2005 -- 2022 19.43)
 	//see: https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 #endif //2022
 #endif //2019
