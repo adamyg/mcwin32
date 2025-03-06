@@ -1,7 +1,7 @@
 /*
    Handle command line arguments.
 
-   Copyright (C) 2009-2024
+   Copyright (C) 2009-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -35,6 +35,10 @@
 #include "lib/util.h"           /* x_basename() */
 
 #include "src/textconf.h"
+
+#ifdef USE_INTERNAL_EDIT
+#include "editor/edit.h"        /* edit_arg_t */
+#endif
 
 #include "src/args.h"
 
@@ -380,9 +384,11 @@ mc_args_add_usage_info (void)
 
     switch (mc_global.mc_run_mode)
     {
+#ifdef USE_INTERNAL_EDIT
     case MC_RUN_EDITOR:
         s = g_strdup_printf ("%s\n", _("[+lineno] file1[:lineno] [file2[:lineno]...]"));
         break;
+#endif /* USE_INTERNAL_EDIT */
     case MC_RUN_VIEWER:
         s = g_strdup_printf ("%s\n", _("file"));
         break;
@@ -433,8 +439,8 @@ mc_args_add_extended_info_to_help (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static GString *
-mc_args__convert_help_to_syscharset (const gchar * charset, const gchar * error_message_str,
-                                     const gchar * help_str)
+mc_args__convert_help_to_syscharset (const gchar *charset, const gchar *error_message_str,
+                                     const gchar *help_str)
 {
     GString *buffer;
     GIConv conv;
@@ -455,8 +461,7 @@ mc_args__convert_help_to_syscharset (const gchar * charset, const gchar * error_
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-parse_mc_e_argument (const gchar * option_name, const gchar * value, gpointer data,
-                     GError ** mcerror)
+parse_mc_e_argument (const gchar *option_name, const gchar *value, gpointer data, GError **mcerror)
 {
     (void) option_name;
     (void) value;
@@ -472,8 +477,7 @@ parse_mc_e_argument (const gchar * option_name, const gchar * value, gpointer da
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-parse_mc_v_argument (const gchar * option_name, const gchar * value, gpointer data,
-                     GError ** mcerror)
+parse_mc_v_argument (const gchar *option_name, const gchar *value, gpointer data, GError **mcerror)
 {
     (void) option_name;
     (void) value;
@@ -487,48 +491,14 @@ parse_mc_v_argument (const gchar * option_name, const gchar * value, gpointer da
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/**
- * Create mcedit_arg_t object from vfs_path_t object and the line number.
- *
- * @param file_vpath  file path object
- * @param line_number line number. If value is 0, try to restore saved position.
- * @return mcedit_arg_t object
- */
 
-static mcedit_arg_t *
-mcedit_arg_vpath_new (vfs_path_t * file_vpath, long line_number)
-{
-    mcedit_arg_t *arg;
-
-    arg = g_new (mcedit_arg_t, 1);
-    arg->file_vpath = file_vpath;
-    arg->line_number = line_number;
-
-    return arg;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Create mcedit_arg_t object from file name and the line number.
- *
- * @param file_name   file name
- * @param line_number line number. If value is 0, try to restore saved position.
- * @return mcedit_arg_t object
- */
-
-static mcedit_arg_t *
-mcedit_arg_new (const char *file_name, long line_number)
-{
-    return mcedit_arg_vpath_new (vfs_path_from_str (file_name), line_number);
-}
-
-/* --------------------------------------------------------------------------------------------- */
+#ifdef USE_INTERNAL_EDIT
 /**
  * Get list of filenames (and line numbers) from command line, when mc called as editor
  *
  * @param argc count of all arguments
  * @param argv array of strings, contains arguments
- * @return list of mcedit_arg_t objects
+ * @return list of edit_arg_t objects
  */
 
 static GList *
@@ -542,7 +512,7 @@ parse_mcedit_arguments (int argc, char **argv)
     {
         char *tmp;
         char *end, *p;
-        mcedit_arg_t *arg;
+        edit_arg_t *arg;
 
         tmp = argv[i];
 
@@ -595,36 +565,37 @@ parse_mcedit_arguments (int argc, char **argv)
              */
             if (mc_stat (tmp_vpath, &st) == -1 && mc_stat (fname_vpath, &st) != -1)
             {
-                arg = mcedit_arg_vpath_new (fname_vpath, atoi (p));
+                arg = edit_arg_vpath_new (fname_vpath, atoi (p));
                 vfs_path_free (tmp_vpath, TRUE);
             }
             else
             {
-                arg = mcedit_arg_vpath_new (tmp_vpath, 0);
+                arg = edit_arg_vpath_new (tmp_vpath, 0);
                 vfs_path_free (fname_vpath, TRUE);
             }
 
             g_free (fname);
         }
         else
-            arg = mcedit_arg_new (tmp, 0);
+            arg = edit_arg_new (tmp, 0);
 
         flist = g_list_prepend (flist, arg);
     }
 
     if (flist == NULL)
-        flist = g_list_prepend (flist, mcedit_arg_new (NULL, 0));
+        flist = g_list_prepend (flist, edit_arg_new (NULL, 0));
     else if (first_line_number != -1)
     {
         /* overwrite line number for first file */
         GList *l;
 
         l = g_list_last (flist);
-        ((mcedit_arg_t *) l->data)->line_number = first_line_number;
+        ((edit_arg_t *) l->data)->line_number = first_line_number;
     }
 
     return flist;
 }
+#endif /* USE_INTERNAL_EDIT */
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
@@ -637,16 +608,18 @@ mc_setup_run_mode (char **argv)
 
     base = x_basename (argv[0]);
 
-    if (strncmp (base, "mce", 3) == 0 || strcmp (base, "vi") == 0)
-    {
-        /* mce* or vi is link to mc */
-        mc_global.mc_run_mode = MC_RUN_EDITOR;
-    }
-    else if (strncmp (base, "mcv", 3) == 0 || strcmp (base, "view") == 0)
+    if (strncmp (base, "mcv", 3) == 0 || strcmp (base, "view") == 0)
     {
         /* mcv* or view is link to mc */
         mc_global.mc_run_mode = MC_RUN_VIEWER;
     }
+#ifdef USE_INTERNAL_EDIT
+    else if (strncmp (base, "mce", 3) == 0 || strcmp (base, "vi") == 0)
+    {
+        /* mce* or vi is link to mc */
+        mc_global.mc_run_mode = MC_RUN_EDITOR;
+    }
+#endif
 #ifdef USE_DIFF_VIEW
     else if (strncmp (base, "mcd", 3) == 0 || strcmp (base, "diff") == 0)
     {
@@ -656,8 +629,10 @@ mc_setup_run_mode (char **argv)
 #endif /* USE_DIFF_VIEW */
 }
 
+/* --------------------------------------------------------------------------------------------- */
+
 gboolean
-mc_args_parse (int *argc, char ***argv, const char *translation_domain, GError ** mcerror)
+mc_args_parse (int *argc, char ***argv, const char *translation_domain, GError **mcerror)
 {
     const gchar *_system_codepage;
     gboolean ok = TRUE;
@@ -773,7 +748,7 @@ mc_args_show_info (void)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mc_setup_by_args (int argc, char **argv, GError ** mcerror)
+mc_setup_by_args (int argc, char **argv, GError **mcerror)
 {
     char *tmp;
 
@@ -803,8 +778,13 @@ mc_setup_by_args (int argc, char **argv, GError ** mcerror)
     switch (mc_global.mc_run_mode)
     {
     case MC_RUN_EDITOR:
+#ifdef USE_INTERNAL_EDIT
         mc_run_param0 = parse_mcedit_arguments (argc - 1, &argv[1]);
         break;
+#else
+        mc_propagate_error (mcerror, 0, "%s\n", _("MC is built without builtin editor."));
+        return FALSE;
+#endif
 
     case MC_RUN_VIEWER:
         if (tmp == NULL)
@@ -842,20 +822,6 @@ mc_setup_by_args (int argc, char **argv, GError ** mcerror)
     }
 
     return TRUE;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Free the mcedit_arg_t object.
- *
- * @param arg mcedit_arg_t object
- */
-
-void
-mcedit_arg_free (mcedit_arg_t * arg)
-{
-    vfs_path_free (arg->file_vpath, TRUE);
-    g_free (arg);
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.18 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.20 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 pwd() implementation
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.18 2024/01/16 15:17:52 cvsuser 
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -42,6 +41,7 @@ __CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.18 2024/01/16 15:17:52 cvsuser 
 #endif
 
 #include "win32_internal.h"
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <grp.h>
@@ -61,7 +61,7 @@ static unsigned             x_groups_count;
 static unsigned             x_cursor;           /* getgrent cursor */
 static struct group         x_group;
 static struct group        *x_groups;
-static char                 x_buffer[MAX_PATH * 2];
+static char                 x_buffer[WIN32_PATH_MAX * 2];
 
 
 /*
@@ -482,7 +482,7 @@ fill_groups(void)
     DWORD_PTR resume_handle = 0;
     NET_API_STATUS nStatus;
     unsigned cbufsz = 0;
-    char name[MAX_PATH];
+    char name[WIN32_PATH_MAX];
     int nlen;
 
     fill_group();

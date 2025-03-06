@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.16 2024/03/03 07:32:03 cvsuser Exp $
+# $Id: makelib.in,v 1.18 2025/02/16 12:03:54 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -31,7 +31,7 @@
 
 $PACKAGE	= 'mc';
 $PACKAGE_NAME	= 'Midnight Commander WIN32';
-$PACKAGE_VERSION= '4.8.31';
+$PACKAGE_VERSION= '4.8.33';
 
 $PACKAGE_URL	= 'https://github.com/adamyg/mcwin32';
 
@@ -85,6 +85,7 @@ $PACKAGE_FILE	= 'package.h';
 	'.',
 	'libw32',
 	'libregex',
+	#'libregex/new',
 	'libz',
 	'libpcre2',
 	'libmbedtls',
@@ -94,11 +95,56 @@ $PACKAGE_FILE	= 'package.h';
 	'libintl',
 	'libglib',
 	'src/kbtest',
+	'src/coninfo',
 	'diff',
+	'apps',
 	'autoupdater'
 	);
 
 ## Toolchain
+
+sub
+ResolveWINKITx86()
+{
+        my $ProgramFiles = $ENV{"ProgramFiles(x86)"};
+        $ProgramFiles =~ s/\\/\//g;
+
+        my @WINKIT = (                                  # Vista+
+                # https://en.wikipedia.org/wiki/Microsoft_Windows_SDK
+                "${ProgramFiles}/Windows Kits/8.0/Lib/win8/um/x86",
+                "${ProgramFiles}/Windows Kits/8.1/Lib/winv6.3/um/x86",
+                "${ProgramFiles}/Windows Kits/10",
+                "${ProgramFiles}/Windows Kits/11"
+                );
+
+        my @sdks;
+        foreach (@WINKIT) {
+                my $sdk = $_;
+                next if (! -d $sdk);
+
+                if (/\/1[01]$/) {                       # "Lib/10.0.xxxxx.0/um/x86"
+                    my @winsdk10 = glob("'${sdk}/Lib/*/um/x86'");
+                    foreach (@winsdk10) {
+                        next if (! -f "$_/Kernel32.lib");
+                        push @sdks, $_;
+                    }
+
+                } else {
+                    next if (! -f "${sdk}/Kernel32.lib");
+                    push @sdks, $sdk;
+                }
+        }
+
+        die "cannot locate any suitable winsdks\n"
+                if (! scalar @sdks);
+
+        foreach (@sdks) {
+                print "WINKIT:   $_\n";
+        }
+
+        set_winsdk($sdks[0]);
+}
+
 
 sub
 Configure()
@@ -115,7 +161,9 @@ Configure()
 
 		remove_define('WIN32');
 		add_define('HAVE_CONFIG_H');
-		add_define('WIN32_WINNT=0x501');
+		add_define('_WIN32_WINNT=0x501');	# Windows SDK
+		add_define('WINVER=0x501');
+
 		add_define('_CRT_SECURE_NO_WARNINGS');
 		add_define('_CRT_SECURE_NO_DEPRECATE');
 		add_define('_CRT_NONSTDC_NO_DEPRECATE');
@@ -133,7 +181,7 @@ Configure()
 
 		remove_define('WIN32');
 		add_define('HAVE_CONFIG_H');
-		add_define('WIN32_WINNT=0x501');
+		add_define('_WIN32_WINNT=0x501');
 		add_define('__STDC_WANT_LIB_EXT1__');
 
 		add_xinclude('$(ROOT)/libw32');
@@ -149,8 +197,13 @@ Configure()
 
 		remove_define('WIN32');
 		add_define('HAVE_CONFIG_H');
-		add_define('_WIN32_WINNT=0x501');	# Windows SDK
-		add_define('_WIN32_VER=0x501');
+		if ($TOOLCHAIN =~ /64/) {
+			add_define('_WIN32_WINNT=0x601');	# Windows SDK/7
+			add_define('_WIN32_VER=0x601');
+		} else {
+			add_define('_WIN32_WINNT=0x501');	# Windows SDK/XP
+			add_define('_WIN32_VER=0x501');
+		}
 
 		add_xinclude('$(ROOT)/libw32');
 		add_application_library('libw32.a');

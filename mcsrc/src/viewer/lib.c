@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Common finctions (used from some other mcviewer functions)
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -69,7 +69,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_toggle_magic_mode (WView * view)
+mcview_toggle_magic_mode (WView *view)
 {
     char *filename, *command;
     dir_list *dir;
@@ -100,7 +100,7 @@ mcview_toggle_magic_mode (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_toggle_wrap_mode (WView * view)
+mcview_toggle_wrap_mode (WView *view)
 {
     view->mode_flags.wrap = !view->mode_flags.wrap;
     view->dpy_wrap_dirty = TRUE;
@@ -111,7 +111,7 @@ mcview_toggle_wrap_mode (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_toggle_nroff_mode (WView * view)
+mcview_toggle_nroff_mode (WView *view)
 {
     view->mode_flags.nroff = !view->mode_flags.nroff;
     mcview_altered_flags.nroff = TRUE;
@@ -123,7 +123,7 @@ mcview_toggle_nroff_mode (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_toggle_hex_mode (WView * view)
+mcview_toggle_hex_mode (WView *view)
 {
     view->mode_flags.hex = !view->mode_flags.hex;
 
@@ -149,7 +149,7 @@ mcview_toggle_hex_mode (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_init (WView * view)
+mcview_init (WView *view)
 {
     size_t i;
 
@@ -201,7 +201,7 @@ mcview_init (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_done (WView * view)
+mcview_done (WView *view)
 {
     /* Save current file position */
     if (mcview_remember_file_position && view->filename_vpath != NULL)
@@ -261,7 +261,7 @@ mcview_done (WView * view)
 
 #ifdef HAVE_CHARSET
 void
-mcview_set_codeset (WView * view)
+mcview_set_codeset (WView *view)
 {
     const char *cp_id = NULL;
 
@@ -287,7 +287,7 @@ mcview_set_codeset (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_select_encoding (WView * view)
+mcview_select_encoding (WView *view)
 {
     if (do_select_codepage ())
         mcview_set_codeset (view);
@@ -297,7 +297,7 @@ mcview_select_encoding (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_show_error (WView * view, const char *msg)
+mcview_show_error (WView *view, const char *msg)
 {
     if (mcview_is_in_panel (view))
         mcview_set_datasource_string (view, msg);
@@ -311,32 +311,38 @@ mcview_show_error (WView * view, const char *msg)
  */
 
 off_t
-mcview_bol (WView * view, off_t current, off_t limit)
+mcview_bol (WView *view, off_t current, off_t limit)
 {
     int c;
-    off_t filesize;
-    filesize = mcview_get_filesize (view);
+
     if (current <= 0)
         return 0;
+
+    const off_t filesize = mcview_get_filesize (view);
+
     if (current > filesize)
         return filesize;
+
     if (!mcview_get_byte (view, current, &c))
         return current;
+
     if (c == '\n')
     {
         if (!mcview_get_byte (view, current - 1, &c))
             return current;
+
         if (c == '\r')
             current--;
     }
-    while (current > 0 && current > limit)
+
+    for (; current > 0 && current > limit; current--)
     {
         if (!mcview_get_byte (view, current - 1, &c))
             break;
         if (c == '\r' || c == '\n')
             break;
-        current--;
     }
+
     return current;
 }
 
@@ -346,36 +352,34 @@ mcview_bol (WView * view, off_t current, off_t limit)
  */
 
 off_t
-mcview_eol (WView * view, off_t current)
+mcview_eol (WView *view, off_t current)
 {
-    int c, prev_ch = 0;
+    int c;
+    int prev_ch = 0;
 
     if (current < 0)
         return 0;
 
-    while (TRUE)
+    for (; mcview_get_byte (view, current, &c); current++)
     {
-        if (!mcview_get_byte (view, current, &c))
-            break;
         if (c == '\n')
         {
             current++;
             break;
         }
-        else if (prev_ch == '\r')
-        {
+        if (prev_ch == '\r')
             break;
-        }
-        current++;
+
         prev_ch = c;
     }
+
     return current;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-mcview_get_title (const WDialog * h, size_t len)
+mcview_get_title (const WDialog *h, size_t len)
 {
     const WView *view;
     const char *modified;
@@ -399,7 +403,7 @@ mcview_get_title (const WDialog * h, size_t len)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-mcview_calc_percent (WView * view, off_t p)
+mcview_calc_percent (WView *view, off_t p)
 {
     off_t filesize;
     int percent;
@@ -429,7 +433,7 @@ mcview_calc_percent (WView * view, off_t p)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_clear_mode_flags (mcview_mode_flags_t * flags)
+mcview_clear_mode_flags (mcview_mode_flags_t *flags)
 {
     memset (flags, 0, sizeof (*flags));
 }

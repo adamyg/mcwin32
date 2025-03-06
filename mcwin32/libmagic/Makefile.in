@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.14 2023/09/20 16:02:47 cvsuser Exp $
+# $Id: Makefile.in,v 1.15 2025/02/24 11:28:24 cvsuser Exp $
 # libmagic makefile
 #
 #
@@ -29,6 +29,7 @@ RANLIB=		@RANLIB@
 RM=		@RM@
 PERL=		@PERL@
 LIBTOOL=	@LIBTOOL@
+RC=		@RC@
 
 # Configuration
 
@@ -93,7 +94,7 @@ RMFLAGS=	-f
 MAGICLIB=	$(D_LIB)/$(LP)magic_static$(A)
 MAGICDLL=	$(D_LIB)/$(LP)magic.la
 
-MAGICUTIL=	$(D_BIN)/file$(E)
+MAGICUTIL=	$(D_BIN)/mcfile$(E)
 MAGICDB=	$(D_BIN)/magic.mgc
 
 #VERSION=	5.1.1
@@ -107,6 +108,12 @@ MAGICPACKED=	file-$(VERSION).gr.tgz
 MAGICSRC=	./file-$(VERSION)/src
 MAGDIR=		./file-$(VERSION)/magic
 
+VERSION_1	=$(word 1,$(subst ., ,$(VERSION)))
+VERSION_2	=$(word 2,$(subst ., ,$(VERSION)))
+VERSION_3	=$(word 3,$(subst ., ,$(VERSION)))
+ifeq ($(strip $(VERSION_3)),)
+VERSION_3	=0
+endif
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 
 VPATH=		$(MAGICSRC)
@@ -162,10 +169,26 @@ LIBOBJS=\
 DLLOBJS=\
 	$(subst $(O),.lo,$(LIBOBJS))
 
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+DLLOBJS+=	$(D_OBJ)/libmagic_res.o
+else
+DLLOBJS+=	$(D_OBJ)/libmagic.res
+endif
+endif
+
 UTILOBJS=\
 	$(D_OBJ)/file$(O)		\
 	$(D_OBJ)/getopt_long$(O)	\
 	$(D_OBJ)/getline$(O)
+
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+UTILOBJS+=	$(D_OBJ)/file_res.o
+else
+UTILOBJS+=	$(D_OBJ)/file.res
+endif
+endif
 
 XCLEAN+=	$(MAGICDB) magic.mgc
 OBJS=		$(LIBOBJS) $(DLLOBJS) $(UTILOBJS)
@@ -257,5 +280,13 @@ $(D_OBJ)/%$(O):		%$(C)
 
 $(D_OBJ)/%.lo:		%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -D_CRT_SECURE_NO_DEPRECATE -o $@ -c $<
+
+RCEXTRA		= -DMAGIC_VERSION=$(VERSION) -DMAGIC_VERSION_1=$(VERSION_1) -DMAGIC_VERSION_2=$(VERSION_2) -DMAGIC_VERSION_3=$(VERSION_3)
+
+$(D_OBJ)/%.res:		%.rc
+		$(RC) $(RCEXTRA) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) $(RCEXTRA) -o $@ $<
 
 #end

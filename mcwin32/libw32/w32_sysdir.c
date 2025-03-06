@@ -1,18 +1,17 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.12 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sysdir_c,"$Id: w32_sysdir.c,v 1.14 2025/03/06 16:59:47 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 interface support
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -77,7 +76,7 @@ LIBW32_API int
 w32_getsysdirA(int id, char *buf, int maxlen)
 {
     char t_path[ MAX_PATH ], *path = buf;
-    HRESULT hres;
+    BOOL ret;
     int len;
 
     if (NULL == buf || maxlen < 4 ||
@@ -86,8 +85,8 @@ w32_getsysdirA(int id, char *buf, int maxlen)
     }
 
     if (maxlen < MAX_PATH) path = t_path;
-    hres = SHGetSpecialFolderPathA(NULL, path, id, FALSE);
-    if (SUCCEEDED(hres)) {
+    ret = SHGetSpecialFolderPathA(NULL, path, id, FALSE);
+    if (ret) {
         len = (int)strlen(path);
         if (path == buf) {                      // direct
             return len;
@@ -104,7 +103,7 @@ LIBW32_API int
 w32_getsysdirW(int id, wchar_t *buf, int maxlen)
 {
     wchar_t t_path[ MAX_PATH ], *path = buf;
-    HRESULT hres;
+    BOOL ret;
     int len;
 
     if (NULL == buf || maxlen < 4 ||
@@ -113,8 +112,8 @@ w32_getsysdirW(int id, wchar_t *buf, int maxlen)
     }
 
     if (maxlen < MAX_PATH) path = t_path;
-    hres = SHGetSpecialFolderPathW(NULL, path, id, FALSE);
-    if (SUCCEEDED(hres)) {
+    ret = SHGetSpecialFolderPathW(NULL, path, id, FALSE);
+    if (ret) {
         len = (int)wcslen(path);
         if (path == buf) {                      // direct
             return len;

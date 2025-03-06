@@ -2,7 +2,7 @@
    File highlight plugin.
    Interface functions
 
-   Copyright (C) 2009-2024
+   Copyright (C) 2009-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -63,7 +63,7 @@ mc_fhl_filter_free (gpointer data)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mc_fhl_array_free (mc_fhl_t * fhl)
+mc_fhl_array_free (mc_fhl_t *fhl)
 {
     if (fhl->filters != NULL)
     {
@@ -104,7 +104,7 @@ mc_fhl_new (gboolean need_auto_fill)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mc_fhl_free (mc_fhl_t ** fhl)
+mc_fhl_free (mc_fhl_t **fhl)
 {
     if (fhl == NULL || *fhl == NULL)
         return;
@@ -117,7 +117,7 @@ mc_fhl_free (mc_fhl_t ** fhl)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mc_fhl_clear (mc_fhl_t * fhl)
+mc_fhl_clear (mc_fhl_t *fhl)
 {
     if (fhl != NULL)
     {

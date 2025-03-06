@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.19 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.21 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 pwd(2) implementation
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_pwd_c,"$Id: w32_pwd.c,v 1.19 2024/01/16 15:17:52 cvsuser E
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -64,7 +63,7 @@ static unsigned             x_passwds_count;
 static int                  x_cursor;           /* getpwent cursor */
 static struct passwd       *x_passwds;
 static struct passwd        x_passwd;
-static char                 x_buffer[MAX_PATH * 5];
+static char                 x_buffer[WIN32_PATH_MAX * 2];
 
 
 /*
@@ -499,7 +498,7 @@ fill_passwds(void)
     DWORD resume_handle = 0;
     NET_API_STATUS nStatus;
     unsigned cbufsz = 0;
-    char name[MAX_PATH];
+    char name[WIN32_PATH_MAX];
     int nlen;
 
     fill_passwd();

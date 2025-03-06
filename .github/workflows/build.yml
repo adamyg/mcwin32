@@ -104,7 +104,6 @@ jobs:
         path: mcwin32/bin.${{ matrix.config.toolversion }}/release/*
 
     - name: Installer
-      if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
@@ -114,7 +113,6 @@ jobs:
         "%programfiles(x86)%\Inno Setup 5\ISCC" -DBUILD_INFO=1 -DBUILD_TYPE=release ".\releases\mc-inno-setup.iss"
 
     - name: Release artifacts
-      if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')
       uses: softprops/action-gh-release@v1
       with:
         files: ./mcwin32/releases/mcwin32-build*-setup.exe

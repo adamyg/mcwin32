@@ -1,7 +1,7 @@
 /*
    Directory hotlist -- for the Midnight Commander
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -167,8 +167,7 @@ static struct
     const char *text;
     int type;
     widget_pos_flags_t pos_flags;
-} hotlist_but[] =
-{
+} hotlist_but[] = {
     /* *INDENT-OFF* */
     { B_ENTER, DEFPUSH_BUTTON, 0, 0, 0, N_("Change &to"),
             LIST_HOTLIST | LIST_VFSLIST | LIST_MOVELIST, WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
@@ -268,23 +267,19 @@ update_path_name (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-fill_listbox (WListbox * list)
+fill_listbox (WListbox *list)
 {
     struct hotlist *current;
-    GString *buff;
-
-    buff = g_string_new ("");
 
     for (current = current_group->head; current != NULL; current = current->next)
         switch (current->type)
         {
         case HL_TYPE_GROUP:
             {
-                /* buff clean up */
-                g_string_truncate (buff, 0);
-                g_string_append (buff, "->");
-                g_string_append (buff, current->label);
-                listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, buff->str, current, FALSE);
+                char *lbl;
+
+                lbl = g_strconcat ("->", current->label, (char *) NULL);
+                listbox_add_item_take (list, LISTBOX_APPEND_AT_END, 0, lbl, current, FALSE);
             }
             break;
         case HL_TYPE_DOTDOT:
@@ -294,8 +289,6 @@ fill_listbox (WListbox * list)
         default:
             break;
         }
-
-    g_string_free (buff, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -482,7 +475,7 @@ hotlist_run_cmd (int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-hotlist_button_callback (WButton * button, int action)
+hotlist_button_callback (WButton *button, int action)
 {
     int ret;
 
@@ -495,7 +488,7 @@ hotlist_button_callback (WButton * button, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static inline cb_ret_t
-hotlist_handle_key (WDialog * h, int key)
+hotlist_handle_key (WDialog *h, int key)
 {
     switch (key)
     {
@@ -564,7 +557,7 @@ hotlist_handle_key (WDialog * h, int key)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-hotlist_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+hotlist_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     WDialog *h = DIALOG (w);
 
@@ -627,7 +620,7 @@ hotlist_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
 /* --------------------------------------------------------------------------------------------- */
 
 static lcback_ret_t
-hotlist_listbox_callback (WListbox * list)
+hotlist_listbox_callback (WListbox *list)
 {
     WDialog *dlg = DIALOG (WIDGET (list)->owner);
 
@@ -988,8 +981,7 @@ add2hotlist (char *label, char *directory, enum HotListType type, listbox_append
             char *lbl;
 
             lbl = g_strconcat ("->", new->label, (char *) NULL);
-            listbox_add_item (l_hotlist, pos, 0, lbl, new, FALSE);
-            g_free (lbl);
+            listbox_add_item_take (l_hotlist, pos, 0, lbl, new, FALSE);
         }
         else
             listbox_add_item (l_hotlist, pos, 0, new->label, new, FALSE);
@@ -1003,7 +995,7 @@ add2hotlist (char *label, char *directory, enum HotListType type, listbox_append
 
 static int
 add_new_entry_input (const char *header, const char *text1, const char *text2,
-                     const char *help, char **r1, char **r2)
+                     const char *help, const char *def_text, char **r1, char **r2)
 {
 #if defined(WIN32)  //WIN32, quick
     quick_widget_t quick_widgets[8] = {0},
@@ -1011,10 +1003,10 @@ add_new_entry_input (const char *header, const char *text1, const char *text2,
 #else
     quick_widget_t quick_widgets[] = {
         /* *INDENT-OFF* */
-        QUICK_LABELED_INPUT (text1, input_label_above, *r1, "input-lbl", r1, NULL,
+        QUICK_LABELED_INPUT (text1, input_label_above, def_text, "input-lbl", r1, NULL,
                              FALSE, FALSE, INPUT_COMPLETE_NONE),
         QUICK_SEPARATOR (FALSE),
-        QUICK_LABELED_INPUT (text2, input_label_above, *r2, "input-lbl", r2, NULL,
+        QUICK_LABELED_INPUT (text2, input_label_above, def_text, "input-lbl", r2, NULL,
                              FALSE, FALSE, INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD),
         QUICK_START_BUTTONS (TRUE, TRUE),
             QUICK_BUTTON (N_("&Append"), B_APPEND, NULL, NULL),
@@ -1032,15 +1024,13 @@ add_new_entry_input (const char *header, const char *text1, const char *text2,
         quick_widgets, NULL, NULL
     );
 
-    int ret;
-
 #if defined(WIN32)  //WIN32, quick
     qc = XQUICK_LABELED_INPUT (qc,
-                                text1, input_label_above, *r1, "input-lbl", r1, NULL,
+                                text1, input_label_above, def_text, "input-lbl", r1, NULL,
                                 FALSE, FALSE, INPUT_COMPLETE_NONE);
     qc = XQUICK_SEPARATOR (qc, FALSE);
     qc = XQUICK_LABELED_INPUT (qc,
-                                text2, input_label_above, *r2, "input-lbl", r2, NULL,
+                                text2, input_label_above, def_text, "input-lbl", r2, NULL,
                                 FALSE, FALSE, INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD);
     qc = XQUICK_START_BUTTONS (qc, TRUE, TRUE);
     qc =      XQUICK_BUTTON (qc, N_("&Append"), B_APPEND, NULL, NULL);
@@ -1050,29 +1040,26 @@ add_new_entry_input (const char *header, const char *text1, const char *text2,
     assert(qc == (quick_widgets + (sizeof(quick_widgets)/sizeof(quick_widgets[0]))));
 #endif
 
-    ret = quick_dialog (&qdlg);
-
-    return (ret != B_CANCEL) ? ret : 0;
+    return quick_dialog (&qdlg);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-add_new_entry_cmd (WPanel * panel)
+add_new_entry_cmd (WPanel *panel)
 {
-    char *title, *url, *to_free;
+    char *def_text;
+    char *title = NULL;
+    char *url = NULL;
     int ret;
 
     /* Take current directory as default value for input fields */
-    to_free = title = url = vfs_path_to_str_flags (panel->cwd_vpath, 0, VPF_STRIP_PASSWORD);
-
+    def_text = vfs_path_to_str_flags (panel->cwd_vpath, 0, VPF_STRIP_PASSWORD);
     ret = add_new_entry_input (_("New hotlist entry"), _("Directory label:"),
-                               _("Directory path:"), "[Hotlist]", &title, &url);
-    g_free (to_free);
+                               _("Directory path:"), "[Hotlist]", def_text, &title, &url);
+    g_free (def_text);
 
-    if (ret == 0)
-        return;
-    if (title == NULL || *title == '\0' || url == NULL || *url == '\0')
+    if (ret == B_CANCEL || title == NULL || *title == '\0' || url == NULL || *url == '\0')
     {
         g_free (title);
         g_free (url);
@@ -1638,7 +1625,7 @@ add_dotdot_to_list (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-add2hotlist_cmd (WPanel * panel)
+add2hotlist_cmd (WPanel *panel)
 {
     char *lc_prompt;
     const char *cp = N_("Label for \"%s\":");
@@ -1675,7 +1662,7 @@ add2hotlist_cmd (WPanel * panel)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-hotlist_show (hotlist_t list_type, WPanel * panel)
+hotlist_show (hotlist_t list_type, WPanel *panel)
 {
     char *target = NULL;
     int res;

@@ -1,7 +1,7 @@
 /*
    lib/vfs - test vfs_parse_ls_lga() functionality
 
-   Copyright (C) 2011-2024
+   Copyright (C) 2011-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -36,10 +36,10 @@
 #include "src/vfs/local/local.c"
 
 
-struct vfs_s_subclass test_subclass1;
+static struct vfs_s_subclass test_subclass1;
 static struct vfs_class *vfs_test_ops1 = VFS_CLASS (&test_subclass1);
 
-struct vfs_s_entry *vfs_root_entry;
+static struct vfs_s_entry *vfs_root_entry;
 static struct vfs_s_inode *vfs_root_inode;
 static struct vfs_s_super *vfs_test_super;
 
@@ -106,10 +106,7 @@ message (int flags, const char *title, const char *text, ...)
 static void
 fill_stat_struct (struct stat *etalon_stat, int iterator)
 {
-
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-    etalon_stat->st_atim.tv_nsec = etalon_stat->st_mtim.tv_nsec = etalon_stat->st_ctim.tv_nsec = 0;
-#endif
+    vfs_zero_stat_times (etalon_stat);
 
     switch (iterator)
     {

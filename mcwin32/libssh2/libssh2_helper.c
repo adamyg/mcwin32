@@ -1,4 +1,4 @@
-//$Id: libssh2_helper.c,v 1.2 2024/03/29 13:22:24 cvsuser Exp $
+//$Id: libssh2_helper.c,v 1.3 2025/02/15 18:27:32 cvsuser Exp $
 //
 //  libssh2 support
 //
@@ -6,6 +6,7 @@
 #define  LIBSSH2_LIBRARY
 #include <libssh2_helper.h>
 
+#include <mbedtls/version.h>
 
 #if defined(_MSC_VER) || defined(__WATCOMC__)
 #pragma comment(lib, "BCrypt.lib") // BCryptGenRandom(), +3.5.0
@@ -30,7 +31,10 @@ libssh2_helper_engine(void)
     return "openssl";
     
 #elif defined(LIBSSH2_MBEDTLS)
-    return "mbedtls";
+    static char string[32];
+    if (string[0] == 0)
+        mbedtls_version_get_string_full(string); //18 bytes
+    return (string[0] ? string : "mbedtls");
     
 #elif defined(LIBSSH2_WINCNG)
     return "wincng";

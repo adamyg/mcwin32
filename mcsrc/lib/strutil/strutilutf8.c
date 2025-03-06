@@ -1,7 +1,7 @@
 /*
    UTF-8 strings utilities
 
-   Copyright (C) 2007-2024
+   Copyright (C) 2007-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -80,7 +80,7 @@ str_unichar_iscombiningmark (gunichar uni)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-str_utf8_insert_replace_char (GString * buffer)
+str_utf8_insert_replace_char (GString *buffer)
 {
     g_string_append (buffer, replch);
 }
@@ -277,7 +277,7 @@ str_utf8_cprev_noncomb_char (const char **text, const char *begin)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-str_utf8_toupper (const char *text, char **out, size_t * remain)
+str_utf8_toupper (const char *text, char **out, size_t *remain)
 {
     gunichar uni;
     size_t left;
@@ -300,7 +300,7 @@ str_utf8_toupper (const char *text, char **out, size_t * remain)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-str_utf8_tolower (const char *text, char **out, size_t * remain)
+str_utf8_tolower (const char *text, char **out, size_t *remain)
 {
     gunichar uni;
     size_t left;
@@ -398,7 +398,7 @@ str_utf8_length_noncomb (const char *text)
 
 #if 0
 static void
-str_utf8_questmark_sustb (char **string, size_t * left, GString * buffer)
+str_utf8_questmark_sustb (char **string, size_t *left, GString *buffer)
 {
     char *next;
 
@@ -412,7 +412,7 @@ str_utf8_questmark_sustb (char **string, size_t * left, GString * buffer)
 /* --------------------------------------------------------------------------------------------- */
 
 static gchar *
-str_utf8_conv_gerror_message (GError * mcerror, const char *def_msg)
+str_utf8_conv_gerror_message (GError *mcerror, const char *def_msg)
 {
     if (mcerror != NULL)
         return g_strdup (mcerror->message);
@@ -423,7 +423,7 @@ str_utf8_conv_gerror_message (GError * mcerror, const char *def_msg)
 /* --------------------------------------------------------------------------------------------- */
 
 static estr_t
-str_utf8_vfs_convert_to (GIConv coder, const char *string, int size, GString * buffer)
+str_utf8_vfs_convert_to (GIConv coder, const char *string, int size, GString *buffer)
 {
     estr_t result = ESTR_SUCCESS;
 
@@ -495,10 +495,13 @@ str_utf8_make_make_term_form (const char *text, size_t length)
         }
         else
         {
+            size_t repl_len;
+
             text++;
             /*actual[0] = '?'; */
-            memcpy (actual, replch, strlen (replch));
-            actual += strlen (replch);
+            repl_len = strlen (replch);
+            memcpy (actual, replch, repl_len);
+            actual += repl_len;
             result.width++;
         }
 
@@ -989,14 +992,23 @@ str_utf8_release_search_needle (char *needle, gboolean case_sen)
 static const char *
 str_utf8_search_first (const char *text, const char *search, gboolean case_sen)
 {
-    char *fold_text;
     char *deco_text;
     const char *match;
     const char *result = NULL;
-    const char *m;
+    size_t search_len;
 
-    fold_text = case_sen ? (char *) text : g_utf8_casefold (text, -1);
-    deco_text = g_utf8_normalize (fold_text, -1, G_NORMALIZE_ALL);
+    if (case_sen)
+        deco_text = g_utf8_normalize (text, -1, G_NORMALIZE_ALL);
+    else
+    {
+        char *fold_text;
+
+        fold_text = g_utf8_casefold (text, -1);
+        deco_text = g_utf8_normalize (fold_text, -1, G_NORMALIZE_ALL);
+        g_free (fold_text);
+    }
+
+    search_len = strlen (search);
 
     match = deco_text;
     do
@@ -1005,10 +1017,11 @@ str_utf8_search_first (const char *text, const char *search, gboolean case_sen)
         if (match != NULL)
         {
             if ((!str_utf8_iscombiningmark (match) || (match == deco_text)) &&
-                !str_utf8_iscombiningmark (match + strlen (search)))
+                !str_utf8_iscombiningmark (match + search_len))
             {
+                const char *m = deco_text;
+
                 result = text;
-                m = deco_text;
                 while (m < match)
                 {
                     str_utf8_cnext_noncomb_char (&m);
@@ -1022,8 +1035,6 @@ str_utf8_search_first (const char *text, const char *search, gboolean case_sen)
     while (match != NULL && result == NULL);
 
     g_free (deco_text);
-    if (!case_sen)
-        g_free (fold_text);
 
     return result;
 }
@@ -1033,14 +1044,23 @@ str_utf8_search_first (const char *text, const char *search, gboolean case_sen)
 static const char *
 str_utf8_search_last (const char *text, const char *search, gboolean case_sen)
 {
-    char *fold_text;
     char *deco_text;
     char *match;
     const char *result = NULL;
-    const char *m;
+    size_t search_len;
 
-    fold_text = case_sen ? (char *) text : g_utf8_casefold (text, -1);
-    deco_text = g_utf8_normalize (fold_text, -1, G_NORMALIZE_ALL);
+    if (case_sen)
+        deco_text = g_utf8_normalize (text, -1, G_NORMALIZE_ALL);
+    else
+    {
+        char *fold_text;
+
+        fold_text = g_utf8_casefold (text, -1);
+        deco_text = g_utf8_normalize (fold_text, -1, G_NORMALIZE_ALL);
+        g_free (fold_text);
+    }
+
+    search_len = strlen (search);
 
     do
     {
@@ -1048,10 +1068,11 @@ str_utf8_search_last (const char *text, const char *search, gboolean case_sen)
         if (match != NULL)
         {
             if ((!str_utf8_iscombiningmark (match) || (match == deco_text)) &&
-                !str_utf8_iscombiningmark (match + strlen (search)))
+                !str_utf8_iscombiningmark (match + search_len))
             {
+                const char *m = deco_text;
+
                 result = text;
-                m = deco_text;
                 while (m < match)
                 {
                     str_utf8_cnext_noncomb_char (&m);
@@ -1065,8 +1086,6 @@ str_utf8_search_last (const char *text, const char *search, gboolean case_sen)
     while (match != NULL && result == NULL);
 
     g_free (deco_text);
-    if (!case_sen)
-        g_free (fold_text);
 
     return result;
 }
@@ -1346,7 +1365,7 @@ str_utf8_caseprefix (const char *text, const char *prefix)
 
 static char *
 str_utf8_create_key_gen (const char *text, gboolean case_sen,
-                         gchar * (*keygen) (const gchar * text, gssize size))
+                         gchar *(*keygen) (const gchar *text, gssize size))
 {
     char *result;
 

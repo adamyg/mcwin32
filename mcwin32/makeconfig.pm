@@ -1,10 +1,10 @@
-# $Id: makeconfig.pm,v 1.6 2022/06/14 02:20:38 cvsuser Exp $
+# $Id: makeconfig.pm,v 1.7 2025/02/13 17:51:35 cvsuser Exp $
 # Makefile generation under Win32.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
 #
 #
-# Copyright (c) 2020 - 2022, Adam Young.
+# Copyright (c) 2020 - 2025, Adam Young.
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.
@@ -59,6 +59,7 @@ our $CONFIG_FILE    = 'w32config.h';
 our $TOOLCHAIN      = undef;
 
 our @MAKEFILES      = ();                       # local makefiles; build order
+our @CONTRIBEXTRA   = ();
 
 our @LIBRARIES      = ();                       # local libraries -l<xxx> lib<xxx>.lib
 our @LIBRARIES2     = ();                       # local libraries -l<xxx> xxx.lib
@@ -321,6 +322,7 @@ sub __ExportConfigurations
     $self->{LIBRARIES2}     = \@LIBRARIES2;
     $self->{TESTLIBRARIES}  = \@TESTLIBRARIES;
     $self->{OPTLIBRARIES}   = \@OPTLIBRARIES;
+    $self->{CONTRIBEXTRA}   = \@CONTRIBEXTRA;
 
     $$x_tokens{PACKAGE_VERSION} = $PACKAGE_VERSION;
     $$x_tokens{PACKAGE_STRING} = $PACKAGE_NAME . ' ' . $PACKAGE_VERSION;

@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Function for hex view
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -82,7 +82,7 @@ static const char hex_char[] = "0123456789ABCDEF";
  */
 
 static mark_t
-mcview_hex_calculate_boldflag (WView * view, off_t from, struct hexedit_change_node *curr,
+mcview_hex_calculate_boldflag (WView *view, off_t from, struct hexedit_change_node *curr,
                                gboolean force_changed)
 {
     return (from == view->hex_cursor) ? MARK_CURSOR
@@ -95,7 +95,7 @@ mcview_hex_calculate_boldflag (WView * view, off_t from, struct hexedit_change_n
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_display_hex (WView * view)
+mcview_display_hex (WView *view)
 {
     const WRect *r = &view->data_area;
     int ngroups = view->bytes_per_line / 4;
@@ -120,8 +120,11 @@ mcview_display_hex (WView * view)
 
     char hex_buff[10];          /* A temporary buffer for sprintf and mvwaddstr */
 
-    text_start = 8 + 13 * ngroups +
-        ((r->cols < 80) ? 0 : (r->cols == 80) ? (ngroups - 1) : (ngroups - 1 + 1));
+    text_start = 8 + 13 * ngroups;
+    if (r->cols == 80)
+        text_start += ngroups - 1;
+    else if (r->cols > 80)
+        text_start += ngroups;
 
     mcview_display_clean (view);
 
@@ -143,10 +146,8 @@ mcview_display_hex (WView * view)
         }
     }
 #endif /* HAVE_CHARSET */
-    while (curr && (curr->offset < from))
-    {
+    while (curr != NULL && (curr->offset < from))
         curr = curr->next;
-    }
 
     for (; mcview_get_byte (view, from, NULL) && row < r->lines; row++)
     {
@@ -218,9 +219,7 @@ mcview_display_hex (WView * view)
                     /* Determine the state of the current multibyte char */
                     ch = g_utf8_get_char_validated (utf8buf, -1);
                     if (ch == -1 || ch == -2)
-                    {
                         ch = '.';
-                    }
                     else
                     {
                         gchar *next_ch;
@@ -279,12 +278,12 @@ mcview_display_hex (WView * view)
             if (col < r->cols)
             {
                 tty_print_char (hex_char[c / 16]);
-                col += 1;
+                col++;
             }
             if (col < r->cols)
             {
                 tty_print_char (hex_char[c % 16]);
-                col += 1;
+                col++;
             }
 
             /* Print the separator */
@@ -294,7 +293,7 @@ mcview_display_hex (WView * view)
                 if (col < r->cols)
                 {
                     tty_print_char (' ');
-                    col += 1;
+                    col++;
                 }
 
                 /* After every four bytes, print a group separator */
@@ -303,12 +302,12 @@ mcview_display_hex (WView * view)
                     if (view->data_area.cols >= 80 && col < r->cols)
                     {
                         tty_print_one_vline (TRUE);
-                        col += 1;
+                        col++;
                     }
                     if (col < r->cols)
                     {
                         tty_print_char (' ');
-                        col += 1;
+                        col++;
                     }
                 }
             }
@@ -326,9 +325,7 @@ mcview_display_hex (WView * view)
             if (mc_global.utf8_display)
             {
                 if (!view->utf8)
-                {
                     c = convert_from_8bit_to_utf_c ((unsigned char) c, view->converter);
-                }
                 if (!g_unichar_isprint (c))
                     c = '.';
             }
@@ -376,7 +373,7 @@ mcview_display_hex (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_hexedit_save_changes (WView * view)
+mcview_hexedit_save_changes (WView *view)
 {
     int answer = 0;
 
@@ -412,7 +409,7 @@ mcview_hexedit_save_changes (WView * view)
             view->change_list = NULL;
 
             if (view->locked)
-                view->locked = unlock_file (view->filename_vpath);
+                view->locked = unlock_file (view->filename_vpath) != 0;
 
             if (mc_close (fp) == -1)
                 message (D_ERROR, _("Save file"),
@@ -437,7 +434,7 @@ mcview_hexedit_save_changes (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_toggle_hexedit_mode (WView * view)
+mcview_toggle_hexedit_mode (WView *view)
 {
     view->hexedit_mode = !view->hexedit_mode;
     view->dpy_bbar_dirty = TRUE;
@@ -447,7 +444,7 @@ mcview_toggle_hexedit_mode (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_hexedit_free_change_list (WView * view)
+mcview_hexedit_free_change_list (WView *view)
 {
     struct hexedit_change_node *curr, *next;
 
@@ -459,7 +456,7 @@ mcview_hexedit_free_change_list (WView * view)
     view->change_list = NULL;
 
     if (view->locked)
-        view->locked = unlock_file (view->filename_vpath);
+        view->locked = unlock_file (view->filename_vpath) != 0;
 
     view->dirty++;
 }

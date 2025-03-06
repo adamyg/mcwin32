@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.19 2024/03/29 11:55:58 cvsuser Exp $
+# $Id: Makefile.in,v 1.20 2025/01/31 17:12:09 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
-# Copyright (c) 2017 - 2024 Adam Young.
+# Copyright (c) 2017 - 2025 Adam Young.
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.
@@ -82,6 +82,9 @@ CFLAGS=		@CFLAGS@
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 CFLAGS+=	-mpclmul -msse2 -maes
 endif
+ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+CFLAGS+=	-wcd=124 -wcd=136 -wcd=200 -wcd=201 -wcd=202
+endif
 CWARN=		@CWARN@
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
@@ -118,7 +121,8 @@ MBEDX509DLL=	$(D_LIB)/$(LP)mbedx509.la
 MBEDTLSLIB=	$(D_LIB)/$(LP)mbedtls_static$(A)
 MBEDTLSDLL=	$(D_LIB)/$(LP)mbedtls.la
 
-VERSION=	3.5.2
+##VERSION=	3.5.2
+VERSION=	3.6.2
 VERSION_1	=$(word 1,$(subst ., ,$(VERSION)))
 VERSION_2	=$(word 2,$(subst ., ,$(VERSION)))
 VERSION_3	=$(word 3,$(subst ., ,$(VERSION)))
@@ -225,6 +229,12 @@ CRYPTO_SOURCES+=\
 	aesni.c
 endif
 
+ifeq ("$(VERSION)","3.6.2")
+CRYPTO_SOURCES+=\
+	block_cipher.c				\
+	pk_ecc.c
+endif
+
 X509_SOURCES=\
 	pkcs7.c					\
 	x509.c					\
@@ -263,8 +273,8 @@ CRYPTO_DLLOBJS:=\
 	$(subst $(O),.lo,$(CRYPTO_LIBOBJS))	\
 	$(D_OBJ)/crypto_globals.lo
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
-CRYPTO_LIBOBJS+=$(D_OBJ)/owc_aesni.obj
-CRYPTO_DLLOBJS+=$(D_OBJ)/owc_aesni.obj
+CRYPTO_LIBOBJS+=$(D_OBJ)/owc_aesni_$(VERSION).obj
+CRYPTO_DLLOBJS+=$(D_OBJ)/owc_aesni_$(VERSION).obj
 endif
 ifeq ("win32","@build_os@")
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
@@ -349,8 +359,8 @@ $(MBEDCRYPTOLIB):	$(CRYPTO_LIBOBJS)
 		$(RANLIB) $@
  
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
-$(D_OBJ)/owc_aesni.obj:		owc\aesni.obj
-		@cp owc\aesni.obj $(D_OBJ)\owc_aesni.obj
+$(D_OBJ)/owc_aesni_$(VERSION).obj:	owc\aesni_$(VERSION).obj
+		@cp owc\aesni_$(VERSION).obj $(D_OBJ)\owc_aesni_$(VERSION).obj
 endif
 
 INSTALLED+=	$(D_BIN)/libmbedcrypto.$(VERSION).dll

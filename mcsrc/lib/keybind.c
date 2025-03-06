@@ -1,7 +1,7 @@
 /*
    Definitions of key bindings.
 
-   Copyright (C) 2005-2024
+   Copyright (C) 2005-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -422,7 +422,7 @@ sort_command_names (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-keymap_add (GArray * keymap, long key, long cmd, const char *caption)
+keymap_add (GArray *keymap, long key, long cmd, const char *caption)
 {
     if (key != 0 && cmd != CK_IgnoreKey)
     {
@@ -440,7 +440,7 @@ keymap_add (GArray * keymap, long key, long cmd, const char *caption)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-keybind_cmd_bind (GArray * keymap, const char *keybind, long action)
+keybind_cmd_bind (GArray *keymap, const char *keybind, long action)
 {
     char *caption = NULL;
     long key;
@@ -483,7 +483,7 @@ keybind_lookup_actionname (long action)
 /* --------------------------------------------------------------------------------------------- */
 
 const char *
-keybind_lookup_keymap_shortcut (const global_keymap_t * keymap, long action)
+keybind_lookup_keymap_shortcut (const global_keymap_t *keymap, long action)
 {
     if (keymap != NULL)
     {
@@ -499,7 +499,7 @@ keybind_lookup_keymap_shortcut (const global_keymap_t * keymap, long action)
 /* --------------------------------------------------------------------------------------------- */
 
 long
-keybind_lookup_keymap_command (const global_keymap_t * keymap, long key)
+keybind_lookup_keymap_command (const global_keymap_t *keymap, long key)
 {
     if (keymap != NULL)
     {

@@ -1,7 +1,7 @@
 /*
    Event callbacks initialization
 
-   Copyright (C) 2011-2024
+   Copyright (C) 2011-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -55,7 +55,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-events_init (GError ** mcerror)
+events_init (GError **mcerror)
 {
     /* *INDENT-OFF* */
     static const event_init_t standard_events[] =

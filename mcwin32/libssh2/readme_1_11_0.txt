@@ -55,6 +55,13 @@
                 +                                   size_t /*unsigned long*/ sig_len,
                 -                                    const unsigned char *m, unsigned long m_len)
                 +                                   const unsigned char *m, size_t /*unsigned long*/ m_len)
+                
+              1216:
+              
+                +  /* Force-expose internal mbedTLS function (patch) */
+                +  #if MBEDTLS_VERSION_NUMBER >= 0x03060000
+                +  int mbedtls_pk_load_file(const char *path, unsigned char **buf, size_t *n);
+                +  #endif
 
         src\misc.h:
 

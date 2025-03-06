@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include <unistd.h>
+
 __BEGIN_DECLS
 
 //#if !defined(HAVE_STRNLEN)

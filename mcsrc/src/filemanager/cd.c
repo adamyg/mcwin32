@@ -1,7 +1,7 @@
 /*
    cd_to() function.
 
-   Copyright (C) 1995-2024
+   Copyright (C) 1995-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -36,7 +36,7 @@
 
 #include "lib/global.h"
 #include "lib/vfs/vfs.h"
-#include "lib/strescape.h"      /* strutils_shell_unescape() */
+#include "lib/strutil.h"
 #include "lib/util.h"           /* whitespace() */
 #include "lib/widget.h"         /* message() */
 
@@ -91,9 +91,9 @@ examine_cd (const char *_path)
 
     /* Tilde expansion */
 #if defined(WIN32)
-    path = strutils_shell_unescape_special (_path); //only escape specials
+    path = str_shell_unescape_special (_path); //only escape specials
 #else
-    path = strutils_shell_unescape (_path);
+    path = str_shell_unescape (_path);
 #endif
     path_tilde = tilde_expand (path);
     g_free (path);
@@ -186,13 +186,13 @@ handle_cdpath (const char *path)
 
         cdpath = g_strdup (getenv ("CDPATH"));
         p = cdpath;
-        c = (p == NULL) ? '\0' : PATH_ENV_SEP;
+        c = (p == NULL) ? '\0' : PATH_ENV_SEP; //WIN32
 
-        while (!result && c == PATH_ENV_SEP)
+        while (!result && c == PATH_ENV_SEP) //WIN32
         {
             char *s;
 
-            s = strchr (p, PATH_ENV_SEP);
+            s = strchr (p, PATH_ENV_SEP); //WIN32
             if (s == NULL)
                 s = strchr (p, '\0');
             c = *s;

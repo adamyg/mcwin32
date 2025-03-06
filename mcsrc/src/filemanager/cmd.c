@@ -2,7 +2,7 @@
    Routines invoked by a function key
    They normally operate on the current panel.
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -38,9 +38,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef HAVE_MMAP
-#include <sys/mman.h>
-#endif
 #ifdef ENABLE_VFS_NET
 #include <netdb.h>
 #endif
@@ -67,7 +64,6 @@
 #include "src/setup.h"
 #include "src/execute.h"        /* toggle_panels() */
 #include "src/history.h"
-#include "src/usermenu.h"       /* MC_GLOBAL_MENU */
 #include "src/util.h"           /* check_for_default() */
 
 #include "src/viewer/mcviewer.h"
@@ -80,7 +76,7 @@
 #include "src/diffviewer/ydiff.h"
 #endif
 
-#include "fileopctx.h"
+#include "filegui.h"
 #include "filenot.h"
 #include "hotlist.h"            /* hotlist_show() */
 #include "tree.h"               /* tree_chdir() */
@@ -91,18 +87,13 @@
 #include "boxes.h"              /* cd_box() */
 #include "dir.h"
 #include "cd.h"
+#include "ioblksize.h"          /* IO_BUFSIZE */
 
 #include "cmd.h"                /* Our definitions */
 
 /*** global variables ****************************************************************************/
 
 /*** file scope macro definitions ****************************************************************/
-
-#ifdef HAVE_MMAP
-#ifndef MAP_FILE
-#define MAP_FILE 0
-#endif
-#endif /* HAVE_MMAP */
 
 /*** file scope type declarations ****************************************************************/
 
@@ -129,11 +120,13 @@ static const char *machine_str = N_("Enter machine name (F1 for details):");
  * If @plain_view is TRUE, force internal viewer and raw mode (used for F13).
  */
 static void
-do_view_cmd (WPanel * panel, gboolean plain_view)
+do_view_cmd (WPanel *panel, gboolean plain_view)
 {
     const file_entry_t *fe;
 
     fe = panel_current_entry (panel);
+    if (fe == NULL)
+        return;
 
     /* Directories are viewed by changing to them */
     if (S_ISDIR (fe->st.st_mode) || link_isdir (fe))
@@ -165,7 +158,7 @@ do_view_cmd (WPanel * panel, gboolean plain_view)
 /* --------------------------------------------------------------------------------------------- */
 
 static inline void
-do_edit (const vfs_path_t * what_vpath)
+do_edit (const vfs_path_t *what_vpath)
 {
     edit_file_at_line (what_vpath, use_internal_edit, 0);
 }
@@ -173,7 +166,7 @@ do_edit (const vfs_path_t * what_vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-compare_files (const vfs_path_t * vpath1, const vfs_path_t * vpath2, off_t size)
+compare_files (const vfs_path_t *vpath1, const vfs_path_t *vpath2, off_t size)
 {
     int file1;
     int result = -1;            /* Different by default */
@@ -189,28 +182,8 @@ compare_files (const vfs_path_t * vpath1, const vfs_path_t * vpath2, off_t size)
         file2 = open (vfs_path_as_str (vpath2), O_RDONLY);
         if (file2 >= 0)
         {
-#ifdef HAVE_MMAP
-            char *data1;
-
-            /* Ugly if jungle */
-            data1 = mmap (0, size, PROT_READ, MAP_FILE | MAP_PRIVATE, file1, 0);
-            if (data1 != (char *) -1)
-            {
-                char *data2;
-
-                data2 = mmap (0, size, PROT_READ, MAP_FILE | MAP_PRIVATE, file2, 0);
-                if (data2 != (char *) -1)
-                {
-                    rotate_dash (TRUE);
-                    result = memcmp (data1, data2, size);
-                    munmap (data2, size);
-                }
-                munmap (data1, size);
-            }
-#else
-            /* Don't have mmap() :( Even more ugly :) */
-            char buf1[BUFSIZ], buf2[BUFSIZ];
-            int n1, n2;
+            char buf1[IO_BUFSIZE], buf2[IO_BUFSIZE];
+            ssize_t n1, n2;
 
             rotate_dash (TRUE);
             do
@@ -221,13 +194,13 @@ compare_files (const vfs_path_t * vpath1, const vfs_path_t * vpath2, off_t size)
                     ;
             }
             while (n1 == n2 && n1 == sizeof (buf1) && memcmp (buf1, buf2, sizeof (buf1)) == 0);
-            result = (n1 != n2) || memcmp (buf1, buf2, n1);
-#endif /* !HAVE_MMAP */
+            result = (n1 != n2) || (memcmp (buf1, buf2, n1) != 0);
+            rotate_dash (FALSE);
+
             close (file2);
         }
         close (file1);
     }
-    rotate_dash (FALSE);
 
     return result;
 }
@@ -235,7 +208,7 @@ compare_files (const vfs_path_t * vpath1, const vfs_path_t * vpath2, off_t size)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-compare_dir (WPanel * panel, const WPanel * other, enum CompareMode mode)
+compare_dir (WPanel *panel, const WPanel *other, enum CompareMode mode)
 {
     int i, j;
 
@@ -464,7 +437,7 @@ nice_cd (const char *text, const char *xtext, const char *help,
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-configure_panel_listing (WPanel * p, int list_format, int brief_cols, gboolean use_msformat,
+configure_panel_listing (WPanel *p, int list_format, int brief_cols, gboolean use_msformat,
                          char **user, char **status)
 {
     p->user_mini_status = use_msformat;
@@ -504,7 +477,7 @@ switch_to_listing (int panel_index)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-view_file_at_line (const vfs_path_t * filename_vpath, gboolean plain_view, gboolean internal,
+view_file_at_line (const vfs_path_t *filename_vpath, gboolean plain_view, gboolean internal,
                    long start_line, off_t search_start, off_t search_end)
 {
     gboolean ret = TRUE;
@@ -584,7 +557,7 @@ view_file_at_line (const vfs_path_t * filename_vpath, gboolean plain_view, gbool
  */
 
 gboolean
-view_file (const vfs_path_t * filename_vpath, gboolean plain_view, gboolean internal)
+view_file (const vfs_path_t *filename_vpath, gboolean plain_view, gboolean internal)
 {
     return view_file_at_line (filename_vpath, plain_view, internal, 0, 0, 0);
 }
@@ -594,7 +567,7 @@ view_file (const vfs_path_t * filename_vpath, gboolean plain_view, gboolean inte
 /** Run user's preferred viewer on the current file */
 
 void
-view_cmd (WPanel * panel)
+view_cmd (WPanel *panel)
 {
     do_view_cmd (panel, FALSE);
 }
@@ -603,14 +576,18 @@ view_cmd (WPanel * panel)
 /** Ask for file and run user's preferred viewer on it */
 
 void
-view_file_cmd (const WPanel * panel)
+view_file_cmd (const WPanel *panel)
 {
+    const file_entry_t *fe;
     char *filename;
     vfs_path_t *vpath;
 
+    fe = panel_current_entry (panel);
+    if (fe == NULL)
+        return;
+
     filename =
-        input_expand_dialog (_("View file"), _("Filename:"),
-                             MC_HISTORY_FM_VIEW_FILE, panel_current_entry (panel)->fname->str,
+        input_expand_dialog (_("View file"), _("Filename:"), MC_HISTORY_FM_VIEW_FILE, fe->fname->str,
                              INPUT_COMPLETE_FILENAMES);
     if (filename == NULL)
         return;
@@ -624,7 +601,7 @@ view_file_cmd (const WPanel * panel)
 /* --------------------------------------------------------------------------------------------- */
 /** Run plain internal viewer on the current file */
 void
-view_raw_cmd (WPanel * panel)
+view_raw_cmd (WPanel *panel)
 {
     do_view_cmd (panel, TRUE);
 }
@@ -632,13 +609,21 @@ view_raw_cmd (WPanel * panel)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-view_filtered_cmd (const WPanel * panel)
+view_filtered_cmd (const WPanel *panel)
 {
     char *command;
     const char *initial_command;
 
     if (input_is_empty (cmdline))
-        initial_command = panel_current_entry (panel)->fname->str;
+    {
+        const file_entry_t *fe;
+
+        fe = panel_current_entry (panel);
+        if (fe == NULL)
+            return;
+
+        initial_command = fe->fname->str;
+    }
     else
         initial_command = input_get_ctext (cmdline);
 
@@ -659,12 +644,16 @@ view_filtered_cmd (const WPanel * panel)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_file_at_line (const vfs_path_t * what_vpath, gboolean internal, long start_line)
+edit_file_at_line (const vfs_path_t *what_vpath, gboolean internal, long start_line)
 {
 
 #ifdef USE_INTERNAL_EDIT
     if (internal)
-        edit_file (what_vpath, start_line);
+    {
+        const edit_arg_t arg = { (vfs_path_t *) what_vpath, start_line };
+
+        edit_file (&arg);
+    }
     else
 #endif /* USE_INTERNAL_EDIT */
     {
@@ -696,11 +685,16 @@ edit_file_at_line (const vfs_path_t * what_vpath, gboolean internal, long start_
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_cmd (const WPanel * panel)
+edit_cmd (const WPanel *panel)
 {
+    const file_entry_t *fe;
     vfs_path_t *fname;
 
-    fname = vfs_path_from_str (panel_current_entry (panel)->fname->str);
+    fe = panel_current_entry (panel);
+    if (fe == NULL)
+        return;
+
+    fname = vfs_path_from_str (fe->fname->str);
     if (regex_command (fname, "Edit") == 0)
         do_edit (fname);
     vfs_path_free (fname, TRUE);
@@ -710,11 +704,16 @@ edit_cmd (const WPanel * panel)
 
 #ifdef USE_INTERNAL_EDIT
 void
-edit_cmd_force_internal (const WPanel * panel)
+edit_cmd_force_internal (const WPanel *panel)
 {
+    const file_entry_t *fe;
     vfs_path_t *fname;
 
-    fname = vfs_path_from_str (panel_current_entry (panel)->fname->str);
+    fe = panel_current_entry (panel);
+    if (fe == NULL)
+        return;
+
+    fname = vfs_path_from_str (fe->fname->str);
     if (regex_command (fname, "Edit") == 0)
         edit_file_at_line (fname, TRUE, 1);
     vfs_path_free (fname, TRUE);
@@ -754,13 +753,15 @@ edit_cmd_new (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mkdir_cmd (WPanel * panel)
+mkdir_cmd (WPanel *panel)
 {
     const file_entry_t *fe;
     char *dir;
     const char *name = "";
 
     fe = panel_current_entry (panel);
+    if (fe == NULL)
+        return;
 
     /* If 'on' then automatically fills name with current item name */
     if (auto_fill_mkdir_name && !DIR_IS_DOTDOT (fe->fname->str))
@@ -964,7 +965,7 @@ edit_fhl_cmd (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-hotlist_cmd (WPanel * panel)
+hotlist_cmd (WPanel *panel)
 {
     char *target;
 
@@ -998,7 +999,7 @@ hotlist_cmd (WPanel * panel)
 
 #ifdef ENABLE_VFS
 void
-vfs_list (WPanel * panel)
+vfs_list (WPanel *panel)
 {
     char *target;
     vfs_path_t *target_vpath;
@@ -1080,11 +1081,11 @@ swap_cmd (void)
 void
 link_cmd (link_type_t link_type)
 {
-    const char *filename;
+    const file_entry_t *fe;
 
-    filename = panel_current_entry (current_panel)->fname->str;
-    if (filename != NULL)
-        do_link (link_type, filename);
+    fe = panel_current_entry (current_panel);
+    if (fe != NULL)
+        do_link (link_type, fe->fname->str);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1096,6 +1097,9 @@ edit_symlink_cmd (void)
     const char *p;
 
     fe = panel_current_entry (current_panel);
+    if (fe == NULL)
+        return;
+
     p = fe->fname->str;
 
     if (!S_ISLNK (fe->st.st_mode))
@@ -1168,14 +1172,6 @@ help_cmd (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-void
-user_file_menu_cmd (void)
-{
-    (void) user_menu_cmd (NULL, NULL, -1);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
 #ifdef ENABLE_VFS_FTP
 void
 ftplink_cmd (void)
@@ -1224,7 +1220,7 @@ undelete_cmd (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-quick_cd_cmd (WPanel * panel)
+quick_cd_cmd (WPanel *panel)
 {
     char *p;
 
@@ -1246,12 +1242,13 @@ quick_cd_cmd (WPanel * panel)
  */
 
 void
-smart_dirsize_cmd (WPanel * panel)
+smart_dirsize_cmd (WPanel *panel)
 {
     const file_entry_t *entry;
 
     entry = panel_current_entry (panel);
-    if ((S_ISDIR (entry->st.st_mode) && DIR_IS_DOTDOT (entry->fname->str)) || panel->dirs_marked)
+    if ((entry != NULL && S_ISDIR (entry->st.st_mode) && DIR_IS_DOTDOT (entry->fname->str))
+        || panel->dirs_marked)
         dirsizes_cmd (panel);
     else
         single_dirsize_cmd (panel);
@@ -1260,13 +1257,13 @@ smart_dirsize_cmd (WPanel * panel)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-single_dirsize_cmd (WPanel * panel)
+single_dirsize_cmd (WPanel *panel)
 {
     file_entry_t *entry;
 
     entry = panel_current_entry (panel);
 
-    if (S_ISDIR (entry->st.st_mode) && !DIR_IS_DOTDOT (entry->fname->str))
+    if (entry != NULL && S_ISDIR (entry->st.st_mode) && !DIR_IS_DOTDOT (entry->fname->str))
     {
         size_t dir_count = 0;
         size_t count = 0;
@@ -1305,7 +1302,7 @@ single_dirsize_cmd (WPanel * panel)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-dirsizes_cmd (WPanel * panel)
+dirsizes_cmd (WPanel *panel)
 {
     int i;
     dirsize_status_msg_t dsm;

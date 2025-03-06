@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Callback function for some actions (hotkeys, menu)
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -85,7 +85,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_remove_ext_script (WView * view)
+mcview_remove_ext_script (WView *view)
 {
     if (view->ext_script != NULL)
     {
@@ -97,42 +97,8 @@ mcview_remove_ext_script (WView * view)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Both views */
 static void
-mcview_search (WView * view, gboolean start_search)
-{
-    off_t want_search_start = view->search_start;
-
-    if (start_search)
-    {
-        if (mcview_dialog_search (view))
-        {
-            if (view->mode_flags.hex)
-                want_search_start = view->hex_cursor;
-
-            mcview_do_search (view, want_search_start);
-        }
-    }
-    else
-    {
-        if (view->mode_flags.hex)
-        {
-            if (!mcview_search_options.backwards)
-                want_search_start = view->hex_cursor + 1;
-            else if (view->hex_cursor > 0)
-                want_search_start = view->hex_cursor - 1;
-            else
-                want_search_start = 0;
-        }
-
-        mcview_do_search (view, want_search_start);
-    }
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static void
-mcview_continue_search_cmd (WView * view)
+mcview_continue_search_cmd (WView *view)
 {
     if (view->last_search_string != NULL)
         mcview_search (view, FALSE);
@@ -168,6 +134,7 @@ mcview_hook (void *v)
 {
     WView *view = (WView *) v;
     WPanel *panel;
+    const file_entry_t *fe;
 
     /* If the user is busy typing, wait until he finishes to update the
        screen */
@@ -187,16 +154,20 @@ mcview_hook (void *v)
     else
         return;
 
+    fe = panel_current_entry (panel);
+    if (fe == NULL)
+        return;
+
     mcview_done (view);
     mcview_init (view);
-    mcview_load (view, 0, panel_current_entry (panel)->fname->str, 0, 0, 0);
+    mcview_load (view, 0, fe->fname->str, 0, 0, 0);
     mcview_display (view);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-mcview_handle_editkey (WView * view, int key)
+mcview_handle_editkey (WView *view, int key)
 {
     struct hexedit_change_node *node;
     int byte_val = -1;
@@ -242,7 +213,7 @@ mcview_handle_editkey (WView * view, int key)
     if ((view->filename_vpath != NULL)
         && (*(vfs_path_get_last_path_str (view->filename_vpath)) != '\0')
         && (view->change_list == NULL))
-        view->locked = lock_file (view->filename_vpath);
+        view->locked = lock_file (view->filename_vpath) != 0;
 
     if (node == NULL)
     {
@@ -263,7 +234,7 @@ mcview_handle_editkey (WView * view, int key)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_load_next_prev_init (WView * view)
+mcview_load_next_prev_init (WView *view)
 {
     if (mc_global.mc_run_mode != MC_RUN_VIEWER)
     {
@@ -317,7 +288,7 @@ mcview_load_next_prev_init (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_scan_for_file (WView * view, int direction)
+mcview_scan_for_file (WView *view, int direction)
 {
     int i;
 
@@ -337,7 +308,7 @@ mcview_scan_for_file (WView * view, int direction)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_load_next_prev (WView * view, int direction)
+mcview_load_next_prev (WView *view, int direction)
 {
     dir_list *dir;
     int *dir_idx;
@@ -371,7 +342,7 @@ mcview_load_next_prev (WView * view, int direction)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_load_file_from_history (WView * view)
+mcview_load_file_from_history (WView *view)
 {
     char *filename;
     int action;
@@ -395,7 +366,7 @@ mcview_load_file_from_history (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-mcview_execute_cmd (WView * view, long command)
+mcview_execute_cmd (WView *view, long command)
 {
     int res = MSG_HANDLED;
 
@@ -564,7 +535,7 @@ mcview_execute_cmd (WView * view, long command)
 /* --------------------------------------------------------------------------------------------- */
 
 static long
-mcview_lookup_key (WView * view, int key)
+mcview_lookup_key (WView *view, int key)
 {
     if (view->mode_flags.hex)
         return keybind_lookup_keymap_command (view->hex_keymap, key);
@@ -575,7 +546,7 @@ mcview_lookup_key (WView * view, int key)
 /* --------------------------------------------------------------------------------------------- */
 /** Both views */
 static cb_ret_t
-mcview_handle_key (WView * view, int key)
+mcview_handle_key (WView *view, int key)
 {
     long command;
 
@@ -609,7 +580,7 @@ mcview_handle_key (WView * view, int key)
 /* --------------------------------------------------------------------------------------------- */
 
 static inline void
-mcview_resize (WView * view)
+mcview_resize (WView *view)
 {
     view->dpy_wrap_dirty = TRUE;
     mcview_compute_areas (view);
@@ -619,7 +590,7 @@ mcview_resize (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-mcview_ok_to_quit (WView * view)
+mcview_ok_to_quit (WView *view)
 {
     int r;
 
@@ -660,7 +631,7 @@ mcview_ok_to_quit (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 cb_ret_t
-mcview_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+mcview_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     WView *view = (WView *) w;
     cb_ret_t i;
@@ -748,7 +719,7 @@ mcview_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *
 /* --------------------------------------------------------------------------------------------- */
 
 cb_ret_t
-mcview_dialog_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+mcview_dialog_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     WDialog *h = DIALOG (w);
     WView *view;

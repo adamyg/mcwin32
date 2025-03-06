@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.27 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.29 2025/03/06 16:59:47 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 io functionality.
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -16,7 +16,6 @@ __CPRAGMA_ONCE
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -63,7 +62,7 @@ __CPRAGMA_ONCE
 __BEGIN_DECLS
 
 /*fcntl.h*/
-#if !defined(F_GETFL)   /* match linux definitions */
+#if !defined(F_GETFL)   /* match Linux definitions */
 #define F_GETFL         3       /* get file status flags */
 #define F_SETFL         4       /* set file status flags */
 #endif
@@ -79,9 +78,14 @@ LIBW32_API int          w32_open (const char *path, int, ...);
 LIBW32_API int          w32_openA (const char *path, int, int);
 LIBW32_API int          w32_openW (const wchar_t *path, int, int);
 
+LIBW32_API FILE *       w32_fopen (const char *path, const char *mode);
+LIBW32_API FILE *       w32_fopenA (const char *path, const char *mode);
+LIBW32_API FILE *       w32_fopenW (const wchar_t *path, const wchar_t *mode);
+
 LIBW32_API int          w32_stat (const char *path, struct stat *sb);
 LIBW32_API int          w32_statA (const char *path, struct stat *sb);
 LIBW32_API int          w32_statW (const wchar_t *path, struct stat *sb);
+
 LIBW32_API int          w32_lstat (const char *path, struct stat *sb);
 LIBW32_API int          w32_lstatA (const char *path, struct stat *sb);
 LIBW32_API int          w32_lstatW (const wchar_t *path, struct stat *sb);
@@ -120,9 +124,9 @@ LIBW32_API char *       w32_getcwd (char *buffer, size_t size);
 LIBW32_API char *       w32_getcwdA (char *buffer, size_t size);
 LIBW32_API wchar_t *    w32_getcwdW (wchar_t *buffer, size_t size);
 
-LIBW32_API char *       w32_getcwdd (char drive, char *path, size_t size);
-LIBW32_API char *       w32_getcwddA (char drive, char *path, size_t size);
-LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, size_t size);
+LIBW32_API char *       w32_getdirectory (void);
+LIBW32_API char *       w32_getdirectoryA (void);
+LIBW32_API wchar_t *    w32_getdirectoryW(void);
 
 LIBW32_API int          w32_getdrive (void);
 LIBW32_API int          w32_getsystemdrive (void);
@@ -145,8 +149,9 @@ LIBW32_API int          w32_rmdirW (const wchar_t *path);
 #define SHORTCUT_TRAILING   0x01
 #define SHORTCUT_COMPONENT  0x02
 
-LIBW32_API int          w32_lnkexpandA (const char *name, char *buf, size_t buflen, unsigned flags);
-LIBW32_API int          w32_lnkexpandW (const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags);
+LIBW32_API int          w32_expandlink (const char *name, char* buf, size_t buflen, unsigned flags);
+LIBW32_API int          w32_expandlinkA (const char *name, char *buf, size_t buflen, unsigned flags);
+LIBW32_API int          w32_expandlinkW (const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags);
 
 LIBW32_API const char * w32_strslash (const char *path);
 LIBW32_API const wchar_t *w32_wcsslash (const wchar_t *path);

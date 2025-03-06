@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_unlink_c,"$Id: w32_unlink.c,v 1.14 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_unlink_c, "$Id: w32_unlink.c,v 1.16 2025/03/06 16:59:47 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 unlink() system call.
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_unlink_c,"$Id: w32_unlink.c,v 1.14 2024/01/16 15:17:52 cvs
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -39,6 +38,8 @@ __CIDENT_RCSID(gr_w32_unlink_c,"$Id: w32_unlink.c,v 1.14 2024/01/16 15:17:52 cvs
 
 #include "win32_internal.h"
 #include <unistd.h>
+
+static int UnlinkReturn(DWORD rc);
 
 /*
 //  NAME
@@ -131,23 +132,20 @@ __CIDENT_RCSID(gr_w32_unlink_c,"$Id: w32_unlink.c,v 1.14 2024/01/16 15:17:52 cvs
 //          The entry to be unlinked is the last directory entry to a pure procedure
 //          (shared text) file that is being executed.
 */
+
 int
 w32_unlink(const char *path)
 {
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
-        wchar_t wpath[WIN32_PATH_MAX];
+        if (path) {
+            wchar_t wpath[WIN32_PATH_MAX];
 
-        if (NULL == path) {
-            errno = EFAULT;
+            if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+                return w32_unlinkW(wpath);
+            }
             return -1;
         }
-
-        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-            return w32_unlinkW(wpath);
-        }
-
-        return -1;
     }
 #endif  //UTF8FILENAMES
 
@@ -160,18 +158,23 @@ w32_unlinkA(const char *path)
 {
     int ret = -1;                               // success=0, otherwise=-1
 
-    if (!path) {
+    if (NULL == path) {
         errno = EFAULT;
 
     } else if (!*path) {
         errno = ENOENT;
 
     } else {
+        const char *expath;
         DWORD attrs, rc = 0;                    // completion code
 
 #ifndef ERROR_DIRECTORY_NOT_SUPPORTED
 #define ERROR_DIRECTORY_NOT_SUPPORTED 336L      // An operation is not supported on a directory.
 #endif
+
+        if (NULL != (expath = w32_extendedpathA(path))) {
+            path = expath;                      // abs-path to expanded
+        }
 
         if (INVALID_FILE_ATTRIBUTES /*0xffffffff*/
                     == (attrs = GetFileAttributesA(path)) ) {
@@ -194,27 +197,9 @@ w32_unlinkA(const char *path)
             }
         }
 
-        if (0 == rc) {
-            ret = 0;                            // success
-        } else {
-            switch (rc) {
-            case ERROR_ACCESS_DENIED:
-            case ERROR_SHARING_VIOLATION:
-            case ERROR_PRIVILEGE_NOT_HELD:
-                errno = EACCES;  break;
-            case ERROR_FILE_NOT_FOUND:
-                errno = ENOENT;  break;
-            case ERROR_PATH_NOT_FOUND:
-                errno = ENOTDIR; break;
-            case ERROR_DIRECTORY_NOT_SUPPORTED:
-                errno = EISDIR;  break;
-            case ERROR_NOT_ENOUGH_MEMORY:
-                errno = ENOMEM;  break;
-            default:
-                errno = w32_errno_cnv(rc);
-                break;
-            }
-        }
+        ret = UnlinkReturn(rc);
+
+        free((void*)expath);
     }
     return ret;
 }
@@ -225,18 +210,23 @@ w32_unlinkW(const wchar_t *path)
 {
     int ret = -1;                               // success=0, otherwise=-1
 
-    if (!path) {
+    if (NULL == path) {
         errno = EFAULT;
 
     } else if (!*path) {
         errno = ENOENT;
 
     } else {
+        const wchar_t *expath;
         DWORD attrs, rc = 0;                    // completion code
 
 #ifndef ERROR_DIRECTORY_NOT_SUPPORTED
 #define ERROR_DIRECTORY_NOT_SUPPORTED 336L      // An operation is not supported on a directory.
 #endif
+
+        if (NULL != (expath = w32_extendedpathW(path))) {
+            path = expath;                      // abs-path to expanded
+        }
 
         if (INVALID_FILE_ATTRIBUTES /*0xffffffff*/
                     == (attrs = GetFileAttributesW(path)) ) {
@@ -259,29 +249,37 @@ w32_unlinkW(const wchar_t *path)
             }
         }
 
-        if (0 == rc) {
-            ret = 0;                            // success
-        } else {
-            switch (rc) {
-            case ERROR_ACCESS_DENIED:
-            case ERROR_SHARING_VIOLATION:
-            case ERROR_PRIVILEGE_NOT_HELD:
-                errno = EACCES;  break;
-            case ERROR_FILE_NOT_FOUND:
-                errno = ENOENT;  break;
-            case ERROR_PATH_NOT_FOUND:
-                errno = ENOTDIR; break;
-            case ERROR_DIRECTORY_NOT_SUPPORTED:
-                errno = EISDIR;  break;
-            case ERROR_NOT_ENOUGH_MEMORY:
-                errno = ENOMEM;  break;
-            default:
-                errno = w32_errno_cnv(rc);
-                break;
-            }
-        }
+        ret = UnlinkReturn(rc);
+
+        free((void*)expath);
     }
     return ret;
+}
+
+
+static int
+UnlinkReturn(DWORD rc)
+{
+    if (0 == rc) 
+        return 0;                           // success
+    switch (rc) {
+    case ERROR_ACCESS_DENIED:
+    case ERROR_SHARING_VIOLATION:
+    case ERROR_PRIVILEGE_NOT_HELD:
+        errno = EACCES;  break;
+    case ERROR_FILE_NOT_FOUND:
+        errno = ENOENT;  break;
+    case ERROR_PATH_NOT_FOUND:
+        errno = ENOTDIR; break;
+    case ERROR_DIRECTORY_NOT_SUPPORTED:
+        errno = EISDIR;  break;
+    case ERROR_NOT_ENOUGH_MEMORY:
+        errno = ENOMEM;  break;
+    default:
+        errno = w32_errno_cnv(rc);
+        break;
+    }
+    return -1;
 }
 
 /*end*/

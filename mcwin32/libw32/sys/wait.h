@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_WAIT_H
 #define LIBW32_SYS_WAIT_H
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_wait_h,"$Id: wait.h,v 1.7 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_wait_h,"$Id: wait.h,v 1.8 2025/03/06 16:59:48 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -13,8 +13,7 @@ __CPRAGMA_ONCE
  *
  * The Midnight Commander is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
  * The Midnight Commander is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of

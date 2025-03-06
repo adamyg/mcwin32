@@ -1,7 +1,7 @@
 /*
    Chown command -- for the Midnight Commander
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -78,8 +78,7 @@ static struct
     int y;
     int len;
     const char *text;
-} chown_but[BUTTONS] =
-{
+} chown_but[BUTTONS] = {
     /* *INDENT-OFF* */
     { B_SETALL,  NORMAL_BUTTON, 5, 0, N_("Set &all")    },
     { B_SETGRP,  NORMAL_BUTTON, 5, 0, N_("Set &groups") },
@@ -96,8 +95,7 @@ static struct
 {
     int y;
     WLabel *l;
-} chown_label[LABELS] =
-{
+} chown_label[LABELS] = {
     /* *INDENT-OFF* */
     {  4, NULL },
     {  6, NULL },
@@ -148,7 +146,7 @@ chown_init (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-chown_refresh (const Widget * h)
+chown_refresh (const Widget *h)
 {
     int y = 3;
     int x = 7 + GW * 2;
@@ -170,7 +168,7 @@ chown_refresh (const Widget * h)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-chown_bg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+chown_bg_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     switch (msg)
     {
@@ -187,7 +185,7 @@ chown_bg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void
 /* --------------------------------------------------------------------------------------------- */
 
 static WDialog *
-chown_dlg_create (WPanel * panel)
+chown_dlg_create (WPanel *panel)
 {
     int single_set;
     WDialog *ch_dlg;
@@ -284,19 +282,8 @@ chown_done (gboolean need_update)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static const GString *
-next_file (const WPanel * panel)
-{
-    while (panel->dir.list[current_file].f.marked == 0)
-        current_file++;
-
-    return panel->dir.list[current_file].fname;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
 static gboolean
-try_chown (const vfs_path_t * p, uid_t u, gid_t g)
+try_chown (const vfs_path_t *p, uid_t u, gid_t g)
 {
     const char *fname = NULL;
 
@@ -342,7 +329,7 @@ try_chown (const vfs_path_t * p, uid_t u, gid_t g)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-do_chown (WPanel * panel, const vfs_path_t * p, uid_t u, gid_t g)
+do_chown (WPanel *panel, const vfs_path_t *p, uid_t u, gid_t g)
 {
     gboolean ret;
 
@@ -356,7 +343,7 @@ do_chown (WPanel * panel, const vfs_path_t * p, uid_t u, gid_t g)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-apply_chowns (WPanel * panel, vfs_path_t * vpath, uid_t u, gid_t g)
+apply_chowns (WPanel *panel, vfs_path_t *vpath, uid_t u, gid_t g)
 {
     gboolean ok;
 
@@ -368,7 +355,7 @@ apply_chowns (WPanel * panel, vfs_path_t * vpath, uid_t u, gid_t g)
         const GString *fname;
         struct stat sf;
 
-        fname = next_file (panel);
+        fname = panel_find_marked_file (panel, &current_file);
         vpath = vfs_path_from_str (fname->str);
         ok = (mc_stat (vpath, &sf) == 0);
 
@@ -394,7 +381,7 @@ apply_chowns (WPanel * panel, vfs_path_t * vpath, uid_t u, gid_t g)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-chown_cmd (WPanel * panel)
+chown_cmd (WPanel *panel)
 {
     gboolean need_update;
     gboolean end_chown;
@@ -420,10 +407,9 @@ chown_cmd (WPanel * panel)
         need_update = FALSE;
         end_chown = FALSE;
 
-        if (panel->marked != 0)
-            fname = next_file (panel);  /* next marked file */
-        else
-            fname = panel_current_entry (panel)->fname; /* single file */
+        fname = panel_get_marked_file (panel, &current_file);
+        if (fname == NULL)
+            break;
 
         vpath = vfs_path_from_str (fname->str);
 

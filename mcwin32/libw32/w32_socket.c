@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_socket_c,"$Id: w32_socket.c,v 1.18 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_socket_c,"$Id: w32_socket.c,v 1.20 2025/03/06 16:59:47 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 socket () system calls
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_socket_c,"$Id: w32_socket.c,v 1.18 2024/01/16 15:17:52 cvs
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -83,7 +82,7 @@ retry:;
         errno = EMFILE;
     } else {
         SetHandleInformation((HANDLE)s, HANDLE_FLAG_INHERIT, 0);
-        w32_sockfd_open(ret, s);                /* associate file-descriptor */
+        w32_fdsockopen(ret, s);                /* associate file-descriptor */
     }
     return ret;
 }
@@ -218,7 +217,7 @@ w32_accept_fd(int fd, struct sockaddr *addr, int *addrlen)
              *  by child processes by default, so disable.
              */
             SetHandleInformation((HANDLE)s, HANDLE_FLAG_INHERIT, 0);
-            w32_sockfd_open(ret, s); /*associate file-descriptor */
+            w32_fdsockopen(ret, s); /*associate file-descriptor */
         }
     }
     return ret;
@@ -467,7 +466,7 @@ w32_sockclose_fd(int fd)
     if ((osf = w32_sockhandle(fd)) == (SOCKET)INVALID_SOCKET) {
         ret = -1;
     } else {
-        w32_sockfd_close(fd, osf);
+        w32_fdsockclose(fd, osf);
         if ((ret = closesocket(osf)) == -1 /*SOCKET_ERROR*/) {
             w32_sockerror();
         }
@@ -502,7 +501,7 @@ LIBW32_API SOCKET
 w32_sockhandle(int fd)
 {
     SOCKET ret;
-    if ((ret = w32_sockfd_get(fd)) == INVALID_SOCKET) {
+    if ((ret = w32_fdsockget(fd)) == INVALID_SOCKET) {
         errno = EBADF;
     }
     return ret;

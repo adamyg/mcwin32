@@ -1,21 +1,20 @@
 #ifndef LIBW32_WIN32_ERRNO_H_INCLUDED
 #define LIBW32_WIN32_ERRNO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.13 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.16 2025/03/06 16:59:47 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * <errno.h>
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -136,6 +135,9 @@ __CPRAGMA_ONCE
 #if !defined(EWOULDBLOCK)
 #define EWOULDBLOCK     WSAEWOULDBLOCK          /* 10035 "Operation would block" */
 #elif (EWOULDBLOCK != WSAEWOULDBLOCK)
+#define STRINGIZE(__x)  __STRINGIZE(__x)
+#define __STRINGIZE(__x) #__x
+#pragma message("errno: EWOULDBLOCK(" STRINGIZE(EWOULDBLOCK) ") != WSAEWOULDBLOCK(" STRINGIZE(WSAEWOULDBLOCK) ")" )
 #error Inconsistent EWOULDBLOCK definition ....
 #endif
 

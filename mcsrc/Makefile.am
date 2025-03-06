@@ -1,5 +1,5 @@
 ## Process this file with automake to create Makefile.in.
-AUTOMAKE_OPTIONS = 1.12
+AUTOMAKE_OPTIONS = 1.14
 
 SUBDIRS = po lib src doc contrib misc
 
@@ -115,7 +115,7 @@ cppcheck-split-all: \
     cppcheck-unusedFunction \
     cppcheck-missingInclude
 
-INDENT_CMD = indent \
+INDENT_CMD = $(INDENT) \
     --gnu-style \
     --format-first-column-comments \
     --indent-level4 \

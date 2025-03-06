@@ -37,7 +37,14 @@ hascolorconsole(void)
 
 	HMODULE hMod = GetModuleHandle(TEXT("ntdll.dll"));
 	if (hMod) {
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
 		RtlGetVersionPtr fn = (RtlGetVersionPtr) GetProcAddress(hMod, "RtlGetVersion");
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
 		if (fn != NULL) {
 			RTL_OSVERSIONINFOW rovi = { 0 };
 			rovi.dwOSVersionInfoSize = sizeof(rovi);

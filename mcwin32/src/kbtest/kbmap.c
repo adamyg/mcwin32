@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(kbmap_c,"$Id: kbmap.c,v 1.9 2024/02/27 17:18:08 cvsuser Exp $")
+__CIDENT_RCSID(kbmap_c,"$Id: kbmap.c,v 1.10 2025/01/29 13:33:04 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * libtermemu console driver
  *
- * Copyright (c) 2015 - 2024, Adam Young.
+ * Copyright (c) 2015 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the WinXSH project.

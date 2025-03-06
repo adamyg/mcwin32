@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Authors:
@@ -57,7 +57,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-groupbox_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+groupbox_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     WGroupbox *g = GROUPBOX (w);
 
@@ -116,7 +116,7 @@ groupbox_new (int y, int x, int height, int width, const char *title)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-groupbox_set_title (WGroupbox * g, const char *title)
+groupbox_set_title (WGroupbox *g, const char *title)
 {
     MC_PTR_FREE (g->title);
 

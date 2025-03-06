@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.20 2024/03/03 11:29:13 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.23 2025/03/06 16:59:47 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 shell and sub-process support
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.20 2024/03/03 11:29:13 cvsus
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -1171,7 +1170,7 @@ Dup(HANDLE old, HANDLE *dup, BOOL inherit)
 
     if (dup == NULL || old == INVALID_HANDLE_VALUE ||
             !DuplicateHandle(self, old, self, dup, 0, inherit, DUPLICATE_SAME_ACCESS)) {
-        *dup = INVALID_HANDLE_VALUE;
+        if (dup) *dup = INVALID_HANDLE_VALUE;
         return FALSE;
     }
     return TRUE;

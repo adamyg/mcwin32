@@ -1,7 +1,7 @@
 /*
    Editor macros engine
 
-   Copyright (C) 2001-2024
+   Copyright (C) 2001-2025
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -52,7 +52,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-edit_macro_comparator (gconstpointer * macro1, gconstpointer * macro2)
+edit_macro_comparator (gconstpointer *macro1, gconstpointer *macro2)
 {
     const macros_t *m1 = (const macros_t *) macro1;
     const macros_t *m2 = (const macros_t *) macro2;
@@ -72,7 +72,7 @@ edit_macro_sort_by_hotkey (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-edit_get_macro (WEdit * edit, int hotkey)
+edit_get_macro (WEdit *edit, int hotkey)
 {
     macros_t *array_start;
     macros_t *result;
@@ -102,7 +102,7 @@ edit_get_macro (WEdit * edit, int hotkey)
 
 /** returns FALSE on error */
 static gboolean
-edit_delete_macro (WEdit * edit, int hotkey)
+edit_delete_macro (WEdit *edit, int hotkey)
 {
     mc_config_t *macros_config = NULL;
     const char *section_name = "editor";
@@ -142,7 +142,7 @@ edit_delete_macro (WEdit * edit, int hotkey)
 
 /** returns FALSE on error */
 gboolean
-edit_store_macro_cmd (WEdit * edit)
+edit_store_macro_cmd (WEdit *edit)
 {
     int i;
     int hotkey;
@@ -228,7 +228,7 @@ edit_store_macro_cmd (WEdit * edit)
 /** return FALSE on error */
 
 gboolean
-edit_load_macro_cmd (WEdit * edit)
+edit_load_macro_cmd (WEdit *edit)
 {
     mc_config_t *macros_config = NULL;
     gchar **profile_keys, **keys;
@@ -305,9 +305,16 @@ edit_load_macro_cmd (WEdit * edit)
 
         if (macros != NULL)
         {
+#if defined(__WATCOMC__) //WIN32/c11
             macros_t macro = {0};
             macro.hotkey = hotkey;
             macro.macro = macros;
+#else
+            macros_t macro = {
+                .hotkey = hotkey,
+                .macro = macros
+            };
+#endif
 
             g_array_append_val (macros_list, macro);
         }
@@ -325,7 +332,7 @@ edit_load_macro_cmd (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_delete_macro_cmd (WEdit * edit)
+edit_delete_macro_cmd (WEdit *edit)
 {
     int hotkey;
 
@@ -338,7 +345,7 @@ edit_delete_macro_cmd (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-edit_repeat_macro_cmd (WEdit * edit)
+edit_repeat_macro_cmd (WEdit *edit)
 {
     gboolean ok;
     char *f;
@@ -380,7 +387,7 @@ edit_repeat_macro_cmd (WEdit * edit)
 
 /** returns FALSE on error */
 gboolean
-edit_execute_macro (WEdit * edit, int hotkey)
+edit_execute_macro (WEdit *edit, int hotkey)
 {
     gboolean res = FALSE;
 
@@ -418,7 +425,7 @@ edit_execute_macro (WEdit * edit, int hotkey)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_begin_end_macro_cmd (WEdit * edit)
+edit_begin_end_macro_cmd (WEdit *edit)
 {
     /* edit is a pointer to the widget */
     if (edit != NULL)
@@ -432,7 +439,7 @@ edit_begin_end_macro_cmd (WEdit * edit)
  /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_begin_end_repeat_cmd (WEdit * edit)
+edit_begin_end_repeat_cmd (WEdit *edit)
 {
     /* edit is a pointer to the widget */
     if (edit != NULL)

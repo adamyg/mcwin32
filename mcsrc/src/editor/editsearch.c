@@ -1,7 +1,7 @@
 /*
    Search & replace engine of MCEditor.
 
-   Copyright (C) 2021-2024
+   Copyright (C) 2021-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -47,15 +47,6 @@
 
 /*** global variables ****************************************************************************/
 
-edit_search_options_t edit_search_options = {
-    .type = MC_SEARCH_T_NORMAL,
-    .case_sens = FALSE,
-    .backwards = FALSE,
-    .only_in_selection = FALSE,
-    .whole_words = FALSE,
-    .all_codepages = FALSE
-};
-
 /*** file scope macro definitions ****************************************************************/
 
 #define B_REPLACE_ALL (B_USER+1)
@@ -64,18 +55,37 @@ edit_search_options_t edit_search_options = {
 
 /*** file scope type declarations ****************************************************************/
 
+typedef struct edit_search_options_t
+{
+    mc_search_type_t type;
+    gboolean case_sens;
+    gboolean backwards;
+    gboolean only_in_selection;
+    gboolean whole_words;
+    gboolean all_codepages;
+} edit_search_options_t;
+
 /*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
+
+static edit_search_options_t edit_search_options = {
+    .type = MC_SEARCH_T_NORMAL,
+    .case_sens = FALSE,
+    .backwards = FALSE,
+    .only_in_selection = FALSE,
+    .whole_words = FALSE,
+    .all_codepages = FALSE
+};
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-edit_dialog_search_show (WEdit * edit)
+edit_dialog_search_show (WEdit *edit)
 {
-    char *search_text;
+    char *search_text = NULL;
     size_t num_of_types = 0;
     gchar **list_of_types;
     int dialog_result;
@@ -155,7 +165,7 @@ edit_dialog_search_show (WEdit * edit)
 
     g_strfreev (list_of_types);
 
-    if ((dialog_result == B_CANCEL) || (search_text == NULL) || (search_text[0] == '\0'))
+    if (dialog_result == B_CANCEL || search_text == NULL || search_text[0] == '\0')
     {
         g_free (search_text);
         return FALSE;
@@ -186,7 +196,7 @@ edit_dialog_search_show (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_dialog_replace_show (WEdit * edit, const char *search_default, const char *replace_default,
+edit_dialog_replace_show (WEdit *edit, const char *search_default, const char *replace_default,
                           /*@out@ */ char **search_text, /*@out@ */ char **replace_text)
 {
     size_t num_of_types = 0;
@@ -278,7 +288,7 @@ edit_dialog_replace_show (WEdit * edit, const char *search_default, const char *
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-edit_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text, int xpos, int ypos)
+edit_dialog_replace_prompt_show (WEdit *edit, char *from_text, char *to_text, int xpos, int ypos)
 {
     Widget *w = WIDGET (edit);
 
@@ -365,7 +375,7 @@ edit_dialog_replace_prompt_show (WEdit * edit, char *from_text, char *to_text, i
  */
 
 static inline char
-edit_search_get_current_end_line_char (const WEdit * edit)
+edit_search_get_current_end_line_char (const WEdit *edit)
 {
     switch (edit->lb)
     {
@@ -374,30 +384,6 @@ edit_search_get_current_end_line_char (const WEdit * edit)
     default:
         return '\n';
     }
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Checking if search condition have BOL(^) or EOL ($) regexp special characters.
- *
- * @param search search object
- * @return result of checks.
- */
-
-static edit_search_line_t
-edit_get_search_line_type (mc_search_t * search)
-{
-    edit_search_line_t search_line_type = 0;
-
-    if (search->search_type != MC_SEARCH_T_REGEX)
-        return search_line_type;
-
-    if (search->original.str->str[0] == '^')
-        search_line_type |= AT_START_LINE;
-
-    if (search->original.str->str[search->original.str->len - 1] == '$')
-        search_line_type |= AT_END_LINE;
-    return search_line_type;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -412,7 +398,7 @@ edit_get_search_line_type (mc_search_t * search)
  */
 
 static off_t
-edit_calculate_start_of_next_line (const edit_buffer_t * buf, off_t current_pos, off_t max_pos,
+edit_calculate_start_of_next_line (const edit_buffer_t *buf, off_t current_pos, off_t max_pos,
                                    char end_string_symbol)
 {
     off_t i;
@@ -438,7 +424,7 @@ edit_calculate_start_of_next_line (const edit_buffer_t * buf, off_t current_pos,
  */
 
 static off_t
-edit_calculate_end_of_previous_line (const edit_buffer_t * buf, off_t current_pos,
+edit_calculate_end_of_previous_line (const edit_buffer_t *buf, off_t current_pos,
                                      char end_string_symbol)
 {
     off_t i;
@@ -461,7 +447,7 @@ edit_calculate_end_of_previous_line (const edit_buffer_t * buf, off_t current_po
  */
 
 static inline off_t
-edit_calculate_start_of_previous_line (const edit_buffer_t * buf, off_t current_pos,
+edit_calculate_start_of_previous_line (const edit_buffer_t *buf, off_t current_pos,
                                        char end_string_symbol)
 {
     current_pos = edit_calculate_end_of_previous_line (buf, current_pos, end_string_symbol);
@@ -481,7 +467,7 @@ edit_calculate_start_of_previous_line (const edit_buffer_t * buf, off_t current_
  */
 
 static inline off_t
-edit_calculate_start_of_current_line (const edit_buffer_t * buf, off_t current_pos,
+edit_calculate_start_of_current_line (const edit_buffer_t *buf, off_t current_pos,
                                       char end_string_symbol)
 {
     current_pos = edit_calculate_end_of_previous_line (buf, current_pos, end_string_symbol);
@@ -497,7 +483,7 @@ edit_calculate_start_of_current_line (const edit_buffer_t * buf, off_t current_p
  */
 
 static void
-edit_search_fix_search_start_if_selection (WEdit * edit)
+edit_search_fix_search_start_if_selection (WEdit *edit)
 {
     off_t start_mark = 0;
     off_t end_mark = 0;
@@ -523,7 +509,7 @@ edit_search_fix_search_start_if_selection (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-edit_find (edit_search_status_msg_t * esm, gsize * len)
+edit_find (edit_search_status_msg_t *esm, gsize *len)
 {
     WEdit *edit = esm->edit;
     off_t search_start = edit->search_start;
@@ -544,14 +530,14 @@ edit_find (edit_search_status_msg_t * esm, gsize * len)
         }
 
         /* fix the start and the end of search block positions */
-        if ((edit->search_line_type & AT_START_LINE) != 0
+        if ((edit->search_line_type & MC_SEARCH_LINE_BEGIN) != 0
             && (start_mark != 0
                 || edit_buffer_get_byte (&edit->buffer, start_mark - 1) != end_string_symbol))
             start_mark =
                 edit_calculate_start_of_next_line (&edit->buffer, start_mark, edit->buffer.size,
                                                    end_string_symbol);
 
-        if ((edit->search_line_type & AT_END_LINE) != 0
+        if ((edit->search_line_type & MC_SEARCH_LINE_END) != 0
             && (end_mark - 1 != edit->buffer.size
                 || edit_buffer_get_byte (&edit->buffer, end_mark) != end_string_symbol))
             end_mark =
@@ -572,7 +558,7 @@ edit_find (edit_search_status_msg_t * esm, gsize * len)
         /* backward search */
         search_end = end_mark;
 
-        if ((edit->search_line_type & AT_START_LINE) != 0)
+        if ((edit->search_line_type & MC_SEARCH_LINE_BEGIN) != 0)
             search_start =
                 edit_calculate_start_of_current_line (&edit->buffer, search_start,
                                                       end_string_symbol);
@@ -595,7 +581,7 @@ edit_find (edit_search_status_msg_t * esm, gsize * len)
             if (!ok && edit->search->error != MC_SEARCH_E_NOTFOUND)
                 return FALSE;
 
-            if ((edit->search_line_type & AT_START_LINE) != 0)
+            if ((edit->search_line_type & MC_SEARCH_LINE_BEGIN) != 0)
                 search_start =
                     edit_calculate_start_of_previous_line (&edit->buffer, search_start,
                                                            end_string_symbol);
@@ -608,7 +594,7 @@ edit_find (edit_search_status_msg_t * esm, gsize * len)
     }
 
     /* forward search */
-    if ((edit->search_line_type & AT_START_LINE) != 0 && search_start != start_mark)
+    if ((edit->search_line_type & MC_SEARCH_LINE_BEGIN) != 0 && search_start != start_mark)
         search_start =
             edit_calculate_start_of_next_line (&edit->buffer, search_start, end_mark,
                                                end_string_symbol);
@@ -657,18 +643,18 @@ edit_replace_cmd__conv_to_input (char *str)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_show_search_error (const WEdit * edit, const char *title)
+edit_search_show_error (const WEdit *edit, const char *title)
 {
     if (edit->search->error == MC_SEARCH_E_NOTFOUND)
-        edit_query_dialog (title, _(STR_E_NOTFOUND));
+        message (D_NORMAL, title, "%s", _(STR_E_NOTFOUND));
     else if (edit->search->error_str != NULL)
-        edit_query_dialog (title, edit->search->error_str);
+        message (D_NORMAL, title, "%s", edit->search->error_str);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_do_search (WEdit * edit)
+edit_do_search (WEdit *edit)
 {
     edit_search_status_msg_t esm;
     gsize len = 0;
@@ -708,19 +694,22 @@ edit_do_search (WEdit * edit)
         }
 
         if (!found)
-            edit_error_dialog (_("Search"), _(STR_E_NOTFOUND));
+            message (D_NORMAL, _("Search"), "%s", _(STR_E_NOTFOUND));
         else
             edit_cursor_move (edit, edit->search_start - edit->buffer.curs1);
     }
     else
     {
-        if (edit->found_len != 0 && edit->search_start == edit->found_start + 1
-            && edit_search_options.backwards)
-            edit->search_start--;
-
-        if (edit->found_len != 0 && edit->search_start == edit->found_start - 1
-            && !edit_search_options.backwards)
-            edit->search_start++;
+        if (edit_search_options.backwards)
+        {
+            if (edit->found_len != 0 && edit->search_start == edit->found_start + 1)
+                edit->search_start--;
+        }
+        else
+        {
+            if (edit->found_len != 0 && edit->search_start == edit->found_start - 1)
+                edit->search_start++;
+        }
 
         if (edit_find (&esm, &len))
         {
@@ -737,7 +726,7 @@ edit_do_search (WEdit * edit)
         else
         {
             edit->search_start = edit->buffer.curs1;
-            edit_show_search_error (edit, _("Search"));
+            edit_search_show_error (edit, _("Search"));
         }
     }
 
@@ -750,14 +739,10 @@ edit_do_search (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_search (WEdit * edit)
+edit_search (WEdit *edit)
 {
     if (edit_dialog_search_show (edit))
-    {
-        edit->search_line_type = edit_get_search_line_type (edit->search);
-        edit_search_fix_search_start_if_selection (edit);
         edit_do_search (edit);
-    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -765,7 +750,7 @@ edit_search (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-edit_search_init (WEdit * edit, const char *str)
+edit_search_init (WEdit *edit, const char *str)
 {
 #ifdef HAVE_CHARSET
     edit->search = mc_search_new (str, cp_source);
@@ -785,13 +770,17 @@ edit_search_init (WEdit * edit, const char *str)
     edit->search->search_fn = edit_search_cmd_callback;
     edit->search->update_fn = edit_search_update_callback;
 
+    edit->search_line_type = mc_search_get_line_type (edit->search);
+
+    edit_search_fix_search_start_if_selection (edit);
+
     return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_search_deinit (WEdit * edit)
+edit_search_deinit (WEdit *edit)
 {
     mc_search_free (edit->search);
     g_free (edit->last_search_string);
@@ -800,11 +789,11 @@ edit_search_deinit (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 mc_search_cbret_t
-edit_search_cmd_callback (const void *user_data, gsize char_offset, int *current_char)
+edit_search_cmd_callback (const void *user_data, off_t char_offset, int *current_char)
 {
     WEdit *edit = ((const edit_search_status_msg_t *) user_data)->edit;
 
-    *current_char = edit_buffer_get_byte (&edit->buffer, (off_t) char_offset);
+    *current_char = edit_buffer_get_byte (&edit->buffer, char_offset);
 
     return MC_SEARCH_CB_OK;
 }
@@ -812,11 +801,11 @@ edit_search_cmd_callback (const void *user_data, gsize char_offset, int *current
 /* --------------------------------------------------------------------------------------------- */
 
 mc_search_cbret_t
-edit_search_update_callback (const void *user_data, gsize char_offset)
+edit_search_update_callback (const void *user_data, off_t char_offset)
 {
     status_msg_t *sm = STATUS_MSG (user_data);
 
-    ((edit_search_status_msg_t *) sm)->offset = (off_t) char_offset;
+    ((edit_search_status_msg_t *) sm)->offset = char_offset;
 
     return (sm->update (sm) == B_CANCEL ? MC_SEARCH_CB_ABORT : MC_SEARCH_CB_OK);
 }
@@ -824,7 +813,7 @@ edit_search_update_callback (const void *user_data, gsize char_offset)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-edit_search_status_update_cb (status_msg_t * sm)
+edit_search_status_update_cb (status_msg_t *sm)
 {
     simple_status_msg_t *ssm = SIMPLE_STATUS_MSG (sm);
     edit_search_status_msg_t *esm = (edit_search_status_msg_t *) sm;
@@ -856,7 +845,7 @@ edit_search_status_update_cb (status_msg_t * sm)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_search_cmd (WEdit * edit, gboolean again)
+edit_search_cmd (WEdit *edit, gboolean again)
 {
     if (!again)
         edit_search (edit);
@@ -891,7 +880,7 @@ edit_search_cmd (WEdit * edit, gboolean again)
 /** call with edit = 0 before shutdown to close memory leaks */
 
 void
-edit_replace_cmd (WEdit * edit, gboolean again)
+edit_replace_cmd (WEdit *edit, gboolean again)
 {
     /* 1 = search string, 2 = replace with */
     static char *saved1 = NULL; /* saved default[123] */
@@ -961,24 +950,22 @@ edit_replace_cmd (WEdit * edit, gboolean again)
     input2_str = g_string_new_take (input2);
     input2 = NULL;
 
-    if (edit->search == NULL)
+    if (edit->search == NULL && !edit_search_init (edit, input1))
     {
-        if (edit_search_init (edit, input1))
-            edit_search_fix_search_start_if_selection (edit);
-        else
-        {
-            edit->search_start = edit->buffer.curs1;
-            goto cleanup;
-        }
+        edit->search_start = edit->buffer.curs1;
+        goto cleanup;
     }
 
-    if (edit->found_len != 0 && edit->search_start == edit->found_start + 1
-        && edit_search_options.backwards)
-        edit->search_start--;
-
-    if (edit->found_len != 0 && edit->search_start == edit->found_start - 1
-        && !edit_search_options.backwards)
-        edit->search_start++;
+    if (edit_search_options.backwards)
+    {
+        if (edit->found_len != 0 && edit->search_start == edit->found_start + 1)
+            edit->search_start--;
+    }
+    else
+    {
+        if (edit->found_len != 0 && edit->search_start == edit->found_start - 1)
+            edit->search_start++;
+    }
 
     esm.first = TRUE;
     esm.edit = edit;
@@ -995,7 +982,7 @@ edit_replace_cmd (WEdit * edit, gboolean again)
         {
             if (!(edit->search->error == MC_SEARCH_E_OK ||
                   (once_found && edit->search->error == MC_SEARCH_E_NOTFOUND)))
-                edit_show_search_error (edit, _("Search"));
+                edit_search_show_error (edit, _("Search"));
             break;
         }
 
@@ -1060,7 +1047,7 @@ edit_replace_cmd (WEdit * edit, gboolean again)
 
             if (edit->search->error != MC_SEARCH_E_OK)
             {
-                edit_show_search_error (edit, _("Replace"));
+                edit_search_show_error (edit, _("Replace"));
                 if (repl_str != NULL)
                     g_string_free (repl_str, TRUE);
                 break;

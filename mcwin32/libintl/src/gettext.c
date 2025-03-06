@@ -281,6 +281,7 @@ flip(uint32_t v, uint32_t magic)
 	} else {
 		abort();
 		/*NOTREACHED*/
+		return 0;
 	}
 }
 

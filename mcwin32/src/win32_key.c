@@ -36,7 +36,7 @@
         void        enable_bracketed_paste (void);
         void        disable_bracketed_paste (void);
 
-   Written by: Adam Young 2012 - 2024
+   Adam Young 2015 - 2025
 
    This file is part of the Midnight Commander.
 
@@ -380,12 +380,19 @@ init_key (void)
             &primary_thread, 0 /*dwDesiredAccess*/, FALSE /*bInheritHandle*/, DUPLICATE_SAME_ACCESS);
 
                                                 /* load CancelSynchronousIo() implementation */
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
         if (0 == (hKernel32 = LoadLibraryA("Kernel32")) ||
                 0 == (CancelSynchronousIoFn =   /* Vista+ */
                         (CancelSynchronousIo_t) GetProcAddress(hKernel32, "CancelSynchronousIo"))) {
             CancelSynchronousIoFn = CancelSynchronousIoImp;
             if (hKernel32) FreeLibrary(hKernel32);
         }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
 }
 

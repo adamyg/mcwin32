@@ -1,7 +1,7 @@
 /*
    Panel layout module for the Midnight Commander
 
-   Copyright (C) 1995-2024
+   Copyright (C) 1995-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -37,8 +37,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <sys/types.h>
+#if defined(WIN32)
+#include <sys/socket.h>         /* gethostname */
+#endif
 #include <unistd.h>
 
 #include "lib/global.h"
@@ -146,8 +148,7 @@ static struct
     panel_view_mode_t type;
     Widget *widget;
     char *last_saved_dir;       /* last view_list working directory */
-} panels[MAX_VIEWS] =
-{
+} panels[MAX_VIEWS] = {
     /* *INDENT-OFF* */
     /* init MAX_VIEWS items */
     { view_listing, NULL, NULL},
@@ -170,8 +171,7 @@ static struct
     const char *text;
     gboolean *variable;
     WCheck *widget;
-} check_options[] =
-{
+} check_options[] = {
     /* *INDENT-OFF* */
     { N_("&Equal split"), &equal_split, NULL },
     { N_("&Menubar visible"), &menubar_visible, NULL },
@@ -204,7 +204,7 @@ max (int a, int b)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-check_split (panels_layout_t * layout)
+check_split (panels_layout_t *layout)
 {
     if (layout->horizontal_split)
     {
@@ -231,7 +231,7 @@ check_split (panels_layout_t * layout)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-update_split (const WDialog * h)
+update_split (const WDialog *h)
 {
     /* Check split has to be done before testing if it changed, since
        it can change due to calling check_split() as well */
@@ -264,7 +264,7 @@ update_split (const WDialog * h)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-b_left_right_cback (WButton * button, int action)
+b_left_right_cback (WButton *button, int action)
 {
     (void) action;
 
@@ -292,7 +292,7 @@ b_left_right_cback (WButton * button, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-bplus_cback (WButton * button, int action)
+bplus_cback (WButton *button, int action)
 {
     (void) button;
     (void) action;
@@ -305,7 +305,7 @@ bplus_cback (WButton * button, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-bminus_cback (WButton * button, int action)
+bminus_cback (WButton *button, int action)
 {
     (void) button;
     (void) action;
@@ -318,7 +318,7 @@ bminus_cback (WButton * button, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-layout_bg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+layout_bg_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     switch (msg)
     {
@@ -348,7 +348,7 @@ layout_bg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, voi
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-layout_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+layout_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     WDialog *h = DIALOG (w);
 
@@ -650,7 +650,7 @@ panel_do_cols (int idx)
 /** Save current list_view widget directory into panel */
 
 static Widget *
-restore_into_right_dir_panel (int idx, gboolean last_was_panel, int y, int x, int lines, int cols)
+restore_into_right_dir_panel (int idx, gboolean last_was_panel, const WRect *r)
 {
     WPanel *new_widget;
     const char *p_name;
@@ -662,11 +662,11 @@ restore_into_right_dir_panel (int idx, gboolean last_was_panel, int y, int x, in
         vfs_path_t *saved_dir_vpath;
 
         saved_dir_vpath = vfs_path_from_str (panels[idx].last_saved_dir);
-        new_widget = panel_sized_with_dir_new (p_name, y, x, lines, cols, saved_dir_vpath);
+        new_widget = panel_sized_with_dir_new (p_name, r, saved_dir_vpath);
         vfs_path_free (saved_dir_vpath, TRUE);
     }
     else
-        new_widget = panel_sized_new (p_name, y, x, lines, cols);
+        new_widget = panel_sized_new (p_name, r);
 
     return WIDGET (new_widget);
 }
@@ -752,7 +752,7 @@ layout_box (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-panel_update_cols (Widget * widget, panel_display_t frame_size)
+panel_update_cols (Widget *widget, panel_display_t frame_size)
 {
     const Widget *mw = CONST_WIDGET (filemanager);
     int cols, x;
@@ -914,6 +914,7 @@ setup_panels (void)
     widget_set_visibility (WIDGET (the_bar), mc_global.keybar_visible);
 
     update_xterm_title_path ();
+    update_terminal_cwd ();
 
     /* unlock */
     if (active)
@@ -1123,10 +1124,8 @@ create_panel (int num, panel_view_mode_t type)
 {
     WRect r = { 0, 0, 0, 0 };
     unsigned int the_other = 0; /* Index to the other panel */
-    const char *file_name = NULL;       /* For Quick view */
     Widget *new_widget = NULL, *old_widget = NULL;
     panel_view_mode_t old_type = view_listing;
-    WPanel *the_other_panel = NULL;
 
     if (num >= MAX_VIEWS)
     {
@@ -1183,29 +1182,37 @@ create_panel (int num, panel_view_mode_t type)
             gboolean last_was_panel;
 
             last_was_panel = old_widget != NULL && get_panel_type (num) != view_listing;
-            new_widget =
-                restore_into_right_dir_panel (num, last_was_panel, r.y, r.x, r.lines, r.cols);
+            new_widget = restore_into_right_dir_panel (num, last_was_panel, &r);
             break;
         }
 
     case view_info:
-        new_widget = WIDGET (info_new (r.y, r.x, r.lines, r.cols));
+        new_widget = WIDGET (info_new (&r));
         break;
 
     case view_tree:
-        new_widget = WIDGET (tree_new (r.y, r.x, r.lines, r.cols, TRUE));
+        new_widget = WIDGET (tree_new (&r, TRUE));
         break;
 
     case view_quick:
-        new_widget = WIDGET (mcview_new (r.y, r.x, r.lines, r.cols, TRUE));
-        the_other_panel = PANEL (panels[the_other].widget);
-        if (the_other_panel != NULL)
-            file_name = panel_current_entry (the_other_panel)->fname->str;
-        else
-            file_name = "";
+        {
+            WPanel *the_other_panel;
+            const char *file_name = "";
 
-        mcview_load ((WView *) new_widget, 0, file_name, 0, 0, 0);
-        break;
+            new_widget = WIDGET (mcview_new (&r, TRUE));
+            the_other_panel = PANEL (panels[the_other].widget);
+            if (the_other_panel != NULL)
+            {
+                const file_entry_t *fe;
+
+                fe = panel_current_entry (the_other_panel);
+                if (fe != NULL)
+                    file_name = fe->fname->str;
+            }
+
+            mcview_load ((WView *) new_widget, 0, file_name, 0, 0, 0);
+            break;
+        }
 
     default:
         break;
@@ -1458,7 +1465,7 @@ save_panel_dir (int idx)
    but for other types - last_saved_dir */
 
 char *
-get_panel_dir_for (const WPanel * widget)
+get_panel_dir_for (const WPanel *widget)
 {
     int i;
 
@@ -1576,13 +1583,36 @@ update_xterm_title_path (void)
         tty_set_title (p);
         g_free (p);
 #else
-        fprintf (stdout, "\33]0;%s\7", str_term_form (p));
+        fprintf (stdout, ESC_STR "]0;%s" ESC_STR "\\", str_term_form (p));
         g_free (p);
 
         if (!mc_global.tty.alternate_plus_minus)
             numeric_keypad_mode ();
         (void) fflush (stdout);
 #endif
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Tell the current directory to the terminal so it can open new tabs there */
+void
+update_terminal_cwd (void)
+{
+    if (mc_global.tty.xterm_flag && vfs_current_is_local ())
+    {
+        const gchar *host;
+        char *path, *path_uri;
+
+        host = g_get_host_name ();
+        path = vfs_path_to_str_flags (current_panel->cwd_vpath, 0, VPF_NONE);
+        path_uri = g_uri_escape_string (path, "/", FALSE);
+
+        fprintf (stdout, ESC_STR "]7;file://%s%s" ESC_STR "\\", host, path_uri);
+        (void) fflush (stdout);
+
+        g_free (path_uri);
+        g_free (path);
     }
 }
 

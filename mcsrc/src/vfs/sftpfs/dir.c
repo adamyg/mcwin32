@@ -1,7 +1,7 @@
 /* Virtual File System: SFTP file system.
    The internal functions: dirs
 
-   Copyright (C) 2011-2024
+   Copyright (C) 2011-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -63,12 +63,12 @@ typedef struct
  */
 
 void *
-sftpfs_opendir (const vfs_path_t * vpath, GError ** mcerror)
+sftpfs_opendir (const vfs_path_t *vpath, GError **mcerror)
 {
     sftpfs_dir_data_t *sftpfs_dir;
     sftpfs_super_t *sftpfs_super;
     const vfs_path_element_t *path_element;
-    LIBSSH2_SFTP_HANDLE *handle;
+    LIBSSH2_SFTP_HANDLE *handle = NULL;
     const GString *fixfname;
 
     if (!sftpfs_op_init (&sftpfs_super, &path_element, vpath, mcerror))
@@ -108,7 +108,7 @@ sftpfs_opendir (const vfs_path_t * vpath, GError ** mcerror)
  */
 
 struct vfs_dirent *
-sftpfs_readdir (void *data, GError ** mcerror)
+sftpfs_readdir (void *data, GError **mcerror)
 {
     char mem[BUF_MEDIUM];
     LIBSSH2_SFTP_ATTRIBUTES attrs;
@@ -141,7 +141,7 @@ sftpfs_readdir (void *data, GError ** mcerror)
  */
 
 int
-sftpfs_closedir (void *data, GError ** mcerror)
+sftpfs_closedir (void *data, GError **mcerror)
 {
     int rc;
     sftpfs_dir_data_t *sftpfs_dir = (sftpfs_dir_data_t *) data;
@@ -164,7 +164,7 @@ sftpfs_closedir (void *data, GError ** mcerror)
  */
 
 int
-sftpfs_mkdir (const vfs_path_t * vpath, mode_t mode, GError ** mcerror)
+sftpfs_mkdir (const vfs_path_t *vpath, mode_t mode, GError **mcerror)
 {
     int res;
     sftpfs_super_t *sftpfs_super;
@@ -201,7 +201,7 @@ sftpfs_mkdir (const vfs_path_t * vpath, mode_t mode, GError ** mcerror)
  */
 
 int
-sftpfs_rmdir (const vfs_path_t * vpath, GError ** mcerror)
+sftpfs_rmdir (const vfs_path_t *vpath, GError **mcerror)
 {
     int res;
     sftpfs_super_t *sftpfs_super;

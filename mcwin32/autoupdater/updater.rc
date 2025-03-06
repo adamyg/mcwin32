@@ -89,14 +89,14 @@ VS_VERSION_INFO VERSIONINFO
 			BEGIN
 				VALUE "CompanyName",		""
 
-				VALUE "FileDescription",	"GNU Midnight Commander, Auto Updater"
+				VALUE "FileDescription",	"Midnight Commander, Auto Updater"
 
 				VALUE "FileVersion",		VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER /* match mc.rc */
 
 				VALUE "InternalName",		"WIN32 Midnight Commander"
 
 				VALUE "Copyright",
-					"Copyright (C) 2012-2024, Adam Young. All rights reserved. \n"
+					"Copyright (C) 2012-" BUILD_YEAR ", Adam Young. All rights reserved. \n"
 					"Copyright (c) 1998-2000 Thai Open Source Software Center Ltd and Clark Cooper. \n"
 					"Copyright (c) 2001-2019 Expat maintainers. \n"
 					"This is free software; see the source for copying conditions. \n"

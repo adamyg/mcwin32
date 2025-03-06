@@ -2,7 +2,7 @@
    Interface to the terminal controlling library.
    Slang wrapper.
 
-   Copyright (C) 2005-2024
+   Copyright (C) 2005-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -94,8 +94,7 @@ static const struct
 {
     int key_code;
     const char *key_name;
-} key_table[] =
-{
+} key_table[] = {
     /* *INDENT-OFF* */
     { KEY_F (0), "k0" },
     { KEY_F (1), "k1" },

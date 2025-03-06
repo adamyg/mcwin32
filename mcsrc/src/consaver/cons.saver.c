@@ -11,7 +11,7 @@
 
    Partly rewritten by Jakub Jelinek <jakub@redhat.com>.
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -145,7 +145,7 @@ send_contents (char *buffer, unsigned int columns, unsigned int rows)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void __attribute__ ((noreturn)) die (void)
+static void __attribute__((noreturn)) die (void)
 {
     unsigned char zero = 0;
     ssize_t ret;

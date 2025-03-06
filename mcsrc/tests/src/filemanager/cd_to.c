@@ -1,7 +1,7 @@
 /*
    src/filemanager - tests for cd_to() function
 
-   Copyright (C) 2011-2024
+   Copyright (C) 2011-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -56,7 +56,7 @@ static gboolean do_cd__return_value;
 
 /* @Mock */
 gboolean
-panel_cd (WPanel * panel, const vfs_path_t * new_dir_vpath, enum cd_enum cd_type)
+panel_cd (WPanel *panel, const vfs_path_t *new_dir_vpath, enum cd_enum cd_type)
 {
     (void) panel;
 

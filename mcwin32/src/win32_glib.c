@@ -14,10 +14,7 @@
 
         * Address PATH_SEP and va_list usage.
 
-   Copyright (C) 2012
-   The Free Software Foundation, Inc.
-
-   Written by: Adam Young 2012 - 2024
+   Adam Young 2015 - 2025
 
    This file is part of the Midnight Commander.
 
@@ -54,7 +51,7 @@
 #include "lib/vfs/xdirentry.h"
 
 /*
- *  g_strerror replacment, extended error code support.
+ *  g_strerror replacement, extended error code support.
  */
 const char *
 g_strerror(int errnum)

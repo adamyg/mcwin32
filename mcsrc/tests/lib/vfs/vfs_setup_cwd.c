@@ -1,7 +1,7 @@
 /*
    lib/vfs - test vfs_setup_cwd() functionality
 
-   Copyright (C) 2013-2024
+   Copyright (C) 2013-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 #include "lib/strutil.h"
+#include "lib/util.h"
 #include "lib/vfs/xdirentry.h"
 #include "src/vfs/local/local.c"
 
@@ -37,7 +38,7 @@
 
 /* @Mock */
 char *
-g_get_current_dir (void)
+my_get_current_dir (void)
 {
     return g_strdup ("/some/path");
 }
@@ -49,7 +50,7 @@ static gboolean mc_stat__call_count = 0;
 
 /* @Mock */
 int
-mc_stat (const vfs_path_t * vpath, struct stat *my_stat)
+mc_stat (const vfs_path_t *vpath, struct stat *my_stat)
 {
     (void) vpath;
 

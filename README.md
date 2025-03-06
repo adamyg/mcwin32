@@ -5,9 +5,9 @@
 
 # Midnight Commander for Windows
 
-## Native Midnight Commander 4.8.31 for Windows/Win32
+## Native Midnight Commander 4.8.33 for Windows/Win32
 
-Windows XP+/32 bit native port of GNU Midnight Commander, based on the current 4.8.30 development stream.
+Windows XP+/32 bit native port of GNU Midnight Commander, based on the [4.8.33](https://midnight-commander.org/wiki/NEWS-4.8.33) release.
 
 Supports both the recent Windows 10 plus the prior legacy console, 16 and 256 colour modes are available within either.
 

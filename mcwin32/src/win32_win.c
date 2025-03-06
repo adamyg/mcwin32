@@ -7,10 +7,7 @@
         void show_rxvt_contents (int starty, unsigned char y1, unsigned char y2)
         gboolean look_for_rxvt_extensions (void)
 
-   Copyright (C) 2012
-   The Free Software Foundation, Inc.
-
-   Written by: Adam Young 2012 - 2024
+   Adam Young 2015 - 2025
 
    This file is part of the Midnight Commander.
 

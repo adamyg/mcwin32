@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2024-01-20 20:51+0100\n"
+"POT-Creation-Date: 2025-01-23 10:30+0100\n"
 "PO-Revision-Date: 2010-12-29 10:19+0000\n"
 "Last-Translator: Martijn Dekker <mcdutchie@hotmail.com>, 2012,2017\n"
 "Language-Team: Interlingua (http://app.transifex.com/mc/mc/language/ia/)\n"
@@ -543,28 +543,10 @@ msgid "Changes to file lost"
 msgstr "Cambiamentos in file perdite"
 
 #, c-format
-msgid "%s is not a directory\n"
-msgstr "%s non es un directorio.\n"
-
-#, c-format
-msgid "Directory %s is not owned by you\n"
-msgstr "Le directorio %s non ha te como proprietario.\n"
-
-#, c-format
-msgid "Cannot set correct permissions for directory %s\n"
-msgstr "Non pote definir le permissiones correcte pro le directorio %s\n"
-
-#, c-format
-msgid "Cannot create temporary directory %s: %s\n"
-msgstr "Non pote crear le directorio temporari %s: %s\n"
-
-#, c-format
-msgid "Temporary files will be created in %s\n"
-msgstr "Le files temporari essera create in %s\n"
-
-#, c-format
-msgid "Temporary files will not be created\n"
-msgstr "Files temporari non essera create\n"
+msgid ""
+"Cannot create temporary directory %s: %s.\n"
+"Temporary files will not be created\n"
+msgstr ""
 
 msgid "Press any key to continue..."
 msgstr "Preme qualcunque clave pro continuar..."
@@ -771,6 +753,9 @@ msgstr "Optiones de terminal"
 msgid "Arguments parse error!"
 msgstr ""
 
+msgid "MC is built without builtin editor."
+msgstr ""
+
 msgid "No arguments given to the viewer."
 msgstr "Nulle parametro passate al visualisator."
 
@@ -929,6 +914,9 @@ msgstr ""
 msgid "Diff:"
 msgstr "Diff:"
 
+msgid "File name is empty!"
+msgstr ""
+
 #, c-format
 msgid "\"%s\" is a directory"
 msgstr ""
@@ -1048,9 +1036,6 @@ msgstr ""
 msgid "Edit Save Mode"
 msgstr ""
 
-msgid "Save as"
-msgstr "Salveguardar como"
-
 msgid "Cannot save: destination is not a regular file"
 msgstr ""
 
@@ -1118,14 +1103,8 @@ msgstr ""
 msgid "This function is not implemented"
 msgstr "Iste function non es implementate"
 
-msgid "Copy to clipboard"
-msgstr "Copiar al area de transferentia"
-
 msgid "Unable to save to file"
 msgstr ""
-
-msgid "Cut to clipboard"
-msgstr "Taliar al area de transferentia"
 
 msgid "Goto line"
 msgstr "Vader al linea"
@@ -1133,13 +1112,13 @@ msgstr "Vader al linea"
 msgid "Save block"
 msgstr "Salveguardar bloco"
 
+msgid "Cannot save block"
+msgstr ""
+
 msgid "Insert file"
 msgstr "Inserer file"
 
 msgid "Cannot insert file"
-msgstr ""
-
-msgid "Sort block"
 msgstr ""
 
 msgid "You must first highlight a block of text"
@@ -1149,9 +1128,6 @@ msgid "Run sort"
 msgstr ""
 
 msgid "Enter sort options (see sort(1) manpage) separated by whitespace:"
-msgstr ""
-
-msgid "Sort"
 msgstr ""
 
 msgid "Cannot execute sort command"
@@ -1167,11 +1143,8 @@ msgstr ""
 msgid "Enter shell command(s):"
 msgstr ""
 
-msgid "External command"
-msgstr "Commando externe"
-
-msgid "Cannot execute command"
-msgstr "Le commando non pote esser executate"
+msgid "Cannot execute external command"
+msgstr ""
 
 msgid "mail -s <subject> -c <cc> <to>"
 msgstr ""
@@ -1561,7 +1534,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2024 the Free Software Foundation"
+msgid "Copyright (C) 1996-2025 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -2181,7 +2154,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot get flags of \"%s\"\n"
+"Cannot get ext2 attributes of \"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2532,7 +2505,7 @@ msgid ""
 "are the same file"
 msgstr ""
 
-msgid "Ski&p all"
+msgid "Ignore a&ll"
 msgstr ""
 
 #, c-format
@@ -2581,6 +2554,12 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot enter into directory \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
 msgstr ""
@@ -2603,6 +2582,18 @@ msgstr ""
 #, c-format
 msgid ""
 "Cannot stat source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot set ext2 attributes of target file \"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2695,7 +2686,19 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot set ext2 attributes for target file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot stat source directory \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source directory \"%s\"\n"
 "%s"
 msgstr ""
 
@@ -3655,11 +3658,10 @@ msgid ""
 "and wait as well."
 msgstr ""
 
-msgid "Cannot accept this key"
-msgstr ""
-
 #, c-format
-msgid "You have entered \"%s\""
+msgid ""
+"Cannot accept this key.\n"
+"You have entered \"%s\""
 msgstr ""
 
 #. TRANSLATORS: This label appears near learned keys.  Keep it short.
@@ -3726,20 +3728,20 @@ msgid ""
 msgstr ""
 
 #, c-format
+msgid "Warning: Cannot change to %s.\n"
+msgstr ""
+
+#, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr ""
 
 msgid "The shell is still active. Quit anyway?"
 msgstr ""
 
-#, c-format
-msgid "Warning: Cannot change to %s.\n"
+msgid "With builtin editor and aspell support"
 msgstr ""
 
-msgid "With builtin Editor and Aspell support"
-msgstr ""
-
-msgid "With builtin Editor"
+msgid "With builtin editor"
 msgstr ""
 
 msgid "With optional subshell support"
@@ -3919,6 +3921,12 @@ msgstr ""
 "%s"
 
 msgid "Inconsistent archive"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot open %s archive\n"
+"%s"
 msgstr ""
 
 #, c-format

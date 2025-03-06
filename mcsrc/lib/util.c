@@ -1,7 +1,7 @@
 /*
    Various utilities
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -112,7 +112,7 @@ is_8bit_printable (unsigned char c)
 /* --------------------------------------------------------------------------------------------- */
 
 static char *
-resolve_symlinks (const vfs_path_t * vpath)
+resolve_symlinks (const vfs_path_t *vpath)
 {
     char *p, *p2;
     char *buf, *buf2, *q, *r, c;
@@ -333,15 +333,11 @@ const char *
 path_trunc (const char *path, size_t trunc_len)
 {
     vfs_path_t *vpath;
-    char *secure_path;
     const char *ret;
 
-    vpath = vfs_path_from_str (path);
-    secure_path = vfs_path_to_str_flags (vpath, 0, VPF_STRIP_PASSWORD);
+    vpath = vfs_path_from_str_flags (path, VPF_STRIP_PASSWORD);
+    ret = str_trunc (vfs_path_as_str (vpath), trunc_len);
     vfs_path_free (vpath, TRUE);
-
-    ret = str_trunc (secure_path, trunc_len);
-    g_free (secure_path);
 
     return ret;
 }
@@ -457,14 +453,25 @@ size_trunc_len (char *buffer, unsigned int len, uintmax_t size, int units, gbool
      */
 #endif
     };
-    /* *INDENT-ON* */
+
     static const char *const suffix[] =
         { "", "K", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q", NULL };
     static const char *const suffix_lc[] =
         { "", "k", "m", "g", "t", "p", "e", "z", "y", "r", "q", NULL };
+    /* *INDENT-ON* */
+
+    static int sfx_last = -1;
 
     const char *const *sfx = use_si ? suffix_lc : suffix;
     int j = 0;
+
+    if (sfx_last < 0)
+    {
+        for (sfx_last = 0; sfx[sfx_last] != NULL; sfx_last++)
+            ;
+
+        sfx_last--;
+    }
 
     if (len == 0)
         len = 9;
@@ -478,13 +485,15 @@ size_trunc_len (char *buffer, unsigned int len, uintmax_t size, int units, gbool
         len = 9;
 #endif
 
+    const int units_safe = MIN (units, sfx_last);
+
     /*
      * recalculate from 1024 base to 1000 base if units>0
      * We can't just multiply by 1024 - that might cause overflow
      * if uintmax_t type is too small
      */
     if (use_si)
-        for (j = 0; j < units; j++)
+        for (j = 0; j < units_safe; j++)
         {
             uintmax_t size_remain;
 
@@ -494,7 +503,7 @@ size_trunc_len (char *buffer, unsigned int len, uintmax_t size, int units, gbool
             size += size_remain;        /* Re-add remainder lost by division/multiplication */
         }
 
-    for (j = units; sfx[j] != NULL; j++)
+    for (j = units_safe; sfx[j] != NULL; j++)
     {
         if (size == 0)
         {
@@ -598,7 +607,7 @@ extension (const char *filename)
 
 char *
 load_mc_home_file (const char *from, const char *filename, char **allocated_filename,
-                   size_t * length)
+                   size_t *length)
 {
     char *hintfile_base, *hintfile;
     char *lang;
@@ -639,7 +648,7 @@ load_mc_home_file (const char *from, const char *filename, char **allocated_file
 /* --------------------------------------------------------------------------------------------- */
 
 const char *
-extract_line (const char *s, const char *top)
+extract_line (const char *s, const char *top, size_t *len)
 {
     static char tmp_line[BUF_MEDIUM];
     char *t = tmp_line;
@@ -647,6 +656,10 @@ extract_line (const char *s, const char *top)
     while (*s != '\0' && *s != '\n' && (size_t) (t - tmp_line) < sizeof (tmp_line) - 1 && s < top)
         *t++ = *s++;
     *t = '\0';
+
+    if (len != NULL)
+        *len = (size_t) (t - tmp_line);
+
     return tmp_line;
 }
 
@@ -740,7 +753,10 @@ skip_numbers (const char *s)
  * "control sequence", in a sort of pidgin BNF, as follows:
  *
  * control-seq = Esc non-'['
- *             | Esc '[' (0 or more digits or ';' or ':' or '?') (any other char)
+ *             | Esc '[' (parameter-byte)* (intermediate-byte)* final-byte
+ * parameter-byte = [\x30-\x3F]     # one of "0-9;:<=>?"
+ * intermediate-byte = [\x20–\x2F]  # one of " !\"#$%&'()*+,-./"
+ * final-byte = [\x40-\x7e]         # one of "@A–Z[\]^_`a–z{|}~"
  *
  * The 256-color and true-color escape sequences should allow either ';' or ':' inside as separator,
  * actually, ':' is the more correct according to ECMA-48.
@@ -767,8 +783,10 @@ strip_ctrl_codes (char *s)
             if (*(++r) == '[' || *r == '(')
             {
                 /* strchr() matches trailing binary 0 */
-                while (*(++r) != '\0' && strchr ("0123456789;:?", *r) != NULL)
+                while (*(++r) != '\0' && strchr ("0123456789;:<=>?", *r) != NULL)
                     ;
+                while (*r != '\0' && (*r < 0x40 || *r > 0x7E))
+                    ++r;
             }
             else if (*r == ']')
             {
@@ -1034,7 +1052,7 @@ convert_controls (const char *p)
  */
 
 char *
-diff_two_paths (const vfs_path_t * vpath1, const vfs_path_t * vpath2)
+diff_two_paths (const vfs_path_t *vpath1, const vfs_path_t *vpath2)
 {
     int j, prevlen = -1, currlen;
     char *my_first = NULL, *my_second = NULL;
@@ -1105,7 +1123,7 @@ diff_two_paths (const vfs_path_t * vpath1, const vfs_path_t * vpath2)
  */
 
 GList *
-list_append_unique (GList * list, char *text)
+list_append_unique (GList *list, char *text)
 {
     GList *lc_link;
 
@@ -1145,8 +1163,8 @@ list_append_unique (GList * list, char *text)
  */
 
 void
-load_file_position (const vfs_path_t * filename_vpath, long *line, long *column, off_t * offset,
-                    GArray ** bookmarks)
+load_file_position (const vfs_path_t *filename_vpath, long *line, long *column, off_t *offset,
+                    GArray **bookmarks)
 {
     char *fn;
     FILE *f;
@@ -1236,8 +1254,8 @@ load_file_position (const vfs_path_t * filename_vpath, long *line, long *column,
  */
 
 void
-save_file_position (const vfs_path_t * filename_vpath, long line, long column, off_t offset,
-                    GArray * bookmarks)
+save_file_position (const vfs_path_t *filename_vpath, long line, long column, off_t offset,
+                    GArray *bookmarks)
 {
     static size_t filepos_max_saved_entries = 0;
     char *fn, *tmp_fn;
@@ -1280,7 +1298,7 @@ save_file_position (const vfs_path_t * filename_vpath, long line, long column, o
         if (bookmarks != NULL)
             for (i = 0; i < bookmarks->len && i < MAX_SAVED_BOOKMARKS; i++)
                 if (fprintf (f, ";%zu", g_array_index (bookmarks, size_t, i)) < 0)
-                    goto write_position_error;
+                      goto write_position_error;
 
         if (fprintf (f, "\n") < 0)
             goto write_position_error;
@@ -1496,7 +1514,7 @@ mc_get_profile_root (void)
  */
 
 void
-mc_propagate_error (GError ** dest, int code, const char *format, ...)
+mc_propagate_error (GError **dest, int code, const char *format, ...)
 {
     if (dest != NULL && *dest == NULL)
     {
@@ -1522,7 +1540,7 @@ mc_propagate_error (GError ** dest, int code, const char *format, ...)
  */
 
 void
-mc_replace_error (GError ** dest, int code, const char *format, ...)
+mc_replace_error (GError **dest, int code, const char *format, ...)
 {
     if (dest != NULL)
     {
@@ -1533,7 +1551,7 @@ mc_replace_error (GError ** dest, int code, const char *format, ...)
         tmp_error = g_error_new_valist (MC_ERROR, code, format, args);
         va_end (args);
 
-        if (*dest) g_error_free (*dest); //WIN32, fix
+        g_error_free (*dest);
         *dest = NULL;
         g_propagate_error (dest, tmp_error);
     }
@@ -1551,7 +1569,7 @@ mc_replace_error (GError ** dest, int code, const char *format, ...)
  * @return TRUE if clock skew detected, FALSE otherwise
  */
 gboolean
-mc_time_elapsed (gint64 * timestamp, gint64 delay)
+mc_time_elapsed (gint64 *timestamp, gint64 delay)
 {
     gint64 now;
 

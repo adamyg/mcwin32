@@ -1,7 +1,7 @@
 /*
    Virtual File System: GNU Tar file system.
 
-   Copyright (C) 2000-2024
+   Copyright (C) 2000-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -223,7 +223,7 @@ cpio_free_archive (struct vfs_class *me, struct vfs_s_super *super)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-cpio_open_cpio_file (struct vfs_class *me, struct vfs_s_super *super, const vfs_path_t * vpath)
+cpio_open_cpio_file (struct vfs_class *me, struct vfs_s_super *super, const vfs_path_t *vpath)
 {
     int fd, type;
     cpio_super_t *arch;
@@ -456,7 +456,7 @@ cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, struct stat 
     if (entry != NULL)
     {
         /* This shouldn't happen! (well, it can happen if there is a record for a
-           file and than a record for a directory it is in; cpio would die with
+           file and then a record for a directory it is in; cpio would die with
            'No such file or directory' is such case) */
 
         if (!S_ISDIR (entry->ino->st.st_mode))
@@ -470,15 +470,8 @@ cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, struct stat 
             entry->ino->st.st_mode = st->st_mode;
             entry->ino->st.st_uid = st->st_uid;
             entry->ino->st.st_gid = st->st_gid;
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-            entry->ino->st.st_atim = st->st_atim;
-            entry->ino->st.st_mtim = st->st_mtim;
-            entry->ino->st.st_ctim = st->st_ctim;
-#else
-            entry->ino->st.st_atime = st->st_atime;
-            entry->ino->st.st_mtime = st->st_mtime;
-            entry->ino->st.st_ctime = st->st_ctime;
-#endif
+
+            vfs_copy_stat_times (st, &entry->ino->st);
         }
 
         g_free (name);
@@ -567,6 +560,7 @@ cpio_read_bin_head (struct vfs_class *me, struct vfs_s_super *super)
     if (arch->type == CPIO_BINRE)
     {
         int i;
+
         for (i = 0; i < (HEAD_LENGTH >> 1); i++)
             u.shorts[i] = GUINT16_SWAP_LE_BE_CONSTANT (u.shorts[i]);
     }
@@ -587,7 +581,7 @@ cpio_read_bin_head (struct vfs_class *me, struct vfs_s_super *super)
     CPIO_POS (super) += len;
     cpio_skip_padding (super);
 
-    if (!strcmp ("TRAILER!!!", name))
+    if (strcmp ("TRAILER!!!", name) == 0)
     {                           /* We got to the last record */
         g_free (name);
         return STATUS_TRAIL;
@@ -603,9 +597,9 @@ cpio_read_bin_head (struct vfs_class *me, struct vfs_s_super *super)
     st.st_rdev = u.buf.c_rdev;
 #endif
     st.st_size = ((off_t) u.buf.c_filesizes[0] << 16) | u.buf.c_filesizes[1];
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-    st.st_atim.tv_nsec = st.st_mtim.tv_nsec = st.st_ctim.tv_nsec = 0;
-#endif
+
+    vfs_zero_stat_times (&st);
+
     st.st_atime = st.st_mtime = st.st_ctime =
         ((time_t) u.buf.c_mtimes[0] << 16) | u.buf.c_mtimes[1];
 
@@ -660,7 +654,7 @@ cpio_read_oldc_head (struct vfs_class *me, struct vfs_s_super *super)
     CPIO_POS (super) += len;
     cpio_skip_padding (super);
 
-    if (!strcmp ("TRAILER!!!", name))
+    if (strcmp ("TRAILER!!!", name) == 0)
     {                           /* We got to the last record */
         g_free (name);
         return STATUS_TRAIL;
@@ -676,9 +670,8 @@ cpio_read_oldc_head (struct vfs_class *me, struct vfs_s_super *super)
     u.st.st_rdev = hd.c_rdev;
 #endif
     u.st.st_size = hd.c_filesize;
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-    u.st.st_atim.tv_nsec = u.st.st_mtim.tv_nsec = u.st.st_ctim.tv_nsec = 0;
-#endif
+
+    vfs_zero_stat_times (&u.st);
     u.st.st_atime = u.st.st_mtime = u.st.st_ctime = hd.c_mtime;
 
     return cpio_create_entry (me, super, &u.st, name);
@@ -757,9 +750,8 @@ cpio_read_crc_head (struct vfs_class *me, struct vfs_s_super *super)
     u.st.st_rdev = makedev (hd.c_rdev, hd.c_rdevmin);
 #endif
     u.st.st_size = hd.c_filesize;
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-    u.st.st_atim.tv_nsec = u.st.st_mtim.tv_nsec = u.st.st_ctim.tv_nsec = 0;
-#endif
+
+    vfs_zero_stat_times (&u.st);
     u.st.st_atime = u.st.st_mtime = u.st.st_ctime = hd.c_mtime;
 
     return cpio_create_entry (me, super, &u.st, name);
@@ -769,8 +761,8 @@ cpio_read_crc_head (struct vfs_class *me, struct vfs_s_super *super)
 /** Need to CPIO_SEEK_CUR to skip the file at the end of add entry!!!! */
 
 static int
-cpio_open_archive (struct vfs_s_super *super, const vfs_path_t * vpath,
-                   const vfs_path_element_t * vpath_element)
+cpio_open_archive (struct vfs_s_super *super, const vfs_path_t *vpath,
+                   const vfs_path_element_t *vpath_element)
 {
     (void) vpath_element;
 
@@ -810,7 +802,7 @@ cpio_open_archive (struct vfs_s_super *super, const vfs_path_t * vpath,
 /** Remaining functions are exactly same as for tarfs (and were in fact just copied) */
 
 static void *
-cpio_super_check (const vfs_path_t * vpath)
+cpio_super_check (const vfs_path_t *vpath)
 {
     static struct stat sb;
     int stat_result;
@@ -822,8 +814,8 @@ cpio_super_check (const vfs_path_t * vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-cpio_super_same (const vfs_path_element_t * vpath_element, struct vfs_s_super *parc,
-                 const vfs_path_t * vpath, void *cookie)
+cpio_super_same (const vfs_path_element_t *vpath_element, struct vfs_s_super *parc,
+                 const vfs_path_t *vpath, void *cookie)
 {
     struct stat *archive_stat = cookie; /* stat of main archive */
 
@@ -840,6 +832,7 @@ cpio_super_same (const vfs_path_element_t * vpath_element, struct vfs_s_super *p
         vfs_rmstamp (vfs_cpiofs_ops, (vfsid) parc);
         return 2;
     }
+
     /* Hasn't been modified, give it a new timeout */
     vfs_stamp (vfs_cpiofs_ops, (vfsid) parc);
     return 1;
@@ -872,7 +865,7 @@ cpio_read (void *fh, char *buffer, size_t count)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-cpio_fh_open (struct vfs_class *me, vfs_file_handler_t * fh, int flags, mode_t mode)
+cpio_fh_open (struct vfs_class *me, vfs_file_handler_t *fh, int flags, mode_t mode)
 {
     (void) fh;
     (void) mode;

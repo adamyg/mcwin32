@@ -1,7 +1,7 @@
 /*
    Editor low level data handling and cursor fundamentals.
 
-   Copyright (C) 1996-2024
+   Copyright (C) 1996-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -111,7 +111,7 @@ int max_undo = 32768;
 gboolean enable_show_tabs_tws = TRUE;
 
 unsigned int edit_stack_iterator = 0;
-edit_stack_type edit_history_moveto[MAX_HISTORY_MOVETO];
+edit_arg_t edit_history_moveto[MAX_HISTORY_MOVETO];
 /* magic sequence for say than block is vertical */
 const char VERTICAL_MAGIC[] = { '\1', '\1', '\1', '\1', '\n' };
 
@@ -134,8 +134,7 @@ const char VERTICAL_MAGIC[] = { '\1', '\1', '\1', '\1', '\n' };
 static const struct edit_filters
 {
     const char *read, *write, *extension;
-} all_filters[] =
-{
+} all_filters[] = {
     /* *INDENT-OFF* */
     { "xz -cd %s 2>&1", "xz > %s", ".xz"},
     { "zstd -cd %s 2>&1", "zstd > %s", ".zst"},
@@ -156,7 +155,7 @@ static const off_t filesize_default_threshold = 64 * 1024 * 1024;       /* 64 MB
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-edit_load_status_update_cb (status_msg_t * sm)
+edit_load_status_update_cb (status_msg_t *sm)
 {
     simple_status_msg_t *ssm = SIMPLE_STATUS_MSG (sm);
     edit_buffer_read_file_status_msg_t *rsm = (edit_buffer_read_file_status_msg_t *) sm;
@@ -193,7 +192,7 @@ edit_load_status_update_cb (status_msg_t * sm)
  */
 
 static gboolean
-edit_load_file_fast (edit_buffer_t * buf, const vfs_path_t * filename_vpath)
+edit_load_file_fast (edit_buffer_t *buf, const vfs_path_t *filename_vpath)
 {
     int file;
     gboolean ret;
@@ -203,12 +202,8 @@ edit_load_file_fast (edit_buffer_t * buf, const vfs_path_t * filename_vpath)
     file = mc_open (filename_vpath, O_RDONLY | O_BINARY);
     if (file < 0)
     {
-        gchar *errmsg;
-
-        errmsg =
-            g_strdup_printf (_("Cannot open %s for reading"), vfs_path_as_str (filename_vpath));
-        edit_error_dialog (_("Error"), errmsg);
-        g_free (errmsg);
+        message (D_ERROR, MSG_ERROR, _("Cannot open %s for reading"),
+                 vfs_path_as_str (filename_vpath));
         return FALSE;
     }
 
@@ -224,13 +219,7 @@ edit_load_file_fast (edit_buffer_t * buf, const vfs_path_t * filename_vpath)
     status_msg_deinit (STATUS_MSG (&rsm));
 
     if (!ret && !aborted)
-    {
-        gchar *errmsg;
-
-        errmsg = g_strdup_printf (_("Error reading %s"), vfs_path_as_str (filename_vpath));
-        edit_error_dialog (_("Error"), errmsg);
-        g_free (errmsg);
-    }
+        message (D_ERROR, MSG_ERROR, _("Error reading %s"), vfs_path_as_str (filename_vpath));
 
     mc_close (file);
     return ret;
@@ -240,7 +229,7 @@ edit_load_file_fast (edit_buffer_t * buf, const vfs_path_t * filename_vpath)
 /** Return index of the filter or -1 is there is no appropriate filter */
 
 static int
-edit_find_filter (const vfs_path_t * filename_vpath)
+edit_find_filter (const vfs_path_t *filename_vpath)
 {
     if (filename_vpath != NULL)
     {
@@ -260,7 +249,7 @@ edit_find_filter (const vfs_path_t * filename_vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static char *
-edit_get_filter (const vfs_path_t * filename_vpath)
+edit_get_filter (const vfs_path_t *filename_vpath)
 {
     int i;
     char *quoted_name;
@@ -283,7 +272,7 @@ edit_get_filter (const vfs_path_t * filename_vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static off_t
-edit_insert_stream (WEdit * edit, FILE * f)
+edit_insert_stream (WEdit *edit, FILE *f)
 {
     int c;
     off_t i;
@@ -305,7 +294,7 @@ edit_insert_stream (WEdit * edit, FILE * f)
   */
 
 static gboolean
-check_file_access (WEdit * edit, const vfs_path_t * filename_vpath, struct stat *st)
+check_file_access (WEdit *edit, const vfs_path_t *filename_vpath, struct stat *st)
 {
     static uintmax_t threshold = UINTMAX_MAX;
     int file;
@@ -384,7 +373,7 @@ check_file_access (WEdit * edit, const vfs_path_t * filename_vpath, struct stat 
 
     if (errmsg != NULL)
     {
-        edit_error_dialog (_("Error"), errmsg);
+        message (D_ERROR, MSG_ERROR, "%s", errmsg);
         g_free (errmsg);
         ret = FALSE;
     }
@@ -407,7 +396,7 @@ check_file_access (WEdit * edit, const vfs_path_t * filename_vpath, struct stat 
  * @return TRUE if file was successfully opened and loaded to buffers, FALSE otherwise
  */
 static gboolean
-edit_load_file (WEdit * edit)
+edit_load_file (WEdit *edit)
 {
     gboolean fast_load = TRUE;
 
@@ -481,7 +470,7 @@ edit_load_file (WEdit * edit)
  */
 
 static void
-edit_load_position (WEdit * edit, gboolean load_position)
+edit_load_position (WEdit *edit, gboolean load_position)
 {
     long line, column;
     off_t offset;
@@ -519,7 +508,7 @@ edit_load_position (WEdit * edit, gboolean load_position)
 /** Save cursor position in the file */
 
 static void
-edit_save_position (WEdit * edit)
+edit_save_position (WEdit *edit)
 {
     if (edit->filename_vpath == NULL
         || *(vfs_path_get_by_index (edit->filename_vpath, 0)->path) == '\0')
@@ -535,7 +524,7 @@ edit_save_position (WEdit * edit)
 /** Clean the WEdit stricture except the widget part */
 
 static void
-edit_purge_widget (WEdit * edit)
+edit_purge_widget (WEdit *edit)
 {
     size_t len = sizeof (WEdit) - sizeof (Widget);
     char *start = (char *) edit + sizeof (Widget);
@@ -550,7 +539,7 @@ edit_purge_widget (WEdit * edit)
  */
 
 static long
-edit_pop_undo_action (WEdit * edit)
+edit_pop_undo_action (WEdit *edit)
 {
     long c;
     unsigned long sp = edit->undo_stack_pointer;
@@ -585,7 +574,7 @@ edit_pop_undo_action (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static long
-edit_pop_redo_action (WEdit * edit)
+edit_pop_redo_action (WEdit *edit)
 {
     long c;
     unsigned long sp = edit->redo_stack_pointer;
@@ -616,7 +605,7 @@ edit_pop_redo_action (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static long
-get_prev_undo_action (WEdit * edit)
+get_prev_undo_action (WEdit *edit)
 {
     long c;
     unsigned long sp = edit->undo_stack_pointer;
@@ -640,7 +629,7 @@ get_prev_undo_action (WEdit * edit)
 /** is called whenever a modification is made by one of the four routines below */
 
 static void
-edit_modification (WEdit * edit)
+edit_modification (WEdit *edit)
 {
     edit->caches_valid = FALSE;
 
@@ -661,7 +650,7 @@ edit_modification (WEdit * edit)
  */
 
 static gboolean
-is_in_indent (const edit_buffer_t * buf)
+is_in_indent (const edit_buffer_t *buf)
 {
     off_t p;
 
@@ -682,7 +671,7 @@ is_in_indent (const edit_buffer_t * buf)
  */
 
 static gboolean
-is_blank (const edit_buffer_t * buf, off_t offset)
+is_blank (const edit_buffer_t *buf, off_t offset)
 {
     off_t s, f;
 
@@ -703,7 +692,7 @@ is_blank (const edit_buffer_t * buf, off_t offset)
 /** returns the offset of line i */
 
 static off_t
-edit_find_line (WEdit * edit, long line)
+edit_find_line (WEdit *edit, long line)
 {
     long i;
     long j = 0;
@@ -759,7 +748,7 @@ edit_find_line (WEdit * edit, long line)
    before a non-blank line is reached */
 
 static void
-edit_move_up_paragraph (WEdit * edit, gboolean do_scroll)
+edit_move_up_paragraph (WEdit *edit, gboolean do_scroll)
 {
     long i = 0;
 
@@ -796,7 +785,7 @@ edit_move_up_paragraph (WEdit * edit, gboolean do_scroll)
    before a non-blank line is reached */
 
 static void
-edit_move_down_paragraph (WEdit * edit, gboolean do_scroll)
+edit_move_down_paragraph (WEdit *edit, gboolean do_scroll)
 {
     long i;
 
@@ -829,7 +818,7 @@ edit_move_down_paragraph (WEdit * edit, gboolean do_scroll)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_begin_page (WEdit * edit)
+edit_begin_page (WEdit *edit)
 {
     edit_update_curs_row (edit);
     edit_move_up (edit, edit->curs_row, FALSE);
@@ -838,7 +827,7 @@ edit_begin_page (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_end_page (WEdit * edit)
+edit_end_page (WEdit *edit)
 {
     edit_update_curs_row (edit);
     edit_move_down (edit, WIDGET (edit)->rect.lines - edit->curs_row - 1, FALSE);
@@ -849,7 +838,7 @@ edit_end_page (WEdit * edit)
 /** goto beginning of text */
 
 static void
-edit_move_to_top (WEdit * edit)
+edit_move_to_top (WEdit *edit)
 {
     if (edit->buffer.curs_line != 0)
     {
@@ -865,7 +854,7 @@ edit_move_to_top (WEdit * edit)
 /** goto end of text */
 
 static void
-edit_move_to_bottom (WEdit * edit)
+edit_move_to_bottom (WEdit *edit)
 {
     if (edit->buffer.curs_line < edit->buffer.lines)
     {
@@ -881,7 +870,7 @@ edit_move_to_bottom (WEdit * edit)
 /** goto beginning of line */
 
 static void
-edit_cursor_to_bol (WEdit * edit)
+edit_cursor_to_bol (WEdit *edit)
 {
     off_t b;
 
@@ -896,7 +885,7 @@ edit_cursor_to_bol (WEdit * edit)
 /** goto end of line */
 
 static void
-edit_cursor_to_eol (WEdit * edit)
+edit_cursor_to_eol (WEdit *edit)
 {
     off_t b;
 
@@ -954,7 +943,7 @@ my_type_of (int c)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_left_word_move (WEdit * edit, int s)
+edit_left_word_move (WEdit *edit, int s)
 {
     while (TRUE)
     {
@@ -986,7 +975,7 @@ edit_left_word_move (WEdit * edit, int s)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_left_word_move_cmd (WEdit * edit)
+edit_left_word_move_cmd (WEdit *edit)
 {
     edit_left_word_move (edit, 0);
     edit->force |= REDRAW_PAGE;
@@ -995,7 +984,7 @@ edit_left_word_move_cmd (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_right_word_move (WEdit * edit, int s)
+edit_right_word_move (WEdit *edit, int s)
 {
     while (TRUE)
     {
@@ -1027,7 +1016,7 @@ edit_right_word_move (WEdit * edit, int s)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_right_word_move_cmd (WEdit * edit)
+edit_right_word_move_cmd (WEdit *edit)
 {
     edit_right_word_move (edit, 0);
     edit->force |= REDRAW_PAGE;
@@ -1036,7 +1025,7 @@ edit_right_word_move_cmd (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_right_char_move_cmd (WEdit * edit)
+edit_right_char_move_cmd (WEdit *edit)
 {
     int char_length = 1;
     int c;
@@ -1061,7 +1050,7 @@ edit_right_char_move_cmd (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_left_char_move_cmd (WEdit * edit)
+edit_left_char_move_cmd (WEdit *edit)
 {
     int char_length = 1;
 
@@ -1092,7 +1081,7 @@ edit_left_char_move_cmd (WEdit * edit)
 */
 
 static void
-edit_move_updown (WEdit * edit, long lines, gboolean do_scroll, gboolean direction)
+edit_move_updown (WEdit *edit, long lines, gboolean do_scroll, gboolean direction)
 {
     long p;
     long l = direction ? edit->buffer.curs_line : edit->buffer.lines - edit->buffer.curs_line;
@@ -1135,7 +1124,7 @@ edit_move_updown (WEdit * edit, long lines, gboolean do_scroll, gboolean directi
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_right_delete_word (WEdit * edit)
+edit_right_delete_word (WEdit *edit)
 {
     while (edit->buffer.curs1 < edit->buffer.size)
     {
@@ -1157,7 +1146,7 @@ edit_right_delete_word (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_left_delete_word (WEdit * edit)
+edit_left_delete_word (WEdit *edit)
 {
     while (edit->buffer.curs1 > 0)
     {
@@ -1183,7 +1172,7 @@ edit_left_delete_word (WEdit * edit)
  */
 
 static void
-edit_do_undo (WEdit * edit)
+edit_do_undo (WEdit *edit)
 {
     long ac;
     long count = 0;
@@ -1269,7 +1258,7 @@ edit_do_undo (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_do_redo (WEdit * edit)
+edit_do_redo (WEdit *edit)
 {
     long ac;
     long count = 0;
@@ -1352,7 +1341,7 @@ edit_do_redo (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_group_undo (WEdit * edit)
+edit_group_undo (WEdit *edit)
 {
     long ac = KEY_PRESS;
     long cur_ac = KEY_PRESS;
@@ -1373,7 +1362,7 @@ edit_group_undo (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_delete_to_line_end (WEdit * edit)
+edit_delete_to_line_end (WEdit *edit)
 {
     while (edit_buffer_get_current_byte (&edit->buffer) != '\n' && edit->buffer.curs2 != 0)
         edit_delete (edit, TRUE);
@@ -1382,7 +1371,7 @@ edit_delete_to_line_end (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_delete_to_line_begin (WEdit * edit)
+edit_delete_to_line_begin (WEdit *edit)
 {
     while (edit_buffer_get_previous_byte (&edit->buffer) != '\n' && edit->buffer.curs1 != 0)
         edit_backspace (edit, TRUE);
@@ -1391,7 +1380,7 @@ edit_delete_to_line_begin (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-is_aligned_on_a_tab (WEdit * edit)
+is_aligned_on_a_tab (WEdit *edit)
 {
     long curs_col;
 
@@ -1403,7 +1392,7 @@ is_aligned_on_a_tab (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-right_of_four_spaces (WEdit * edit)
+right_of_four_spaces (WEdit *edit)
 {
     int i;
     int ch = 0;
@@ -1417,7 +1406,7 @@ right_of_four_spaces (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-left_of_four_spaces (WEdit * edit)
+left_of_four_spaces (WEdit *edit)
 {
     int i, ch = 0;
 
@@ -1430,7 +1419,7 @@ left_of_four_spaces (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_auto_indent (WEdit * edit)
+edit_auto_indent (WEdit *edit)
 {
     off_t p;
 
@@ -1452,7 +1441,7 @@ edit_auto_indent (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static inline void
-edit_double_newline (WEdit * edit)
+edit_double_newline (WEdit *edit)
 {
     edit_insert (edit, '\n');
     if (edit_buffer_get_current_byte (&edit->buffer) == '\n'
@@ -1465,7 +1454,7 @@ edit_double_newline (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-insert_spaces_tab (WEdit * edit, gboolean half)
+insert_spaces_tab (WEdit *edit, gboolean half)
 {
     long i;
 
@@ -1481,7 +1470,7 @@ insert_spaces_tab (WEdit * edit, gboolean half)
 /* --------------------------------------------------------------------------------------------- */
 
 static inline void
-edit_tab_cmd (WEdit * edit)
+edit_tab_cmd (WEdit *edit)
 {
     if (edit_options.fake_half_tabs && is_in_indent (&edit->buffer))
     {
@@ -1508,7 +1497,7 @@ edit_tab_cmd (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-check_and_wrap_line (WEdit * edit)
+check_and_wrap_line (WEdit *edit)
 {
     off_t curs;
 
@@ -1551,7 +1540,7 @@ check_and_wrap_line (WEdit * edit)
  */
 
 static off_t
-edit_get_bracket (WEdit * edit, gboolean in_screen, unsigned long furthest_bracket_search)
+edit_get_bracket (WEdit *edit, gboolean in_screen, unsigned long furthest_bracket_search)
 {
     const char *const b = "{}{[][()(", *p;
     int i = 1, inc = -1, c, d, n = 0;
@@ -1606,7 +1595,7 @@ edit_get_bracket (WEdit * edit, gboolean in_screen, unsigned long furthest_brack
 /* --------------------------------------------------------------------------------------------- */
 
 static inline void
-edit_goto_matching_bracket (WEdit * edit)
+edit_goto_matching_bracket (WEdit *edit)
 {
     off_t q;
 
@@ -1622,7 +1611,7 @@ edit_goto_matching_bracket (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_move_block_to_right (WEdit * edit)
+edit_move_block_to_right (WEdit *edit)
 {
     off_t start_mark, end_mark;
     long cur_bol, start_bol;
@@ -1662,7 +1651,7 @@ edit_move_block_to_right (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_move_block_to_left (WEdit * edit)
+edit_move_block_to_left (WEdit *edit)
 {
     off_t start_mark, end_mark;
     off_t cur_bol, start_bol;
@@ -1714,7 +1703,7 @@ edit_move_block_to_left (WEdit * edit)
  */
 
 static size_t
-edit_print_string (WEdit * e, const char *s)
+edit_print_string (WEdit *e, const char *s)
 {
     size_t i;
 
@@ -1728,7 +1717,7 @@ edit_print_string (WEdit * e, const char *s)
 /* --------------------------------------------------------------------------------------------- */
 
 static off_t
-edit_insert_column_from_file (WEdit * edit, int file, off_t * start_pos, off_t * end_pos,
+edit_insert_column_from_file (WEdit *edit, int file, off_t *start_pos, off_t *end_pos,
                               long *col1, long *col2)
 {
     off_t cursor;
@@ -1801,7 +1790,7 @@ edit_insert_column_from_file (WEdit * edit, int file, off_t * start_pos, off_t *
 /** User edit menu, like user menu (F2) but only in editor. */
 
 void
-edit_user_menu (WEdit * edit, const char *menu_file, int selected_entry)
+edit_user_menu (WEdit *edit, const char *menu_file, int selected_entry)
 {
     char *block_file;
     gboolean mark;
@@ -1821,14 +1810,14 @@ edit_user_menu (WEdit * edit, const char *menu_file, int selected_entry)
     if (user_menu_cmd (CONST_WIDGET (edit), menu_file, selected_entry)
         && (mc_stat (block_file_vpath, &status) == 0) && (status.st_size != 0))
     {
-        gboolean rc = FALSE;
+        gboolean rc = TRUE;
         FILE *fd;
 
         /* i.e. we have marked block */
         if (mark)
             rc = edit_block_delete_cmd (edit);
 
-        if (!rc)
+        if (rc)
         {
             off_t ins_len;
 
@@ -1852,7 +1841,7 @@ edit_user_menu (WEdit * edit, const char *menu_file, int selected_entry)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-edit_get_write_filter (const vfs_path_t * write_name_vpath, const vfs_path_t * filename_vpath)
+edit_get_write_filter (const vfs_path_t *write_name_vpath, const vfs_path_t *filename_vpath)
 {
     int i;
     const char *write_name;
@@ -1881,7 +1870,7 @@ edit_get_write_filter (const vfs_path_t * write_name_vpath, const vfs_path_t * f
  */
 
 off_t
-edit_write_stream (WEdit * edit, FILE * f)
+edit_write_stream (WEdit *edit, FILE *f)
 {
     long i;
 
@@ -1990,7 +1979,7 @@ is_break_char (char c)
 /** inserts a file at the cursor, returns count of inserted bytes on success */
 
 off_t
-edit_insert_file (WEdit * edit, const vfs_path_t * filename_vpath)
+edit_insert_file (WEdit *edit, const vfs_path_t *filename_vpath)
 {
     char *p;
     off_t current;
@@ -2016,21 +2005,13 @@ edit_insert_file (WEdit * edit, const vfs_path_t * filename_vpath)
             }
             if (pclose (f) > 0)
             {
-                char *errmsg;
-
-                errmsg = g_strdup_printf (_("Error reading from pipe: %s"), p);
-                edit_error_dialog (_("Error"), errmsg);
-                g_free (errmsg);
+                message (D_ERROR, MSG_ERROR, _("Error reading from pipe: %s"), p);
                 ins_len = -1;
             }
         }
         else
         {
-            char *errmsg;
-
-            errmsg = g_strdup_printf (_("Cannot open pipe for reading: %s"), p);
-            edit_error_dialog (_("Error"), errmsg);
-            g_free (errmsg);
+            message (D_ERROR, MSG_ERROR, _("Cannot open pipe for reading: %s"), p);
             ins_len = -1;
         }
         g_free (p);
@@ -2066,9 +2047,9 @@ edit_insert_file (WEdit * edit, const vfs_path_t * filename_vpath)
             edit_set_markers (edit, edit->buffer.curs1, mark2, c1, c2);
 
             /* highlight inserted text then not persistent blocks */
-            if (!edit_options.persistent_selections && edit->modified)
+            if (!edit_options.persistent_selections && edit->modified != 0)
             {
-                if (!edit->column_highlight)
+                if (edit->column_highlight == 0)
                     edit_push_undo_action (edit, COLUMN_OFF);
                 edit->column_highlight = 1;
             }
@@ -2083,10 +2064,10 @@ edit_insert_file (WEdit * edit, const vfs_path_t * filename_vpath)
                     edit_insert (edit, buf[i]);
             }
             /* highlight inserted text then not persistent blocks */
-            if (!edit_options.persistent_selections && edit->modified)
+            if (!edit_options.persistent_selections && edit->modified != 0)
             {
                 edit_set_markers (edit, edit->buffer.curs1, current, 0, 0);
-                if (edit->column_highlight)
+                if (edit->column_highlight != 0)
                     edit_push_undo_action (edit, COLUMN_ON);
                 edit->column_highlight = 0;
             }
@@ -2114,21 +2095,22 @@ edit_insert_file (WEdit * edit, const vfs_path_t * filename_vpath)
  * Fill in the edit structure.  Return NULL on failure.  Pass edit as
  * NULL to allocate a new structure.
  *
- * If line is 0, try to restore saved position.  Otherwise put the
+ * If arg is NULL or arg->line_number is 0, try to restore saved position.  Otherwise put the
  * cursor on that line and show it in the middle of the screen.
  */
 
 WEdit *
-edit_init (WEdit * edit, const WRect * r, const vfs_path_t * filename_vpath, long line)
+edit_init (WEdit *edit, const WRect *r, const edit_arg_t *arg)
 {
     gboolean to_free = FALSE;
+    long line;
 
     auto_syntax = TRUE;         /* Resetting to auto on every invocation */
     edit_options.line_state_width = edit_options.line_state ? LINE_STATE_WIDTH : 0;
 
     if (edit != NULL)
     {
-        gboolean fullscreen;
+        int fullscreen;
         WRect loc_prev;
 
         /* save some widget parameters */
@@ -2153,7 +2135,7 @@ edit_init (WEdit * edit, const WRect * r, const vfs_path_t * filename_vpath, lon
         w->options |= WOP_SELECTABLE | WOP_TOP_SELECT | WOP_WANT_CURSOR;
         w->keymap = editor_map;
         w->ext_keymap = editor_x_map;
-        edit->fullscreen = TRUE;
+        edit->fullscreen = 1;
         edit_save_size (edit);
     }
 
@@ -2164,13 +2146,27 @@ edit_init (WEdit * edit, const WRect * r, const vfs_path_t * filename_vpath, lon
     edit->stat1.st_gid = getgid ();
     edit->stat1.st_mtime = 0;
 
+    if (arg != NULL)
+        edit->attrs_ok = (mc_fgetflags (arg->file_vpath, &edit->attrs) == 0);
+    else
+        edit->attrs_ok = FALSE;
+
     edit->over_col = 0;
     edit->bracket = -1;
     edit->last_bracket = -1;
     edit->force |= REDRAW_PAGE;
 
     /* set file name before load file */
-    edit_set_filename (edit, filename_vpath);
+    if (arg != NULL)
+    {
+        edit_set_filename (edit, arg->file_vpath);
+        line = arg->line_number;
+    }
+    else
+    {
+        edit_set_filename (edit, NULL);
+        line = 0;
+    }
 
     edit->undo_stack_size = START_STACK_SIZE;
     edit->undo_stack_size_mask = START_STACK_SIZE - 1;
@@ -2221,14 +2217,14 @@ edit_init (WEdit * edit, const WRect * r, const vfs_path_t * filename_vpath, lon
 
 /** Clear the edit struct, freeing everything in it.  Return TRUE on success */
 gboolean
-edit_clean (WEdit * edit)
+edit_clean (WEdit *edit)
 {
     if (edit == NULL)
         return FALSE;
 
     /* a stale lock, remove it */
     if (edit->locked)
-        (void) unlock_file (edit->filename_vpath);
+        edit->locked = unlock_file (edit->filename_vpath);
 
     /* save cursor position */
     if (edit_options.save_position)
@@ -2237,7 +2233,7 @@ edit_clean (WEdit * edit)
         g_array_free (edit->serialized_bookmarks, TRUE);
 
     /* File specified on the mcedit command line and never saved */
-    if (edit->delete_file)
+    if (edit->delete_file != 0)
         unlink (vfs_path_get_last_path_str (edit->filename_vpath));
 
     edit_free_syntax_rules (edit);
@@ -2271,7 +2267,7 @@ edit_clean (WEdit * edit)
  * @return TRUE on success, FALSE on failure.
  */
 gboolean
-edit_reload_line (WEdit * edit, const vfs_path_t * filename_vpath, long line)
+edit_reload_line (WEdit *edit, const edit_arg_t *arg)
 {
     Widget *w = WIDGET (edit);
     WEdit *e;
@@ -2282,7 +2278,7 @@ edit_reload_line (WEdit * edit, const vfs_path_t * filename_vpath, long line)
     e->fullscreen = edit->fullscreen;
     e->loc_prev = edit->loc_prev;
 
-    if (edit_init (e, &w->rect, filename_vpath, line) == NULL)
+    if (edit_init (e, &w->rect, arg) == NULL)
     {
         g_free (e);
         return FALSE;
@@ -2299,7 +2295,7 @@ edit_reload_line (WEdit * edit, const vfs_path_t * filename_vpath, long line)
 
 #ifdef HAVE_CHARSET
 void
-edit_set_codeset (WEdit * edit)
+edit_set_codeset (WEdit *edit)
 {
     const char *cp_id;
 
@@ -2371,7 +2367,7 @@ edit_set_codeset (WEdit * edit)
  */
 
 void
-edit_push_undo_action (WEdit * edit, long c)
+edit_push_undo_action (WEdit *edit, long c)
 {
     unsigned long sp = edit->undo_stack_pointer;
     unsigned long spm1;
@@ -2462,7 +2458,7 @@ edit_push_undo_action (WEdit * edit, long c)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_push_redo_action (WEdit * edit, long c)
+edit_push_redo_action (WEdit *edit, long c)
 {
     unsigned long sp = edit->redo_stack_pointer;
     unsigned long spm1;
@@ -2549,7 +2545,7 @@ edit_push_redo_action (WEdit * edit, long c)
  */
 
 void
-edit_insert (WEdit * edit, int c)
+edit_insert (WEdit *edit, int c)
 {
     /* first we must update the position of the display window */
     if (edit->buffer.curs1 < edit->start_display)
@@ -2560,7 +2556,7 @@ edit_insert (WEdit * edit, int c)
     }
 
     /* Mark file as modified, unless the file hasn't been fully loaded */
-    if (edit->loading_done)
+    if (edit->loading_done != 0)
         edit_modification (edit);
 
     /* now we must update some info on the file and check if a redraw is required */
@@ -2590,7 +2586,7 @@ edit_insert (WEdit * edit, int c)
 /** same as edit_insert and move left */
 
 void
-edit_insert_ahead (WEdit * edit, int c)
+edit_insert_ahead (WEdit *edit, int c)
 {
     if (edit->buffer.curs1 < edit->start_display)
     {
@@ -2621,7 +2617,7 @@ edit_insert_ahead (WEdit * edit, int c)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_insert_over (WEdit * edit)
+edit_insert_over (WEdit *edit)
 {
     long i;
 
@@ -2634,7 +2630,7 @@ edit_insert_over (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-edit_delete (WEdit * edit, gboolean byte_delete)
+edit_delete (WEdit *edit, gboolean byte_delete)
 {
     int p = 0;
     int char_length = 1;
@@ -2695,7 +2691,7 @@ edit_delete (WEdit * edit, gboolean byte_delete)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-edit_backspace (WEdit * edit, gboolean byte_delete)
+edit_backspace (WEdit *edit, gboolean byte_delete)
 {
     int p = 0;
     int char_length = 1;
@@ -2757,7 +2753,7 @@ edit_backspace (WEdit * edit, gboolean byte_delete)
 /** moves the cursor right or left: increment positive or negative respectively */
 
 void
-edit_cursor_move (WEdit * edit, off_t increment)
+edit_cursor_move (WEdit *edit, off_t increment)
 {
     if (increment < 0)
     {
@@ -2802,7 +2798,7 @@ edit_cursor_move (WEdit * edit, off_t increment)
 /* If upto is zero returns index of cols across from current. */
 
 off_t
-edit_move_forward3 (const WEdit * edit, off_t current, long cols, off_t upto)
+edit_move_forward3 (const WEdit *edit, off_t current, long cols, off_t upto)
 {
     off_t p, q;
     long col;
@@ -2872,7 +2868,7 @@ edit_move_forward3 (const WEdit * edit, off_t current, long cols, off_t upto)
 /** returns the current offset of the cursor from the beginning of a file */
 
 off_t
-edit_get_cursor_offset (const WEdit * edit)
+edit_get_cursor_offset (const WEdit *edit)
 {
     return edit->buffer.curs1;
 }
@@ -2881,7 +2877,7 @@ edit_get_cursor_offset (const WEdit * edit)
 /** returns the current column position of the cursor */
 
 long
-edit_get_col (const WEdit * edit)
+edit_get_col (const WEdit *edit)
 {
     off_t b;
 
@@ -2894,7 +2890,7 @@ edit_get_col (const WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_update_curs_row (WEdit * edit)
+edit_update_curs_row (WEdit *edit)
 {
     edit->curs_row = edit->buffer.curs_line - edit->start_line;
 }
@@ -2902,7 +2898,7 @@ edit_update_curs_row (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_update_curs_col (WEdit * edit)
+edit_update_curs_col (WEdit *edit)
 {
     off_t b;
 
@@ -2913,7 +2909,7 @@ edit_update_curs_col (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 long
-edit_get_curs_col (const WEdit * edit)
+edit_get_curs_col (const WEdit *edit)
 {
     return edit->curs_col;
 }
@@ -2922,7 +2918,7 @@ edit_get_curs_col (const WEdit * edit)
 /** moves the display start position up by i lines */
 
 void
-edit_scroll_upward (WEdit * edit, long i)
+edit_scroll_upward (WEdit *edit, long i)
 {
     long lines_above = edit->start_line;
 
@@ -2942,7 +2938,7 @@ edit_scroll_upward (WEdit * edit, long i)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_scroll_downward (WEdit * edit, long i)
+edit_scroll_downward (WEdit *edit, long i)
 {
     long lines_below;
 
@@ -2963,7 +2959,7 @@ edit_scroll_downward (WEdit * edit, long i)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_scroll_right (WEdit * edit, long i)
+edit_scroll_right (WEdit *edit, long i)
 {
     edit->force |= REDRAW_PAGE;
     edit->force &= (0xfff - REDRAW_CHAR_ONLY);
@@ -2973,7 +2969,7 @@ edit_scroll_right (WEdit * edit, long i)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_scroll_left (WEdit * edit, long i)
+edit_scroll_left (WEdit *edit, long i)
 {
     if (edit->start_col)
     {
@@ -2990,7 +2986,7 @@ edit_scroll_left (WEdit * edit, long i)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_move_to_prev_col (WEdit * edit, off_t p)
+edit_move_to_prev_col (WEdit *edit, off_t p)
 {
     long prev = edit->prev_col;
     long over = edit->over_col;
@@ -3015,9 +3011,9 @@ edit_move_to_prev_col (WEdit * edit, off_t p)
         }
         else
         {
-            edit->over_col = 0;
-            edit->prev_col = edit->curs_col;
             edit->curs_col = prev + over;
+            edit->prev_col = edit->curs_col;
+            edit->over_col = 0;
         }
     }
     else
@@ -3059,7 +3055,7 @@ edit_move_to_prev_col (WEdit * edit, off_t p)
  */
 
 gboolean
-edit_line_is_blank (WEdit * edit, long line)
+edit_line_is_blank (WEdit *edit, long line)
 {
     return is_blank (&edit->buffer, edit_find_line (edit, line));
 }
@@ -3068,7 +3064,7 @@ edit_line_is_blank (WEdit * edit, long line)
 /** move cursor to line 'line' */
 
 void
-edit_move_to_line (WEdit * e, long line)
+edit_move_to_line (WEdit *e, long line)
 {
     if (line < e->buffer.curs_line)
         edit_move_up (e, e->buffer.curs_line - line, FALSE);
@@ -3081,7 +3077,7 @@ edit_move_to_line (WEdit * e, long line)
 /** scroll window so that first visible line is 'line' */
 
 void
-edit_move_display (WEdit * e, long line)
+edit_move_display (WEdit *e, long line)
 {
     if (line < e->start_line)
         edit_scroll_upward (e, e->start_line - line);
@@ -3093,7 +3089,7 @@ edit_move_display (WEdit * e, long line)
 /** save markers onto undo stack */
 
 void
-edit_push_markers (WEdit * edit)
+edit_push_markers (WEdit *edit)
 {
     edit_push_undo_action (edit, MARK_1 + edit->mark1);
     edit_push_undo_action (edit, MARK_2 + edit->mark2);
@@ -3103,7 +3099,7 @@ edit_push_markers (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_set_markers (WEdit * edit, off_t m1, off_t m2, long c1, long c2)
+edit_set_markers (WEdit *edit, off_t m1, off_t m2, long c1, long c2)
 {
     edit->mark1 = m1;
     edit->mark2 = m2;
@@ -3119,7 +3115,7 @@ edit_set_markers (WEdit * edit, off_t m1, off_t m2, long c1, long c2)
  */
 
 gboolean
-eval_marks (WEdit * edit, off_t * start_mark, off_t * end_mark)
+eval_marks (WEdit *edit, off_t *start_mark, off_t *end_mark)
 {
     long end_mark_curs;
 
@@ -3147,7 +3143,7 @@ eval_marks (WEdit * edit, off_t * start_mark, off_t * end_mark)
         edit->column2 = edit->curs_col + edit->over_col;
     }
 
-    if (edit->column_highlight
+    if (edit->column_highlight != 0
         && ((edit->mark1 > end_mark_curs && edit->column1 < edit->column2)
             || (edit->mark1 < end_mark_curs && edit->column1 > edit->column2)))
     {
@@ -3181,7 +3177,7 @@ eval_marks (WEdit * edit, off_t * start_mark, off_t * end_mark)
 /** highlight marker toggle */
 
 void
-edit_mark_cmd (WEdit * edit, gboolean unmark)
+edit_mark_cmd (WEdit *edit, gboolean unmark)
 {
     edit_push_markers (edit);
     if (unmark)
@@ -3208,7 +3204,7 @@ edit_mark_cmd (WEdit * edit, gboolean unmark)
 /** highlight the word under cursor */
 
 void
-edit_mark_current_word_cmd (WEdit * edit)
+edit_mark_current_word_cmd (WEdit *edit)
 {
     long pos;
 
@@ -3244,7 +3240,7 @@ edit_mark_current_word_cmd (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_mark_current_line_cmd (WEdit * edit)
+edit_mark_current_line_cmd (WEdit *edit)
 {
     edit->mark1 = edit_buffer_get_current_bol (&edit->buffer);
     edit->mark2 = edit_buffer_get_current_eol (&edit->buffer);
@@ -3255,7 +3251,7 @@ edit_mark_current_line_cmd (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_delete_line (WEdit * edit)
+edit_delete_line (WEdit *edit)
 {
     /*
      * Delete right part of the line.
@@ -3283,7 +3279,7 @@ edit_delete_line (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_push_key_press (WEdit * edit)
+edit_push_key_press (WEdit *edit)
 {
     edit_push_undo_action (edit, KEY_PRESS + edit->start_display);
     if (edit->mark2 == -1)
@@ -3296,7 +3292,7 @@ edit_push_key_press (WEdit * edit)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_find_bracket (WEdit * edit)
+edit_find_bracket (WEdit *edit)
 {
     edit->bracket = edit_get_bracket (edit, 1, 10000);
     if (edit->last_bracket != edit->bracket)
@@ -3316,7 +3312,7 @@ edit_find_bracket (WEdit * edit)
  */
 
 void
-edit_execute_key_command (WEdit * edit, long command, int char_for_insertion)
+edit_execute_key_command (WEdit *edit, long command, int char_for_insertion)
 {
     if (command == CK_MacroStartRecord || command == CK_RepeatStartRecord
         || (macro_index < 0
@@ -3353,7 +3349,7 @@ edit_execute_key_command (WEdit * edit, long command, int char_for_insertion)
         edit_push_key_press (edit);
 
     edit_execute_cmd (edit, command, char_for_insertion);
-    if (edit->column_highlight)
+    if (edit->column_highlight != 0)
         edit->force |= REDRAW_PAGE;
 }
 
@@ -3365,7 +3361,7 @@ edit_execute_key_command (WEdit * edit, long command, int char_for_insertion)
    all of them. It also does not check for the Undo command.
  */
 void
-edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
+edit_execute_cmd (WEdit *edit, long command, int char_for_insertion)
 {
     WRect *w = &WIDGET (edit)->rect;
 
@@ -3383,7 +3379,7 @@ edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
 
     /* The next key press will unhighlight the found string, so update
      * the whole page */
-    if (edit->found_len || edit->column_highlight)
+    if (edit->found_len != 0 || edit->column_highlight != 0)
         edit->force |= REDRAW_PAGE;
 
     switch (command)
@@ -3429,7 +3425,7 @@ edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
 
         /* any other command */
     default:
-        if (edit->highlight)
+        if (edit->highlight != 0)
             edit_mark_cmd (edit, FALSE);        /* clear */
         edit->highlight = 0;
     }
@@ -3464,7 +3460,7 @@ edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
         if (!edit_options.persistent_selections && edit->mark1 != edit->mark2)
             edit_block_delete_cmd (edit);
 
-        if (edit->overwrite)
+        if (edit->overwrite != 0)
         {
             /* remove char only one time, after input first byte, multibyte chars */
 #ifdef HAVE_CHARSET
@@ -3538,7 +3534,7 @@ edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
     case CK_WordRight:
         if (!edit_options.persistent_selections && edit->mark2 >= 0)
         {
-            if (edit->column_highlight)
+            if (edit->column_highlight != 0)
                 edit_push_undo_action (edit, COLUMN_ON);
             edit->column_highlight = 0;
             edit_mark_cmd (edit, TRUE);
@@ -3667,14 +3663,14 @@ edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
         MC_FALLTHROUGH;
     case CK_PageUp:
     case CK_MarkPageUp:
-        edit_move_up (edit, w->lines - 1, TRUE);
+        edit_move_up (edit, w->lines - (edit->fullscreen ? 1 : 2), TRUE);
         break;
     case CK_MarkColumnPageDown:
         edit->column_highlight = 1;
         MC_FALLTHROUGH;
     case CK_PageDown:
     case CK_MarkPageDown:
-        edit_move_down (edit, w->lines - 1, TRUE);
+        edit_move_down (edit, w->lines - (edit->fullscreen ? 1 : 2), TRUE);
         break;
     case CK_MarkColumnLeft:
         edit->column_highlight = 1;
@@ -3805,14 +3801,14 @@ edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
     case CK_Mark:
         if (edit->mark2 >= 0)
         {
-            if (edit->column_highlight)
+            if (edit->column_highlight != 0)
                 edit_push_undo_action (edit, COLUMN_ON);
             edit->column_highlight = 0;
         }
         edit_mark_cmd (edit, FALSE);
         break;
     case CK_MarkColumn:
-        if (!edit->column_highlight)
+        if (edit->column_highlight == 0)
             edit_push_undo_action (edit, COLUMN_OFF);
         edit->column_highlight = 1;
         edit_mark_cmd (edit, FALSE);
@@ -3822,19 +3818,19 @@ edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
         edit->force |= REDRAW_PAGE;
         break;
     case CK_Unmark:
-        if (edit->column_highlight)
+        if (edit->column_highlight != 0)
             edit_push_undo_action (edit, COLUMN_ON);
         edit->column_highlight = 0;
         edit_mark_cmd (edit, TRUE);
         break;
     case CK_MarkWord:
-        if (edit->column_highlight)
+        if (edit->column_highlight != 0)
             edit_push_undo_action (edit, COLUMN_ON);
         edit->column_highlight = 0;
         edit_mark_current_word_cmd (edit);
         break;
     case CK_MarkLine:
-        if (edit->column_highlight)
+        if (edit->column_highlight != 0)
             edit_push_undo_action (edit, COLUMN_ON);
         edit->column_highlight = 0;
         edit_mark_current_line_cmd (edit);
@@ -3929,7 +3925,7 @@ edit_execute_cmd (WEdit * edit, long command, int char_for_insertion)
         edit_paste_from_X_buf_cmd (edit);
         if (!edit_options.persistent_selections && edit->mark2 >= 0)
         {
-            if (edit->column_highlight)
+            if (edit->column_highlight != 0)
                 edit_push_undo_action (edit, COLUMN_ON);
             edit->column_highlight = 0;
             edit_mark_cmd (edit, TRUE);
@@ -4133,10 +4129,7 @@ void
 edit_stack_init (void)
 {
     for (edit_stack_iterator = 0; edit_stack_iterator < MAX_HISTORY_MOVETO; edit_stack_iterator++)
-    {
-        edit_history_moveto[edit_stack_iterator].filename_vpath = NULL;
-        edit_history_moveto[edit_stack_iterator].line = -1;
-    }
+        edit_arg_init (&edit_history_moveto[edit_stack_iterator], NULL, -1);
 
     edit_stack_iterator = 0;
 }
@@ -4147,14 +4140,14 @@ void
 edit_stack_free (void)
 {
     for (edit_stack_iterator = 0; edit_stack_iterator < MAX_HISTORY_MOVETO; edit_stack_iterator++)
-        vfs_path_free (edit_history_moveto[edit_stack_iterator].filename_vpath, TRUE);
+        vfs_path_free (edit_history_moveto[edit_stack_iterator].file_vpath, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 /** move i lines */
 
 void
-edit_move_up (WEdit * edit, long i, gboolean do_scroll)
+edit_move_up (WEdit *edit, long i, gboolean do_scroll)
 {
     edit_move_updown (edit, i, do_scroll, TRUE);
 }
@@ -4163,9 +4156,99 @@ edit_move_up (WEdit * edit, long i, gboolean do_scroll)
 /** move i lines */
 
 void
-edit_move_down (WEdit * edit, long i, gboolean do_scroll)
+edit_move_down (WEdit *edit, long i, gboolean do_scroll)
 {
     edit_move_updown (edit, i, do_scroll, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Create edit_arg_t object from vfs_path_t object and the line number.
+ *
+ * @param file_vpath  file path object
+ * @param line_number line number. If value is 0, try to restore saved position.
+ * @return edit_arg_t object
+ */
+
+edit_arg_t *
+edit_arg_vpath_new (vfs_path_t *file_vpath, long line_number)
+{
+    edit_arg_t *arg;
+
+    arg = g_new (edit_arg_t, 1);
+    arg->file_vpath = file_vpath;
+    arg->line_number = line_number;
+
+    return arg;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Create edit_arg_t object from file name and the line number.
+ *
+ * @param file_name   file name
+ * @param line_number line number. If value is 0, try to restore saved position.
+ * @return edit_arg_t object
+ */
+
+edit_arg_t *
+edit_arg_new (const char *file_name, long line_number)
+{
+    return edit_arg_vpath_new (vfs_path_from_str (file_name), line_number);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Initialize edit_arg_t object.
+ *
+ * @param arg  edit_arg_t object
+ * @param vpath vfs_path_t object
+ * @param line line number
+ */
+
+void
+edit_arg_init (edit_arg_t *arg, vfs_path_t *vpath, long line)
+{
+    arg->file_vpath = (vfs_path_t *) vpath;
+    arg->line_number = line;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Apply new values to edit_arg_t object members.
+ *
+ * @param arg  edit_arg_t object
+ * @param vpath vfs_path_t object
+ * @param line line number
+ */
+
+void
+edit_arg_assign (edit_arg_t *arg, vfs_path_t *vpath, long line)
+{
+    vfs_path_free (arg->file_vpath, TRUE);
+    edit_arg_init (arg, vpath, line);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Free the edit_arg_t object.
+ *
+ * @param arg edit_arg_t object
+ */
+
+void
+edit_arg_free (edit_arg_t *arg)
+{
+    vfs_path_free (arg->file_vpath, TRUE);
+    g_free (arg);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+const char *
+edit_get_file_name (const WEdit *edit)
+{
+    return vfs_path_as_str (edit->filename_vpath);
 }
 
 /* --------------------------------------------------------------------------------------------- */

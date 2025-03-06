@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.5 2024/01/03 16:03:03 cvsuser Exp $
+# $Id: Makefile.in,v 1.6 2025/02/19 17:29:37 cvsuser Exp $
 # libpcre2 makefile.
 #
 #
-# Copyright (c) 2023, Adam Young.
+# Copyright (c) 2023 - 2025, Adam Young.
 # All rights reserved.
 #
 # ==end==
@@ -66,6 +66,9 @@ XFLAGS=
 
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
+ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+CFLAGS+=	-wcd=124 -wcd=201
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 LDDEBUG=	@LDDEBUG@
@@ -90,8 +93,7 @@ RMFLAGS=	-f
 #########################################################################################
 # Targets
 
-
-VERSION=	10.42
+VERSION=	10.45
 VERSION_1	=$(word 1,$(subst ., ,$(VERSION)))
 VERSION_2	=$(word 2,$(subst ., ,$(VERSION)))
 VERSION_3	=$(word 3,$(subst ., ,$(VERSION)))
@@ -121,8 +123,9 @@ INSTALL=
 
 CSOURCES=\
 	pcre2_auto_possess.c		\
-	pcre2_chartables.c		\
+	pcre2_chkdint.c			\
 	pcre2_compile.c			\
+	pcre2_compile_class.c		\
 	pcre2_config.c			\
 	pcre2_context.c			\
 	pcre2_convert.c			\
@@ -147,6 +150,9 @@ CSOURCES=\
 	pcre2_ucd.c			\
 	pcre2_valid_utf.c		\
 	pcre2_xclass.c
+
+CSOURCES+=\
+	pcre2_chartables.c
 
 define pcre2_defines	#(width)
 

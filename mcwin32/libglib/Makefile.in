@@ -1,9 +1,9 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.14 2023/10/02 12:11:28 cvsuser Exp $
+# $Id: Makefile.in,v 1.15 2025/01/27 15:10:28 cvsuser Exp $
 # libglib makefile.
 #
 #
-# Copyright (c) 2016 - 2023 Adam Young.
+# Copyright (c) 2016 - 2025 Adam Young.
 #
 # This file is part of the Midnight Commander.
 #
@@ -123,7 +123,8 @@ GLIBDLL=	$(D_LIB)/$(LP)glib-2.0.la
 GMODULELIB=	$(D_LIB)/$(LP)gmodule-2.0_static$(A)
 GMODULEDLL=	$(D_LIB)/$(LP)gmodule-2.0.la
 
-VERSION=	2.51.4
+##VERSION=	2.51.4
+VERSION=	2.54.3
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 VERPACKED=	glib-$(VERSION).tgz
 
@@ -132,7 +133,7 @@ GLIBSRC=	$(GLIBBASE)/glib
 GLIBINCLUDE=	$(GLIBBASE)/glib
 GMODULESRC=	$(GLIBBASE)/gmodule
 
-CINCLUDE+=	-I$(GLIBBASE) -I./sdk
+CINCLUDE+=	-I$(GLIBBASE) -I./include-$(VERSION) -I./sdk
 CEXTRA+=	-D_WIN32
 
 ###	glib
@@ -177,7 +178,6 @@ CEXTRA_GOBJECT = \
 	-DFFI_BUILDING
 
 VPATH+=		$(GLIBSRC)
-VPATH+=		.\patch
 base=\
 	garray.c \
 	gasyncqueue.c \
@@ -193,7 +193,6 @@ base=\
 	gdataset.c \
 	gdate.c \
 	gdatetime.c \
-	patch_gdir.c \
 	genviron.c \
 	gerror.c \
 	gfileutils.c \
@@ -247,7 +246,6 @@ base=\
 	gunicollate.c \
 	gunidecomp.c \
 	guniprop.c \
-	gurifuncs.c \
 	gutf8.c \
 	gutils.c \
 	guuid.c \
@@ -260,6 +258,20 @@ base=\
 	gversion.c \
 	gwakeup.c \
 	gwin32.c
+
+ifeq ("$(VERSION)","2.51.4")
+VPATH+=		.\patch
+base+=\
+	patch_gdir_2_51_4.c \
+	gurifuncs.c
+endif
+
+ifeq ("$(VERSION)","2.54.3")
+VPATH+=		.\patch
+base+=\
+	patch_gdir_2_54_3.c \
+	gurifuncs.c
+endif
 
 deprecated=\
 	gallocator.c \
@@ -375,7 +387,7 @@ $(GLIBLIB):		$(GLIBLIBOBJS)
 INSTALLED+=	$(D_BIN)/libglib.$(VERSION).dll
 $(GLIBDLL):		CLOCAL += -I. -I$(GLIBSRC)
 $(GLIBDLL):		CEXTRA += -DGLIB_COMPILATION -DDLL_EXPORT -DPCRE_STATIC
-$(GLIBDLL):		DLLDEF = -export-symbols libglib.def
+$(GLIBDLL):		DLLDEF = -export-symbols include-$(VERSION)/libglib.def
 $(GLIBDLL):		$(GLIBDLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) -dlbase libglib -o $@ $^ $(DLLDEF) $(LDLIBS)

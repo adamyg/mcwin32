@@ -1,7 +1,7 @@
 /*
    Widget based utility functions.
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Authors:
@@ -66,7 +66,7 @@ static int sel_pos = 0;
 /** default query callback, used to reposition query */
 
 static cb_ret_t
-query_default_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+query_default_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     WDialog *h = DIALOG (w);
 
@@ -121,46 +121,6 @@ query_default_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** Create message dialog */
-
-static WDialog *
-do_create_message (int flags, const char *title, const char *text)
-{
-    char *p;
-    WDialog *d;
-
-    /* Add empty lines before and after the message */
-    p = g_strconcat ("\n", text, "\n", (char *) NULL);
-    query_dialog (title, p, flags, 0);
-    d = last_query_dlg;
-
-    /* do resize before initing and running */
-    send_message (d, NULL, MSG_RESIZE, 0, NULL);
-
-    dlg_init (d);
-    g_free (p);
-
-    return d;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Show message dialog.  Dismiss it when any key is pressed.
- * Not safe to call from background.
- */
-
-static void
-fg_message (int flags, const char *title, const char *text)
-{
-    WDialog *d;
-
-    d = do_create_message (flags, title, text);
-    tty_getch ();
-    dlg_run_done (d);
-    widget_destroy (WIDGET (d));
-}
-
-/* --------------------------------------------------------------------------------------------- */
 /** Show message box from background */
 
 #ifdef ENABLE_BACKGROUND
@@ -169,7 +129,7 @@ bg_message (int dummy, int *flags, char *title, const char *text)
 {
     (void) dummy;
     title = g_strconcat (_("Background process:"), " ", title, (char *) NULL);
-    fg_message (*flags, title, text);
+    query_dialog (title, text, *flags, 1, _("&OK"));
     g_free (title);
 }
 #endif /* ENABLE_BACKGROUND */
@@ -195,7 +155,7 @@ fg_input_dialog_help (const char *header, const char *text, const char *help,
     char *p_text;
     char histname[64] = "inp|";
     gboolean is_passwd = FALSE;
-    char *my_str;
+    char *my_str = NULL;
     int ret;
 
     /* label text */
@@ -416,7 +376,13 @@ create_message (int flags, const char *title, const char *text, ...)
     p = g_strdup_vprintf (text, args);
     va_end (args);
 
-    d = do_create_message (flags, title, p);
+    query_dialog (title, p, flags, 0);
+    d = last_query_dlg;
+
+    /* do resize before initing and running */
+    send_message (d, NULL, MSG_RESIZE, 0, NULL);
+
+    dlg_init (d);
     g_free (p);
 
     return d;
@@ -446,6 +412,7 @@ message (int flags, const char *title, const char *text, ...)
             void *p;
             void (*f) (int, int *, char *, const char *);
         } func;
+
         func.f = bg_message;
 
         wtools_parent_call (func.p, NULL, 3, sizeof (flags), &flags, strlen (title), title,
@@ -453,7 +420,7 @@ message (int flags, const char *title, const char *text, ...)
     }
     else
 #endif /* ENABLE_BACKGROUND */
-        fg_message (flags, title, p);
+        query_dialog (title, p, flags, 1, _("&OK"));
 
     g_free (p);
 }
@@ -462,7 +429,7 @@ message (int flags, const char *title, const char *text, ...)
 /** Show error message box */
 
 gboolean
-mc_error_message (GError ** mcerror, int *code)
+mc_error_message (GError **mcerror, int *code)
 {
     if (mcerror == NULL || *mcerror == NULL)
         return FALSE;
@@ -583,7 +550,7 @@ status_msg_create (const char *title, double delay, status_msg_cb init_cb,
  */
 
 void
-status_msg_destroy (status_msg_t * sm)
+status_msg_destroy (status_msg_t *sm)
 {
     status_msg_deinit (sm);
     g_free (sm);
@@ -602,7 +569,7 @@ status_msg_destroy (status_msg_t * sm)
  */
 
 void
-status_msg_init (status_msg_t * sm, const char *title, double delay, status_msg_cb init_cb,
+status_msg_init (status_msg_t *sm, const char *title, double delay, status_msg_cb init_cb,
                  status_msg_update_cb update_cb, status_msg_cb deinit_cb)
 {
     gint64 start;
@@ -640,7 +607,7 @@ status_msg_init (status_msg_t * sm, const char *title, double delay, status_msg_
  */
 
 void
-status_msg_deinit (status_msg_t * sm)
+status_msg_deinit (status_msg_t *sm)
 {
     if (sm == NULL)
         return;
@@ -663,7 +630,7 @@ status_msg_deinit (status_msg_t * sm)
  */
 
 int
-status_msg_common_update (status_msg_t * sm)
+status_msg_common_update (status_msg_t *sm)
 {
     int c;
     Gpm_Event event;
@@ -709,7 +676,7 @@ status_msg_common_update (status_msg_t * sm)
  */
 
 void
-simple_status_msg_init_cb (status_msg_t * sm)
+simple_status_msg_init_cb (status_msg_t *sm)
 {
     simple_status_msg_t *ssm = SIMPLE_STATUS_MSG (sm);
     Widget *wd = WIDGET (sm->dlg);

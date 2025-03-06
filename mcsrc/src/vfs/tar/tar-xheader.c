@@ -1,7 +1,7 @@
 /*
    Virtual File System: GNU Tar file system.
 
-   Copyright (C) 1995-2024
+   Copyright (C) 1995-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -31,7 +31,6 @@
 #include <config.h>
 
 #include <ctype.h>              /* isdigit() */
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -51,7 +50,7 @@
 
 /* General Interface */
 
-/* Since tar VFS is read-only, inplement decodes only */
+/* Since tar VFS is read-only, implement decodes only */
 /* *INDENT-OFF* */
 struct xhdr_tab
 {
@@ -159,7 +158,7 @@ static struct xhdr_tab xhdr_tab[] =
 
     { "GNU.sparse.size",      sparse_size_decoder,      XHDR_PROTECTED },
     /* tar 1.14 - 1.15.1 keywords. Multiple instances of these appeared in 'x'
-       headers, and each of them was meaningful. It confilcted with POSIX specs,
+       headers, and each of them was meaningful. It conflicted with POSIX specs,
        which requires that "when extended header records conflict, the last one
        given in the header shall take precedence." */
     { "GNU.sparse.offset",    sparse_offset_decoder,    XHDR_PROTECTED },
@@ -178,61 +177,6 @@ static GSList *global_header_override_list = NULL;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
-/* --------------------------------------------------------------------------------------------- */
-
-/* Convert a prefix of the string @arg to a system integer type whose minimum value is @minval
-   and maximum @maxval. If @minval is negative, negative integers @minval .. -1 are assumed
-   to be represented using leading '-' in the usual way. If the represented value exceeds INTMAX_MAX,
-   return a negative integer V such that (uintmax_t) V yields the represented value. If @arglim is
-   nonnull, store into *@arglim a pointer to the first character after the prefix.
-
-   This is the inverse of sysinttostr.
-
-   On a normal return, set errno = 0.
-   On conversion error, return 0 and set errno = EINVAL.
-   On overflow, return an extreme value and set errno = ERANGE.
- */
-#if ! (INTMAX_MAX <= UINTMAX_MAX)
-#error "strtosysint: nonnegative intmax_t does not fit in uintmax_t"
-#endif
-static intmax_t
-strtosysint (const char *arg, char **arglim, intmax_t minval, uintmax_t maxval)
-{
-    errno = 0;
-
-    if (maxval <= INTMAX_MAX)
-    {
-        if (isdigit (arg[*arg == '-' ? 1 : 0]))
-        {
-            gint64 i;
-
-            i = g_ascii_strtoll (arg, arglim, 10);
-            if ((gint64) minval <= i && i <= (gint64) maxval)
-                return (intmax_t) i;
-
-            errno = ERANGE;
-            return i < (gint64) minval ? minval : (intmax_t) maxval;
-        }
-    }
-    else
-    {
-        if (isdigit (*arg))
-        {
-            guint64 i;
-
-            i = g_ascii_strtoull (arg, arglim, 10);
-            if (i <= (guint64) maxval)
-                return tar_represent_uintmax ((uintmax_t) i);
-
-            errno = ERANGE;
-            return maxval;
-        }
-    }
-
-    errno = EINVAL;
-    return 0;
-}
-
 /* --------------------------------------------------------------------------------------------- */
 
 static struct xhdr_tab *
@@ -278,7 +222,7 @@ keyword_item_free (gpointer data)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-xheader_list_append (GSList ** root, const char *kw, const char *value)
+xheader_list_append (GSList **root, const char *kw, const char *value)
 {
     struct keyword_item *kp;
 
@@ -291,7 +235,7 @@ xheader_list_append (GSList ** root, const char *kw, const char *value)
 /* --------------------------------------------------------------------------------------------- */
 
 static inline void
-xheader_list_destroy (GSList ** root)
+xheader_list_destroy (GSList **root)
 {
     g_slist_free_full (*root, keyword_item_free);
     *root = NULL;
@@ -300,7 +244,7 @@ xheader_list_destroy (GSList ** root)
 /* --------------------------------------------------------------------------------------------- */
 
 static inline void
-run_override_list (GSList * kp, struct tar_stat_info *st)
+run_override_list (GSList *kp, struct tar_stat_info *st)
 {
     g_slist_foreach (kp, (GFunc) keyword_item_run, st);
 }
@@ -310,7 +254,9 @@ run_override_list (GSList * kp, struct tar_stat_info *st)
 static struct timespec
 decode_timespec (const char *arg, char **arg_lim, gboolean parse_fraction)
 {
-    time_t s = TYPE_MINIMUM (time_t);
+#if defined(WIN32) //WIN32: stdckdint.h
+    time_t s = TYPE_MINIMUM(time_t);
+
     int ns = -1;
     const char *p = arg;
     gboolean negative = *arg == '-';
@@ -389,11 +335,68 @@ decode_timespec (const char *arg, char **arg_lim, gboolean parse_fraction)
         if (errno == ERANGE)
             ns = -1;
     }
-
-    *arg_lim = (char *) p;
+     
+    *arg_lim = (char *)p;
     r.tv_sec = s;
     r.tv_nsec = ns;
     return r;
+
+#else
+    int ns = -1;
+    gboolean overflow = FALSE;
+    time_t s;
+    char const *p;
+    struct timespec r;
+
+    s = stoint (arg, arg_lim, &overflow, TYPE_MINIMUM (time_t), TYPE_MAXIMUM (time_t));
+    p = *arg_lim;
+
+    if (p != arg)
+    {
+        ns = 0;
+
+        if (parse_fraction && *p == '.')
+        {
+            int digits = 0;
+            gboolean trailing_nonzero = FALSE;
+
+            while (isdigit (*++p))
+                if (digits < LOG10_BILLION)
+                {
+                    digits++;
+                    ns = 10 * ns + (*p - '0');
+                }
+                else if (*p != '0')
+                    trailing_nonzero = TRUE;
+
+            *arg_lim = (char *) p;
+
+            while (digits < LOG10_BILLION)
+            {
+                digits++;
+                ns *= 10;
+            }
+
+            if (*arg == '-')
+            {
+                /* Convert "-1.10000000000001" to s == -2, ns == 89999999.
+                   I.e., truncate time stamps towards minus infinity while
+                   converting them to internal form.  */
+                if (trailing_nonzero)
+                    ns++;
+                if (ns != 0)
+                    ns = ckd_sub (&s, s, 1) ? -1 : BILLION - ns;
+            }
+        }
+
+        if (overflow)
+            ns = -1;
+    }
+
+    r.tv_sec = s;
+    r.tv_nsec = ns;
+    return r;
+#endif
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -401,7 +404,7 @@ decode_timespec (const char *arg, char **arg_lim, gboolean parse_fraction)
 static gboolean
 decode_time (struct timespec *ts, const char *arg, const char *keyword)
 {
-    char *arg_lim;
+    char *arg_lim = NULL;
     struct timespec t;
 
     (void) keyword;
@@ -424,23 +427,21 @@ decode_time (struct timespec *ts, const char *arg, const char *keyword)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-decode_signed_num (intmax_t * num, const char *arg, intmax_t minval, uintmax_t maxval,
+decode_signed_num (intmax_t *num, const char *arg, intmax_t minval, uintmax_t maxval,
                    const char *keyword)
 {
-    char *arg_lim;
+    char *arg_lim = NULL;
+    gboolean overflow = FALSE;
     intmax_t u;
 
     (void) keyword;
 
-    if (!isdigit (*arg))
+    u = stoint (arg, &arg_lim, &overflow, minval, maxval);
+
+    if (arg_lim == arg || *arg_lim != '\0')
         return FALSE;           /* malformed extended header */
 
-    u = strtosysint (arg, &arg_lim, minval, maxval);
-
-    if (errno == EINVAL || *arg_lim != '\0')
-        return FALSE;           /* malformed extended header */
-
-    if (errno == ERANGE)
+    if (overflow)
         return FALSE;           /* out of range */
 
     *num = u;
@@ -450,7 +451,7 @@ decode_signed_num (intmax_t * num, const char *arg, intmax_t minval, uintmax_t m
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-decode_num (uintmax_t * num, const char *arg, uintmax_t maxval, const char *keyword)
+decode_num (uintmax_t *num, const char *arg, uintmax_t maxval, const char *keyword)
 {
     intmax_t i;
 
@@ -670,11 +671,11 @@ decode_record (struct xheader *xhdr, char **ptr,
 {
     char *start = *ptr;
     char *p = start;
-    size_t len;
-    char *len_lim;
+    idx_t len;
+    char *len_lim = NULL;
     const char *keyword;
     char *nextp;
-    size_t len_max;
+    idx_t len_max;
     gboolean ret;
 
     len_max = xhdr->buffer + xhdr->size - start;
@@ -682,10 +683,12 @@ decode_record (struct xheader *xhdr, char **ptr,
     while (*p == ' ' || *p == '\t')
         p++;
 
-    if (!isdigit (*p))
+    len = stoint (p, &len_lim, NULL, 0, IDX_MAX);
+
+    if (len_lim == p)
+        /* Is the length missing? */
         return (*p != '\0' ? decode_record_fail : decode_record_finish);
 
-    len = (uintmax_t) g_ascii_strtoull (p, &len_lim, 10);
     if (len_max < len)
         return decode_record_fail;
 
@@ -741,15 +744,15 @@ decg (void *data, const char *keyword, const char *value, size_t size)
 static gboolean
 decx (void *data, const char *keyword, const char *value, size_t size)
 {
-#if !defined(__WATCOMC__)
+#if defined(__WATCOMC__) //c11
+    struct keyword_item kp = {0};
+    kp.pattern = (char *) keyword;
+    kp.value = (char *) value;
+#else
     struct keyword_item kp = {
         .pattern = (char *) keyword,
         .value = (char *) value
     };
-#else
-    struct keyword_item kp = { 0 };
-    kp.pattern = (char *)keyword;
-    kp.value = (char *)value;
 #endif
 
     (void) size;
@@ -778,8 +781,8 @@ sparse_major_decoder (struct tar_stat_info *st, const char *keyword, const char 
 
     (void) size;
 
-    if (!decode_num (&u, arg, TYPE_MAXIMUM (unsigned), keyword))
-          return FALSE;
+    if (!decode_num (&u, arg, INTMAX_MAX, keyword))
+        return FALSE;
 
     st->sparse_major = u;
     return TRUE;
@@ -794,8 +797,8 @@ sparse_minor_decoder (struct tar_stat_info *st, const char *keyword, const char 
 
     (void) size;
 
-    if (!decode_num (&u, arg, TYPE_MAXIMUM (unsigned), keyword))
-          return FALSE;
+    if (!decode_num (&u, arg, INTMAX_MAX, keyword))
+        return FALSE;
 
     st->sparse_minor = u;
     return TRUE;
@@ -893,26 +896,22 @@ sparse_map_decoder (struct tar_stat_info *st, const char *keyword, const char *a
 
     while (TRUE)
     {
-        gint64 u;
-        char *delim;
+        off_t u;
+        char *delim = NULL;
+        gboolean overflow = FALSE;
 
-        if (!isdigit (*arg))
+        u = stoint (arg, &delim, &overflow, 0, TYPE_MAXIMUM (off_t));
+
+        if (delim == arg)
         {
             /* malformed extended header */
             return FALSE;
         }
 
-        errno = 0;
-        u = g_ascii_strtoll (arg, &delim, 10);
-        if (TYPE_MAXIMUM (off_t) < u)
-        {
-            u = TYPE_MAXIMUM (off_t);
-            errno = ERANGE;
-        }
         if (offset)
         {
             e.offset = u;
-            if (errno == ERANGE)
+            if (overflow)
             {
                 /* out of range */
                 return FALSE;
@@ -921,7 +920,7 @@ sparse_map_decoder (struct tar_stat_info *st, const char *keyword, const char *a
         else
         {
             e.numbytes = u;
-            if (errno == ERANGE)
+            if (overflow)
             {
                 /* out of range */
                 return FALSE;
@@ -961,10 +960,10 @@ sparse_map_decoder (struct tar_stat_info *st, const char *keyword, const char *a
  *
  * @param st stat info
  *
- * @return TRUE on success, FALSE otherwize
+ * @return TRUE on success, FALSE otherwise
  */
 gboolean
-tar_xheader_decode (struct tar_stat_info * st)
+tar_xheader_decode (struct tar_stat_info *st)
 {
     char *p;
     enum decode_record_status status;
@@ -995,15 +994,21 @@ tar_xheader_decode (struct tar_stat_info * st)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-tar_xheader_read (tar_super_t * archive, struct xheader * xhdr, union block * p, off_t size)
+tar_xheader_read (tar_super_t *archive, struct xheader *xhdr, union block *p, off_t size)
 {
     size_t j = 0;
+    size_t size_plus_1;
 
     size = MAX (0, size);
-    size += BLOCKSIZE;
-
+#if defined(WIN32) //WIN32: stdckdint.h
+    size_plus_1 = size + 1;
+#else
+    if (ckd_add (&size_plus_1, size, BLOCKSIZE + 1))
+        return FALSE;
+#endif
+    size = size_plus_1 - 1;
     xhdr->size = size;
-    xhdr->buffer = g_malloc (size + 1);
+    xhdr->buffer = g_malloc (size_plus_1);
     xhdr->buffer[size] = '\0';
 
     do
@@ -1030,7 +1035,7 @@ tar_xheader_read (tar_super_t * archive, struct xheader * xhdr, union block * p,
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-tar_xheader_decode_global (struct xheader * xhdr)
+tar_xheader_decode_global (struct xheader *xhdr)
 {
     char *p;
     gboolean ret;

@@ -9,15 +9,15 @@
 # Junghee Lee <daemul72@gmail.com>, 2022-2023
 # Junghee Lee <daemul72@gmail.com>, 2022
 # Junghee Lee <daemul72@gmail.com>, 2019-2021,2023
-# Seong-ho Cho <darkcircle.0426@gmail.com>, 2023
+# Seong-ho Cho <darkcircle.0426@gmail.com>, 2023-2024
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2024-01-20 20:51+0100\n"
+"POT-Creation-Date: 2025-01-23 10:30+0100\n"
 "PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>, 2023\n"
+"Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>, 2023-2024\n"
 "Language-Team: Korean (http://app.transifex.com/mc/mc/language/ko/)\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
@@ -566,28 +566,10 @@ msgid "Changes to file lost"
 msgstr "파일 변경 내용 손실"
 
 #, c-format
-msgid "%s is not a directory\n"
-msgstr "%s은(는) 디렉터리가 아님\n"
-
-#, c-format
-msgid "Directory %s is not owned by you\n"
-msgstr "%s 디렉터리가 사용자의 소유가 아님\n"
-
-#, c-format
-msgid "Cannot set correct permissions for directory %s\n"
-msgstr "%s 디렉터리에 대한 올바른 사용 권한을 설정할 수 없음\n"
-
-#, c-format
-msgid "Cannot create temporary directory %s: %s\n"
-msgstr "%s 임시 디렉터리를 생성할 수 없음: %s\n"
-
-#, c-format
-msgid "Temporary files will be created in %s\n"
-msgstr "%s에 임시 파일이 생성됨\n"
-
-#, c-format
-msgid "Temporary files will not be created\n"
-msgstr "임시 파일이 생성되지 않음\n"
+msgid ""
+"Cannot create temporary directory %s: %s.\n"
+"Temporary files will not be created\n"
+msgstr ""
 
 msgid "Press any key to continue..."
 msgstr "계속하려면 아무 키나 누르십시오..."
@@ -807,6 +789,9 @@ msgstr "터미널 옵션"
 msgid "Arguments parse error!"
 msgstr "인수 분석 오류!"
 
+msgid "MC is built without builtin editor."
+msgstr ""
+
 msgid "No arguments given to the viewer."
 msgstr "뷰어에 지정한 인자가 없습니다."
 
@@ -967,6 +952,9 @@ msgstr ""
 msgid "Diff:"
 msgstr "비교:"
 
+msgid "File name is empty!"
+msgstr ""
+
 #, c-format
 msgid "\"%s\" is a directory"
 msgstr "\"%s\"은(는) 디렉터리임"
@@ -1090,9 +1078,6 @@ msgstr "POSIX 새 행 확인(&P)"
 msgid "Edit Save Mode"
 msgstr "저장 모드 편집"
 
-msgid "Save as"
-msgstr "다른 이름으로 저장"
-
 msgid "Cannot save: destination is not a regular file"
 msgstr "저장할 수 없음: 대상이 일반 파일이 아님"
 
@@ -1164,14 +1149,8 @@ msgstr ""
 msgid "This function is not implemented"
 msgstr "이 기능은 구현되지 않음"
 
-msgid "Copy to clipboard"
-msgstr "클립보드로 복사하기"
-
 msgid "Unable to save to file"
 msgstr "파일에 저장할 수 없음"
-
-msgid "Cut to clipboard"
-msgstr "클립보드로 잘라내기"
 
 msgid "Goto line"
 msgstr "행으로 이동"
@@ -1179,14 +1158,14 @@ msgstr "행으로 이동"
 msgid "Save block"
 msgstr "블록 저장"
 
+msgid "Cannot save block"
+msgstr ""
+
 msgid "Insert file"
 msgstr "파일 삽입"
 
 msgid "Cannot insert file"
 msgstr "파일을 삽입할 수 없음"
-
-msgid "Sort block"
-msgstr "블록 정렬"
 
 msgid "You must first highlight a block of text"
 msgstr "먼저 텍스트 블록을 강조 표시해야 함"
@@ -1196,9 +1175,6 @@ msgstr "정렬 실행"
 
 msgid "Enter sort options (see sort(1) manpage) separated by whitespace:"
 msgstr "공백으로 구분된 정렬 옵션을 입력합니다(sort(1) 매뉴얼 페이지 참조):"
-
-msgid "Sort"
-msgstr "정렬"
 
 msgid "Cannot execute sort command"
 msgstr "정렬 명령을 실행할 수 없음"
@@ -1213,11 +1189,8 @@ msgstr "확장 명령의 출력 붙여넣기"
 msgid "Enter shell command(s):"
 msgstr "쉘 명령어 입력:"
 
-msgid "External command"
-msgstr "확장 명령어"
-
-msgid "Cannot execute command"
-msgstr "명령을 실행할 수 없음"
+msgid "Cannot execute external command"
+msgstr ""
 
 msgid "mail -s <subject> -c <cc> <to>"
 msgstr "mail -s <subject> -c <cc> <to>"
@@ -1611,7 +1584,7 @@ msgstr ""
 "사용자 친화적인 텍스트 편집기\n"
 "미드나잇 커맨더를 위해 작성됨."
 
-msgid "Copyright (C) 1996-2024 the Free Software Foundation"
+msgid "Copyright (C) 1996-2025 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1776,7 +1749,7 @@ msgid ""
 "Not an xterm or Linux console;\n"
 "the subshell cannot be toggled."
 msgstr ""
-"xterm 또는 Linux 콘솔이 아님;\n"
+"xterm 또는 Linux 콘솔이 아닙니다.\n"
 "서브쉘은 토글할 수 없습니다."
 
 msgid "Type 'exit' to return to the Midnight Commander"
@@ -1808,7 +1781,7 @@ msgid "Permissions (octal): %o"
 msgstr "사용권한 (octal): %o"
 
 msgid "Chown advanced command"
-msgstr "Chown 고급 명령어"
+msgstr "chown 고급 명령어"
 
 #, c-format
 msgid ""
@@ -1851,7 +1824,7 @@ msgid "Stopped"
 msgstr "중지됨"
 
 msgid "&Never"
-msgstr "Never(&N)"
+msgstr "안 함(&N)"
 
 msgid "On dum&b terminals"
 msgstr "Dumb 터미널에서(&B)"
@@ -1863,31 +1836,31 @@ msgid "File operations"
 msgstr "파일 작업"
 
 msgid "&Verbose operation"
-msgstr "동작할 때 말을 많이(&V)"
+msgstr "자세한 동작 출력(&V)"
 
 msgid "Compute tota&ls"
 msgstr "계산 합계(&L)"
 
 msgid "Classic pro&gressbar"
-msgstr "클래식 진행률 표시줄(&G)"
+msgstr "일반 진행 표시줄(&G)"
 
 msgid "Mkdi&r autoname"
-msgstr "디렉터리 만들기 자동이름 지정(&R)"
+msgstr "mkdir 자동 작명(&R)"
 
 msgid "&Preallocate space"
-msgstr "사전 할당 공간(&P)"
+msgstr "사전 공간 할당(&P)"
 
 msgid "Esc key mode"
 msgstr "Esc 키 모드"
 
 msgid "S&ingle press"
-msgstr "단일 키 누르기(&I)"
+msgstr "한 번 키 누르기(&I)"
 
 msgid "Timeout:"
 msgstr "타임아웃:"
 
 msgid "Pause after run"
-msgstr "실행후 일시 중지"
+msgstr "실행 후 일시 중지"
 
 msgid "Use internal edi&t"
 msgstr "내부 편집 사용(&T)"
@@ -1896,7 +1869,7 @@ msgid "Use internal vie&w"
 msgstr "내부 보기 사용(&W)"
 
 msgid "A&sk new file name"
-msgstr "새 파일 이름 묻기"
+msgstr "새 파일 이름 묻기(&S)"
 
 msgid "Auto m&enus"
 msgstr "자동 메뉴(&E)"
@@ -1914,7 +1887,7 @@ msgid "Rotating d&ash"
 msgstr "대시 회전(&A)"
 
 msgid "Cd follows lin&ks"
-msgstr "링크를 따르는 디렉터리 변경(&K)"
+msgstr "cd 명령 링크 따르기(&K)"
 
 msgid "Sa&fe delete"
 msgstr "안전 삭제(&F)"
@@ -1935,10 +1908,10 @@ msgid "&Shadows"
 msgstr "그림자(&S)"
 
 msgid "Appearance"
-msgstr "외형"
+msgstr "모양새"
 
 msgid "Case &insensitive"
-msgstr "대/소문자 구분안함(&I)"
+msgstr "대/소문자 구분 안함(&I)"
 
 msgid "Use panel sort mo&de"
 msgstr "패널 정렬 모드 사용(&D)"
@@ -1977,7 +1950,7 @@ msgid "Navigation"
 msgstr "탐색"
 
 msgid "L&ynx-like motion"
-msgstr "Lynx같은 동작(&Y)"
+msgstr "Lynx 유사 동작(&Y)"
 
 msgid "Pa&ge scrolling"
 msgstr "페이지 스크롤(&G)"
@@ -1989,7 +1962,7 @@ msgid "&Mouse page scrolling"
 msgstr "마우스 페이지 스크롤(&M)"
 
 msgid "File highlight"
-msgstr "파일 강조표시"
+msgstr "파일 강조 표시"
 
 msgid "File &types"
 msgstr "파일 형식(&T)"
@@ -2076,7 +2049,7 @@ msgid "&Full 8 bits output"
 msgstr "전체 8비트 출력(&F)"
 
 msgid "&ISO 8859-1"
-msgstr "&ISO 8859-1"
+msgstr "ISO 8859-1(&I)"
 
 msgid "7 &bits"
 msgstr "7비트(&B)"
@@ -2088,19 +2061,19 @@ msgid "Display bits"
 msgstr "디스플레이 비트"
 
 msgid "Input / display codepage:"
-msgstr "입력 / 디스플레이 코드페이지:"
+msgstr "코드페이지 입력/표시:"
 
 msgid "Directory tree"
 msgstr "디렉터리 트리"
 
 msgid "Timeout for freeing VFSs (sec):"
-msgstr "VFS를 해제하기 위한 타임아웃(초):"
+msgstr "VFS 해제 제한시간(초):"
 
 msgid "FTP anonymous password:"
-msgstr "FTP 익명 비밀번호:"
+msgstr "FTP 익명 암호:"
 
 msgid "FTP directory cache timeout (sec):"
-msgstr "FTP 디렉터리 캐시 시간 초과(초):"
+msgstr "FTP 디렉터리 캐시 제한시간(초):"
 
 msgid "&Always use ftp proxy:"
 msgstr "항상 ftp 프록시 사용(&A):"
@@ -2139,7 +2112,7 @@ msgid "&Resume"
 msgstr "재개(&R)"
 
 msgid "&Kill"
-msgstr "죽임(&K)"
+msgstr "강제종료(&K)"
 
 msgid "Background jobs"
 msgstr "백그라운드 작업"
@@ -2251,11 +2224,9 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot get flags of \"%s\"\n"
+"Cannot get ext2 attributes of \"%s\"\n"
 "%s"
 msgstr ""
-"\"%s\" 플래그를 가져올 수 없음\n"
-"%s"
 
 msgid "set &user ID on execution"
 msgstr "실행 시 사용자 ID 설정(&U)"
@@ -2641,8 +2612,8 @@ msgstr ""
 "\"%s\"\n"
 "는 같은 파일임"
 
-msgid "Ski&p all"
-msgstr "모두 건너뛰기(&P)"
+msgid "Ignore a&ll"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2704,6 +2675,12 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot enter into directory \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
 msgstr ""
@@ -2736,6 +2713,18 @@ msgid ""
 msgstr ""
 "\"%s\" 원본 파일을 통계할 수 없음\n"
 "%s"
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot set ext2 attributes of target file \"%s\"\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2850,11 +2839,23 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot set ext2 attributes for target file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot stat source directory \"%s\"\n"
 "%s"
 msgstr ""
 "\"%s\" 소스 디렉터리를 stat할 수 없음\n"
 "%s"
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source directory \"%s\"\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -3841,12 +3842,11 @@ msgstr ""
 "만약 빠져나가길 원하시면 Escape키를 한번만 누른 후\n"
 "마찬가지로 기다리십시오."
 
-msgid "Cannot accept this key"
-msgstr "이 키를 수락할 수 없음"
-
 #, c-format
-msgid "You have entered \"%s\""
-msgstr "\"%s\"을(를) 입력했습니다"
+msgid ""
+"Cannot accept this key.\n"
+"You have entered \"%s\""
+msgstr ""
 
 #. TRANSLATORS: This label appears near learned keys.  Keep it short.
 msgid "OK"
@@ -3929,21 +3929,21 @@ msgstr ""
 "%s"
 
 #, c-format
+msgid "Warning: Cannot change to %s.\n"
+msgstr "경고: %s으(로) 변경할 수 없습니다.\n"
+
+#, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "명명된 %s 파이프를 열 수 없음\n"
 
 msgid "The shell is still active. Quit anyway?"
 msgstr "셸이 아직 활성 상태입니다. 그래도 끝낼까요?"
 
-#, c-format
-msgid "Warning: Cannot change to %s.\n"
-msgstr "경고: %s으(로) 변경할 수 없습니다.\n"
+msgid "With builtin editor and aspell support"
+msgstr ""
 
-msgid "With builtin Editor and Aspell support"
-msgstr "내장 편집기 및 Aspell 지원 포함"
-
-msgid "With builtin Editor"
-msgstr "내장 편집기 포함"
+msgid "With builtin editor"
+msgstr ""
 
 msgid "With optional subshell support"
 msgstr "선택적 서브쉘 지원 포함"
@@ -4125,6 +4125,12 @@ msgstr ""
 
 msgid "Inconsistent archive"
 msgstr "일관성 없는 압축파일"
+
+#, c-format
+msgid ""
+"Cannot open %s archive\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""

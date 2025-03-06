@@ -1,7 +1,7 @@
 /*
    Extension dependent execution.
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -123,7 +123,7 @@ static const char *default_group = "Default";
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-exec_cleanup_script (vfs_path_t * script_vpath)
+exec_cleanup_script (vfs_path_t *script_vpath)
 {
     if (script_vpath != NULL)
     {
@@ -135,7 +135,7 @@ exec_cleanup_script (vfs_path_t * script_vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-exec_cleanup_file_name (const vfs_path_t * filename_vpath, gboolean has_changed)
+exec_cleanup_file_name (const vfs_path_t *filename_vpath, gboolean has_changed)
 {
     if (localfilecopy_vpath == NULL)
         return;
@@ -155,7 +155,7 @@ exec_cleanup_file_name (const vfs_path_t * filename_vpath, gboolean has_changed)
 /* --------------------------------------------------------------------------------------------- */
 
 static char *
-exec_get_file_name (const vfs_path_t * filename_vpath)
+exec_get_file_name (const vfs_path_t *filename_vpath)
 {
     if (!do_local_copy)
         return quote_func (vfs_path_get_last_path_str (filename_vpath), FALSE);
@@ -196,7 +196,7 @@ exec_expand_format (char symbol, gboolean is_result_quoted)
 /* --------------------------------------------------------------------------------------------- */
 
 static GString *
-exec_get_export_variables (const vfs_path_t * filename_vpath)
+exec_get_export_variables (const vfs_path_t *filename_vpath)
 {
     char *text;
     GString *export_vars_string;
@@ -244,7 +244,7 @@ exec_get_export_variables (const vfs_path_t * filename_vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static GString *
-exec_make_shell_string (const char *lc_data, const vfs_path_t * filename_vpath)
+exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath)
 {
     GString *shell_string;
     char lc_prompt[80] = "\0";
@@ -378,7 +378,7 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t * filename_vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-exec_extension_view (void *target, char *cmd, const vfs_path_t * filename_vpath, int start_line)
+exec_extension_view (void *target, char *cmd, const vfs_path_t *filename_vpath, int start_line)
 {
 #if !defined(WIN32) //WIN32, C11
     mcview_mode_flags_t def_flags = {
@@ -425,7 +425,7 @@ exec_extension_view (void *target, char *cmd, const vfs_path_t * filename_vpath,
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-exec_extension_cd (WPanel * panel)
+exec_extension_cd (WPanel *panel)
 {
     char *q;
     vfs_path_t *p_vpath;
@@ -448,7 +448,7 @@ exec_extension_cd (WPanel * panel)
 /* --------------------------------------------------------------------------------------------- */
 
 static vfs_path_t *
-exec_extension (WPanel * panel, void *target, const vfs_path_t * filename_vpath,
+exec_extension (WPanel *panel, void *target, const vfs_path_t *filename_vpath,
                 const char *lc_data, int start_line)
 {
     GString *shell_string, *export_variables;
@@ -658,7 +658,7 @@ get_popen_information (const char *cmd_file, const char *args, char *buf, int bu
  */
 
 static int
-get_file_type_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
+get_file_type_local (const vfs_path_t *filename_vpath, char *buf, int buflen)
 {
 #if defined(HAVE_LIBMAGIC) //WIN32, libmagic
     static struct magic_set *ms;                /* oneshot */
@@ -707,7 +707,7 @@ get_file_type_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
 
 #ifdef HAVE_CHARSET
 static int
-get_file_encoding_local (const vfs_path_t * filename_vpath, char *buf, int buflen)
+get_file_encoding_local (const vfs_path_t *filename_vpath, char *buf, int buflen)
 {
 #if defined(HAVE_LIBENCA)
     unsigned char sample[4096];
@@ -772,8 +772,8 @@ get_file_encoding_local (const vfs_path_t * filename_vpath, char *buf, int bufle
  */
 
 static gboolean
-regex_check_type (const vfs_path_t * filename_vpath, const char *ptr, gboolean case_insense,
-                  gboolean * have_type, GError ** mcerror)
+regex_check_type (const vfs_path_t *filename_vpath, const char *ptr, gboolean case_insense,
+                  gboolean *have_type, GError **mcerror)
 {
     gboolean found = FALSE;
 
@@ -883,7 +883,9 @@ regex_check_type (const vfs_path_t * filename_vpath, const char *ptr, gboolean c
         {
             search->search_type = MC_SEARCH_T_REGEX;
             search->is_case_sensitive = !case_insense;
-            found = mc_search_run (search, content_string + content_shift, 0, -1, NULL);
+            found =
+                mc_search_run (search, content_string + content_shift, 0,
+                               sizeof (content_string) - 1, NULL);
             mc_search_free (search);
         }
         else
@@ -1011,8 +1013,8 @@ flush_extension_file (void)
  */
 
 int
-regex_command_for (void *target, const vfs_path_t * filename_vpath, const char *action,
-                   vfs_path_t ** script_vpath)
+regex_command_for (void *target, const vfs_path_t *filename_vpath, const char *action,
+                   vfs_path_t **script_vpath)
 {
     const char *filename;
     size_t filename_len;

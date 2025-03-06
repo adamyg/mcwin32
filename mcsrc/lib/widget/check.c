@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Authors:
@@ -56,7 +56,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-check_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+check_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     WCheck *c = CHECK (w);
 
@@ -110,7 +110,7 @@ check_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-check_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
+check_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 {
     (void) event;
 
@@ -156,7 +156,7 @@ check_new (int y, int x, gboolean state, const char *text)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-check_set_text (WCheck * check, const char *text)
+check_set_text (WCheck *check, const char *text)
 {
     Widget *w = WIDGET (check);
     hotkey_t hk;

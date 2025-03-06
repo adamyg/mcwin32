@@ -1,7 +1,7 @@
 /*
    lib/widget - tests for autocomplete feature
 
-   Copyright (C) 2013-2024
+   Copyright (C) 2013-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -33,7 +33,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 void complete_engine_fill_completions (WInput * in);
-char **try_complete (char *text, int *lc_start, int *lc_end, input_complete_t flags);
+GPtrArray *try_complete (char *text, int *lc_start, int *lc_end, input_complete_t flags);
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -47,10 +47,10 @@ static int try_complete__lc_end__captured;
 static input_complete_t try_complete__flags__captured;
 
 /* @ThenReturnValue */
-static char **try_complete__return_value;
+static GPtrArray *try_complete__return_value;
 
 /* @Mock */
-char **
+GPtrArray *
 try_complete (char *text, int *lc_start, int *lc_end, input_complete_t flags)
 {
     try_complete__text__captured = g_strdup (text);
