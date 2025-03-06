@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_access_c,"$Id: w32_access.c,v 1.6 2025/02/16 12:04:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_access_c,"$Id: w32_access.c,v 1.7 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_access_c,"$Id: w32_access.c,v 1.6 2025/02/16 12:04:04 cvsu
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -110,18 +109,14 @@ w32_access(const char *path, int amode)
 {
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
-        wchar_t wpath[WIN32_PATH_MAX];
+        if (path) {
+            wchar_t wpath[WIN32_PATH_MAX];
 
-        if (NULL == path) {
-            errno = EFAULT;
+            if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+                return w32_accessW(wpath, amode);
+            }
             return -1;
         }
-
-        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-            return w32_accessW(wpath, amode);
-        }
-
-        return -1;
     }
 #endif  //UTF8FILENAMES
 
@@ -132,14 +127,54 @@ w32_access(const char *path, int amode)
 int
 w32_accessA(const char *path, int amode)
 {
-    return _access(path, amode);
+    int ret = -1;
+
+    if (NULL == path) {
+        errno = EFAULT;
+
+    } else if (!*path) {
+        errno = ENOENT;
+
+    } else {
+        const char *expath;
+
+        if (NULL != (expath = w32_extendedpathA(path))) {
+            path = expath;                      // abs-path to expanded
+        }
+
+#undef _access
+        ret = _access(path, amode);
+
+        free((void*)expath);
+    }
+    return ret;
 }
 
 
 int
 w32_accessW(const wchar_t *path, int amode)
 {
-    return _waccess(path, amode);
+    int ret = -1;
+
+    if (NULL == path) {
+        errno = EFAULT;
+
+    } else if (!*path) {
+        errno = ENOENT;
+
+    } else {
+        const wchar_t *expath;
+
+        if (NULL != (expath = w32_extendedpathW(path))) {
+            path = expath;                      // abs-path to expanded
+        }
+
+#undef _waccess
+        ret = _waccess(path, amode);
+
+        free((void*)expath);
+    }
+    return ret;
 }
 
 /*end*/

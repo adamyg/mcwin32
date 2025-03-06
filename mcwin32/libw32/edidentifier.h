@@ -2,7 +2,7 @@
 #define LIBW32_EDIDENTIFIER_H_INCLUDED
 
 /* -*- mode: c; indent-width: 4; -*- */
-/*  $Id: edidentifier.h,v 1.8 2025/02/13 17:55:24 cvsuser Exp $
+/*  $Id: edidentifier.h,v 1.9 2025/03/06 16:59:45 cvsuser Exp $
  *  Compiler specific object identify functionality.
  *
  *      __CIDENT(description)
@@ -17,7 +17,6 @@
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.

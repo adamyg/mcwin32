@@ -129,6 +129,16 @@ str_unescape (const char *src, gsize src_len, const char *unescaped_chars,
             continue;
         }
 
+#if defined(WIN32) //WIN32, path/UNC
+        if (curr_index <= 1 && src[curr_index + 1] == '\\') // retain leading "\\ .."
+        {
+            g_string_append_c (ret, '\\');
+            g_string_append_c (ret, '\\');
+            ++curr_index;
+            continue;
+        }
+#endif
+
         curr_index++;
 
         if (unescaped_chars == ESCAPE_SHELL_CHARS && src[curr_index] == '$')

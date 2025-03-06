@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.10 2025/02/16 12:04:05 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.11 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.10 2025/02/16 12:04:05 cv
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -117,20 +116,16 @@ w32_rename(const char *ofile, const char *nfile)
 {
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
-        wchar_t wofile[WIN32_PATH_MAX], wnfile[WIN32_PATH_MAX];
+        if (ofile && nfile) {
+            wchar_t wofile[WIN32_PATH_MAX], wnfile[WIN32_PATH_MAX];
 
-        if (NULL == ofile || NULL == nfile) {
-            errno = EFAULT;
+            if (w32_utf2wc(ofile, wofile, _countof(wofile)) > 0) {
+                if (w32_utf2wc(nfile, wnfile, _countof(wnfile)) > 0) {
+                    return w32_renameW(wofile, wnfile);
+                }
+            }
             return -1;
         }
-
-        if (w32_utf2wc(ofile, wofile, _countof(wofile)) > 0) {
-            if (w32_utf2wc(nfile, wnfile, _countof(wnfile)) > 0) {
-                return w32_renameW(wofile, wnfile);
-            }
-        }
-
-        return -1;
     }
 #endif  //UTF8FILENAMES
 
@@ -142,39 +137,65 @@ LIBW32_API int
 w32_renameA(const char *ofile, const char *nfile)
 {
     BY_HANDLE_FILE_INFORMATION oft = {0};
-    int ret;
+    const char *exopath;
+    int ret = 0;
+
+    if (NULL == ofile || NULL == nfile) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (!*ofile || !*nfile) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    if (NULL != (exopath = w32_extendedpathA(ofile))) {
+        ofile = exopath;                        // abs-path to expanded
+    }
 
     if (FileStatA(ofile, &oft, FILE_FLAG_OPEN_REPARSE_POINT) &&
             (oft.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
         BY_HANDLE_FILE_INFORMATION t_oft;
 
-        if (!FileStatA(ofile, &t_oft, 0)) {
+        if (! FileStatA(ofile, &t_oft, 0)) {
             if (GetLastError() == ERROR_CANT_RESOLVE_FILENAME) {
                 // ELOOP - A loop exists in symbolic links encountered during resolution of the path argument.
                 errno = ELOOP;
-                return -1;
+                ret = -1;
             }
         }
     }
 
+    if (0 == ret) {
+        const char* exnpath;
+
+        if (NULL != (exnpath = w32_extendedpathA(nfile))) {
+            nfile = exnpath;                    // abs-path to expanded
+        }
+
 #undef rename
-    ret = rename(ofile, nfile);
-        // MoveFileA
+        ret = rename(ofile, nfile);             // MoveFileA
 
-    if (-1 == ret && errno == EACCES) {
-        if (GetLastError() == ERROR_ACCESS_DENIED) {
-            if (oft.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                BY_HANDLE_FILE_INFORMATION nft = {0};
+        if (-1 == ret && errno == EACCES) {
+            if (GetLastError() == ERROR_ACCESS_DENIED) {
+                if (oft.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                    BY_HANDLE_FILE_INFORMATION nft = { 0 };
 
-                (void)FileStatA(nfile, &nft, 0);
-                if (oft.dwVolumeSerialNumber != nft.dwVolumeSerialNumber) {
-                    // EXDEV - The links named by new and old are on different file systems 
-                    //  and the implementation does not support links between file systems.
-                    errno = EXDEV;
+                    (void) FileStatA(nfile, &nft, 0);
+                    if (oft.dwVolumeSerialNumber != nft.dwVolumeSerialNumber) {
+                        // EXDEV - The links named by new and old are on different file systems
+                        //  and the implementation does not support links between file systems.
+                        errno = EXDEV;
+                    }
                 }
             }
         }
+
+        free((void*)exnpath);
     }
+
+    free((void*)exopath);
     return ret;
 }
 
@@ -183,9 +204,24 @@ LIBW32_API int
 w32_renameW(const wchar_t *ofile, const wchar_t *nfile)
 {
     BY_HANDLE_FILE_INFORMATION oft = {0};
-    int ret;
+    const wchar_t *exopath;
+    int ret = 0;
 
-    if (FileStatW(ofile, &oft, FILE_FLAG_OPEN_REPARSE_POINT) && 
+    if (NULL == ofile || NULL == nfile) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (!*ofile || !*nfile) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    if (NULL != (exopath = w32_extendedpathW(ofile))) {
+        ofile = exopath;                        // abs-path to expanded
+    }
+
+    if (FileStatW(ofile, &oft, FILE_FLAG_OPEN_REPARSE_POINT) &&
             (oft.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
         BY_HANDLE_FILE_INFORMATION t_oft;
 
@@ -193,28 +229,41 @@ w32_renameW(const wchar_t *ofile, const wchar_t *nfile)
             if (GetLastError() == ERROR_CANT_RESOLVE_FILENAME) {
                 // ELOOP - A loop exists in symbolic links encountered during resolution of the path argument.
                 errno = ELOOP;
-                return -1;
+                ret = -1;
             }
         }
     }
 
-    ret = _wrename(ofile, nfile); 
-        // MoveFileW
+    if (0 == ret) {
+        const wchar_t *exnpath;
 
-    if (-1 == ret && errno == EACCES) {
-        if (GetLastError() == ERROR_ACCESS_DENIED) {
-            if (oft.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                BY_HANDLE_FILE_INFORMATION nft = {0};
+        if (NULL != (exnpath = w32_extendedpathW(nfile))) {
+            nfile = exnpath;                    // abs-path to expanded
+        }
 
-                (void) FileStatW(nfile, &nft, 0);
-                if (oft.dwVolumeSerialNumber != nft.dwVolumeSerialNumber) {
-                    // EXDEV - The links named by new and old are on different file systems
-                    //  and the implementation does not support links between file systems.
-                    errno = EXDEV;
+#undef _wrename
+        ret = _wrename(ofile, nfile);           // MoveFileW
+
+        if (-1 == ret && errno == EACCES) {
+            if (GetLastError() == ERROR_ACCESS_DENIED) {
+                if (oft.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                    BY_HANDLE_FILE_INFORMATION nft = { 0 };
+
+                    (void) FileStatW(nfile, &nft, 0);
+                    if (oft.dwVolumeSerialNumber != nft.dwVolumeSerialNumber) {
+                        // EXDEV - The links named by new and old are on different file systems
+                        //  and the implementation does not support links between file systems.
+                        errno = EXDEV;
+                    }
                 }
             }
         }
+
+        free((void*)exnpath);
     }
+
+    free((void*)exopath);
+
     return ret;
 }
 

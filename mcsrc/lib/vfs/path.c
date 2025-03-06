@@ -463,7 +463,19 @@ vfs_path_from_str_uri_parser (char *path)
     if (path == NULL)
         return vfs_path_new (FALSE);
 
+#if defined(WIN32) //WIN32, drive/path
+    if (path[0] == '"' || path[0] == '\'') {
+        size_t plen = strlen(path);
+        if (plen > 1 && path[0] == path[plen - 1]) { // quoted, remove
+            plen -= 2;
+            memmove(path, path + 1, plen);
+            path[plen] = 0;
+        }
+    }
+    path_is_absolute = IS_PATH_SEP(*path) || (isalpha((unsigned char)path[0]) && path[1] == ':');
+#else
     path_is_absolute = IS_PATH_SEP (*path);
+#endif
 #ifdef HAVE_CHARSET
     path_is_absolute = path_is_absolute || g_str_has_prefix (path, VFS_ENCODING_PREFIX);
 #endif

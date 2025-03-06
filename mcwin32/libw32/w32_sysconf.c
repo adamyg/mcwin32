@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.2 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.3 2025/03/06 17:15:29 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -8,10 +8,11 @@ __CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.2 2024/01/16 15:17:52 cv
  * Copyright (c) 2021 - 2022 Adam Young.
  * All rights reserved.
  *
- * This file is part of the GRIEF Editor.
+ * This file is part of the Midnight Commander.
  *
- * The GRIEF Editor is free software: you can redistribute it
- * and/or modify it under the terms of the GRIEF Editor License.
+ * The applications are free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, version 3.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.

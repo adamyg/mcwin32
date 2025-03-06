@@ -1,4 +1,4 @@
-Thu Feb 20 12:11:28 2025 adamy
+Fri Mar  7 11:26:56 2025 adamy
 
 	* build-231
 
@@ -16,6 +16,7 @@ Thu Feb 20 12:11:28 2025 adamy
 		o glib 2.54.3 (#102)
 		o zlib-1.3.1 (#102)
 		o mbedtls-3.6.2 (#100)
+		o improved UNC and extended prefix support, plus stat optmisations (#98)
 		o libssh2-1.11.1 (#95)
 		o enhanced utf8 support, directory plus username; non-ascii user name support (#97)
 		o EXDEV, cross-device link on rename failure; allowing alt move logic (#85)

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.41 2025/02/13 18:56:45 cvsuser Exp $
+# $Id: makelib.pl,v 1.42 2025/03/06 17:16:28 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -1018,6 +1018,8 @@ my @x_headers       = (     #headers
 my @x_headers2      = (     #headers; check only
         'thr/xthreads.h',                       # MSVC +2017, almost C11
         'xthreads.h',
+        'ntifs.h',                              # SDK; optional
+        'ntdef.h',
         'windows.h',
         'wincrypt.h',
         'bcrypt.h',
@@ -1118,6 +1120,12 @@ my @x_sizes         = (
         'time_t'
         );
 
+#TODO
+# HAVE_DECL_ENVIRON:extern char **environ;
+# HAVE_DECL__ENVIRON:extern char **_environ;
+#   unix: <unistd.h> if the _GNU_SOURCE
+#   win32: <stdlib.h>
+
 my @x_functions     = (
         'putenv',
         'setenv',
@@ -1160,7 +1168,7 @@ my @x_functions     = (
         'strrchr', 'strdup',
         'asnprintf', 'vasnprintf',
         'setlocale',
-        'mbrtowc', 'wcrtomb', 'wcsrtombs', 'wcstombs', 'wcscmp', 'wcscpy', 'wcslen', 'wctomb', 
+        'mbrtowc', 'wcrtomb', 'wcsrtombs', 'wcstombs', 'wcscmp', 'wcscpy', 'wcslen', 'wctomb',
                 'wmemcmp', 'wmemmove', 'wmemcpy',
         'wcwidth',
         '_tzset',                               # msvc
@@ -3678,4 +3686,3 @@ systemrcode($)          # (retcode)
 }
 
 #end
-

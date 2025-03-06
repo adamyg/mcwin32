@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.7 2025/02/16 12:04:05 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.8 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_getrusage_c,"$Id: w32_getrusage.c,v 1.7 2025/02/16 12:04:0
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
