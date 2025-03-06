@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.35 2025/02/16 12:04:05 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.36 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -15,7 +15,6 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.35 2025/02/16 12:04:05 cvsuser Ex
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -39,9 +38,15 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.35 2025/02/16 12:04:05 cvsuser Ex
  * ==extra==
  */
 
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501                     /* enable xp+ features */
+//#ifndef _WIN32_WINNT
+//#define _WIN32_WINNT 0x0501                     /* enable xp+ features */
+//#endif
+
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x600)
+#undef _WIN32_WINNT                             /* Vista+ features; FILE_INFO_BY_HANDLE_CLASS */
+#define _WIN32_WINNT 0x0600
 #endif
+
 #if defined(__MINGW32__)
 #undef  _WIN32_VER
 #define _WIN32_VER _WIN32_WINNT
@@ -102,11 +107,20 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.35 2025/02/16 12:04:05 cvsuser Ex
 #pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
 #endif
 
+#if defined(_MSC_VER)
+#define ST_NLINK_T      short
+#else
+#define ST_NLINK_T      int
+#endif
+
 typedef DWORD (WINAPI *GetFinalPathNameByHandleW_t)(
                         HANDLE hFile, LPWSTR lpszFilePath, DWORD length, DWORD dwFlags);
 
 typedef DWORD (WINAPI *GetFinalPathNameByHandleA_t)(
                         HANDLE hFile, LPSTR lpszFilePath, DWORD length, DWORD dwFlags);
+
+typedef DWORD (WINAPI *GetFileInformationByHandleEx_t)(
+                        HANDLE handle, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
 
 typedef BOOL  (WINAPI *CreateSymbolicLinkW_t)(
                         LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
@@ -118,28 +132,32 @@ typedef BOOL  (WINAPI *GetVolumeInformationByHandleW_t)(
                         HANDLE hFile, LPWSTR lpVolumeNameBuffer, DWORD nVolumeNameSize, LPDWORD lpVolumeSerialNumber,
                             LPDWORD lpMaximumComponentLength, LPDWORD lpFileSystemFlags, LPWSTR lpFileSystemNameBuffer, DWORD nFileSystemNameSize);
 
+static int                  StatHandle(int fd, struct stat* sb);
+
 static DWORD                my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR name, int length);
 static DWORD WINAPI         my_GetFinalPathNameByHandleWImp(HANDLE handle, LPWSTR name, DWORD length, DWORD dwFlags);
 
 static DWORD                my_GetFinalPathNameByHandleA(HANDLE handle, LPSTR name, int length);
 static DWORD WINAPI         my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR name, DWORD length, DWORD dwFlags);
 
-static DWORD                my_GetFinalPathNameByHandleA(HANDLE handle, LPSTR name, int length);
-static DWORD WINAPI         my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR name, DWORD length, DWORD dwFlags);
+static DWORD                my_GetFileInformationByHandleEx(HANDLE handle, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
+static DWORD WINAPI         my_GetFileInformationByHandleExImp(HANDLE handle, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
 
 static BOOL                 my_CreateSymbolicLinkW(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
 static BOOL WINAPI          my_CreateSymbolicLinkWImp(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
 
 static BOOL                 my_CreateSymbolicLinkA(const char *lpSymlinkFileName, const char *lpTargetFileName, DWORD dwFlags);
 static BOOL WINAPI          my_CreateSymbolicLinkAImp(const char *lpSymlinkFileName, const char *lpTargetFileName, DWORD dwFlags);
-static BOOL                 isshortcut(const char *name);
+
+static BOOL                 IsShortcutA(const char *name);
+static BOOL                 IsShortcutW(const wchar_t *name);
 
 static void                 ApplyAttributesA(struct stat *sb, const DWORD dwAttr, const char *name, const char *magic);
 static void                 ApplyAttributesW(struct stat *sb, const DWORD dwAttr, const wchar_t *name, const char *magic);
 static void                 ApplyOwner(struct stat *sb,  const DWORD dwAttributes, HANDLE handle);
-static void                 ApplyTimes(struct stat *sb, const FILETIME *ftCreationTime,
-                                    const FILETIME *ftLastAccessTime, const FILETIME *ftLastWriteTime);
+static void                 ApplyTimes(struct stat *sb, const FILETIME *ftCreationTime, const FILETIME *ftLastAccessTime, const FILETIME *ftLastWriteTime);
 static void                 ApplySize(struct stat *sb, const DWORD nFileSizeLow, const DWORD nFileSizeHigh);
+static void                 ApplyDevice(struct stat *sb, const DWORD dwVolumeSerialNumber, const DWORD nFileIndexLow, const DWORD nFileIndexHigh, const wchar_t *name);
 static time_t               ConvertTime(const FILETIME *ft);
 
 static int                  IsScriptMagic(const char *magic);
@@ -156,9 +174,13 @@ static int                  ReadShortcutA(const char *name, char *buf, size_t ma
 static int                  ReadShortcutW(const wchar_t *name, wchar_t *buf, size_t maxlen);
 
 static int                  CreateShortcutA(const char *link, const char *name, const char *working, const char *desc);
+static int                  CreateShortcutW(const wchar_t *link, const wchar_t *name, const wchar_t *working, const wchar_t *desc);
 
 static int                  StatA(const char *name, struct stat *sb);
 static int                  StatW(const wchar_t *name, struct stat *sb);
+static BOOL                 StatByHandleA(const char *name, struct stat* sb);
+static BOOL                 StatByHandleW(const wchar_t *name, struct stat *sb);
+static BOOL                 StatFileCommon(HANDLE handle, const WIN32_FIND_DATAW *fb, struct stat *sb, const wchar_t *fullname, size_t namelen);
 
 static BOOL                 my_GetVolumeInformationByHandle(HANDLE handle, DWORD *serialno, DWORD *flags);
 static BOOL WINAPI          my_GetVolumeInformationByHandleImp(HANDLE, LPWSTR, DWORD, LPDWORD, LPDWORD, LPDWORD, LPWSTR, DWORD);
@@ -175,7 +197,7 @@ static const char *         suffixes_default[] = {
 
 /*
 //  NAME
-//      w32_utf8filenames_enable - enable UTF8 flenames
+//      w32_utf8filenames_enable - enable UTF8 filenames.
 //
 //  SYNOPSIS
 //      #include <unistd.h>
@@ -197,6 +219,24 @@ w32_utf8filenames_enable (void)
 
 
 LIBW32_API int
+w32_utf8filenames_disable (void)
+{
+    const int previous = x_utf8filenames;
+    x_utf8filenames = 0;
+    return previous;
+}
+
+
+LIBW32_API int
+w32_utf8filenames_set (int state)
+{
+    const int previous = x_utf8filenames;
+    x_utf8filenames = state;
+    return previous;
+}
+
+
+LIBW32_API int
 w32_utf8filenames_state (void)
 {
     return x_utf8filenames;
@@ -210,7 +250,7 @@ w32_utf8filenames_state (void)
 //  SYNOPSIS
 //      int w32_HTOI(HANDLE handle)
 //      HANDLE w32_ITOH(int fd)
-// 
+//
 //  NOTES:
 //
 //      MSDN - Interprocess Communication Between 32-bit and 64-bit Applications
@@ -219,7 +259,7 @@ w32_utf8filenames_state (void)
 //          When sharing a handle between 32-bit and 64-bit applications, only the lower 32 bits are significant,
 //          so it is safe to truncate the handle (when passing it from 64-bit to 32-bit) or sign-extend the handle (when passing it from 32-bit to 64-bit).
 //          Handles that can be shared include handles to user objects such as windows (HWND), handles to GDI objects such as pens and brushes (HBRUSH and HPEN),
-//          and handles to named objects such as mutexes, semaphores, and file handles.
+//          and handles to named objects such as mutex's, semaphores, and file handles.
 //
 //  RETURN VALUE
 //      Converted handle.
@@ -272,7 +312,7 @@ w32_ITOH(int fd)
 //  DESCRIPTION
 //
 //      The stat() function shall obtain information about the named file and write it to
-//      the area pointed to by the buf argument. The path argument points to a pathname
+//      the area pointed to by the 'buf' argument. The 'path' argument points to a pathname
 //      naming a file. Read, write, or execute permission of the named file is not
 //      required. An implementation that provides additional or alternate file access
 //      control mechanisms may, under implementation-defined conditions, cause stat() to
@@ -282,7 +322,7 @@ w32_ITOH(int fd)
 //      resolution using the contents of the symbolic link, and shall return information
 //      pertaining to the resulting file if the file exists.
 //
-//      The buf argument is a pointer to a stat structure, as defined in the <sys/stat.h>
+//      The 'buf' argument is a pointer to a stat structure, as defined in the <sys/stat.h>
 //      header, into which information is placed concerning the file.
 //
 //      The stat() function shall update any time-related fields (as described in the Base
@@ -327,7 +367,6 @@ w32_ITOH(int fd)
 //          file serial number cannot be represented correctly in the structure pointed to
 //          by buf.
 //
-//
 //      The stat() function may fail if:
 //
 //      [ELOOP]
@@ -341,23 +380,20 @@ w32_ITOH(int fd)
 //      [EOVERFLOW]
 //          A value to be stored would overflow one of the members of the stat structure.
 */
+
 LIBW32_API int
 w32_stat(const char *path, struct stat *sb)
 {
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
-        wchar_t wpath[WIN32_PATH_MAX];
+        if (path && sb) {
+            wchar_t wpath[WIN32_PATH_MAX];
 
-        if (NULL == path || NULL == sb) {
-            errno = EFAULT;
+            if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+                return w32_statW(wpath, sb);
+            }
             return -1;
         }
-
-        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-            return w32_statW(wpath, sb);
-        }
-
-        return -1;
     }
 #endif  //UTF8FILENAMES
 
@@ -383,7 +419,7 @@ w32_statA(const char *path, struct stat *sb)
     if (ret < 0 || (ret = StatA(path, sb)) < 0) {
         if (-ENOTDIR == ret) {                  // component error.
             if (path != symbuf &&               // expand embedded shortcut
-                    w32_lnkexpandA(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
+                    w32_expandlinkA(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = StatA(symbuf, sb)) >= 0) {
                     return ret;
                 }
@@ -414,7 +450,7 @@ w32_statW(const wchar_t *path, struct stat *sb)
     if (ret < 0 || (ret = StatW(path, sb)) < 0) {
         if (-ENOTDIR == ret) {                  // component error.
             if (path != symbuf &&               // expand embedded shortcut
-                    w32_lnkexpandW(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
+                    w32_expandlinkW(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = StatW(symbuf, sb)) >= 0) {
                     return ret;
                 }
@@ -438,12 +474,12 @@ w32_statW(const wchar_t *path, struct stat *sb)
 //      int lstat(const char *restrict path, struct stat *restrict buf);
 //
 //  DESCRIPTION
-//      The lstat() function shall be equivalent to stat(), except when path refers to a
+//      The lstat() function shall be equivalent to stat(), except when 'path' refers to a
 //      symbolic link. In that case lstat() shall return information about the link, while
 //      stat() shall return information about the file the link references.
 //
-//      For symbolic links, the st_mode member shall contain meaningful information when
-//      used with the file type macros, and the st_size member shall contain the length of
+//      For symbolic links, the 'st_mode' member shall contain meaningful information when
+//      used with the file type macros, and the 'st_size' member shall contain the length of
 //      the pathname contained in the symbolic link. File mode bits and the contents of the
 //      remaining members of the stat structure are unspecified. The value returned in the
 //      st_size member is the length of the contents of the symbolic link, and does not
@@ -496,23 +532,20 @@ w32_statW(const wchar_t *path, struct stat *sb)
 //          One of the members is too large to store into the structure pointed to by the
 //          buf argument.
 */
+
 LIBW32_API int
 w32_lstat(const char *path, struct stat *sb)
 {
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
-        wchar_t wpath[WIN32_PATH_MAX];
+        if (path && sb) {
+            wchar_t wpath[WIN32_PATH_MAX];
 
-        if (NULL == path || NULL == sb) {
-            errno = EFAULT;
+            if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+                return w32_lstatW(wpath, sb);
+            }
             return -1;
         }
-
-        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-            return w32_lstatW(wpath, sb);
-        }
-
-        return -1;
     }
 #endif  //UTF8FILENAMES
 
@@ -535,7 +568,7 @@ w32_lstatA(const char *path, struct stat *sb)
         if (-ENOTDIR == ret) {                  // component error.
             char lnkbuf[WIN32_PATH_MAX];
                                                 // expand embedded shortcut
-            if (w32_lnkexpandA(path, lnkbuf, _countof(lnkbuf), SHORTCUT_COMPONENT)) {
+            if (w32_expandlinkA(path, lnkbuf, _countof(lnkbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = StatA(lnkbuf, sb)) >= 0) {
                     return ret;
                 }
@@ -563,7 +596,7 @@ w32_lstatW(const wchar_t *path, struct stat *sb)
        if (-ENOTDIR == ret) {                   // component error.
             wchar_t lnkbuf[WIN32_PATH_MAX];
                                                 // expand embedded shortcut
-            if (w32_lnkexpandW(path, lnkbuf, _countof(lnkbuf), SHORTCUT_COMPONENT)) {
+            if (w32_expandlinkW(path, lnkbuf, _countof(lnkbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = StatW(lnkbuf, sb)) >= 0) {
                     return ret;
                 }
@@ -587,21 +620,21 @@ w32_lstatW(const wchar_t *path, struct stat *sb)
 //
 //  DESCRIPTION
 //      The fstat() function shall obtain information about an open file associated with
-//      the file descriptor fildes, and shall write it to the area pointed to by buf.
+//      the file descriptor 'fildes', and shall write it to the area pointed to by 'buf'.
 //
-//      If fildes references a shared memory object, the implementation shall update in the
-//      stat structure pointed to by the buf argument only the st_uid, st_gid, st_size, and
+//      If 'fildes' references a shared memory object, the implementation shall update in the
+//      stat structure pointed to by the 'buf' argument only the st_uid, st_gid, st_size, and
 //      st_mode fields, and only the S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, and
 //      S_IWOTH file permission bits need be valid. The implementation may update other
-//      fields and flags. [Optional]
+//      fields and flags.
 //
-//      If fildes references a typed memory object, the implementation shall update in the
-//      stat structure pointed to by the buf argument only the st_uid, st_gid, st_size, and
+//      If 'fildes' references a typed memory object, the implementation shall update in the
+//      stat structure pointed to by the 'buf' argument only the st_uid, st_gid, st_size, and
 //      st_mode fields, and only the S_IRUSR, S_IWUSR, S_IRGRP, S_IWGRP, S_IROTH, and
 //      S_IWOTH file permission bits need be valid. The implementation may update other
-//      fields and flags. [Optional]
+//      fields and flags.
 //
-//      The buf argument is a pointer to a stat structure, as defined in <sys/stat.h>, into
+//      The 'buf' argument is a pointer to a stat structure, as defined in <sys/stat.h>, into
 //      which information is placed concerning the file.
 //
 //      The structure members st_mode, st_ino, st_dev, st_uid, st_gid, st_atime, st_ctime,
@@ -640,23 +673,30 @@ w32_lstatW(const wchar_t *path, struct stat *sb)
 //          One of the values is too large to store into the structure pointed to by
 //          the buf argument.
 */
+
 LIBW32_API int
 w32_fstat(int fd, struct stat *sb)
 {
-#if defined(UTF8FILENAMES)
-    if (w32_utf8filenames_state()) {
-        return w32_fstatW(fd, sb);
-    }
-#endif  //UTF8FILENAMES
-
-    return w32_fstatA(fd, sb);
+    return StatHandle(fd, sb);
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
+LIBW32_API int
+w32_fstatW(int fd, struct stat* sb)
+{
+    return StatHandle(fd, sb);
+}
+
 
 LIBW32_API int
-w32_fstatW(int fd, struct stat *sb)
+w32_fstatA(int fd, struct stat* sb)
+{
+    return StatHandle(fd, sb);
+}
+
+
+static int
+StatHandle(int fd, struct stat *sb)
 {
     HANDLE handle;
     int ret = 0;
@@ -686,21 +726,13 @@ w32_fstatW(int fd, struct stat *sb)
 
             switch (ftype) {
             case FILE_TYPE_DISK: {              // disk file.
-                    BY_HANDLE_FILE_INFORMATION fi = {0};
+                    wchar_t fullname[WIN32_PATH_MAX];
+                    size_t namelen;
 
-                    if (GetFileInformationByHandle(handle, &fi)) {
-                        wchar_t t_name[MAX_PATH], *name = NULL;
-
-                        if (my_GetFinalPathNameByHandleW(handle, t_name, _countof(t_name))) {
-                            name = t_name;      // resolved filename.
-                        }
-                        ApplyAttributesW(sb, fi.dwFileAttributes, name, NULL);
-                        ApplyOwner(sb, fi.dwFileAttributes, handle);
-                        ApplyTimes(sb, &fi.ftCreationTime, &fi.ftLastAccessTime, &fi.ftLastWriteTime);
-                        ApplySize(sb, fi.nFileSizeLow, fi.nFileSizeHigh);
-                        if (fi.nNumberOfLinks > 0) {
-                            sb->st_nlink = (int)fi.nNumberOfLinks;
-                        }
+                    fullname[0] = 0;
+                    namelen = my_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
+                    if (! StatFileCommon(handle, NULL, sb, fullname, namelen)) {
+                        ret = -EIO;
                     }
                 }
                 break;
@@ -793,11 +825,11 @@ my_GetFinalPathNameByHandleWImp(HANDLE handle, LPWSTR path, DWORD length, DWORD 
                 //
                 wchar_t t_drives[512] = {0};    // 27*4 ...
 
-                if (GetLogicalDriveStringsW(sizeof(t_drives) - 1, t_drives)) {
+                if (GetLogicalDriveStringsW(_countof(t_drives) - 1, t_drives)) {
 
                     BOOL found = FALSE;
                     const wchar_t *p = t_drives;
-                    wchar_t t_name[MAX_PATH];
+                    wchar_t t_name[WIN32_PATH_MAX];
                     wchar_t t_drive[3] = L" :";
 
                     do {                        // Look up each device name
@@ -806,7 +838,7 @@ my_GetFinalPathNameByHandleWImp(HANDLE handle, LPWSTR path, DWORD length, DWORD 
                         if (QueryDosDeviceW(t_drive, t_name, _countof(t_name) - 1)) {
                             const size_t namelen = wcslen(t_name);
 
-                            if (namelen < MAX_PATH) {
+                            if (namelen < WIN32_PATH_MAX) {
                                 found = (0 == _wcsnicmp(path, t_name, namelen) && path[namelen] == '\\');
 
                                 if (found) {    // Reconstruct path, replacing device with drive
@@ -830,86 +862,6 @@ my_GetFinalPathNameByHandleWImp(HANDLE handle, LPWSTR path, DWORD length, DWORD 
         (void) CloseHandle(map);
     }
     return ret;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-LIBW32_API int
-w32_fstatA(int fd, struct stat *sb)
-{
-    HANDLE handle;
-    int ret = 0;
-
-    if (NULL == sb) {
-        ret = -EFAULT;
-
-    } else {
-        memset(sb, 0, sizeof(struct stat));
-
-        if (fd < 0) {
-            ret = -EBADF;
-
-        } else if ((handle = ((HANDLE) _get_osfhandle(fd))) == INVALID_HANDLE_VALUE) {
-                                                // socket, a named pipe, or an anonymous pipe.
-            if (fd > WIN32_FILDES_MAX && FILE_TYPE_PIPE == GetFileType(w32_ITOH(fd))) {
-                sb->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
-                sb->st_mode |= S_IFIFO;
-                sb->st_dev = sb->st_rdev = 1;
-
-            } else {
-                ret = -EBADF;
-            }
-
-        } else {
-            const DWORD ftype = GetFileType(handle);
-
-            switch (ftype) {
-            case FILE_TYPE_DISK: {              // disk file.
-                    BY_HANDLE_FILE_INFORMATION fi = {0};
-
-                    if (GetFileInformationByHandle(handle, &fi)) {
-                        char t_name[MAX_PATH], *name = NULL;
-
-                        if (my_GetFinalPathNameByHandleA(handle, t_name, sizeof(t_name))) {
-                            name = t_name;      // resolved filename.
-                        }
-                        ApplyAttributesA(sb, fi.dwFileAttributes, name, NULL);
-                        ApplyOwner(sb, fi.dwFileAttributes, handle);
-                        ApplyTimes(sb, &fi.ftCreationTime, &fi.ftLastAccessTime, &fi.ftLastWriteTime);
-                        ApplySize(sb, fi.nFileSizeLow, fi.nFileSizeHigh);
-                        if (fi.nNumberOfLinks > 0) {
-                            sb->st_nlink = (int)fi.nNumberOfLinks;
-                        }
-                    }
-                }
-                break;
-
-            case FILE_TYPE_CHAR:                // character file, typically an LPT device or a console.
-            case FILE_TYPE_PIPE:                // socket, a named pipe, or an anonymous pipe.
-                sb->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
-                if (FILE_TYPE_PIPE == ftype) {
-                    sb->st_mode |= S_IFIFO;
-                } else {
-                    sb->st_mode |= S_IFCHR;
-                }
-                sb->st_dev = sb->st_rdev = 1;
-                break;
-
-            case FILE_TYPE_REMOTE:
-            case FILE_TYPE_UNKNOWN:             // others
-            default:
-                ret = -EBADF;
-                break;
-            }
-        }
-    }
-
-    if (ret < 0) {
-        errno = -ret;
-        return -1;
-    }
-    return 0;
 }
 
 
@@ -977,7 +929,7 @@ my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR path, DWORD length, DWORD f
 
                     BOOL found = FALSE;
                     const char *p = t_drives;
-                    char t_name[MAX_PATH];
+                    char t_name[WIN32_PATH_MAX];
                     char t_drive[3] = " :";
 
                     do {                        // Look up each device name
@@ -986,7 +938,7 @@ my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR path, DWORD length, DWORD f
                         if (QueryDosDeviceA(t_drive, t_name, sizeof(t_name) - 1)) {
                             const size_t namelen = strlen(t_name);
 
-                            if (namelen < MAX_PATH) {
+                            if (namelen < WIN32_PATH_MAX) {
                                 found = (0 == _strnicmp(path, t_name, namelen) && path[namelen] == '\\');
 
                                 if (found) {    // Reconstruct path, replacing device with drive
@@ -1010,6 +962,47 @@ my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR path, DWORD length, DWORD f
         (void) CloseHandle(map);
     }
     return ret;
+}
+
+
+static DWORD
+my_GetFileInformationByHandleEx(HANDLE handle, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize)
+{
+    static GetFileInformationByHandleEx_t x_GetFileInformationByHandleEx = NULL;
+
+    if (NULL == x_GetFileInformationByHandleEx) {
+        HINSTANCE hinst;
+
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+        if (0 == (hinst = LoadLibraryA("Kernel32")) ||
+                0 == (x_GetFileInformationByHandleEx =
+                            (GetFileInformationByHandleEx_t)GetProcAddress(hinst, "GetFileInformationByHandleEx"))) {
+            // Kernel32.lib; FileExtd.lib on Windows Server 2003 and Windows XP
+            x_GetFileInformationByHandleEx = my_GetFileInformationByHandleExImp;
+            if (hinst) FreeLibrary(hinst);
+        }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
+    }
+
+    return x_GetFileInformationByHandleEx(handle, FileInformationClass, lpFileInformation, dwBufferSize);
+}
+
+
+static DWORD WINAPI
+my_GetFileInformationByHandleExImp(HANDLE handle, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize)
+{
+    __CUNUSED(handle)
+    __CUNUSED(FileInformationClass)
+    __CUNUSED(lpFileInformation)
+    __CUNUSED(dwBufferSize)
+
+    SetLastError(ERROR_NOT_SUPPORTED);          // not implemented
+    return 0;
 }
 
 
@@ -1078,24 +1071,26 @@ my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR path, DWORD length, DWORD f
 //          As a result of encountering a symbolic link in resolution of the path argument,
 //          the length of the substituted pathname string exceeded {PATH_MAX}.
 //
-//
-//  NOTES:
-//      Portable applications should not assume that the returned contents of
-//      the symblic link are null-terminated.
+//  NOTES
+//      Portable applications should not assume that the returned contents of the symbolic
+//      link are null-terminated.
 */
+
 LIBW32_API int
 w32_readlink(const char *path, char *buf, size_t maxlen)
 {
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
-        wchar_t wpath[WIN32_PATH_MAX];
+        if (path && buf) {
+            wchar_t wpath[WIN32_PATH_MAX];
 
-        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-            if (w32_readlinkW(wpath, wpath, _countof(wpath)) > 0) {
-                return w32_wc2utf(wpath, buf, maxlen);
+            if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+                if (w32_readlinkW(wpath, wpath, _countof(wpath)) > 0) {
+                    return w32_wc2utf(wpath, buf, maxlen);
+                }
             }
+            return -1;
         }
-        return -1;
     }
 #endif  //UTF8FILENAMES
 
@@ -1215,8 +1210,30 @@ w32_readlinkA(const char *path, char *buf, size_t maxlen)
 //          (including the terminating null byte), or the length of the string pointed to
 //          by path1 exceeded {SYMLINK_MAX}.
 */
+
 LIBW32_API int
 w32_symlink(const char *name1, const char *name2)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        if (name1 && name2) {
+            wchar_t wname1[WIN32_PATH_MAX], wname2[WIN32_PATH_MAX];
+
+            if (w32_utf2wc(name1, wname1, _countof(wname1)) > 0 &&
+                w32_utf2wc(name2, wname2, _countof(wname2)) > 0) {
+                return w32_symlinkW(wname1, wname2);
+            }
+            return -1;
+        }
+    }
+#endif  //UTF8FILENAMES
+
+    return w32_symlinkA(name1, name2);
+}
+
+
+LIBW32_API int
+w32_symlinkW(const wchar_t* name1, const wchar_t* name2)
 {
     int ret = -1;
 
@@ -1226,7 +1243,70 @@ w32_symlink(const char *name1, const char *name2)
     } else if (!*name1 || !*name2) {
         errno = ENOENT;
 
-    } else if (strlen(name1) > MAX_PATH || strlen(name2) > MAX_PATH) {
+    } else if (wcslen(name1) > WIN32_PATH_MAX || wcslen(name2) > WIN32_PATH_MAX) {
+        errno = ENAMETOOLONG;
+
+    } else if (GetFileAttributesW(name2) != INVALID_FILE_ATTRIBUTES /*0xffffffff*/) {
+        errno = EEXIST;
+
+    } else {
+        ret = 0;
+        if (IsShortcutW(name2)) {               // possible shortcut (xxx.lnk)
+            if (!CreateShortcutW(name2, name1, NULL, name1)) {
+                errno = EIO;
+                ret = -1;
+            }
+
+        } else {                                // otherwise symlink (vista+).
+#ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
+#define SYMBOLIC_LINK_FLAG_DIRECTORY 0x01
+#endif
+#ifndef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE
+#define SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE 0x2
+    //https://docs.microsoft.com/en-us/windows/uwp/get-started/enable-your-device-for-development
+#endif
+
+            DWORD attrs1, flag =                // Note: Generally only available under an Admin account
+                (((attrs1 = GetFileAttributesW(name1)) != INVALID_FILE_ATTRIBUTES &&
+                    (attrs1 & FILE_ATTRIBUTE_DIRECTORY)) ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0);
+            if (! my_CreateSymbolicLinkW(/*target-link*/name2, /*existing*/name1, flag)) {
+                switch (GetLastError()) {
+                case ERROR_ACCESS_DENIED:
+                case ERROR_SHARING_VIOLATION:
+                case ERROR_PRIVILEGE_NOT_HELD:
+                    errno = EACCES;  break;
+                case ERROR_FILE_NOT_FOUND:
+                    errno = ENOENT;  break;
+                case ERROR_PATH_NOT_FOUND:
+                case ERROR_INVALID_DRIVE:
+                    errno = ENOTDIR; break;
+                case ERROR_WRITE_PROTECT:
+                    errno = EROFS;   break;
+                default:
+                    w32_errno_set();
+                    break;
+                }
+                ret = -1;
+            }
+        }
+    }
+
+    return ret;
+}
+
+
+LIBW32_API int
+w32_symlinkA(const char *name1, const char *name2)
+{
+    int ret = -1;
+
+    if (name1 == NULL || name2 == NULL) {
+        errno = EFAULT;
+
+    } else if (!*name1 || !*name2) {
+        errno = ENOENT;
+
+    } else if (strlen(name1) > WIN32_PATH_MAX || strlen(name2) > WIN32_PATH_MAX) {
         errno = ENAMETOOLONG;
 
     } else if (GetFileAttributesA(name2) != INVALID_FILE_ATTRIBUTES /*0xffffffff*/) {
@@ -1234,8 +1314,8 @@ w32_symlink(const char *name1, const char *name2)
 
     } else {
         ret = 0;
-        if (isshortcut(name2)) {                // possible shortcut (xxx.lnk)
-            if (! CreateShortcutA(name2, name1, "", name1)) {
+        if (IsShortcutA(name2)) {               // possible shortcut (xxx.lnk)
+            if (! CreateShortcutA(name2, name1, NULL, name1)) {
                 errno = EIO;
                 ret = -1;
             }
@@ -1357,7 +1437,7 @@ my_CreateSymbolicLinkAImp(const char *lpSymlinkFileName, const char *lpTargetFil
 
 
 static BOOL
-isshortcut(const char *name)
+IsShortcutA(const char *name)
 {
     const size_t len = strlen(name);
     const char *cursor;
@@ -1365,6 +1445,24 @@ isshortcut(const char *name)
     for (cursor = name + len; --cursor >= name;) {
         if (*cursor == '.') {                   // extension
             return (*++cursor && 0 == w32_io_stricmp(cursor, "lnk"));
+        }
+        if (*cursor == '/' || *cursor == '\\') {
+            break;                              // delimiter
+        }
+    }
+    return FALSE;
+}
+
+
+static BOOL
+IsShortcutW(const wchar_t *name)
+{
+    const size_t len = wcslen(name);
+    const wchar_t *cursor;
+
+    for (cursor = name + len; --cursor >= name;) {
+        if (*cursor == '.') {                   // extension
+            return (*++cursor && 0 == w32_io_wstricmp(cursor, "lnk"));
         }
         if (*cursor == '/' || *cursor == '\\') {
             break;                              // delimiter
@@ -1402,11 +1500,11 @@ isshortcut(const char *name)
 //      the beginning of the file.
 //
 //      The file status flags and file access modes of the open file description shall be
-//      set according to the value of oflag.
+//      set according to the value of 'oflag'.
 //
-//      Values for oflag are constructed by a bitwise-inclusive OR of flags from the
+//      Values for 'oflag' are constructed by a bitwise-inclusive OR of flags from the
 //      following list, defined in <fcntl.h>. Applications shall specify exactly one of the
-//      first three values (file access modes) below in the value of oflag:
+//      first three values (file access modes) below in the value of 'oflag':
 //
 //          O_RDONLY
 //              Open for reading only.
@@ -1512,19 +1610,19 @@ isshortcut(const char *name)
 //      If O_TRUNC is set and the file did previously exist, upon successful completion,
 //      open() shall mark for update the st_ctime and st_mtime fields of the file.
 //
-//      If both the O_SYNC and O_DSYNC flags are set, the effect is as if only the O_SYNC
-//      flag was set. [Option End]
+//      [Optional] If both the O_SYNC and O_DSYNC flags are set, the effect is as if only the O_SYNC
+//      flag was set.
 //
-//      If path refers to a STREAMS file, oflag may be constructed from O_NONBLOCK OR'ed
+//      [Optional] If path refers to a STREAMS file, 'oflag' may be constructed from O_NONBLOCK OR'ed
 //      with either O_RDONLY, O_WRONLY, or O_RDWR. Other flag values are not applicable to
 //      STREAMS devices and shall have no effect on them. The value O_NONBLOCK affects the
 //      operation of STREAMS drivers and certain functions applied to file descriptors
 //      associated with STREAMS files. For STREAMS drivers, the implementation of
-//      O_NONBLOCK is device-specific. [Option End]
+//      O_NONBLOCK is device-specific.
 //
-//      If path names the master side of a pseudo-terminal device, then it is unspecified
+//      [Optional If path names the master side of a pseudo-terminal device, then it is unspecified
 //      whether open() locks the slave side so that it cannot be opened. Conforming
-//      applications shall call unlockpt() before opening the slave side. [Option End]
+//      applications shall call unlockpt() before opening the slave side.
 //
 //      The largest value that can be represented correctly in an object of type off_t
 //      shall be established as the offset maximum in the open file description.
@@ -1648,18 +1746,14 @@ w32_open(const char *path, int oflag, ...)
 
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
-        wchar_t wpath[WIN32_PATH_MAX];
+        if (path) {
+            wchar_t wpath[WIN32_PATH_MAX];
 
-        if (NULL == path) {
-            errno = EFAULT;
+            if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+                return w32_openW(wpath, oflag, mode);
+            }
             return -1;
         }
-
-        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-            return w32_openW(wpath, oflag, mode);
-        }
-
-        return -1;
     }
 #endif  //UTF8FILENAMES
 
@@ -1671,18 +1765,22 @@ LIBW32_API int
 w32_openW(const wchar_t *path, int oflag, int mode)
 {
     wchar_t symbuf[WIN32_PATH_MAX];
-    int ret = 0;
+    const wchar_t *expath;
+    int fd, ret = 0;
 
     if (NULL == path) {
         errno = EFAULT;
         return -1;
     }
 
+    if (!*path) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    // specials
     if (0 == w32_io_wstricmp(path, "/dev/null")) {
-        /*
-         *  Redirect ..
-         */
-        path = L"NUL";
+        path = L"NUL";                          // redirect
 
     } else if ((ret = ReadlinkW(path, (void *)-1, symbuf, _countof(symbuf))) < 0) {
         /*
@@ -1709,8 +1807,9 @@ w32_openW(const wchar_t *path, int oflag, int mode)
          *  open() will fail even if the symbolic link points to a non-existent name.
          */
         if ((oflag & (O_CREAT|O_EXCL)) == (O_CREAT|O_EXCL)) {
-            oflag &= ~(O_CREAT|O_EXCL);         // link must exist !
+            oflag &= ~(O_CREAT|O_EXCL);         // link must exist
         }
+
         path = symbuf;
     }
 
@@ -1719,9 +1818,17 @@ w32_openW(const wchar_t *path, int oflag, int mode)
         return -1;
     }
 
-    // true open
+    // open
 #undef _wopen
-    return w32_sockfd_limit(_wopen(path, oflag, mode));
+    if (NULL != (expath = w32_extendedpathW(path))) {
+        path = expath;                          // abs-path to expanded
+    }
+
+    fd = _wopen(path, oflag, mode);
+
+    free((void*)expath);                        // release temporary
+
+    return w32_fdregister(fd);
 }
 
 
@@ -1729,18 +1836,22 @@ LIBW32_API int
 w32_openA(const char *path, int oflag, int mode)
 {
     char symbuf[WIN32_PATH_MAX];
-    int ret = 0;
+    const char *expath;
+    int fd, ret = 0;
 
     if (NULL == path) {
         errno = EFAULT;
         return -1;
     }
 
+    if (!*path) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    // specials
     if (0 == w32_io_stricmp(path, "/dev/null")) {
-        /*
-         *  Redirect ..
-         */
-        path = "NUL";
+        path = "NUL";                           // redirect
 
     } else if ((ret = ReadlinkA(path, (void *)-1, symbuf, sizeof(symbuf))) < 0) {
         /*
@@ -1767,7 +1878,7 @@ w32_openA(const char *path, int oflag, int mode)
          *  open() will fail even if the symbolic link points to a non-existent name.
          */
         if ((oflag & (O_CREAT|O_EXCL)) == (O_CREAT|O_EXCL)) {
-            oflag &= ~(O_CREAT|O_EXCL);         // link must exist !
+            oflag &= ~(O_CREAT|O_EXCL);         // link must exist
         }
         path = symbuf;
     }
@@ -1777,34 +1888,210 @@ w32_openA(const char *path, int oflag, int mode)
         return -1;
     }
 
-    // true open
+    // open
 #undef _open
-    return w32_sockfd_limit(_open(path, oflag, mode));
+    if (NULL != (expath = w32_extendedpathA(path))) {
+        path = expath;                          // abs-path to expanded
+    }
+
+    fd = _open(path, oflag, mode);
+
+    free((void*)expath);                        // release temporary
+
+    return w32_fdregister(fd);
 }
 
 
 /*
- *  Convert WIN attributes to thier Unix counterparts.
+//  NAME
+//      fopen - open a stream
+//
+//  SYNOPSIS
+//
+//      #include <stdio.h>
+//
+//      FILE *fopen(const char *path, const char *mode);
+//
+//  DESCRIPTION
+//
+//      The fopen() function shall open the file whose pathname is the string pointed to by filename,
+//      and associates a stream with it.
+//
+//      The mode argument points to a string. If the string is one of the following,
+//      the file shall be opened in the indicated mode. Otherwise, the behavior is undefined.
+//
+//        "r" or "rb"
+//          - Open file for reading.
+//
+//        "w" or "wb"
+//          - Truncate to zero length or create file for writing.
+//
+//        "a" or "ab"
+//           - Append; open or create file for writing at end-of-file.
+//
+//        "r+" or "rb+" or "r+b"
+//           - Open file for update (reading and writing).
+//
+//        "w+" or "wb+" or "w+b"
+//           - Truncate to zero length or create file for update.
+//
+//        "a+" or "ab+" or "a+b"
+//           - Append; open or create file for update, writing at end-of-file.
+//
+//      Opening a file with read mode (r as the first character in the mode argument) shall fail
+//      if the file does not exist or cannot be read.
+//
+//      Opening a file with append mode (a as the first character in the mode argument) shall
+//      cause all subsequent writes to the file to be forced to the then current end-of-file,
+//      regardless of intervening calls to fseek().
+//
+//      When a file is opened with update mode ( '+' as the second or third character in the mode
+//      argument), both input and output may be performed on the associated stream. However, the
+//      application shall ensure that output is not directly followed by input without an
+//      intervening call to fflush() or to a file positioning function (fseek(), fsetpos(), or
+//      rewind()), and input is not directly followed by output without an intervening call to a
+//      file positioning function, unless the input operation encounters end-of-file.
+//
+//      When opened, a stream is fully buffered if and only if it can be determined not to refer
+//      to an interactive device. The error and end-of-file indicators for the stream shall be
+//      cleared.
+//
+//      If mode is "w", "wb", "a", "ab", "w+", "wb+", "w+b", "a+", "ab+", or "a+b", and the file
+//      did not previously exist, upon successful completion, the fopen() function shall mark for
+//      update the 'st_atime', 'st_ctime', and 'st_mtime' fields of the file and the 'st_ctime'
+//      and 'st_mtime' fields of the parent directory.
+//
+//      If mode is "w", "wb", "w+", "wb+", or "w+b", and the file did previously exist, upon successful
+//      completion, fopen() shall mark for update the 'st_ctime' and 'st_mtime' fields of the file.
+//      The fopen() function shall allocate a file descriptor as open() does.
+//
+//      After a successful call to the fopen() function, the orientation of the stream shall be
+//      cleared, the encoding rule shall be cleared, and the associated mbstate_t object shall be
+//      set to describe an initial conversion state.
+//
+//      The largest value that can be represented correctly in an object of type off_t shall be
+//      established as the offset maximum in the open file description.
+//
+//  RETURN VALUE
+//
+//      Upon successful completion, fopen() shall return a pointer to the object controlling the stream.
+//      Otherwise, a null pointer shall be returned, and errno shall be set indicate the error.
+//
+//  ERRORS
+//
+*/
+
+FILE *
+w32_fopen(const char *path, const char *mode)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        if (path && mode) {
+            wchar_t wpath[WIN32_PATH_MAX], wmode[32];
+
+            if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+                if (w32_utf2wc(mode, wmode, _countof(wmode)) > 0) {
+                    return w32_fopenW(wpath, wmode);
+                }
+            }
+            return NULL;
+        }
+    }
+#endif  //UTF8FILENAMES
+
+    return w32_fopenA(path, mode);
+}
+
+
+FILE *
+w32_fopenA(const char *path, const char *mode)
+{
+    char symbuf[WIN32_PATH_MAX];
+    FILE *file = NULL;
+
+    if (NULL == path || NULL == mode) {
+        errno = EFAULT;
+        return NULL;
+    }
+
+    if (0 == w32_io_stricmp(path, "/dev/null")) {
+        path = "NUL";                           /* Redirect */
+
+    } else if (ReadlinkA(path, (void*)-1, symbuf, _countof(symbuf)) >= 0) {
+        path = symbuf;                          /* Follow link */
+    }
+
+    if (NULL != (file = fopen(path, mode))) {
+        w32_fdregister(_fileno(file));
+    }
+
+    return file;
+}
+
+
+FILE *
+w32_fopenW(const wchar_t *path, const wchar_t *mode)
+{
+    wchar_t symbuf[WIN32_PATH_MAX];
+    const wchar_t* expath;
+    FILE *file = NULL;
+
+    if (NULL == path || NULL == mode) {
+        errno = EFAULT;
+        return NULL;
+    }
+
+    if (0 == w32_io_wstricmp(path, "/dev/null")) {
+        path = L"NUL";                          /* Redirect */
+
+    } else if (ReadlinkW(path, (void*)-1, symbuf, _countof(symbuf)) >= 0) {
+        path = symbuf;                          /*  Follow link */
+    }
+
+    if (NULL != (expath = w32_extendedpathW(path))) {
+        path = expath;                          /* abs-path to expanded */
+    }
+
+    if (NULL != (file = _wfopen(path, mode))) {
+        w32_fdregister(_fileno(file));
+    }
+
+    free((void*)expath);                        /* release temporary */
+
+    return file;
+}
+
+
+/*
+ *  Convert WIN attributes to their Unix counterparts.
  */
 static void
-ApplyAttributesA(struct stat *sb,
-        const DWORD dwAttributes, const char *name, const char *magic)
+ApplyAttributesA(struct stat *sb, const DWORD dwAttributes, const char *name, const char *magic)
 {
-    const char *p;
+    const char *p = name;
     char symbuf[WIN32_PATH_MAX];
     mode_t mode = 0;
 
     /*
-     *  mode
+     *  mode, S_IFxxx
      */
 
-    /* S_IFxxx */
-    if (NULL != (p = name) && p[0] && p[1] == ':') {
-        p += 2;                                 /* remove drive */
+    if (p) {
+        if (0 == memcmp(p, "\\\\?\\", 4)) {
+            if (0 == memcmp(p, "\\\\?\\UNC\\", 8)) {
+                p += 4 + 3;                     /* Network UNC prefix, "\\?\UNC" */
+            } else {
+                p += 4;                         /* UNC prefix; consume */
+            }
+        }
+
+        if (p[0] && p[1] == ':') {
+            p += 2;                             /* remove drive */
+        }
     }
 
     if (p && (!p[0] || (ISSLASH(p[0]) && !p[1]))) {
-        mode |= S_IFDIR|S_IEXEC;                /* handle root directory explicity */
+        mode |= S_IFDIR|S_IEXEC;                /* handle root directory explicitly */
 
     } else if (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         mode |= S_IFDIR|S_IEXEC;                /* directory */
@@ -1847,27 +2134,34 @@ ApplyAttributesA(struct stat *sb,
 
 
 /*
- *  Convert WIN attributes to thier Unix counterparts.
+ *  Convert WIN attributes to their Unix counterparts.
  */
 static void
-ApplyAttributesW(struct stat *sb,
-        const DWORD dwAttributes, const wchar_t *name, const char *magic)
+ApplyAttributesW(struct stat *sb, const DWORD dwAttributes, const wchar_t *name, const char *magic)
 {
-    const wchar_t *p;
+    const wchar_t *p = name;
     wchar_t symbuf[WIN32_PATH_MAX];
     mode_t mode = 0;
 
     /*
-     *  mode
+     *  mode, S_IFxxx
      */
+    if (p) {
+        if (0 == wmemcmp(p, L"\\\\?\\", 4)) {
+            if (0 == wmemcmp(p, L"\\\\?\\UNC\\", 8)) {
+                p += 4 + 3;                      /* Network UNC prefix, "\\?\UNC" */
+            } else {
+                p += 4;                         /* UNC prefix; consume */
+            }
+        }
 
-    /* S_IFxxx */
-    if (NULL != (p = name) && p[0] && p[1] == ':') {
-        p += 2;                                 /* remove drive */
+        if (p[0] && p[1] == ':') {
+            p += 2;                             /* consume drive */
+        }
     }
 
     if (p && (!p[0] || (ISSLASH(p[0]) && !p[1]))) {
-        mode |= S_IFDIR|S_IEXEC;                /* handle root directory explicity */
+        mode |= S_IFDIR|S_IEXEC;                /* handle root directory explicitly */
 
     } else if (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         mode |= S_IFDIR|S_IEXEC;                /* directory */
@@ -2052,6 +2346,54 @@ ApplySize(struct stat *sb, const DWORD nFileSizeLow, const DWORD nFileSizeHigh)
 #endif /*HAVE_STRUCT_STAT_ST_BLKSIZE*/
     }
 #endif /*HAVE_STRUCT_STAT_ST_BLOCKS*/
+}
+
+
+static void
+ApplyDevice(struct stat* sb, const DWORD dwVolumeSerialNumber, const DWORD nFileIndexLow, const DWORD nFileIndexHigh, const wchar_t *name)
+{
+    //  st_dev
+    //      This field describes the device on which this file resides.
+    //
+    //  st_rdev
+    //      This field describes the device that this file (INODE) represents.
+    //
+    //  st_ino
+    //      This field contains the file's INODE number.
+    //
+    if (name) {
+        const wchar_t *path = name;
+
+        if (0 == wmemcmp(path, L"\\\\?\\", 4)) {
+            path += 4;                      // UNC prefix
+        }
+
+        if (path[1] == ':' && iswalpha(path[0])) {
+            const int drive = toupper((unsigned char)path[0]) - ('A' - 1);
+            sb->st_rdev = (dev_t)(drive);   // A=1 ...
+        }
+    }
+
+    sb->st_dev = (dev_t)dwVolumeSerialNumber;
+    if (0 == sb->st_dev) {
+        sb->st_dev = sb->st_rdev;
+            //Note:  
+            //  Wont function for reparse-points, hence it is not possible to test in call cases
+            //  as to whether a parent/child directory represent a mount-point or are cross-device.
+    }
+
+    sb->st_ino = w32_ino_gen(nFileIndexLow, nFileIndexHigh);
+        //Note:
+        //  Generate an INODE from nFileIndexHigh and nFileIndexLow, yet warning the identifier 
+        //  that is stored in the nFileIndexHigh and nFileIndexLow members is called the file ID.
+        // 
+        //  Support for file IDs is file system - specific.File IDs are not guaranteed to be unique
+        //  over time, because file systems are free to reuse them. In some cases, the file ID
+        //  for a file can change over time.
+
+    if (0 == sb->st_ino && name) {
+        sb->st_ino = w32_ino_whash(name);
+    }
 }
 
 
@@ -2288,20 +2630,29 @@ ReadlinkA(const char *path, const char **suffixes, char *buf, size_t maxlen)
     }
 
     while ((suffix = *suffixes++) != NULL) {
-        /* Concat suffix */
+        /* Concatenate suffix */
         if (length + strlen(suffix) >= maxlen) {
             ret = -ENAMETOOLONG;
             continue;
         }
-        strcpy(buf + length, suffix);           // concat suffix
+        strcpy(buf + length, suffix);           // concatenate suffix
 
         /* File attributes */
         if (0xffffffff == (attrs = GetFileAttributesA(buf))) {
+            const char *expath;                 // abs-path to expanded
+
+            if (NULL != (expath = w32_extendedpathA(buf))) {
+                attrs = GetFileAttributesA(expath);
+                free((void*) expath);
+            }
+        }
+
+        if (0xffffffff == attrs) {
             DWORD rc;
 
             if ((rc = GetLastError()) == ERROR_ACCESS_DENIED ||
                         rc == ERROR_SHARING_VIOLATION) {
-                ret = -EACCES;                  // true error ???
+                ret = -EACCES;
             } else if (rc == ERROR_PATH_NOT_FOUND) {
                 ret = -ENOTDIR;
             } else if (rc == ERROR_FILE_NOT_FOUND) {
@@ -2333,7 +2684,7 @@ ReadlinkA(const char *path, const char **suffixes, char *buf, size_t maxlen)
                 }
             }
 
-        /* readparse point - symlink/mount-point */
+        /* reparse point - symlink/mount-point */
         } else if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
             if ((ret = w32_reparse_readA(path, buf, maxlen)) >= 0) {
                 ret = (int)strlen(buf);
@@ -2347,7 +2698,7 @@ ReadlinkA(const char *path, const char **suffixes, char *buf, size_t maxlen)
 
 #define SHORTCUT_COOKIE         "L\0\0\0"       // shortcut magic
 
-                                                // cygwin shortcut also syste/rdonly
+                                                // cygwin shortcut also system/read-only
 #define CYGWIN_ATTRS            FILE_ATTRIBUTE_SYSTEM
 #define CYGWIN_COOKIE           "!<symlink>"    // old style shortcut
 
@@ -2372,10 +2723,10 @@ ReadlinkA(const char *path, const char **suffixes, char *buf, size_t maxlen)
 
                 // win32 shortcut (will also read cygwin shortcuts)
                 } else if (got >= 4 && 0 == memcmp(cookie, SHORTCUT_COOKIE, 4)) {
-                    if ((ret = ReadShortcutA(buf, buf, maxlen)) < 0) {
-                        ret = -EIO;
-                    } else {
+                    if ((ret = ReadShortcutA(buf, buf, maxlen)) >= 0) {
                         ret = (int)strlen(buf);
+                    } else {
+                        ret = -EIO;
                     }
 
                 // cygwin symlink (old style)
@@ -2393,7 +2744,7 @@ ReadlinkA(const char *path, const char **suffixes, char *buf, size_t maxlen)
                             ret = (int)got;
                         }
                         if (ret == 0) {
-                            ret = -EIO;         // hmmm .. empty link specification
+                            ret = -EIO;         // empty link specification
                         }
                     }
                 } else {
@@ -2433,7 +2784,7 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxle
     }
 
     while ((suffix = *suffixes++) != NULL) {
-        /* Concat suffix */
+        /* Concatenate suffix */
         if (length + strlen(suffix) >= maxlen) {
             ret = -ENAMETOOLONG;
             continue;
@@ -2449,11 +2800,20 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxle
 
         /* File attributes */
         if (0xffffffff == (attrs = GetFileAttributesW(buf))) {
+            const wchar_t *expath;              // abs-path to expanded
+
+            if (NULL != (expath = w32_extendedpathW(buf))) {
+                attrs = GetFileAttributesW(expath);
+                free((void*)expath);
+            }
+        }
+
+        if (0xffffffff == attrs) {
             DWORD rc;
 
             if ((rc = GetLastError()) == ERROR_ACCESS_DENIED ||
                         rc == ERROR_SHARING_VIOLATION) {
-                ret = -EACCES;                  // true error ???
+                ret = -EACCES;
             } else if (rc == ERROR_PATH_NOT_FOUND) {
                 ret = -ENOTDIR;
             } else if (rc == ERROR_FILE_NOT_FOUND) {
@@ -2485,10 +2845,10 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxle
                 }
             }
 
-        /* readparse point - symlink/mount-point */
+        /* reparse point - symlink/mount-point */
         } else if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
             if ((ret = w32_reparse_readW(path, buf, maxlen)) >= 0) {
-                ret = (int)wcslen(buf);
+                ret = (int) wcslen(buf);
             } else {
                 ret = -EIO;
             }
@@ -2499,7 +2859,7 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxle
 
 #define SHORTCUT_COOKIE         "L\0\0\0"       // shortcut magic
 
-                                                // cygwin shortcut also syste/rdonly
+                                                // Cygwin shortcut also system/read-only
 #define CYGWIN_ATTRS            FILE_ATTRIBUTE_SYSTEM
 #define CYGWIN_COOKIE           "!<symlink>"    // old style shortcut
 
@@ -2524,10 +2884,10 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxle
 
                 // win32 shortcut (will also read cygwin shortcuts)
                 } else if (got >= 4 && 0 == memcmp(cookie, SHORTCUT_COOKIE, 4)) {
-                    if ((ret = ReadShortcutW(buf, buf, maxlen)) < 0) {
-                        ret = -EIO;
-                    } else {
+                    if ((ret = ReadShortcutW(buf, buf, maxlen)) >= 0) {
                         ret = (int)wcslen(buf);
+                    } else {
+                        ret = -EIO;
                     }
 
                 // cygwin symlink (old style)
@@ -2545,7 +2905,7 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxle
                             ret = (int)(got / sizeof(wchar_t));
                         }
                         if (ret == 0) {
-                            ret = -EIO;         // hmmm .. empty link specification
+                            ret = -EIO;         // empty link specification
                         }
                     }
                 } else {
@@ -2568,8 +2928,12 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxle
 
 static const GUID   x_CLSID_ShellLink   =       // local copies; OWC linker crashes otherwise
     { 0x00021401, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
-static const IID    x_IID_IShellLink    =
+
+static const IID    x_IID_IShellLinkA   =
     { 0x000214EE, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
+static const IID    x_IID_IShellLinkW   =
+    { 0x000214F9, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
+
 static const IID    x_IID_IPersistFile  =
     { 0x0000010B, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
 
@@ -2600,17 +2964,18 @@ static const IID    x_IID_IPersistFile  =
  *      IShellLink interface supports functions such as GetPath(), GetDescription(),
  *      Resolve(), GetWorkingDirectory(), and so on.
  */
+
 static int
 ReadShortcutA(const char *name, char *buf, size_t maxlen)
 {
+    WIN32_FIND_DATA wfd = {0};
+    IShellLinkA *pShLink;
     HRESULT hres = FALSE;
-    WIN32_FIND_DATA wfd;
-    IShellLink *pShLink;
 
     (void) CoInitialize(NULL);
 
     hres = CoCreateInstance(&x_CLSID_ShellLink, NULL,
-                CLSCTX_INPROC_SERVER, &x_IID_IShellLink, (LPVOID *)&pShLink);
+                CLSCTX_INPROC_SERVER, &x_IID_IShellLinkA, (LPVOID *)&pShLink);
 
     if (name != buf) buf[0] = 0;
     if (SUCCEEDED(hres)) {
@@ -2637,7 +3002,7 @@ ReadShortcutA(const char *name, char *buf, size_t maxlen)
                      */
                     hres = pShLink->lpVtbl->GetDescription(pShLink, buf, (int)maxlen);
                     if (SUCCEEDED(hres) && 0 == buf[0]) {
-                        hres = -1;
+                        hres = E_FAIL;
                     }
                 }
                 ppf->lpVtbl->Release(ppf);
@@ -2654,14 +3019,14 @@ ReadShortcutA(const char *name, char *buf, size_t maxlen)
 static int
 ReadShortcutW(const wchar_t *name, wchar_t *buf, size_t maxlen)
 {
+    WIN32_FIND_DATAW wfd = {0};
+    IShellLinkW *pShLink;
     HRESULT hres = FALSE;
-    WIN32_FIND_DATA wfd;
-    IShellLink *pShLink;
 
     (void) CoInitialize(NULL);
 
     hres = CoCreateInstance(&x_CLSID_ShellLink, NULL,
-                CLSCTX_INPROC_SERVER, &x_IID_IShellLink, (LPVOID *)&pShLink);
+                CLSCTX_INPROC_SERVER, &x_IID_IShellLinkW, (LPVOID *)&pShLink);
 
     if (name != buf) buf[0] = 0;
     if (SUCCEEDED(hres)) {
@@ -2671,25 +3036,17 @@ ReadShortcutW(const wchar_t *name, wchar_t *buf, size_t maxlen)
         if (SUCCEEDED(hres)) {
             hres = ppf->lpVtbl->Load(ppf, name, STGM_READ);
             if (SUCCEEDED(hres)) {
-                char t_buf[WIN32_PATH_MAX];
-
-                t_buf[0] = 0;
-                hres = pShLink->lpVtbl->GetPath(pShLink, t_buf, sizeof(t_buf), &wfd, 0);
-                if (!SUCCEEDED(hres) || 0 == t_buf[0]) {
+                hres = pShLink->lpVtbl->GetPath(pShLink, buf, maxlen, &wfd, 0);
+                if (!SUCCEEDED(hres) || 0 == buf[0]) {
                     /*
                      *  A document shortcut may only have a description ...
                      *  Also CYGWIN generates this style of link.
                      */
-                    hres = pShLink->lpVtbl->GetDescription(pShLink, t_buf, sizeof(t_buf));
-                    if (SUCCEEDED(hres) && 0 == t_buf[0]) {
-                        hres = -1;
+                    hres = pShLink->lpVtbl->GetDescription(pShLink, buf, maxlen);
+                    if (SUCCEEDED(hres) && 0 == buf[0]) {
+                        hres = E_FAIL;
                     }
                 }
-
-                if (SUCCEEDED(hres) && t_buf[0]) {
-                    w32_utf2wc(t_buf, buf, maxlen);
-                }
-
                 ppf->lpVtbl->Release(ppf);
             }
         }
@@ -2704,46 +3061,93 @@ ReadShortcutW(const wchar_t *name, wchar_t *buf, size_t maxlen)
 static int
 CreateShortcutA(const char *link, const char *name, const char *working, const char *desc)
 {
-    IShellLink *pShLink;
+    IShellLinkA *pShLink;
     HRESULT hres;
 
     (void) CoInitialize(NULL);
 
     // Get a pointer to the IShellLink interface.
     hres = CoCreateInstance(&x_CLSID_ShellLink, NULL,
-                CLSCTX_INPROC_SERVER, &x_IID_IShellLink, (PVOID *) &pShLink);
+                CLSCTX_INPROC_SERVER, &x_IID_IShellLinkA, (PVOID *) &pShLink);
 
     if (SUCCEEDED(hres)) {
-        IPersistFile* ppf;
+        IPersistFile *ppf;
 
-        // Set the path to the shortcut target and add the
-        // description.
-    //  if (flags & MAXIMIZED)
-    //      pShLink->lpVtbl->SetShowCmd(pShLink, SW_SHOW);
-        if (name)
-            pShLink->lpVtbl->SetPath(pShLink, (LPCSTR) name);
-        if (working)
+        // Attributes.
+        if (name) {
+            char resolved[WIN32_PATH_MAX];
+
+            if (GetFullPathNameA(name, (DWORD)sizeof(resolved), resolved, 0)) {
+                pShLink->lpVtbl->SetPath(pShLink, (LPCSTR)resolved);
+            } else {
+                pShLink->lpVtbl->SetPath(pShLink, (LPCSTR)name);
+            }
+        }
+
+        if (working && *working)
             pShLink->lpVtbl->SetWorkingDirectory(pShLink, (LPCSTR) working);
+
         if (desc)
             pShLink->lpVtbl->SetDescription(pShLink, (LPCSTR) desc);
-    //  if (icon)
-    //      pShLink->lpVtbl->SetIconLocation(pShLink, (LPCSTR) icon);
 
-        // Query IShellLink for the IPersistFile interface for saving the
-        // shortcut in persistent storage.
+        // IPersistFile interface, for saving the shortcut in persistent storage.
         hres = pShLink->lpVtbl->QueryInterface(pShLink, &x_IID_IPersistFile, (PVOID *) &ppf);
 
         if (SUCCEEDED(hres)) {
-            wchar_t wlink[ MAX_PATH ];
+            wchar_t wlink[WIN32_PATH_MAX];
 
-            // Ensure that the string is ANSI.
             w32_utf2wc(link, wlink, _countof(wlink));
-
-            // Save the link by calling IPersistFile::Save.
             hres = ppf->lpVtbl->Save(ppf, wlink, TRUE);
             ppf->lpVtbl->Release(ppf);
         }
+        pShLink->lpVtbl->Release(pShLink);
+    }
 
+    CoUninitialize();
+
+    return (SUCCEEDED(hres) ? TRUE : FALSE);
+}
+
+
+static int
+CreateShortcutW(const wchar_t *link, const wchar_t *name, const wchar_t *working, const wchar_t *desc)
+{
+    IShellLinkW *pShLink;
+    HRESULT hres;
+
+    (void)CoInitialize(NULL);
+
+    // Get a pointer to the IShellLink interface.
+    hres = CoCreateInstance(&x_CLSID_ShellLink, NULL,
+                CLSCTX_INPROC_SERVER, &x_IID_IShellLinkW, (PVOID*)&pShLink);
+
+    if (SUCCEEDED(hres)) {
+        IPersistFile *ppf;
+
+        // Attributes.
+        if (name) {
+            wchar_t resolved[WIN32_PATH_MAX];
+
+            if (GetFullPathNameW(name, (DWORD)_countof(resolved), resolved, 0)) {
+                pShLink->lpVtbl->SetPath(pShLink, (LPCWSTR)resolved);
+            } else {
+                pShLink->lpVtbl->SetPath(pShLink, (LPCWSTR)name);
+            }
+        }
+
+        if (working && *working)
+            pShLink->lpVtbl->SetWorkingDirectory(pShLink, (LPCWSTR)working);
+
+        if (desc)
+            pShLink->lpVtbl->SetDescription(pShLink, (LPCWSTR)desc);
+
+        // IPersistFile interface, for saving the shortcut in persistent storage.
+        hres = pShLink->lpVtbl->QueryInterface(pShLink, &x_IID_IPersistFile, (PVOID*)&ppf);
+
+        if (SUCCEEDED(hres)) {
+            hres = ppf->lpVtbl->Save(ppf, link, TRUE);
+            ppf->lpVtbl->Release(ppf);
+        }
         pShLink->lpVtbl->Release(pShLink);
     }
 
@@ -2759,59 +3163,61 @@ CreateShortcutA(const char *link, const char *name, const char *working, const c
 static int
 StatA(const char *name, struct stat *sb)
 {
-    char fullname[WIN32_PATH_MAX] = {0}, *pfname = NULL;
-    int flength, ret = -1;
-    BOOL domagic = 0;
+    union {
+        char name[WIN32_PATH_MAX];
+        wchar_t wname[WIN32_PATH_MAX];
+    } resolved;
+    char *pfname = NULL;
+    int namelen, ret = -1;
+
+    resolved.wname[0] = 0;
 
     if (name == NULL || sb == NULL) {
         ret = -EFAULT;                          /* basic checks */
 
     } else if (name[0] == '\0' ||
-                    (name[1] == ':' && name[2] == '\0')) {
+                (name[1] == ':' && name[2] == '\0')) {
         ret = -ENOENT;                          /* missing directory ??? */
 
-    } else if (strchr(name, '?') || strchr(name, '*')) {
-        ret = -ENOENT;                          /* wildcards -- break FindFirstFile() */
+    } else if (StatByHandleA(name, sb)) {
+        ret = 0;                                /* direct by handle interface */
 
-    } else if (0 == (flength = GetFullPathNameA(name, sizeof(fullname), fullname, &pfname))) {
+    } else if (strchr(name, '?') || strchr(name, '*')) {
+        ret = -ENOENT;                          /* wild cards -- break FindFirstFile() */
+
+    } else if (0 == (namelen =
+                GetFullPathNameA(name, sizeof(resolved.name), resolved.name, &pfname))) {
         ret = -ENOENT;                          /* parse error */
 
-    } else if (flength >= (int)sizeof(fullname)) {
+    } else if (namelen >= (int)sizeof(resolved.name)) {
         ret = -ENAMETOOLONG;                    /* buffer overflow */
 
     } else {
-        HANDLE h = INVALID_HANDLE_VALUE;
+        /*
+         *  Indirect method using FindFirstFileW.
+         */
+        const char *fullname = resolved.name;
+        HANDLE find = INVALID_HANDLE_VALUE;
         WIN32_FIND_DATAA fb = {0};
-        DWORD dwRootAttributes = 0;
-        int drive = 0;
 
-        /*
-         *  determine the drive .. used as st_dev
-         */
-        if (! ISSLASH(fullname[0])) {           /* A=1 .. */
-            drive = toupper(fullname[0]) - 'A' + 1;
-        }
-
-        /*
-         *  retrieve the file details
-         */
         memset(sb, 0, sizeof(struct stat));
 
-        if ((h = FindFirstFileA(fullname, &fb)) == INVALID_HANDLE_VALUE) {
+        if ((find = FindFirstFileA(fullname, &fb)) != INVALID_HANDLE_VALUE) {
+            ret = 0;
 
+        } else {                                /* "x:\" */
             if (((fullname[0] && fullname[1] == ':' &&
                         ISSLASH(fullname[2]) && fullname[3] == '\0')) &&
                     GetDriveTypeA(fullname) > 1) {
-                                                /* "x:\" */
                 /*
-                 *  root directories
+                 *  Root directories
                  */
-                dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
+                fb.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
                 ret = 0;
 
             } else if (ISSLASH(fullname[0]) && ISSLASH(fullname[1])) {
                 /*
-                 *  root UNC (//servername/xxx)
+                 *  Root UNC (//server-name/mount)
                  */
                 const char *slash = w32_strslash(fullname + 2);
                 const char *nextslash = w32_strslash(slash ? slash + 1 : NULL);
@@ -2819,7 +3225,7 @@ StatA(const char *name, struct stat *sb)
                 ret = -ENOENT;
                 if (NULL != slash &&
                         (NULL == nextslash || 0 == nextslash[1])) {
-                    dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
+                    fb.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
                     ret = 0;
                 }
 
@@ -2827,11 +3233,10 @@ StatA(const char *name, struct stat *sb)
                 /*
                  *  Determine cause
                  */
-                DWORD rc = GetLastError(), attrs;
+                DWORD rc = GetLastError(), attrs = 0;
 
                 if (0xffffffff == (attrs = GetFileAttributesA(fullname))) {
-                    // Decode error.
-                    if ((rc = GetLastError()) == ERROR_ACCESS_DENIED ||
+                   if ((rc = GetLastError()) == ERROR_ACCESS_DENIED ||
                             rc == ERROR_SHARING_VIOLATION) {
                         ret = -EACCES;
                     } else if (rc == ERROR_PATH_NOT_FOUND) {
@@ -2844,7 +3249,7 @@ StatA(const char *name, struct stat *sb)
 
                 } else if (rc == ERROR_ACCESS_DENIED) {
                     // Junction encountered (e.g C:/Users/Default User --> Default),
-                    //  FindFirstFile() behaviour is by design to stop applications recursively accessing symlinks.
+                    // FindFirstFile() behavior is by design to stop applications recursively accessing symlinks.
                     fb.dwFileAttributes = attrs;
                     ret = 0;
 
@@ -2853,172 +3258,49 @@ StatA(const char *name, struct stat *sb)
                     ret = -EIO;
                 }
             }
-
-        } else {
-            (void) FindClose(h);                /* release find session */
-            ret = 0;
         }
 
         /*
-         *  assign results
+         *  Export results
          */
-#if defined(DO_FILEMAGIC)                       /* verify file magic */
-        domagic = (HasExtension(fullname) == NULL);
-#endif
+        if (0 == ret) {
+            const wchar_t *wfullname = NULL;
+            size_t wnamelen = 0;
+            HANDLE file;
 
-        while (0 == ret) {
-            char magic[1024] = {0};
-            BOOL dirsymlink = FALSE;
-            DWORD count = 0;
-            HANDLE handle;
+            file = CreateFileA(fullname, READ_CONTROL, 0, NULL, OPEN_EXISTING,
+                        FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL);
+            if (INVALID_HANDLE_VALUE == file) {
+                file = CreateFileA(fullname, 0, 0, NULL, OPEN_EXISTING,
+                            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL);
+            }
 
-            if (INVALID_HANDLE_VALUE != (handle =
-                    CreateFileA(fullname, (domagic ? GENERIC_READ : 0), 0, NULL, OPEN_EXISTING,
-                        FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL))) {
-                //
-                //  file information
-                //      FILE_FLAG_BACKUP_SEMANTICS      permit directories to be open'ed
-                BY_HANDLE_FILE_INFORMATION fi = {0};
-
-                if (GetFileInformationByHandle(handle, &fi)) {
-                    if (fi.nNumberOfLinks > 0) {
-#if defined(_MSC_VER)                           /* XXX/NOTE */
-                        sb->st_nlink = (short)fi.nNumberOfLinks;
-#else
-                        sb->st_nlink = fi.nNumberOfLinks;
-#endif
-                    }
-                    fb.nFileSizeHigh    = fi.nFileSizeHigh;
-                    fb.nFileSizeLow     = fi.nFileSizeLow;
-                    fb.ftCreationTime   = fi.ftCreationTime;
-                    fb.ftLastAccessTime = fi.ftLastAccessTime;
-                    fb.ftLastWriteTime  = fi.ftLastWriteTime;
-                    sb->st_ino = w32_ino_gen(fi.nFileIndexLow, fi.nFileIndexHigh);
-                        //Note: Generate an inode from nFileIndexHigh and nFileIndexLow, yet warning
-                        //  The identifier that is stored in the nFileIndexHigh and nFileIndexLow members is called the file ID.
-                        //  Support for file IDs is file system - specific.File IDs are not guaranteed to be unique over time,
-                        //  because file systems are free to reuse them.In some cases, the file ID for a file can change over time.
-                }
-
-                //
-                //  directory symlinks
-                //  see: https://docs.microsoft.com/en-us/windows/desktop/FileIO/reparse-point-tags
-                if ((fb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
-                            (fb.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
-                                                /* retrieve reparse details */
-                    if (IO_REPARSE_TAG_SYMLINK == fb.dwReserved0) {
-                        dirsymlink = TRUE;
-
-                    } else if (IO_REPARSE_TAG_MOUNT_POINT == fb.dwReserved0 || 0 == fb.dwReserved0) {
-                        BYTE reparseBuffer[MAX_REPARSE_SIZE];
-                            /* XXX: warning: owc crash if = {0} under full optimisation */
-                        PREPARSE_DATA_BUFFER rdb = (PREPARSE_DATA_BUFFER)reparseBuffer;
-                        DWORD returnedLength = 0;
-
-                        memset(reparseBuffer, 0, sizeof(MAX_REPARSE_SIZE));
-
-                        if (DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT,
-                                NULL, 0, rdb, sizeof(reparseBuffer), &returnedLength, NULL)) {
-                            if (IsReparseTagMicrosoft(rdb->ReparseTag)) {
-                                switch (rdb->ReparseTag) {
-                                case IO_REPARSE_TAG_SYMLINK:
-                                    dirsymlink = TRUE;
-                                        /*XXX: unexpected */
-                                    break;
-                                case IO_REPARSE_TAG_MOUNT_POINT:
-                                    if (rdb->MountPointReparseBuffer.SubstituteNameLength > 0) {
-                                        const size_t offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
-                                        const wchar_t* mount = rdb->MountPointReparseBuffer.PathBuffer + offset;
-
-                                        if (0 == memcmp(mount, L"\\??\\", 4 * sizeof(wchar_t)) &&
-                                                0 != memcmp(mount, L"\\??\\Volume{", 11 * sizeof(wchar_t))) {
-                                            dirsymlink = TRUE;
-                                                /* not a volume mount point -- hard-link */
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                //
-                //  extended file-type
-#if defined(DO_FILEMAGIC)
-                if (domagic) {                  /* read file magic; regular files only */
-                     /* performed on files without an extension to determine whether an exec script */
-                     if (0 == (fb.dwFileAttributes &
-                                (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_TEMPORARY |
-                                 FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_ENCRYPTED))) {
-                        (void) ReadFile(handle, magic, sizeof(magic)-1, &count, NULL);
-                     }
-                }
-#endif //DO_MAGIC
-                magic[count] = 0;               /* null terminate magic buffer */
-
-                //
-                //  dev emulation
-                {   DWORD serialno = 0, flags = 0;
-                    if (my_GetVolumeInformationByHandle(handle, &serialno, &flags)) {
-                        sb->st_dev = serialno;
-                    }
-                }
-
-                //
-                //  inode emulation
-                if (0 == sb->st_ino) {
-                    sb->st_ino = w32_ino_hash(fullname);
-                }
-                ApplyOwner(sb, fb.dwFileAttributes, handle);
-
-                CloseHandle(handle);
-
-            } else {
-#if defined(DO_FILEMAGIC)
-                if (domagic) {
-                   domagic = 0;
-                   continue;                    /* retry without read; eg directories */
-                }
-#endif //DO_MAGIC
-
-                if (dwRootAttributes) {
-                    ret = -ENOENT;
-                } else if (0 == (sb->st_ino = w32_ino_file(fullname))) {
-                    sb->st_ino = w32_ino_hash(fullname);
-                    ApplyOwner(sb, fb.dwFileAttributes, NULL);
+            if (INVALID_HANDLE_VALUE != file) {
+                wnamelen = my_GetFinalPathNameByHandleW(file, resolved.wname, _countof(resolved.wname));
+                if (wnamelen) {
+                    wfullname = resolved.wname;
                 }
             }
 
-            ApplyAttributesA(sb, fb.dwFileAttributes|dwRootAttributes, fullname, magic);
-            if (dirsymlink) {
-                // NOTE: Directory reparse-points are hidden, as these are closer to hard-links
-                //          other link types are reclassed as symlinks.
-                sb->st_mode &= ~S_IFDIR;        /* can only be one type */
-                sb->st_mode |= S_IFLNK;
+            assert(offsetof(WIN32_FIND_DATAW, dwFileAttributes) == offsetof(WIN32_FIND_DATAA, dwFileAttributes));
+            assert(offsetof(WIN32_FIND_DATAW, ftCreationTime) == offsetof(WIN32_FIND_DATAA, ftCreationTime));
+            assert(offsetof(WIN32_FIND_DATAW, ftLastAccessTime) == offsetof(WIN32_FIND_DATAA, ftLastAccessTime));
+            assert(offsetof(WIN32_FIND_DATAW, ftLastWriteTime) == offsetof(WIN32_FIND_DATAA, ftLastWriteTime));
+            assert(offsetof(WIN32_FIND_DATAW, nFileSizeHigh) == offsetof(WIN32_FIND_DATAA, nFileSizeHigh));
+            assert(offsetof(WIN32_FIND_DATAW, nFileSizeLow) == offsetof(WIN32_FIND_DATAA, nFileSizeLow));
+            assert(offsetof(WIN32_FIND_DATAW, dwReserved0) == offsetof(WIN32_FIND_DATAA, dwReserved0));
+
+            if (! StatFileCommon(file, (const WIN32_FIND_DATAW *)&fb, sb, wfullname, wnamelen)) {
+                ret = -EIO;
             }
 
-            ApplyTimes(sb, &fb.ftCreationTime, &fb.ftLastAccessTime, &fb.ftLastWriteTime);
-            ApplySize(sb, fb.nFileSizeLow, fb.nFileSizeHigh);
-
-            //  st_dev
-            //      This field describes the device on which this file resides.
-            //
-            //  st_rdev
-            //      This field describes the device that this file (inode) represents.
-            //
-            //  st_ino
-            //      This field contains the file's inode number.
-            //
-            sb->st_rdev = (dev_t)(drive - 1);   /* A=0 ... */
-
-            if (0 == sb->st_dev) {
-                sb->st_dev = sb->st_rdev;
-                    //XXX: This wont work for reparse-points, hence it is not possible to test in call cases
-                    //  as to whether a parent/child directory represent a mount-point or are cross-device.
+            if (INVALID_HANDLE_VALUE != file) {
+                CloseHandle(file);              /* file session */
             }
+        }
 
-            break;                              // done
+        if (INVALID_HANDLE_VALUE != find) {
+            FindClose(find);                    /* find session */
         }
     }
     return ret;
@@ -3032,81 +3314,73 @@ static int
 StatW(const wchar_t *name, struct stat *sb)
 {
     wchar_t fullname[WIN32_PATH_MAX] = {0}, *pfname = NULL;
-    int flength, ret = -1;
-#if defined(DO_FILEMAGIC)
-    BOOL domagic = 0;
-#endif
+    size_t namelen;
+    int ret = -1;
 
     if (name == NULL || sb == NULL) {
         ret = -EFAULT;                          /* basic checks */
 
     } else if (name[0] == '\0' ||
-                    (name[1] == ':' && name[2] == '\0')) {
-        ret = -ENOENT;                          /* missing directory ??? */
+                (name[1] == ':' && name[2] == '\0')) {
+        ret = -ENOENT;                          /* missing path */
+
+    } else if (StatByHandleW(name, sb)) {
+        ret = 0;                                /* direct by handle interface */
 
     } else if (StrChrW(name, '?') || StrChrW(name, '*')) {
-        ret = -ENOENT;                          /* wildcards -- break FindFirstFile() */
+        ret = -ENOENT;                          /* wild cards -- break FindFirstFile() */
 
-    } else if (0 == (flength = GetFullPathNameW(name, _countof(fullname), fullname, &pfname))) {
+    } else if (0 == (namelen =
+                GetFullPathNameW(name, _countof(fullname), fullname, &pfname))) {
         ret = -ENOENT;                          /* parse error */
 
-    } else if (flength >= (int)_countof(fullname)) {
+    } else if (namelen >= _countof(fullname)) {
         ret = -ENAMETOOLONG;                    /* buffer overflow */
 
     } else {
-        HANDLE h = INVALID_HANDLE_VALUE;
+        /*
+         *  Indirect method using FindFirstFileW.
+         */
         WIN32_FIND_DATAW fb = {0};
-        DWORD dwRootAttributes = 0;
-        int drive = 0;
+        HANDLE find;
 
-        /*
-         *  determine the drive .. used as st_dev
-         */
-        if (! ISSLASH(fullname[0])) {           /* A=1 .. */
-            drive = toupper(fullname[0]) - 'A' + 1;
-        }
-
-        /*
-         *  retrieve the file details
-         */
         memset(sb, 0, sizeof(struct stat));
 
-        if ((h = FindFirstFileW(fullname, &fb)) == INVALID_HANDLE_VALUE) {
+        if ((find = FindFirstFileW(fullname, &fb)) != INVALID_HANDLE_VALUE) {
+            ret = 0;
 
+        } else {                                 /* "x:\" */
             if (((fullname[0] && fullname[1] == ':' &&
                         ISSLASH(fullname[2]) && fullname[3] == '\0')) &&
                     GetDriveTypeW(fullname) > 1) {
-                                                /* "x:\" */
                 /*
-                 *  root directories
+                 *  Root directories
                  */
-                dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
+                fb.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
                 ret = 0;
 
             } else if (ISSLASH(fullname[0]) && ISSLASH(fullname[1])) {
                 /*
-                 *  root UNC (//servername/xxx)
+                 *  Root UNC (//server-name/mount)
                  */
-                const wchar_t *slash = w32_wcsslash(fullname + 2);
-                const wchar_t *nextslash = w32_wcsslash(slash ? slash+1 : NULL);
+                const wchar_t* slash = w32_wcsslash(fullname + 2);
+                const wchar_t* nextslash = w32_wcsslash(slash ? slash + 1 : NULL);
 
                 ret = -ENOENT;
                 if (NULL != slash &&
-                        (NULL == nextslash || 0 == nextslash[1])) {
-                    dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
+                    (NULL == nextslash || 0 == nextslash[1])) {
+                    fb.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
                     ret = 0;
                 }
-
             } else {
                 /*
                  *  Determine cause
                  */
-                DWORD rc = GetLastError(), attrs;
+                DWORD rc = GetLastError(), attrs = 0;
 
                 if (0xffffffff == (attrs = GetFileAttributesW(fullname))) {
-                    // Decode error.
                     if ((rc = GetLastError()) == ERROR_ACCESS_DENIED ||
-                            rc == ERROR_SHARING_VIOLATION) {
+                                rc == ERROR_SHARING_VIOLATION) {
                         ret = -EACCES;
                     } else if (rc == ERROR_PATH_NOT_FOUND) {
                         ret = -ENOTDIR;
@@ -3118,7 +3392,7 @@ StatW(const wchar_t *name, struct stat *sb)
 
                 } else if (rc == ERROR_ACCESS_DENIED) {
                     // Junction encountered (e.g C:/Users/Default User --> Default),
-                    //  FindFirstFile() behaviour is by design to stop applications recursively accessing symlinks.
+                    // FindFirstFile() behavior is by design to stop applications recursively accessing symbolic links.
                     fb.dwFileAttributes = attrs;
                     ret = 0;
 
@@ -3127,182 +3401,296 @@ StatW(const wchar_t *name, struct stat *sb)
                     ret = -EIO;
                 }
             }
-
-        } else {
-            (void) FindClose(h);                /* release find session */
-            ret = 0;
         }
 
         /*
-         *  assign results
+         *  Export results
          */
-#if defined(DO_FILEMAGIC)                       /* verify file magic */
-        domagic = (HasExtension(fullname) == NULL);
-#endif
+        if (0 == ret) {
+            HANDLE file;
 
-        while (0 == ret) {
-            char magic[1024] = {0};
-            BOOL dirsymlink = FALSE;
-            DWORD count = 0;
-            HANDLE handle;
-
-            handle = CreateFileW(fullname, READ_CONTROL, 0, NULL, OPEN_EXISTING,
-                            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL);
-            if (INVALID_HANDLE_VALUE == handle) {
-                handle = CreateFileW(fullname, 0, 0, NULL, OPEN_EXISTING,
+            file = CreateFileW(fullname, READ_CONTROL, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
+                        FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL);
+            if (INVALID_HANDLE_VALUE == file) {
+                file = CreateFileW(fullname, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
                             FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL);
             }
 
-            if (INVALID_HANDLE_VALUE != handle) {
-                //
-                //  file information
-                //      FILE_FLAG_BACKUP_SEMANTICS      permit directories to be open'ed
-                BY_HANDLE_FILE_INFORMATION fi = {0};
-
-                if (GetFileInformationByHandle(handle, &fi)) {
-                    if (fi.nNumberOfLinks > 0) {
-#if defined(_MSC_VER)                           /* XXX/NOTE */
-                        sb->st_nlink = (short)fi.nNumberOfLinks;
-#else
-                        sb->st_nlink = fi.nNumberOfLinks;
-#endif
-                    }
-                    fb.nFileSizeHigh    = fi.nFileSizeHigh;
-                    fb.nFileSizeLow     = fi.nFileSizeLow;
-                    fb.ftCreationTime   = fi.ftCreationTime;
-                    fb.ftLastAccessTime = fi.ftLastAccessTime;
-                    fb.ftLastWriteTime  = fi.ftLastWriteTime;
-                    sb->st_ino = w32_ino_gen(fi.nFileIndexLow, fi.nFileIndexHigh);
-                        //Note: Generate an inode from nFileIndexHigh and nFileIndexLow, yet warning
-                        //  The identifier that is stored in the nFileIndexHigh and nFileIndexLow members is called the file ID.
-                        //  Support for file IDs is file system - specific.File IDs are not guaranteed to be unique over time,
-                        //  because file systems are free to reuse them.In some cases, the file ID for a file can change over time.
-                }
-
-                //
-                //  directory symlinks
-                //  see: https://docs.microsoft.com/en-us/windows/desktop/FileIO/reparse-point-tags
-                if ((fb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
-                            (fb.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
-                                                /* retrieve reparse details */
-                    if (IO_REPARSE_TAG_SYMLINK == fb.dwReserved0) {
-                        dirsymlink = TRUE;
-
-                    } else if (IO_REPARSE_TAG_MOUNT_POINT == fb.dwReserved0 || 0 == fb.dwReserved0) {
-                        BYTE reparseBuffer[MAX_REPARSE_SIZE];
-                            /* XXX: warning: owc crash if = {0} under full optimisation */
-                        PREPARSE_DATA_BUFFER rdb = (PREPARSE_DATA_BUFFER)reparseBuffer;
-                        DWORD returnedLength = 0;
-
-                        memset(reparseBuffer, 0, sizeof(MAX_REPARSE_SIZE));
-
-                        if (DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT,
-                                NULL, 0, rdb, sizeof(reparseBuffer), &returnedLength, NULL)) {
-                            if (IsReparseTagMicrosoft(rdb->ReparseTag)) {
-                                switch (rdb->ReparseTag) {
-                                case IO_REPARSE_TAG_SYMLINK:
-                                    dirsymlink = TRUE;
-                                        /*XXX: unexpected */
-                                    break;
-                                case IO_REPARSE_TAG_MOUNT_POINT:
-                                    if (rdb->MountPointReparseBuffer.SubstituteNameLength > 0) {
-                                        const size_t offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
-                                        const wchar_t* mount = rdb->MountPointReparseBuffer.PathBuffer + offset;
-
-                                        if (0 == wmemcmp(mount, L"\\??\\", 4) &&
-                                                0 != wmemcmp(mount, L"\\??\\Volume{", 11)) {
-                                            dirsymlink = TRUE;
-                                                /* not a volume mount point -- hard-link */
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                //
-                //  extended file-type
-#if defined(DO_FILEMAGIC)
-                if (domagic) {                  /* read file magic; regular files only */
-                     /* performed on files without an extension to determine whether an exec script */
-                     if (0 == (fb.dwFileAttributes &
-                                (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_TEMPORARY |
-                                 FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_ENCRYPTED))) {
-                        (void) ReadFile(handle, magic, sizeof(magic)-1, &count, NULL);
-                     }
-                }
-#endif //DO_MAGIC
-                magic[count] = 0;               /* null terminate magic buffer */
-
-                //
-                //  dev emulation
-                {   DWORD serialno = 0, flags = 0;
-                    if (my_GetVolumeInformationByHandle(handle, &serialno, &flags)) {
-                        sb->st_dev = serialno;
-                            // volume serial number that the operating system assigns
-                            // when a hard disk is formatted.
-                    }
-                }
-
-                //
-                //  inode emulation
-                if (0 == sb->st_ino) {
-                    sb->st_ino = w32_ino_whash(fullname);
-                }
-
-                ApplyOwner(sb, fb.dwFileAttributes, handle);
-                CloseHandle(handle);
-
-            } else {
-#if defined(DO_FILEMAGIC)
-                if (domagic) {
-                   domagic = 0;
-                   continue;                    /* retry without read; eg directories */
-                }
-#endif //DO_MAGIC
-
-                if (dwRootAttributes) {
-                    ret = -ENOENT;
-                } else if (0 == (sb->st_ino = w32_ino_wfile(fullname))) {
-                    sb->st_ino = w32_ino_whash(fullname);
-                    ApplyOwner(sb, fb.dwFileAttributes, NULL);
-                }
+            if (! StatFileCommon(file, &fb, sb, fullname, namelen)) {
+                ret = -EIO;
             }
 
-            ApplyAttributesW(sb, fb.dwFileAttributes|dwRootAttributes, fullname, magic);
-            if (dirsymlink) {
-                // NOTE: Directory reparse-points are hidden, as these are closer to hard-links
-                //          other link types are reclassed as symlinks.
-                sb->st_mode &= ~S_IFDIR;        /* can only be one type */
-                sb->st_mode |= S_IFLNK;
+            if (INVALID_HANDLE_VALUE != file) {
+                CloseHandle(file);              /* file session */
             }
+        }
 
-            ApplyTimes(sb, &fb.ftCreationTime, &fb.ftLastAccessTime, &fb.ftLastWriteTime);
-            ApplySize(sb, fb.nFileSizeLow, fb.nFileSizeHigh);
-
-            //  st_dev
-            //      This field describes the device on which this file resides.
-            //
-            //  st_rdev
-            //      This field describes the device that this file (inode) represents.
-            //
-            //  st_ino
-            //      This field contains the file's inode number.
-            //
-            sb->st_rdev = (dev_t)(drive - 1);   /* A=0 ... */
-
-            if (0 == sb->st_dev) {
-                sb->st_dev = sb->st_rdev;
-                    //XXX: This wont work for reparse-points, hence it is not possible to test in call cases
-                    //  as to whether a parent/child directory represent a mount-point or are cross-device.
-            }
-
-            break;                              // done
+        if (INVALID_HANDLE_VALUE != find) {
+            FindClose(find);                    /* find session */
         }
     }
     return ret;
+}
+
+
+/*
+ *  StatByHandleA ---
+ *      stat() via direct file handle.
+ */
+static BOOL
+StatByHandleA(const char *name, struct stat *sb)
+{
+    const char *expath;
+    HANDLE handle;
+
+    if (NULL != (expath = w32_extendedpathA(name))) {
+        name = expath;                          // abs-path to expanded
+    }
+
+    handle = CreateFileA(name, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
+                    FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL);
+
+    free((void*)expath);                       // release temporary
+
+    if (handle != INVALID_HANDLE_VALUE) {
+        wchar_t fullname[WIN32_PATH_MAX];
+        size_t namelen;
+
+        fullname[0] = 0;
+        namelen = my_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
+        if (StatFileCommon(handle, NULL, sb, fullname, namelen)) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+
+/*
+ *  StatByHandleW ---
+ *      stat() via direct file handle.
+ */
+static BOOL
+StatByHandleW(const wchar_t *name, struct stat *sb)
+{
+    const wchar_t *expath;
+    HANDLE handle;
+
+    if (NULL != (expath = w32_extendedpathW(name))) {
+        name = expath;                          // abs-path to expanded
+    }
+
+    handle = CreateFileW(name, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
+                    FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY, NULL);
+
+    free((void *)expath);                       // release temporary
+
+    if (handle != INVALID_HANDLE_VALUE) {
+        wchar_t fullname[WIN32_PATH_MAX];
+        size_t namelen;
+
+        fullname[0] = 0;
+        namelen = my_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
+        if (StatFileCommon(handle, NULL, sb, fullname, namelen)) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+
+/*
+ *  StatFileCommon ---
+ *      Common stat() function on files.
+ */
+static BOOL
+StatFileCommon(HANDLE handle, const WIN32_FIND_DATAW *fb, struct stat *sb, const wchar_t *fullname, size_t namelen)
+{
+    BY_HANDLE_FILE_INFORMATION fi = {0};
+    DWORD dwRootAttributes = 0;
+    const wchar_t *path = fullname;
+    unsigned specialmode = 0;
+    char magic[512];
+
+    // File Information
+    if (handle) {                               // Direct handle
+        if (! GetFileInformationByHandle(handle, &fi) && NULL == fb) {
+            return FALSE;
+        }
+
+    } else {                                    // FindFirstFile() sourced information
+        if (NULL == fb) {
+            return FALSE;
+        }
+    }
+
+    if (fb && 0 == fi.dwFileAttributes) {       // import FindFirst information
+        fi.dwFileAttributes = fb->dwFileAttributes;
+        fi.nFileSizeHigh = fb->nFileSizeHigh;
+        fi.nFileSizeLow = fb->nFileSizeLow;
+        fi.ftCreationTime = fb->ftCreationTime;
+        fi.ftLastAccessTime = fb->ftLastAccessTime;
+        fi.ftLastWriteTime = fb->ftLastWriteTime;
+        fi.nFileIndexLow = 0;
+        fi.nFileIndexHigh = 0;
+        fi.dwVolumeSerialNumber = 0;
+    }
+
+    // Name
+    if (namelen && path) {
+        BOOL isnetwork = FALSE;
+
+        if (0 == wmemcmp(path, L"\\\\?\\", 4)) {
+            if (0 == wmemcmp(path, L"\\\\?\\UNC\\", 8)) {
+                isnetwork = TRUE;
+                path += 4 + 3;                  // Network UNC prefix, "\\?\UNC"
+            } else {
+                path += 4;                      // UNC prefix "\\?\"
+            }
+        }
+
+        if (path[0]) {
+            if (path[1] == ':') {
+                // Root directories
+                if (ISSLASH(path[2]) && path[3] == '\0' &&
+                        GetDriveTypeW(path) > 1) { // "x:\", root directories
+                    dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
+                }
+
+            } else if (ISSLASH(path[0]) && (isnetwork || ISSLASH(path[1]))) {
+                // UNC root (/<server-name>/<path>)
+                const wchar_t *slash = w32_wcsslash(path + 1);
+                const wchar_t *nextslash = w32_wcsslash(slash ? slash + 1 : NULL);
+
+                if (NULL != slash &&
+                        (NULL == nextslash || 0 == nextslash[1])) {
+                    dwRootAttributes = FILE_ATTRIBUTE_DIRECTORY;
+                }
+            }
+        }
+    }
+
+    // Symbolic links
+    if (fi.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+        DWORD ReparseTag = 0;
+
+        if (fb) {
+            // FindFirstFile() sourced information
+            // See: https://docs.microsoft.com/en-us/windows/desktop/FileIO/reparse-point-tags
+            if (fi.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                ReparseTag = fb->dwReserved0;
+            }
+
+        } else {
+            // Extended file attribute information
+            FILE_ATTRIBUTE_TAG_INFO ai;
+
+            if (my_GetFileInformationByHandleEx(handle, FileAttributeTagInfo, &ai, sizeof(ai))) {
+                ReparseTag = ai.ReparseTag;
+            }
+        }
+
+        if (IO_REPARSE_TAG_SYMLINK == ReparseTag) {
+            specialmode = S_IFLNK;              // Window symbolic link
+#if defined(IO_REPARSE_TAG_LX_SYMLINK)
+        } else if (IO_REPARSE_TAG_LX_SYMLINK == ReparseTag) {
+            specialmode = S_IFLNK;              // WSL symbolic link
+                // Note: not accessible from a window's client.
+#endif
+#if defined(IO_REPARSE_TAG_AF_UNIX)
+        } else if (IO_REPARSE_TAG_AF_UNIX == ReparseTag) {
+            specialmode = S_IFSOCK;
+#endif
+        } else if (handle && (IO_REPARSE_TAG_MOUNT_POINT == ReparseTag || 0 == ReparseTag)) {
+            BYTE *reparseBuffer;
+            DWORD dwret = 0;
+
+            reparseBuffer = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, MAX_REPARSE_SIZE);
+            if (reparseBuffer &&
+                    DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT,
+                            NULL, 0, (LPVOID)reparseBuffer, MAX_REPARSE_SIZE, &dwret, NULL)) {
+                const REPARSE_DATA_BUFFER *rdb = (const REPARSE_DATA_BUFFER *)reparseBuffer;
+
+                if (IsReparseTagMicrosoft(rdb->ReparseTag)) {
+                    switch (rdb->ReparseTag) {
+                    case IO_REPARSE_TAG_SYMLINK:
+#if defined(IO_REPARSE_TAG_LX_SYMLINK)
+                    case IO_REPARSE_TAG_LX_SYMLINK:
+#endif
+                        specialmode = S_IFLNK;
+                            // Note: unexpected
+                        break;
+#if defined(IO_REPARSE_TAG_AF_UNIX)
+                    case IO_REPARSE_TAG_AF_UNIX:
+                        specialmode = S_IFSOCK;
+                        break;
+#endif
+                    case IO_REPARSE_TAG_MOUNT_POINT:
+                        if (rdb->MountPointReparseBuffer.SubstituteNameLength > 0) {
+                            const size_t offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
+                            const wchar_t *mount = rdb->MountPointReparseBuffer.PathBuffer + offset;
+
+                            if (0 == wmemcmp(mount, L"\\??\\", 4) &&
+                                    0 != wmemcmp(mount, L"\\??\\Volume{", 11)) {
+                                specialmode = S_IFLNK;
+                                    /* not a volume mount point -- hard-link */
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            HeapFree(GetProcessHeap(), 0, reparseBuffer);
+        }
+    }
+
+    // Extended file-type
+    magic[0] = 0;
+#if defined(DO_FILEMAGIC)
+    if (HasExtension(fullname) == NULL) {       // read file magic; regular files only
+        /*
+         *  Performed on files without an extension to determine whether an exec script
+         */
+        DWORD count = 0;
+
+        if (0 == (fb.dwFileAttributes &
+                (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_TEMPORARY |
+                    FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_ENCRYPTED))) {
+            (void) ReadFile(handle, magic, sizeof(magic) - 1, &count, NULL);
+        }
+
+        magic[count] = 0;                       // null terminate magic buffer
+    }
+#endif  //DO_FILEMAGIC
+
+    // Apply results
+    ApplyOwner(sb, fi.dwFileAttributes, handle);
+
+    ApplyAttributesW(sb, fi.dwFileAttributes|dwRootAttributes, fullname, magic);
+    if (specialmode) {
+        // NOTE:
+        // Directory reparse-points are hidden, as these are closer to hard-links
+        // other link types are re-classed as symlinks.
+        sb->st_mode &= ~S_IFDIR;                // can only be one type
+        sb->st_mode |= specialmode;
+        if (specialmode == S_IFSOCK) {
+            fi.nFileSizeLow = fi.nFileSizeHigh = 0;
+        }
+    }
+
+    ApplyTimes(sb, &fi.ftCreationTime, &fi.ftLastAccessTime, &fi.ftLastWriteTime);
+
+    ApplySize(sb, fi.nFileSizeLow, fi.nFileSizeHigh);
+
+    ApplyDevice(sb, fi.dwVolumeSerialNumber, fi.nFileIndexLow, fi.nFileIndexHigh, fullname);
+
+    if (fi.nNumberOfLinks > 0) {
+        sb->st_nlink = (ST_NLINK_T)fi.nNumberOfLinks;
+    }
+
+    return TRUE;
 }
 
 

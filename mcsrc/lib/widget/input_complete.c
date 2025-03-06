@@ -55,7 +55,7 @@
 /*** global variables ****************************************************************************/
 
 /* Linux declares environ in <unistd.h>, so don't repeat it here. */
-#if !defined(_MSC_VER) && !defined(__WATCOMC__) //WIN32/c11
+#if !defined(_MSC_VER) && !defined(__WATCOMC__) && !defined(__MINGW32__) //WIN32/c11
 #if !HAVE_DECL_ENVIRON
 extern char **environ;
 #endif

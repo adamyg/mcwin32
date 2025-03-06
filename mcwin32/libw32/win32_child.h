@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_CHILD_H_INCLUDED
 #define LIBW32_WIN32_CHILD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.16 2025/02/16 12:04:05 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.17 2025/03/06 16:59:47 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -16,7 +16,6 @@ __CPRAGMA_ONCE
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -84,9 +83,11 @@ typedef struct {
 #endif
 
 LIBW32_API const char * w32_getshell (void);
+LIBW32_API const char*  w32_getshellA (void);
 LIBW32_API const wchar_t * w32_getshellW (void);
 
 LIBW32_API const char * w32_gethome (int ignore_env);
+LIBW32_API const char * w32_gethomeA (int ignore_env);
 LIBW32_API const wchar_t * w32_gethomeW (int ignore_env);
 
 LIBW32_API int          w32_iscommand (const char *);

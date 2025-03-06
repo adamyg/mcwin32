@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.12 2025/02/16 12:04:05 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.13 2025/03/06 16:59:47 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
@@ -12,7 +12,6 @@ __CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.12 2025/02/16 12:04:05
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -76,7 +75,7 @@ w32_sockinit(void)
         WORD wVersionRequested;
         WSADATA wsaData;
 
-        w32_sockfd_init();                      /* shadow file-descriptors */
+        w32_fdsetinit();                      /* shadow file-descriptors */
         wVersionRequested = MAKEWORD(2, 2);     /* winsock2 */
         if (WSAStartup(wVersionRequested, &wsaData) != 0) {
             w32_sockerror();

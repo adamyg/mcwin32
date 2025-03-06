@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.45 2025/01/26 18:53:42 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.47 2025/03/06 17:15:29 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -15,7 +15,6 @@ __CPRAGMA_ONCE
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -557,6 +556,10 @@ LIBW32_API int          w32_unlink (const char *fname);
 LIBW32_API int          w32_unlinkA (const char *fname);
 LIBW32_API int          w32_unlinkW (const wchar_t *fname);
 
+LIBW32_API FILE *       w32_fopen (const char *path, const char *mode);
+LIBW32_API FILE *       w32_fopenA (const char *path, const char *mode);
+LIBW32_API FILE *       w32_fopenW (const wchar_t *path, const wchar_t *mode);
+
 LIBW32_API int          w32_access (const char *fname, int mode);
 LIBW32_API int          w32_accessA (const char *fname, int mode);
 LIBW32_API int          w32_accessW (const wchar_t *fname, int mode);
@@ -612,6 +615,14 @@ LIBW32_API char *       w32_getcwdd (char drive, char *path, size_t size);
 LIBW32_API char *       w32_getcwddA (char drive, char *path, size_t size);
 LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, size_t size);
 
+LIBW32_API char *       w32_getdirectory (void);
+LIBW32_API char *       w32_getdirectoryA (void);
+LIBW32_API wchar_t *    w32_getdirectoryW (void);
+
+LIBW32_API int          w32_getdrive (void);
+LIBW32_API int          w32_getsystemdrive (void);
+LIBW32_API int          w32_getlastdrive (void);
+
 #if defined(WIN32_UNISTD_MAP)
 #define mkdir(d,m)      w32_mkdir(d, m)
 #define chdir(d)        w32_chdir(d)
@@ -632,9 +643,6 @@ LIBW32_API wchar_t *    w32_getcwddW (char drive, wchar_t *path, size_t size);
 LIBW32_API int          w32_mkstemp (char *path);
 LIBW32_API int          w32_mkstempA (char *path);
 LIBW32_API int          w32_mkstempW (wchar_t *path);
-//#if defined(_MSC_VER)
-//LIBW32_API int          mkstemp (char *path);
-//#endif
 
 LIBW32_API int          w32_mkstemps (char *path, int suffixlen);
 LIBW32_API int          w32_mkstempsA (char *path, int suffixlen);
@@ -660,7 +668,10 @@ LIBW32_API int          truncateW (const wchar_t *path, off_t length);
 LIBW32_API int          w32_readlink (const char *path, char *name, size_t sz);
 LIBW32_API int          w32_readlinkA (const char *path, char *name, size_t sz);
 LIBW32_API int          w32_readlinkW (const wchar_t *path, wchar_t *name, size_t sz);
+
 LIBW32_API int          w32_symlink (const char *from, const char *to);
+LIBW32_API int          w32_symlinkA (const char *from, const char *to);
+LIBW32_API int          w32_symlinkW (const wchar_t *from, const wchar_t *to);
 
 LIBW32_API char *       w32_realpath (const char *path, char *resolved_path /*PATH_MAX*/);
 LIBW32_API char *       w32_realpath2 (const char *path, char *resolved_path, size_t maxlen);
@@ -691,7 +702,7 @@ LIBW32_API int          mknod (const char *path, int mode, int dev);
 LIBW32_API int          mknodA (const char *path, int mode, int dev);
 LIBW32_API int          mknodW (const wchar_t *path, int mode, int dev);
 
-#if !defined(F_GETFL)   /* match linux definitions */
+#if !defined(F_GETFL)   /* match Linux definitions */
 #define F_GETFL         3       /* get file status flags */
 #define F_SETFL         4       /* set file status flags */
 #endif

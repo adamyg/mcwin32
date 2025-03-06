@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_close_c,"$Id: w32_close.c,v 1.14 2025/02/16 12:04:05 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_close_c,"$Id: w32_close.c,v 1.15 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_close_c,"$Id: w32_close.c,v 1.14 2025/02/16 12:04:05 cvsus
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -171,7 +170,7 @@ w32_close(int fildes)
 #define SD_SEND         0x01
 #define SD_BOTH         0x02
 #endif
-        w32_sockfd_close(fildes, s);
+        w32_fdsockclose(fildes, s);
         (void) shutdown(s, SD_BOTH);
         if ((ret = closesocket(s)) == SOCKET_ERROR) {
             w32_neterrno_set();
