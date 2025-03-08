@@ -194,6 +194,7 @@ CSOURCES=\
 	w32_strsep.c \
 	w32_strtoll.c \
 	w32_strtoull.c \
+	w32_sysconf.c \
 	w32_sysdir.c \
 	w32_time.c \
 	w32_timegm.c \

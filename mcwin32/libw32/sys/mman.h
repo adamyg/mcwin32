@@ -7,7 +7,7 @@ __CPRAGMA_ONCE
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 mmap implementation
- * Copyright (c) 2012 - 2024, Adam Young.
+ * Copyright (c) 2012 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
