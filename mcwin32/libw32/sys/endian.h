@@ -1,7 +1,7 @@
 #ifndef GR_ENDIAN_H_INCLUDED
 #define GR_ENDIAN_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_endian_h,"$Id: endian.h,v 1.6 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_endian_h,"$Id: endian.h,v 1.7 2025/03/08 16:40:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*-

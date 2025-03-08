@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.28 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.29 2025/03/08 16:40:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -94,13 +94,17 @@ LIBW32_API char *
 w32_getcwd(char *path, size_t size)
 {
     if (NULL == path || size <= 0) {
+#if (__GNU_COMPAT)
+        return w32_getdirectory();              // dynamic
+#else
         errno = EINVAL;
+#endif
 
     } else if (size < 64) {
         errno = ERANGE;
 
     } else {
-        if (x_w32_vfscwd) {                     /* vfs chdir() */
+        if (x_w32_vfscwd) {                     // vfs chdir()
             const char *in;
             char *out;
 
@@ -174,7 +178,11 @@ w32_getcwdA(char *path, size_t size)
     char t_path[WIN32_PATH_MAX];
 
     if (NULL == path || size <= 0) {
+#if (__GNU_COMPAT)
+        return w32_getdirectoryA();
+#else
         errno = EINVAL;
+#endif
 
     } else if (size < 64) {
         errno = ERANGE;
@@ -233,7 +241,11 @@ w32_getcwdW(wchar_t *path, size_t size)
     wchar_t t_path[WIN32_PATH_MAX];
 
     if (NULL == path || size <= 0) {
+#if (__GNU_COMPAT)
+        return w32_getdirectoryW();             /* dynamic */
+#else
         errno = EINVAL;
+#endif
 
     } else if (size < 64) {
         errno = ERANGE;

@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_POLL_H_INCLUDED
 #define LIBW32_SYS_POLL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_poll_h,"$Id: poll.h,v 1.7 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_poll_h,"$Id: poll.h,v 1.8 2025/03/08 16:40:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */

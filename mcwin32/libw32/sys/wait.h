@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_WAIT_H
 #define LIBW32_SYS_WAIT_H
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_wait_h,"$Id: wait.h,v 1.8 2025/03/06 16:59:48 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_wait_h,"$Id: wait.h,v 1.9 2025/03/08 16:40:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */

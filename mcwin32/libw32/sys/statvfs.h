@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_STATVFS_H
 #define LIBW32_SYS_STATVFS_H
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_statvfs_h,"$Id: statvfs.h,v 1.10 2025/03/06 16:59:48 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_statvfs_h,"$Id: statvfs.h,v 1.11 2025/03/08 16:40:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */

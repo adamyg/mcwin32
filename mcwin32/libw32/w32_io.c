@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.36 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.37 2025/03/08 16:40:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -37,10 +37,6 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.36 2025/03/06 16:59:46 cvsuser Ex
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
  */
-
-//#ifndef _WIN32_WINNT
-//#define _WIN32_WINNT 0x0501                     /* enable xp+ features */
-//#endif
 
 #if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x600)
 #undef _WIN32_WINNT                             /* Vista+ features; FILE_INFO_BY_HANDLE_CLASS */
@@ -712,9 +708,16 @@ StatHandle(int fd, struct stat *sb)
 
         } else if ((handle = ((HANDLE) _get_osfhandle(fd))) == INVALID_HANDLE_VALUE) {
                                                 // socket, a named pipe, or an anonymous pipe.
-            if (fd > WIN32_FILDES_MAX && FILE_TYPE_PIPE == GetFileType(w32_ITOH(fd))) {
+            HANDLE t_handle = w32_ITOH(fd);
+
+            if (fd > WIN32_FILDES_MAX && FILE_TYPE_PIPE == GetFileType(t_handle)) {
+                DWORD bytesAvail = 0;
+
                 sb->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
                 sb->st_mode |= S_IFIFO;
+                if (PeekNamedPipe(t_handle, NULL, 0, NULL, &bytesAvail, NULL)) {
+                    sb->st_size = bytesAvail;
+                }
                 sb->st_dev = sb->st_rdev = 1;
 
             } else {
@@ -741,7 +744,12 @@ StatHandle(int fd, struct stat *sb)
             case FILE_TYPE_PIPE:                // socket, a named pipe, or an anonymous pipe.
                 sb->st_mode |= S_IRUSR | S_IRGRP | S_IROTH;
                 if (FILE_TYPE_PIPE == ftype) {
+                    DWORD bytesAvail = 0;
+
                     sb->st_mode |= S_IFIFO;
+                    if (PeekNamedPipe(handle, NULL, 0, NULL, &bytesAvail, NULL)) {
+                        sb->st_size = bytesAvail;
+                    }
                 } else {
                     sb->st_mode |= S_IFCHR;
                 }
@@ -2377,16 +2385,16 @@ ApplyDevice(struct stat* sb, const DWORD dwVolumeSerialNumber, const DWORD nFile
     sb->st_dev = (dev_t)dwVolumeSerialNumber;
     if (0 == sb->st_dev) {
         sb->st_dev = sb->st_rdev;
-            //Note:  
+            //Note:
             //  Wont function for reparse-points, hence it is not possible to test in call cases
             //  as to whether a parent/child directory represent a mount-point or are cross-device.
     }
 
     sb->st_ino = w32_ino_gen(nFileIndexLow, nFileIndexHigh);
         //Note:
-        //  Generate an INODE from nFileIndexHigh and nFileIndexLow, yet warning the identifier 
+        //  Generate an INODE from nFileIndexHigh and nFileIndexLow, yet warning the identifier
         //  that is stored in the nFileIndexHigh and nFileIndexLow members is called the file ID.
-        // 
+        //
         //  Support for file IDs is file system - specific.File IDs are not guaranteed to be unique
         //  over time, because file systems are free to reuse them. In some cases, the file ID
         //  for a file can change over time.
