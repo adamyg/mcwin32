@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_SYSINFO_H_INCLUDED
 #define LIBW32_SYS_SYSINFO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_sysinit_h,"$Id: $")
+__CIDENT_RCSID(gr_libw32_sys_sysinit_h,"$Id: sysinfo.h,v 1.1 2025/03/08 16:40:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */

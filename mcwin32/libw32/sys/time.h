@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_TIME_H_INCLUDED
 #define LIBW32_SYS_TIME_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_time_h,"$Id: time.h,v 1.13 2025/03/06 16:59:48 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_time_h,"$Id: time.h,v 1.14 2025/03/08 16:40:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */

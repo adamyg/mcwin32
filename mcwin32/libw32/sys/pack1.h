@@ -1,5 +1,5 @@
 /* -*- mode: c; indent-width: 4; -*-
- * $Id: pack1.h,v 1.6 2025/03/06 16:59:48 cvsuser Exp $
+ * $Id: pack1.h,v 1.7 2025/03/08 16:40:00 cvsuser Exp $
  * ==noguard==
  *
  * win32 declaration helpers

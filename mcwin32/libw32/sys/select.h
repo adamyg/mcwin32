@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_SELECT_H_INCLUDED
 #define LIBW32_SYS_SELECT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_select_h,"$Id: select.h,v 1.10 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_select_h,"$Id: select.h,v 1.11 2025/03/08 16:40:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */

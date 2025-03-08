@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.14 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.15 2025/03/08 16:40:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -44,6 +44,23 @@ __CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.14 2025/03/06 16:59:47
 #endif
 #include <unistd.h>
 
+#if !defined(_OFF64_T)
+#define _OFF64_T 1
+typedef __int64 _off64_t;
+#endif
+
+static int Truncate32(HANDLE handle, off_t length);
+static int Truncate64(HANDLE handle, _off64_t length);
+
+int truncate64(const char *path, _off64_t length);
+int truncate64A(const char * path, _off64_t length);
+int truncate64W(const wchar_t* path, _off64_t length);
+
+int ftruncate64(int fildes, _off64_t length);
+int ftruncate64A(int fildes, _off64_t length);
+int fruncate64W(int filedes, _off64_t length);
+
+
 /*
 //    NAME
 //       ftruncate, truncate - truncate a file to a specified length
@@ -54,6 +71,9 @@ __CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.14 2025/03/06 16:59:47
 //
 //       int ftruncate(int fildes, off_t length);
 //       int truncate(const char *path, off_t length);
+//
+//       int ftruncate64(int fildes, off64_t length);
+//       int truncate64(const char *path, off64_t length);
 //
 //    DESCRIPTION
 //
@@ -155,6 +175,7 @@ __CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.14 2025/03/06 16:59:47
 //           Pathname resolution of a symbolic link produced an intermediate result
 //           whose length exceeds {PATH_MAX}.
 */
+
 int
 ftruncate(int fildes, off_t length)
 {
@@ -163,16 +184,179 @@ ftruncate(int fildes, off_t length)
     if (length < 0) {
         errno = EINVAL;
         return -1;
-
     } else if (fildes < 0 ||
                 (handle = (HANDLE) _get_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
         errno = EBADF;
         return -1;
     }
+    return Truncate32(handle, length);
+}
 
-    if (0xFFFFFFFF == SetFilePointer (handle, 0, NULL, FILE_CURRENT) ||
-                0xFFFFFFFF == SetFilePointer (handle, length, NULL, FILE_BEGIN) ||
-            !SetEndOfFile (handle)) {
+
+int
+ftruncate64(int fildes, _off64_t length)
+{
+    HANDLE handle;
+
+    if (length < 0) {
+        errno = EINVAL;
+        return -1;
+    } else if (fildes < 0 ||
+                (handle = (HANDLE) _get_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
+        errno = EBADF;
+        return -1;
+    }
+    return Truncate64(handle, length);
+}
+
+
+int
+truncate(const char *path, off_t length)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        if (path) {
+            wchar_t wpath[WIN32_PATH_MAX];
+
+            if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+                return truncateW(wpath, length);
+            }
+            return -1;
+        }
+    }
+#endif  //UTF8FILENAMES
+
+    return truncateA(path, length);
+}
+
+
+int
+truncate64(const char *path, _off64_t length)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        if (path) {
+            wchar_t wpath[WIN32_PATH_MAX];
+
+            if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
+                return truncate64W(wpath, length);
+            }
+            return -1;
+        }
+    }
+#endif  //UTF8FILENAMES
+
+    return truncate64A(path, length);
+}
+
+
+int
+truncateA(const char *path, off_t length)
+{
+    HANDLE handle;
+    int ret = -1;
+
+    if (length < 0) {
+        errno = EINVAL;
+    } else if (NULL == path || 0 == *path) {
+        errno = EINVAL;
+    } else {
+        if (INVALID_HANDLE_VALUE == (handle =
+                CreateFileA(path, GENERIC_WRITE, 0,
+                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL))) {
+            w32_errno_set();
+        } else {
+            ret = Truncate32(handle, length);
+            CloseHandle(handle);
+        }
+    }
+    return 0;
+}
+
+
+int
+truncate64A(const char *path, _off64_t length)
+{
+    HANDLE handle;
+    int ret = -1;
+
+    if (length < 0) {
+        errno = EINVAL;
+    } else if (NULL == path || 0 == *path) {
+        errno = EINVAL;
+    } else {
+        if (INVALID_HANDLE_VALUE == (handle =
+                CreateFileA(path, GENERIC_WRITE, 0,
+                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL))) {
+            w32_errno_set();
+        } else {
+            ret = Truncate64(handle, length);
+            CloseHandle(handle);
+        }
+    }
+    return 0;
+}
+
+
+int
+truncateW(const wchar_t *path, off_t length)
+{
+    HANDLE handle;
+    int ret = -1;
+
+    if (length < 0) {
+        errno = EINVAL;
+    } else if (NULL == path || 0 == *path) {
+        errno = EINVAL;
+    } else {
+        if (INVALID_HANDLE_VALUE == (handle =
+                CreateFileW(path, GENERIC_WRITE, 0,
+                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL))) {
+            w32_errno_set();
+        } else {
+            ret = Truncate32(handle, length);
+            CloseHandle(handle);
+        }
+    }
+    return ret;
+}
+
+
+int
+truncate64W(const wchar_t *path, _off64_t length)
+{
+    HANDLE handle;
+    int ret = -1;
+
+    if (length < 0) {
+        errno = EINVAL;
+    } else if (NULL == path || 0 == *path) {
+        errno = EINVAL;
+    } else {
+        if (INVALID_HANDLE_VALUE == (handle =
+                CreateFileW(path, GENERIC_WRITE, 0,
+                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL))) {
+            w32_errno_set();
+        } else {
+            ret = Truncate64(handle, length);
+            CloseHandle(handle);
+        }
+    }
+    return ret;
+}
+
+
+
+static int
+Truncate32(HANDLE handle, off_t length)
+{
+#if !defined(INVALID_SET_FILE_POINTER)
+#define INVALID_SET_FILE_POINTER 0xFFFFFFFF
+#endif
+
+    if (INVALID_SET_FILE_POINTER == SetFilePointer(handle, 0, NULL, FILE_CURRENT) ||
+            INVALID_SET_FILE_POINTER == SetFilePointer(handle, length, NULL, FILE_BEGIN) ||
+                ! SetEndOfFile(handle)) {
         const DWORD rc = GetLastError();
 
         switch (rc) {
@@ -189,99 +373,29 @@ ftruncate(int fildes, off_t length)
 }
 
 
-int
-truncate(const char *path, off_t length)
+static int
+Truncate64(HANDLE handle, _off64_t length)
 {
-#if defined(UTF8FILENAMES)
-    if (w32_utf8filenames_state()) {
-        wchar_t wpath[WIN32_PATH_MAX];
+    LARGE_INTEGER li;
 
-        if (NULL == path) {
-            errno = EFAULT;
-            return -1;
-        }
+    li.QuadPart = length;
 
-        if (w32_utf2wc(path, wpath, _countof(wpath)) > 0) {
-            return truncateW(wpath, length);
-        }
+    if (INVALID_SET_FILE_POINTER == SetFilePointer(handle, 0, NULL, FILE_CURRENT) ||
+            INVALID_SET_FILE_POINTER == SetFilePointer(handle, li.LowPart, &li.HighPart, FILE_BEGIN) ||
+                ! SetEndOfFile(handle)) {
+        const DWORD rc = GetLastError();
 
-        return -1;
-    }
-#endif  //UTF8FILENAMES
-
-    return truncateA(path, length);
-}
-
-
-int
-truncateA(const char *path, off_t length)
-{
-    HANDLE handle;
-
-    if (length < 0) {
-        errno = EINVAL;
-        return -1;
-
-    } else if (NULL == path || 0 == *path) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    if (INVALID_HANDLE_VALUE == (handle =
-            CreateFileA(path, GENERIC_WRITE, 0,
-                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) ||
-
-            0xFFFFFFFF == SetFilePointer (handle, 0, NULL, FILE_CURRENT) ||
-                    0xFFFFFFFF == SetFilePointer (handle, length, NULL, FILE_BEGIN) ||
-            !SetEndOfFile (handle)) {
-        w32_errno_set();
-        if (INVALID_HANDLE_VALUE != handle) {
-            CloseHandle(handle);
+        switch (rc) {
+        case ERROR_INVALID_HANDLE:
+            errno = EBADF;
+            break;
+        default:
+            w32_errno_set();
+            break;
         }
         return -1;
     }
-    CloseHandle(handle);
     return 0;
 }
-
-
-int
-truncateW(const wchar_t *path, off_t length)
-{
-    HANDLE handle;
-
-    if (length < 0) {
-        errno = EINVAL;
-        return -1;
-
-    } else if (NULL == path || 0 == *path) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    if (INVALID_HANDLE_VALUE == (handle =
-            CreateFileW(path, GENERIC_WRITE, 0,
-                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) ||
-
-            0xFFFFFFFF == SetFilePointer (handle, 0, NULL, FILE_CURRENT) ||
-                    0xFFFFFFFF == SetFilePointer (handle, length, NULL, FILE_BEGIN) ||
-            !SetEndOfFile (handle)) {
-        w32_errno_set();
-        if (INVALID_HANDLE_VALUE != handle) {
-            CloseHandle(handle);
-        }
-        return -1;
-    }
-    CloseHandle(handle);
-    return 0;
-}
-
-
-//  int
-//  truncate64(const char *path, off64_t length)
-//  {
-//      errno = EIO;
-//      return -1;
-//  }
 
 /*end*/

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.3 2025/03/06 17:15:29 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.4 2025/03/08 16:40:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 interface support
  *
- * Copyright (c) 2021 - 2022 Adam Young.
+ * Copyright (c) 2021 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -36,20 +36,151 @@ __CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.3 2025/03/06 17:15:29 cv
  * ==extra==
  */
 
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x600)
+#undef _WIN32_WINNT                             /* Vista+ features; FILE_INFO_BY_HANDLE_CLASS */
+#define _WIN32_WINNT 0x0600
+#endif
+
 #include <sys/cdefs.h>
+
+#include <sys/sysconf.h>
+#include <sys/sysinfo.h>
+
+#include <limits.h>
 
 #include "win32_internal.h"
 
-static int
-LogicalProcessors(void)
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN 64
+#endif
+
+struct ProcessorInfo {
+    unsigned processorCoreCount;
+    unsigned processorPackageCount;
+    unsigned logicalProcessorCount;
+    unsigned numaNodeCount;
+    unsigned processorL1CacheCount;
+    unsigned processorL2CacheCount;
+    unsigned processorL3CacheCount;
+};
+
+static int  GetProcessorInfo(struct ProcessorInfo *pi);
+static long NumberOfProcessors(void);
+static long PageSize(void);
+static long PhysicalPages(void);
+
+
+/*
+//  NAME
+//      sysconf -- get configurable system variables
+//
+//  SYNOPSIS
+//      #include <unistd.h>
+//
+//      long sysconf(int name);
+//
+//  DESCRIPTION
+//      This interface is defined by IEEE Std 1003.1 - 1988 (``POSIX.1'').A far
+//      more complete interface is available using sysctl(3).
+//
+//      The sysconf() function provides a method for applications to determine
+//      the current value of a configurable system limit or option variable.The
+//      name argument specifies the system variable to be queried.Symbolic constants
+//      for each name value are found in the include file <unistd.h>.
+//
+*/
+
+long
+sysconf(int name)
 {
-    SYSTEM_LOGICAL_PROCESSOR_INFORMATION *pi = NULL;
-    DWORD len = 0, i;
+    switch (name) {
+    case _SC_NPROCESSORS_CONF:      
+        return get_nprocs_conf();
+    case _SC_NPROCESSORS_ONLN:
+        return get_nprocs();
+    case _SC_PAGESIZE:
+        return PageSize();
+    case _SC_PHYS_PAGES:
+        return PhysicalPages();
+    case _SC_HOST_NAME_MAX:
+#if (MAXHOSTNAMELEN > MAX_COMPUTERNAME_LENGTH)
+        return MAXHOSTNAMELEN;
+#else
+        return MAX_COMPUTERNAME_LENGTH;
+#endif
+#if defined(ATEXIT_MAX)
+    case _SC_ATEXIT_MAX:
+        return ATEXIT_MAX;
+#endif
+    default:
+        break;
+    }
+    return -1;
+}
+
+
+/*
+//  NAME
+//      get_nprocs, get_nprocs_conf --- get number of processors
+//
+//  SYNOPSIS
+//      #include <sys/sysinfo.h>
+//      int get_nprocs(void);
+//      int get_nprocs_conf(void);
+//
+//  DESCRIPTION
+//      The function get_nprocs_conf() returns the number of processors configured 
+//      by the operating system.
+//
+//      The function get_nprocs() returns the number of processors currently available
+//      in the system.This may be less than the number returned by get_nprocs_conf() 
+//      because processors may be off-line.
+//
+*/
+
+int
+get_nprocs()
+{
+    struct ProcessorInfo pi = { 0 };
+    if (0 == GetProcessorInfo(&pi)) {
+        return pi.logicalProcessorCount;
+    }
+    return -1;
+}
+
+
+int
+get_nprocs_conf()
+{
+    return NumberOfProcessors();
+}
+
+
+static unsigned
+CountSetBits(ULONG_PTR bitMask)
+{
+    DWORD LSHIFT = sizeof(ULONG_PTR) * 8 - 1;
+    ULONG_PTR bitTest = (ULONG_PTR)1 << LSHIFT;
+    unsigned i, bitSetCount = 0;
+
+    for (i = 0; i <= LSHIFT; ++i) {
+        bitSetCount += ((bitMask & bitTest) ? 1 : 0);
+        bitTest /= 2;
+    }
+    return bitSetCount;
+}
+
+
+static int
+GetProcessorInfo(struct ProcessorInfo *pi)
+{
+    SYSTEM_LOGICAL_PROCESSOR_INFORMATION *slpi = NULL;
+    DWORD len = 0;
     int count = 0;
 
-    while (! GetLogicalProcessorInformation(pi, &len)) {
+    while (! GetLogicalProcessorInformation(slpi, &len)) {
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-            if (NULL == (pi = malloc(len))) {
+            if (NULL == (slpi = malloc(len))) {
                 return -1;
             }
         } else {
@@ -58,56 +189,160 @@ LogicalProcessors(void)
         }
     }
 
-    for (i = 0; i < len / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); ++i) {
-        if (pi[i].Relationship == RelationProcessorCore) {
-            count += hweight64(pi[i].ProcessorMask);
+    if (slpi && len) {
+        const SYSTEM_LOGICAL_PROCESSOR_INFORMATION *cursor = slpi;
+        DWORD offset = 0;
+
+        while (offset < len) {
+            switch (cursor->Relationship) {
+            case RelationNumaNode:
+                pi->numaNodeCount++;
+                break;
+            case RelationProcessorCore:
+                pi->logicalProcessorCount += CountSetBits(cursor->ProcessorMask);
+                pi->processorCoreCount++;
+                break;
+            case RelationCache: {
+                    // CACHE_DESCRIPTOR structure for each cache. 
+                    const CACHE_DESCRIPTOR *Cache = &cursor->Cache;
+                    if (Cache->Level == 1) {
+                        pi->processorL1CacheCount++;
+                    } else if (Cache->Level == 2) {
+                        pi->processorL2CacheCount++;
+                    } else if (Cache->Level == 3) {
+                        pi->processorL3CacheCount++;
+                    }
+                }
+                break;
+            case RelationProcessorPackage:
+                pi->processorPackageCount++;
+                break;
+            }
+            offset += sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION);
+            ++cursor;
         }
     }
 
-    free(pi);
-    return count;
+    free(slpi);
+    return 0;
 }
 
 
-static int
+static long
+NumberOfProcesses(void)
+{
+    //TODO
+    return 0;
+}
+
+
+static long
+NumberOfProcessors(void)
+{
+    SYSTEM_INFO si = {0};
+    GetNativeSystemInfo(&si);
+    return si.dwNumberOfProcessors;
+}
+
+
+static long
 PageSize(void)
 {
     SYSTEM_INFO si = {0};
-    GetSystemInfo(&si);
+    GetNativeSystemInfo(&si);
     return si.dwPageSize;
 }
 
 
-
-static int
+static long
 PhysicalPages()
 {
     MEMORYSTATUSEX ms = {0};
     ms.dwLength = sizeof(ms);
-    if (GlobalMemoryStatusEx(&ms))
-        return ms.ullTotalPhys / PageSize();
+    if (GlobalMemoryStatusEx(&ms)) {
+        return (long)(ms.ullTotalPhys / PageSize());
+    }
     return -1;
 }
 
 
-long
-sysconf(int name)
+////////////////////////////////////////////////////////////////////////////////
+//  https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysysteminformation?redirectedfrom=MSDN
+//
+
+typedef enum _SYSTEM_INFORMATION_CLASS {
+    SystemTimeOfDayInformation = 3
+        // NOTE: numerous other values
+} SYSTEM_INFORMATION_CLASS;
+
+typedef struct _SYSTEM_TIMEOFDAY_INFORMATION {
+    LARGE_INTEGER BootTime;
+    LARGE_INTEGER CurrentTime;
+    LARGE_INTEGER TimeZoneBias;
+    ULONG TimeZoneId;
+    ULONG Reserved;
+    ULONGLONG BootTimeBias;
+    ULONGLONG SleepTimeBias;
+} SYSTEM_TIMEOFDAY_INFORMATION;
+
+typedef DWORD (WINAPI * NtQuerySystemInformation_t)(
+                SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
+
+/*
+//  NAME
+//      sysinfo -- return system information.
+//
+//  SYNOPSIS
+//      #include <sys/sysinfo.h>
+//
+//      int sysinfo(struct sysinfo* info);
+//
+//  DESCRIPTION
+//      sysinfo() returns certain statistics on memoryand swap usage, as well as the load average.
+//
+*/
+
+int
+sysinfo(struct sysinfo *info) 
 {
-    switch (name) {
-//  case _SC_CLK_TCK:
-//  case _SC_OPEN_MAX:
-    case _SC_NPROCESSORS_ONLN:
-        return NumLogicalProcessors();
-//  case PAGE_SIZE:
-//  case _SC_PAGE_SIZE:
-    case _SC_PAGESIZE:
-        return PageSize();
-    case _SC_PHYS_PAGES:
-        return PhysicalPages();
-    default:
-        break;
+    const unsigned page_size = (unsigned)PageSize();
+    MEMORYSTATUSEX ms = {0};
+
+    if (NULL == info) {
+        errno = EFAULT;
+        return -1;
     }
-    return -1;
+
+    memset(info, 0, sizeof(*info));             // zero unsupported fields
+
+    {   SYSTEM_TIMEOFDAY_INFORMATION sti = {0};
+        HMODULE ntdll = GetModuleHandleA("ntdll");
+        NtQuerySystemInformation_t fNtQuerySystemInformation =
+                (NtQuerySystemInformation_t) GetProcAddress(ntdll, "NtQuerySystemInformation");
+        long uptime = 0;
+
+        if (fNtQuerySystemInformation &&        // uptime
+                NO_ERROR == fNtQuerySystemInformation(SystemTimeOfDayInformation, (PVOID) &sti, sizeof(sti), NULL)) {
+            uptime = (long)((sti.CurrentTime.QuadPart - sti.BootTime.QuadPart) / 10000000ULL);
+        } else {                                // ticks / 1000
+            uptime = (long)(GetTickCount64() / 1000ULL);
+        }
+        info->uptime = uptime;
+    }
+
+    ms.dwLength = sizeof(ms);
+    if (! GlobalMemoryStatusEx(&ms)) {
+        return -1;
+    }
+
+    info->totalram  = (unsigned long)(ms.ullTotalPhys / page_size);
+    info->freeram   = (unsigned long)(ms.ullAvailPhys / page_size);
+    info->totalswap = (unsigned long)((ms.ullTotalPageFile - ms.ullTotalPhys) / page_size);
+    info->freeswap  = (unsigned long)((ms.ullAvailPageFile - ms.ullTotalPhys) / page_size);
+    info->procs     = (unsigned short)NumberOfProcesses();
+    info->mem_unit  = page_size;
+
+    return 0;
 }
 
 //end
