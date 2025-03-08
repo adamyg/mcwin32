@@ -3,7 +3,7 @@
 /*
  * <sys/fd_set.h>
  *
- * Copyright (c) 2022 - 2024, Adam Young.
+ * Copyright (c) 2022 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

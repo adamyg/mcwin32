@@ -4,7 +4,7 @@ Windows minimal POSIX implementation.
 This library fills a few holes which are not generally provided by
 run-time libraries of native WIN32 compiler chains.
 
-Copyright (c) 2007, 2012-2022, Adam Young.
+Copyright (c) 2007, 2012-2025, Adam Young.
 All rights reserved.
 
     ------------------------------------------------------------

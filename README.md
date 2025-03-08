@@ -26,10 +26,17 @@ It lets the user specify the original and resulting file names using wildcard ch
 
 ## Examples
 
-![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample01.png?raw=true)
+Main panels.
 
 ![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample03.png?raw=true)
 
+Internal diff viewer.
+
+![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample04.png?raw=true)
+
+Internal editor.
+
+![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample05.png?raw=true)
 
 ## Installation
 

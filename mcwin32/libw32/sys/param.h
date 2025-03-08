@@ -8,7 +8,7 @@ __CPRAGMA_ONCE
 /*
  * win32 <sys/param.h>
  *
- * Copyright (c) 2012 - 2024, Adam Young.
+ * Copyright (c) 2012 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
