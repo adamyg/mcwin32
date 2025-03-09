@@ -34,7 +34,11 @@ int
 main(int argc, char *argv[])
 {
     const char *version = NULL,
+#if defined(_M_AMD64)           // x64; XXX as channel?
+            *hosturl = "https://sourceforge.net/projects/mcwin32/files/mcwin32x64.manifest/download";
+#else
             *hosturl = "https://sourceforge.net/projects/mcwin32/files/mcwin32.manifest/download";
+#endif
     const char *exename = NULL;
     int ch;
 
