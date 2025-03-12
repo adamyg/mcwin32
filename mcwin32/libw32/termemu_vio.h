@@ -1,7 +1,7 @@
 #ifndef TERMEMU_VIO_H_INCLUDED
 #define TERMEMU_VIO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.12 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.13 2025/03/12 17:38:50 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -92,7 +92,7 @@ enum vt_colors {
 #define VIO_FAINT           0x8000
 #define VIO_ATTRIBUTES      0xff00
 #define VIO_MINCOLS         12
-#define VIO_MINROWS         2
+#define VIO_MINROWS         3
 #define VIO_MAXCOLS         1024
 #define VIO_MAXROWS         500
 

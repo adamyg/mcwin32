@@ -62,11 +62,11 @@ isconsole (int fd)
         return 0;
     if (STDIN_FILENO == fd) { // input
         DWORD mode;
-        if (!GetConsoleMode(h, &mode))
+        if (! GetConsoleMode(h, &mode))
             return 0;
     } else { // output
         CONSOLE_SCREEN_BUFFER_INFO sbi = {0};
-        if (!GetConsoleScreenBufferInfo(h, &sbi))
+        if (! GetConsoleScreenBufferInfo(h, &sbi))
             return 0;
     }
     return 1;
@@ -91,7 +91,7 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
     key_mouse_mode (mouse_enable);
     SLsmg_init_smg ();
 
-    if (!isconsole(STDIN_FILENO)) {
+    if (! isconsole(STDIN_FILENO)) {
         fprintf(stderr, _("Console not detected.\n"));
         exit (EXIT_FAILURE);
     }
