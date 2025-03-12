@@ -47,7 +47,7 @@ __END_DECLS
 #define win32API_CALL(__call) \
             { if (!(__call)) w32_trace_api(#__call, __LINE__, __FILE__); }
 
-#define win32API_CALL_HANDLE(__handle,__api) \
+#define win32API_HCALL(__handle,__api) \
             { __handle=__api; if (INVALID_HANDLE_VALUE == __handle) w32_trace_api(#__handle" = "#__api, __LINE__, __FILE__); }
 
 #define win32API_CALL_RC(r,x) \
@@ -66,7 +66,7 @@ __END_DECLS
 #define win32Tracev(x)
 #define win32ASSERT(x)
 #define win32API_CALL(__call) __call
-#define win32API_CALL_HANDLE(__handle,__api) __handle=__api;
+#define win32API_HCALL(__handle,__api) __handle=__api;
 #define win32API_RC(x, rc)
 #define win32API_ERROR(x)
 #define win32TraceSet()

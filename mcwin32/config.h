@@ -3,7 +3,7 @@
 /*
  *  win32 Midnight Commander -- config.h
  *
- *  Written by: Adam Young 2012 - 2024
+ *  Copyright (c) 2012 - 2025 Adam Young.
  *
  *  This file is part of the Midnight Commander.
  *
@@ -87,15 +87,18 @@ extern int                  win32_pclose(FILE *file);
 extern void                 win32_ptrace(void);
 extern int                  win32_perror(int error, const char *msg);
 
-#ifndef popen
+#if !defined(popen)
 #define popen(__cmd,__mode) win32_popen(__cmd, __mode)
 #define pclose(__file)      win32_pclose(__file)
 #endif
 
 extern const char *         mc_inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size);
+
 #if !defined(HAVE_STRTOK_R)
 extern char *               strtok_r(char *s, const char *delim, char **lasts);
 #endif
+
+extern char **              GetUTF8Arguments(int *pargc);
 
 extern void                 tty_set_title(const char *title);
 
@@ -149,8 +152,6 @@ extern void                 tty_set_title(const char *title);
 /*
  *  configuration options
  */
-    //#define SEARCH_TYPE_GLIB 1
-    //#undef  SEARCH_TYPE_PCRE
 #undef  SEARCH_TYPE_GLIB
 #define SEARCH_TYPE_PCRE 1                      /* 4.8.30+ */
 #define HAVE_PCRE2 1                            /* PCRE or PCRE2 */
@@ -184,6 +185,7 @@ extern void                 tty_set_title(const char *title);
 #define ENABLE_VFS_SHELL 1                      /* build-225+ */
 #define ENABLE_VFS_SFTP 1                       /* libssh2 */
 #undef  ENABLE_VFS_UNDELFS
+#define ENABLE_VFS_NET 1                        /* 4.8.33+ */
 
 #define SIG_ATOMIC_VOLATILE_T int volatile
 #define PROMOTED_MODE_T int

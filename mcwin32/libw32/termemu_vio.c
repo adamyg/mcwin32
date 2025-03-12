@@ -2,14 +2,13 @@
 /*
  * libtermemu console driver
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -137,7 +136,7 @@ BOOL WINAPI         GetCurrentConsoleFont(HANDLE hConsoleOutput, BOOL bMaximumWi
 #pragma pack(pop)
 #endif  /*_CONSOLE_FONT_INFOEX*/
 
-static const uint32_t   acs_characters[128] = { /* alternative character map to unicode */
+static const uint32_t   acs_characters[128] = { /* alternative character map to Unicode */
 
      /*
       * NUL     SOH     STX     ETX     EOT     ENQ     ACK     BEL
@@ -207,7 +206,7 @@ typedef struct copyoutctx {
         { COLORREF t_color = __f; __f = __b; __b = t_color; }
 
 static int              vio_init(void);
-static void             vio_size(int *rows, int *cols);
+static COORD            vio_size(HANDLE console, int *rows, int *cols);
 static void             vio_profile(int rebuild);
 static void             vio_setsize(int rows, int cols);
 static void             vio_reset(void);
@@ -352,7 +351,7 @@ static struct {                                 /* Video state */
     ULONG               size;                   /* Screen buffer size, in character cells */
     WCHAR_INFO *        image;                  /* Screen working image */
     WCHAR_INFO *        oimage;                 /* Screen output image; double buffered image */
-    CHAR_INFO *         oshadow;                /* Black&white/16 color shadow image */
+    CHAR_INFO *         oshadow;                /* Black & white/16 color shadow image */
     CHAR_INFO *         iimage;                 /* Temporary working screen image */
     unsigned            codepage;               /* Font code page */
     unsigned            maxcolors;              /* Maximum colors supported (16 or 256) */
@@ -556,7 +555,7 @@ vio_trace(const char *fmt, ...)
 static int
 vio_init(void)
 {
-    CONSOLE_SCREEN_BUFFER_INFO sbinfo = {0};
+    CONSOLE_SCREEN_BUFFER_INFO sbi = {0};
     HANDLE chandle = GetStdHandle(STD_OUTPUT_HANDLE);
     unsigned fontprofile = 0;
     int rows = 0, cols = 0;
@@ -588,15 +587,7 @@ vio_init(void)
 
     //  Screen sizing
     //
-    vio_size(&rows, &cols);                     // buffer size.
-    if (rows < VIO_MINROWS) {
-        rows = VIO_MINROWS;
-    } else if (rows > VIO_MAXROWS) {
-        rows = VIO_MAXROWS;                     // limit to supported width.
-    }
-
-    if (cols < VIO_MINCOLS) cols = VIO_MINCOLS;
-        //Note: shouldnt occur, console limits ~6 to accommodate def buttons.
+    vio_size(vio.chandle, &rows, &cols);        // buffer size.
 
     if (fontprofile || vio.cols != cols || vio.rows != rows) {
         const WCHAR_INFO *oimage;
@@ -668,7 +659,7 @@ vio_init(void)
         }
 
         (void) GetConsoleCursorInfo(vio.chandle, &vio.cinfo);
-        vio.ccoord = sbinfo.dwCursorPosition;
+        vio.ccoord = sbi.dwCursorPosition;
 
         if (! fontprofile) {
             vio_profile(FALSE);                 // font profile
@@ -698,20 +689,51 @@ vio_init(void)
 }
 
 
-static void
-vio_size(int *rows, int *cols)
+static COORD
+vio_size(HANDLE console, int *rows, int *cols)
 {
-    if (vio.chandle) {
-        CONSOLE_SCREEN_BUFFER_INFO sbinfo = {0};
+    const COORD home = {0, 0};
 
-        if (0 == vio.cols && vio.whandle) vio_profile(FALSE);
-        GetConsoleScreenBufferInfo(vio.chandle, &sbinfo);
-        *rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
-        *cols = 1 + sbinfo.srWindow.Right  - sbinfo.srWindow.Left;
+    if (console) {
+        CONSOLE_SCREEN_BUFFER_INFO sbi = {0};
+
+        if (0 == vio.cols && vio.whandle) {
+            vio_profile(FALSE);
+        }
+
+        if (GetConsoleScreenBufferInfo(console, &sbi)) {
+            int nrows, ncols;
+
+            nrows = (sbi.srWindow.Bottom - sbi.srWindow.Top) + 1;
+            ncols = (sbi.srWindow.Right - sbi.srWindow.Left) + 1;
+
+            if (nrows < VIO_MINROWS) {
+                nrows = VIO_MINROWS;
+            } else if (nrows > VIO_MAXROWS) {
+                nrows = VIO_MAXROWS;
+            }
+
+            if (ncols < VIO_MINCOLS) {
+                ncols = VIO_MINCOLS;            // Note: shouldn't occur, console limits ~6 to accommodate def buttons.
+            } else if (ncols > VIO_MAXCOLS) {
+                ncols = VIO_MAXCOLS;
+            }
+
+            *rows = nrows;
+            *cols = ncols;
+
+            return sbi.dwCursorPosition;
+        }
+
+        *rows = 0;
+        *cols = 0;
+
     } else {
         *rows = 25;
         *cols = 80;
     }
+
+    return home;
 }
 
 
@@ -748,7 +770,7 @@ vio_profile(int rebuild)
                 vio.isvirtualconsole = 1;
                 vio.maxcolors = 256;
             } else {
-                printf("Running under a prelim virtual console, disabling 256 support\n");
+                printf("Running under a preliminary virtual console, disabling 256 support\n");
                 vio.maxcolors = 16;
             }
 #else
@@ -923,7 +945,7 @@ vio_profile(int rebuild)
         TRACE_LOG(("Current Font: Idx:%d, %dx%d, Family:%d, Weight:%d, Mode:%d, Name:<%s> (%s)\n",
             vio.fontindex, vio.fcwidth, vio.fcheight,
                 vio.fcfamily, vio.fcweight, vio.displaymode, vio.fcfacename,
-                (vio.fcflags & FCNRASTER) ? "raster" : "unicode"))
+                (vio.fcflags & FCNRASTER) ? "Raster" : "Unicode"))
 
         // available fonts
         vio.fontnumber = -1;
@@ -1118,7 +1140,7 @@ IsVirtualConsole(int *depth)
     //     return FALSE;
     //  }
 
-    if (w32_RtlGetVersion(&rovi)) {             // Note: GetVersionEx() only returns the compatibily details.
+    if (w32_RtlGetVersion(&rovi)) {             // Note: GetVersionEx() only returns the compatibly details.
         const int t_depth =                     // Build 14931+
             (rovi.dwBuildNumber >= 14931 ? 256 : 16);
 
@@ -1395,7 +1417,7 @@ AttributesShadow(const struct WCHAR_COLORINFO *color)
         if (flags) {
             /*
              *  internal attribute,
-             *      map the fg/bg 256-color attributes to thier 16-color window counterparts.
+             *      map the fg/bg 256-color attributes to their 16-color window counterparts.
              */
             WORD fg, bg;
 
@@ -1644,7 +1666,7 @@ COLOR256(const struct WCHAR_COLORINFO *color, COLORREF *fg, COLORREF *bg)
     if (flags) {
         /*
          *  internal attribute,
-         *      map the fg/bg 256-color attributes to thier 16-color window counterparts.
+         *      map the fg/bg 256-color attributes to their 16-color window counterparts.
          */
         assert(color->fg >= 0 && color->fg <= COLIDX_BACKGROUND);
         assert(color->bg >= 0 && color->bg <= COLIDX_BACKGROUND);
@@ -1883,7 +1905,7 @@ CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
 //              } else {
 //                  //
 //                  //  Fixed width font,
-//                  //      in thoery safe as a single export; yet not all fonts are equal in their abilities.
+//                  //      in theory safe as a single export; yet not all fonts are equal in their abilities.
 //                  //
 //                  const int left = vio.fcwidth * start,
 //                      top = vio.fcheight * row;
@@ -1983,7 +2005,7 @@ CopyOutEx2(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
                     continue;                   // NULL, padding
                 }
 
-                //  ESC[<y>; <x> H              CUP, Cursor Position *Cursor moves to <x>; <y> coordinate within the viewport, where <x> is the column of the <y> line.
+                //  ESC[<y>; <x> H              CUP, Cursor Position *Cursor moves to <x>; <y> coordinate within the view-port, where <x> is the column of the <y> line.
                 //
                 if (-1 == start) {
                     if (0 == (flags & TRASHED) &&
@@ -2334,7 +2356,7 @@ consolefontsenum(void)
     //          http://www.levien.com/type/myfonts/inconsolata.html
     //          http://terminus-font.sourceforge.net/ and https://files.ax86.net/terminus-ttf/
     //
-    fcnpush("Classic Console", FCNUNC);         // clean mon-spaced font, http://webdraft.hu/fonts/classic-console/
+    fcnpush("Classic Console", FCNUNC);         // clean mono-spaced font, http://webdraft.hu/fonts/classic-console/
 
     fcnpush("DejaVu Sans Mono", FCNUNC);        // nice mono-spaced font, dejavu-fonts.org
 
@@ -2344,13 +2366,13 @@ consolefontsenum(void)
     fcnpush("TITUS Cyberbit Basic", FCNUNC|FCNPRO2);
     fcnpush("Marin", FCNUNC|FCNPRO2);
 
-    fcnpush("Arial Unicode MS", FCNUNC|FCNPRO5);// 'most complete' standard windows unicode font (Office)
+    fcnpush("Arial Unicode MS", FCNUNC|FCNPRO5);// 'most complete' standard windows Unicode font (Office)
 
-    fcnpush("Courier New", FCNUNC|FCNPRO);      // next most complete font, yet monospaced.
+    fcnpush("Courier New", FCNUNC|FCNPRO);      // next most complete font, yet mono-spaced.
 
     fcnpush("Consolas", 0);                     // "Consolas Font Pack" for Microsoft Visual Studio.
 
-    fcnpush("Terminal", FCNRASTER);             // implied rastor font.
+    fcnpush("Terminal", FCNRASTER);             // implied raster font.
 
     //  Determine availability
     //
@@ -2441,7 +2463,7 @@ consolefontset(int height, int width, const char *facename)
         //  Select first available.
         //
         if (! fnHandle) {
-            while (1) {                         // test availablity.
+            while (1) {                         // test availability.
                 fcname = vio.fcnames + faceindex;
 
                 if (NULL == (facename = fcname->name)) {
@@ -2828,16 +2850,13 @@ LIBVIO_API void
 vio_save(void)
 {
     HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
-    CONSOLE_SCREEN_BUFFER_INFO sbinfo;
-    COORD iHome = {0,0};
+    COORD cursor, home = {0, 0};
     int rows, cols;
 
     /*
      *  Size arena
      */
-    GetConsoleScreenBufferInfo(console, &sbinfo);
-    rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
-    cols = 1 + sbinfo.srWindow.Right - sbinfo.srWindow.Left;
+    cursor = vio_size(console, &rows, &cols);
 
     if (!vio_state.image ||                     // initial or size change
             vio_state.rows != rows || vio_state.cols != cols) {
@@ -2856,11 +2875,9 @@ vio_save(void)
     /*
      *  Save cursor and image
      */
+    vio_state.cursorcoord = cursor;
     GetConsoleCursorInfo(console, &vio_state.cursorinfo);
-    vio_state.cursorcoord.X = sbinfo.dwCursorPosition.X;
-    vio_state.cursorcoord.Y = sbinfo.dwCursorPosition.Y;
-
-    SetConsoleCursorPosition(console, iHome);   // home cursor.
+    SetConsoleCursorPosition(console, home);    // home cursor.
 
     ImageSave(console, 0, rows * cols);         // read image.
 }
@@ -2910,19 +2927,17 @@ LIBVIO_API void
 vio_restore(void)
 {
     HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
-    CONSOLE_SCREEN_BUFFER_INFO sbinfo = {0};
+    CONSOLE_SCREEN_BUFFER_INFO sbi = {0};
     COORD iHome = {0,0};
     CHAR_INFO * nimage;
-    int rows, cols;
+    int rows = 0, cols = 0;
 
     if (NULL == vio_state.image)                // initialised?
         return;
 
-    GetConsoleScreenBufferInfo(console, &sbinfo);
-    rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
-    cols = 1 + sbinfo.srWindow.Right - sbinfo.srWindow.Left;
-    if (!rows || !cols) return;
-
+    vio_size(console, &rows, &cols);
+    if (0 == rows || 0 == cols)
+        return;
                                                 // resize
     if ((rows != vio_state.rows || cols != vio_state.cols) &&
             (nimage = calloc(rows * cols, sizeof(CHAR_INFO))) != NULL) {
@@ -3009,11 +3024,11 @@ LIBVIO_API int
 vio_screenbuffersize(void)
 {
     HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
-    CONSOLE_SCREEN_BUFFER_INFO sbinfo = {0};
+    CONSOLE_SCREEN_BUFFER_INFO sbi = {0};
     int ret = -1;
 
-    if (GetConsoleScreenBufferInfo(console, &sbinfo)) {
-        ret = sbinfo.dwSize.X;
+    if (GetConsoleScreenBufferInfo(console, &sbi)) {
+        ret = sbi.dwSize.X;
     }
     return ret;
 }
@@ -3027,32 +3042,15 @@ LIBVIO_API int
 vio_open(int *rows, int *cols)
 {
     if (vio.inited) vio_reset();
+
     vio_init();
     vio_define_vtattr(0, VT_COLOR_LIGHT_GREY, VT_COLOR_BLACK, 0);
     vio_normal_video();
     vio.inited = 1;
+
+    TRACE_LOG(("open(rows:%d, cols:%d)", vio.rows, vio.cols))
     if (rows) *rows = vio.rows;
     if (cols) *cols = vio.cols;
-    TRACE_LOG(("open(rows:%d, cols:%d)", vio.rows, vio.cols))
-
-#if (0)     // dump character table.
-    {   static unsigned once;
-        if (!once++) {
-            const int width = (vio.cols - 10);
-            int row, col, ch, i;
-
-            for (row = 0, col = 0, ch = 0; row < vio.rows; ++row, col = 0) {
-                col += vio_atprintf(row, col, "%4x-%4x:", ch, ch + width);
-                for (i = 0; i < width; ++i) {
-                  //vio_atputc(row, col++, ' ', 1);
-                    vio_atputc(row, col++, ch++, 1);
-                }
-            }
-            vio_flush();
-            getch();
-        }
-    }
-#endif
 
     return 0;
 }
@@ -3065,7 +3063,7 @@ vio_open(int *rows, int *cols)
 LIBVIO_API void
 vio_close(void)
 {
-    if (0 == vio.inited) return;                /* uninitialised */
+    if (0 == vio.inited) return;                /* uninitialized */
 
     TRACE_LOG(("close(rows:%d, cols:%d)", vio.rows, vio.cols))
     if (vio.maximised) {
@@ -3081,7 +3079,7 @@ vio_close(void)
                     (void) SetConsoleOutputCP(vio.oldConsoleCP);
                 }
             }
-            vio.isvirtualconsole = 1;           /* reinitialise state */
+            vio.isvirtualconsole = 1;           /* reinitialize state */
         }
         ShowWindow(vio.whandle, /*SW_RESTORE*/ SW_NORMAL);
         vio.maximised = 0;
@@ -3106,23 +3104,23 @@ vio_config_truecolor(int truecolor)
  *      Determine whether there has been a change in screen-size.
  **/
 LIBVIO_API int
-vio_winch(int *rows, int *cols)
+vio_winch(int *nrows, int *ncols)
 {
-    CONSOLE_SCREEN_BUFFER_INFO scr = {0};
-    int t_rows, t_cols, ret = 0;
+    int rows, cols, ret = 0;
 
-    GetConsoleScreenBufferInfo(vio.chandle, &scr);
-    t_cols = (scr.srWindow.Right - scr.srWindow.Left) + 1;
-    t_rows = (scr.srWindow.Bottom - scr.srWindow.Top) + 1;
-    if (t_rows != vio.rows || t_cols != vio.cols) {
-        TRACE_LOG(("winch(rows:%d->%d, cols:%d->%d)", vio.rows, t_rows, vio.cols, t_cols))
+    vio_size(vio.chandle, &rows, &cols);
+
+    if (rows != vio.rows || cols != vio.cols) {
+        TRACE_LOG(("winch(rows:%d->%d, cols:%d->%d)", vio.rows, rows, vio.cols, cols))
         vio_init();
         vio.c_trashed = 1;
         vio.inited = 1;
         ret = 1;
     }
-    if (rows) *rows = vio.rows;
-    if (cols) *cols = vio.cols;
+
+    if (nrows) *nrows = vio.rows;
+    if (ncols) *ncols = vio.cols;
+
     return ret;
 }
 
@@ -3449,7 +3447,7 @@ vio_define_flags(int obj, uint16_t attributes)
 
 /*
  *  vio_set_colorattr ---
- *      Set the current terminal color, to the specfied color-object.
+ *      Set the current terminal color, to the specified color-object.
  **/
 LIBVIO_API void
 vio_set_colorattr(int obj)
@@ -3465,7 +3463,7 @@ vio_set_colorattr(int obj)
 
 /*
  *  vio_set_wincolor_native ---
- *      Set the current terminal color, to the specfied native windows console color-attribute.
+ *      Set the current terminal color, to the specified native windows console color-attribute.
  **/
 LIBVIO_API void
 vio_set_wincolor_native(uint16_t attributes)
@@ -3481,7 +3479,7 @@ vio_set_wincolor_native(uint16_t attributes)
 
 /*
  *  vio_set_wincolor ---
- *      Set the current terminal color, foreground and background, to the specfied windows console enumerated values.
+ *      Set the current terminal color, foreground and background, to the specified windows console enumerated values.
  **/
 LIBVIO_API void
 vio_set_wincolor(int fg, int bg, uint16_t attributes)
@@ -3514,7 +3512,7 @@ vio_set_wincolor(int fg, int bg, uint16_t attributes)
 
 /*
  *  vio_set_vtcolor ---
- *      Set the current terminal color, foreground and background, to the specfied vt/xterm color enumerated values.
+ *      Set the current terminal color, foreground and background, to the specified vt/xterm color enumerated values.
  **/
 LIBVIO_API void
 vio_set_vtcolor(int fg, int bg, uint16_t attributes)
@@ -3539,7 +3537,7 @@ vio_set_vtcolor(int fg, int bg, uint16_t attributes)
 
 /*
  *  vio_set_rgbcolor ---
- *      Set the current terminal color, foreground and background, to the specfied RGB color values.
+ *      Set the current terminal color, foreground and background, to the specified RGB color values.
  **/
 LIBVIO_API void
 vio_set_rgbcolor(int32_t fg, int32_t bg, uint16_t attributes)
@@ -3564,7 +3562,7 @@ vio_set_rgbcolor(int32_t fg, int32_t bg, uint16_t attributes)
 
 /*
  *  vio_set_winforeground ---
- *      Set the default terminal foreground color, to the specfied windows console color enumerated value.
+ *      Set the default terminal foreground color, to the specified windows console color enumerated value.
  **/
 LIBVIO_API void
 vio_set_winforeground(int color, int32_t rgb /*optional, otherwise -1*/)
@@ -3579,7 +3577,7 @@ vio_set_winforeground(int color, int32_t rgb /*optional, otherwise -1*/)
 
 /*
  *  vio_set_winbackground ---
- *      Set the default terminal background color, to the specfied windows console color enumerated value.
+ *      Set the default terminal background color, to the specified windows console color enumerated value.
  **/
 LIBVIO_API void
 vio_set_winbackground(int color, int32_t rgb /*optional, otherwise -1*/)
@@ -3631,7 +3629,7 @@ vio_normal_video(void)
 {
     vio.c_color.Flags = VIO_FNORMAL;
     vio.c_color.Attributes = 0;
-    vio.c_color.fg = COLIDX_FOREGROUND;         /* implied indexs */
+    vio.c_color.fg = COLIDX_FOREGROUND;         /* implied indexes */
     vio.c_color.bg = COLIDX_BACKGROUND;
     vio.c_color.fgrgb = (COLORREF)-1;
     vio.c_color.bgrgb = (COLORREF)-1;
@@ -3788,6 +3786,8 @@ vio_putc(unsigned ch, unsigned cnt, int move)
 
     assert(row >= 0 && row < vio.rows);
     assert(col >= 0 && col < vio.cols);
+    if (row < 0 || row >= vio.rows) return;
+    if (col < 0 || col >= vio.cols) return;
     cursor  = vio.c_screen[ row ].text;
     cend    = cursor + vio.cols;
     cursor += col;
@@ -3829,29 +3829,32 @@ vio_putc(unsigned ch, unsigned cnt, int move)
  */
 
 struct interval {
-  int first;
-  int last;
+    int first;
+    int last;
 };
 
 
 /* auxiliary function for binary search in interval table */
-static int bisearch(wchar_t ucs, const struct interval *table, int max) {
-  int min = 0;
-  int mid;
+static int
+bisearch(wchar_t ucs, const struct interval *table, int max)
+{
+    int min = 0;
+    int mid;
 
-  if (ucs < table[0].first || ucs > table[max].last)
+    if (ucs < table[0].first || ucs > table[max].last)
+        return 0;
+
+    while (max >= min) {
+        mid = (min + max) / 2;
+        if (ucs > table[mid].last)
+            min = mid + 1;
+        else if (ucs < table[mid].first)
+            max = mid - 1;
+        else
+            return 1;
+    }
+
     return 0;
-  while (max >= min) {
-    mid = (min + max) / 2;
-    if (ucs > table[mid].last)
-      min = mid + 1;
-    else if (ucs < table[mid].first)
-      max = mid - 1;
-    else
-      return 1;
-  }
-
-  return 0;
 }
 
 
@@ -3964,7 +3967,7 @@ int vio_wcwidth(wchar_t ucs)
       (ucs >= 0xf900 && ucs <= 0xfaff) || /* CJK Compatibility Ideographs */
       (ucs >= 0xfe10 && ucs <= 0xfe19) || /* Vertical forms */
       (ucs >= 0xfe30 && ucs <= 0xfe6f) || /* CJK Compatibility Forms */
-      (ucs >= 0xff00 && ucs <= 0xff60) || /* Fullwidth Forms */
+      (ucs >= 0xff00 && ucs <= 0xff60) || /* Full-width Forms */
       (ucs >= 0xffe0 && ucs <= 0xffe6)
 #if defined(SIZEOF_WCHAR_T) && (SIZEOF_WCHAR_T > 2)
       || (ucs >= 0x20000 && ucs <= 0x2fffd)

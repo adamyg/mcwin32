@@ -22,7 +22,6 @@
 #define KEY_M_ALT   0x2000
 #define KEY_M_CTRL  0x4000
 #define KEY_M_MASK  0x7000
-#define KEY_M_UNICODE 0x8000
 
 #define XCTRL(x) (KEY_M_CTRL | ((x) & 0x1F))
 #define ALT(x) (KEY_M_ALT | (unsigned int)(x))

@@ -1,18 +1,17 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.14 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.16 2025/03/06 16:59:47 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
  * Light weight replacement functions, which maintain the global errno.
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.

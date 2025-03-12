@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.11 2024/02/04 10:39:25 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.15 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 iconv dynamic loader.
  *
- * Copyright (c) 1998 - 2024, Adam Young.
+ * Copyright (c) 1998 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.11 2024/02/04 10:39:25 cvsus
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -52,7 +51,7 @@ __CIDENT_RCSID(gr_w32_iconv_c,"$Id: w32_iconv.c,v 1.11 2024/02/04 10:39:25 cvsus
 #endif
 typedef void *          (DLLLINKAGE * iconvopenfn_t)(const char *to, const char *from);
 typedef void            (DLLLINKAGE * iconvclosefn_t)(void *fd);
-typedef int             (DLLLINKAGE * iconvfn_t)(void *fd, const char **from, size_t *fromlen, char **to, size_t *tolen);
+typedef size_t          (DLLLINKAGE * iconvfn_t)(void *fd, const char **from, size_t *fromlen, char **to, size_t *tolen);
 typedef int             (DLLLINKAGE * iconverrnofn_t)(void);
 
 #if defined(HAVE_LIBCITRUS)
@@ -71,15 +70,17 @@ static iconvfn_t        x_iconv;
 //  static void *       x_iconv_errno;
 
 static const char *     x_iconvnames[] = {
-        NULL,                                   // place-holder
-#if defined(ICONVDLL_NAME)
-        ICONVDLL_NAME,                          // compile-time configuration
+        NULL,                                   // place-holder/runtime configuration
+#if defined(HAVE_LIBICONV_CITRUS_DLL)
+        HAVE_LIBICONV_CITRUS_DLL,
+#elif defined(ICONVDLL_NAME)
+        ICONVDLL_NAME,
 #else
-#define ICONVDLL_NAME   "[lib]iconv[2].dll"     // dynamic
-        "libiconv2.dll",
         "libiconv.dll",
-        "iconv2.dll",
-        "iconv.dll",
+        "iconv.dll"
+#endif
+#if !defined(ICONVDLL_NAME)
+#define ICONVDLL_NAME "iconv.dll"               // generic name
 #endif
        };
 
@@ -252,14 +253,14 @@ w32_iconv_close(void *fd)
 }
 
 
-LIBW32_API int
+LIBW32_API size_t
 w32_iconv(void * fd, const char **from, size_t *fromlen, char **to, size_t *tolen)
 {
     if (x_iconv) {
         return (x_iconv)(fd, from, fromlen, to, tolen);
     }
     errno = EIO;
-    return -1;
+    return (size_t)-1;
 }
 
 #endif  /*WIN32*/

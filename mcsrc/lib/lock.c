@@ -1,7 +1,7 @@
 /*
    File locking
 
-   Copyright (C) 2003-2024
+   Copyright (C) 2003-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -57,7 +57,7 @@
 
 #include "lib/global.h"
 #include "lib/vfs/vfs.h"
-#include "lib/util.h"           /* tilde_expand() */
+#include "lib/util.h"
 #include "lib/lock.h"
 #include "lib/widget.h"         /* query_dialog() */
 
@@ -117,7 +117,7 @@ lock_build_name (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static char *
-lock_build_symlink_name (const vfs_path_t * fname_vpath)
+lock_build_symlink_name (const vfs_path_t *fname_vpath)
 {
     const char *elpath;
     char *str_filename, *str_dirname, *symlink_name;
@@ -198,7 +198,7 @@ lock_get_info (const char *lockfname)
    Warning: Might do screen refresh and lose edit->force */
 
 int
-lock_file (const vfs_path_t * fname_vpath)
+lock_file (const vfs_path_t *fname_vpath)
 {
     char *lockfname = NULL, *newlock, *msg;
     struct stat statbuf;
@@ -277,7 +277,7 @@ lock_file (const vfs_path_t * fname_vpath)
  */
 
 int
-unlock_file (const vfs_path_t * fname_vpath)
+unlock_file (const vfs_path_t *fname_vpath)
 {
     char *lockfname;
     const char *elpath;

@@ -1,5 +1,7 @@
+*10.42*
 pcre2-*/
 .unpacked.*
 Makefile
 *.err
+
 

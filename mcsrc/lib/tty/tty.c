@@ -1,7 +1,7 @@
 /*
    Interface to the terminal controlling library.
 
-   Copyright (C) 2005-2024
+   Copyright (C) 2005-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -25,7 +25,7 @@
  */
 
 /** \file tty.c
- *  \brief Source: %interface to the terminal controlling library
+ *  \brief Source: interface to the terminal controlling library
  */
 
 #include <config.h>
@@ -55,6 +55,7 @@
 
 #include "lib/global.h"
 #include "lib/strutil.h"
+#include "lib/util.h"
 
 #include "tty.h"
 #include "tty-internal.h"
@@ -157,7 +158,7 @@ tty_start_interrupt_key (void)
 #ifdef SA_RESTART
     act.sa_flags = SA_RESTART;
 #endif /* SA_RESTART */
-    sigaction (SIGINT, &act, NULL);
+    my_sigaction (SIGINT, &act, NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -170,7 +171,7 @@ tty_enable_interrupt_key (void)
     memset (&act, 0, sizeof (act));
     act.sa_handler = sigintr_handler;
     sigemptyset (&act.sa_mask);
-    sigaction (SIGINT, &act, NULL);
+    my_sigaction (SIGINT, &act, NULL);
     got_interrupt = 0;
 }
 
@@ -184,7 +185,7 @@ tty_disable_interrupt_key (void)
     memset (&act, 0, sizeof (act));
     act.sa_handler = SIG_IGN;
     sigemptyset (&act.sa_mask);
-    sigaction (SIGINT, &act, NULL);
+    my_sigaction (SIGINT, &act, NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */

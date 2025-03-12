@@ -1,4 +1,4 @@
-//  $Id: mcupdater.cpp,v 1.8 2023/10/08 17:25:11 cvsuser Exp $
+//  $Id: mcupdater.cpp,v 1.9 2025/02/21 20:06:10 cvsuser Exp $
 //
 //  Midnight Commander AutoUpdater command line.
 //
@@ -32,7 +32,11 @@ int
 main(int argc, char *argv[])
 {
     const char *version = VERSION "." BUILD_NUMBER,
+#if defined(_M_AMD64)           // x64; XXX as channel?
+            *hosturl = "https://sourceforge.net/projects/mcwin32/files/mcwin32x64.manifest/download";
+#else
             *hosturl = "https://sourceforge.net/projects/mcwin32/files/mcwin32.manifest/download";
+#endif
     int mode = 2, interactive = 0;
     int ch;
 

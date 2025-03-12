@@ -2,7 +2,7 @@
    Handle any events in application.
    Raise events.
 
-   Copyright (C) 2011-2024
+   Copyright (C) 2011-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -46,7 +46,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mc_event_raise (const gchar * event_group_name, const gchar * event_name, gpointer event_data)
+mc_event_raise (const gchar *event_group_name, const gchar *event_name, gpointer event_data)
 {
     GTree *event_group;
     GPtrArray *callbacks;

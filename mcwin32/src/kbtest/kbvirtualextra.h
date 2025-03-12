@@ -2,7 +2,7 @@
 /*
  * libtermemu console driver
  *
- * Copyright (c) 2024, Adam Young.
+ * Copyright (c) 2024 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the WinXSH project.

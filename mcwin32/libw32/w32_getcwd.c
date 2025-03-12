@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.26 2024/01/16 15:17:51 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.29 2025/03/08 16:40:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 getcwd() implementation
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.26 2024/01/16 15:17:51 cvs
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -95,13 +94,17 @@ LIBW32_API char *
 w32_getcwd(char *path, size_t size)
 {
     if (NULL == path || size <= 0) {
+#if (__GNU_COMPAT)
+        return w32_getdirectory();              // dynamic
+#else
         errno = EINVAL;
+#endif
 
     } else if (size < 64) {
         errno = ERANGE;
 
     } else {
-        if (x_w32_vfscwd) {                     /* vfs chdir() */
+        if (x_w32_vfscwd) {                     // vfs chdir()
             const char *in;
             char *out;
 
@@ -135,13 +138,51 @@ w32_getcwd(char *path, size_t size)
 }
 
 
+static unsigned
+dir_prefixA(const char *path)
+{
+    if (0 == memcmp(path, "\\\\?\\", 4)) {
+        // consume extended prefix, if present
+
+        if (path[4] && path[5] == ':' && path[6] == '\\') {
+            return 4;                           // "\\?\X:\..."  ==> "X:/..."
+
+        } else if (path[4] == 'U' && path[5] == 'N' && path[6] == 'C' && path[7] == '\\') {
+            return 4 + 3;                       // "\\?\UNC\..." ==> "//..."
+        }
+    }
+    return 0;
+}
+
+
+static unsigned
+dir_prefixW(const wchar_t *path)
+{
+    if (0 == wmemcmp(path, L"\\\\?\\", 4)) {
+        // consume extended prefix, if present
+
+        if (path[4] && path[5] == ':' && path[6] == '\\') {
+            return 4;                           // "\\?\X:\..."  ==> "X:/..."
+
+        } else if (path[4] == 'U' && path[5] == 'N' && path[6] == 'C' && path[7] == '\\') {
+            return 4 + 3;                       // "\\?\UNC\..." ==> "//..."
+        }
+    }
+    return 0;
+}
+
+
 LIBW32_API char *
 w32_getcwdA(char *path, size_t size)
 {
     char t_path[WIN32_PATH_MAX];
 
     if (NULL == path || size <= 0) {
+#if (__GNU_COMPAT)
+        return w32_getdirectoryA();
+#else
         errno = EINVAL;
+#endif
 
     } else if (size < 64) {
         errno = ERANGE;
@@ -164,12 +205,19 @@ w32_getcwdA(char *path, size_t size)
         } else if (ret >= (DWORD)size || ret >= _countof(t_path)) {
             errno = ENOMEM;
 
-        } else {                                /* standardise to the system seperator */
-            const char *in;
-            char *out;
+        } else {                                /* standardise to the system separator */
+            unsigned prefix;
+            const char *in = t_path;
+            char *out = path;
 
-            for (in = t_path, out = path; *in; ++in) {
-                if ('~' == *in) {               /* shortname expand */
+            if (0 != (prefix = dir_prefixA(in))) {
+                if (prefix == 7)
+                    *out++ = '/';               /* leading UNC slash */
+                in += prefix;
+            }
+
+            for (; *in; ++in) {
+                if ('~' == *in) {               /* short-name expand */
                     (void) GetLongPathNameA(t_path, t_path, _countof(t_path));
                     for (in = t_path, out = path; *in; ++in) {
                         *out++ = ('\\' == *in ? '/' : *in);
@@ -193,7 +241,11 @@ w32_getcwdW(wchar_t *path, size_t size)
     wchar_t t_path[WIN32_PATH_MAX];
 
     if (NULL == path || size <= 0) {
+#if (__GNU_COMPAT)
+        return w32_getdirectoryW();             /* dynamic */
+#else
         errno = EINVAL;
+#endif
 
     } else if (size < 64) {
         errno = ERANGE;
@@ -216,12 +268,19 @@ w32_getcwdW(wchar_t *path, size_t size)
         } else if (ret >= (DWORD)size || ret >= _countof(t_path)) {
             errno = ENOMEM;
 
-        } else {                                /* standardise to the system seperator */
-            const wchar_t *in;
-            wchar_t *out;
+        } else {                                /* standardise to the system separator */
+            unsigned prefix;
+            const wchar_t *in = t_path;
+            wchar_t *out = path;
 
-            for (in = t_path, out = path; *in; ++in) {
-                if ('~' == *in) {               /* shortname expand */
+            if (0 != (prefix = dir_prefixW(in))) {
+                if (prefix == 7)
+                    *out++ = '/';               /* leading UNC slash */
+                in += prefix;
+            }
+
+            for (; *in; ++in) {
+                if ('~' == *in) {               /* short-name expand */
                     (void) GetLongPathNameW(t_path, t_path, _countof(t_path));
                     for (in = t_path, out = path; *in; ++in) {
                         *out++ = ('\\' == *in ? '/' : *in);
@@ -239,6 +298,79 @@ w32_getcwdW(wchar_t *path, size_t size)
 }
 
 
+LIBW32_API char *
+w32_getdirectory(void)
+{
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        wchar_t *t_wcwd;
+
+        if (NULL != (t_wcwd = w32_getdirectoryW())) {
+            char *cwd = w32_wc2utfa(t_wcwd, NULL);
+            free((void *) t_wcwd);
+            return cwd;
+        }
+    }
+#endif  //UTF8FILENAMES
+
+    return w32_getdirectoryA();
+}
+
+
+LIBW32_API char *
+w32_getdirectoryA(void)
+{
+    const DWORD cdlen = GetCurrentDirectoryA(0, NULL); // includes terminator.
+    char *cd;
+
+    if (NULL != (cd = (char *)malloc(cdlen * sizeof(char)))) {
+        if (cdlen == (GetCurrentDirectoryA(cdlen, cd) + 1)) { // length excludes terminator.
+            unsigned prefix;
+
+            if (0 != (prefix = dir_prefixA(cd))) {
+                if (prefix == 7) {              // UNC
+                    memmove(cd + 1, cd + prefix, cdlen - prefix);
+                    cd[0] = '\\';
+                } else {
+                    memmove(cd, cd + prefix, cdlen - prefix);
+                }
+            }
+            w32_dos2unix(cd);
+            return cd;
+        }
+        free((void*)cd);
+    }
+    return NULL;
+}
+
+
+LIBW32_API wchar_t *
+w32_getdirectoryW(void)
+{
+    const DWORD cdlen = GetCurrentDirectoryW(0, NULL); // includes terminator.
+    wchar_t *cd;
+
+    if (NULL != (cd = (wchar_t *)malloc(cdlen * sizeof(wchar_t)))) {
+        if (cdlen == (GetCurrentDirectoryW(cdlen, cd) + 1)) { // length excludes terminator.
+            unsigned prefix;
+
+            if (0 != (prefix = dir_prefixW(cd))) {
+                if (prefix == 7) {              // UNC
+                    wmemmove(cd + 1, cd + prefix, cdlen - prefix);
+                    cd[0] = '\\';
+                } else {
+                    wmemmove(cd, cd + prefix, cdlen - prefix);
+                }
+            }
+            w32_dos2unixW(cd);
+            return cd;
+        }
+        free((void*)cd);
+    }
+    return NULL;
+}
+
+
 LIBW32_API int
 w32_getdrive(void)
 {
@@ -247,8 +379,12 @@ w32_getdrive(void)
 
     t_path[0] = 0, t_path[1] = 0;
     if ((ret = GetCurrentDirectoryW(_countof(t_path), t_path)) >= 2) {
-        if (t_path[1] == ':') {                 /* X: */
-            const wchar_t ch = t_path[0];
+        const wchar_t *path = 
+            t_path + dir_prefixW(t_path);       // consume extended prefix, if present
+
+        // decode drive
+        if (path[1] == ':') {                   // X:\...
+            const wchar_t ch = path[0];
 
             if (ch >= L'A' && ch <= L'Z') {
                 return (ch - L'A') + 1;
@@ -271,8 +407,12 @@ w32_getsystemdrive(void)
 
     t_path[0] = 0, t_path[1] = 0;
     if ((ret = GetSystemDirectoryW(t_path, _countof(t_path))) >= 2) {
-        if (t_path[1] == ':') {                 /* X: */
-            const wchar_t ch = t_path[0];
+        const wchar_t *path = 
+            t_path + dir_prefixW(t_path);       // consume extended prefix, if present
+
+        // decode drive
+        if (path[1] == ':') {                   // X:\...
+            const wchar_t ch = path[0];
 
             if (ch >= L'A' && ch <= L'Z') {
                 return (ch - L'A') + 1;

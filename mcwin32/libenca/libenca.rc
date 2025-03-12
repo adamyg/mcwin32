@@ -1,13 +1,15 @@
-//$Id: libenca.rc,v 1.1 2023/09/30 05:39:55 cvsuser Exp $
+//$Id: libenca.rc,v 1.2 2025/02/24 14:09:04 cvsuser Exp $
 //
-//  WIN32 resource file
+//  libenca - resource file
 //
 
 #include <winver.h>
 
-LANGUAGE  0x09,0x01
+#include "../buildinfo.h"
 
-#define RC_VERSION VERSION_1, VERSION_2, VERSION_3, 0
+LANGUAGE 0x09,0x01
+
+#define RC_VERSION ENCA_VERSION_1, ENCA_VERSION_2, ENCA_VERSION_3, 0
 
 #define __STRINGIZE(__x)        #__x
 #define STRINGIZE(__x)          __STRINGIZE(__x)
@@ -30,13 +32,13 @@ BEGIN
   BEGIN
     BLOCK "040904b0"
     BEGIN
-    //VALUE "CompanyName",      "xxx\0"
       VALUE "FileDescription",  "ENCA - Extremely Naive Charset Analyser\0"
       VALUE "FileVersion",      STRINGIZE(VERSION) "\0"
-      VALUE "InternalName",     STRINGIZE(LIBNAME) "\0"
-      VALUE "OriginalFilename", STRINGIZE(LIBNAME) ".dll\0"
-      VALUE "ProductVersion",   "enca\0"
-      VALUE "LegalCopyright",   "Copyright (C) 2000-2003 David Necas, 2009-2016 Michal Cihar\0"
+      VALUE "InternalName",     "libenca" STRINGIZE(ENCA_VERSION) ".dll\0"
+      VALUE "OriginalFilename", "enca\0"
+      VALUE "ProductVersion",   "mcwin32 - " VERSION "\0"
+      VALUE "LegalCopyright",  
+        "Copyright (C) 2000-2003 David Necas, 2009-2016 Michal Cihar\0"
       VALUE "License",          "http://github.com/nijel/enca/COPYING\0"
     END
   END

@@ -1,14 +1,14 @@
 #ifndef LIBW32_SYS_UIO_H_INCLUDED
 #define LIBW32_SYS_UIO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_uio_h,"$Id: uio.h,v 1.10 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_uio_h,"$Id: uio.h,v 1.11 2025/03/08 16:40:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 sys/uio.h
  *
- * Copyright (c) 1998 - 2024, Adam Young.
+ * Copyright (c) 1998 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.

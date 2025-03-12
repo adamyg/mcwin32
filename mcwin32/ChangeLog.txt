@@ -1,19 +1,57 @@
+Fri Mar  7 11:26:56 2025 adamy
+
+	* build-231
+
+	* 4.8.33 merge (#94)
+
+	* internal tools front-ends, externalized (#78)
+
+		o mcedit
+		o mcdiff and mcbsddiff (diff backend)
+		o mcview
+
+	* upgrades/bugfixes
+
+		o pcre2 10.45 (#106)
+		o appupdater (#102)
+		o glib 2.54.3 (#102)
+		o zlib-1.3.1 (#102)
+		o mbedtls-3.6.2 (#100)
+		o improved UNC and extended prefix support, plus stat optimisations (#98)
+		o libssh2-1.11.1 (#95)
+		o enhanced utf8 support, directory plus username; non-ascii user name support (#97)
+		o EXDEV, cross-device detection rename failure; allowing alt move logic (#85)
+		o x64 installer path (#79)
+
+Wed Mar 20 20:30:50 2024 adamy
+
+	* build-230
+
+	* 4.8.31 merge (#70)
+
+	* upgrades/bugfixes
+
+		o mbedtls 3.5.2 (#67)
+		o AltGr detection (#71, #52)
+		o mcdiff integration (#74)
+		o cd/cdpath (#72)
+
+	* x64 binary (Beta)
+
 Sun Nov 12 11:36:11 2023 adamy
 
 	* build-229
-
-	* x64 build (msvc/mingw)
 
 	* 4.8.30 merge
 
 	* package upgrades
 
-                o libappupdater 1.0.2
-                o pcre2 10.42
-                o mbedtls 3.4.1
-                o enca 1.19
-                o file 5.45
-                o zlib 1.2.13
+		o libappupdater 1.0.2
+		o pcre2 10.42
+		o mbedtls 3.4.1
+		o enca 1.19
+		o file 5.45
+		o zlib 1.2.13
 
 Sun Sep 10 22:45:15 2023 adamy
 
@@ -410,104 +448,102 @@ Mon Apr  6 02:44:48 2015 adamy
 
 	* build 189
 
-                - 2.8.14 merge
+		- 2.8.14 merge
 
-                        win32_pipe.c: mc_popen/mc_pread/mc_pclose() implementation
+			win32_pipe.c: mc_popen/mc_pread/mc_pclose() implementation
 
-                - imported AUTHORS and NEWS.OLD.
+		- imported AUTHORS and NEWS.OLD.
 
-                - busybox-w32-TIG-1658-g067f2e7.exe (2014/12/18),
-                        rolled back version, crashes noted on newer version when running under xp.
+		- busybox-w32-TIG-1658-g067f2e7.exe (2014/12/18),
+			rolled back version, crashes noted on newer version when running under xp.
 
 Sun Mar 29 02:48:16 2015 adamy
 
 	* build 188
 
-                - 256/italic color support.
-
-                - additional glib() va_list issues.
-
-                - save/restore unicode support.
+		- 256/italic color support.
+		- additional glib() va_list issues.
+		- save/restore unicode support.
 
 Sun Mar 22 03:39:34 2015 adamy
 
 	* build 187
 
-            Bug Fixes
-                - ticket #9
+	    Bug Fixes
+		- ticket #9
 
-            New
-                - <Shift-Return> maximize.
+	    New
+		- <Shift-Return> maximize.
 
-                - <Alt-0..9> function key emulation.
+		- <Alt-0..9> function key emulation.
 
-                - 4.8.13 merge.
+		- 4.8.13 merge.
 
-                - busybox upgrade,
-                        busybox-w32-TIG-1764-g74ba8c7.exe
+		- busybox upgrade,
+			busybox-w32-TIG-1764-g74ba8c7.exe
 
-                     source:
-                        https://github.com/rmyorston/busybox-w32
-                        http://intgat.tigress.co.uk/rmy/files/busybox/
+		    source:
+			https://github.com/rmyorston/busybox-w32
+			http://intgat.tigress.co.uk/rmy/files/busybox/
 
 Wed Mar 18 23:21:46 2015 adamy
 
 	* build 186
 
-                - ticket #8, Crash during 'mc --config'
+		- ticket #8, Crash during 'mc --config'
 
-                - ticket #7, MC crashes when MCEDIT menu Options>General... is selected
+		- ticket #7, MC crashes when MCEDIT menu Options>General... is selected
 
-                - syslink() EEXISTS errno mapping.
+		- syslink() EEXISTS errno mapping.
 
 Tue Aug  5 15:21:01 2014 adamy
 
 	* build 185
 
-                - 4.8.12 snap-shot merge
+		- 4.8.12 snap-shot merge
 
 Sat Dec 28 12:52:59 2013 adamy
 
 	* build 182
 
-                - 4.8.11 snap-shot merge
+		- 4.8.11 snap-shot merge
 
-                - busybox version changed (busybox-w32-TIG-1226-g3fd3465.exe)
+		- busybox version changed (busybox-w32-TIG-1226-g3fd3465.exe)
 
-                                http://intgat.tigress.co.uk/rmy/busybox/index.html
-                        older:  https://github.com/pclouds/busybox-w32
+			        http://intgat.tigress.co.uk/rmy/busybox/index.html
+			older:  https://github.com/pclouds/busybox-w32
 
 Sun Jun 30 19:09:11 2013 adamy
 
 	* build 181
 
-                - 4.8.8 snap-shot
+		- 4.8.8 snap-shot
 
 Sat Mar  9 00:48:59 2013 adamy
 
-        * build 180, port bug fix
+	* build 180, port bug fix
 
-                - my_system() convert slashes of leading word of 'cmd.exe' expressions.
-                - g_mktemp() replacement, needed for correct fdopen() operation.
+		- my_system() convert slashes of leading word of 'cmd.exe' expressions.
+		- g_mktemp() replacement, needed for correct fdopen() operation.
 
 Wed Feb  6 00:10:27 2013 adamy
 
 	* build 178, port bug fix
 
-                - TMPDIR logic corrected, remove startup warning regarding inability to access /tmp.
-                - 'console.saver.c' enabled.
+		- TMPDIR logic corrected, remove startup warning regarding inability to access /tmp.
+		- 'console.saver.c' enabled.
 
 Mon Jan 28 21:09:43 2013 adamy
 
 	* build 176
 
-                - port bug fix, 163:editcmd_dialog.c
+		- port bug fix, 163:editcmd_dialog.c
 
 Sun Jan 27 22:27:50 2013 adamy
 
 	* build 174
 
-                - 4.8.7 source import/merge.
+		- 4.8.7 source import/merge.
 
 Fri Aug 24 01:02:30 2012 adamy
 
@@ -515,7 +551,7 @@ Fri Aug 24 01:02:30 2012 adamy
 
 Tue Aug 21 04:05:31 2012 adamy
 
-        * force refresh within keyboard handler.
+	* force refresh within keyboard handler.
 
 Thu Aug 16 23:46:52 2012 adamy
 
@@ -525,21 +561,20 @@ Wed Aug 15 00:36:55 2012 adamy
 
 	* build 159
 
-                - additional UNC support, local shares available under //<hostname>/
-
-                - build number exported (e.g. --help).
+		- additional UNC support, local shares available under //<hostname>/
+		- build number exported (e.g. --help).
 
 
 Tue Aug 14 16:39:56 2012 adamy
 
 	* build 157
 
-                - home directory search order, HOME then PERSONAL (fix ch ~).
+		- home directory search order, HOME then PERSONAL (fix ch ~).
 
-                        HOME
-                        $PERSONAL/home
-                        $PERSONAL
-                        c:/
+			HOME
+			$PERSONAL/home
+			$PERSONAL
+			c:/
 
 
 /*

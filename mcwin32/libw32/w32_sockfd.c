@@ -1,17 +1,16 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.13 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.17 2025/03/06 16:59:47 cvsuser Exp $")
 
 /*
  * win32 socket file-descriptor support
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -64,12 +63,12 @@ static SOCKET *             x_fdsockets;
  *  file-descriptor association initialisation.
  */
 LIBW32_API void
-w32_sockfd_init(void)
+w32_fdsetinit(void)
 {
     if (0 == x_fdhard) {
         unsigned s;
 
-        if (NULL != (x_fdsockets = calloc(sizeof(SOCKET), WIN32_FILDES_MAX))) {
+        if (NULL != (x_fdsockets = (SOCKET *)calloc(WIN32_FILDES_MAX, sizeof(SOCKET)))) {
             for (s = 0; s < WIN32_FILDES_MAX; ++s) {
                 x_fdsockets[s] = INVALID_SOCKET;
             }
@@ -83,12 +82,12 @@ w32_sockfd_init(void)
  *  update the file-descriptor limit
  */
 LIBW32_API int
-w32_sockfd_limit(int fd)
+w32_fdregister(int fd)
 {
     assert(fd >= -1 /*error*/ && fd < WIN32_FILDES_MAX);
     if (fd > x_fdlimit) {
         if ((x_fdlimit = fd) > WIN32_FILDES_MAX) {
-            x_fdlimit =  WIN32_FILDES_MAX;      /* cap */
+            x_fdlimit = WIN32_FILDES_MAX;       /* cap */
         }
     }
     return fd;
@@ -99,12 +98,12 @@ w32_sockfd_limit(int fd)
  *  associate a file-descriptor with a socket.
  */
 LIBW32_API void
-w32_sockfd_open(int fd, SOCKET s)
+w32_fdsockopen(int fd, SOCKET s)
 {
     assert(fd >= 0 && fd < WIN32_FILDES_MAX);
 
-    w32_sockfd_init();
-    w32_sockfd_limit(fd);
+    w32_fdsetinit();
+    w32_fdregister(fd);
 
     if (x_fdsockets && fd >= 0 && fd < x_fdhard) {
         assert(s != INVALID_SOCKET);
@@ -114,10 +113,10 @@ w32_sockfd_open(int fd, SOCKET s)
 
 
 /*
- *      retrieve the socket associated with a file-descriptor.
+ *  retrieve the socket associated with a file-descriptor.
  */
 LIBW32_API SOCKET
-w32_sockfd_get(int fd)
+w32_fdsockget(int fd)
 {
     if (fd >= WIN32_FILDES_MAX) {               /* not an osf handle; hard limit */
         return fd;
@@ -141,10 +140,10 @@ w32_sockfd_get(int fd)
 
 
 /*
- *      unassociate a file-descriptor with a socket.
+ *  disassociate a file-descriptor with a socket.
  */
 LIBW32_API void
-w32_sockfd_close(int fd, SOCKET s)
+w32_fdsockclose(int fd, SOCKET s)
 {
     if (fd >= 0 && fd < x_fdhard) {
         if (s == INVALID_SOCKET || x_fdsockets[fd] == s) {
@@ -155,15 +154,16 @@ w32_sockfd_close(int fd, SOCKET s)
 
 
 /*
- *      determine whether a socket file descriptor, for read/write/close usage.
+ *  determine whether a socket file descriptor, for read/write/close usage.
  */
+
 //  static int
 //  IsStdHandle(int fd)
 //  {
 //      switch((DWORD)fd) {
-//	case STD_INPUT_HANDLE:	// (DWORD)-10   The standard input device. Initially, this is the console input buffer, CONIN$.
+//	case STD_INPUT_HANDLE:	// (DWORD)-10   The standard input device.  Initially, this is the console input buffer, CONIN$.
 //      case STD_OUTPUT_HANDLE: // (DWORD)-11   The standard output device. Initially, this is the active console screen buffer, CONOUT$.
-//      case STD_ERROR_HANDLE:  // (DWORD)-12   The standard error device. Initially, this is the active console screen buffer, CONOUT$.
+//      case STD_ERROR_HANDLE:  // (DWORD)-12   The standard error device.  Initially, this is the active console screen buffer, CONOUT$.
 //          return 1;
 //      }
 //	return 0;
@@ -186,8 +186,8 @@ w32_issockfd(int fd, SOCKET *s)
             /*
              *  TODO: restrict logic further
              *      HANDLES should always be DWORD aligned, hence must be "(fd & 0x7) == 0"
-             *      Confirm and can this go futher??
-             *          Mininal handle value??
+             *      Confirm and can this go further??
+             *          Minimal handle value??
              */
             t_s = (SOCKET)fd;
 

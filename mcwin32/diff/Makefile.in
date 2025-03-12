@@ -1,6 +1,6 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.2 2024/03/03 06:56:44 cvsuser Exp $
-# mcdiff
+# $Id: Makefile.in,v 1.3 2025/02/13 17:54:03 cvsuser Exp $
+# mc[bsd]diff
 #
 #
 #
@@ -134,9 +134,9 @@ RMDFLAGS=	-rf
 #########################################################################################
 # Targets
 
-MCDIFFLIB=	$(D_LIB)/$(LP)mcdiff$(A)
+MCDIFFLIB=	$(D_LIB)/$(LP)mcbsddiff$(A)
 
-MCDIFFTSK=	$(D_BIN)/mcdiff$(E)
+MCDIFFTSK=	$(D_BIN)/mcbsddiff$(E)
 MCDIFFSRC=	.
 
 VPATH+=		./compat

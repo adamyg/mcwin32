@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_write_c,"$Id: w32_write.c,v 1.16 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_write_c,"$Id: w32_write.c,v 1.18 2025/03/06 16:59:47 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 write() system calls.
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_write_c,"$Id: w32_write.c,v 1.16 2024/01/16 15:17:52 cvsus
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.10 2023/02/03 17:10:09 cvsuser Exp $
+# $Id: Makefile.in,v 1.12 2025/02/24 11:28:53 cvsuser Exp $
 # libintl makefile
 #
 #
@@ -28,6 +28,7 @@ RANLIB=		@RANLIB@
 RM=		@RM@
 PERL=		@PERL@
 LIBTOOL=	@LIBTOOL@
+RC=		@RC@
 
 # Configuration
 
@@ -61,6 +62,9 @@ XFLAGS=
 
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
+ifeq ("gcc","@CC@")
+CWARN+=		-Wno-implicit-fallthrough
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 LDDEBUG=	@LDDEBUG@
@@ -89,6 +93,12 @@ INTLLIB=	$(D_LIB)/$(LP)intl_static$(A)
 INTLDLL=	$(D_LIB)/$(LP)intl.la
 
 VERSION=	1.0.1
+VERSION_1	=$(word 1,$(subst ., ,$(VERSION)))
+VERSION_2	=$(word 2,$(subst ., ,$(VERSION)))
+VERSION_3	=$(word 3,$(subst ., ,$(VERSION)))
+ifeq ($(strip $(VERSION_3)),)
+VERSION_3	=0
+endif
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 INTLSRC=	./src
 CITRUSSRC=	../libcitrus/src
@@ -111,6 +121,14 @@ DLLOBJS=\
 	$(D_OBJ)/citrus_memstream.lo		\
 	$(D_OBJ)/tfind.lo			\
 	$(D_OBJ)/tsearch.lo
+
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+DLLOBJS+=	$(D_OBJ)/libintl_res.o
+else
+DLLOBJS+=	$(D_OBJ)/libintl.res
+endif
+endif
 
 OBJS=		$(LIBOBJS) $(DLLOBJS)
 LIBS=		$(INTLLIB) $(INTLDLL)
@@ -164,5 +182,13 @@ $(D_OBJ)/%$(O):		%.c
 
 $(D_OBJ)/%.lo:		%.c
 		$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -o $@ -c $<
+
+RCEXTRA		= -DINTL_VERSION=$(VERSION) -DINTL_VERSION_1=$(VERSION_1) -DINTL_VERSION_2=$(VERSION_2) -DINTL_VERSION_3=$(VERSION_3)
+
+$(D_OBJ)/%.res:		%.rc
+		$(RC) $(RCEXTRA) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) $(RCEXTRA) -o $@ $<
 
 #end

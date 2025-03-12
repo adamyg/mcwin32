@@ -1,27 +1,33 @@
 #ifndef LIBW32_SYS_TIME_H_INCLUDED
 #define LIBW32_SYS_TIME_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_time_h,"$Id: time.h,v 1.12 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_time_h,"$Id: time.h,v 1.14 2025/03/08 16:40:00 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 sys/time.h implementation.
  *
- * Copyright (c) 1998 - 2024, Adam Young.
+ * Copyright (c) 1998 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
  * The Midnight Commander is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
- * The Midnight Commander is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The applications are free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, version 3.
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, and must be distributed with the license document above.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, and must include the license document above in
+ * the documentation and/or other materials provided with the
+ * distribution.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.

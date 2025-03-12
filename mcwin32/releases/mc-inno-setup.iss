@@ -1,7 +1,7 @@
 ;
 ; Midnight Commander - Inno Setup
 ;
-; Adam Young, 2012 - 2024
+; Copyright (c) 2012 - 2025 Adam Young.
 ; This file is part of the Midnight Commander.
 ;
 ; The Midnight Commander is free software: you can redistribute it
@@ -57,6 +57,9 @@ OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-{#BUILD_TOOLNAME}-setup
 #else
 OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
 #endif
+#if defined(BUILD_ISWIN64)
+ArchitecturesInstallIn64BitMode=x64
+#endif
 Compression=lzma
 SolidCompression=yes
 ChangesEnvironment=true
@@ -101,12 +104,14 @@ Root: HKLM; Subkey: "Software\Midnight-Commander"; ValueType: dword;  ValueName:
 Source: "..\{#BinDir}\README.txt";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\ChangeLog.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; Flags: ignoreversion
-Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; DestName: "mcedit.exe"; Flags: ignoreversion
-;;Source: "..\{#BinDir}\mc.map";      DestDir: "{app}"; Flags: ignoreversion
-Source: "..\{#BinDir}\mcupdater.exe"; DestDir: "{app}"; Flags: ignoreversion
+        ;;Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; DestName: "mcedit.exe"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcdiff.exe";    DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mcedit.exe";    DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mcview.exe";    DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mcbsddiff.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mcupdater.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
-Source: "..\{#BinDir}\file.exe";      DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mcfile.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\enca.exe";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\kbtest.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\*.dll";         DestDir: "{app}"; Flags: ignoreversion

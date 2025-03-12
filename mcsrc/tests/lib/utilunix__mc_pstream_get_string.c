@@ -1,7 +1,7 @@
 /*
    lib - Read string from mc_pipe_stream
 
-   Copyright (C) 2021-2024
+   Copyright (C) 2021-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -253,7 +253,7 @@ test_mc_popen (void)
 }
 
 static void
-test_mc_pread (mc_pipe_t * p)
+test_mc_pread (mc_pipe_t *p)
 {
     size_t len;
 

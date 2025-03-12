@@ -10,7 +10,7 @@
    Janne Kukonlehto added much error recovery to them for being used
    in an interactive program.
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -62,6 +62,7 @@
 
 #include <errno.h>
 #include <ctype.h>
+#include <limits.h>             /* INT_MAX */
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -147,7 +148,6 @@ statfs (char const *filename, struct fs_info *buf)
 #include "lib/mcconfig.h"
 #include "lib/search.h"
 #include "lib/vfs/vfs.h"
-#include "lib/strescape.h"
 #include "lib/strutil.h"
 #include "lib/timefmt.h"        /* file_date() */
 #include "lib/util.h"
@@ -156,7 +156,6 @@ statfs (char const *filename, struct fs_info *buf)
 #include "src/setup.h"          /* verbose, safe_overwrite */
 
 #include "filemanager.h"
-#include "fileopctx.h"          /* FILE_CONT */
 
 #include "filegui.h"
 
@@ -168,7 +167,6 @@ gboolean classic_progressbar = TRUE;
 
 /*** file scope macro definitions ****************************************************************/
 
-#define truncFileString(dlg, s)       str_trunc (s, WIDGET (dlg)->rect.cols - 10)
 #define truncFileStringSecure(dlg, s) path_trunc (s, WIDGET (dlg)->rect.cols - 10)
 
 /*** file scope type declarations ****************************************************************/
@@ -217,15 +215,13 @@ typedef struct
     /* Target file: label and name */
     WLabel *tgt_file_label;
     WLabel *tgt_file;
-
     WGauge *progress_file_gauge;
     WLabel *progress_file_label;
 
+    WHLine *total_bytes_label;
     WGauge *progress_total_gauge;
-
     WLabel *total_files_processed_label;
     WLabel *time_label;
-    WHLine *total_bytes_label;
 
     /* Query replace dialog */
     WDialog *replace_dlg;
@@ -235,7 +231,7 @@ typedef struct
     gboolean dont_overwrite_with_zero;
 
     struct stat *src_stat, *dst_stat;
-} file_op_context_ui_t;
+} file_progress_ui_t;
 
 /*** forward declarations (file scope functions) *************************************************/
 
@@ -248,8 +244,7 @@ static struct
     const char *text;
     button_flags_t flags;
     int len;
-} progress_buttons[] =
-{
+} progress_buttons[] = {
     /* *INDENT-OFF* */
     { NULL, FILE_SKIP, N_("&Skip"), NORMAL_BUTTON, -1 },
     { NULL, FILE_SUSPEND, N_("S&uspend"), NORMAL_BUTTON, -1 },
@@ -353,15 +348,27 @@ file_eta_prepare_for_show (char *buffer, double eta_secs, gboolean always_show)
 {
     char _fmt_buff[BUF_TINY];
 
-    if (eta_secs <= 0.5 && !always_show)
+    if (eta_secs >= INT_MAX)
     {
-        *buffer = '\0';
-        return;
+        /* Over 68 years */
+        g_strlcpy (_fmt_buff, "--", sizeof (_fmt_buff));
+    }
+    else
+    {
+        if (eta_secs <= 0.5)
+        {
+            if (!always_show)
+            {
+                *buffer = '\0';
+                return;
+            }
+
+            eta_secs = 1.0;
+        }
+
+        file_frmt_time (_fmt_buff, eta_secs);
     }
 
-    if (eta_secs <= 0.5)
-        eta_secs = 1;
-    file_frmt_time (_fmt_buff, eta_secs);
     g_snprintf (buffer, BUF_TINY, _("ETA %s"), _fmt_buff);
 }
 
@@ -383,7 +390,7 @@ file_bps_prepare_for_show (char *buffer, long bps)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-file_ui_op_dlg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+file_ui_op_dlg_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     switch (msg)
     {
@@ -391,7 +398,7 @@ file_ui_op_dlg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm
         /* Do not close the dialog because the query dialog will be shown */
         if (parm == CK_Cancel)
         {
-            DIALOG (w)->ret_value = FILE_ABORT; /* for check_progress_buttons() */
+            DIALOG (w)->ret_value = FILE_ABORT; /* for file_progress_check_buttons() */
             return MSG_HANDLED;
         }
         return MSG_NOT_HANDLED;
@@ -423,7 +430,7 @@ file_ui_op_dlg_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm
  */
 
 static replace_action_t
-overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
+overwrite_query_dialog (file_op_context_t *ctx, enum OperationMode mode)
 {
 #define W(i) dlg_widgets[i].widget
 #define WX(i) W(i)->rect.x
@@ -456,8 +463,7 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
         int x;
         widget_pos_flags_t pos_flags;
         int value;              /* 0 for labels and checkbox */
-    } dlg_widgets[] =
-    {
+    } dlg_widgets[] = {
         /* *INDENT-OFF* */
         /*  0 - label */
         { NULL, N_("New     :"), 2, 3, WPOS_KEEP_DEFAULT, 0 },
@@ -509,7 +515,7 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
 
     const int gap = 1;
 
-    file_op_context_ui_t *ui = ctx->ui;
+    file_progress_ui_t *ui = ctx->ui;
     Widget *wd;
     WGroup *g;
     const char *title;
@@ -524,6 +530,8 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
     gboolean do_append = FALSE, do_reget = FALSE;
     unsigned long yes_id, no_id;
     int result;
+
+    const gint64 t = g_get_monotonic_time ();
 
     if (mode == Foreground)
         title = _("File exists");
@@ -573,7 +581,7 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
 
     /* will "Append" and "Reget" buttons be in the dialog? */
     do_append = !S_ISDIR (ui->dst_stat->st_mode);
-    do_reget = do_append && ctx->operation == OP_COPY && ui->dst_stat->st_size != 0
+    do_reget = do_append && ui->dst_stat->st_size != 0
         && ui->src_stat->st_size > ui->dst_stat->st_size;
 
     NEW_LABEL (8, dlg_widgets[8].text);
@@ -697,6 +705,8 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
 
     widget_destroy (wd);
 
+    ctx->pauses += g_get_monotonic_time () - t;
+
     return (result == B_CANCEL) ? REPLACE_ABORT : (replace_action_t) result;
 
 #undef ADD_BUTTON
@@ -736,7 +746,7 @@ is_wildcarded (const char *p)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-place_progress_buttons (WDialog * h, gboolean suspended)
+place_progress_buttons (WDialog *h, gboolean suspended)
 {
     const size_t i = suspended ? 2 : 1;
     Widget *w = WIDGET (h);
@@ -754,7 +764,7 @@ place_progress_buttons (WDialog * h, gboolean suspended)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-progress_button_callback (WButton * button, int action)
+progress_button_callback (WButton *button, int action)
 {
     (void) button;
     (void) action;
@@ -766,13 +776,61 @@ progress_button_callback (WButton * button, int action)
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
+/**
+ * \fn file_op_context_t * file_op_context_new (FileOperation op)
+ * \param op file operation struct
+ * \return The newly-created context, filled with the default file mask values.
+ *
+ * Creates a new file operation context with the default values.  If you later want
+ * to have a user interface for this, call file_progress_ui_create().
+ */
+
+file_op_context_t *
+file_op_context_new (FileOperation op)
+{
+    file_op_context_t *ctx;
+
+    ctx = g_new0 (file_op_context_t, 1);
+    ctx->operation = op;
+    ctx->preserve = TRUE;
+    ctx->preserve_uidgid = (geteuid () == 0);
+    ctx->umask_kill = (mode_t) (~0);
+    ctx->erase_at_end = TRUE;
+    ctx->do_reget = -1;
+    ctx->stat_func = mc_lstat;
+    ctx->ask_overwrite = TRUE;
+
+    return ctx;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * \fn void file_op_context_destroy (file_op_context_t *ctx)
+ * \param ctx The file operation context to destroy.
+ *
+ * Destroys the specified file operation context and its associated UI data, if
+ * it exists.
+ */
+
+void
+file_op_context_destroy (file_op_context_t *ctx)
+{
+    if (ctx != NULL)
+    {
+        file_progress_ui_destroy (ctx);
+        mc_search_free (ctx->search_handle);
+        g_free (ctx);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 FileProgressStatus
-check_progress_buttons (file_op_context_t * ctx)
+file_progress_check_buttons (file_op_context_t *ctx)
 {
     int c;
     Gpm_Event event;
-    file_op_context_ui_t *ui;
+    file_progress_ui_t *ui;
 
     if (ctx == NULL || ctx->ui == NULL)
         return FILE_CONT;
@@ -820,10 +878,10 @@ check_progress_buttons (file_op_context_t * ctx)
 /* {{{ File progress display routines */
 
 void
-file_op_context_create_ui (file_op_context_t * ctx, gboolean with_eta,
-                           filegui_dialog_type_t dialog_type)
+file_progress_ui_create (file_op_context_t *ctx, gboolean with_eta,
+                         filegui_dialog_type_t dialog_type)
 {
-    file_op_context_ui_t *ui;
+    file_progress_ui_t *ui;
     Widget *w;
     WGroup *g;
     int buttons_width;
@@ -846,7 +904,7 @@ file_op_context_create_ui (file_op_context_t * ctx, gboolean with_eta,
 
     ctx->dialog_type = dialog_type;
     ctx->recursive_result = RECURSIVE_YES;
-    ctx->ui = g_new0 (file_op_context_ui_t, 1);
+    ctx->ui = g_new0 (file_progress_ui_t, 1);
 
     ui = ctx->ui;
     ui->replace_result = REPLACE_YES;
@@ -858,7 +916,7 @@ file_op_context_create_ui (file_op_context_t * ctx, gboolean with_eta,
 
     if (dialog_type != FILEGUI_DIALOG_DELETE_ITEM)
     {
-        ui->showing_eta = with_eta && ctx->progress_totals_computed;
+        ui->showing_eta = with_eta && ctx->totals_computed;
         ui->showing_bps = with_eta;
 
         ui->src_file_label = label_new (y++, x, NULL);
@@ -886,7 +944,7 @@ file_op_context_create_ui (file_op_context_t * ctx, gboolean with_eta,
             ui->total_bytes_label = hline_new (y++, -1, -1);
             group_add_widget (g, ui->total_bytes_label);
 
-            if (ctx->progress_totals_computed)
+            if (ctx->totals_computed)
             {
                 ui->progress_total_gauge =
                     gauge_new (y++, x + 3, dlg_width - (x + 3) * 2, FALSE, 100, 0);
@@ -940,7 +998,7 @@ file_op_context_create_ui (file_op_context_t * ctx, gboolean with_eta,
 
     progress_buttons[3].w = WIDGET (button_new (y, 0, progress_buttons[3].action,
                                                 progress_buttons[3].flags, progress_buttons[3].text,
-                                                NULL));
+                                                progress_button_callback));
     if (progress_buttons[3].len == -1)
         progress_buttons[3].len = button_get_len (BUTTON (progress_buttons[3].w));
 
@@ -970,11 +1028,11 @@ file_op_context_create_ui (file_op_context_t * ctx, gboolean with_eta,
 /* --------------------------------------------------------------------------------------------- */
 
 void
-file_op_context_destroy_ui (file_op_context_t * ctx)
+file_progress_ui_destroy (file_op_context_t *ctx)
 {
     if (ctx != NULL && ctx->ui != NULL)
     {
-        file_op_context_ui_t *ui = (file_op_context_ui_t *) ctx->ui;
+        file_progress_ui_t *ui = (file_progress_ui_t *) ctx->ui;
 
         dlg_run_done (ui->op_dlg);
         widget_destroy (WIDGET (ui->op_dlg));
@@ -988,12 +1046,12 @@ file_op_context_destroy_ui (file_op_context_t * ctx)
  */
 
 void
-file_progress_show (file_op_context_t * ctx, off_t done, off_t total,
+file_progress_show (file_op_context_t *ctx, off_t done, off_t total,
                     const char *stalled_msg, gboolean force_update)
 {
-    file_op_context_ui_t *ui;
+    file_progress_ui_t *ui;
 
-    if (!verbose || ctx == NULL || ctx->ui == NULL)
+    if (ctx == NULL || ctx->ui == NULL)
         return;
 
     ui = ctx->ui;
@@ -1033,9 +1091,9 @@ file_progress_show (file_op_context_t * ctx, off_t done, off_t total,
 /* --------------------------------------------------------------------------------------------- */
 
 void
-file_progress_show_count (file_op_context_t * ctx, size_t done, size_t total)
+file_progress_show_count (file_op_context_t *ctx)
 {
-    file_op_context_ui_t *ui;
+    file_progress_ui_t *ui;
 
     if (ctx == NULL || ctx->ui == NULL)
         return;
@@ -1045,22 +1103,23 @@ file_progress_show_count (file_op_context_t * ctx, size_t done, size_t total)
     if (ui->total_files_processed_label == NULL)
         return;
 
-    if (ctx->progress_totals_computed)
-        label_set_textv (ui->total_files_processed_label, _("Files processed: %zu / %zu"), done,
-                         total);
+    if (ctx->totals_computed)
+        label_set_textv (ui->total_files_processed_label, _("Files processed: %zu / %zu"),
+                         ctx->total_progress_count, ctx->total_count);
     else
-        label_set_textv (ui->total_files_processed_label, _("Files processed: %zu"), done);
+        label_set_textv (ui->total_files_processed_label, _("Files processed: %zu"),
+                         ctx->total_progress_count);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 void
-file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ctx,
-                          uintmax_t copied_bytes, gboolean show_summary)
+file_progress_show_total (file_op_context_t *ctx, uintmax_t copied_bytes, gint64 tv_current,
+                          gboolean show_summary)
 {
     char buffer2[BUF_TINY];
     char buffer3[BUF_TINY];
-    file_op_context_ui_t *ui;
+    file_progress_ui_t *ui;
 
     if (ctx == NULL || ctx->ui == NULL)
         return;
@@ -1069,45 +1128,44 @@ file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ct
 
     if (ui->progress_total_gauge != NULL)
     {
-        if (ctx->progress_bytes == 0)
+        if (ctx->total_bytes == 0)
             gauge_show (ui->progress_total_gauge, FALSE);
         else
         {
             gauge_set_value (ui->progress_total_gauge, 1024,
-                             (int) (1024 * copied_bytes / ctx->progress_bytes));
+                             (int) (1024 * copied_bytes / ctx->total_bytes));
             gauge_show (ui->progress_total_gauge, TRUE);
         }
     }
 
-    if (!show_summary && tctx->bps == 0)
+    if (!show_summary && ctx->total_bps == 0)
         return;
 
     if (ui->time_label != NULL)
     {
-        gint64 tv_current;
         char buffer4[BUF_TINY];
 
-        tv_current = g_get_monotonic_time ();
-        file_frmt_time (buffer2, (tv_current - tctx->transfer_start) / G_USEC_PER_SEC);
+        file_frmt_time (buffer2,
+                        (tv_current - ctx->pauses - ctx->total_transfer_start) / G_USEC_PER_SEC);
 
-        if (ctx->progress_totals_computed)
+        if (ctx->totals_computed)
         {
-            file_eta_prepare_for_show (buffer3, tctx->eta_secs, TRUE);
-            if (tctx->bps == 0)
+            file_eta_prepare_for_show (buffer3, ctx->total_eta_secs, TRUE);
+            if (ctx->total_bps == 0)
                 label_set_textv (ui->time_label, _("Time: %s %s"), buffer2, buffer3);
             else
             {
-                file_bps_prepare_for_show (buffer4, (long) tctx->bps);
+                file_bps_prepare_for_show (buffer4, ctx->total_bps);
                 label_set_textv (ui->time_label, _("Time: %s %s (%s)"), buffer2, buffer3, buffer4);
             }
         }
         else
         {
-            if (tctx->bps == 0)
+            if (ctx->total_bps == 0)
                 label_set_textv (ui->time_label, _("Time: %s"), buffer2);
             else
             {
-                file_bps_prepare_for_show (buffer4, (long) tctx->bps);
+                file_bps_prepare_for_show (buffer4, ctx->total_bps);
                 label_set_textv (ui->time_label, _("Time: %s (%s)"), buffer2, buffer4);
             }
         }
@@ -1115,13 +1173,13 @@ file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ct
 
     if (ui->total_bytes_label != NULL)
     {
-        size_trunc_len (buffer2, 5, tctx->copied_bytes, 0, panels_options.kilobyte_si);
+        size_trunc_len (buffer2, 5, copied_bytes, 0, panels_options.kilobyte_si);
 
-        if (!ctx->progress_totals_computed)
+        if (!ctx->totals_computed)
             hline_set_textv (ui->total_bytes_label, _(" Total: %s "), buffer2);
         else
         {
-            size_trunc_len (buffer3, 5, ctx->progress_bytes, 0, panels_options.kilobyte_si);
+            size_trunc_len (buffer3, 5, ctx->total_bytes, 0, panels_options.kilobyte_si);
             hline_set_textv (ui->total_bytes_label, _(" Total: %s / %s "), buffer2, buffer3);
         }
     }
@@ -1132,9 +1190,9 @@ file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ct
 /* --------------------------------------------------------------------------------------------- */
 
 void
-file_progress_show_source (file_op_context_t * ctx, const vfs_path_t * vpath)
+file_progress_show_source (file_op_context_t *ctx, const vfs_path_t *vpath)
 {
-    file_op_context_ui_t *ui;
+    file_progress_ui_t *ui;
 
     if (ctx == NULL || ctx->ui == NULL)
         return;
@@ -1143,12 +1201,8 @@ file_progress_show_source (file_op_context_t * ctx, const vfs_path_t * vpath)
 
     if (vpath != NULL)
     {
-        char *s;
-
-        s = vfs_path_tokens_get (vpath, -1, 1);
         label_set_text (ui->src_file_label, _("Source"));
-        label_set_text (ui->src_file, truncFileString (ui->op_dlg, s));
-        g_free (s);
+        label_set_text (ui->src_file, truncFileStringSecure (ui->op_dlg, vfs_path_as_str (vpath)));
     }
     else
     {
@@ -1160,9 +1214,9 @@ file_progress_show_source (file_op_context_t * ctx, const vfs_path_t * vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-file_progress_show_target (file_op_context_t * ctx, const vfs_path_t * vpath)
+file_progress_show_target (file_op_context_t *ctx, const vfs_path_t *vpath)
 {
-    file_op_context_ui_t *ui;
+    file_progress_ui_t *ui;
 
     if (ctx == NULL || ctx->ui == NULL)
         return;
@@ -1184,7 +1238,7 @@ file_progress_show_target (file_op_context_t * ctx, const vfs_path_t * vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-file_progress_show_deleting (file_op_context_t * ctx, const char *s, size_t * count)
+file_progress_show_deleting (file_op_context_t *ctx, const vfs_path_t *vpath, size_t *count)
 {
     static gint64 timestamp = 0;
     /* update with 25 FPS rate */
@@ -1199,13 +1253,15 @@ file_progress_show_deleting (file_op_context_t * ctx, const char *s, size_t * co
 
     if (ret)
     {
-        file_op_context_ui_t *ui;
+        file_progress_ui_t *ui;
+        const char *s;
 
         ui = ctx->ui;
 
         if (ui->src_file_label != NULL)
             label_set_text (ui->src_file_label, _("Deleting"));
 
+        s = vfs_path_as_str (vpath);
         label_set_text (ui->src_file, truncFileStringSecure (ui->op_dlg, s));
     }
 
@@ -1218,11 +1274,11 @@ file_progress_show_deleting (file_op_context_t * ctx, const char *s, size_t * co
 /* --------------------------------------------------------------------------------------------- */
 
 FileProgressStatus
-file_progress_real_query_replace (file_op_context_t * ctx, enum OperationMode mode,
-                                  const char *src, struct stat * src_stat,
-                                  const char *dst, struct stat * dst_stat)
+file_progress_real_query_replace (file_op_context_t *ctx, enum OperationMode mode,
+                                  const char *src, struct stat *src_stat,
+                                  const char *dst, struct stat *dst_stat)
 {
-    file_op_context_ui_t *ui;
+    file_progress_ui_t *ui;
     FileProgressStatus replace_with_zero;
 
     if (ctx == NULL || ctx->ui == NULL)
@@ -1297,9 +1353,10 @@ file_progress_real_query_replace (file_op_context_t * ctx, enum OperationMode mo
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-file_mask_dialog (file_op_context_t * ctx, gboolean only_one, const char *format, const void *text,
-                  const char *def_text, gboolean * do_bg)
+file_mask_dialog (file_op_context_t *ctx, gboolean only_one, const char *format, const void *text,
+                  const char *def_text, gboolean *do_bg)
 {
+    gboolean preserve;
     size_t fmd_xlen;
     vfs_path_t *vpath;
     gboolean source_easy_patterns = easy_patterns;
@@ -1312,7 +1369,8 @@ file_mask_dialog (file_op_context_t * ctx, gboolean only_one, const char *format
         return NULL;
 
     /* unselect checkbox if target filesystem doesn't support attributes */
-    ctx->op_preserve = copymove_persistent_attr && filegui__check_attrs_on_fs (def_text);
+    preserve = copymove_persistent_attr && filegui__check_attrs_on_fs (def_text);
+
     ctx->stable_symlinks = FALSE;
     *do_bg = FALSE;
 
@@ -1322,9 +1380,9 @@ file_mask_dialog (file_op_context_t * ctx, gboolean only_one, const char *format
     vfs_path_free (vpath, TRUE);
 
     if (source_easy_patterns)
-        def_text_secure = strutils_glob_escape (tmp);
+        def_text_secure = str_glob_escape (tmp);
     else
-        def_text_secure = strutils_regex_escape (tmp);
+        def_text_secure = str_regex_escape (tmp);
     g_free (tmp);
 
     if (only_one)
@@ -1385,7 +1443,7 @@ file_mask_dialog (file_op_context_t * ctx, gboolean only_one, const char *format
             QUICK_SEPARATOR (TRUE),
             QUICK_START_COLUMNS,
                 QUICK_CHECKBOX (N_("Follow &links"), &ctx->follow_links, NULL),
-                QUICK_CHECKBOX (N_("Preserve &attributes"), &ctx->op_preserve, NULL),
+                QUICK_CHECKBOX (N_("Preserve &attributes"), &preserve, NULL),
             QUICK_NEXT_COLUMN,
                 QUICK_CHECKBOX (N_("Di&ve into subdir if exists"), &ctx->dive_into_subdirs, NULL),
                 QUICK_CHECKBOX (N_("&Stable symlinks"), &ctx->stable_symlinks, NULL),
@@ -1422,7 +1480,7 @@ file_mask_dialog (file_op_context_t * ctx, gboolean only_one, const char *format
         qc = XQUICK_SEPARATOR (qc, TRUE);
         qc = XQUICK_START_COLUMNS (qc);
         qc =      XQUICK_CHECKBOX (qc, N_("Follow &links"), &ctx->follow_links, NULL);
-        qc =      XQUICK_CHECKBOX (qc, N_("Preserve &attributes"), &ctx->op_preserve, NULL);
+        qc =      XQUICK_CHECKBOX (qc, N_("Preserve &attributes"), &preserve, NULL);
         qc = XQUICK_NEXT_COLUMN (qc);
         qc =      XQUICK_CHECKBOX (qc, N_("Di&ve into subdir if exists"), &ctx->dive_into_subdirs, NULL);
         qc =      XQUICK_CHECKBOX (qc, N_("&Stable symlinks"), &ctx->stable_symlinks, NULL);
@@ -1449,10 +1507,10 @@ file_mask_dialog (file_op_context_t * ctx, gboolean only_one, const char *format
 
             ctx->stat_func = ctx->follow_links ? mc_stat : mc_lstat;
 
-            if (ctx->op_preserve)
+            if (preserve)
             {
                 ctx->preserve = TRUE;
-                ctx->umask_kill = (mode_t)0777777;
+                ctx->umask_kill = (mode_t) (~0);
                 ctx->preserve_uidgid = (geteuid () == 0);
             }
             else
@@ -1462,10 +1520,10 @@ file_mask_dialog (file_op_context_t * ctx, gboolean only_one, const char *format
                 ctx->preserve = ctx->preserve_uidgid = FALSE;
                 i2 = umask (0);
                 umask (i2);
-                ctx->umask_kill = i2 ^ 0777777;
+                ctx->umask_kill = i2 ^ ((mode_t) (~0));
             }
 
-            if (dest_dir == NULL || *dest_dir == '\0')
+            if (*dest_dir == '\0')
             {
                 g_free (def_text_secure);
                 g_free (source_mask);

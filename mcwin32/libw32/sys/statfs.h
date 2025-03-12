@@ -1,27 +1,33 @@
 #ifndef LIBW32_SYS_STATFS_H_INCLUDED
 #define LIBW32_SYS_STATFS_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_statfs_h,"$Id: statfs.h,v 1.10 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_statfs_h,"$Id: statfs.h,v 1.13 2025/03/12 17:38:50 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 [f]statfs implementation
  *
- * Copyright (c) 2012 - 2024, Adam Young.
+ * Copyright (c) 2012 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
  * The Midnight Commander is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
- * The Midnight Commander is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The applications are free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, version 3.
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, and must be distributed with the license document above.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, and must include the license document above in
+ * the documentation and/or other materials provided with the
+ * distribution.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -39,7 +45,7 @@ __CPRAGMA_ONCE
 #define MNAMELEN    90                          /* length of buffer for returned name */
 
 typedef struct fsid {                           /* file system id type */
-    unsigned long   val[2]; 
+    unsigned long   val[2];
 } fsid_t;
 
 struct statfs {

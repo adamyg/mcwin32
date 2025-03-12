@@ -1,7 +1,7 @@
 /*
    Learn keys
 
-   Copyright (C) 1995-2024
+   Copyright (C) 1995-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -37,7 +37,6 @@
 #include "lib/tty/tty.h"
 #include "lib/tty/key.h"
 #include "lib/mcconfig.h"
-#include "lib/strescape.h"
 #include "lib/strutil.h"
 #include "lib/util.h"           /* convert_controls() */
 #include "lib/widget.h"
@@ -82,7 +81,7 @@ static gboolean learnchanged = FALSE;
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-learn_button (WButton * button, int action)
+learn_button (WButton *button, int action)
 {
     WDialog *d;
     char *seq;
@@ -119,7 +118,8 @@ learn_button (WButton * button, int action)
         }
 
         if (!seq_ok)
-            message (D_NORMAL, _("Cannot accept this key"), _("You have entered \"%s\""), seq);
+            message (D_NORMAL, _("Warning"), _("Cannot accept this key.\nYou have entered \"%s\""),
+                     seq);
 
         g_free (seq);
     }
@@ -233,7 +233,7 @@ learn_check_key (int c)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-learn_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
+learn_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
     switch (msg)
     {
@@ -366,7 +366,7 @@ learn_save (void)
         {
             char *esc_str;
 
-            esc_str = strutils_escape (learnkeys[i].sequence, -1, ";\\", TRUE);
+            esc_str = str_escape (learnkeys[i].sequence, -1, ";\\", TRUE);
             mc_config_set_string_raw_value (mc_global.main_config, section,
                                             key_name_conv_tab[i].name, esc_str);
             g_free (esc_str);

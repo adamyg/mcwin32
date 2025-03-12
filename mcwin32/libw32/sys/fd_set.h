@@ -3,15 +3,14 @@
 /*
  * <sys/fd_set.h>
  *
- * Copyright (c) 2022 - 2024, Adam Young.
+ * Copyright (c) 2022 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
  *
  * The Midnight Commander is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
+ * published by the Free Software Foundation, version 3.
  *
  * The Midnight Commander is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of

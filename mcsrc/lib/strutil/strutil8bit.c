@@ -1,7 +1,7 @@
 /*
    8bit strings utilities
 
-   Copyright (C) 2007-2024
+   Copyright (C) 2007-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -79,7 +79,7 @@ DECLARE_CTYPE_WRAPPER (tolower)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-str_8bit_insert_replace_char (GString * buffer)
+str_8bit_insert_replace_char (GString *buffer)
 {
     g_string_append_c (buffer, replch);
 }
@@ -195,7 +195,7 @@ str_8bit_iscombiningmark (const char *text)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-str_8bit_toupper (const char *text, char **out, size_t * remain)
+str_8bit_toupper (const char *text, char **out, size_t *remain)
 {
     if (*remain <= 1)
         return FALSE;
@@ -209,7 +209,7 @@ str_8bit_toupper (const char *text, char **out, size_t * remain)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-str_8bit_tolower (const char *text, char **out, size_t * remain)
+str_8bit_tolower (const char *text, char **out, size_t *remain)
 {
     if (*remain <= 1)
         return FALSE;
@@ -233,13 +233,17 @@ str_8bit_length (const char *text)
 static int
 str_8bit_length2 (const char *text, int size)
 {
-    return (size >= 0) ? MIN (strlen (text), (gsize) size) : strlen (text);
+    size_t length;
+
+    length = strlen (text);
+
+    return (size >= 0) ? MIN (length, (size_t) size) : length;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static gchar *
-str_8bit_conv_gerror_message (GError * mcerror, const char *def_msg)
+str_8bit_conv_gerror_message (GError *mcerror, const char *def_msg)
 {
     GIConv conv;
     gchar *ret;
@@ -272,7 +276,7 @@ str_8bit_conv_gerror_message (GError * mcerror, const char *def_msg)
 /* --------------------------------------------------------------------------------------------- */
 
 static estr_t
-str_8bit_vfs_convert_to (GIConv coder, const char *string, int size, GString * buffer)
+str_8bit_vfs_convert_to (GIConv coder, const char *string, int size, GString *buffer)
 {
     estr_t result = ESTR_SUCCESS;
 
@@ -443,7 +447,11 @@ str_8bit_term_trim (const char *text, int width)
 static int
 str_8bit_term_width2 (const char *text, size_t length)
 {
-    return (length != (size_t) (-1)) ? MIN (strlen (text), length) : strlen (text);
+    size_t text_len;
+
+    text_len = strlen (text);
+
+    return (length != (size_t) (-1)) ? MIN (text_len, length) : text_len;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -661,7 +669,12 @@ str_8bit_compare (const char *t1, const char *t2)
 static int
 str_8bit_ncompare (const char *t1, const char *t2)
 {
-    return strncmp (t1, t2, MIN (strlen (t1), strlen (t2)));
+    size_t l1, l2;
+
+    l1 = strlen (t1);
+    l2 = strlen (t2);
+
+    return strncmp (t1, t2, MIN (l1, l2));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -703,12 +716,15 @@ str_8bit_casecmp (const char *s1, const char *s2)
 static int
 str_8bit_ncasecmp (const char *s1, const char *s2)
 {
+    size_t l1, l2;
     size_t n;
 
     g_return_val_if_fail (s1 != NULL, 0);
     g_return_val_if_fail (s2 != NULL, 0);
 
-    n = MIN (strlen (s1), strlen (s2));
+    l1 = strlen (s1);
+    l2 = strlen (s2);
+    n = MIN (l1, l2);
 
     /* code from GLib */
 

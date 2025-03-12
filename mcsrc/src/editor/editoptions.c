@@ -1,7 +1,7 @@
 /*
    Editor options dialog box
 
-   Copyright (C) 1996-2024
+   Copyright (C) 1996-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -117,7 +117,7 @@ edit_reload_syntax (void *data, void *user_data)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_options_dialog (WDialog * h)
+edit_options_dialog (WDialog *h)
 {
     char wrap_length[16], tab_spacing[16];
     char *p, *q;

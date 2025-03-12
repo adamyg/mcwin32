@@ -2,7 +2,7 @@
 #define LIBW32_EDIDENTIFIER_H_INCLUDED
 
 /* -*- mode: c; indent-width: 4; -*- */
-/*  $Id: edidentifier.h,v 1.7 2024/01/16 15:17:51 cvsuser Exp $
+/*  $Id: edidentifier.h,v 1.9 2025/03/06 16:59:45 cvsuser Exp $
  *  Compiler specific object identify functionality.
  *
  *      __CIDENT(description)
@@ -10,14 +10,13 @@
  *      __CPRAGMA_ONCE
  *
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 1998 - 2025, Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.

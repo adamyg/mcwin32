@@ -1,7 +1,7 @@
 /*
    src - tests for execute_external_editor_or_viewer() function
 
-   Copyright (C) 2013-2024
+   Copyright (C) 2013-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -47,7 +47,7 @@ static char *execute_external_cmd_opts__return_value;
 
 /* @Mock */
 char *
-execute_get_external_cmd_opts_from_config (const char *command, const vfs_path_t * filename_vpath,
+execute_get_external_cmd_opts_from_config (const char *command, const vfs_path_t *filename_vpath,
                                            long start_line)
 {
     execute_external_cmd_opts__command__captured = g_strdup (command);

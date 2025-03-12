@@ -1,14 +1,14 @@
 #ifndef LIBW32_WIN32_INCLUDE_H_INCLUDED
 #define LIBW32_WIN32_INCLUDE_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_include_h,"$Id: win32_include.h,v 1.13 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_include_h,"$Id: win32_include.h,v 1.15 2025/03/06 16:59:47 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * winsock2.h and windows.h include guard
  *
- * Copyright (c) 2007, 2012 - 2024 Adam Young.
+ * Copyright (c) 2007, 2012 - 2025 Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -16,7 +16,6 @@ __CPRAGMA_ONCE
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.

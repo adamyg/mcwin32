@@ -18,10 +18,7 @@
             my_build_filenamev
             my_build_filename
 
-   Copyright (C) 2012
-   The Free Software Foundation, Inc.
-
-   Written by: Adam Young 2012 - 2024
+   Adam Young 2015 - 2025
 
    Portions sourced from lib/utilunix.c, see for additional information.
 
@@ -75,13 +72,12 @@
 #include "lib/global.h"
 #include "lib/vfs/vfs.h"                        /* VFS_ENCODING_PREFIX */
 #include "lib/strutil.h"                        /* str_move() */
-#include "lib/util.h"
+#include "lib/util.h"                           /* my_xxx() definitions */
 #include "lib/widget.h"                         /* message() */
 #include "lib/vfs/xdirentry.h"
 #ifdef HAVE_CHARSET
 #include "lib/charsets.h"
 #endif
-#include "lib/utilunix.h"
 
 #include "src/setup.h"                          /* use_internal_busybox */
 
@@ -196,12 +192,7 @@ set_term(void)
 static void
 set_home(void)
 {
-//  extern const char *g_get_user_config_dir(void);
-//  const char *cp;
-//
-//  if (NULL != (cp = getenv("MC_HOME")) && *cp) {
-//      my_setpathenv("MC_HOME", g_get_user_config_dir(), FALSE);
-//  }
+    //my_setenv("MC_HOME", mc_USERCONFDIR(), FALSE);
 }
 
 
@@ -210,6 +201,95 @@ set_editor(void)
 {
     my_setenv("EDITOR", "notepad.exe", FALSE);
     my_setenv("PAGER", "notepad.exe", FALSE);
+}
+
+
+/**
+ *  ugetenv ---
+ *      Retrieves a value from the current environment, as a utf-8 encoded string.
+ */
+static const char *
+ugetenv(const char *varname)
+{
+    static const char *x_utf8xenv = NULL;       // last converted result.
+    const char *env;
+
+    env = getenv(varname);
+    if (env) {
+#define MAX_VARNAME 128
+        wchar_t wvarname[MAX_VARNAME + 1 /*NUL*/];
+        const wchar_t *wenv;
+
+        (void) MultiByteToWideChar(CP_UTF8, 0, varname, -1, wvarname, MAX_VARNAME);
+        wvarname[MAX_VARNAME] = 0;
+
+        wenv = _wgetenv(wvarname);
+        if (wenv) {                             // wide-char available, convert and compare.
+            const unsigned wenvsz = wcslen(wenv),
+                utf8sz = WideCharToMultiByte(CP_UTF8, 0, wenv, (int)wenvsz, NULL, 0, NULL, NULL);
+            char *utf8env;
+
+            if (NULL != (utf8env = calloc(utf8sz + 1 /*NUL*/, sizeof(char)))) {
+                (void) WideCharToMultiByte(CP_UTF8, 0, wenv, (int)wenvsz, utf8env, utf8sz, NULL, NULL);
+                utf8env[utf8sz] = 0;
+
+                // when values differ, return utf8
+                if (strcmp(utf8env, env) != 0) {
+                    free((void *)x_utf8xenv);
+                    x_utf8xenv = utf8env;
+                    return utf8env;
+                }
+                free(utf8env);
+            }
+        }
+    }
+    return env;
+}
+
+
+/**
+ *  ugetenv ---
+ *      Retrieves an available directory value from the current environment, as a utf-8 encoded string.
+ */
+static const char *
+ugetdir(const char *varname)
+{
+    const char *env;
+
+    if (NULL != (env = ugetenv(varname))) {
+        if (env[0] && 0 == w32_access(env, 0)) {
+            return env;                         // exists
+        }
+    }
+    return NULL;
+}
+
+
+/**
+ *  SHGetFolderPathU ---
+ *      Retrieves the path of a folder identified by a CSIDL value, as a utf-8 encoded string.
+ */
+static HRESULT
+SHGetFolderPathU(HWND hwnd, int csidl, HANDLE hToken, DWORD dwFlags, char *path, size_t pathlen)
+{
+    wchar_t wpath[MAX_PATH + 1] = {0};
+    HRESULT ret;
+
+    path[0] = 0;
+    ret = SHGetFolderPathW(hwnd, csidl, hToken, dwFlags, wpath);
+    if (SUCCEEDED(ret)) {
+        const unsigned wpathsz = wcslen(wpath),
+            pathsz = WideCharToMultiByte(CP_UTF8, 0, wpath, (int)wpathsz, NULL, 0, NULL, NULL);
+
+        if (pathsz < pathlen) {
+            (void) WideCharToMultiByte(CP_UTF8, 0, wpath, (int)wpathsz, path, pathlen, NULL, NULL);
+            path[pathsz] = 0;
+
+        } else {
+            ret = E_OUTOFMEMORY;
+        }
+    }
+    return ret;
 }
 
 
@@ -225,9 +305,9 @@ set_busybox(void)
     const char *busybox = NULL;
     char buffer[MAX_PATH] = {0};
 
-    if (NULL != (busybox = getenv("MC_BUSYBOX")) && *busybox) {
-        char *t_busybox = strdup(busybox);  // import external version.
-        if ('"' == t_busybox[0]) { // remove quotes; optional.
+    if (NULL != (busybox = ugetenv("MC_BUSYBOX")) && *busybox) {
+        char *t_busybox = strdup(busybox);      // import external version.
+        if ('"' == t_busybox[0]) {              // remove quotes; optional.
             size_t len = strlen(t_busybox);
             if ('"' == t_busybox[len-1]) {
                 memmove(t_busybox, t_busybox + 1, --len);
@@ -272,25 +352,28 @@ set_tmpdir(void)
 {
     const char *tmpdir = NULL;
 
-    if (NULL != (tmpdir = getenv("MC_TMPDIR")) && *tmpdir)  {
-        return;
+    if (NULL != (tmpdir = ugetenv("MC_TMPDIR"))) {
+        if (tmpdir[0] &&                        // 4.8.27, verify either "/" or "X:/"
+                (IS_PATH_SEP(tmpdir[0]) || (':' == tmpdir[1] && !IS_PATH_SEP(tmpdir[2])))) {
+            return;
+        }
     }
 
-    tmpdir = mc_TMPDIR();
-    if (tmpdir && *tmpdir) {
+    if (NULL != (tmpdir = mc_TMPDIR()) && tmpdir[0]) {
         char buffer[MAX_PATH] = {0};
         struct passwd *pwd;
         struct stat st = {0};
 
-        pwd = getpwuid (getuid ());             /* check permissions */
+        pwd = getpwuid (getuid ());             // check permissions
         snprintf (buffer, sizeof (buffer), "%s%cmc-%s", tmpdir, PATH_SEP, pwd->pw_name);
         buffer[sizeof(buffer) - 1] = 0;
         canonicalize_pathname (buffer);
+
         if (0 == w32_lstat(buffer, &st)) {
             if (! S_ISDIR(st.st_mode)) {
                 tmpdir = NULL;
             }
-        } else if (0 != w32_mkdir (buffer, S_IRWXU)) {
+        } else if (0 != w32_mkdir(buffer, S_IRWXU)) {
             tmpdir = NULL;
         }
 
@@ -310,25 +393,39 @@ mc_TMPDIR(void)
         char sysdir[MAX_PATH] = {0};
         const char *tmpdir;
 
-        if (NULL != (tmpdir = getenv("MC_TMPDIR"))) { // 4.8.27
-            if (!*tmpdir || // verify either "/" or "X:/"
-                    !(IS_PATH_SEP(tmpdir[0]) || (':' == tmpdir[1] && !IS_PATH_SEP(tmpdir[2])))) {
-                tmpdir = NULL;
+        // explicit
+        tmpdir = ugetenv("MC_TMPDIR");          // 4.8.27
+
+        // accessible temp directory
+        if (!tmpdir) tmpdir = ugetdir("TMP");
+        if (!tmpdir) tmpdir = ugetdir("TEMP");
+        if (!tmpdir) tmpdir = ugetdir("TMPDIR");
+
+        if (!tmpdir) {
+            if (NULL != (tmpdir = ugetenv("USERPROFILE"))) {
+                //
+                //  "%USERPROFILE%\AppData\Local\Temp": see #97
+                //
+                _snprintf(x_buffer, sizeof(x_buffer), "%s\\AppData\\Local\\Temp", tmpdir);
+                x_buffer[sizeof(x_buffer) - 1] = 0;
+                if (0 == w32_access(x_buffer, 0)) {
+                    tmpdir = x_buffer;
+                }
             }
         }
-        if (!tmpdir) tmpdir = getenv("TMP");    /* determine the temp directory */
-        if (!tmpdir) tmpdir = getenv("TEMP");
-        if (!tmpdir) tmpdir = getenv("TMPDIR");
-        if (!tmpdir) {
+
+        if (!tmpdir) {                          // system default
             if (w32_getsysdir (SYSDIR_TEMP, sysdir, sizeof(sysdir)) > 0) {
                 tmpdir = sysdir;
             }
         }
-        if (!tmpdir) tmpdir = getenv("USERPROFILE");
+
         if (!tmpdir) tmpdir = TMPDIR_DEFAULT;
 
-        strncpy(x_buffer, tmpdir, sizeof(x_buffer));
-        x_buffer[sizeof(x_buffer) - 1] = 0;
+        if (tmpdir != x_buffer) {               // cache
+            strncpy(x_buffer, tmpdir, sizeof(x_buffer));
+            x_buffer[sizeof(x_buffer) - 1] = 0;
+        }
         unixpath(x_buffer);
     }
 
@@ -358,7 +455,7 @@ mc_aspell_dllpath(void)
     if ((len = w32_getexedir(x_buffer, sizeof(x_buffer))) > 0) {
         _snprintf(x_buffer + len, sizeof(x_buffer) - len, "\\%s.dll", ASPELL_DLLNAME);
         x_buffer[sizeof(x_buffer) - 1] = 0;
-        if (0 == _access(x_buffer, 0)) {
+        if (0 == w32_access(x_buffer, 0)) {
             x_buffer[len] = 0; //exclude delimiter
             return x_buffer;
         }
@@ -372,7 +469,7 @@ mc_aspell_dllpath(void)
             if (0 == x_buffer[dwSize]) --dwSize;
             _snprintf(x_buffer + dwSize, sizeof(x_buffer) - dwSize, "\\%s.dll", ASPELL_DLLNAME);
             x_buffer[sizeof(x_buffer) - 1] = 0;
-            if (0 == _access(x_buffer, 0)) {
+            if (0 == w32_access(x_buffer, 0)) {
                 x_buffer[dwSize] = 0; //exclude delimiter
                 return x_buffer;
             }
@@ -457,18 +554,18 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
     if ((len = w32_getexedir(buffer, buflen)) > 0) {
         _snprintf(buffer + len, buflen - len, "/%s/", subdir);
         buffer[buflen - 1] = 0;
-        if (0 == _access(buffer, 0)) {
+        if (0 == w32_access(buffer, 0)) {
             done = TRUE;
         }
     }
 
     // <INSTALLPATH>
     if (! done) {
-        if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer))) {
+        if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer, buflen))) {
             len = strlen(buffer);
             _snprintf(buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
             buffer[buflen - 1] = 0;
-            if (0 == _access(buffer, 0)) {
+            if (0 == w32_access(buffer, 0)) {
                 done = TRUE;
             }
         }
@@ -476,11 +573,11 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
 
     // <APPDATA>
     if (! done)  {
-        if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, buffer))) {
+        if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_COMMON_APPDATA, NULL, 0, buffer, buflen))) {
             len = strlen(buffer);
             _snprintf(buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
             buffer[buflen - 1] = 0;
-            if (0 == _access(buffer, 0)) {
+            if (0 == w32_access(buffer, 0)) {
                 done = TRUE;
             }
         }
@@ -490,11 +587,11 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
     if (! done) {
         const char *env;
 
-        if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer))) {
+        if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer, buflen))) {
             len = strlen(buffer);
             _snprintf(buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
 
-        } else if (NULL != (env = getenv("ProgramFiles"))) {
+        } else if (NULL != (env = ugetenv("ProgramFiles"))) {
             _snprintf(buffer, buflen, "%s/%s/%s/", env, MC_APPLICATION_DIR, subdir);
 
         } else {
@@ -669,10 +766,10 @@ mc_USERCONFIGDIR(const char *subdir)
 #if defined(MC_HOMEDIR_XDG)
         /* <XDG_CONFIG_HOME>/mc */
         if (NULL != (env = getenv("XDG_CONFIG_HOME")) && *env) {
-            if (0 == _access(env, 0)) {
+            if (0 == w32_access(env, 0)) {
                 _snprintf(x_buffer, sizeof(x_buffer), "%s/mc", env);
                 mkdir(x_buffer, S_IRWXU);       /* auto create */
-                if (0 == _access(x_buffer, 0)) {
+                if (0 == w32_access(x_buffer, 0)) {
                     done = TRUE;
                 }
             }
@@ -680,12 +777,12 @@ mc_USERCONFIGDIR(const char *subdir)
 
         /* <HOME>/.config/mc */
         if (!done) { //
-            if (NULL != (env = getenv("HOME")) && *env) {
+            if (NULL != (env = ugetenv("HOME")) && *env) {
                 _snprintf(x_buffer, sizeof(x_buffer), "%s/.config", env);
-                if (0 == _access(x_buffer, 0)) {
+                if (0 == w32__access(x_buffer, 0)) {
                     _snprintf(x_buffer, sizeof(x_buffer), "%s/.config/mc", env);
                     mkdir(x_buffer, S_IRWXU);   /* auto create */
-                    if (0 == _access(x_buffer, 0)) {
+                    if (0 == w32_access(x_buffer, 0)) {
                         done = TRUE;
                     }
                 }
@@ -695,12 +792,12 @@ mc_USERCONFIGDIR(const char *subdir)
 
         // <PERSONAL>
         if (!done) {
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, x_buffer)) &&
+            if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_APPDATA, NULL, 0, x_buffer, sizeof(x_buffer))) &&
                                 (len = strlen(x_buffer)) > 0) {
                                                 /* personal settings */
                 _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
                 x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
+                if (0 == w32_access(x_buffer, 0)) {
                     x_buffer[len+1] = 0;
                     done = TRUE;
                 }
@@ -709,11 +806,11 @@ mc_USERCONFIGDIR(const char *subdir)
 
         // <APPDATA>
         if (! done) {
-            if ((env = getenv("APPDATA")) != NULL && (len = strlen(env)) > 0) {
+            if ((env = ugetenv("APPDATA")) != NULL && (len = strlen(env)) > 0) {
                                                 /* personal settings */
                 _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
                 x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
+                if (0 == w32_access(x_buffer, 0)) {
                     x_buffer[len+1] = 0;
                     done = TRUE;
                 }
@@ -722,11 +819,11 @@ mc_USERCONFIGDIR(const char *subdir)
 
         // <HOME> --- XXX, consider as first option.
         if (! done) {
-            if ((env = getenv("HOME")) != NULL && (len = strlen(env)) > 0) {
+            if ((env = ugetenv("HOME")) != NULL && (len = strlen(env)) > 0) {
                                                 /* personal settings, new */
                 _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
                 x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == _access(x_buffer, 0)) {
+                if (0 == w32_access(x_buffer, 0)) {
                     x_buffer[len+1] = 0;
                     done = TRUE;
                 }
@@ -736,12 +833,12 @@ mc_USERCONFIGDIR(const char *subdir)
         // new user, create
         if (! done) {
                                                 /* personal settings */
-            if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, x_buffer)) &&
+            if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_APPDATA, NULL, 0, x_buffer, sizeof(x_buffer))) &&
                                 (len = strlen(x_buffer)) > 0) {
                 _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
                 done = TRUE;
                                                 /* old school configuration */
-            } else if ((env = getenv("HOME")) != NULL && (len = strlen(env)) > 0) {
+            } else if ((env = ugetenv("HOME")) != NULL && (len = strlen(env)) > 0) {
                 _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
                 done = TRUE;
                                                 /* full back, current working directory */
@@ -756,7 +853,7 @@ mc_USERCONFIGDIR(const char *subdir)
             } else {
                 x_buffer[sizeof(x_buffer) - 1] = 0;
                 mkdir(x_buffer, S_IRWXU);
-                x_buffer[len+1] = 0;            /* remove trailing subdirectory, leave seperator */
+                x_buffer[len+1] = 0;            /* remove trailing subdirectory, leave separator */
             }
         }
 
@@ -764,12 +861,12 @@ mc_USERCONFIGDIR(const char *subdir)
     }
 
     if (subdir && *subdir) {
-        const int dirlen = strlen(x_buffer) + strlen(subdir) + 2;
+        const int dirlen = strlen(x_buffer) + strlen(subdir) + 2 /* '/' and NUL */;
         char *dir = g_malloc(dirlen);
 
         if (dir) {
             (void) _snprintf(dir, dirlen, "%s%s/", x_buffer, subdir);
-            if (-1 == _access(dir, 0)) {
+            if (-1 == w32_access(dir, 0)) {
                 w32_mkdir(dir, 0666);
             }
         }
@@ -790,7 +887,7 @@ my_setenv(const char *name, const char *value, int overwrite)
         char buf[1024];
         snprintf(buf, sizeof(buf), "%s=%s", name, value);
         buf[sizeof(buf)-1] = 0;
-        putenv(strdup(buf));
+        (void) putenv(strdup(buf));
 #endif
     }
 }
@@ -799,7 +896,7 @@ my_setenv(const char *name, const char *value, int overwrite)
 static void
 my_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
 {
-    char path[1204]={0}, buf[1024]={0};
+    char path[1024]={0}, buf[1024 + 80]={0};
 
     if ((1 == overwrite) || NULL == getenv(name)) {
         strncpy(path, value, sizeof(path)-1);
@@ -819,7 +916,7 @@ my_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
         } else {
             snprintf(buf, sizeof(buf)-1, "%s=%s", name, path);
         }
-        putenv(buf);
+        (void) putenv(buf);
 #endif
     }
 }
@@ -941,6 +1038,40 @@ save_stop_handler(void)
 }
 
 
+
+/** 4.8.33+
+ * Wrapper for signal() system call.
+ */
+
+sighandler_t
+my_signal (int signum, sighandler_t handler)
+{
+    return signal (signum, handler);
+}
+
+
+/** 4.8.33+
+ * Wrapper for sigaction() system call.
+ */
+
+int
+my_sigaction (int signum, const struct sigaction *act, struct sigaction *oldact)
+{
+    return sigaction (signum, (struct sigaction *)act, oldact);
+}
+
+
+/** 4.8.33+
+ * Wrapper for g_get_current_dir() library function.
+ */
+
+char *
+my_get_current_dir (void)
+{
+    return g_get_current_dir ();
+}
+
+
 /**
  * Call external programs with flags and with array of strings as parameters.
  *
@@ -949,12 +1080,13 @@ save_stop_handler(void)
  *                    Shell (or command) will be found in paths described in PATH variable
  *                    (if shell parameter doesn't begin from path delimiter)
  * @parameter argv    Array of strings (NULL-terminated) with parameters for command
- * @return 0 if successfull, -1 otherwise
+ * @return 0 if successful, -1 otherwise
  */
 
 int
 my_systemv_flags (int flags, const char *command, char *const xargv[])
 {
+    unsigned argc = 0;
     const char **argv = NULL;
     char *cmd = NULL;
     unsigned idx;
@@ -970,17 +1102,19 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
             size_t slen = 0;
             char *cursor;
 
-            for (idx = 0; xargv[idx]; ++idx) continue;
-            if (NULL == (argv = calloc(idx + 1, sizeof(void *)))) {
+            for (argc = 0; xargv[argc]; ++argc)
+                continue;
+            if (NULL == (argv = calloc(argc + 1, sizeof(const char *)))) {
                 return -1;
             }
-            for (idx = 0; NULL != (str = xargv[idx]); ++idx) {
+
+            for (idx = 0; idx < argc && NULL != (str = xargv[idx]); ++idx) {
                 if (NULL == (argv[idx] = my_unquote (str, FALSE))) {
                     goto error;
                 }
             }
 
-            for (idx = 0; NULL != (str = argv[idx]); ++idx) {
+            for (idx = 0; idx < argc && NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
                     const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
 
@@ -994,7 +1128,7 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
             }
 
             cursor = cmd;
-            for (idx = 0; NULL != (str = argv[idx]); ++idx) {
+            for (idx = 0; idx < argc && NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
                     const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
 
@@ -1015,7 +1149,7 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
 
 error:;
     if (argv) {
-        for (idx = 0; argv[idx]; ++idx) {
+        for (idx = 0; idx < argc && argv[idx]; ++idx) {
             free((void *)argv[idx]);
         }
         free ((void *)argv);
@@ -1196,7 +1330,9 @@ static int
 system_SET(int argc, const char **argv)
 {
     if (argc == 1) {
-        extern char **environ;                  /* MSVC/WATCOM */
+#if defined(_MSC_VER) || defined(__WATCOMC__)
+        extern char **environ;
+#endif
         char **env = environ;
 
         if (env) {
@@ -1797,7 +1933,7 @@ tilde_expand(const char *directory)
         if (!(*p) || (*p == PATH_SEP)) {        /* d = "~" or d = "~/" */
             passwd = getpwuid (geteuid ());
             if (passwd) home = passwd->pw_dir;
-            if (NULL == home || !*home) home = getenv("HOME");
+            if (NULL == home || !*home) home = ugetenv("HOME");
             q = (*p == PATH_SEP) ? p + 1 : "";
 
         } else {
@@ -1871,7 +2007,7 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
     int unc = FALSE;
     char *p, *s;
 
-    /* Standardise to the system seperator */
+    /* Standardise to the system separator */
     if (0 == lpath[0])
         return;                                 /* empty */
 
@@ -1901,7 +2037,7 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
         return;
 
     /* DOS'ish
-     *  o standardize seperator
+     *  o standardize separator
      *  o preserve leading drive
      */
     if (!unc)

@@ -1,7 +1,7 @@
 /*
    Editor menu definitions and initialisation
 
-   Copyright (C) 1996-2024
+   Copyright (C) 1996-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -38,18 +38,15 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
-#include <errno.h>
 #include <sys/stat.h>
 #include <stdlib.h>
 
 #include "lib/global.h"
 
-#include "lib/tty/tty.h"        /* KEY_F */
-#include "lib/tty/key.h"        /* XCTRL */
+#include "lib/tty/key.h"        /* ALT */
 #include "lib/widget.h"
 
 #include "src/setup.h"          /* drop_menus */
-#include "src/keymap.h"
 
 #include "edit-impl.h"
 #include "editwidget.h"
@@ -259,7 +256,7 @@ create_options_menu (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-edit_drop_menu_cmd (WDialog * h, int which)
+edit_drop_menu_cmd (WDialog *h, int which)
 {
     WMenuBar *menubar;
 
@@ -272,7 +269,7 @@ edit_drop_menu_cmd (WDialog * h, int which)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_init_menu (WMenuBar * menubar)
+edit_init_menu (WMenuBar *menubar)
 {
     menubar_add_menu (menubar,
                       menu_new (_("&File"), create_file_menu (), "[Internal File Editor]"));
@@ -294,7 +291,7 @@ edit_init_menu (WMenuBar * menubar)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_menu_cmd (WDialog * h)
+edit_menu_cmd (WDialog *h)
 {
     edit_drop_menu_cmd (h, -1);
 }
@@ -302,7 +299,7 @@ edit_menu_cmd (WDialog * h)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-edit_drop_hotkey_menu (WDialog * h, int key)
+edit_drop_hotkey_menu (WDialog *h, int key)
 {
     int m = 0;
     switch (key)

@@ -1,11 +1,11 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.7 2024/01/16 15:17:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.11 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
  * win32 rename() system calls.
  *
- * Copyright (c) 2020 - 2024 Adam Young.
+ * Copyright (c) 2020 - 2025, Adam Young.
  * All rights reserved.
  *
  * This file is part of the Midnight Commander.
@@ -13,7 +13,6 @@ __CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.7 2024/01/16 15:17:52 cvsu
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -46,6 +45,8 @@ __CIDENT_RCSID(gr_w32_rename_c,"$Id: w32_rename.c,v 1.7 2024/01/16 15:17:52 cvsu
 #endif
 #include <unistd.h>
 
+static BOOL FileStatA(const char* path, BY_HANDLE_FILE_INFORMATION* fi, DWORD flags);
+static BOOL FileStatW(const wchar_t *path, BY_HANDLE_FILE_INFORMATION *fi, DWORD flags);
 
 /*
 //  NAME
@@ -115,20 +116,16 @@ w32_rename(const char *ofile, const char *nfile)
 {
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
-        wchar_t wofile[WIN32_PATH_MAX], wnfile[WIN32_PATH_MAX];
+        if (ofile && nfile) {
+            wchar_t wofile[WIN32_PATH_MAX], wnfile[WIN32_PATH_MAX];
 
-        if (NULL == ofile || NULL == nfile) {
-            errno = EFAULT;
+            if (w32_utf2wc(ofile, wofile, _countof(wofile)) > 0) {
+                if (w32_utf2wc(nfile, wnfile, _countof(wnfile)) > 0) {
+                    return w32_renameW(wofile, wnfile);
+                }
+            }
             return -1;
         }
-
-        if (w32_utf2wc(ofile, wofile, _countof(wofile)) > 0) {
-            if (w32_utf2wc(nfile, wnfile, _countof(wnfile)) > 0) {
-                return w32_renameW(wofile, wnfile);
-            }
-        }
-
-        return -1;
     }
 #endif  //UTF8FILENAMES
 
@@ -139,15 +136,173 @@ w32_rename(const char *ofile, const char *nfile)
 LIBW32_API int
 w32_renameA(const char *ofile, const char *nfile)
 {
+    BY_HANDLE_FILE_INFORMATION oft = {0};
+    const char *exopath;
+    int ret = 0;
+
+    if (NULL == ofile || NULL == nfile) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (!*ofile || !*nfile) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    if (NULL != (exopath = w32_extendedpathA(ofile))) {
+        ofile = exopath;                        // abs-path to expanded
+    }
+
+    if (FileStatA(ofile, &oft, FILE_FLAG_OPEN_REPARSE_POINT) &&
+            (oft.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+        BY_HANDLE_FILE_INFORMATION t_oft;
+
+        if (! FileStatA(ofile, &t_oft, 0)) {
+            if (GetLastError() == ERROR_CANT_RESOLVE_FILENAME) {
+                // ELOOP - A loop exists in symbolic links encountered during resolution of the path argument.
+                errno = ELOOP;
+                ret = -1;
+            }
+        }
+    }
+
+    if (0 == ret) {
+        const char* exnpath;
+
+        if (NULL != (exnpath = w32_extendedpathA(nfile))) {
+            nfile = exnpath;                    // abs-path to expanded
+        }
+
 #undef rename
-    return rename(ofile, nfile);
+        ret = rename(ofile, nfile);             // MoveFileA
+
+        if (-1 == ret && errno == EACCES) {
+            if (GetLastError() == ERROR_ACCESS_DENIED) {
+                if (oft.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                    BY_HANDLE_FILE_INFORMATION nft = { 0 };
+
+                    (void) FileStatA(nfile, &nft, 0);
+                    if (oft.dwVolumeSerialNumber != nft.dwVolumeSerialNumber) {
+                        // EXDEV - The links named by new and old are on different file systems
+                        //  and the implementation does not support links between file systems.
+                        errno = EXDEV;
+                    }
+                }
+            }
+        }
+
+        free((void*)exnpath);
+    }
+
+    free((void*)exopath);
+    return ret;
 }
 
 
 LIBW32_API int
 w32_renameW(const wchar_t *ofile, const wchar_t *nfile)
 {
-    return _wrename(ofile, nfile);
+    BY_HANDLE_FILE_INFORMATION oft = {0};
+    const wchar_t *exopath;
+    int ret = 0;
+
+    if (NULL == ofile || NULL == nfile) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (!*ofile || !*nfile) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    if (NULL != (exopath = w32_extendedpathW(ofile))) {
+        ofile = exopath;                        // abs-path to expanded
+    }
+
+    if (FileStatW(ofile, &oft, FILE_FLAG_OPEN_REPARSE_POINT) &&
+            (oft.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+        BY_HANDLE_FILE_INFORMATION t_oft;
+
+        if (! FileStatW(ofile, &t_oft, 0)) {
+            if (GetLastError() == ERROR_CANT_RESOLVE_FILENAME) {
+                // ELOOP - A loop exists in symbolic links encountered during resolution of the path argument.
+                errno = ELOOP;
+                ret = -1;
+            }
+        }
+    }
+
+    if (0 == ret) {
+        const wchar_t *exnpath;
+
+        if (NULL != (exnpath = w32_extendedpathW(nfile))) {
+            nfile = exnpath;                    // abs-path to expanded
+        }
+
+#undef _wrename
+        ret = _wrename(ofile, nfile);           // MoveFileW
+
+        if (-1 == ret && errno == EACCES) {
+            if (GetLastError() == ERROR_ACCESS_DENIED) {
+                if (oft.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                    BY_HANDLE_FILE_INFORMATION nft = { 0 };
+
+                    (void) FileStatW(nfile, &nft, 0);
+                    if (oft.dwVolumeSerialNumber != nft.dwVolumeSerialNumber) {
+                        // EXDEV - The links named by new and old are on different file systems
+                        //  and the implementation does not support links between file systems.
+                        errno = EXDEV;
+                    }
+                }
+            }
+        }
+
+        free((void*)exnpath);
+    }
+
+    free((void*)exopath);
+
+    return ret;
+}
+
+
+static BOOL
+FileStatA(const char *path, BY_HANDLE_FILE_INFORMATION* fi, DWORD flags)
+{
+    const DWORD dwShareMode =
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    HANDLE handle = CreateFileA(path, 0, dwShareMode, NULL, OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | flags, NULL);
+    BOOL ret = FALSE;
+
+    if (handle != INVALID_HANDLE_VALUE) {
+        if (GetFileInformationByHandle(handle, fi)) {
+            ret = TRUE;
+        }
+        CloseHandle(handle);
+    }
+    return ret;
+}
+
+
+static BOOL
+FileStatW(const wchar_t *path, BY_HANDLE_FILE_INFORMATION *fi, DWORD flags)
+{
+    const DWORD dwShareMode =
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    HANDLE handle = CreateFileW(path, 0, dwShareMode, NULL, OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | flags, NULL);
+    BOOL ret = FALSE;
+
+    if (handle != INVALID_HANDLE_VALUE) {
+        if (GetFileInformationByHandle(handle, fi)) {
+            ret = TRUE;
+        }
+        CloseHandle(handle);
+    }
+    return ret;
 }
 
 /*end*/

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.6 2024/02/04 10:38:35 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.8 2025/03/06 16:59:46 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -7,14 +7,13 @@ __CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.6 2024/02/04 10:38:35 cvsuse
  *
  *  dlopen, dlsym, dlclose and dlerror
  *
- * Copyright (c) 1998 - 2024, Adam Young.
+ * Copyright (c) 1998 - 2025, Adam Young.
  *
  * This file is part of the Midnight Commander.
  *
  * The applications are free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, version 3.
- * or (at your option) any later version.
  *
  * Redistributions of source code must retain the above copyright
  * notice, and must be distributed with the license document above.
@@ -33,7 +32,7 @@ __CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.6 2024/02/04 10:38:35 cvsuse
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
  */
@@ -216,15 +215,17 @@ LIBW32_API void *
 dlopen(const char *file, int mode)
 {
 #if defined(UTF8FILENAMES)
-    if (file && w32_utf8filenames_state()) {
-        wchar_t *wfile = NULL;
-        void *ret = NULL;
+    if (w32_utf8filenames_state()) {
+        if (file) {
+            wchar_t *wfile = NULL;
+            void *ret = NULL;
 
-        if (NULL != (wfile = w32_utf2wca(file, NULL))) {
-            ret = dlopenW(wfile, mode);
-            free((void *)wfile);
+            if (NULL != (wfile = w32_utf2wca(file, NULL))) {
+                ret = dlopenW(wfile, mode);
+                free((void*)wfile);
+            }
+            return ret;
         }
-        return ret;
     }
 #endif  //UTF8FILENAMES
 
@@ -248,11 +249,11 @@ dlopenA(const char *file, int mode)
         ++x_dlopen;
     }
 
-    if (NULL == file) {				// global handle
+    if (NULL == file) {                         // global handle
         if (! (hm = GetModuleHandle(NULL))) {
             dlerror_lastA("global handle");
         }
-    } else {					// module specific
+    } else {                                    // module specific
         HARD_ERRORS
         const char *cursor;
         char t_file[MAX_PATH];
@@ -316,12 +317,12 @@ dlopenW(const wchar_t *file, int mode)
         ++x_dlopen;
     }
 
-    if (NULL == file) {				// global handle
+    if (NULL == file) {                         // global handle
         if (! (hm = GetModuleHandle(NULL))) {
             dlerror_lastA("global handle");
         }
 
-    } else {					// module specific
+    } else {                                    // module specific
         HARD_ERRORS
         const wchar_t *cursor;
         wchar_t t_file[MAX_PATH*2];
@@ -576,7 +577,7 @@ mod_pushW(HMODULE handle, const wchar_t *file)
     char *t_file = NULL;
 
     if (file && NULL != (t_file = w32_wc2utfa(file, NULL))) {
-        lib = mod_pushA(handle, t_file); 
+        lib = mod_pushA(handle, t_file);
         free(t_file);
     }
     return lib;
@@ -637,3 +638,4 @@ dlerror_lastW(const wchar_t *file)
 }
 
 /*end*/
+

@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2024-01-20 20:51+0100\n"
+"POT-Creation-Date: 2025-01-23 10:30+0100\n"
 "PO-Revision-Date: 2010-12-29 10:19+0000\n"
 "Last-Translator: Alexander Kilian <alexander.kilian@gmail.com>, 2022\n"
 "Language-Team: Swedish (http://app.transifex.com/mc/mc/language/sv/)\n"
@@ -565,28 +565,10 @@ msgid "Changes to file lost"
 msgstr "Ändringar i filen gick förlorade"
 
 #, c-format
-msgid "%s is not a directory\n"
-msgstr "%s är inte en katalog\n"
-
-#, c-format
-msgid "Directory %s is not owned by you\n"
-msgstr "Katalogen %s ägs inte av dig\n"
-
-#, c-format
-msgid "Cannot set correct permissions for directory %s\n"
-msgstr "Kan inte ställa in rätt rättigheter för katalogen %s\n"
-
-#, c-format
-msgid "Cannot create temporary directory %s: %s\n"
-msgstr "Kan inte skapa temporär katalog %s: %s\n"
-
-#, c-format
-msgid "Temporary files will be created in %s\n"
-msgstr "Temporära filer kommer att skapas i %s\n"
-
-#, c-format
-msgid "Temporary files will not be created\n"
-msgstr "Temporära filer kommer inte att skapas\n"
+msgid ""
+"Cannot create temporary directory %s: %s.\n"
+"Temporary files will not be created\n"
+msgstr ""
 
 msgid "Press any key to continue..."
 msgstr "Tryck valfri tangent för att fortsätta..."
@@ -809,6 +791,9 @@ msgstr "Terminalalternativ"
 msgid "Arguments parse error!"
 msgstr "Argumenttolkningsfel!"
 
+msgid "MC is built without builtin editor."
+msgstr ""
+
 msgid "No arguments given to the viewer."
 msgstr "Inga argument angavs till filvisaren"
 
@@ -969,6 +954,9 @@ msgstr ""
 msgid "Diff:"
 msgstr "Diff:"
 
+msgid "File name is empty!"
+msgstr ""
+
 #, c-format
 msgid "\"%s\" is a directory"
 msgstr "\"%s\" är en katalog"
@@ -1092,9 +1080,6 @@ msgstr "Kontrollera &POSIX-radslut"
 msgid "Edit Save Mode"
 msgstr "Editera sätt att spara"
 
-msgid "Save as"
-msgstr "Spara som"
-
 msgid "Cannot save: destination is not a regular file"
 msgstr "Kan inte spara: målfilen är inte en vanlig fil"
 
@@ -1166,14 +1151,8 @@ msgstr ""
 msgid "This function is not implemented"
 msgstr "Denna funktion är inte implementerad"
 
-msgid "Copy to clipboard"
-msgstr "Kopiera till urklipp"
-
 msgid "Unable to save to file"
 msgstr "Kan inte spara till fil"
-
-msgid "Cut to clipboard"
-msgstr "Klipp ut till urklipp"
 
 msgid "Goto line"
 msgstr "Gå till rad"
@@ -1181,14 +1160,14 @@ msgstr "Gå till rad"
 msgid "Save block"
 msgstr "Spara block"
 
+msgid "Cannot save block"
+msgstr ""
+
 msgid "Insert file"
 msgstr "Infoga fil"
 
 msgid "Cannot insert file"
 msgstr "Kan inte infoga fil"
-
-msgid "Sort block"
-msgstr "Sortera block"
 
 msgid "You must first highlight a block of text"
 msgstr "Du måste först markera ett textblock"
@@ -1198,9 +1177,6 @@ msgstr "Kör sortering"
 
 msgid "Enter sort options (see sort(1) manpage) separated by whitespace:"
 msgstr ""
-
-msgid "Sort"
-msgstr "Sortera"
 
 msgid "Cannot execute sort command"
 msgstr "Sort-kommandot kunde inte köras"
@@ -1215,11 +1191,8 @@ msgstr "Klistra in utmatning från externt kommando"
 msgid "Enter shell command(s):"
 msgstr "Ange shell-kommando(n):"
 
-msgid "External command"
-msgstr "Externt kommando"
-
-msgid "Cannot execute command"
-msgstr "Kan inte exekvera kommando"
+msgid "Cannot execute external command"
+msgstr ""
 
 msgid "mail -s <subject> -c <cc> <to>"
 msgstr "mail -s <ämne> -c <kopia> <till>"
@@ -1613,7 +1586,7 @@ msgstr ""
 "En användarvänlig texteditor\n"
 "skriven för Midnight Commander."
 
-msgid "Copyright (C) 1996-2024 the Free Software Foundation"
+msgid "Copyright (C) 1996-2025 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -2249,7 +2222,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot get flags of \"%s\"\n"
+"Cannot get ext2 attributes of \"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2625,8 +2598,8 @@ msgstr ""
 "\"%s\"\n"
 "är samma fil"
 
-msgid "Ski&p all"
-msgstr "Ho&ppa över alla"
+msgid "Ignore a&ll"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2687,6 +2660,12 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot enter into directory \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
 msgstr ""
@@ -2719,6 +2698,18 @@ msgid ""
 msgstr ""
 "Stat på källfilen \"%s\" misslyckades\n"
 "%s"
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot set ext2 attributes of target file \"%s\"\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2833,11 +2824,23 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot set ext2 attributes for target file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot stat source directory \"%s\"\n"
 "%s"
 msgstr ""
 "Stat på källkatalogen \"%s\" misslyckades\n"
 "%s"
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source directory \"%s\"\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -3822,12 +3825,11 @@ msgstr ""
 "Om du vill avbryta, tryck en gång på Escape-\n"
 "tangenten och vänta."
 
-msgid "Cannot accept this key"
-msgstr "Tangenten godtas inte"
-
 #, c-format
-msgid "You have entered \"%s\""
-msgstr "Du har matat in \"%s\""
+msgid ""
+"Cannot accept this key.\n"
+"You have entered \"%s\""
+msgstr ""
 
 #. TRANSLATORS: This label appears near learned keys.  Keep it short.
 msgid "OK"
@@ -3908,21 +3910,21 @@ msgstr ""
 "%s"
 
 #, c-format
+msgid "Warning: Cannot change to %s.\n"
+msgstr "Varning: Kan inte byta till %s.\n"
+
+#, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "Kan inte öppna namngiven tunnel %s\n"
 
 msgid "The shell is still active. Quit anyway?"
 msgstr "Skalet är fortfarande aktivt. Avsluta ändå?"
 
-#, c-format
-msgid "Warning: Cannot change to %s.\n"
-msgstr "Varning: Kan inte byta till %s.\n"
-
-msgid "With builtin Editor and Aspell support"
+msgid "With builtin editor and aspell support"
 msgstr ""
 
-msgid "With builtin Editor"
-msgstr "Med inbyggd redigerare"
+msgid "With builtin editor"
+msgstr ""
 
 msgid "With optional subshell support"
 msgstr ""
@@ -4103,6 +4105,12 @@ msgstr ""
 "%s"
 
 msgid "Inconsistent archive"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot open %s archive\n"
+"%s"
 msgstr ""
 
 #, c-format

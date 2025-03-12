@@ -91,7 +91,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "InternalName",		"mcdiff"
 
 				VALUE "Copyright",
-					"Copyright (C) 2024, Adam Young. \n"
+					"Copyright (C) 2024 - " BUILD_YEAR ", Adam Young. \n"
 					"[bsd-diff] Copyright (c) 2003, 2010 Todd C. Miller <Todd.Miller@courtesan.com>. \n"
 					"There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. \n"
 

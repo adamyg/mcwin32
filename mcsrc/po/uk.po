@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2024-01-20 20:51+0100\n"
+"POT-Creation-Date: 2025-01-23 10:30+0100\n"
 "PO-Revision-Date: 2010-12-29 10:19+0000\n"
 "Last-Translator: Rostyslav Haitkulov <info@ubilling.net.ua>, 2023\n"
 "Language-Team: Ukrainian (http://app.transifex.com/mc/mc/language/uk/)\n"
@@ -578,28 +578,10 @@ msgid "Changes to file lost"
 msgstr "Зміни у файлі втрачено"
 
 #, c-format
-msgid "%s is not a directory\n"
-msgstr "%s не є каталогом\n"
-
-#, c-format
-msgid "Directory %s is not owned by you\n"
-msgstr "Каталог %s вам не належить\n"
-
-#, c-format
-msgid "Cannot set correct permissions for directory %s\n"
-msgstr "Не вдалося встановити правильні права для каталога %s\n"
-
-#, c-format
-msgid "Cannot create temporary directory %s: %s\n"
-msgstr "Не вдалося створити тимчасовий каталог «%s»: %s\n"
-
-#, c-format
-msgid "Temporary files will be created in %s\n"
-msgstr "Тимчасові файли створюватимуться у %s\n"
-
-#, c-format
-msgid "Temporary files will not be created\n"
-msgstr "Тимчасові файли не створюватимуться\n"
+msgid ""
+"Cannot create temporary directory %s: %s.\n"
+"Temporary files will not be created\n"
+msgstr ""
 
 msgid "Press any key to continue..."
 msgstr "Щоб продовжити, натисніть будь-яку клавішу…"
@@ -820,6 +802,9 @@ msgstr "Параметри терміналу"
 msgid "Arguments parse error!"
 msgstr "Сталася помилка під час обробки аргументів."
 
+msgid "MC is built without builtin editor."
+msgstr ""
+
 msgid "No arguments given to the viewer."
 msgstr "Переглядачу не передано жодних аргументів."
 
@@ -978,6 +963,9 @@ msgstr "Midnight Commander закривається. Зберегти зміне
 msgid "Diff:"
 msgstr "Різниця:"
 
+msgid "File name is empty!"
+msgstr ""
+
 #, c-format
 msgid "\"%s\" is a directory"
 msgstr "«%s» є каталогом"
@@ -1101,9 +1089,6 @@ msgstr "Перевіряти новий рядок &POSIX"
 msgid "Edit Save Mode"
 msgstr "Редагувати режим збереження "
 
-msgid "Save as"
-msgstr "Зберегти як"
-
 msgid "Cannot save: destination is not a regular file"
 msgstr "Сталася помилка під час збереження: цільовий об’єкт не є файлом"
 
@@ -1175,14 +1160,8 @@ msgstr ""
 msgid "This function is not implemented"
 msgstr "Цю функція ще не реалізовано"
 
-msgid "Copy to clipboard"
-msgstr "Скопіювати в буфер"
-
 msgid "Unable to save to file"
 msgstr "Не вдалося зберегти у файл"
-
-msgid "Cut to clipboard"
-msgstr "Вирізати в буфер"
 
 msgid "Goto line"
 msgstr "Перейти на рядок"
@@ -1190,14 +1169,14 @@ msgstr "Перейти на рядок"
 msgid "Save block"
 msgstr "Зберегти блок"
 
+msgid "Cannot save block"
+msgstr ""
+
 msgid "Insert file"
 msgstr "Вставити файл"
 
 msgid "Cannot insert file"
 msgstr "Не вдалося вставити файл"
-
-msgid "Sort block"
-msgstr "Сортувати блок"
 
 msgid "You must first highlight a block of text"
 msgstr "Спочатку необхідно відмітити блок тексту"
@@ -1208,9 +1187,6 @@ msgstr "Виконати сортування"
 msgid "Enter sort options (see sort(1) manpage) separated by whitespace:"
 msgstr ""
 "Уведіть параметри сортування (див. man-сторінку sort(1)) розділені пробілами:"
-
-msgid "Sort"
-msgstr "Сортування"
 
 msgid "Cannot execute sort command"
 msgstr "Не вдалося виконати команду sort"
@@ -1225,11 +1201,8 @@ msgstr "Вставити вивід зовнішньої команди"
 msgid "Enter shell command(s):"
 msgstr "Введіть команди оболонки:"
 
-msgid "External command"
-msgstr "Зовнішня команда"
-
-msgid "Cannot execute command"
-msgstr "Не вдалося виконати команду"
+msgid "Cannot execute external command"
+msgstr ""
 
 msgid "mail -s <subject> -c <cc> <to>"
 msgstr "mail -s <Тема> -c <Копії> <До>"
@@ -1623,7 +1596,7 @@ msgstr ""
 "Дружній до користувача редактор тексту\n"
 "написаний для Midnight Commander."
 
-msgid "Copyright (C) 1996-2024 the Free Software Foundation"
+msgid "Copyright (C) 1996-2025 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -2259,11 +2232,9 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot get flags of \"%s\"\n"
+"Cannot get ext2 attributes of \"%s\"\n"
 "%s"
 msgstr ""
-"Не вдалося отримати прапорець \"%s\"\n"
-"%s"
 
 msgid "set &user ID on execution"
 msgstr "встановити ID &користувача на виконання"
@@ -2641,8 +2612,8 @@ msgstr ""
 "«%s»\n"
 "є одним і тим же файлом "
 
-msgid "Ski&p all"
-msgstr "П&ропустити все"
+msgid "Ignore a&ll"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2703,6 +2674,12 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot enter into directory \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot overwrite directory \"%s\"\n"
 "%s"
 msgstr ""
@@ -2733,6 +2710,18 @@ msgid ""
 msgstr ""
 "Не вдалося отримати властивості вихідного файлу «%s»\n"
 "%s"
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Cannot set ext2 attributes of target file \"%s\"\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -2847,11 +2836,23 @@ msgstr ""
 
 #, c-format
 msgid ""
+"Cannot set ext2 attributes for target file \"%s\"\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
 "Cannot stat source directory \"%s\"\n"
 "%s"
 msgstr ""
 "Не вдавдалосяться отримати властивості вихідного каталогу «%s»\n"
 "%s"
+
+#, c-format
+msgid ""
+"Cannot get ext2 attributes of source directory \"%s\"\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -3851,12 +3852,11 @@ msgstr ""
 "Якщо необхідно скасувати навчання, натисніть\n"
 "клавішу Esc і також зачекайте."
 
-msgid "Cannot accept this key"
-msgstr "Не вдалося прийняти цю клавішу"
-
 #, c-format
-msgid "You have entered \"%s\""
-msgstr "Введено «%s»"
+msgid ""
+"Cannot accept this key.\n"
+"You have entered \"%s\""
+msgstr ""
 
 #. TRANSLATORS: This label appears near learned keys.  Keep it short.
 msgid "OK"
@@ -3939,21 +3939,21 @@ msgstr ""
 "%s"
 
 #, c-format
+msgid "Warning: Cannot change to %s.\n"
+msgstr "Попередження: не вдалося змінити на %s.\n"
+
+#, c-format
 msgid "Cannot open named pipe %s\n"
 msgstr "Не вдалося відкрити іменований канал %s\n"
 
 msgid "The shell is still active. Quit anyway?"
 msgstr "Оболонка ще активна. Все одно вийти?"
 
-#, c-format
-msgid "Warning: Cannot change to %s.\n"
-msgstr "Попередження: не вдалося змінити на %s.\n"
+msgid "With builtin editor and aspell support"
+msgstr ""
 
-msgid "With builtin Editor and Aspell support"
-msgstr "Із вбудованим редактором і підтримкою Aspell"
-
-msgid "With builtin Editor"
-msgstr "Із вбудованим редактором"
+msgid "With builtin editor"
+msgstr ""
 
 msgid "With optional subshell support"
 msgstr "Із необовʼязковою підтримкою підоболонки"
@@ -4135,6 +4135,12 @@ msgstr ""
 
 msgid "Inconsistent archive"
 msgstr "Неузгоджений архів"
+
+#, c-format
+msgid ""
+"Cannot open %s archive\n"
+"%s"
+msgstr ""
 
 #, c-format
 msgid ""

@@ -19,16 +19,6 @@
 
 /*** enums ***************************************************************************************/
 
-/**
-    enum for store the search conditions check results.
-    (if search condition have BOL(^) or EOL ($) regexp checial characters).
-*/
-typedef enum
-{
-    AT_START_LINE = (1 << 0),
-    AT_END_LINE = (1 << 1)
-} edit_search_line_t;
-
 /*** structures declarations (and typedefs of structures)*****************************************/
 
 typedef struct edit_book_mark_t edit_book_mark_t;
@@ -89,8 +79,8 @@ struct WEdit
     /* search handler */
     mc_search_t *search;
     int replace_mode;
-    /* is search conditions should be started from BOL(^) or ended with EOL($) */
-    edit_search_line_t search_line_type;
+    /* whether search conditions should be started with BOL(^) or ended with EOL($) */
+    mc_search_line_t search_line_type;
 
     char *last_search_string;   /* String that have been searched */
     off_t search_start;         /* First character to start searching from */
@@ -100,7 +90,6 @@ struct WEdit
     /* display information */
     long start_display;         /* First char displayed */
     long start_col;             /* First displayed column, negative */
-    long max_column;            /* The maximum cursor position ever reached used to calc hori scroll bar */
     long curs_row;              /* row position of cursor on the screen */
     long curs_col;              /* column position on screen */
     long over_col;              /* pos after '\n' */
@@ -150,6 +139,9 @@ struct WEdit
     unsigned int redo_stack_reset:1;    /* If 1, need clear redo stack */
 
     struct stat stat1;          /* Result of mc_fstat() on the file */
+    unsigned long attrs;        /* Result of mc_fgetflags() on the file */
+    gboolean attrs_ok;          /* mc_fgetflags() == 0 */
+
     unsigned int skip_detach_prompt:1;  /* Do not prompt whether to detach a file anymore */
 
     /* syntax highlighting */

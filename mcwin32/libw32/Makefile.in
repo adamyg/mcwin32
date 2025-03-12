@@ -1,17 +1,16 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.27 2024/02/03 17:22:14 cvsuser Exp $
+# $Id: Makefile.in,v 1.29 2025/03/08 16:40:00 cvsuser Exp $
 # libwin32 makefile.
 #
 #
-# Copyright (c) 2007, 2012 - 2024 Adam Young.
+# Copyright (c) 2007, 2012 - 2025 Adam Young.
 # All rights reserved.
 #
 # This file is part of the Midnight Commander.
 #
 # The Midnight Commander is free software: you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation, either version 3 of the License,
-# or (at your option) any later version.
+# published by the Free Software Foundation, version 3.
 #
 # The Midnight Commander is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -124,6 +123,7 @@ VERSIONSPEC=	$(subst .,:,$(VERSION))
 
 CSOURCES=\
 	w32_access.c \
+	w32_basename.c \
 	w32_check.c \
 	w32_child.c \
 	w32_chmod.c \
@@ -131,11 +131,12 @@ CSOURCES=\
 	w32_close.c \
 	w32_dir.c \
 	w32_dirent.c \
-	w32_wdirent.c \
-	w32_dlfcn.c \
 	w32_direntunc.c \
+	w32_dirname.c \
+	w32_dlfcn.c \
 	w32_domainname.c \
 	w32_err.c \
+	w32_wdirent.c \
 	w32_errno.c \
 	w32_flock.c \
 	w32_fcntl.c \
@@ -193,6 +194,7 @@ CSOURCES=\
 	w32_strsep.c \
 	w32_strtoll.c \
 	w32_strtoull.c \
+	w32_sysconf.c \
 	w32_sysdir.c \
 	w32_time.c \
 	w32_timegm.c \

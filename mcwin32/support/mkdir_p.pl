@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: mkdir_p.pl,v 1.2 2020/04/28 22:59:45 cvsuser Exp $
+# $Id: mkdir_p.pl,v 1.3 2025/02/13 17:56:42 cvsuser Exp $
 # "mkdir -p" emulation for WIN32 builds.
 #
 use strict;
@@ -34,3 +34,5 @@ foreach $arg (@ARGV) {
 }
 
 #end
+
+

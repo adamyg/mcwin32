@@ -27,10 +27,6 @@
 
 #define VFS_CLASS(a) ((struct vfs_class *) (a))
 
-#if defined (ENABLE_VFS_FTP) || defined (ENABLE_VFS_FISH)
-#define ENABLE_VFS_NET 1
-#endif
-
 #define VFS_ENCODING_PREFIX "#enc:"
 
 #define O_ALL (O_CREAT | O_EXCL | O_NOCTTY | O_NDELAY | O_SYNC | O_WRONLY | O_RDWR | O_RDONLY)
@@ -98,6 +94,12 @@ typedef struct timespec mc_timesbuf_t[2];
 #else
 typedef struct utimbuf mc_timesbuf_t;
 #endif
+
+typedef struct mc_timespec
+{
+    time_t tv_sec;
+    long tv_nsec;
+} mc_timespec_t;
 
 /*** enums ***************************************************************************************/
 
@@ -218,6 +220,7 @@ struct vfs_dirent
     /* public */
     ino_t d_ino;
     char *d_name;               /* Alias of d_name_str->str */
+    size_t d_len;               /* Alias of d_name_str->len */
 };
 
 /*** global variables defined in .c file *********************************************************/
@@ -261,7 +264,7 @@ const vfs_path_t *vfs_get_raw_current_dir (void);
 void vfs_set_raw_current_dir (const vfs_path_t * vpath);
 
 gboolean vfs_current_is_local (void);
-gboolean vfs_file_is_local (const vfs_path_t * vpath);
+MC_MOCKABLE gboolean vfs_file_is_local (const vfs_path_t * vpath);
 
 char *vfs_strip_suffix_from_filename (const char *filename);
 
@@ -315,13 +318,13 @@ off_t mc_lseek (int fd, off_t offset, int whence);
 DIR *mc_opendir (const vfs_path_t * vpath);
 struct vfs_dirent *mc_readdir (DIR * dirp);
 int mc_closedir (DIR * dir);
-int mc_stat (const vfs_path_t * vpath, struct stat *buf);
+MC_MOCKABLE int mc_stat (const vfs_path_t * vpath, struct stat *buf);
 int mc_mknod (const vfs_path_t * vpath, mode_t mode, dev_t dev);
 int mc_link (const vfs_path_t * vpath1, const vfs_path_t * vpath2);
 int mc_mkdir (const vfs_path_t * vpath, mode_t mode);
 int mc_rmdir (const vfs_path_t * vpath);
 int mc_fstat (int fd, struct stat *buf);
-int mc_lstat (const vfs_path_t * vpath, struct stat *buf);
+MC_MOCKABLE int mc_lstat (const vfs_path_t * vpath, struct stat *buf);
 int mc_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2);
 int mc_rename (const vfs_path_t * vpath1, const vfs_path_t * vpath2);
 int mc_chmod (const vfs_path_t * vpath, mode_t mode);
@@ -333,9 +336,9 @@ int mc_unlink (const vfs_path_t * vpath);
 int mc_ctl (int fd, int ctlop, void *arg);
 int mc_setctl (const vfs_path_t * vpath, int ctlop, void *arg);
 int mc_open (const vfs_path_t * vpath, int flags, ...);
-vfs_path_t *mc_getlocalcopy (const vfs_path_t * pathname_vpath);
-int mc_ungetlocalcopy (const vfs_path_t * pathname_vpath, const vfs_path_t * local_vpath,
-                       gboolean has_changed);
+MC_MOCKABLE vfs_path_t *mc_getlocalcopy (const vfs_path_t * pathname_vpath);
+MC_MOCKABLE int mc_ungetlocalcopy (const vfs_path_t * pathname_vpath,
+                                   const vfs_path_t * local_vpath, gboolean has_changed);
 int mc_mkstemps (vfs_path_t ** pname_vpath, const char *prefix, const char *suffix);
 
 /* Creating temporary files safely */

@@ -1,7 +1,7 @@
 /*
    Keyboard support routines.
 
-   Copyright (C) 1994-2024
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
 
    Written by:
@@ -584,7 +584,7 @@ select_cmp_by_fd (gconstpointer a, gconstpointer b)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-add_selects (fd_set * select_set)
+add_selects (fd_set *select_set)
 {
     int top_fd = 0;
 
@@ -608,7 +608,7 @@ add_selects (fd_set * select_set)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-check_selects (fd_set * select_set)
+check_selects (fd_set *select_set)
 {
     while (disabled_channels == 0)
     {
@@ -665,10 +665,12 @@ try_channels (gboolean set_timeout)
 static key_def *
 create_sequence (const char *seq, int code, int action)
 {
-    key_def *base, *p, *attach;
+    key_def *base, *attach;
 
     for (base = attach = NULL; *seq != '\0'; seq++)
     {
+        key_def *p;
+
         p = g_new (key_def, 1);
         if (base == NULL)
             base = p;
@@ -677,11 +679,9 @@ create_sequence (const char *seq, int code, int action)
 
         p->ch = *seq;
         p->code = code;
-        p->child = p->next = NULL;
-        if (seq[1] == '\0')
-            p->action = action;
-        else
-            p->action = MCKEY_NOACTION;
+        p->child = NULL;
+        p->next = NULL;
+        p->action = seq[1] == '\0' ? action : MCKEY_NOACTION;
         attach = p;
     }
     return base;
@@ -690,7 +690,7 @@ create_sequence (const char *seq, int code, int action)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-define_sequences (const key_define_t * kd)
+define_sequences (const key_define_t *kd)
 {
     int i;
 
@@ -745,7 +745,7 @@ getch_with_delay (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-xmouse_get_event (Gpm_Event * ev, gboolean extended)
+xmouse_get_event (Gpm_Event *ev, gboolean extended)
 {
     static gint64 tv1 = 0;      /* Force first click as single */
     static int clicks = 0;
@@ -1173,7 +1173,7 @@ getch_with_timeout (unsigned int delay_us)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-learn_store_key (GString * buffer, int c)
+learn_store_key (GString *buffer, int c)
 {
     if (c == ESC_CHAR)
         g_string_append (buffer, "\\e");
@@ -1191,7 +1191,7 @@ learn_store_key (GString * buffer, int c)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-k_dispose (key_def * k)
+k_dispose (key_def *k)
 {
     if (k != NULL)
     {

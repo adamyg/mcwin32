@@ -7,91 +7,23 @@
 #ifndef MC_GLOBAL_H
 #define MC_GLOBAL_H
 
-#if defined(HAVE_STRING_H)
-#include <string.h>
-   /* An ANSI string.h and pre-ANSI memory.h might conflict */
-#elif defined(HAVE_MEMORY_H)
-#include <memory.h>
-#else
-#include <strings.h>
-    /* memory and strings.h conflict on other systems */
-#endif /* !STDC_HEADERS & !HAVE_STRING_H */
-
-#ifdef HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-
-/* for O_* macros */
-#include <fcntl.h>
-
-/* for sig_atomic_t */
-#include <signal.h>
-
-#ifdef HAVE_FUNC_ATTRIBUTE_FALLTHROUGH
-#define MC_FALLTHROUGH __attribute__((fallthrough))
-#else
-#define MC_FALLTHROUGH
-#endif
-
-/*** typedefs(not structures) and defined constants **********************************************/
-
-/* Enable WIN32 tweaks */
-#if defined(_WIN32) && !defined(WIN32)
-#define WIN32 1
-#endif
-
-/* The O_BINARY definition was taken from gettext */
-#if defined(__WATCOMC__) //WIN32/c11
-#include <fcntl.h>
-#include <inttypes.h>
-
-#elif defined(_MSC_VER)
-#if !defined O_BINARY && defined _O_BINARY
-  /* For MSC-compatible compilers.  */
-#define O_BINARY _O_BINARY
-#endif
-#endif
-#ifdef __BEOS__
-  /* BeOS 5 has O_BINARY, but is has no effect.  */
-#undef O_BINARY
-#endif
-/* On reasonable systems, binary I/O is the default.  */
-#ifndef O_BINARY
-#define O_BINARY 0
-#endif
-
-/* Replacement for O_NONBLOCK */
-#ifndef O_NONBLOCK
-#ifdef O_NDELAY                 /* SYSV */
-#define O_NONBLOCK O_NDELAY
-#else /* BSD */
-#ifdef WIN32 //WIN32/APY
-#define O_NONBLOCK 0
-#else
-#define O_NONBLOCK FNDELAY
-#endif
-#endif /* !O_NDELAY */
-#endif /* !O_NONBLOCK */
-
-#if defined(__QNX__) && !defined(__QNXNTO__)
-/* exec*() from <process.h> */
-#include <unix.h>
-#endif
-
 #include <glib.h>
+
+#if defined(HAVE_FUNC_ATTRIBUTE_WEAK) && defined(HAVE_TESTS)
+#define MC_MOCKABLE __attribute__((weak))
+#else
+#define MC_MOCKABLE
+#endif
+
 #include "glibcompat.h"
 
-/* For SMB VFS only */
-#ifndef __GNUC__
-#define __attribute__(x)
-#endif
+#include "unixcompat.h"
 
-/* Solaris9 doesn't have PRIXMAX */
-#ifndef WIN32 //WIN32, fix
-#ifndef PRIXMAX
-#define PRIXMAX PRIxMAX
-#endif
-#endif
+#include "fs.h"
+#include "shell.h"
+#include "mcconfig.h"
+
+/*** typedefs(not structures) and defined constants **********************************************/
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -112,9 +44,17 @@
 #define N_(String) (String)
 #endif /* !ENABLE_NLS */
 
-#include "fs.h"
-#include "shell.h"
-#include "mcconfig.h"
+#ifdef HAVE_FUNC_ATTRIBUTE_FALLTHROUGH
+#define MC_FALLTHROUGH __attribute__((fallthrough))
+#else
+#define MC_FALLTHROUGH
+#endif
+
+#ifdef HAVE_FUNC_ATTRIBUTE_UNUSED
+#define MC_UNUSED __attribute__((unused))
+#else
+#define MC_UNUSED
+#endif
 
 #ifdef USE_MAINTAINER_MODE
 #include "lib/logging.h"
@@ -131,40 +71,7 @@
 #define BUF_SMALL 128
 #define BUF_TINY 64
 
-/* ESC_CHAR is defined in /usr/include/langinfo.h in some systems */
-#ifdef ESC_CHAR
-#undef ESC_CHAR
-#endif
-/* AIX compiler doesn't understand '\e' */
-#define ESC_CHAR '\033'
-#define ESC_STR  "\033"
-
-/* OS specific defines */
-#define PATH_SEP '/'
-#define PATH_SEP_STR "/"
-#if defined(WIN32) //WIN32, path
-#define PATH_SEP2 '\\'
-#define PATH_SEP_STR2 "\\"
-#define IS_PATH_SEP(c) ((c) == PATH_SEP || (c) == PATH_SEP2)
-#define PATH_ENV_SEP ';'
-extern char *strrchr2(const char *s, int c1, int c2);
-extern char *strchr2(const char *s, int c1, int c2);
-#else
-#define IS_PATH_SEP(c) ((c) == PATH_SEP)
-#define PATH_ENV_SEP ':'
-#endif
-#define TMPDIR_DEFAULT "/tmp"
-#define SCRIPT_SUFFIX ""
-#define get_default_editor() "vi"
-#define OS_SORT_CASE_SENSITIVE_DEFAULT TRUE
 #define UTF8_CHAR_LEN 6
-
-/* struct stat members */
-#ifdef __APPLE__
-#define st_atim st_atimespec
-#define st_ctim st_ctimespec
-#define st_mtim st_mtimespec
-#endif
 
 /* Used to distinguish between a normal MC termination and */
 /* one caused by typing 'exit' or 'logout' in the subshell */
