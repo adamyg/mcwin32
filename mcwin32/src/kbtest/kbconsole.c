@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(btest_c,"$Id: kbconsole.c,v 1.6 2025/01/29 13:33:04 cvsuser Exp $")
+__CIDENT_RCSID(btest_c,"$Id: kbconsole.c,v 1.7 2025/03/12 17:39:21 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -44,13 +44,13 @@ void
 ConsoleClear(HANDLE console)
 {
 	COORD coord = {0,0};
-	CONSOLE_SCREEN_BUFFER_INFO csbi = {0,0};
+	CONSOLE_SCREEN_BUFFER_INFO sbi = {0,0};
 	DWORD dwConSize, cCharsWritten;
 
-	GetConsoleScreenBufferInfo(console, &csbi);
-	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+	GetConsoleScreenBufferInfo(console, &sbi);
+	dwConSize = sbi.dwSize.X * sbi.dwSize.Y;
 	FillConsoleOutputCharacterA(console, ' ', dwConSize, coord, &cCharsWritten);
-	FillConsoleOutputAttribute(console, csbi.wAttributes, dwConSize, coord, &cCharsWritten);
+	FillConsoleOutputAttribute(console, sbi.wAttributes, dwConSize, coord, &cCharsWritten);
 	SetConsoleCursorPosition(console, coord);
 }
 
@@ -62,14 +62,14 @@ ConsoleClear(HANDLE console)
 void
 ConsoleCEOS(HANDLE console)
 {
-	CONSOLE_SCREEN_BUFFER_INFO csbi = {0,0};
+	CONSOLE_SCREEN_BUFFER_INFO sbi = {0,0};
 	DWORD dwConSize, cCharsWritten;
 
-	GetConsoleScreenBufferInfo(console, &csbi);
-	dwConSize = csbi.dwSize.X - csbi.dwCursorPosition.X; // EOL
-	if (--csbi.dwCursorPosition.Y < csbi.dwSize.Y) dwConSize += (csbi.dwSize.Y - csbi.dwCursorPosition.Y) * csbi.dwSize.Y; // EOS
-	FillConsoleOutputCharacterA(console, ' ', dwConSize, csbi.dwCursorPosition, &cCharsWritten);
-	FillConsoleOutputAttribute(console, csbi.wAttributes, dwConSize, csbi.dwCursorPosition, &cCharsWritten);
+	GetConsoleScreenBufferInfo(console, &sbi);
+	dwConSize = sbi.dwSize.X - sbi.dwCursorPosition.X; // EOL
+	if (--sbi.dwCursorPosition.Y < sbi.dwSize.Y) dwConSize += (sbi.dwSize.Y - sbi.dwCursorPosition.Y) * sbi.dwSize.Y; // EOS
+	FillConsoleOutputCharacterA(console, ' ', dwConSize, sbi.dwCursorPosition, &cCharsWritten);
+	FillConsoleOutputAttribute(console, sbi.wAttributes, dwConSize, sbi.dwCursorPosition, &cCharsWritten);
 }
 
 
@@ -80,13 +80,13 @@ ConsoleCEOS(HANDLE console)
 void
 ConsoleCEOL(HANDLE console)
 {
-	CONSOLE_SCREEN_BUFFER_INFO csbi = {0,0};
+	CONSOLE_SCREEN_BUFFER_INFO sbi = {0,0};
 	DWORD dwConSize, cCharsWritten;
 
-	GetConsoleScreenBufferInfo(console, &csbi);
-	dwConSize = csbi.dwSize.X - csbi.dwCursorPosition.X;
-	FillConsoleOutputCharacterA(console, ' ', dwConSize, csbi.dwCursorPosition, &cCharsWritten);
-	FillConsoleOutputAttribute(console, csbi.wAttributes, dwConSize, csbi.dwCursorPosition, &cCharsWritten);
+	GetConsoleScreenBufferInfo(console, &sbi);
+	dwConSize = sbi.dwSize.X - sbi.dwCursorPosition.X;
+	FillConsoleOutputCharacterA(console, ' ', dwConSize, sbi.dwCursorPosition, &cCharsWritten);
+	FillConsoleOutputAttribute(console, sbi.wAttributes, dwConSize, sbi.dwCursorPosition, &cCharsWritten);
 }
 
 

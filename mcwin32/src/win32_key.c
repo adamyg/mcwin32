@@ -465,9 +465,9 @@ key_prog_mode (void)
 {
     if (hConsoleIn) {
         if ((DWORD)-1 == consoleMode) {         /* save */
-            CONSOLE_SCREEN_BUFFER_INFO sbinfo = {sizeof(CONSOLE_SCREEN_BUFFER_INFO)};
-            if (GetConsoleScreenBufferInfo(hConsoleOut, &sbinfo)) {
-                consoleAttribute = sbinfo.wAttributes;
+            CONSOLE_SCREEN_BUFFER_INFO sbi = {sizeof(CONSOLE_SCREEN_BUFFER_INFO)};
+            if (GetConsoleScreenBufferInfo(hConsoleOut, &sbi)) {
+                consoleAttribute = sbi.wAttributes;
             }
             GetConsoleMode(hConsoleOut, &consoleOutMode);
             GetConsoleMode(hConsoleIn, &consoleMode);
@@ -619,7 +619,7 @@ lookup_keycode (const long code, int *idx)
 
 
 /*
- *  Return the code associated with the symbolic name keyname
+ *  Return the code associated with the symbolic name key-name.
  */
 
 long
@@ -849,7 +849,7 @@ learn_key (void)
 
 
 /*
- *  enable keypad strings
+ *  Enable keypad strings
  */
 void
 slang_keypad (int set)
@@ -866,53 +866,80 @@ slang_keypad (int set)
  *      EV_MOUSE if it is a mouse event
  *      EV_NONE if non-blocking or interrupt set and nothing was done
  */
+
 static void
-check_winch (int check_type)
+check_size_change (int check_type)
 {
     static char ofont[80];                      /* FIXME: clear */
     static RECT orect;
 
-    if (0 == mc_global.tty.winch_flag) {
-        HANDLE hConsole;
-        CONSOLE_SCREEN_BUFFER_INFO sbinfo = {0};
-        int  rows, cols, nfont = -1, resize = 0;
-        char font[sizeof(ofont)];
-        RECT rect;
+    HANDLE hConsole;
+    CONSOLE_SCREEN_BUFFER_INFO sbi = { 0 };
+    int  rows, cols, nfont = -1, resize = 0;
+    char font[sizeof(ofont)];
+    RECT rect;
 
-        font[0] = 0;
-        win32API_CALL_HANDLE(hConsole, GetStdHandle(STD_OUTPUT_HANDLE));
-        win32API_CALL(GetConsoleScreenBufferInfo(hConsole, &sbinfo));
-        rows = 1 + sbinfo.srWindow.Bottom - sbinfo.srWindow.Top;
-        cols = 1 + sbinfo.srWindow.Right  - sbinfo.srWindow.Left;
+    font[0] = 0;
+    win32API_HCALL(hConsole, GetStdHandle(STD_OUTPUT_HANDLE));
+    win32API_CALL(GetConsoleScreenBufferInfo(hConsole, &sbi));
 
-        if (rows < VIO_MINROWS) rows = VIO_MINROWS;
-        if (cols < VIO_MINCOLS) cols = VIO_MINCOLS;
+    cols = (sbi.srWindow.Right - sbi.srWindow.Left) + 1;
+    rows = (sbi.srWindow.Bottom - sbi.srWindow.Top) + 1;
 
-        if (COLS != cols || LINES != rows) {    /* size change */
-            resize = 1;
+    if (cols > 2000) {
+        // extreme width, attempt to restore previous
+        SMALL_RECT nrect = sbi.srWindow;
 
-        } else if (2 == check_type) {           /* check for a possible font change */
-            SLtt_get_font(font, sizeof(font));
-            nfont = (ofont[0] && (0 != memcmp(font, ofont, sizeof(ofont))));
-            win32API_CALL(GetWindowRect(GetConsoleWindow(), &rect));
-            if ((orect.right - orect.left) != (rect.right - rect.left) ||
-                    (orect.bottom - orect.top) != (rect.bottom - rect.top)) {
-                if (orect.bottom) {
-                    nfont = 1;
-                }
-            }
-        }
+        nrect.Right = nrect.Left + COLS;
+        nrect.Bottom = nrect.Top + LINES;
 
-        if (resize || 1 == nfont) {             /* change; cache current */
-            ++mc_global.tty.winch_flag;
-            if (-1 == nfont) {
-                SLtt_get_font(font, sizeof(font));
-                win32API_CALL(GetWindowRect(GetConsoleWindow(), &rect));
-            }
-            (void) memcpy(ofont, font, sizeof(ofont));
-            orect = rect;
+        fputs("Warning: an unusual winch detected, resizing\n", stdout);
+        if (SetConsoleWindowInfo(hConsole, TRUE, &nrect)) {
+            return;
         }
     }
+
+    if (cols < VIO_MINCOLS) cols = VIO_MINCOLS;
+    if (cols > VIO_MAXCOLS) cols = VIO_MAXCOLS;
+    if (rows < VIO_MINROWS) rows = VIO_MINROWS;
+    if (rows > VIO_MAXROWS) rows = VIO_MAXROWS;
+
+    if (COLS != cols || LINES != rows) {        /* size change */
+        resize = 1;
+
+    } else if (2 == check_type) {               /* check for a possible font change */
+
+        SLtt_get_font(font, sizeof(font));
+        nfont = (ofont[0] && (0 != memcmp(font, ofont, sizeof(ofont))));
+
+        win32API_CALL(GetWindowRect(GetConsoleWindow(), &rect));
+        if ((orect.right - orect.left) != (rect.right - rect.left) ||
+                (orect.bottom - orect.top) != (rect.bottom - rect.top)) {
+            if (orect.bottom) {
+                nfont = 1;
+            }
+        }
+    }
+
+    if (resize || 1 == nfont) {                 /* change; cache current */
+        ++mc_global.tty.winch_flag;
+
+        if (-1 == nfont) {
+            SLtt_get_font(font, sizeof(font));
+            win32API_CALL(GetWindowRect(GetConsoleWindow(), &rect));
+        }
+
+        (void)memcpy(ofont, font, sizeof(ofont));
+        orect = rect;
+    }
+}
+
+static void
+check_winch (int check_type)
+{
+    if (0 == mc_global.tty.winch_flag) {
+        check_size_change (check_type);
+    }  
 }
 
 
@@ -935,7 +962,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
     static int clicks = 0;
     static int dirty = 3; 
 
-    if (*utf8_cursor) {                         /* unicode pending */
+    if (*utf8_cursor) {                         /* Unicode pending */
         return *utf8_cursor++;
     }
 
@@ -1020,7 +1047,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                         c = EV_VOID;            // consume
                     }
 
-                    if (unicode) {              // unicode to utf-8
+                    if (unicode) {              // Unicode to utf-8
                         assert(0 == *utf8_cursor);
                         g_unichar_to_utf8(unicode, (gchar *)utf8_buffer);
                         utf8_cursor = utf8_buffer;
@@ -1161,7 +1188,8 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
 
 
 /*
- *  retrieve the next character code including any modiferes, unicode keycode are converted to their utf-8 representation.
+ *  Retrieve the next character code including any modifier's, 
+ *  Unicode key-code are converted to their utf-8 representation.
  */
 static int
 key_next(int no_delay, unsigned *unicode)
@@ -1574,7 +1602,7 @@ is_idle (void)
             if (mc_args__nomouse ||
                     (0 == k.Event.MouseEvent.dwButtonState && MOUSE_MOVED == k.Event.MouseEvent.dwEventFlags)) {
                 //
-                //  nomouse or mouse-move only, consume
+                //  no-mouse or mouse-move only, consume
                 //
                 (void) ReadConsoleInput(hConsoleIn, &k, 1, &count);
                 continue;
@@ -1585,9 +1613,9 @@ is_idle (void)
     return TRUE;
 }
 
-
+                                             
 /*
- *  set keypad to numeric or application mode. Only in application keypad mode
+ *  Set keypad to numeric or application mode. Only in application keypad mode
  *  it's possible to distinguish the '+' key and the '+' on the keypad
  *  ('*' and '-' ditto).
  */

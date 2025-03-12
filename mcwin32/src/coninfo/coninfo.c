@@ -154,11 +154,13 @@ isoption(const char *argv, const char *option)
 int
 main(int argc, char *argv[])
 {
-        CONSOLE_SCREEN_BUFFER_INFOEX csbi = {0};
+        HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_SCREEN_BUFFER_INFOEX sbi = {0};
         wchar_t iso639[16] = {0}, iso3166[16] = {0},
             countryname[256], abbrevcountryname[10] = {0},
             displayname[256] = {0};
         LCID lcid, setlcid = 0;
+        COORD lbws;
 
         if (argc == 2) {
                 const char *option = argv[1], *val;
@@ -203,38 +205,42 @@ main(int argc, char *argv[])
                return EXIT_FAILURE;
         }
 
-        csbi.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
-        GetConsoleScreenBufferInfoEx(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-        OutputA("SIZE:        %u/%u\n", (unsigned)csbi.dwSize.X, (unsigned)csbi.dwSize.Y);
-        OutputA("MAX:         %u/%u\n", (unsigned)csbi.dwMaximumWindowSize.X, (unsigned)csbi.dwMaximumWindowSize.Y);
-        OutputA("WIN:         %u/%u to %u/%u\n",
-            (unsigned)csbi.srWindow.Left, (unsigned)csbi.srWindow.Top, (unsigned)csbi.srWindow.Right, (unsigned)csbi.srWindow.Bottom);
-        OutputA("FULL:        %s\n", csbi.wPopupAttributes ? "yes" : "no");
+        sbi.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
+        GetConsoleScreenBufferInfoEx(console, &sbi);
+        lbws = GetLargestConsoleWindowSize(console);
+
+        OutputA("SIZE:     %u/%u\n", (unsigned)sbi.dwSize.X, (unsigned)sbi.dwSize.Y);
+        OutputA("MAX:      %u/%u\n", (unsigned)sbi.dwMaximumWindowSize.X, (unsigned)sbi.dwMaximumWindowSize.Y);
+        OutputA("WIN:      %u/%u to %u/%u\n",
+            (unsigned)sbi.srWindow.Left, (unsigned)sbi.srWindow.Top, (unsigned)sbi.srWindow.Right, (unsigned)sbi.srWindow.Bottom);
+        OutputA("FULL:     %s\n", sbi.wPopupAttributes ? "yes" : "no");
+        OutputA("CON:      %u/%u\n", (unsigned)lbws.X, (unsigned)lbws.Y);
         OutputA("\n");
 
         ////////////////////////////
 
         lcid = GetSystemDefaultLCID();
-        OutputA("LCID: system %u/0x%x\n", lcid, lcid);
+        OutputA("LCID: system   %u/0x%x\n", lcid, lcid);
         lcid = GetUserDefaultLCID();
-        OutputA("LCID: user   %u/0x%x\n", lcid, lcid);
+        OutputA("LCID: user     %u/0x%x\n", lcid, lcid);
 
         lcid = GetThreadLocale();
-        OutputA("LCID: thread %u/0x%x\n", lcid, lcid);
+        OutputA("LCID: thread   %u/0x%x\n", lcid, lcid);
 
         if (GetLocaleInfoW(lcid, LOCALE_SISO639LANGNAME, iso639, _countof(iso639)) &&
-                GetLocaleInfoW(lcid, LOCALE_SISO3166CTRYNAME, iso3166, _countof(iso3166))) {
+                    GetLocaleInfoW(lcid, LOCALE_SISO3166CTRYNAME, iso3166, _countof(iso3166))) {
                 GetLocaleInfoW(lcid, LOCALE_SLOCALIZEDCOUNTRYNAME, countryname, _countof(countryname));
                 GetLocaleInfoW(lcid, LOCALE_SABBREVCTRYNAME, abbrevcountryname, _countof(abbrevcountryname));
                 GetLocaleInfoW(lcid, LOCALE_SLOCALIZEDDISPLAYNAME, displayname, _countof(displayname));
-                OutputW(L"LCID: name   %s_%s (%s - %s) <%s>\n",
+                OutputW(L"LCID: name %s_%s (%s - %s) <%s>\n",
                     iso639, iso3166, countryname, abbrevcountryname, displayname); // "9_9 (countryname - abbrevcountryname) <displayname>"
         }
+        OutputA("\n");
 
-        OutputA("OEMCP:       %u/0x%x\n", GetOEMCP(), GetOEMCP());
-        OutputA("ACP:         %u/0x%x\n", GetACP(), GetACP());
-        OutputA("ICP:         %u/0x%x\n", GetConsoleCP(), GetConsoleCP());
-        OutputA("OCP:         %u/0x%x\n", GetConsoleOutputCP(), GetConsoleOutputCP());
+        OutputA("OEMCP:    %u/0x%x\n", GetOEMCP(), GetOEMCP());
+        OutputA("ACP:      %u/0x%x\n", GetACP(), GetACP());
+        OutputA("ICP:      %u/0x%x\n", GetConsoleCP(), GetConsoleCP());
+        OutputA("OCP:      %u/0x%x\n", GetConsoleOutputCP(), GetConsoleOutputCP());
         OutputA("\n");
 
         ////////////////////////////

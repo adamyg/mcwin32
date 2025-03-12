@@ -1,7 +1,7 @@
 #ifndef LIBW32_DIRENT_H_INCLUDED
 #define LIBW32_DIRENT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.20 2025/03/06 16:59:45 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.22 2025/03/12 16:08:09 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -77,6 +77,12 @@ struct dirent {
 #define _DIRENT_HAVE_D_TYPE                     /* BSD extension */
 #endif
 
+#ifndef _GENERIC_DIRSIZ
+#define _GENERIC_DIRLEN(__namlen) \
+            ((offsetof(struct dirent, d_name) + ((__namlen) * sizeof(char)) + 1 + 7) & ~7)
+#define _GENERIC_DIRSIZ(dp) _GENERIC_DIRLEN((dp)->d_namlen)
+#endif
+
 #if defined(_POSIX_SOURCE) && !defined(_DIRENT_SOURCE)
     time_t              d_reserved1;
     time_t              d_reserved2;
@@ -109,6 +115,13 @@ struct _wdirent {
     unsigned long       d_fileno;               /* File number directory */
     unsigned short      d_reclen;               /* Length of this record, in bytes */
     unsigned short      d_namlen;               /* Length of string in d_name, excluding terminating null; in characters. */
+    
+#ifndef _GENERIC_WDIRSIZ
+#define _GENERIC_WDIRLEN(__namlen) \
+            ((offsetof(struct dirent, d_name) + ((__namlen) * sizeof(wchar_t)) + 1 + 7) & ~7)
+#define _GENERIC_WDIRSIZ(dp) _GENERIC_WDIRLEN((dp)->d_namlen)
+#endif    
+    
 #if defined(_POSIX_SOURCE) && !defined(_DIRENT_SOURCE)
     time_t              d_reserved1;
     time_t              d_reserved2;
@@ -229,12 +242,12 @@ LIBW32_API void         _wseekdir __P((_WDIR *, long));
 LIBW32_API long         _wtelldir __P((_WDIR *));
 LIBW32_API int          _wreaddir_r __P((_WDIR *, struct _wdirent *, struct _wdirent **)); /*deprecated*/
 
-//LIBW32_API int          alphasort __P((const void *, const void *));
-//LIBW32_API int          scandir __P((void));
-//LIBW32_API int          getdirentries __P((int, char *, int, long *));
+LIBW32_API int          alphasort __P((const struct dirent **, const struct dirent **));
+LIBW32_API int          scandir __P((const char *, struct dirent ***,
+                            int (*sel)(const struct dirent *), int (*compar)(const struct dirent **, const struct dirent **)));
+
 #endif  /*_POSIX_SOURCE*/
 
 __END_DECLS
 
 #endif /*LIBW32_DIRENT_H_INCLUDED*/
-
