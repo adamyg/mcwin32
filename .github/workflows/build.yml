@@ -85,7 +85,7 @@ jobs:
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gettext-tools
 
     - name: Generate
-      if: startsWith(matrix.config.name, 'Windows Latest')
+      if: startsWith(matrix.config.name, 'Windows')
       shell: cmd
       run: |
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
@@ -99,7 +99,7 @@ jobs:
         c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=%BUSYBOX% --verbose "${{ matrix.config.toolchain }}"
 
     - name: Compile
-      if: startsWith(matrix.config.name, 'Windows Latest')
+      if: startsWith(matrix.config.name, 'Windows')
       shell: cmd
       run: |
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
@@ -120,6 +120,7 @@ jobs:
         path: mcwin32/bin.${{ matrix.config.toolversion }}/release/*
 
     - name: Installer
+      if: startsWith(matrix.config.name, 'Windows')
       shell: cmd
       run: |
         @set PERL=c:/Strawberry/perl/bin/perl
@@ -129,6 +130,7 @@ jobs:
         "%programfiles(x86)%\Inno Setup 5\ISCC" -DBUILD_INFO=1 -DBUILD_TYPE=release ".\releases\mc-inno-setup.iss"
 
     - name: Release artifacts
+      if: startsWith(matrix.config.name, 'Windows')
       uses: softprops/action-gh-release@v1
       with:
         files: ./mcwin32/releases/mcwin32-build*-setup.exe
