@@ -2927,7 +2927,6 @@ LIBVIO_API void
 vio_restore(void)
 {
     HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
-    CONSOLE_SCREEN_BUFFER_INFO sbi = {0};
     COORD iHome = {0,0};
     CHAR_INFO * nimage;
     int rows = 0, cols = 0;

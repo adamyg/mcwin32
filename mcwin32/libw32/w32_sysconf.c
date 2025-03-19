@@ -176,7 +176,6 @@ GetProcessorInfo(struct ProcessorInfo *pi)
 {
     SYSTEM_LOGICAL_PROCESSOR_INFORMATION *slpi = NULL;
     DWORD len = 0;
-    int count = 0;
 
     while (! GetLogicalProcessorInformation(slpi, &len)) {
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
@@ -216,6 +215,8 @@ GetProcessorInfo(struct ProcessorInfo *pi)
                 break;
             case RelationProcessorPackage:
                 pi->processorPackageCount++;
+                break;
+            default:
                 break;
             }
             offset += sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION);
@@ -315,6 +316,10 @@ sysinfo(struct sysinfo *info)
 
     memset(info, 0, sizeof(*info));             // zero unsupported fields
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
     {   SYSTEM_TIMEOFDAY_INFORMATION sti = {0};
         HMODULE ntdll = GetModuleHandleA("ntdll");
         NtQuerySystemInformation_t fNtQuerySystemInformation =
@@ -329,6 +334,9 @@ sysinfo(struct sysinfo *info)
         }
         info->uptime = uptime;
     }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
 
     ms.dwLength = sizeof(ms);
     if (! GlobalMemoryStatusEx(&ms)) {

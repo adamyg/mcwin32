@@ -270,7 +270,7 @@ truncateA(const char *path, off_t length)
             CloseHandle(handle);
         }
     }
-    return 0;
+    return ret;
 }
 
 
@@ -294,7 +294,7 @@ truncate64A(const char *path, _off64_t length)
             CloseHandle(handle);
         }
     }
-    return 0;
+    return ret;
 }
 
 

@@ -96,7 +96,7 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="mingw64" set BUSYBOX=./support/busybox64
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
-        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=%BUSYBOX% --verbose "${{ matrix.config.toolchain }}"
+        c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=%BUSYBOX% "${{ matrix.config.toolchain }}"
 
     - name: Compile
       if: startsWith(matrix.config.name, 'Windows')
