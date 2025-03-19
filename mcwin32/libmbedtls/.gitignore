@@ -1,10 +1,10 @@
-*2.27.0*
-*2_27_0*
-*3.3.*
-*3.4.*
 mbedtls-2.*/
 mbedtls-3.*/
 ref/
+*2.27.0*
+*2_27_0*
+*3.*
+*3_*
 .unpacked.*
 Makefile.in.*
 Makefile

@@ -16,7 +16,6 @@ Makefile
 buildinfo.h
 packageinfo.h
 busyboxcmds.h
-BUILDNUMBER
 owcsetup.dbg
 testaccounts.txt
 .created
