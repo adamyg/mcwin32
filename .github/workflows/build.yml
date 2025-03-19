@@ -32,6 +32,12 @@ jobs:
            toolchain: owc20,
            toolversion: owc20
           }
+        - {
+           name: "Windows Legacy OWC",
+           os: windows-latest,
+           toolchain: owc19,
+           toolversion: owc19
+          }
 
     steps:
 
@@ -66,8 +72,15 @@ jobs:
         version: "2.0"
         location: "C:\\Watcom"
 
+    - name: OpenWatcom legacy setup
+      uses: open-watcom/setup-watcom@v0
+      if: startsWith(matrix.config.name, 'Windows Legacy OWC')
+      with:
+        version: "1.9"
+        location: "C:\\Watcom"
+
     - name: Windows extra
-      if: startsWith(matrix.config.name, 'Windows Latest MSVC') || startsWith(matrix.config.name, 'Windows Latest OWC')
+      if: contains(matrix.config.name, 'MSVC') || contains(matrix.config.name, 'OWC')
       run: |
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gettext-tools
 
@@ -78,6 +91,7 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="mingw32" set PATH=c:\msys64\mingw32\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="owc20"   call .\mcwin32\support\owc20setenv.bat C:\Watcom
+        @if "${{ matrix.config.toolchain }}"=="owc19"   call .\mcwin32\support\owc19setenv.bat C:\Watcom
         @set BUSYBOX=./support/busybox
         @if "${{ matrix.config.toolchain }}"=="mingw64" set BUSYBOX=./support/busybox64
         @set PERL=c:/Strawberry/perl/bin/perl
@@ -92,6 +106,8 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="mingw64" set PATH=c:\msys64\mingw64\bin;%PATH%
         @if "${{ matrix.config.toolchain }}"=="owc20"   call .\mcwin32\support\owc20setenv.bat C:\Watcom
         @if "${{ matrix.config.toolchain }}"=="owc20"   set PATH=%PATH%;c:\msys64\mingw64\bin
+        @if "${{ matrix.config.toolchain }}"=="owc19"   call .\mcwin32\support\owc19setenv.bat C:\Watcom
+        @if "${{ matrix.config.toolchain }}"=="owc19"   set PATH=%PATH%;c:\msys64\mingw64\bin
         @if "${{ matrix.config.toolchain }}"=="vc2022"  set PATH=%PATH%;c:\msys64\mingw64\bin
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32

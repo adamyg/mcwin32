@@ -1,9 +1,9 @@
 @echo off
 echo Open Watcom 2.0 Build Environment
+if not "%1" == "" SET OWC20=%1
 if not defined OWC20 (
         SET OWC20=d:\tools\WC20
 )
-if NOT "%1" == "" SET OWC20=%1
 PATH %OWC20%\BINNT64;%OWC20%\BINNT;%PATH%
 SET  INCLUDE=%OWC20%\H;%OWC20%\H\NT;%OWC20%\H\NT\DIRECTX;%OWC20%\H\NT\DDK;%INCLUDE%
 SET  WATCOM=%OWC20%
