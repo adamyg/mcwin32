@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.23 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.24 2025/03/20 17:23:54 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -379,6 +379,7 @@ initialise_user()
                 DWORD ulen = _countof(wlogin), dlen = _countof(wdomain);
 
                 if (LookupAccountSidW(NULL, tu->User.Sid, wlogin, &ulen, wdomain, &dlen, &user_type)) {
+                    _wcslwr(wlogin);
                     w32_wc2utf(wlogin, login, sizeof(login));
                 }
             }
@@ -440,9 +441,22 @@ initialise_user()
 
     // old-school
     } else {
-        DWORD cbBuffer = sizeof(x_passwd_name) - 1;
+        WCHAR t_username[WIN32_LOGIN_LEN];
+        DWORD cbBuffer = _countof(t_username) - 1;
 
-        if (! GetUserNameA(x_passwd_name, &cbBuffer)) {
+        x_passwd_name[0] = 0;
+
+        if (GetUserNameW(t_username, &cbBuffer)) {
+            int ret, maxlen = sizeof(x_passwd_name) - 1;
+
+            _wcslwr(t_username);
+            if ((ret = WideCharToMultiByte(CP_UTF8, 0,
+                            t_username, -1, x_passwd_name, (int)maxlen, NULL, NULL)) >= 0) {
+                x_passwd_name[ret] = 0;
+            }
+        }
+
+        if (0 == x_passwd_name[0]) {
             const char *name = NULL;
 
             if (NULL == name) name = getenv("USER");
@@ -460,7 +474,6 @@ initialise_user()
     }
 
     // additional account attributes
-    _strlwr(x_passwd_name);
     strncpy(x_passwd_dir, w32_gethome(FALSE), sizeof(x_passwd_dir) - 1);
     strncpy(x_passwd_shell, w32_getshell(), sizeof(x_passwd_shell) - 1);
 

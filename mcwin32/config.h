@@ -81,11 +81,16 @@ const char *                mc_EXTHELPERSDIR(void);
 #define EXTHELPERSDIR       mc_EXTHELPERSDIR()  /* ???, 4.8.7 */
 
 extern void                 WIN32_Setup(void);
+extern void                 WIN32_HeapInit(void);
+extern int                  WIN32_HeapCheck(void);
 
 extern FILE *               win32_popen(const char *cmd, const char *mode);
 extern int                  win32_pclose(FILE *file);
 extern void                 win32_ptrace(void);
 extern int                  win32_perror(int error, const char *msg);
+
+extern void                 mc_setenv(const char *name, const char *value, int overwrite);
+extern void                 mc_setpathenv(const char *name, const char *value, int overwrite, int quote_ws);
 
 #if !defined(popen)
 #define popen(__cmd,__mode) win32_popen(__cmd, __mode)
@@ -191,3 +196,4 @@ extern void                 tty_set_title(const char *title);
 #define PROMOTED_MODE_T int
 
 #endif  /*CONFIG_H_INCLUDED*/
+

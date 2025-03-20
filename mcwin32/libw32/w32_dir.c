@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.27 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.28 2025/03/20 17:22:45 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -764,8 +764,8 @@ w32_expandlinkA(const char *name, char *buf, size_t buflen, unsigned flags)
         memcpy(t_name, name, length + 1 /*nul*/);
 
         for (cursor = t_name + length, end = cursor; --cursor >= t_name;) {
-            if ('.' == *cursor) {                   // extension
-                if (1 == ++dots) {                  // last/trailing
+            if ('.' == *cursor) {               // extension
+                if (1 == ++dots) {              // last/trailing
                     if (0 == w32_io_strnicmp(cursor, ".lnk", 4) && (cursor + 4) == end) {
                         //
                         //  <shortcut>.lnk
@@ -779,13 +779,13 @@ w32_expandlinkA(const char *name, char *buf, size_t buflen, unsigned flags)
 
                         if (flags & (term ? SHORTCUT_COMPONENT : SHORTCUT_TRAILING)) {
 
-                            *end = 0;               // remove trailing component.
+                            *end = 0;           // remove trailing component.
                             if ((t_ret = w32_readlinkA(t_name, buf, buflen)) > 0) {
                                 if (buflen > (t_ret + trailing)) {
                                     if (trailing) { // appending trailing component(s).
                                         *end = term, memcpy(buf + t_ret, end, trailing + 1 /*nul*/);
                                     }
-                                    ret = 1;        // success.
+                                    ret = 1;    // success.
                                 }
                             }
                         }
@@ -794,7 +794,7 @@ w32_expandlinkA(const char *name, char *buf, size_t buflen, unsigned flags)
                 }
 
             } else if ('/' == *cursor || '\\' == *cursor) {
-                end  = cursor;                      // new component.
+                end  = cursor;                  // new component.
                 dots = 0;
             }
         }
@@ -822,8 +822,8 @@ w32_expandlinkW(const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags
         wmemcpy(t_name, name, length + 1 /*nul*/);
 
         for (cursor = t_name + length, end = cursor; --cursor >= t_name;) {
-            if ('.' == *cursor) {                   // extension
-                if (1 == ++dots) {                  // last/trailing
+            if ('.' == *cursor) {               // extension
+                if (1 == ++dots) {              // last/trailing
                     if (0 == w32_io_wstrnicmp(cursor, ".lnk", 4) && (cursor + 4) == end) {
                         //
                         //  <shortcut>.lnk
@@ -837,13 +837,13 @@ w32_expandlinkW(const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags
 
                         if (flags & (term ? SHORTCUT_COMPONENT : SHORTCUT_TRAILING)) {
 
-                            *end = 0;               // remove trailing component.
+                            *end = 0;           // remove trailing component.
                             if ((t_ret = w32_readlinkW(t_name, buf, buflen)) > 0) {
                                 if (buflen > (t_ret + trailing)) {
                                     if (trailing) { // appending trailing component(s).
                                         *end = term, wmemcpy(buf + t_ret, end, trailing + 1 /*nul*/);
                                     }
-                                    ret = 1;        // success.
+                                    ret = 1;    // success.
                                 }
                             }
                         }
@@ -852,7 +852,7 @@ w32_expandlinkW(const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags
                 }
 
             } else if ('/' == *cursor || '\\' == *cursor) {
-                end  = cursor;                      // new component.
+                end  = cursor;                  // new component.
                 dots = 0;
             }
         }
