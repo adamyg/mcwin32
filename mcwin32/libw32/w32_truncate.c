@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.15 2025/03/08 16:40:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.16 2025/03/20 17:23:29 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -270,7 +270,7 @@ truncateA(const char *path, off_t length)
             CloseHandle(handle);
         }
     }
-    return 0;
+    return ret;
 }
 
 
@@ -294,7 +294,7 @@ truncate64A(const char *path, _off64_t length)
             CloseHandle(handle);
         }
     }
-    return 0;
+    return ret;
 }
 
 

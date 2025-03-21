@@ -1015,7 +1015,7 @@ shell_dir_load (struct vfs_class *me, struct vfs_s_inode *dir, const char *remot
 
     vfs_print_message (_("shell: Reading directory %s..."), remote_path);
 
-    dir->timestamp = g_get_monotonic_time () + shell_directory_timeout * G_USEC_PER_SEC;
+    dir->timestamp = g_get_monotonic_time () + ((gint64)shell_directory_timeout * G_USEC_PER_SEC);
 
     quoted_path = str_shell_escape (remote_path);
     (void) shell_command_v (me, super, NONE, SHELL_SUPER (super)->scr_ls, "SHELL_FILENAME=%s;\n",

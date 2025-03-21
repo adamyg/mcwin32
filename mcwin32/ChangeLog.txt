@@ -1,4 +1,4 @@
-Fri Mar  7 11:26:56 2025 adamy
+Wed Mar 19 16:03:57 2025 adamy
 
 	* build-231
 
@@ -12,6 +12,7 @@ Fri Mar  7 11:26:56 2025 adamy
 
 	* upgrades/bugfixes
 
+		o wputenv() cross tool-chain usage (#113)
 		o pcre2 10.45 (#106)
 		o appupdater (#102)
 		o glib 2.54.3 (#102)
@@ -563,7 +564,6 @@ Wed Aug 15 00:36:55 2012 adamy
 
 		- additional UNC support, local shares available under //<hostname>/
 		- build number exported (e.g. --help).
-
 
 Tue Aug 14 16:39:56 2012 adamy
 

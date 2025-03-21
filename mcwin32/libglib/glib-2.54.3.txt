@@ -1,0 +1,83 @@
+
+    Source: glib-2.54.3
+    
+        o galloca.h
+        
+                OWC:    
+                +       # if defined(__WATCOMC__)
+                +       #       include <malloc.h>
+                |       # elif defined(_MSC_VER) || defined(__DMC__)
+                
+        o gtypes.h:
+        
+                OWC:
+                +       #if defined(__WATCOMC__)
+                +       #       define GLIB_VAR extern __declspec(dllexport) /* remove multiple definition warnings */
+                +       #else
+                        #       define GLIB_VAR __declspec(dllexport)
+                +       #endif
+
+        o gatomic.c
+                
+                OWC: ATOMIC_CAST()
+                
+        o genviron.c                
+        
+                OWC: _wsetenv() replacement of _wputenv()
+                
+                +       #if defined(__WATCOMC__)
+                +         wchar_t *wname, *wvalue;
+                +       #else
+                          wchar_t *wname, *wvalue, *wassignment;
+                          gchar *tem;
+                +       #endif
+                
+                                and
+                
+                +       #if defined(__WATCOMC__)
+                +         _wsetenv (wname, wvalue, 1 /*overwrite*/);
+                +       #else
+                          tem = g_strconcat (variable, "=", value, NULL);
+                          wassignment = g_utf8_to_utf16 (tem, -1, NULL, NULL, NULL);
+                          g_free (tem);
+                 
+                          _wputenv (wassignment);
+                          g_free (wassignment);
+                +       #endif
+                
+        o gthread-deprecated.c:
+        
+                OWC: structure initialisation
+                
+        o grand.c:
+        
+                OWC: #pragma message() replacement of #warning
+                
+        o gstdio.c:
+        
+                OWC:
+                        #if (defined (__MINGW64_VERSION_MAJOR) || defined (_MSC_VER)) && !defined(_WIN64) && \
+                +               !defined(__WATCOMC__)
+                        #undef _wstat
+                        #define _wstat _wstat32
+                        
+        o gwin32.c:
+        
+                OWC:
+                +       #if defined(__WATCOMC__)        /* missing from OCW 1.9 DSK */
+                +       typedef struct _OSVERSIONINFOEXW *PRTL_OSVERSIONINFOEXW;      
+                +       #endif //__WATCOMC__
+                
+                +       #if defined(__WATCOMC__) && !defined(WC_NO_BEST_FIT_CHARS)
+                +       #define WC_NO_BEST_FIT_CHARS 0x00000400 // do not use best fit chars
+                +       #endif
+                                                
+        o win_iconv.c:
+        
+                +       #if defined(__WATCOMC__)
+                +       static int * _errno(void)
+                +       {
+                +               return __get_errno_ptr();
+                +       }
+                +       #endif
+                

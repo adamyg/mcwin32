@@ -269,6 +269,10 @@ main (int argc, char *argv[])
     int exit_code = EXIT_FAILURE;
     const char *tmpdir = NULL;
 
+#if defined(WIN32)
+    WIN32_HeapInit ();
+#endif
+
     mc_global.run_from_parent_mc = !check_sid ();
 
     /* We had LC_CTYPE before, LC_ALL includes LC_TYPE as well */
@@ -590,7 +594,12 @@ main (int argc, char *argv[])
         exit_code = EXIT_FAILURE;
     }
 
-    (void) putchar ('\n');      /* Hack to make shell's prompt start at left of screen */
+    (void) putchar ('\n');    
+    /* Hack to make shell's prompt start at left of screen */
+
+#if defined(WIN32)
+    WIN32_HeapCheck ();
+#endif
 
     return exit_code;
 }

@@ -2,10 +2,10 @@
 /*
    win32 tty/win implementation
 
-        void do_enter_ca_mode (void)
-        void do_exit_ca_mode (void)
-        void show_rxvt_contents (int starty, unsigned char y1, unsigned char y2)
-        gboolean look_for_rxvt_extensions (void)
+        do_enter_ca_mode
+        do_exit_ca_mode
+        show_rxvt_contents
+        look_for_rxvt_extensions
 
    Adam Young 2015 - 2025
 
@@ -23,7 +23,6 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
  */
 
 #include <config.h>

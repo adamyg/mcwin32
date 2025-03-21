@@ -315,8 +315,11 @@ init_subshell_child (const char *pty_name)
     {
         char sid_str[BUF_SMALL];
 
-        g_snprintf (sid_str, sizeof (sid_str), "MC_SID=%ld", (long) mc_sid);
-        putenv (g_strdup (sid_str));
+      //WIN32,setenv
+      //g_snprintf (sid_str, sizeof (sid_str), "MC_SID=%ld", (long) mc_sid);
+      //putenv (g_strdup (sid_str));
+        g_snprintf (sid_str, sizeof (sid_str), "%ld", (long) mc_sid);
+        g_setenv ("MC_SID", sid_str);
     }
 
     switch (mc_global.shell->type)
@@ -334,7 +337,9 @@ init_subshell_child (const char *pty_name)
 
         /* Make MC's special commands not show up in bash's history and also suppress
          * consecutive identical commands*/
-        putenv ((char *) "HISTCONTROL=ignoreboth");
+      //WIN32,setenv
+      //putenv ((char *) "HISTCONTROL=ignoreboth");
+        g_setenv ("HISTCONTROL", "ignoreboth");
 
         /* Allow alternative readline settings for MC */
         {
@@ -382,7 +387,9 @@ init_subshell_child (const char *pty_name)
         g_setenv ("ENV", init_file, FALSE);
 
         /* Make MC's special commands not show up in history */
-        putenv ((char *) "HISTCONTROL=ignorespace");
+      //WIN32,setenv
+      //putenv ((char *) "HISTCONTROL=ignorespace");
+        g_setenv ("HISTCONTROL", "ignorespace");
 
         break;
 

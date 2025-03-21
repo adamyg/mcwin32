@@ -76,22 +76,18 @@ isconsole (int fd)
 void
 tty_init (gboolean mouse_enable, gboolean is_xterm)
 {
-    if (NULL == getenv("TERM")) {
-        (void) putenv("TERM=dos");
-    }
+    mc_setenv ("TERM", "dos", FALSE);
 
-    if (NULL == getenv("COLORTERM")) {
-        if (tty_use_256colors(NULL)) {          /* TODO: command line, max colors. */
-            (void) putenv("COLORTERM=24bit");   /* allow true-color skins */
-        } else {
-            (void) putenv("COLORTERM=16");
-        }
+    if (tty_use_256colors(NULL)) {              /* TODO: command line, max colors. */
+        mc_setenv ("COLORTERM", "24bit", FALSE); /* allow true-color skins */
+    } else {
+        mc_setenv ("COLORTERM", "16", FALSE);
     }
 
     key_mouse_mode (mouse_enable);
     SLsmg_init_smg ();
 
-    if (! isconsole(STDIN_FILENO)) {
+    if (! isconsole (STDIN_FILENO)) {
         fprintf(stderr, _("Console not detected.\n"));
         exit (EXIT_FAILURE);
     }

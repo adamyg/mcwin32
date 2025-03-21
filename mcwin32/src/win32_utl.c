@@ -1,22 +1,49 @@
 /* -*- mode: c; indent-width: 4; -*- */
 /*
-   WIN32 util implementation
+    WIN32 util implementation
 
         #include "../lib/utilunix.h"
+
+            mc_BUSYBOX
+            mc_TMPDIR
+            mc_aspell_dllpath
+            mc_get_locale
+            mc_MAGICPATH
+            mc_SYSCONFDIR
+            mc_DATADIR
+            mc_LOCALEDIR
+            mc_LIBEXECDIR
+            mc_EXTHELPERSDIR
+            mc_USERCONFIGDIR
+            mc_setenv
+            mc_setpathenv
+
+            WIN32_HeapInit
+            WIN32_HeapInit
 
             get_group
             get_user_permissions
             save_stop_handler
+            my_signal
+            my_sigaction
+            my_get_current_dir
+
             my_systemv_flags
             my_system
-            tilde_expand
-            open_error_pipe
-            close_error_pipe
+
+            mc_busybox_exts
+            mc_isscript
+            my_unquote
+
+            win32_popen
+            win32_pclose
+            win32_perror
+
             custom_canonicalize_pathname
             canonicalize_pathname
             mc_realpath
-            my_build_filenamev
-            my_build_filename
+            mc_build_filenamev
+            mc_build_filename
 
    Adam Young 2015 - 2025
 
@@ -53,6 +80,10 @@
 #include <shlobj.h>                             /* SHxx */
 
 #include <stdio.h>
+#if defined(_MSC_VER)
+#include <crtdbg.h>
+#endif
+#include <wchar.h>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -98,9 +129,6 @@ static void             set_home (void);
 static void             set_tmpdir (void);
 static void             set_editor (void);
 static void             set_busybox (void);
-
-static void             my_setenv (const char *name, const char *value, int overwrite);
-static void             my_setpathenv (const char *name, const char *value, int overwrite, int quote_ws);
 
 static void             unixpath (char *path);
 static void             dospath (char *path);
@@ -178,29 +206,29 @@ WIN32_Setup(void)
 static void
 set_shell(void)
 {
-    my_setpathenv("SHELL", w32_getshell(), FALSE, FALSE);
+    mc_setpathenv ("SHELL", w32_getshell(), FALSE, FALSE);
 }
 
 
 static void
 set_term(void)
 {
-    my_setenv("TERM", "dos-console", FALSE);
+    mc_setenv ("TERM", "dos-console", FALSE);
 }
 
 
 static void
 set_home(void)
 {
-    //my_setenv("MC_HOME", mc_USERCONFDIR(), FALSE);
+    //mc_setenv ("MC_HOME", mc_USERCONFDIR(), FALSE);
 }
 
 
 static void
 set_editor(void)
 {
-    my_setenv("EDITOR", "notepad.exe", FALSE);
-    my_setenv("PAGER", "notepad.exe", FALSE);
+    mc_setenv ("EDITOR", "notepad.exe", FALSE);
+    mc_setenv ("PAGER", "notepad.exe", FALSE);
 }
 
 
@@ -218,7 +246,7 @@ ugetenv(const char *varname)
     if (env) {
 #define MAX_VARNAME 128
         wchar_t wvarname[MAX_VARNAME + 1 /*NUL*/];
-        const wchar_t *wenv;
+        const wchar_t *wenv = NULL;
 
         (void) MultiByteToWideChar(CP_UTF8, 0, varname, -1, wvarname, MAX_VARNAME);
         wvarname[MAX_VARNAME] = 0;
@@ -330,7 +358,7 @@ set_busybox(void)
     }
 
     /* publish, quote if path contains whitespace */
-    my_setpathenv("MC_BUSYBOX", busybox, TRUE, TRUE);
+    mc_setpathenv ("MC_BUSYBOX", busybox, TRUE, TRUE);
     busybox_path = strdup(busybox);
 }
 
@@ -378,7 +406,7 @@ set_tmpdir(void)
         }
 
         if (tmpdir) {
-            my_setpathenv("MC_TMPDIR", tmpdir, TRUE, FALSE);
+            mc_setpathenv ("MC_TMPDIR", tmpdir, TRUE, FALSE);
         }
     }
 }
@@ -595,7 +623,11 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
             _snprintf(buffer, buflen, "%s/%s/%s/", env, MC_APPLICATION_DIR, subdir);
 
         } else {
+#if defined(_WIN32)
+            _snprintf(buffer, buflen, "c:/Program Files (x86)/%s/%s/", MC_APPLICATION_DIR, subdir);
+#else
             _snprintf(buffer, buflen, "c:/Program Files/%s/%s/", MC_APPLICATION_DIR, subdir);
+#endif
         }
         buffer[buflen - 1] = 0;
         mkdir(buffer, S_IRWXU);
@@ -740,7 +772,7 @@ mc_EXTHELPERSDIR(void)
  *
  *      <XDG_CONFIG_HOME>
  *          If $XDG_CONFIG_HOME is either not set or empty, a default equal to $HOME/.config should be used.
- *          XDG Base Directory Specification, glib compatiblity ??
+ *          XDG Base Directory Specification, glib compatibility ??
  *
  *      <SYSCONFDIR>
  *          x:\Documents and Settings\<user>\Application Data\<Midnight Commander>\
@@ -877,69 +909,123 @@ mc_USERCONFIGDIR(const char *subdir)
 }
 
 
-static void
-my_setenv(const char *name, const char *value, int overwrite)
+void
+mc_setenv(const char *name, const char *value, int overwrite)
 {
     if ((1 == overwrite) || NULL == getenv(name)) {
 #if defined(__WATCOMC__)
-        setenv(name, value, TRUE);
+        setenv(name, value, 1);                 // putenv() semantics unclear
 #else
-        char buf[1024];
-        snprintf(buf, sizeof(buf), "%s=%s", name, value);
-        buf[sizeof(buf)-1] = 0;
-        (void) putenv(strdup(buf));
+        _putenv_s(name, value);                 // copy semantics
 #endif
+        (void) SetEnvironmentVariableA (name, value);
     }
 }
 
 
-static void
-my_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
+void
+mc_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
 {
-    char path[1024]={0}, buf[1024 + 80]={0};
-
     if ((1 == overwrite) || NULL == getenv(name)) {
-        strncpy(path, value, sizeof(path)-1);
-        canonicalize_pathname (path);
-        dospath(path);
+        char t_path[WIN32_PATH_MAX], t_quoted[WIN32_PATH_MAX + 16];
+        wchar_t *wname, *wvalue;
 
+        strncpy (t_path, value, sizeof(t_path) - 1);
+        t_path[sizeof(t_path) - 1] = 0;         // working copy
+
+        canonicalize_pathname (t_path);
+        dospath (t_path);
+        value = t_path;
+
+        if (quote_ws && strchr(value, ' ')) {
+            snprintf (t_quoted, sizeof(t_quoted) - 1, "\"%s\"", value);
+            t_quoted[sizeof(t_quoted) - 1] = 0;
+            value = t_quoted;
+        }
+
+        if (NULL != (wname = w32_utf2wca (name, NULL))) {
+            if (NULL != (wvalue = w32_utf2wca (value, NULL))) {
 #if defined(__WATCOMC__)
-        if (quote_ws && strchr(path, ' ')) {
-            snprintf(buf, sizeof(buf)-1, "\"%s\"", path);
-            setenv(name, (const char *)buf, TRUE);
-        } else {
-            setenv(name, (const char *)path, TRUE);
-        }
+                _wsetenv (wname, wvalue, 1 /*overwrite*/);
 #else
-        if (quote_ws && strchr(path, ' ')) {
-            snprintf(buf, sizeof(buf)-1, "%s=\"%s\"", name, path);
-        } else {
-            snprintf(buf, sizeof(buf)-1, "%s=%s", name, path);
-        }
-        (void) putenv(buf);
+                _wputenv_s (wname, wvalue);
 #endif
+                (void) SetEnvironmentVariableW (wname, wvalue);
+                free (wvalue);
+            }
+            free (wname);
+        }
     }
+}
+
+
+void
+WIN32_HeapInit(void)
+{
+#if defined(_MSC_VER) && !defined(NDEBUG)
+    int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+
+  //flags = (flags & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_1024_DF;
+  //flags = (flags & 0x0000FFFF) | _CRTDBG_CHECK_ALWAYS_DF;
+    flags |= _CRTDBG_DELAY_FREE_MEM_DF;
+    flags |= _CRTDBG_CHECK_CRT_DF;
+
+    _CrtSetDbgFlag(flags);
+#endif //_MSC_VER
 }
 
 
 int
-WIN32_checkheap(void)
+WIN32_HeapCheck(void)
 {
     int rc = 0;
+
+#if defined(_MSC_VER)
+    if (! _CrtCheckMemory()) {
+        puts("ERROR - heap corruption detected\n");
+    }
+#endif //_MSC_VER
 
     switch (_heapchk()) {
     case _HEAPOK:
     case _HEAPEMPTY:
         break;
     case _HEAPBADBEGIN:
-        printf("ERROR - heap is damaged\n");
+        printf("ERROR - heapchk: heap is damaged\n");
         rc = -1;
         break;
     case _HEAPBADNODE:
-        printf("ERROR - bad node in heap\n");
+        printf("ERROR - heapchk: bad node in heap\n");
         rc = -1;
         break;
     }
+
+#if !defined(NDEBUG)
+    {   struct _heapinfo hi = {0};
+        int hstatus;
+
+        for (;;) {
+            hstatus = _heapwalk(&hi);
+            if (hstatus != _HEAPOK) {
+                break;
+            }
+        }
+        switch (hstatus) {
+        case _HEAPEND:
+        case _HEAPEMPTY:
+            break;
+        case _HEAPBADBEGIN:
+            puts("ERROR - heapwalk: heap is damaged\n");
+            break;
+        case _HEAPBADPTR:
+            puts("ERROR - heapwalk: bad pointer to heap\n");
+            break;
+        case _HEAPBADNODE:
+            puts("ERROR - heapwalk: bad node in heap\n");
+        }
+    }
+#endif //NDEBUG
+
     return (rc);
 }
 
@@ -999,7 +1085,6 @@ get_user_permissions(struct stat *st)
             ngroups = 0;                        /* ignore errors */
         }
 
-
         /* allocate space for one element in addition to what
          * will be filled by getgroups(). */
         groups = g_new (gid_t, ngroups + 1);
@@ -1036,7 +1121,6 @@ void
 save_stop_handler(void)
 {
 }
-
 
 
 /** 4.8.33+
@@ -1104,7 +1188,8 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
 
             for (argc = 0; xargv[argc]; ++argc)
                 continue;
-            if (NULL == (argv = calloc(argc + 1, sizeof(const char *)))) {
+
+            if (NULL == (argv = calloc(argc + 1 /*NULL*/, sizeof(const char *)))) {
                 return -1;
             }
 
@@ -1149,9 +1234,16 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
 
 error:;
     if (argv) {
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 6001) // false positive, calloc() usage not understood
+#endif
         for (idx = 0; idx < argc && argv[idx]; ++idx) {
             free((void *)argv[idx]);
         }
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
         free ((void *)argv);
     }
     return status;
@@ -1166,7 +1258,7 @@ error:;
  *                    Shell (or command) will be found in paths described in PATH variable
  *                    (if shell parameter doesn't begin from path delimiter)
  * @parameter command Command for shell (or first parameter for command, if flags contain EXECUTE_AS_SHELL)
- * @return 0 if successfull, -1 otherwise
+ * @return 0 if successful, -1 otherwise
  */
 int
 my_system (int flags, const char *shell, const char *cmd)
@@ -1264,7 +1356,7 @@ system_impl (int flags, const char *shell, const char *cmd)
     }
 
     if ((flags & EXECUTE_AS_SHELL) && cmd) {    /* internal commands */
-#define MAX_ARGV    10
+#define MAX_ARGV 10
 #define MAX_CMDLINE (4 * 1024)
         const char *argv[MAX_ARGV];
         char cbuf[MAX_CMDLINE];
@@ -1275,7 +1367,7 @@ system_impl (int flags, const char *shell, const char *cmd)
                 (argc = system_bustargs(cbuf, argv, MAX_ARGV)) <= MAX_ARGV && argc > 0) {
 
             if (0 == strcmp(argv[0], "set")) {
-                return system_SET(argc, argv);
+                return system_SET (argc, argv);
 
             } else if (use_internal_busybox) {
                 const size_t cmdlen = strlen(argv[0]);
@@ -1326,36 +1418,71 @@ mc_busybox_exts(unsigned *count)
 /**
  *  'set' command replacement
  */
+static void
+wputs(const wchar_t *buffer, ...)
+{ 
+    HANDLE cout = GetStdHandle(STD_OUTPUT_HANDLE);
+    const wchar_t *nl;
+    va_list ap;
+
+    va_start (ap, buffer);
+    while (buffer) {
+        size_t len = wcslen(buffer);
+
+        while ((nl = wcschr (buffer, '\n')) != NULL) {
+            const int part = (nl - buffer) + 1;
+            WriteConsoleW (cout, buffer, part - 1, NULL, NULL);
+            WriteConsoleW (cout, L"\n\r", 2, NULL, NULL);
+            buffer += part;
+            len -= part;
+        }
+        WriteConsoleW (cout, buffer, len, NULL, NULL);
+        buffer = va_arg (ap, const wchar_t *);
+    }
+    va_end (ap);
+}
+
+
 static int
 system_SET(int argc, const char **argv)
 {
     if (argc == 1) {
-#if defined(_MSC_VER) || defined(__WATCOMC__)
-        extern char **environ;
-#endif
-        char **env = environ;
-
+        // list
+        wchar_t **env = _wenviron;
         if (env) {
             while (*env) {
-                printf( "%s\n", *env);
+                wputs(*env, L"\n", NULL);
                 ++env;
             }
         }
-    } else {
-        char *p;
 
-        if ((p = strchr(argv[1], '=')) != NULL) {
-            *p++ = '\0';
-            my_setenv(argv[1], p, 1);
-        } else {
-            if ((p = getenv(argv[1])) == NULL) {
-                printf("Environment variable %s not defined\n", argv[1]);
+    } else if (argc > 1) {
+        // set or lookup
+        const wchar_t *wname;
+
+        if (NULL != (wname = w32_utf2wca (argv[1], NULL))) {
+            wchar_t *wvalue;
+
+            if (NULL != (wvalue = wcschr (wname, '='))) {
+                *wvalue++ = '\0';               // delimiter
+#if defined(__WATCOMC__)
+                _wsetenv (wname, wvalue, 1 /*overwrite*/);
+#else
+                _wputenv_s (wname, wvalue);
+#endif
+                (void) SetEnvironmentVariableW (wname, wvalue);
+
+            } else if (NULL != (wvalue = _wgetenv(wname))) {
+                wputs (wname, L"=", wvalue, L"\n", NULL);
+
             } else {
-                printf("%s=%s\n", argv[1], p );
+                wputs (L"Environment variable <", wname, L"> not defined\n", NULL);
             }
+
+            free ((void *)wname);
         }
     }
-    return (0);
+    return 0;
 }
 
 
@@ -1472,7 +1599,7 @@ my_unquote(const char *cmd, int quotews)
     while (1) {
         if ('\\' == *cmd) {
             switch(*++cmd) {
-            case '\'': // escapeable characters
+            case '\'': // escapable characters
             case '\\':
             case '"':
             case ';':

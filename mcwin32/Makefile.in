@@ -965,7 +965,11 @@ BUILD_DATE=			$(shell $(BUSYBOX) date +'%Y%m%d')
 ifneq ($(APPVEYOR_BUILD_NUMBER),)
 BUILD_NUMBER=			$(APPVEYOR_BUILD_NUMBER)
 else ifneq ($(GITHUB_RUN_NUMBER),)
-BUILD_NUMBER=			$(GITHUB_RUN_NUMBER)
+ifeq (master,$(findstring master,$(GITHUB_REF)))
+BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
+else
+BUILD_NUMBER=			$(shell $(BUSYBOX) expr 10000 + $(GITHUB_RUN_NUMBER))
+endif
 else
 BUILD_NUMBER=			$(shell $(BUSYBOX) cat BUILDNUMBER)
 endif
