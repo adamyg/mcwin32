@@ -418,7 +418,7 @@ SLtt_tgetnum(const char *key)
         if (0 == strcmp(key, "Co")) {           // colors
             if (vio.inited)
                 return vio.maxcolors;           // 16 or 256
-            return WIN32_COLORS;                // assumeed support
+            return WIN32_COLORS;                // assumed support
         }
     }
     return -1;
@@ -463,7 +463,7 @@ SLsmg_gotorc(int r, int c)
 
 /*
  *  SLsmg_get_row ---
- *      Retrieve the current cursor row corrdinate.
+ *      Retrieve the current cursor row coordinate.
  **/
 int
 SLsmg_get_row(void)
@@ -474,7 +474,7 @@ SLsmg_get_row(void)
 
 /*
  *  SLsmg_get_column ---
- *      Retrieve the current cursor column corrdinate.
+ *      Retrieve the current cursor column coordinate.
  **/
 int
 SLsmg_get_column(void)
@@ -634,7 +634,7 @@ top:                                            /* get here only on newline */
 
                 if (SLsmg_Display_Alt_Chars) cooked = acs_lookup(cooked);
                 flags |= WCHAR_UPDATE(cursor, cooked, color);
-                if (width > 1) {                /* wide-character, NULL padding */
+                if (width > 1) {                /* wide-character, NUL padding */
                     flags |= WCHAR_UPDATE(++cursor, 0, color);
                     ++col;
                 }

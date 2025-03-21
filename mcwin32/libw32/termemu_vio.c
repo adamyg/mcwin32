@@ -232,12 +232,13 @@ static __inline int     vtnormal(const int color);
 
 static void             CopyIn(unsigned pos, unsigned cnt, WCHAR_INFO *image);
 static void             CopyOut(copyoutctx_t *ctx, unsigned offset, unsigned len, unsigned flags);
+static void             CopyOutLegacy(copyoutctx_t* ctx, unsigned pos, unsigned cnt, unsigned flags);
 #if defined(WIN32_CONSOLEEXT)
 #if defined(WIN32_CONSOLE256)
 static void             CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags);
 #define WIN32_CONSOLEVIRTUAL
 #if defined(WIN32_CONSOLEVIRTUAL)
-static void             CopyOutEx2(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags);
+static void             CopyOutVirtual(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags);
 #endif  //WIN32_CONSOLEVIRTUAL
 #endif  //WIN32_CONSOLE256
 static void             UnderOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt);
@@ -1483,7 +1484,25 @@ CopyOutFinal(copyoutctx_t *ctx)
 
 
 static void
-CopyOut(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
+CopyOut(copyoutctx_t* ctx, unsigned pos, unsigned cnt, unsigned flags)
+{
+#if defined(WIN32_CONSOLEVIRTUAL)
+    //
+    //  windows 10+ virtual console.
+    if (vio.isvirtualconsole) {
+        CopyOutVirtual(ctx, pos, cnt, flags);
+        return;
+    }
+#endif  //WIN32_CONSOLEVIRTUAL
+
+    //
+    //  legacy modes
+    CopyOutLegacy(ctx, pos, cnt, flags);
+}
+
+
+static void
+CopyOutLegacy(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
 {
     const unsigned activecolors = (vio.displaymode || 0 == vio.activecolors ? 16 : vio.activecolors);
     const int /*rows = vio.rows,*/ cols = vio.cols;
@@ -1491,7 +1510,8 @@ CopyOut(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
     COORD is = {0}, ic = {0};
     SMALL_RECT wr = {0};
     unsigned underline = 0, strike = 0,         /* special attribute counts */
-        modcnt = vio.c_trashed|(flags&TRASHED); /* modified cell count */
+        mcnt = vio.c_trashed|(flags & TRASHED), /* modified cell count */
+        wcnt = 0;                               /* wide-character count */
     WORD attr;
 
     assert(pos < vio.size);                     /* starting position within window */
@@ -1517,10 +1537,13 @@ CopyOut(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
 
             attr = AttributesShadow(&cursor->Info);
             if (oshadow->Attributes != attr ||
-                    oshadow->Char.UnicodeChar != cursor->Char.UnicodeChar) {
-                oshadow->Char.UnicodeChar = (WCHAR)cursor->Char.UnicodeChar;
+                        oshadow->Char.UnicodeChar != cursor->Char.UnicodeChar) {
+                const WCHAR wch = (WCHAR)cursor->Char.UnicodeChar;
+                if (0 == (oshadow->Char.UnicodeChar = wch)) {
+                    ++wcnt;
+                }
                 oshadow->Attributes = attr;
-                ++modcnt;
+                ++mcnt;
             }
         }
     }
@@ -1539,16 +1562,6 @@ CopyOut(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
 #if defined(WIN32_CONSOLEEXT)
 #if defined(WIN32_CONSOLE256)
     if (activecolors > 16) {
-
-#if defined(WIN32_CONSOLEVIRTUAL)
-        //
-        //  windows 10 virtual console.
-        if (vio.isvirtualconsole) {
-            CopyOutEx2(ctx, pos, cnt, flags);   // export text
-            return;
-        }
-#endif  //WIN32_CONSOLEVIRTUAL
-
         //                                      // update console buffer
         //  cursor-get
         //  cursor-hide
@@ -1566,7 +1579,7 @@ CopyOut(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
             }
         }
 
-        if (modcnt) {
+        if (mcnt) {
             const BOOL isvisible = IsWindowVisible(vio.whandle);
 
             if (isvisible) {                    // flush changes, disable updates
@@ -1584,8 +1597,35 @@ CopyOut(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
         CopyOutEx(ctx, pos, cnt, flags);        // export text
 
     } else {
-        if (modcnt) {
-            WriteConsoleOutputW(chandle, vio.oshadow + pos, is, ic, &wr);
+        if (mcnt) {
+            if (wcnt) {
+                CHAR_INFO wcbuf[VIO_MAXCOLS], *wcend;
+
+                const CHAR_INFO *cursor = vio.oshadow + pos, *end;
+                const SHORT Bottom = wr.Bottom;
+
+                while (wr.Top <= Bottom) {      // export line-by-line
+                    SHORT nchrs = 0;
+
+                    for (wcend = wcbuf, end = cursor + cols; cursor < end; ++cursor) {
+                        if (cursor->Char.UnicodeChar) {
+                            *wcend++ = *cursor; // omit padding
+                            ++nchrs;
+                        }
+                    }
+
+                    wr.Bottom = wr.Top;
+                    is.Y = (SHORT)(vio.rows - wr.Top);
+                    is.X = nchrs;
+
+                    WriteConsoleOutputW(chandle, wcbuf, is, ic, &wr);
+
+                    ++wr.Top;
+                }
+
+            } else {
+                WriteConsoleOutputW(chandle, vio.oshadow + pos, is, ic, &wr);
+            }
         }
     }
 #endif  //CONSOLE256
@@ -1699,7 +1739,7 @@ COLOR256(const struct WCHAR_COLORINFO *color, COLORREF *fg, COLORREF *bg)
     if (t_fg == t_bg) {                         // default, normal
         t_fg = vio.rgb256[ COLIDX_FOREGROUND ];
         t_bg = vio.rgb256[ COLIDX_BACKGROUND ];
-        if (t_fg == t_bg) {                     // fallback
+        if (t_fg == t_bg) {                     // fall-back
             t_bg = vio.rgb256[ VT_COLOR_BLACK ];
             t_fg = vio.rgb256[ VT_COLOR_LIGHT_GREY ];
         }
@@ -1754,7 +1794,6 @@ SameAttributesBG(const WCHAR_INFO *cell, const struct WCHAR_COLORINFO *info, con
 }
 
 
-
 /*private*/
 /*  Function:           CopyOutEx
  *      Extended export characters within the specified region to the console window.
@@ -1775,8 +1814,8 @@ CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
     const int rows = vio.rows, cols = vio.cols;
     float fcwidth, fcheight;                    // proportional sizing
     int row = (int)(pos / cols);
-    WCHAR textbuf[1024],                        // ExtTextOut limit 8192
-        *etext = textbuf + (sizeof(textbuf)/sizeof(textbuf[0]));
+    WCHAR wcbuf[1024],                          // ExtTextOut limit 8192
+        *wcend = wcbuf + (sizeof(wcbuf)/sizeof(wcbuf[0]));
     HFONT oldfont;
     HDC wdc;
 
@@ -1800,23 +1839,29 @@ CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
     }
     oldfont = SelectObject(wdc, vio.fnHandle);  // base font
 
-    do {    //forearch(row)
+    do {    // foreach(row)
         WCHAR_INFO *ocursor = vio.oimage + (row * cols);
-        int start = -1, col = 0;
         struct WCHAR_COLORINFO info = {0};      // accumulator
         COLORREF bg = (COLORREF)-1, fg = (COLORREF)-1; // current colors
         WCHAR *text = NULL;
+        int col = 0;
 
         while (col < cols) {
-            start = -1;
+            int start = -1;
+
             do {
                 const WCHAR_INFO cell = *cursor++;
+
+                if (0 == cell.Char.UnicodeChar) {
+                    ocursor[col++] = cell;      // update out image
+                    continue;                   // NUL, padding
+                }
 
                 if (start >= 0) {               // attribute run
                     if (SameAttributesFGBG(&cell, &info, fg, bg, VIO_BOLD|VIO_BLINK|VIO_ITALIC|VIO_FAINT|VIO_INVERSE)) {
                         ocursor[col++] = cell;  // update out image
                         *text = (WCHAR)cell.Char.UnicodeChar;
-                        if (++text >= etext)
+                        if (++text >= wcend)
                             break;              // flush
                         continue;
                     } //else, attribute change
@@ -1833,7 +1878,7 @@ CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
 
                 // start of new draw arena
                 start = col++;
-                text  = textbuf;
+                text  = wcbuf;
                 info  = cell.Info;
                 COLOR256(&info, &fg, &bg);
                 if (info.Attributes & VIO_INVERSE) {
@@ -1880,12 +1925,12 @@ CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
                     const int left = (int)(fcwidth * start);
                     const int top = (int)(fcheight * row);
                     HPEN oldbrush, oldpen;
-                    const WCHAR *otext = textbuf;
+                    const WCHAR *otext = wcbuf;
                     unsigned idx = 0;
 
                     oldbrush = SelectObject(wdc, CreateSolidBrush(bg));
                     oldpen = SelectObject(wdc, CreatePen(PS_SOLID, 0, bg));
-                    Rectangle(wdc, left, top, left + (int)(fcwidth * (text - textbuf)), top + (int)fcheight);
+                    Rectangle(wdc, left, top, left + (int)(fcwidth * (text - wcbuf)), top + (int)fcheight);
                     oldpen = SelectObject(wdc, oldpen);
                     oldbrush = SelectObject(wdc, oldbrush);
                     DeleteObject(oldpen);
@@ -1894,11 +1939,14 @@ CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
                     SetBkColor(wdc, bg);
                     SetTextColor(wdc, fg);
                     SetTextAlign(wdc, GetTextAlign(wdc) | TA_CENTER);
-                    for (idx = 0; otext < text; ++idx) {
+                    for (idx = 0; otext < text;) {
                         WCHAR t_ch = *otext++;
 
-                        if (t_ch && !IsSpace(t_ch)) {
-                            ExtTextOutW(wdc, left + (int)(fcwidth * (0.5 + idx)), top, ETO_OPAQUE, NULL, &t_ch, 1, NULL);
+                        if (t_ch) {             // omit padding
+                            if (! IsSpace(t_ch)) {
+                                ExtTextOutW(wdc, left + (int)(fcwidth * (0.5 + idx)), top, ETO_OPAQUE, NULL, &t_ch, 1, NULL);
+                            }
+                            ++idx;
                         }
                     }
 
@@ -1927,14 +1975,14 @@ CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
 
 
 #if defined(WIN32_CONSOLEVIRTUAL)
-/*  Function:           CopyOutEx2
+/*  Function:           CopyOutVirtual
  *      Virtual console drivers.
  *
  *  Reference:
  *      https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
  */
 static void
-CopyOutEx2(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
+CopyOutVirtual(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
 {
     const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
     HANDLE chandle = vio.chandle;
@@ -1988,21 +2036,22 @@ CopyOutEx2(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
 #define L_VTESC     L"\x1b"
 #define L_VTCSI     L"\x1b["
 
-    do {    //forearch(row)
+    do {    // foreach(row)
         WCHAR_INFO *ocursor = vio.oimage + (row * cols);
-        int start = -1, col = 0;
         struct WCHAR_COLORINFO info = {0};      // accumulator
         COLORREF bg = (COLORREF)-1, fg = (COLORREF)-1; // current colors
         WCHAR *wctext = NULL;
+        int col = 0;                            // current column
 
         while (col < cols) {
-            start = -1;
+            int start = -1;                     // start of change
+
             do {
                 const WCHAR_INFO cell = *cursor++;
 
                 if (0 == cell.Char.UnicodeChar) {
-                    ++col;
-                    continue;                   // NULL, padding
+                    ocursor[col++] = cell;      // update out image
+                    continue;                   // NUL, padding
                 }
 
                 //  ESC[<y>; <x> H              CUP, Cursor Position *Cursor moves to <x>; <y> coordinate within the view-port, where <x> is the column of the <y> line.
@@ -2689,7 +2738,7 @@ parse_color(const char *color, const char *defname, const struct attrmap *map, i
         const int len = (int)(a - color);
 
         strncpy(t_name, color, sizeof(t_name)-1);// remove attribute component.
-        if (len < (int)sizeof(t_name)) 
+        if (len < (int)sizeof(t_name))
             t_name[len] = 0;
         color = t_name;
 

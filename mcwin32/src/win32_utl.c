@@ -963,10 +963,10 @@ void
 WIN32_HeapInit(void)
 {
 #if defined(_MSC_VER) && !defined(NDEBUG)
-    int flags;
-    
-    flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-    flags = (flags & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_128_DF; //_CRTDBG_CHECK_ALWAYS_DF
+    int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+
+  //flags = (flags & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_1024_DF;
+  //flags = (flags & 0x0000FFFF) | _CRTDBG_CHECK_ALWAYS_DF;
     flags |= _CRTDBG_DELAY_FREE_MEM_DF;
     flags |= _CRTDBG_CHECK_CRT_DF;
 
