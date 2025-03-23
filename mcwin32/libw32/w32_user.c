@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.24 2025/03/20 17:23:54 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_user_c,"$Id: w32_user.c,v 1.25 2025/03/23 18:19:06 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -395,6 +395,7 @@ initialise_user()
                 DWORD glen = _countof(wgroup), dlen = _countof(wdomain);
 
                 if (LookupAccountSidW(NULL, pg->PrimaryGroup, wgroup, &glen, wdomain, &dlen, &user_type)) {
+                    _wcslwr(wgroup);
                     w32_wc2utf(wgroup, group, sizeof(group));
                 }
 
@@ -480,7 +481,6 @@ initialise_user()
     // group
     if (group[0]) {
         strncpy(x_group_name, group, sizeof(x_group_name) - 1);
-        _strlwr(x_group_name);
     }
     x_group.gr_gid = x_passwd.pw_gid;
     x_group.gr_mem = NULL;

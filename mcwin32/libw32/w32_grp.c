@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.20 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.21 2025/03/23 18:19:06 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -570,6 +570,7 @@ fill_groups(void)
                 for (i = 0; i < dwEntriesRead; ++i) {
                     const PGROUP_INFO_2 group = groups + i;
 
+                    _wcslwr(group->grpi2_name);
                     if ((int)group->grpi2_group_id == x_group.gr_gid ||
                             (nlen = w32_wc2utf(group->grpi2_name, name, sizeof(name))) <= 0) {
                         continue;
@@ -583,7 +584,6 @@ fill_groups(void)
 
                     memset(grp, 0, sizeof(*grp));
                     grp->gr_name = cursor;
-                    _strlwr(cursor);
                     grp->gr_gid = (short) group->grpi2_group_id;
                     cursor += (nlen + 1);
                     bufsz -= (nlen + 1);
