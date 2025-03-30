@@ -28,6 +28,7 @@
  */
 
 #include <config.h>
+
 #include "libw32.h"
 
 #include <sys/types.h>
@@ -47,6 +48,7 @@
 #include "lib/util.h"
 #include "lib/widget.h"
 #include "lib/keybind.h"                        /* CK_Cancel etc */
+
 #include "src/filemanager/panel.h"
 #include "src/filemanager/cmd.h"                /* reread_cmd() */
 #include "src/filemanager/filemanager.h"        /* left/right panel */
@@ -78,41 +80,13 @@ struct WNetFunctions {
 struct NetworkDrive {
     const char *local;
     const char *remote;
-        // [loca/remote storage ]
+        // [local/remote storage]
 };
 
 static int              drive_network_names (int global, GQueue *result);
 static int              enumerate_disks (int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueue *result);
 
 #endif  //DO_NETWORK_DRIVES
-
-#if (XXX)
-static int
-IsRemovable(char drive)
-{
-    int RemovableMedia = 0;
-    char path[] = "\\\\?\\X:";
-    HANDLE handle;
-
-    assert(drive >= 'A' && drive <= 'Z');
-    
-    path[4] = drive;
-    handle = CreateFileA(path, 0 /*no-access*/, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-
-    if (INVALID_HANDLE_VALUE != handle) {
-        STORAGE_PROPERTY_QUERY spq = { StorageDeviceProperty, PropertyStandardQuery };
-        STORAGE_DEVICE_DESCRIPTOR sdd = { 0 };
-        ULONG rcb;
-
-        if (DeviceIoControl(handle, IOCTL_STORAGE_QUERY_PROPERTY, &spq, sizeof(spq), &sdd, sizeof(sdd), &rcb, 0)) {
-            RemovableMedia = sdd.RemovableMedia;
-                // Indicates when TRUE that the device's media (if any) is removable.
-        }
-        CloseHandle(handle);
-    }
-    return RemovableMedia;
-}
-#endif
 
 
 void
@@ -121,7 +95,7 @@ drive_cmd(void)
     WPanel *panel;
 
     if (NULL != (panel = current_panel)) {
-        drive_sel(panel);
+        drive_sel (panel);
     }
 }
 
@@ -132,7 +106,7 @@ drive_cmd_a(void)
     WPanel *panel;
 
     if (NULL != (panel = left_panel)) {
-        drive_sel(panel);
+        drive_sel (panel);
     }
 }
 
@@ -143,16 +117,68 @@ drive_cmd_b(void)
     WPanel *panel;
 
     if (NULL != (panel = right_panel)) {
-        drive_sel(panel);
+        drive_sel (panel);
     }
+}
+
+
+static int
+is_hidden(char drive)
+{
+    static unsigned nodrives = (unsigned)-1;
+    unsigned bit = 0;
+
+    if (nodrives == (unsigned)-1) {
+        // 
+        //  https://support.microsoft.com/en-us/topic/hide-physical-drives-in-windows-explorer-25e8ddaf-b6d4-e5ac-5342-ff22eaefb2f1
+        //  NODRIVES group policy
+        //
+        //  Examples:
+        //      Hide A      01
+        //      Hide B      02
+        //      Hide C      04
+        //      Hide D      08
+        //      Hide E      16
+        //      Hide F      32
+        //          :   :
+        //
+        const char *regroot = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+            *regvalue = "NoDrives";
+        DWORD extra = 0;
+        HKEY key = 0;
+
+        nodrives = 0;
+        if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, regroot, 0, KEY_QUERY_VALUE | extra, &key) == ERROR_SUCCESS) {
+            DWORD size, type = REG_NONE;
+
+            if (RegQueryValueExA(key, regvalue, NULL, &type, NULL, NULL) == ERROR_SUCCESS) {
+                if (REG_DWORD == type) {
+                    DWORD value = 0;
+                    size = (DWORD)sizeof(value);
+
+                    if (RegQueryValueExA(key, regvalue, NULL, NULL, (LPBYTE)&value, &size) == ERROR_SUCCESS) {
+                        nodrives = (unsigned) value;
+                    }
+                }
+            }
+            RegCloseKey(key);
+        }
+    }
+
+    if (drive >= 'A' && drive <= 'Z') {
+        bit = 1 << (drive - 'A');
+    } else if (drive >= 'a' && drive <= 'z') {
+        bit = 1 << (drive - 'a');
+    }
+
+    return (nodrives & bit) != 0;
 }
 
 
 static void
 drive_sel(WPanel *panel)
 {
-    char t_drives[27 * 8] = {0}, *cursor,       /* temporary drives and cursor */
-            drives[27 * 8] = {0};               /* resulting */
+    char drives[27 * 8] = { 0 };                /* resulting */
     int x_pos, y_pos, y_height, x_width;
     char root[4] = "?:\\";
     WDialog *drive_dlg;
@@ -169,40 +195,53 @@ drive_sel(WPanel *panel)
         }
     }
 
-    GetLogicalDriveStringsA(sizeof(t_drives) - 1, t_drives);
-    for (path = t_drives, cursor = drives; *path;) {
-        const int length = strlen(path);
-        const char drive = toupper(*path);
-        int type;
+    {
+        char t_drives[27 * 8] = {0}, *cursor;   /* temporary drives and cursor */
 
-        assert(length < 8);
-        assert(drive >= 'A' && drive <= 'Z');
+        EMODEINIT()
+        EMODESUPPRESS()
 
-        root[0] = drive;
-        if ((type = GetDriveTypeA(root)) != DRIVE_UNKNOWN && type != DRIVE_NO_ROOT_DIR) {
-            if (DRIVE_REMOVABLE == type ||      /* assume floppies; FIXME */
-                    GetDiskFreeSpaceExA(root, NULL, NULL, NULL)) {
-                (void) memcpy(cursor, path, length);
-                if (drive == currentdrive) {
-                    groupidx = totaldrives;     /* initial selection index */
+        GetLogicalDriveStringsA(sizeof(t_drives) - 1, t_drives);
+
+        for (path = t_drives, cursor = drives; *path;) {
+            const int length = strlen(path);
+            const char drive = toupper(*path);
+            int type;
+
+            assert(length < 8);
+            assert(drive >= 'A' && drive <= 'Z');
+
+            root[0] = drive;
+            if (! is_hidden(drive)) {
+                if ((type = GetDriveTypeA(root)) != DRIVE_UNKNOWN && type != DRIVE_NO_ROOT_DIR) {
+                    if (DRIVE_REMOVABLE == type ||  /* assume floppies; FIXME */
+                            GetDiskFreeSpaceExA(root, NULL, NULL, NULL)) {
+                        (void)memcpy(cursor, path, length);
+                        if (drive == currentdrive) {
+                            groupidx = totaldrives; /* initial selection index */
+                        }
+                        cursor[0] = drive;
+                        cursor += length + 1;
+                        ++totaldrives;
+                    }
                 }
-                cursor[0] = drive;
-                cursor += length + 1;
-                ++totaldrives;
             }
+            path += length + 1 /*nul*/;
         }
-        path += length + 1 /*nul*/;
+
+        groupidx = totaldrives - groupidx;      /* flip */
+
+        EMODERESTORE();
     }
-    groupidx = totaldrives - groupidx;          /* flip */
 
     /* Network resources */
 #if defined(DO_NETWORK_DRIVES)
     {                                           /* test only */
-        GQueue *network_drives = g_queue_new();
-        int elements = drive_network_names (TRUE, network_drives); // XXX: cache results           
+        GQueue *network_drives = g_queue_new ();
+        int elements = drive_network_names (TRUE, network_drives); // XXX: cache results
         g_queue_free_full (network_drives, free);
     }
-#endif  //DO_NETWORK_DRIVES
+#endif //DO_NETWORK_DRIVES
 
     /* Create Dialog */
 #define D_PERLINE       12                      /* dynamic, based on screen width?? */
@@ -283,10 +322,10 @@ drive_sel(WPanel *panel)
                 const char *curr_dir = vfs_get_current_dir ();
                 const char drive = *path;
 
-                if (!*curr_dir || toupper(*curr_dir) != drive) {
+                if (!*curr_dir || toupper (*curr_dir) != drive) {
                     char t_path[MAX_PATH], t_cwd[MAX_PATH];
 
-                    if (! w32_getcwdd(drive, t_path, sizeof(t_path))) {
+                    if (! w32_getcwdd (drive, t_path, sizeof(t_path))) {
                         t_path[0] = drive;
                         t_path[1] = ':';
                         t_path[2] = 0;
@@ -308,7 +347,7 @@ drive_sel(WPanel *panel)
                                     unix_error_string (errno));
                     }
                 }
-                break;  //done
+                break; // done
             }
             path += strlen(path) + 1;
         }
@@ -359,9 +398,16 @@ drive_network_names(int global, GQueue *result)
     if (0 == fns.state) {                       // initial request
         fns.state = -1;
         if (NULL != (fns.mpr = LoadLibraryA ("MPR.DLL"))) {
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
             fns.fnWNetOpenEnumA = (WNetOpenEnumA_t) GetProcAddress (fns.mpr, "WNetOpenEnumA");
             fns.fnWNetEnumResourceA = (WNetEnumResourceA_t) GetProcAddress (fns.mpr, "WNetEnumResourceA");
             fns.fnWNetCloseEnum = (WNetCloseEnum_t) GetProcAddress (fns.mpr, "WNetCloseEnum");
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
             if (fns.fnWNetOpenEnumA && fns.fnWNetEnumResourceA && fns.fnWNetCloseEnum) {
                 fns.state = 1;                  // done
             } else {
@@ -395,8 +441,7 @@ enumerate_disks(int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueu
 
         while (pnr) {
             if (NO_ERROR == (dwResult = fns->fnWNetEnumResourceA(hEnum, &cEntries, pnr, &dwSize))) {
-                //
-                //  Iterate result
+                // Iterate result
                 for (cIndex = 0; cIndex < cEntries; ++cIndex) {
                     NETRESOURCE *nr = pnr + cIndex;
 
@@ -427,28 +472,26 @@ enumerate_disks(int global, struct WNetFunctions *fns, LPNETRESOURCE lpnr, GQueu
                         }
                     }
                 }
-                continue;   //next
+                continue; // next
 
             } else if (ERROR_MORE_DATA == dwResult) {
-                //
-                //  Extend storage
+                // Extend storage
                 NETRESOURCE *org_pnr = pnr;
 
                 assert(dwSize > dwOrgSize);
-                if (NULL == (pnr = (NETRESOURCE*) realloc(pnr, dwSize))) {
+                if (NULL == (pnr = (NETRESOURCE *) realloc(pnr, dwSize))) {
                     free((void *)org_pnr);      // error, release previous
                 } else {
                     memset(pnr + dwOrgSize, 0, dwSize - dwOrgSize);
                     dwOrgSize = dwSize;
                 }
-                continue;   //next
+                continue; // next
 
             } else if (ERROR_NO_MORE_ITEMS != dwResult) {
-                //
-                //  Completion or error
+                // Completion or error
                 elements = -1;
             }
-            break;  //done
+            break; // done
         }
 
         if (NO_ERROR != fns->fnWNetCloseEnum(hEnum) || NULL == pnr) {
