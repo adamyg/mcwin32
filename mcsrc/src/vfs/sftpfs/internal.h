@@ -78,9 +78,9 @@ const GString *sftpfs_fix_filename (const char *file_name);
 gboolean sftpfs_op_init (sftpfs_super_t ** super, const vfs_path_element_t ** path_element,
                          const vfs_path_t * vpath, GError ** mcerror);
 
-void sftpfs_attr_to_stat (const LIBSSH2_SFTP_ATTRIBUTES * attrs, struct stat *s);
-int sftpfs_lstat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror);
-int sftpfs_stat (const vfs_path_t * vpath, struct stat *buf, GError ** mcerror);
+void sftpfs_attr_to_stat (const LIBSSH2_SFTP_ATTRIBUTES * attrs, mc_stat_t *s);
+int sftpfs_lstat (const vfs_path_t * vpath, mc_stat_t *buf, GError ** mcerror);
+int sftpfs_stat (const vfs_path_t * vpath, mc_stat_t *buf, GError ** mcerror);
 int sftpfs_readlink (const vfs_path_t * vpath, char *buf, size_t size, GError ** mcerror);
 int sftpfs_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2, GError ** mcerror);
 int sftpfs_utime (const vfs_path_t * vpath, time_t atime, time_t mtime, GError ** mcerror);
@@ -106,8 +106,8 @@ ssize_t sftpfs_read_file (vfs_file_handler_t * fh, char *buffer, size_t count, G
 ssize_t sftpfs_write_file (vfs_file_handler_t * fh, const char *buffer, size_t count,
                            GError ** mcerror);
 int sftpfs_close_file (vfs_file_handler_t * fh, GError ** mcerror);
-int sftpfs_fstat (void *data, struct stat *buf, GError ** mcerror);
-off_t sftpfs_lseek (vfs_file_handler_t * fh, off_t offset, int whence, GError ** mcerror);
+int sftpfs_fstat (void *data, mc_stat_t *buf, GError ** mcerror);
+mc_off_t sftpfs_lseek (vfs_file_handler_t * fh, mc_off_t offset, int whence, GError ** mcerror);
 
 /*** inline functions ****************************************************************************/
 

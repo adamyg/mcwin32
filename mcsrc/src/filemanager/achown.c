@@ -102,7 +102,7 @@ static int x_toggle;
 static char ch_flags[11];
 static const char ch_perm[] = "rwx";
 static mode_t ch_cmode;
-static struct stat sf_stat;
+static mc_stat_t sf_stat;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -931,7 +931,7 @@ do_advanced_chown (WPanel *panel, const vfs_path_t *p, mode_t m, uid_t u, gid_t 
  /* --------------------------------------------------------------------------------------------- */
 
 static void
-apply_advanced_chowns (WPanel *panel, vfs_path_t *vpath, struct stat *sf)
+apply_advanced_chowns (WPanel *panel, vfs_path_t *vpath, mc_stat_t *sf)
 {
     gid_t a_gid = sf->st_gid;
     uid_t a_uid = sf->st_uid;

@@ -1481,7 +1481,7 @@ static void
 load_hotlist (void)
 {
     gboolean remove_old_list = FALSE;
-    struct stat stat_buf;
+    mc_stat_t stat_buf;
 
     if (hotlist_state.loaded)
     {
@@ -1702,7 +1702,7 @@ gboolean
 save_hotlist (void)
 {
     gboolean saved = FALSE;
-    struct stat stat_buf;
+    mc_stat_t stat_buf;
 
     if (!hotlist_state.readonly && hotlist_state.modified && hotlist_file_name != NULL)
     {

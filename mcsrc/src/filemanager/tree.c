@@ -755,7 +755,7 @@ tree_move (WTree *tree, const char *default_dest)
     if (dest != NULL && *dest != '\0')
     {
         vfs_path_t *dest_vpath;
-        struct stat buf;
+        mc_stat_t buf;
 
         dest_vpath = vfs_path_from_str (dest);
 

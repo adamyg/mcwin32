@@ -265,7 +265,7 @@ static const char *netrcp;
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-ftpfs_set_blksize (struct stat *s)
+ftpfs_set_blksize (mc_stat_t *s)
 {
 #ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
     /* redefine block size */
@@ -275,10 +275,10 @@ ftpfs_set_blksize (struct stat *s)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static struct stat *
+static mc_stat_t *
 ftpfs_default_stat (struct vfs_class *me)
 {
-    struct stat *s;
+    mc_stat_t *s;
 
     s = vfs_s_default_stat (me, S_IFDIR | 0755);
     ftpfs_set_blksize (s);
@@ -1677,7 +1677,7 @@ resolve_symlink_with_ls_options (struct vfs_class *me, struct vfs_s_super *super
     char buffer[2048] = "", *filename;
     int sock;
     FILE *fp;
-    struct stat s;
+    mc_stat_t s;
     struct linklist *flist;
     struct direntry *fe;
     int switch_method = 0;
@@ -1752,7 +1752,7 @@ resolve_symlink_with_ls_options (struct vfs_class *me, struct vfs_s_super *super
                         goto done;
                     }
 
-                    fe->l_stat = g_try_new (struct stat, 1);
+                    fe->l_stat = g_try_new (mc_stat_t, 1);
                     if (fe->l_stat == NULL)
                         goto done;
 
@@ -1933,14 +1933,14 @@ ftpfs_file_store (struct vfs_class *me, vfs_file_handler_t *fh, char *name, char
     ftp_file_handler_t *ftp = FTP_FILE_HANDLER (fh);
 
     int h, sock;
-    off_t n_stored = 0;
+    mc_off_t n_stored = 0;
 #ifdef HAVE_STRUCT_LINGER_L_LINGER
     struct linger li;
 #else
     int flag_one = 1;
 #endif
     char lc_buffer[BUF_8K];
-    struct stat s;
+    mc_stat_t s;
     char *w_buf;
 
     h = open (localname, O_RDONLY);
@@ -2034,7 +2034,7 @@ ftpfs_file_store (struct vfs_class *me, vfs_file_handler_t *fh, char *name, char
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-ftpfs_linear_start (struct vfs_class *me, vfs_file_handler_t *fh, off_t offset)
+ftpfs_linear_start (struct vfs_class *me, vfs_file_handler_t *fh, mc_off_t offset)
 {
     char *name;
 
@@ -2157,7 +2157,7 @@ ftpfs_send_command (const vfs_path_t *vpath, const char *cmd, int flags)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-ftpfs_stat (const vfs_path_t *vpath, struct stat *buf)
+ftpfs_stat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     int ret;
 
@@ -2169,7 +2169,7 @@ ftpfs_stat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-ftpfs_lstat (const vfs_path_t *vpath, struct stat *buf)
+ftpfs_lstat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     int ret;
 
@@ -2181,7 +2181,7 @@ ftpfs_lstat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-ftpfs_fstat (void *vfs_info, struct stat *buf)
+ftpfs_fstat (void *vfs_info, mc_stat_t *buf)
 {
     int ret;
 
@@ -2501,7 +2501,7 @@ ftpfs_netrc_next (void)
 static gboolean
 ftpfs_netrc_bad_mode (const char *netrcname)
 {
-    struct stat mystat;
+    mc_stat_t mystat;
 
     if (stat (netrcname, &mystat) >= 0 && (mystat.st_mode & 077) != 0)
     {

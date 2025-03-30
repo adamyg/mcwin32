@@ -1,7 +1,12 @@
-Sun Mar 23 14:50:26 2025 adamy
+Mon Mar 31 00:18:09 2025 adamy
 
 	* build-232
-
+	
+		o obey NODRIVES group policy (#121)
+		o getmntinfo, networked/mapped drive (#120)
+		o non-ascii group name handling (#118)
+		o stat/seek64 (#35) and (#89)
+		
 Wed Mar 19 16:03:57 2025 adamy
 
 	* build-231

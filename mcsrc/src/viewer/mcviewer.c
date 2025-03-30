@@ -331,7 +331,7 @@ mcview_load (WView *view, const char *command, const char *file, int start_line,
     {
         int fd;
         char tmp[BUF_MEDIUM];
-        struct stat st;
+        mc_stat_t st;
 
         /* Open the file */
         vpath = vfs_path_from_str (file);

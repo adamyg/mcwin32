@@ -181,7 +181,7 @@ static gboolean
 execute_prepare_with_vfs_arg (const vfs_path_t *filename_vpath, vfs_path_t **localcopy_vpath,
                               time_t *mtime)
 {
-    struct stat st;
+    mc_stat_t st;
 
     /* Simplest case, this file is local */
     if ((filename_vpath == NULL && vfs_file_is_local (vfs_get_raw_current_dir ()))
@@ -213,7 +213,7 @@ execute_cleanup_with_vfs_arg (const vfs_path_t *filename_vpath, vfs_path_t **loc
 {
     if (*localcopy_vpath != NULL)
     {
-        struct stat st;
+        mc_stat_t st;
 
         /*
          * filename can be an entry on panel, it can be changed by executing

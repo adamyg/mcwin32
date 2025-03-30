@@ -138,7 +138,7 @@ edit_save_file (WEdit *edit, const vfs_path_t *filename_vpath)
     vfs_path_t *savename_vpath = NULL;
     const char *start_filename;
     const vfs_path_element_t *vpath_element;
-    struct stat sb;
+    mc_stat_t sb;
 
     vpath_element = vfs_path_get_by_index (filename_vpath, 0);
     if (vpath_element == NULL)
@@ -954,7 +954,7 @@ edit_save_as_cmd (WEdit *edit)
         if (!vfs_path_equal (edit->filename_vpath, exp_vpath))
         {
             int file;
-            struct stat sb;
+            mc_stat_t sb;
 
             if (mc_stat (exp_vpath, &sb) == 0 && !S_ISREG (sb.st_mode))
             {

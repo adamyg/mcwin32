@@ -622,7 +622,7 @@ undelfs_getindex (char *path)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-undelfs_stat_int (int inode_index, struct stat *buf)
+undelfs_stat_int (int inode_index, mc_stat_t *buf)
 {
     buf->st_dev = 0;
     buf->st_ino = delarray[inode_index].ino;
@@ -643,7 +643,7 @@ undelfs_stat_int (int inode_index, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-undelfs_lstat (const vfs_path_t *vpath, struct stat *buf)
+undelfs_lstat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     int inode_index;
     char *file, *f = NULL;
@@ -688,7 +688,7 @@ undelfs_lstat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-undelfs_fstat (void *vfs_info, struct stat *buf)
+undelfs_fstat (void *vfs_info, mc_stat_t *buf)
 {
     undelfs_file *p = vfs_info;
 

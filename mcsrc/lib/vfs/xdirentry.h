@@ -93,11 +93,11 @@ struct vfs_s_inode
                                    use only for directories because they
                                    cannot be hardlinked */
     GQueue *subdir;             /* If this is a directory, its entry. List of vfs_s_entry */
-    struct stat st;             /* Parameters of this inode */
+    mc_stat_t st;               /* Parameters of this inode */
     char *linkname;             /* Symlink's contents */
     char *localname;            /* Filename of local file, if we have one */
     gint64 timestamp;           /* Subclass specific */
-    off_t data_offset;          /* Subclass specific */
+    mc_off_t data_offset;       /* Subclass specific */
     void *user_data;            /* Subclass specific */
 };
 
@@ -105,7 +105,7 @@ struct vfs_s_inode
 typedef struct
 {
     struct vfs_s_inode *ino;
-    off_t pos;                  /* This is for module's use */
+    mc_off_t pos;               /* This is for module's use */
     int handle;                 /* This is for module's use, but if != -1, will be mc_close()d */
     gboolean changed;           /* Did this file change? */
     vfs_linear_state_t linear;  /* Is that file open with O_LINEAR? */
@@ -148,7 +148,7 @@ struct vfs_s_subclass
     gboolean (*dir_uptodate) (struct vfs_class * me, struct vfs_s_inode * ino);
     int (*file_store) (struct vfs_class * me, vfs_file_handler_t * fh, char *path, char *localname);
 
-    int (*linear_start) (struct vfs_class * me, vfs_file_handler_t * fh, off_t from);
+    int (*linear_start) (struct vfs_class * me, vfs_file_handler_t * fh, mc_off_t from);
     ssize_t (*linear_read) (struct vfs_class * me, vfs_file_handler_t * fh, void *buf, size_t len);
     void (*linear_close) (struct vfs_class * me, vfs_file_handler_t * fh);
     /* *INDENT-ON* */
@@ -160,7 +160,7 @@ struct vfs_s_subclass
 
 /* entries and inodes */
 struct vfs_s_inode *vfs_s_new_inode (struct vfs_class *me,
-                                     struct vfs_s_super *super, struct stat *initstat);
+                                     struct vfs_s_super *super, mc_stat_t *initstat);
 void vfs_s_free_inode (struct vfs_class *me, struct vfs_s_inode *ino);
 
 struct vfs_s_entry *vfs_s_new_entry (struct vfs_class *me, const char *name,
@@ -168,7 +168,7 @@ struct vfs_s_entry *vfs_s_new_entry (struct vfs_class *me, const char *name,
 void vfs_s_free_entry (struct vfs_class *me, struct vfs_s_entry *ent);
 void vfs_s_insert_entry (struct vfs_class *me, struct vfs_s_inode *dir, struct vfs_s_entry *ent);
 int vfs_s_entry_compare (const void *a, const void *b);
-struct stat *vfs_s_default_stat (struct vfs_class *me, mode_t mode);
+mc_stat_t *vfs_s_default_stat (struct vfs_class *me, mode_t mode);
 
 struct vfs_s_entry *vfs_s_generate_entry (struct vfs_class *me, const char *name,
                                           struct vfs_s_inode *parent, mode_t mode);

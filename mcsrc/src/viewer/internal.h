@@ -251,7 +251,7 @@ gboolean mcview_get_byte_none (WView * view, off_t byte_index, int *retval);
 void mcview_set_byte (WView * view, off_t offset, byte b);
 void mcview_file_load_data (WView * view, off_t byte_index);
 void mcview_close_datasource (WView * view);
-void mcview_set_datasource_file (WView * view, int fd, const struct stat *st);
+void mcview_set_datasource_file (WView * view, int fd, const mc_stat_t *st);
 gboolean mcview_load_command_output (WView * view, const char *command);
 void mcview_set_datasource_vfs_pipe (WView * view, int fd);
 void mcview_set_datasource_string (WView * view, const char *s);

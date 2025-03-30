@@ -3164,7 +3164,7 @@ chdir_to_readlink (WPanel *panel)
     vfs_path_t *new_dir_vpath;
     char buffer[MC_MAXPATHLEN];
     int i;
-    struct stat st;
+    mc_stat_t st;
     vfs_path_t *panel_fname_vpath;
     gboolean ok;
     WPanel *cpanel;
@@ -4729,7 +4729,7 @@ panel_sized_with_dir_new (const char *panel_name, const WRect *r, const vfs_path
 void
 panel_reload (WPanel *panel)
 {
-    struct stat current_stat;
+    mc_stat_t current_stat;
     vfs_path_t *cwd_vpath;
 
     if (panels_options.fast_reload && stat (vfs_path_as_str (panel->cwd_vpath), &current_stat) == 0

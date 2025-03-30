@@ -251,7 +251,7 @@ sftpfs_cb_closedir (void *data)
  */
 
 static int
-sftpfs_cb_lstat (const vfs_path_t *vpath, struct stat *buf)
+sftpfs_cb_lstat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     int rc;
     GError *mcerror = NULL;
@@ -271,7 +271,7 @@ sftpfs_cb_lstat (const vfs_path_t *vpath, struct stat *buf)
  */
 
 static int
-sftpfs_cb_stat (const vfs_path_t *vpath, struct stat *buf)
+sftpfs_cb_stat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     int rc;
     GError *mcerror = NULL;
@@ -291,7 +291,7 @@ sftpfs_cb_stat (const vfs_path_t *vpath, struct stat *buf)
  */
 
 static int
-sftpfs_cb_fstat (void *data, struct stat *buf)
+sftpfs_cb_fstat (void *data, mc_stat_t *buf)
 {
     int rc;
     GError *mcerror = NULL;
@@ -573,10 +573,10 @@ sftpfs_cb_rmdir (const vfs_path_t *vpath)
  * @return 0 if success, negative value otherwise
  */
 
-static off_t
-sftpfs_cb_lseek (void *data, off_t offset, int whence)
+static mc_off_t
+sftpfs_cb_lseek (void *data, mc_off_t offset, int whence)
 {
-    off_t ret_offset;
+    mc_off_t ret_offset;
     vfs_file_handler_t *fh = VFS_FILE_HANDLER (data);
     GError *mcerror = NULL;
 

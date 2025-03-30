@@ -679,7 +679,7 @@ vfs_parse_ls_lga_get_final_spaces (void)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-vfs_parse_ls_lga (const char *p, struct stat *s, char **filename, char **linkname,
+vfs_parse_ls_lga (const char *p, mc_stat_t *s, char **filename, char **linkname,
                   size_t *num_spaces)
 {
     int idx, idx2, num_cols;
@@ -793,7 +793,7 @@ vfs_parse_ls_lga (const char *p, struct stat *s, char **filename, char **linknam
         if (!is_num (idx2))
             goto error;
 
-        s->st_size = (off_t) g_ascii_strtoll (columns[idx2], NULL, 10);
+        s->st_size = (mc_off_t) g_ascii_strtoll (columns[idx2], NULL, 10);
 #ifdef HAVE_STRUCT_STAT_ST_RDEV
         s->st_rdev = 0;
 #endif

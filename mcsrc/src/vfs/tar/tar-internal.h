@@ -205,9 +205,9 @@ union block
 /* Information about a sparse file */
 struct sp_array
 {
-    off_t offset;               /* chunk offset in file */
-    off_t numbytes;             /* length of chunk */
-    off_t arch_offset;          /* chunk offset in archive */
+    mc_off_t offset;            /* chunk offset in file */
+    mc_off_t numbytes;          /* length of chunk */
+    mc_off_t arch_offset;       /* chunk offset in archive */
 };
 
 enum dump_status
@@ -234,7 +234,7 @@ typedef struct
     struct vfs_s_super base;    /* base class */
 
     int fd;
-    struct stat st;
+    mc_stat_t st;
     enum archive_format type;   /**< type of the archive */
     union block *record_start;  /**< start of record of archive */
 } tar_super_t;
@@ -254,7 +254,7 @@ struct tar_stat_info
     char *uname;                /**< user name of owner */
     char *gname;                /**< group name of owner */
 #endif
-    struct stat stat;           /**< regular filesystem stat */
+    mc_stat_t stat;             /**< regular filesystem stat */
 
     /* stat() doesn't always have access, data modification, and status
        change times in a convenient form, so store them separately.  */
@@ -262,7 +262,7 @@ struct tar_stat_info
     struct timespec mtime;
     struct timespec ctime;
 
-    off_t archive_file_size;    /**< size of file as stored in the archive.
+    mc_off_t archive_file_size; /**< size of file as stored in the archive.
                                      Equals stat.st_size for non-sparse files */
     gboolean is_sparse;         /**< is the file sparse */
 
@@ -271,7 +271,7 @@ struct tar_stat_info
     intmax_t sparse_minor;
     GArray *sparse_map;         /**< array of struct sp_array */
 
-    off_t real_size;            /**< real size of sparse file */
+    mc_off_t real_size;         /**< real size of sparse file */
     gboolean real_size_set;     /**< TRUE when GNU.sparse.realsize is set in archived file */
 
     gboolean sparse_name_done;  /**< TRUE if 'GNU.sparse.name' header was processed pax header parsing.
@@ -293,7 +293,7 @@ extern const idx_t record_size;
 
 extern union block *record_end; /* last+1 block of archive record */
 extern union block *current_block;      /* current block of archive */
-extern off_t record_start_block;        /* block ordinal at record_start */
+extern mc_off_t record_start_block;     /* block ordinal at record_start */
 
 extern union block *current_header;
 
@@ -313,11 +313,11 @@ intmax_t stoint (const char *arg, char **arglim, gboolean *overflow, intmax_t mi
                  uintmax_t maxval);
 intmax_t tar_from_header (const char *where0, size_t digs, char const *type, intmax_t minval,
                           uintmax_t maxval, gboolean octal_only);
-off_t off_from_header (const char *p, size_t s);
+mc_off_t off_from_header (const char *p, size_t s);
 union block *tar_find_next_block (tar_super_t * archive);
 gboolean tar_set_next_block_after (union block *block);
-off_t tar_current_block_ordinal (const tar_super_t * archive);
-gboolean tar_skip_file (tar_super_t * archive, off_t size);
+mc_off_t tar_current_block_ordinal (const tar_super_t * archive);
+gboolean tar_skip_file (tar_super_t * archive, mc_off_t size);
 
 /* tar-sparse.c */
 gboolean tar_sparse_member_p (tar_super_t * archive, struct tar_stat_info *st);
@@ -327,7 +327,7 @@ enum dump_status tar_sparse_skip_file (tar_super_t * archive, struct tar_stat_in
 /* tar-xheader.c */
 gboolean tar_xheader_decode (struct tar_stat_info *st);
 gboolean tar_xheader_read (tar_super_t * archive, struct xheader *xhdr, union block *header,
-                           off_t size);
+                           mc_off_t size);
 gboolean tar_xheader_decode_global (struct xheader *xhdr);
 void tar_xheader_destroy (struct xheader *xhdr);
 

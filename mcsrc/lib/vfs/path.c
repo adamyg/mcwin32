@@ -68,7 +68,7 @@ extern GPtrArray *vfs__classes_list;
 static gboolean
 path_magic (const char *path)
 {
-    struct stat buf;
+    mc_stat_t buf;
 
     return (stat (path, &buf) != 0);
 }

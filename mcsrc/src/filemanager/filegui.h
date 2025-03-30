@@ -14,7 +14,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-typedef int (*mc_stat_fn) (const vfs_path_t * vpath, struct stat * buf);
+typedef int (*mc_stat_fn) (const vfs_path_t * vpath, mc_stat_t * buf);
 
 /*** enums ***************************************************************************************/
 
@@ -101,7 +101,7 @@ typedef struct
     gboolean erase_at_end;
 
     /* Whether to do a reget */
-    off_t do_reget;
+    mc_off_t do_reget;
     /* Controls appending to files */
     gboolean do_append;
 
@@ -172,7 +172,7 @@ char *file_mask_dialog (file_op_context_t * ctx, gboolean only_one, const char *
 
 FileProgressStatus file_progress_check_buttons (file_op_context_t * ctx);
 
-void file_progress_show (file_op_context_t * ctx, off_t done, off_t total,
+void file_progress_show (file_op_context_t * ctx, mc_off_t done, mc_off_t total,
                          const char *stalled_msg, gboolean force_update);
 void file_progress_show_count (file_op_context_t * ctx);
 void file_progress_show_total (file_op_context_t * ctx, uintmax_t copied_bytes, gint64 tv_current,
@@ -185,8 +185,8 @@ gboolean file_progress_show_deleting (file_op_context_t * ctx, const vfs_path_t 
 /* The following functions are implemented separately by each port */
 FileProgressStatus file_progress_real_query_replace (file_op_context_t * ctx,
                                                      enum OperationMode mode, const char *src,
-                                                     struct stat *src_stat, const char *dst,
-                                                     struct stat *dst_stat);
+                                                     mc_stat_t *src_stat, const char *dst,
+                                                     mc_stat_t *dst_stat);
 
 /*** inline functions ****************************************************************************/
 

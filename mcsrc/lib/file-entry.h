@@ -22,7 +22,7 @@ typedef struct
     /* File name */
     GString *fname;
     /* File attributes */
-    struct stat st;
+    mc_stat_t st;
     /* Key used for comparing names */
     char *name_sort_key;
     /* Key used for comparing extensions */

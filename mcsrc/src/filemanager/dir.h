@@ -75,7 +75,7 @@ typedef struct
 /*** declarations of public functions ************************************************************/
 
 gboolean dir_list_grow (dir_list * list, int delta);
-gboolean dir_list_append (dir_list * list, const char *fname, const struct stat *st,
+gboolean dir_list_append (dir_list * list, const char *fname, const mc_stat_t *st,
                           gboolean link_to_dir, gboolean stale_link);
 
 gboolean dir_list_load (dir_list * list, const vfs_path_t * vpath, GCompareFunc sort,
@@ -86,7 +86,7 @@ void dir_list_sort (dir_list * list, GCompareFunc sort, const dir_sort_options_t
 gboolean dir_list_init (dir_list * list);
 void dir_list_clean (dir_list * list);
 void dir_list_free_list (dir_list * list);
-gboolean handle_path (const char *path, struct stat *buf1, gboolean * link_to_dir,
+gboolean handle_path (const char *path, mc_stat_t *buf1, gboolean * link_to_dir,
                       gboolean * stale_link);
 
 /* Sorting functions */

@@ -201,7 +201,7 @@ int
 lock_file (const vfs_path_t *fname_vpath)
 {
     char *lockfname = NULL, *newlock, *msg;
-    struct stat statbuf;
+    mc_stat_t statbuf;
     lock_s *lockinfo;
     gboolean is_local;
     gboolean symlink_ok = FALSE;
@@ -293,7 +293,7 @@ unlock_file (const vfs_path_t *fname_vpath)
     lockfname = lock_build_symlink_name (fname_vpath);
     if (lockfname != NULL)
     {
-        struct stat statbuf;
+        mc_stat_t statbuf;
 
         /* Check if lock exists */
         if (lstat (lockfname, &statbuf) != -1)

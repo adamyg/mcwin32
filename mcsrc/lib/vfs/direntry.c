@@ -507,7 +507,7 @@ vfs_s_chdir (const vfs_path_t *vpath)
 /* --------------------------- stat and friends ---------------------------- */
 
 static int
-vfs_s_internal_stat (const vfs_path_t *vpath, struct stat *buf, int flag)
+vfs_s_internal_stat (const vfs_path_t *vpath, mc_stat_t *buf, int flag)
 {
     struct vfs_s_inode *ino;
 
@@ -611,18 +611,18 @@ vfs_s_write (void *fh, const char *buffer, size_t count)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static off_t
-vfs_s_lseek (void *fh, off_t offset, int whence)
+static mc_off_t
+vfs_s_lseek (void *fh, mc_off_t offset, int whence)
 {
     vfs_file_handler_t *file = VFS_FILE_HANDLER (fh);
-    off_t size = file->ino->st.st_size;
+    mc_off_t size = file->ino->st.st_size;
 
     if (file->linear == LS_LINEAR_OPEN)
         vfs_die ("cannot lseek() after linear_read!");
 
     if (file->handle != -1)
     {                           /* If we have local file opened, we want to work with it */
-        off_t retval;
+        mc_off_t retval;
 
         retval = lseek (file->handle, offset, whence);
         if (retval == -1)
@@ -704,7 +704,7 @@ vfs_s_close (void *fh)
 
 static void
 vfs_s_print_stats (const char *fs_name, const char *action,
-                   const char *file_name, off_t have, off_t need)
+                   const char *file_name, mc_off_t have, mc_off_t need)
 {
     if (need != 0)
         vfs_print_message (_("%s: %s: %s %3d%% (%lld) bytes transferred"), fs_name, action,
@@ -878,7 +878,7 @@ vfs_s_dir_uptodate (struct vfs_class *me, struct vfs_s_inode *ino)
 /* --------------------------------------------------------------------------------------------- */
 
 struct vfs_s_inode *
-vfs_s_new_inode (struct vfs_class *me, struct vfs_s_super *super, struct stat *initstat)
+vfs_s_new_inode (struct vfs_class *me, struct vfs_s_super *super, mc_stat_t *initstat)
 {
     struct vfs_s_inode *ino;
 
@@ -1000,10 +1000,10 @@ vfs_s_entry_compare (const void *a, const void *b)
 
 /* --------------------------------------------------------------------------------------------- */
 
-struct stat *
+mc_stat_t *
 vfs_s_default_stat (struct vfs_class *me, mode_t mode)
 {
-    static struct stat st;
+    static mc_stat_t st;
     mode_t myumask;
 
     (void) me;
@@ -1041,7 +1041,7 @@ vfs_s_default_stat (struct vfs_class *me, mode_t mode)
  */
 
 void
-vfs_adjust_stat (struct stat *s)
+vfs_adjust_stat (mc_stat_t *s)
 {
 #ifdef HAVE_STRUCT_STAT_ST_BLOCKS
     if (s->st_size == 0)
@@ -1073,7 +1073,7 @@ vfs_s_generate_entry (struct vfs_class *me, const char *name, struct vfs_s_inode
                       mode_t mode)
 {
     struct vfs_s_inode *inode;
-    struct stat *st;
+    mc_stat_t *st;
 
     st = vfs_s_default_stat (me, mode);
     inode = vfs_s_new_inode (me, parent->super, st);
@@ -1396,7 +1396,7 @@ vfs_s_open (const vfs_path_t *vpath, int flags, mode_t mode)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-vfs_s_stat (const vfs_path_t *vpath, struct stat *buf)
+vfs_s_stat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     return vfs_s_internal_stat (vpath, buf, FL_FOLLOW);
 }
@@ -1404,7 +1404,7 @@ vfs_s_stat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-vfs_s_lstat (const vfs_path_t *vpath, struct stat *buf)
+vfs_s_lstat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     return vfs_s_internal_stat (vpath, buf, FL_NONE);
 }
@@ -1412,7 +1412,7 @@ vfs_s_lstat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-vfs_s_fstat (void *fh, struct stat *buf)
+vfs_s_fstat (void *fh, mc_stat_t *buf)
 {
     *buf = VFS_FILE_HANDLER (fh)->ino->st;
     return 0;
@@ -1424,11 +1424,11 @@ int
 vfs_s_retrieve_file (struct vfs_class *me, struct vfs_s_inode *ino)
 {
     /* If you want reget, you'll have to open file with O_LINEAR */
-    off_t total = 0;
+    mc_off_t total = 0;
     char buffer[BUF_8K];
     int handle;
     ssize_t n;
-    off_t stat_size = ino->st.st_size;
+    mc_off_t stat_size = ino->st.st_size;
     vfs_file_handler_t *fh = NULL;
     vfs_path_t *tmp_vpath;
     struct vfs_s_subclass *s = VFS_SUBCLASS (me);

@@ -294,7 +294,7 @@ edit_insert_stream (WEdit *edit, FILE *f)
   */
 
 static gboolean
-check_file_access (WEdit *edit, const vfs_path_t *filename_vpath, struct stat *st)
+check_file_access (WEdit *edit, const vfs_path_t *filename_vpath, mc_stat_t *st)
 {
     static uintmax_t threshold = UINTMAX_MAX;
     int file;
@@ -1796,7 +1796,7 @@ edit_user_menu (WEdit *edit, const char *menu_file, int selected_entry)
     gboolean mark;
     off_t curs;
     off_t start_mark, end_mark;
-    struct stat status;
+    mc_stat_t status;
     vfs_path_t *block_file_vpath;
 
     block_file = mc_config_get_full_path (EDIT_HOME_BLOCK_FILE);

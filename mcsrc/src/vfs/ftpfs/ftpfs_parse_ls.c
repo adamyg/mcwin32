@@ -56,7 +56,7 @@
 
 #define number_of_parsers 7
 
-#define NO_SIZE     ((off_t) (-1L))
+#define NO_SIZE     ((mc_off_t) (-1L))
 #define NO_DATE     ((time_t) (-1L))
 
 #define FIRST_TOKEN strtok (line, " \t")
@@ -76,24 +76,24 @@ typedef enum
     NORMAL
 } filetype;
 
-typedef gboolean (*ftpfs_line_parser) (char *line, struct stat * s, char **filename,
+typedef gboolean (*ftpfs_line_parser) (char *line, mc_stat_t * s, char **filename,
                                        char **linkname, int *err);
 
 /*** forward declarations (file scope functions) *************************************************/
 
-static gboolean ftpfs_parse_long_list_UNIX (char *line, struct stat *s, char **filename,
+static gboolean ftpfs_parse_long_list_UNIX (char *line, mc_stat_t *s, char **filename,
                                             char **linkname, int *err);
-static gboolean ftpfs_parse_long_list_NT (char *line, struct stat *s, char **filename,
+static gboolean ftpfs_parse_long_list_NT (char *line, mc_stat_t *s, char **filename,
                                           char **linkname, int *err);
-static gboolean ftpfs_parse_long_list_EPLF (char *line, struct stat *s, char **filename,
+static gboolean ftpfs_parse_long_list_EPLF (char *line, mc_stat_t *s, char **filename,
                                             char **linkname, int *err);
-static gboolean ftpfs_parse_long_list_MLSD (char *line, struct stat *s, char **filename,
+static gboolean ftpfs_parse_long_list_MLSD (char *line, mc_stat_t *s, char **filename,
                                             char **linkname, int *err);
-static gboolean ftpfs_parse_long_list_AS400 (char *line, struct stat *s, char **filename,
+static gboolean ftpfs_parse_long_list_AS400 (char *line, mc_stat_t *s, char **filename,
                                              char **linkname, int *err);
-static gboolean ftpfs_parse_long_list_OS2 (char *line, struct stat *s, char **filename,
+static gboolean ftpfs_parse_long_list_OS2 (char *line, mc_stat_t *s, char **filename,
                                            char **linkname, int *err);
-static gboolean ftpfs_parse_long_list_MacWebStar (char *line, struct stat *s, char **filename,
+static gboolean ftpfs_parse_long_list_MacWebStar (char *line, mc_stat_t *s, char **filename,
                                                   char **linkname, int *err);
 
 /*** file scope variables ************************************************************************/
@@ -274,7 +274,7 @@ ftpfs_convert_date (const char *s)
  */
 
 static gboolean
-parse_ls_line (char *line, struct stat *s, char **filename, char **linkname)
+parse_ls_line (char *line, mc_stat_t *s, char **filename, char **linkname)
 {
     char *next = NULL;
     char *t;
@@ -327,7 +327,7 @@ parse_ls_line (char *line, struct stat *s, char **filename, char **linkname)
         s->st_gid = ftpfs_get_gid (group_or_size);
 
         if (sscanf (t, "%lld%n", &size, &n) == 1 && t[n] == '\0')
-            s->st_size = (off_t) size;
+            s->st_size = (mc_off_t) size;
         t = NEXT_TOKEN_R;
         if (t == NULL)
             return FALSE;
@@ -339,7 +339,7 @@ parse_ls_line (char *line, struct stat *s, char **filename, char **linkname)
         int n;
 
         if (sscanf (group_or_size, "%lld%n", &size, &n) == 1 && group_or_size[n] == '\0')
-            s->st_size = (off_t) size;
+            s->st_size = (mc_off_t) size;
     }
 
 #ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
@@ -416,7 +416,7 @@ parse_ls_line (char *line, struct stat *s, char **filename, char **linkname)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-ftpfs_parse_long_list_UNIX (char *line, struct stat *s, char **filename, char **linkname, int *err)
+ftpfs_parse_long_list_UNIX (char *line, mc_stat_t *s, char **filename, char **linkname, int *err)
 {
     int tmp;
     gboolean ret;
@@ -447,7 +447,7 @@ ftpfs_parse_long_list_UNIX (char *line, struct stat *s, char **filename, char **
  */
 
 static gboolean
-ftpfs_parse_long_list_NT (char *line, struct stat *s, char **filename, char **linkname, int *err)
+ftpfs_parse_long_list_NT (char *line, mc_stat_t *s, char **filename, char **linkname, int *err)
 {
     char *t;
     int month, day, year, hour, minute;
@@ -503,7 +503,7 @@ ftpfs_parse_long_list_NT (char *line, struct stat *s, char **filename, char **li
         s->st_mode = S_IFREG;
         if (sscanf (t, "%lld", &size) != 1)
             ERR2;
-        s->st_size = (off_t) size;
+        s->st_size = (mc_off_t) size;
     }
 
     t = strtok (NULL, "");
@@ -539,13 +539,13 @@ ftpfs_parse_long_list_NT (char *line, struct stat *s, char **filename, char **li
  */
 
 static gboolean
-ftpfs_parse_long_list_EPLF (char *line, struct stat *s, char **filename, char **linkname, int *err)
+ftpfs_parse_long_list_EPLF (char *line, mc_stat_t *s, char **filename, char **linkname, int *err)
 {
     size_t len;
     const char *b;
     const char *name = NULL;
     size_t name_len = 0;
-    off_t size = NO_SIZE;
+    mc_off_t size = NO_SIZE;
     time_t date = NO_DATE;
     long date_l;
     long long size_ll;
@@ -651,10 +651,10 @@ ftpfs_parse_long_list_EPLF (char *line, struct stat *s, char **filename, char **
  */
 
 static gboolean
-ftpfs_parse_long_list_MLSD (char *line, struct stat *s, char **filename, char **linkname, int *err)
+ftpfs_parse_long_list_MLSD (char *line, mc_stat_t *s, char **filename, char **linkname, int *err)
 {
     const char *name = NULL;
-    off_t size = NO_SIZE;
+    mc_off_t size = NO_SIZE;
     time_t date = NO_DATE;
     const char *owner = NULL;
     const char *group = NULL;
@@ -816,7 +816,7 @@ ftpfs_parse_long_list_MLSD (char *line, struct stat *s, char **filename, char **
  */
 
 static gboolean
-ftpfs_parse_long_list_AS400 (char *line, struct stat *s, char **filename, char **linkname, int *err)
+ftpfs_parse_long_list_AS400 (char *line, mc_stat_t *s, char **filename, char **linkname, int *err)
 {
     char *t;
     char *user;
@@ -903,7 +903,7 @@ ftpfs_parse_long_list_AS400 (char *line, struct stat *s, char **filename, char *
 
     *filename = g_strdup (t);
     s->st_mode = type;
-    s->st_size = (off_t) size;
+    s->st_size = (mc_off_t) size;
     s->st_mtime = mtime;
     /* Use resulting time value */
     s->st_atime = s->st_ctime = s->st_mtime;
@@ -920,7 +920,7 @@ ftpfs_parse_long_list_AS400 (char *line, struct stat *s, char **filename, char *
  */
 
 static gboolean
-ftpfs_parse_long_list_OS2 (char *line, struct stat *s, char **filename, char **linkname, int *err)
+ftpfs_parse_long_list_OS2 (char *line, mc_stat_t *s, char **filename, char **linkname, int *err)
 {
     char *t;
     long long size;
@@ -933,7 +933,7 @@ ftpfs_parse_long_list_OS2 (char *line, struct stat *s, char **filename, char **l
 
     if (sscanf (t, "%lld", &size) != 1)
         ERR2;
-    s->st_size = (off_t) size;
+    s->st_size = (mc_off_t) size;
 
     t = NEXT_TOKEN;
     if (t == NULL)
@@ -988,7 +988,7 @@ ftpfs_parse_long_list_OS2 (char *line, struct stat *s, char **filename, char **l
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-ftpfs_parse_long_list_MacWebStar (char *line, struct stat *s, char **filename,
+ftpfs_parse_long_list_MacWebStar (char *line, mc_stat_t *s, char **filename,
                                   char **linkname, int *err)
 {
     char *t;
@@ -1031,7 +1031,7 @@ ftpfs_parse_long_list_MacWebStar (char *line, struct stat *s, char **filename,
             ERR2;
 
         if (sscanf (t, "%lld", &size) == 1)
-            s->st_size = (off_t) size;
+            s->st_size = (mc_off_t) size;
     }
     else
     {

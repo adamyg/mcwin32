@@ -155,12 +155,12 @@ tar_flush_archive (tar_super_t *archive)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static off_t
-tar_seek_archive (tar_super_t *archive, off_t size)
+static mc_off_t
+tar_seek_archive (tar_super_t *archive, mc_off_t size)
 {
-    off_t start, offset;
-    off_t nrec, nblk;
-    off_t skipped;
+    mc_off_t start, offset;
+    mc_off_t nrec, nblk;
+    mc_off_t skipped;
 
     /* If low level I/O is already at EOF, do not try to seek further. */
     if (record_end < archive->record_start + blocking_factor)
@@ -567,12 +567,12 @@ tar_from_header (const char *where0, size_t digs, char const *type, intmax_t min
 
 /* --------------------------------------------------------------------------------------------- */
 
-off_t
+mc_off_t
 off_from_header (const char *p, size_t s)
 {
     /* Negative offsets are not allowed in tar files, so invoke
-       from_header with minimum value 0, not TYPE_MINIMUM (off_t). */
-    return tar_from_header (p, s, "off_t", 0, TYPE_MAXIMUM (off_t), FALSE);
+       from_header with minimum value 0, not TYPE_MINIMUM (mc_off_t). */
+    return tar_from_header (p, s, "off_t", 0, TYPE_MAXIMUM (mc_off_t), FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -628,7 +628,7 @@ tar_set_next_block_after (union block *block)
 /**
  * Compute and return the block ordinal at current_block.
  */
-off_t
+mc_off_t
 tar_current_block_ordinal (const tar_super_t *archive)
 {
     return record_start_block + (current_block - archive->record_start);
@@ -640,10 +640,10 @@ tar_current_block_ordinal (const tar_super_t *archive)
  * Skip over @size bytes of data in blocks in the archive.
  */
 gboolean
-tar_skip_file (tar_super_t *archive, off_t size)
+tar_skip_file (tar_super_t *archive, mc_off_t size)
 {
     union block *x;
-    off_t nblk;
+    mc_off_t nblk;
 
     nblk = tar_seek_archive (archive, size);
     if (nblk >= 0)

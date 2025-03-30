@@ -169,9 +169,9 @@ typedef struct vfs_class
     struct vfs_dirent *(*readdir) (void *vfs_info);
     int (*closedir) (void *vfs_info);
 
-    int (*stat) (const vfs_path_t * vpath, struct stat * buf);
-    int (*lstat) (const vfs_path_t * vpath, struct stat * buf);
-    int (*fstat) (void *vfs_info, struct stat * buf);
+    int (*stat) (const vfs_path_t * vpath, mc_stat_t * buf);
+    int (*lstat) (const vfs_path_t * vpath, mc_stat_t * buf);
+    int (*fstat) (void *vfs_info, mc_stat_t * buf);
 
     int (*chmod) (const vfs_path_t * vpath, mode_t mode);
     int (*chown) (const vfs_path_t * vpath, uid_t owner, gid_t group);
@@ -188,7 +188,7 @@ typedef struct vfs_class
     int (*rename) (const vfs_path_t * vpath1, const vfs_path_t * vpath2);
     int (*chdir) (const vfs_path_t * vpath);
     int (*ferrno) (struct vfs_class * me);
-    off_t (*lseek) (void *vfs_info, off_t offset, int whence);
+    mc_off_t (*lseek) (void *vfs_info, mc_off_t offset, int whence);
     int (*mknod) (const vfs_path_t * vpath, mode_t mode, dev_t dev);
 
     vfsid (*getid) (const vfs_path_t * vpath);
@@ -238,11 +238,11 @@ void vfs_init_class (struct vfs_class *vclass, const char *name, vfs_flags_t fla
                      const char *prefix);
 
 void *vfs_s_open (const vfs_path_t * vpath, int flags, mode_t mode);
-int vfs_s_stat (const vfs_path_t * vpath, struct stat *buf);
-int vfs_s_lstat (const vfs_path_t * vpath, struct stat *buf);
-int vfs_s_fstat (void *fh, struct stat *buf);
+int vfs_s_stat (const vfs_path_t * vpath, mc_stat_t *buf);
+int vfs_s_lstat (const vfs_path_t * vpath, mc_stat_t *buf);
+int vfs_s_fstat (void *fh, mc_stat_t *buf);
 
-void vfs_adjust_stat (struct stat *s);
+void vfs_adjust_stat (mc_stat_t *s);
 
 vfsid vfs_getid (const vfs_path_t * vpath);
 
@@ -302,7 +302,7 @@ void vfs_free_handle (int handle);
 void vfs_setup_cwd (void);
 char *vfs_get_cwd (void);
 
-int vfs_preallocate (int dest_desc, off_t src_fsize, off_t dest_fsize);
+int vfs_preallocate (int dest_desc, mc_off_t src_fsize, mc_off_t dest_fsize);
 
 int vfs_clone_file (int dest_vfs_fd, int src_vfs_fd);
 
@@ -314,17 +314,17 @@ ssize_t mc_write (int handle, const void *buffer, size_t count);
 int mc_utime (const vfs_path_t * vpath, mc_timesbuf_t * times);
 int mc_readlink (const vfs_path_t * vpath, char *buf, size_t bufsiz);
 int mc_close (int handle);
-off_t mc_lseek (int fd, off_t offset, int whence);
+mc_off_t mc_lseek (int fd, mc_off_t offset, int whence);
 DIR *mc_opendir (const vfs_path_t * vpath);
 struct vfs_dirent *mc_readdir (DIR * dirp);
 int mc_closedir (DIR * dir);
-MC_MOCKABLE int mc_stat (const vfs_path_t * vpath, struct stat *buf);
+MC_MOCKABLE int mc_stat (const vfs_path_t * vpath, mc_stat_t *buf);
 int mc_mknod (const vfs_path_t * vpath, mode_t mode, dev_t dev);
 int mc_link (const vfs_path_t * vpath1, const vfs_path_t * vpath2);
 int mc_mkdir (const vfs_path_t * vpath, mode_t mode);
 int mc_rmdir (const vfs_path_t * vpath);
-int mc_fstat (int fd, struct stat *buf);
-MC_MOCKABLE int mc_lstat (const vfs_path_t * vpath, struct stat *buf);
+int mc_fstat (int fd, mc_stat_t * buf);
+MC_MOCKABLE int mc_lstat (const vfs_path_t * vpath, mc_stat_t *buf);
 int mc_symlink (const vfs_path_t * vpath1, const vfs_path_t * vpath2);
 int mc_rename (const vfs_path_t * vpath1, const vfs_path_t * vpath2);
 int mc_chmod (const vfs_path_t * vpath, mode_t mode);

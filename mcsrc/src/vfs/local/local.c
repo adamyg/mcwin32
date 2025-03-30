@@ -142,7 +142,7 @@ local_closedir (void *data)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-local_stat (const vfs_path_t *vpath, struct stat *buf)
+local_stat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     const char *path;
 
@@ -153,7 +153,7 @@ local_stat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-local_lstat (const vfs_path_t *vpath, struct stat *buf)
+local_lstat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     const char *path;
 
@@ -441,7 +441,7 @@ local_errno (struct vfs_class *me)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-local_fstat (void *data, struct stat *buf)
+local_fstat (void *data, mc_stat_t *buf)
 {
     int fd = *(int *) data;
 
@@ -450,8 +450,8 @@ local_fstat (void *data, struct stat *buf)
 
 /* --------------------------------------------------------------------------------------------- */
 
-off_t
-local_lseek (void *data, off_t offset, int whence)
+mc_off_t
+local_lseek (void *data, mc_off_t offset, int whence)
 {
     int fd = *(int *) data;
 

@@ -553,7 +553,7 @@ parse_mcedit_arguments (int argc, char **argv)
         {
             char *fname;
             vfs_path_t *tmp_vpath, *fname_vpath;
-            struct stat st;
+            mc_stat_t st;
 
             fname = g_strndup (tmp, p - 1 - tmp);
             tmp_vpath = vfs_path_from_str (tmp);

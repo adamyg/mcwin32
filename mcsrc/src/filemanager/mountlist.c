@@ -835,7 +835,7 @@ read_file_system_list (void)
             while ((d = readdir (dirp)) != NULL)
             {
                 char *name;
-                struct stat statbuf;
+                mc_stat_t statbuf;
 
                 if (DIR_IS_DOT (d->d_name))
                     continue;

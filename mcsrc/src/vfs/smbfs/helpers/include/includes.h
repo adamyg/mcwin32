@@ -346,7 +346,7 @@
 #endif
 
 #ifndef SMB_OFF_T
-#define SMB_OFF_T off_t
+#define SMB_OFF_T mc_off_t
 #endif
 
 #define SMB_OFF_T_BITS (sizeof(SMB_OFF_T)*8)
@@ -373,7 +373,7 @@
  */
 
 #ifndef SMB_STRUCT_STAT
-#define SMB_STRUCT_STAT struct stat
+#define SMB_STRUCT_STAT mc_stat_t
 #endif
 
 /*

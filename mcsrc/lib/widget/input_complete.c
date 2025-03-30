@@ -228,7 +228,7 @@ filename_completion_function (const char *text, int state, input_complete_t flag
         isexec = FALSE;
 
         {
-            struct stat tempstat;
+            mc_stat_t tempstat;
             vfs_path_t *tmp_vpath;
 
             tmp_vpath = vfs_path_build_filename (dirname, entry->d_name, (char *) NULL);

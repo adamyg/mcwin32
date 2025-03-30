@@ -812,7 +812,7 @@ tree_store_start_check (const vfs_path_t *vpath)
     current = tree_store_whereis (vpath);
     if (current == NULL)
     {
-        struct stat s;
+        mc_stat_t s;
 
         if (mc_stat (vpath, &s) == -1 || !S_ISDIR (s.st_mode))
             return NULL;
@@ -900,7 +900,7 @@ tree_entry *
 tree_store_rescan (const vfs_path_t *vpath)
 {
     DIR *dirp;
-    struct stat buf;
+    mc_stat_t buf;
     tree_entry *entry;
 
     if (should_skip_directory (vpath))

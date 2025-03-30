@@ -314,7 +314,7 @@ sfs_open (const vfs_path_t *vpath /*struct vfs_class *me, const char *path */ , 
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-sfs_stat (const vfs_path_t *vpath, struct stat *buf)
+sfs_stat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     return stat (sfs_redirect (vpath), buf);
 }
@@ -322,7 +322,7 @@ sfs_stat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-sfs_lstat (const vfs_path_t *vpath, struct stat *buf)
+sfs_lstat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
 #ifndef HAVE_STATLSTAT
     return lstat (sfs_redirect (vpath), buf);

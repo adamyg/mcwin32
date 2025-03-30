@@ -166,8 +166,8 @@ typedef struct
 {
     vfs_file_handler_t base;    /* base class */
 
-    off_t got;
-    off_t total;
+    mc_off_t got;
+    mc_off_t total;
     gboolean append;
 } shell_file_handler_t;
 
@@ -185,7 +185,7 @@ static struct vfs_class *vfs_shell_ops = VFS_CLASS (&shell_subclass);
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-shell_set_blksize (struct stat *s)
+shell_set_blksize (mc_stat_t *s)
 {
 #ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
     /* redefine block size */
@@ -195,10 +195,10 @@ shell_set_blksize (struct stat *s)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static struct stat *
+static mc_stat_t *
 shell_default_stat (struct vfs_class *me)
 {
-    struct stat *s;
+    mc_stat_t *s;
 
     s = vfs_s_default_stat (me, S_IFDIR | 0755);
     shell_set_blksize (s);
@@ -918,7 +918,7 @@ shell_parse_ls (char *buffer, struct vfs_s_entry *ent)
         }
 
     case 'S':
-        ST.st_size = (off_t) g_ascii_strtoll (buffer, NULL, 10);
+        ST.st_size = (mc_off_t) g_ascii_strtoll (buffer, NULL, 10);
         break;
 
     case 'P':
@@ -1079,9 +1079,9 @@ shell_file_store (struct vfs_class *me, vfs_file_handler_t *fh, char *name, char
     struct vfs_s_super *super = VFS_FILE_HANDLER_SUPER (fh);
     shell_super_t *shell_super = SHELL_SUPER (super);
     int code;
-    off_t total = 0;
+    mc_off_t total = 0;
     char buffer[BUF_8K];
-    struct stat s;
+    mc_stat_t s;
     int h;
     char *quoted_name;
 
@@ -1185,7 +1185,7 @@ shell_file_store (struct vfs_class *me, vfs_file_handler_t *fh, char *name, char
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-shell_linear_start (struct vfs_class *me, vfs_file_handler_t *fh, off_t offset)
+shell_linear_start (struct vfs_class *me, vfs_file_handler_t *fh, mc_off_t offset)
 {
     shell_file_handler_t *shell = SHELL_FILE_HANDLER (fh);
     struct vfs_s_super *super = VFS_FILE_HANDLER_SUPER (fh);
@@ -1218,9 +1218,9 @@ shell_linear_start (struct vfs_class *me, vfs_file_handler_t *fh, off_t offset)
     shell->got = 0;
     errno = 0;
 #if SIZEOF_OFF_T == SIZEOF_LONG
-    shell->total = (off_t) strtol (reply_str, NULL, 10);
+    shell->total = (mc_off_t) strtol (reply_str, NULL, 10);
 #else
-    shell->total = (off_t) g_ascii_strtoll (reply_str, NULL, 10);
+    shell->total = (mc_off_t) g_ascii_strtoll (reply_str, NULL, 10);
 #endif
     if (errno != 0)
         ERRNOR (E_REMOTE, 0);
@@ -1241,7 +1241,7 @@ shell_linear_abort (struct vfs_class *me, vfs_file_handler_t *fh)
 
     do
     {
-        n = MIN ((off_t) sizeof (buffer), (shell->total - shell->got));
+        n = MIN ((mc_off_t) sizeof (buffer), (shell->total - shell->got));
         if (n != 0)
         {
             n = read (SHELL_SUPER (super)->sockr, buffer, n);
@@ -1433,7 +1433,7 @@ shell_symlink (const vfs_path_t *vpath1, const vfs_path_t *vpath2)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-shell_stat (const vfs_path_t *vpath, struct stat *buf)
+shell_stat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     int ret;
 
@@ -1445,7 +1445,7 @@ shell_stat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-shell_lstat (const vfs_path_t *vpath, struct stat *buf)
+shell_lstat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     int ret;
 
@@ -1457,7 +1457,7 @@ shell_lstat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-shell_fstat (void *vfs_info, struct stat *buf)
+shell_fstat (void *vfs_info, mc_stat_t *buf)
 {
     int ret;
 

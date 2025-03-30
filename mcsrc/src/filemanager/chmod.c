@@ -300,7 +300,7 @@ chmod_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *dat
 /* --------------------------------------------------------------------------------------------- */
 
 static WDialog *
-chmod_dlg_create (WPanel *panel, const char *fname, const struct stat *sf_stat)
+chmod_dlg_create (WPanel *panel, const char *fname, const mc_stat_t *sf_stat)
 {
     gboolean single_set;
     WDialog *ch_dlg;
@@ -457,7 +457,7 @@ try_chmod (const vfs_path_t *p, mode_t m)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-do_chmod (WPanel *panel, const vfs_path_t *p, struct stat *sf)
+do_chmod (WPanel *panel, const vfs_path_t *p, mc_stat_t *sf)
 {
     gboolean ret;
 
@@ -474,7 +474,7 @@ do_chmod (WPanel *panel, const vfs_path_t *p, struct stat *sf)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-apply_mask (WPanel *panel, vfs_path_t *vpath, struct stat *sf)
+apply_mask (WPanel *panel, vfs_path_t *vpath, mc_stat_t *sf)
 {
     gboolean ok;
 
@@ -529,7 +529,7 @@ chmod_cmd (WPanel *panel)
     {                           /* do while any files remaining */
         vfs_path_t *vpath;
         WDialog *ch_dlg;
-        struct stat sf_stat;
+        mc_stat_t sf_stat;
         const GString *fname;
         int i, result;
 

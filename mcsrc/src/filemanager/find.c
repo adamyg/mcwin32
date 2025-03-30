@@ -163,7 +163,7 @@ static gint64 last_refresh;
 static gboolean resuming;
 static int last_line;
 static int last_pos;
-static off_t last_off;
+static mc_off_t last_off;
 static int last_i;
 
 static size_t ignore_count = 0;
@@ -1015,7 +1015,7 @@ check_find_events (WDialog *h)
 static gboolean
 search_content (WDialog *h, const char *directory, const char *filename)
 {
-    struct stat s;
+    mc_stat_t s;
     char buffer[BUF_4K] = "";   /* raw input buffer */
     int file_fd = -1;
     gboolean ret_val = FALSE;
@@ -1052,7 +1052,7 @@ search_content (WDialog *h, const char *directory, const char *filename)
         int line = 1;
         int pos = 0;
         int n_read = 0;
-        off_t off = 0;          /* file_fd's offset corresponding to strbuf[0] */
+        mc_off_t off = 0;       /* file_fd's offset corresponding to strbuf[0] */
         gboolean found = FALSE;
         char *strbuf = NULL;    /* buffer for fetched string */
         int strbuf_size = 0;
@@ -1277,7 +1277,7 @@ do_search (WDialog *h)
     static DIR *dirp = NULL;
     static char *directory = NULL;
     static gboolean pop_start_dir = TRUE;
-    struct stat tmp_stat;
+    mc_stat_t tmp_stat;
     gsize bytes_found;
     unsigned short count;
 
@@ -1816,7 +1816,7 @@ do_find (WPanel *panel, const char *start_dir, ssize_t start_dir_len, const char
 
     if (return_value == B_PANELIZE && *filename != NULL)
     {
-        struct stat st;
+        mc_stat_t st;
         GList *entry;
         dir_list *list = &panel->dir;
         char *name = NULL;

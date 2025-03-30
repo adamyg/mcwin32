@@ -353,7 +353,7 @@ apply_chowns (WPanel *panel, vfs_path_t *vpath, uid_t u, gid_t g)
     do
     {
         const GString *fname;
-        struct stat sf;
+        mc_stat_t sf;
 
         fname = panel_find_marked_file (panel, &current_file);
         vpath = vfs_path_from_str (fname->str);
@@ -395,7 +395,7 @@ chown_cmd (WPanel *panel)
     {                           /* do while any files remaining */
         vfs_path_t *vpath;
         WDialog *ch_dlg;
-        struct stat sf_stat;
+        mc_stat_t sf_stat;
         const GString *fname;
         int result;
         char buffer[BUF_TINY];
