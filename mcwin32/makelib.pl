@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.42 2025/03/06 17:16:28 cvsuser Exp $
+# $Id: makelib.pl,v 1.43 2025/03/30 18:26:01 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -124,6 +124,16 @@ my %x_environment   = (
             },
 
         'mingw32'       => {    # MingW64 (32-bit mode)
+            #
+            #   -D__MINGW_USE_VC2005_COMPAT/
+            #       Disables _USE_32BIT_TIME_T being automatically set for _WIN32 applications.
+            #
+            #    An ABI change introduced with Microsoft Visual C++ 2005 (also known as Visual C++ 8.0) 
+            #    switched time_t from 32-bit to 64-bit. It is important to build libaries with 64-bit
+            #    time_t whenever possible, as 32-bit time_t is unable to epresent times past 2038.
+            #
+            #    64-bit systems always have a 64-bit time_t and are not affected by this problem.
+            #
             TOOLCHAIN       => 'mingw32',
             TOOLCHAINEXT    => '.mingw32',
             TOOLCHAINNAME   => 'MingW32',
@@ -136,7 +146,7 @@ my %x_environment   = (
             XSWITCH         => '-o',
             AR              => 'ar',
             RC              => 'windres -DGCC_WINDRES',
-            DEFS            => '-DHAVE_CONFIG_H',
+            DEFS            => '-DHAVE_CONFIG_H -D__MINGW_USE_VC2005_COMPAT',
             CINCLUDE        => '',
             CFLAGS          => '-m32 @CCVER@ -fno-strength-reduce',
             CCVER           => '-std=gnu11',
