@@ -1069,7 +1069,7 @@ get_group(gid_t gid)
 
 
 int
-get_user_permissions(struct stat *st)
+get_user_permissions(mc_stat_t *st)
 {
     static gboolean initialized = FALSE;
     static gid_t *groups;

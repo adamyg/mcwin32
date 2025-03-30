@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.29 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.30 2025/03/30 17:16:03 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -72,8 +72,6 @@ LIBW32_API int          w32_fcntl (int fildes, int ctrl, int);
 LIBW32_API int          w32_fsync (int fildes);
 
 /*io.h*/
-struct stat;
-
 LIBW32_API int          w32_open (const char *path, int, ...);
 LIBW32_API int          w32_openA (const char *path, int, int);
 LIBW32_API int          w32_openW (const wchar_t *path, int, int);

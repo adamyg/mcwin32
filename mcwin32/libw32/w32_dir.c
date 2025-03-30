@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.28 2025/03/20 17:22:45 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dir_c, "$Id: w32_dir.c,v 1.29 2025/03/30 17:16:02 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -284,6 +284,7 @@ w32_chdirA(const char *path)
 {
     const char *expath;
     BOOL success, isunc = FALSE;
+    EMODEINIT()
     int root;
 
     if (NULL == path || !*path) {
@@ -295,6 +296,7 @@ w32_chdirA(const char *path)
         return root;
     }
 
+    EMODESUPPRESS()
     expath = w32_extendedpathA(path);           // abs-path to expanded
     success = SetCurrentDirectoryA(expath ? expath : path);
 
@@ -328,6 +330,7 @@ w32_chdirA(const char *path)
     } else {
         isunc = w32_unc_validA(path);
     }
+    EMODERESTORE()
 
     free((void*)expath);
     expath = NULL;
@@ -348,6 +351,7 @@ w32_chdirW(const wchar_t *path)
 {
     const wchar_t *expath;
     BOOL success, isunc = FALSE;
+    EMODEINIT()
     int root;
 
     if (NULL == path || !*path) {
@@ -359,6 +363,7 @@ w32_chdirW(const wchar_t *path)
         return root;
     }
 
+    EMODESUPPRESS()
     expath = w32_extendedpathW(path);           // abs-path to expanded
     success = SetCurrentDirectoryW(expath ? expath : path);
 
@@ -392,6 +397,7 @@ w32_chdirW(const wchar_t *path)
     } else {
         isunc = w32_unc_validW(path);
     }
+    EMODERESTORE()
 
     free((void*)expath);
     expath = NULL;
@@ -766,7 +772,7 @@ w32_expandlinkA(const char *name, char *buf, size_t buflen, unsigned flags)
         for (cursor = t_name + length, end = cursor; --cursor >= t_name;) {
             if ('.' == *cursor) {               // extension
                 if (1 == ++dots) {              // last/trailing
-                    if (0 == w32_io_strnicmp(cursor, ".lnk", 4) && (cursor + 4) == end) {
+                    if (0 == w32_iostrnicmp(cursor, ".lnk", 4) && (cursor + 4) == end) {
                         //
                         //  <shortcut>.lnk
                         //      - attempt expansion, allowing one within any given path.
@@ -824,7 +830,7 @@ w32_expandlinkW(const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags
         for (cursor = t_name + length, end = cursor; --cursor >= t_name;) {
             if ('.' == *cursor) {               // extension
                 if (1 == ++dots) {              // last/trailing
-                    if (0 == w32_io_wstrnicmp(cursor, ".lnk", 4) && (cursor + 4) == end) {
+                    if (0 == w32_iowstrnicmp(cursor, ".lnk", 4) && (cursor + 4) == end) {
                         //
                         //  <shortcut>.lnk
                         //      - attempt expansion, allowing one within any given path.

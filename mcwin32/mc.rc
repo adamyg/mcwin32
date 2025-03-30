@@ -75,7 +75,7 @@ VS_VERSION_INFO VERSIONINFO
 
                                 VALUE "FileVersion",            VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER
 
-                                VALUE "InternalName",           "WIN32 Midnight Commander"
+                                VALUE "InternalName",           "Midnight Commander Win32"
 
                                 VALUE "LegalCopyright",
                                         "Copyright (C) 2012 - " BUILD_YEAR ", Adam Young. All rights reserved. \n"

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.11 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.12 2025/03/30 17:16:03 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -168,7 +168,7 @@ w32_renameA(const char *ofile, const char *nfile)
     }
 
     if (0 == ret) {
-        const char* exnpath;
+        const char *exnpath;
 
         if (NULL != (exnpath = w32_extendedpathA(nfile))) {
             nfile = exnpath;                    // abs-path to expanded

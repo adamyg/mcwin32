@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_ino_c,"$Id: w32_ino.c,v 1.16 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_ino_c,"$Id: w32_ino.c,v 1.17 2025/03/30 17:16:02 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -191,11 +191,8 @@ w32_ino_fildes(int fildes)
 {
     HANDLE handle;
 
-    if (fildes < 0) {
-        return 0;
-    } else if (fildes >= WIN32_FILDES_MAX ||
-                (handle = (HANDLE) _get_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
-        return 0;
+    if ((handle = w32_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
+        return 0;                               // socket or invalid file-descriptor
     }
     return w32_ino_handle(handle);
 }

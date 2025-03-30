@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.8 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.9 2025/03/30 17:16:03 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -41,6 +41,57 @@ __CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.8 2025/03/06 16:59:47 cvsu
 
 #pragma comment(lib, "Ws2_32.lib")
 
+/*
+//  NAME
+//
+//      writev - write a vector
+//
+//  SYNOPSIS
+//
+//      #include <sys/uio.h>
+//      ssize_t writev(int fildes, const struct iovec* iov, int iovcnt); [Option End]
+//
+//  DESCRIPTION
+//
+//      The writev() function shall be equivalent to write(), except as described below. 
+//  
+//      The writev() function shall gather output data from the iovcnt buffers specified
+//      by the members of the iov array: iov[0], iov[1], ..., iov[iovcnt - 1]. The iovcnt
+//      argument is valid if greater than 0 and less than or equal to IOV_MAX, 
+//      as defined in <limits.h>.
+//
+//      Each iovec entry specifies the base addressand length of an area in memory from 
+//      which data should be written.The writev() function shall always write a complete
+//      area before proceeding to the next.
+//
+//      If fildes refers to a regular fileand all of the iov_len members in the array 
+//      pointed to by iov are 0, writev() shall return 0 and have no other effect.
+//      For other file types, the behavior is unspecified.
+//
+//      If the sum of the iov_len values is greater than SSIZE_MAX, the operation shall
+//      failand no data shall be transferred.
+//
+//  RETURN VALUE
+//
+//      Upon successful completion, writev() shall return the number of bytes actually
+//      written. Otherwise, it shall return a value of - 1, the file - pointer shall 
+//      remain unchanged, and errno shall be set to indicate an error.
+//
+//  ERRORS
+//
+//      Refer to write().
+//
+//      In addition, the writev() function shall fail if:
+//
+//      [EINVAL]
+//          The sum of the iov_len values in the iov array would overflow an ssize_t.
+//
+//          The writev() function may failand set errno to :
+//
+//      [EINVAL]
+//          The iovcnt argument was less than or equal to 0, or greater than{ IOV_MAX }.
+//
+*/
 
 LIBW32_API int /*ssize_t*/
 writev(int fildes, const struct iovec *iov, int iovcnt)

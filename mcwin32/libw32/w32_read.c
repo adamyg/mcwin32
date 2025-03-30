@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_read_c,"$Id: w32_read.c,v 1.15 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_read_c,"$Id: w32_read.c,v 1.16 2025/03/30 17:16:03 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -40,8 +40,13 @@ __CIDENT_RCSID(gr_w32_read_c,"$Id: w32_read.c,v 1.15 2025/03/06 16:59:46 cvsuser
 #define _WIN32_WINNT        0x0501              /* enable xp+ features */
 #endif
 
+#if !defined(_LARGEFILE64_SOURCE)
+#define _LARGEFILE64_SOURCE
+#endif
+
 #include "win32_internal.h"
 #include "win32_misc.h"
+
 #include <unistd.h>
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -55,6 +60,8 @@ __CIDENT_RCSID(gr_w32_read_c,"$Id: w32_read.c,v 1.15 2025/03/06 16:59:46 cvsuser
 //      #include <unistd.h>
 //
 //      ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset);
+//      ssize_t pread64(int fildes, void *buf, size_t nbyte, off64_t offset);
+//
 //      ssize_t read(int fildes, void *buf, size_t nbyte);
 //
 //  DESCRIPTION
@@ -288,6 +295,7 @@ __CIDENT_RCSID(gr_w32_read_c,"$Id: w32_read.c,v 1.15 2025/03/06 16:59:46 cvsuser
 //      [ESPIPE]
 //          fildes is associated with a pipe or FIFO. [Option End]
 */
+
 LIBW32_API int
 w32_read(int fildes, void *buf, size_t nbyte)
 {
@@ -312,25 +320,22 @@ w32_read(int fildes, void *buf, size_t nbyte)
 
 
 LIBW32_API ssize_t
-pread(int fildes, void *buf, size_t nbyte, off_t offset)
+pread(int fildes, void* buf, size_t nbyte, off_t offset)
 {
-#if defined(DO_NONBINARY)
-    if (_lseek(filde, offset, SEEK_SET) != offset) {
-        return -1;
-    }
-    return _read(file, buf, nbytes);
+    return pread64(fildes, buf, nbyte, (off64_t)offset);
+}
 
-#else
+
+LIBW32_API ssize_t
+pread64(int fildes, void *buf, size_t nbyte, off64_t offset)
+{
     HANDLE handle;
     ssize_t ret;
 
-    if (fildes < 0) {
-        errno = EBADF;
+    if ((handle = w32_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
+        errno = EBADF;                          // socket or invalid file-descriptor
         ret = -1;
-    } else if (fildes >= WIN32_FILDES_MAX ||    // socket
-            (handle = (HANDLE) _get_osfhandle(fildes)) != INVALID_HANDLE_VALUE) {
-        errno = EBADF;
-        ret = -1;
+
     } else {
         DWORD nread, error, rc;
         LARGE_INTEGER li;
@@ -338,7 +343,6 @@ pread(int fildes, void *buf, size_t nbyte, off_t offset)
         li.QuadPart = offset;
         if (INVALID_SET_FILE_POINTER ==
                 (rc = SetFilePointer(handle, li.LowPart, &li.HighPart, FILE_BEGIN))) {
-                                                // confirm, see msdn examples
             if (NO_ERROR != (error = GetLastError())) {
                 return (w32_errno_setas(error));
             }
@@ -351,7 +355,6 @@ pread(int fildes, void *buf, size_t nbyte, off_t offset)
         }
     }
     return ret;
-#endif
 }
 
 /*end*/

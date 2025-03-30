@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_write_c,"$Id: w32_write.c,v 1.18 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_write_c,"$Id: w32_write.c,v 1.19 2025/03/30 17:16:03 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -33,8 +33,13 @@ __CIDENT_RCSID(gr_w32_write_c,"$Id: w32_write.c,v 1.18 2025/03/06 16:59:47 cvsus
 #define _WIN32_WINNT 0x0501                     /* enable xp+ features */
 #endif
 
+#if !defined(_LARGEFILE64_SOURCE)
+#define _LARGEFILE64_SOURCE
+#endif
+
 #include "win32_internal.h"
 #include "win32_misc.h"
+
 #include <unistd.h>
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -48,7 +53,8 @@ __CIDENT_RCSID(gr_w32_write_c,"$Id: w32_write.c,v 1.18 2025/03/06 16:59:47 cvsus
 //
 //      #include <unistd.h>
 //
-//      ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset); [Option End]
+//      ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset);
+//      ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off64_t offset);
 //
 //      ssize_t write(int fildes, const void *buf, size_t nbyte);
 //
@@ -341,25 +347,22 @@ w32_write(int fildes, const void *buffer, size_t nbyte)
 
 
 LIBW32_API ssize_t
-pwrite(int fildes, const void *buf, size_t nbyte, off_t offset)
+pwrite(int fildes, const void* buf, size_t nbyte, off_t offset)
 {
-#if defined(DO_NONBINARY)
-    if (-1 == _lseek(fildes, offset)) {
-        return (-1);
-    }
-    return _write(filedes, buf, nbytes);
+    return pwrite64(fildes, buf, nbyte, (off64_t)offset);
+}
 
-#else
+
+LIBW32_API ssize_t
+pwrite64(int fildes, const void *buf, size_t nbyte, off64_t offset)
+{
     HANDLE handle;
     ssize_t ret;
 
-    if (fildes < 0) {
-        errno = EBADF;
+    if ((handle = w32_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
+        errno = EBADF;                          // socket or invalid file-descriptor
         ret = -1;
-    } else if (fildes >= WIN32_FILDES_MAX ||    // socket or invalid file-descriptor
-            (handle = (HANDLE) _get_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
-        errno = EBADF;
-        ret = -1;
+
     } else {
         DWORD nwrite, error, rc;
         LARGE_INTEGER li;
@@ -367,7 +370,6 @@ pwrite(int fildes, const void *buf, size_t nbyte, off_t offset)
         li.QuadPart = offset;
         if (INVALID_SET_FILE_POINTER ==
                 (rc = SetFilePointer(handle, li.LowPart, &li.HighPart, FILE_BEGIN))) {
-                                                // confirm, see msdn examples
             if (NO_ERROR != (error = GetLastError())) {
                 return (w32_errno_setas(error));
             }
@@ -380,7 +382,6 @@ pwrite(int fildes, const void *buf, size_t nbyte, off_t offset)
         }
     }
     return ret;
-#endif
 }
 
 /*end*/

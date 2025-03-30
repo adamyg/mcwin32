@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.15 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_direntunc_c,"$Id: w32_direntunc.c,v 1.16 2025/03/30 17:16:02 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -153,7 +153,7 @@ w32_unc_opendirA(const char *dirname)
     }
 
     if (NULL == (dp = w32_dir_alloc())) {
-        WNetCloseEnum(handle);
+        (void) WNetCloseEnum(handle);
         return (DIR *)NULL;
     }
 
@@ -184,7 +184,7 @@ w32_unc_opendirW(const wchar_t *dirname)
     }
 
     if (NULL == (dp = w32_dir_alloc())) {
-        WNetCloseEnum(handle);
+        (void) WNetCloseEnum(handle);
         return (DIR *)NULL;
     }
 
@@ -208,12 +208,19 @@ w32_unc_readdirA(DIR *dp)
     }
     assert(DIR_UMAGIC == dp->dd_magic);
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:6255)
+#endif
     if (NULL == (buffer = alloca(bufsize))) return NULL;
     result = WNetEnumResourceA(dp->dd_handle, &count, buffer, &bufsize);
     if (NO_ERROR != result) {
         unc_errno();
         return NULL;
     }
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
     cursor = ((LPNETRESOURCEA) buffer)->lpRemoteName;
     if (cursor[0] && cursor[1]) {
@@ -253,7 +260,14 @@ w32_unc_readdirW(DIR *dp)
     }
     assert(DIR_UMAGIC == dp->dd_magic);
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:6255)
+#endif
     if (NULL == (buffer = alloca(bufsize))) return NULL;
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
     result = WNetEnumResourceW(dp->dd_handle, &count, buffer, &bufsize);
     if (NO_ERROR != result) {
         unc_errno();
@@ -274,7 +288,7 @@ w32_unc_readdirW(DIR *dp)
             int namlen;
 
             if ((namlen = w32_wc2utf(cursor, filename, _countof(filename))) < 0) {
-                namlen = 0;                     // shouldnt occur
+                namlen = 0;                     // shouldn't occur
             }
             dpent->d_namlen = namlen;
             memcpy(dpent->d_name, filename, namlen + 1 /*nul*/);
@@ -294,7 +308,7 @@ w32_unc_closedir(DIR *dp)
         return -1;
     }
     if (dp->dd_handle && INVALID_HANDLE_VALUE != dp->dd_handle) {
-        WNetCloseEnum(dp->dd_handle);
+        (void) WNetCloseEnum(dp->dd_handle);
         dp->dd_handle = INVALID_HANDLE_VALUE;
     }
     w32_dir_free(dp);

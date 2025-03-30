@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.8 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_dlfcn_c,"$Id: w32_dlfcn.c,v 1.9 2025/03/30 17:16:02 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -604,7 +604,7 @@ dlerror_lastA(const char *file)
     if (file && *file) {
         int len;
 
-        len = _snprintf(x_dlerror, sizeof(x_dlerror), "%s : ", file);
+        len = _snprintf(x_dlerror, sizeof(x_dlerror)-1, "%s : ", file);
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), 0,
             x_dlerror, sizeof(x_dlerror) - len, NULL);
         x_dlerror[sizeof(x_dlerror)-1] = 0;

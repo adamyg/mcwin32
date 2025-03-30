@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.48 2025/03/06 17:39:04 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.49 2025/03/30 17:16:02 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -145,6 +145,29 @@ __CPRAGMA_ONCE
 #if defined(LIBW32_UNISTD_MAP) && !defined(WIN32_UNISTD_MAP)
 #define WIN32_UNISTD_MAP 1
 #endif
+
+#if defined(_LARGEFILE64_SOURCE)
+#if !defined(OFF64_T)
+#define OFF64_T 1
+#define FPOS64_T 1
+#if defined(__WATCOMC__)
+typedef long long off64_t;
+typedef long long fpos64_t;
+#define stat64 _stati64     // Note: sizeof(st_size)==8, sizeof(st_atime)==4
+#else
+typedef __int64 off64_t;
+typedef __int64 fpos64_t;
+#define stat64 _stat64      // Note: sizeof(st_size)==8, sizeof(time_t/st_atime)==8
+#endif
+#endif // OFF64_T
+#endif //_LARGEFILE64_SOURCE
+
+#define EMODEINIT()         UINT __errmode = 0;
+    // 0 - system default, displays all error dialog boxes.
+#define EMODESUPPRESS()     __errmode = SetErrorMode (SEM_FAILCRITICALERRORS|SEM_NOGPFAULTERRORBOX);
+    // SEM_FAILCRITICALERRORS - system does not display the critical-error handler message box.
+    // SEM_NOGPFAULTERRORBOX - system does not invoke Windows Error Reporting.
+#define EMODERESTORE()      SetErrorMode (__errmode);
 
 __BEGIN_DECLS
 
@@ -460,8 +483,8 @@ LIBW32_API int          getsubopt (char **optionp, char * const *tokens, char **
 #define NEED_STRCASECMP                         /*see: w32_string.c*/
 #endif
 #if defined(NEED_STRCASECMP)
-LIBW32_API int          strcasecmp(const char *s1, const char *s2);
-LIBW32_API int          strncasecmp(const char *s1, const char *s2, size_t len);
+LIBW32_API int          strcasecmp (const char *s1, const char *s2);
+LIBW32_API int          strncasecmp (const char *s1, const char *s2, size_t len);
 #endif /*NEED_STRCASECMP*/
 
 #if (defined(_MSC_VER) && (_MSC_VER < 1400)) || \
@@ -534,18 +557,32 @@ LIBW32_API int          w32_utf8filenames_enable (void);
 LIBW32_API int          w32_open (const char *path, int, ...);
 LIBW32_API int          w32_openA (const char *path, int, int);
 LIBW32_API int          w32_openW (const wchar_t *path, int, int);
+
 LIBW32_API int          w32_stat (const char *path, struct stat *sb);
 LIBW32_API int          w32_statA (const char *path, struct stat *sb);
 LIBW32_API int          w32_statW (const wchar_t *path, struct stat *sb);
 LIBW32_API int          w32_lstat (const char *path, struct stat *sb);
 LIBW32_API int          w32_lstatA (const char *path, struct stat *sb);
 LIBW32_API int          w32_lstatW (const wchar_t *path, struct stat *sb);
-LIBW32_API int          w32_fstat (int fd, struct stat *sb);
-LIBW32_API int          w32_fstatA (int fd, struct stat *sb);
-LIBW32_API int          w32_fstatW (int fd, struct stat *sb);
-LIBW32_API int          w32_read (int fd, void *buffer, size_t cnt);
-LIBW32_API int          w32_write (int fd, const void *buffer, size_t cnt);
-LIBW32_API int          w32_close (int fd);
+LIBW32_API int          w32_fstat (int fildes, struct stat *sb);
+LIBW32_API int          w32_fstatA (int fildes, struct stat *sb);
+LIBW32_API int          w32_fstatW (int fildes, struct stat *sb);
+
+#if defined(_LARGEFILE64_SOURCE)
+LIBW32_API int          w32_stat64 (const char *path, struct stat64 *sb);
+LIBW32_API int          w32_stat64A (const char *path, struct stat64 *sb);
+LIBW32_API int          w32_stat64W (const wchar_t *path, struct stat64 *sb);
+LIBW32_API int          w32_lstat64 (const char *path, struct stat64 *sb);
+LIBW32_API int          w32_lstat64A (const char *path, struct stat64 *sb);
+LIBW32_API int          w32_lstat64W (const wchar_t *path, struct stat64 *sb);
+LIBW32_API int          w32_fstat64 (int fildes, struct stat64 *sb);
+LIBW32_API int          w32_fstat64A (int fildes, struct stat64 *sb);
+LIBW32_API int          w32_fstat64W (int fildes, struct stat64 *sb);
+#endif
+
+LIBW32_API int          w32_read (int fildes, void *buffer, size_t cnt);
+LIBW32_API int          w32_write (int fildes, const void *buffer, size_t cnt);
+LIBW32_API int          w32_close (int fildes);
 LIBW32_API const char * w32_strerror (int errnum);
 
 LIBW32_API int          w32_link (const char *from, const char *to);
@@ -571,21 +608,43 @@ LIBW32_API int          w32_renameW (const wchar_t *ofile, const wchar_t *nfile)
 LIBW32_API ssize_t      pread (int fildes, void *buf, size_t nbyte, off_t offset);
 LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t offset);
 
-LIBW32_API int          w32_pipe(int fildes[2]);
+#if defined(_LARGEFILE64_SOURCE)
+LIBW32_API off64_t      w32_lseek64 (int fildes, off64_t offset, int whence);
+LIBW32_API off64_t      w32_tell64 (int fildes);
+LIBW32_API off64_t      w32_filelength64 (int fildes);
+
+LIBW32_API off64_t      w32_fseeko64 (FILE *stream, off64_t offset, int whence);
+LIBW32_API off64_t      w32_ftello64 (FILE *stream);
+LIBW32_API int          w32_fgetpos64 (FILE *stream, fpos64_t *pos);
+
+LIBW32_API ssize_t      pread64 (int fildes, void *buf, size_t nbyte, off64_t offset);
+LIBW32_API ssize_t      pwrite64 (int fildes, const void *buf, size_t nbyte, off64_t offset);
+#endif
+
+LIBW32_API int          w32_pipe (int fildes[2]);
 
 #if defined(WIN32_UNISTD_MAP)
 #define open            w32_open
-#define stat(a,b)       w32_stat(a, b)
-#define lstat(a,b)      w32_lstat(a, b)
-#define fstat(a,b)      w32_fstat(a, b)
-#define read(a,b,c)     w32_read(a, b, c)
-#define write(a,b,c)    w32_write(a, b, c)
-#define close(a)        w32_close(a)
-#define link(f,t)       w32_link(f,t)
-#define unlink(p)       w32_unlink(p)
-#define access(p,m)     w32_access(p, m)
-#define rename(a,b)     w32_rename(a,b)
-#define pipe(__f)       w32_pipe(__f)
+#if defined(_LARGEFILE64_SOURCE)
+#define stat(a,b)       w32_stat64 (a, b)
+#define lstat(a,b)      w32_lstat64 (a, b)
+#define fstat(a,b)      w32_fstat64 (a, b)
+#define lseek(a,b,c)    w32_lseek64 (a, b, c)
+#define tell(a)         w32_tell64 (a)
+#define filelength(a)   w32_filelength64 (a)
+#else
+#define stat(a,b)       w32_stat (a, b)
+#define lstat(a,b)      w32_lstat (a, b)
+#define fstat(a,b)      w32_fstat (a, b)
+#endif
+#define read(a,b,c)     w32_read (a, b, c)
+#define write(a,b,c)    w32_write (a, b, c)
+#define close(a)        w32_close (a)
+#define link(f,t)       w32_link (f,t)
+#define unlink(p)       w32_unlink (p)
+#define access(p,m)     w32_access (p, m)
+#define rename(a,b)     w32_rename (a,b)
+#define pipe(__f)       w32_pipe (__f)
 #endif /*WIN32_UNISTD_MAP*/
 
 #if defined(WIN32_UNISTD_MAP) || \
@@ -664,6 +723,12 @@ LIBW32_API int          ftruncate (int fildes, off_t size);
 LIBW32_API int          truncate (const char *path, off_t length);
 LIBW32_API int          truncateA (const char *path, off_t length);
 LIBW32_API int          truncateW (const wchar_t *path, off_t length);
+#if defined(_LARGEFILE64_SOURCE)
+LIBW32_API int          ftruncate64 (int fildes, off64_t size);
+LIBW32_API int          truncate64 (const char *path, off64_t size);
+LIBW32_API int          truncate64A (const char *path, off64_t length);
+LIBW32_API int          truncate64W (const wchar_t *path, off64_t length);
+#endif
 
 LIBW32_API int          w32_readlink (const char *path, char *name, size_t sz);
 LIBW32_API int          w32_readlinkA (const char *path, char *name, size_t sz);
@@ -734,8 +799,8 @@ LIBW32_API long long    strtoll (const char * nptr, char ** endptr, int base);
 #endif
 #endif /*_MSC_VER*/
 
-LIBW32_API void         setproctitle(const char *fmt, ...);
-LIBW32_API void         setproctitle_fast(const char *fmt, ...);
+LIBW32_API void         setproctitle (const char *fmt, ...);
+LIBW32_API void         setproctitle_fast (const char *fmt, ...);
 
 __END_DECLS
 

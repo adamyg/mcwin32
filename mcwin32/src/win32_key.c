@@ -2,39 +2,37 @@
 /*
    win32 tty/keys implementation
 
-        #include "../lib/tty/key.h"
+        init_key
+        init_key_input_fd
+        done_key
 
-        void        init_key (void);
-        void        init_key_input_fd (void);
-        void        done_key (void);
+        define_sequence
 
-        gboolean    define_sequence (int code, const char *seq, int action);
+        lookup_key
+        lookup_key_by_code
 
-        long        lookup_key (const char *name, char **label);
-        char *      lookup_key_by_code (const int keycode);
+        add_select_channel
+        delete_select_channel
+        remove_select_channel
 
-        void        add_select_channel (int fd, select_fn callback, void *info);
-        void        delete_select_channel (int fd);
-        void        remove_select_channel (int fd);
+        channels_up
+        channels_down
 
-        void        channels_up (void);
-        void        channels_down (void);
+        load_xtra_key_defines
 
-        void        load_xtra_key_defines (void);
+        learn_key
 
-        char *      learn_key (void);
+        tty_get_event
+        is_idle
+        tty_getch
 
-        int         tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block);
-        gboolean    is_idle (void);
-        int         tty_getch (void);
+        get_key_code
 
-        int         get_key_code (int nodelay);
+        numeric_keypad_mode
+        application_keypad_mode
 
-        void        numeric_keypad_mode (void);
-        void        application_keypad_mode (void);
-
-        void        enable_bracketed_paste (void);
-        void        disable_bracketed_paste (void);
+        enable_bracketed_paste
+        disable_bracketed_paste
 
    Adam Young 2015 - 2025
 

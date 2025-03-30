@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.23 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.24 2025/03/30 17:16:03 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -282,7 +282,7 @@ ShellA(const char *shell, const char *cmd,
 
     } else {
         ShellCleanup((void *)&pd);
-        (void) w32_waitpid(w32_HTOI(hProc), &status, 0);
+        (void) w32_waitpid(w32_htof(hProc), &status, 0);
     }
 
     free(shname);
@@ -427,7 +427,7 @@ ShellW(const wchar_t *shell, const wchar_t  *cmd,
 
     } else {
         ShellCleanup((void *)&pd);
-        (void) w32_waitpid(w32_HTOI(hProc), &status, 0);
+        (void) w32_waitpid(w32_htof(hProc), &status, 0);
     }
 
     free(shname);
@@ -668,7 +668,7 @@ w32_spawnA2(
             Close(hErrorRead);
         }
     }
-    return w32_HTOI(hProc);
+    return w32_htof(hProc);
 }
 
 
@@ -811,7 +811,7 @@ w32_spawnW2(
             Close(hErrorRead);
         }
     }
-    return w32_HTOI(hProc);
+    return w32_htof(hProc);
 }
 
 
@@ -1090,7 +1090,7 @@ w32_execA(win32_exec_t *args)
     args->hInput  = hInputWrite;
     args->hOutput = hOutputRead;
     args->hError  = hErrorRead;
-    return w32_HTOI(args->hProc);
+    return w32_htof(args->hProc);
 
 einval:;
     Close(hOutputReadTmp); Close(hInputWriteTmp); Close(hErrorReadTmp);
@@ -1148,7 +1148,7 @@ w32_execW(win32_execw_t *args)
     args->hInput  = hInputWrite;
     args->hOutput = hOutputRead;
     args->hError  = hErrorRead;
-    return w32_HTOI(args->hProc);
+    return w32_htof(args->hProc);
 
 einval:;
     Close(hOutputReadTmp); Close(hInputWriteTmp); Close(hErrorReadTmp);

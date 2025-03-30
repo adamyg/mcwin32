@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.13 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockbase_c,"$Id: w32_sockbase.c,v 1.14 2025/03/30 17:16:03 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
@@ -75,7 +75,7 @@ w32_sockinit(void)
         WORD wVersionRequested;
         WSADATA wsaData;
 
-        w32_fdsetinit();                      /* shadow file-descriptors */
+        w32_fdsetinit();                        /* shadow file-descriptors */
         wVersionRequested = MAKEWORD(2, 2);     /* winsock2 */
         if (WSAStartup(wVersionRequested, &wsaData) != 0) {
             w32_sockerror();

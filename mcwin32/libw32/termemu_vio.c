@@ -1991,7 +1991,7 @@ CopyOutVirtual(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
 
     WCHAR wcbuf[2 * 1024],                      // ExtTextOut limit
         *wcend = wcbuf + ((sizeof(wcbuf) / sizeof(wcbuf[0])) - 128);
-    char  u8buf[sizeof(wcbuf) * 4];
+    char u8buf[sizeof(wcbuf) * 4];
 
     assert(pos < vio.size);
     assert(0 == (pos % cols));

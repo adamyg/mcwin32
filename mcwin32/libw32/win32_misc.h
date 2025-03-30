@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_MISC_H_INCLUDED
 #define LIBW32_WIN32_MISC_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.18 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.19 2025/03/30 17:16:03 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -56,8 +56,9 @@ enum w32ostype {            /* generalised machine types, ignoring server */
 #define WIN32_PATH_MAX      1024                /* 255, unless UNC names are used */
 #define WIN32_LINK_DEPTH    8
 
-int                         w32_HTOI(HANDLE handle);
-HANDLE                      w32_ITOH(int pid);
+int                         w32_htof(HANDLE handle);
+HANDLE                      w32_ftoh(int pid);
+HANDLE                      w32_osfhandle(int fildes);
 
 LIBW32_API enum w32ostype   w32_ostype(void);
 LIBW32_API int              w32_getexedir(char *buf, int maxlen);

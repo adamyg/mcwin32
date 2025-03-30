@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.29 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.30 2025/03/30 17:16:03 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -107,13 +107,13 @@ __BEGIN_DECLS
 #define WIN32_FILDES_MAX    (8*1024)            /* was 2048, now 8192/2019 */
 
 extern int              x_w32_cwdn;             /* current/last working drive number, A=1 etc */
-extern const char *     x_w32_cwdd[26];         /* last directory, prr drive */
+extern const char *     x_w32_cwdd[26];         /* last directory, per drive */
 extern const char *     x_w32_vfscwd;           /* current UNC path, if any */
 
-int                     w32_io_stricmp (const char *s1, const char *s2);
-int                     w32_io_strnicmp (const char *s1, const char *s2, int slen);
-int                     w32_io_wstricmp (const wchar_t *s1, const char *s2);
-int                     w32_io_wstrnicmp (const wchar_t *s1, const char *s2, int slen);
+int                     w32_iostricmp (const char *s1, const char *s2);
+int                     w32_iostrnicmp (const char *s1, const char *s2, int slen);
+int                     w32_iowstricmp (const wchar_t *s1, const char *s2);
+int                     w32_iowstrnicmp (const wchar_t *s1, const char *s2, int slen);
 
 LIBW32_API int          w32_utf8filenames_enable (void);
 LIBW32_API int          w32_utf8filenames_disable (void);
@@ -142,10 +142,10 @@ LIBW32_API const struct passwd *w32_passwd_user (void);
 LIBW32_API const struct group *w32_group_user (void);
 
 LIBW32_API char *       w32_extendedpathA (const char *path);
-LIBW32_API wchar_t*     w32_extendedpathW (const wchar_t *path);
+LIBW32_API wchar_t *    w32_extendedpathW (const wchar_t *path);
 
-#define FNCMP_FILENAME (0x01)           // Matching a file-name otherwise a directory,  allowing optional trailing slashes.
-#define FNCMP_CASE_SENSITIVE (0x02)     // Enable case sensitively.
+#define FNCMP_FILENAME (0x01)                   // Matching a file-name otherwise a directory,  allowing optional trailing slashes.
+#define FNCMP_CASE_SENSITIVE (0x02)             // Enable case sensitively.
 
 LIBW32_API int          w32_filenamecmpA (const char *f1, const char *f2, unsigned flags);
 LIBW32_API int          w32_filenamecmpW (const wchar_t *f1, const wchar_t *f2, unsigned flags);
