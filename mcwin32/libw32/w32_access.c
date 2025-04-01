@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_access_c,"$Id: w32_access.c,v 1.7 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_access_c,"$Id: w32_access.c,v 1.8 2025/04/01 16:15:14 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -30,7 +30,13 @@ __CIDENT_RCSID(gr_w32_access_c,"$Id: w32_access.c,v 1.7 2025/03/06 16:59:46 cvsu
  */
 
 #include "win32_internal.h"
+#include "win32_io.h"
+
 #include <unistd.h>
+
+static int W32AccessA(const char *path, int amode);
+static int W32AccessW(const wchar_t *path, int amode);
+
 
 /*
 //  NAME
@@ -127,7 +133,7 @@ w32_access(const char *path, int amode)
 int
 w32_accessA(const char *path, int amode)
 {
-    int ret = -1;
+    int ret = -1;                               // success=0, otherwise=-1
 
     if (NULL == path) {
         errno = EFAULT;
@@ -136,16 +142,21 @@ w32_accessA(const char *path, int amode)
         errno = ENOENT;
 
     } else {
-        const char *expath;
+        char symbuf[WIN32_PATH_MAX];
 
-        if (NULL != (expath = w32_extendedpathA(path))) {
-            path = expath;                      // abs-path to expanded
+        if (w32_resolvelinkA(path, symbuf, _countof(symbuf), NULL) != NULL) {
+            path = symbuf;                      // symlink
         }
 
-#undef _access
-        ret = _access(path, amode);
-
-        free((void*)expath);
+        if ((ret = W32AccessA(path, amode)) == -1) {
+            if (ENOTDIR == errno || ENOENT == errno) {
+                if (path != symbuf) {           // component error, expand embedded shortcut
+                    if (w32_expandlinkA(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
+                        ret = W32AccessA(symbuf, amode);
+                   }
+                }
+            }
+        }
     }
     return ret;
 }
@@ -154,7 +165,7 @@ w32_accessA(const char *path, int amode)
 int
 w32_accessW(const wchar_t *path, int amode)
 {
-    int ret = -1;
+    int ret = -1;                               // success=0, otherwise=-1
 
     if (NULL == path) {
         errno = EFAULT;
@@ -163,17 +174,58 @@ w32_accessW(const wchar_t *path, int amode)
         errno = ENOENT;
 
     } else {
-        const wchar_t *expath;
+        wchar_t symbuf[WIN32_PATH_MAX];
 
-        if (NULL != (expath = w32_extendedpathW(path))) {
-            path = expath;                      // abs-path to expanded
+        if (w32_resolvelinkW(path, symbuf, _countof(symbuf), NULL) != NULL) {
+            path = symbuf;                      // symlink
         }
 
-#undef _waccess
-        ret = _waccess(path, amode);
-
-        free((void*)expath);
+        if ((ret = W32AccessW(path, amode)) == -1) {
+            if (ENOTDIR == errno || ENOENT == errno) {
+                if (path != symbuf) {           // component error, expand embedded shortcut
+                    if (w32_expandlinkW(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
+                        ret = W32AccessW(symbuf, amode);
+                   }
+                }
+            }
+        }
     }
+    return ret;
+}
+
+
+static int
+W32AccessA(const char *path, int amode)
+{
+    const char *expath;
+    int ret;
+
+    if (NULL != (expath = w32_extendedpathA(path))) {
+        path = expath;                          // extended abs-path
+    }
+
+#undef _access
+    ret = _access(path, amode);
+
+    free((void*)expath);
+    return ret;
+}
+
+
+static int 
+W32AccessW(const wchar_t *path, int amode)
+{
+    const wchar_t *expath;
+    int ret;
+
+    if (NULL != (expath = w32_extendedpathW(path))) {
+        path = expath;                          // extended abs-path
+    }
+
+#undef _waccess
+    ret = _waccess(path, amode);
+
+    free((void*)expath);
     return ret;
 }
 

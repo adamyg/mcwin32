@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.18 2025/03/30 17:16:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.19 2025/04/01 16:15:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -183,9 +183,9 @@ w32_realpathA(const char *path, char *resolved_path, size_t maxlen)
             }
         }
 
-        if (result) {                           // resolve symlink component
+        if (result) {
             if (w32_expandlinkA(path, symlink, _countof(symlink), SHORTCUT_COMPONENT)) {
-                path = symlink;
+                path = symlink;                 // expanded short-cut 
             }
         }
 
@@ -308,9 +308,9 @@ w32_realpathW(const wchar_t *path, wchar_t *resolved_path, size_t maxlen)
             }
         }
 
-        if (result) {                           // resolve symlink component
+        if (result) {
             if (w32_expandlinkW(path, symlink, _countof(symlink), SHORTCUT_COMPONENT)) {
-                path = symlink;
+                path = symlink;                 // expanded short-cut
             }
         }
 

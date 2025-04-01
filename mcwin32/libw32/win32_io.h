@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.30 2025/03/30 17:16:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.31 2025/04/01 16:15:15 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -147,12 +147,15 @@ LIBW32_API int          w32_rmdirW (const wchar_t *path);
 #define SHORTCUT_TRAILING   0x01
 #define SHORTCUT_COMPONENT  0x02
 
+LIBW32_API char *       w32_resolvelinkA (const char *path, char *buf, size_t maxlen, int *ret);
+LIBW32_API wchar_t *    w32_resolvelinkW (const wchar_t *path, wchar_t *buf, size_t maxlen, int *ret);
+
 LIBW32_API int          w32_expandlink (const char *name, char* buf, size_t buflen, unsigned flags);
 LIBW32_API int          w32_expandlinkA (const char *name, char *buf, size_t buflen, unsigned flags);
 LIBW32_API int          w32_expandlinkW (const wchar_t *name, wchar_t *buf, size_t buflen, unsigned flags);
 
-LIBW32_API const char * w32_strslash (const char *path);
-LIBW32_API const wchar_t *w32_wcsslash (const wchar_t *path);
+LIBW32_API const char * w32_strslashA (const char *path);
+LIBW32_API const wchar_t *w32_strslashW (const wchar_t *path);
 
 LIBW32_API int          w32_errno_set (void);
 LIBW32_API int          w32_errno_setas (unsigned nerrno);

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.21 2025/03/30 17:16:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.22 2025/04/01 16:15:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -157,7 +157,7 @@ statfsA(const char *path, struct statfs *sb)
     }
 
     strncpy(sb->f_mntonname, path, MNAMELEN-1); /* mount point */
-    w32_dos2unix(sb->f_mntonname);
+    w32_dos2unixA(sb->f_mntonname);
     if ((mnamelen = strlen(sb->f_mntonname)) > 3) {
         if (sb->f_mntonname[mnamelen - 1] == '/') {
             sb->f_mntonname[mnamelen - 1] = 0;
@@ -238,7 +238,7 @@ statfsW(const wchar_t *path, struct statfs *sb)
     }
 
     w32_wc2utf(path, sb->f_mntonname, sizeof(sb->f_mntonname));
-    w32_dos2unix(sb->f_mntonname);
+    w32_dos2unixA(sb->f_mntonname);
     if ((mnamelen = strlen(sb->f_mntonname)) > 3) {
         if (sb->f_mntonname[mnamelen - 1] == '/') {
             sb->f_mntonname[mnamelen - 1] = 0;

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.30 2025/03/30 17:16:02 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_getcwd_c,"$Id: w32_getcwd.c,v 1.31 2025/04/01 16:15:14 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -342,7 +342,7 @@ w32_getdirectoryA(void)
                     memmove(cd, cd + prefix, cdlen - prefix);
                 }
             }
-            w32_dos2unix(cd);
+            w32_dos2unixA(cd);
             return cd;
         }
         free((void*)cd);

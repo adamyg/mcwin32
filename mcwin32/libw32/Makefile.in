@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.30 2025/03/30 17:16:02 cvsuser Exp $
+# $Id: Makefile.in,v 1.31 2025/04/01 16:15:14 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -154,6 +154,7 @@ CSOURCES=\
 	w32_gistrerror.c \
 	w32_grp.c \
 	w32_iconv.c \
+	w32_fopen.c \
 	w32_iconv_native.c \
 	w32_ino.c \
 	w32_io.c \
@@ -163,6 +164,7 @@ CSOURCES=\
 	w32_mkstemp.c \
 	w32_mmap.c \
 	w32_neterr.c \
+	w32_open.c \
 	w32_pipe.c \
 	w32_poll.c \
 	w32_popen.c \

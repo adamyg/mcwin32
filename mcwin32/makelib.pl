@@ -128,7 +128,7 @@ my %x_environment   = (
             #   -D__MINGW_USE_VC2005_COMPAT/
             #       Disables _USE_32BIT_TIME_T being automatically set for _WIN32 applications.
             #
-            #    An ABI change introduced with Microsoft Visual C++ 2005 (also known as Visual C++ 8.0) 
+            #    An ABI change introduced with Microsoft Visual C++ 2005 (also known as Visual C++ 8.0)
             #    switched time_t from 32-bit to 64-bit. It is important to build libaries with 64-bit
             #    time_t whenever possible, as 32-bit time_t is unable to epresent times past 2038.
             #
