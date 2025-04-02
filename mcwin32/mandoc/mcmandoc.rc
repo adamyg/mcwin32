@@ -1,0 +1,112 @@
+/* -*- mode: c; indent-width: 4; -*-
+ *
+ * windows resource file
+ *
+ * This file is part of the Midnight Commander.                             
+ *                                                                          
+ * The Midnight Commander is free software: you can redistribute it         
+ * and/or modify it under the terms of the GNU General Public License as    
+ * published by the Free Software Foundation, version 3 of the License.     
+ *                                                                          
+ * The Midnight Commander is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of           
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             
+ * GNU General Public License for more details.                             
+ *                                                                          
+ * You should have received a copy of the GNU General Public License        
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.     
+ * ==end==
+ */
+
+#include "mdocversion.h"
+
+#define RC_PRODUCTVERSION	VERSION_1 , VERSION_2 , VERSION_3 , 0
+#define RC_FILEVERSION		VERSION_1 , VERSION_2 , VERSION_3 , 0
+
+#ifndef WINDRES
+#include "windows.h"
+#include "winver.h"
+#endif
+
+/*
+ * English (U.S.) resources
+ */
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+
+#ifdef _WIN32
+#ifndef WINDRES
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#endif
+#pragma code_page(1252)
+#endif /* _WIN32 */
+
+/*
+ * Manifest
+ */
+
+#ifndef RT_MANIFEST
+#define RT_MANIFEST 24
+#endif
+#ifndef CREATEPROCESS_MANIFEST_RESOURCE_ID
+#define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
+#endif
+#ifdef _WIN64
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "./compat/manifest_x64.xml"
+#else
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "./compat/manifest.xml"
+#endif
+
+/*
+ * Version Information
+ */
+
+VS_VERSION_INFO VERSIONINFO
+	FILEVERSION		RC_FILEVERSION
+	PRODUCTVERSION		RC_PRODUCTVERSION
+	FILEFLAGSMASK		VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+	FILEFLAGS		(VS_FF_SPECIALBUILD|VS_FF_DEBUG)
+#else
+	FILEFLAGS		(VS_FF_SPECIALBUILD)
+#endif
+	FILEOS			VOS_NT_WINDOWS32
+	FILETYPE		VFT_APP
+	FILESUBTYPE		VFT2_UNKNOWN
+	BEGIN
+		BLOCK	"StringFileInfo"
+		BEGIN
+			BLOCK	"040904E4"
+			BEGIN
+				VALUE "CompanyName",		""
+				VALUE "FileDescription",	"mcmandoc"
+				VALUE "FileVersion",		VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER
+				VALUE "InternalName",		"grmandoc"
+				VALUE "Copyright",
+					"Copyright (C) 2014 - " BUILD_YEAR ", Adam Young. \n"
+					"Copyright (C) Authors, The mandoc UNIX manpage compiler toolset. \n"
+					"Copyright (c) 1989,1990,1993,1994 The Regents of the University of California. \n"
+					"This is free software; see the source for copying conditions. \n"
+					"There is NO warranty; not even for MERCHANTABILITY \n"
+					"or FITNESS FOR A PARTICULAR PURPOSE. \0"
+				VALUE "Maintainers",		"https://github.com/adamyg/grief\n"
+				VALUE "LegalTrademarks",	"see mandoc license, http://mdocml.bsd.lv/"
+				VALUE "OriginalFilename",	"grmandoc.exe"
+				VALUE "ProductName",		"GRIEF"
+			END
+		END
+
+		/* The following line should only be modified for localized versions.     */
+		/* It consists of any number of WORD,WORD pairs, with each pair           */
+		/* describing a language,codepage combination supported by the file.      */
+		/*                                                                        */
+		/* For example, a file might have values "0x409,1252" indicating that it  */
+		/* supports English language (0x409) in the Windows ANSI codepage (1252). */
+
+		BLOCK	"VarFileInfo"
+		BEGIN
+			VALUE "Translation", 0x409, 1252
+		END
+	END
+
+#endif	/* English (U.S.) resources */

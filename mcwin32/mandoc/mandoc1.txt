@@ -1,0 +1,1123 @@
+MANDOC(1)                   General Commands Manual                  MANDOC(1)
+
+NNAAMMEE
+     mmaannddoocc - format manual pages
+
+SSYYNNOOPPSSIISS
+     mmaannddoocc [--aacc] [--II ooss=_n_a_m_e] [--KK _e_n_c_o_d_i_n_g] [--mmddoocc | --mmaann] [--OO _o_p_t_i_o_n_s]
+            [--TT _o_u_t_p_u_t] [--WW _l_e_v_e_l] [_f_i_l_e _._._.]
+
+DDEESSCCRRIIPPTTIIOONN
+     The mmaannddoocc utility formats manual pages for display.
+
+     By default, mmaannddoocc reads mdoc(7) or man(7) text from stdin and produces
+     --TT llooccaallee output.
+
+     The options are as follows:
+
+     --aa   If the standard output is a terminal device and --cc is not specified,
+          use more(1) to paginate the output, just like man(1) would.
+
+     --cc   Copy the formatted manual pages to the standard output without using
+          more(1) to paginate them.  This is the default.  It can be specified
+          to override --aa.
+
+     --II ooss=_n_a_m_e
+          Override the default operating system _n_a_m_e for the mdoc(7) OOss and
+          for the man(7) TTHH macro.
+
+     --KK _e_n_c_o_d_i_n_g
+          Specify the input encoding.  The supported _e_n_c_o_d_i_n_g arguments are
+          uuss--aasscciiii, iissoo--88885599--11, and uuttff--88.  If not specified, autodetection
+          uses the first match in the following list:
+
+          1.   If the first three bytes of the input file are the UTF-8 byte
+               order mark (BOM, 0xefbbbf), input is interpreted as uuttff--88.
+
+          2.   If the first or second line of the input file matches the eemmaaccss
+               mode line format
+
+                     .\" -*- [...;] coding: _e_n_c_o_d_i_n_g; -*-
+
+               then input is interpreted according to _e_n_c_o_d_i_n_g.
+
+          3.   If the first non-ASCII byte in the file introduces a valid
+               UTF-8 sequence, input is interpreted as uuttff--88.
+
+          4.   Otherwise, input is interpreted as iissoo--88885599--11.
+
+     --mmddoocc | --mmaann
+          With --mmddoocc, all input files are interpreted as mdoc(7).  With --mmaann,
+          all input files are interpreted as man(7).  By default, the input
+          language is automatically detected for each file: if the first macro
+          is DDdd or DDtt, the mdoc(7) parser is used; otherwise, the man(7)
+          parser is used.  With other arguments, --mm is silently ignored.
+
+     --OO _o_p_t_i_o_n_s
+          Comma-separated output options.  See the descriptions of the
+          individual output formats for supported _o_p_t_i_o_n_s.
+
+     --TT _o_u_t_p_u_t
+          Select the output format.  Supported values for the _o_u_t_p_u_t argument
+          are aasscciiii, hhttmmll, the default of llooccaallee, mmaann, mmaarrkkddoowwnn, ppddff, ppss,
+          ttrreeee, and uuttff88.
+
+          The special --TT lliinntt mode only parses the input and produces no
+          output.  It implies --WW aallll and redirects parser messages, which
+          usually appear on standard error output, to standard output.
+
+     --WW _l_e_v_e_l
+          Specify the minimum message _l_e_v_e_l to be reported on the standard
+          error output and to affect the exit status.  The _l_e_v_e_l can be bbaassee,
+          ssttyyllee, wwaarrnniinngg, eerrrroorr, or uunnssuupppp.  The bbaassee level automatically
+          derives the operating system from the contents of the OOss macro, from
+          the --IIooss command line option, or from the uname(3) return value.
+          The levels ooppeennbbssdd and nneettbbssdd are variants of bbaassee that bypass
+          autodetection and request validation of base system conventions for
+          a particular operating system.  The level aallll is an alias for bbaassee.
+          By default, mmaannddoocc is silent.  See _E_X_I_T _S_T_A_T_U_S and _D_I_A_G_N_O_S_T_I_C_S for
+          details.
+
+          The special option --WW ssttoopp tells mmaannddoocc to exit after parsing a file
+          that causes warnings or errors of at least the requested level.  No
+          formatted output will be produced from that file.  If both a _l_e_v_e_l
+          and ssttoopp are requested, they can be joined with a comma, for example
+          --WW eerrrroorr,ssttoopp.
+
+     _f_i_l_e
+          Read from the given input file.  If multiple files are specified,
+          they are processed in the given order.  If unspecified, mmaannddoocc reads
+          from standard input.
+
+     The options --ffhhkkllww are also supported and are documented in man(1).  In
+     --ff and --kk mode, mmaannddoocc also supports the options --CCMMmmOOSSss described in the
+     apropos(1) manual.  The options --ffkkll are mutually exclusive and override
+     each other.
+
+   AASSCCIIII OOuuttppuutt
+     Use --TT aasscciiii to force text output in 7-bit ASCII character encoding
+     documented in the ascii(7) manual page, ignoring the locale(1) set in the
+     environment.
+
+     Font styles are applied by using back-spaced encoding such that an
+     underlined character `c' is rendered as `_\[bs]c', where `\[bs]' is the
+     back-space character number 8.  Emboldened characters are rendered as
+     `c\[bs]c'.
+
+     The special characters documented in mandoc_char(7) are rendered best-
+     effort in an ASCII equivalent.
+
+     The following --OO arguments are accepted:
+
+     iinnddeenntt=_i_n_d_e_n_t
+          The left margin for normal text is set to _i_n_d_e_n_t blank characters
+          instead of the default of five for mdoc(7) and seven for man(7).
+          Increasing this is not recommended; it may result in degraded
+          formatting, for example overfull lines or ugly line breaks.  When
+          output is to a pager on a terminal that is less than 66 columns
+          wide, the default is reduced to three columns.
+
+     mmddoocc
+          Format man(7) input files in mdoc(7) output style.  Specifically,
+          this suppresses the two additional blank lines near the top and the
+          bottom of each page, and it implies --OO iinnddeenntt=5.  One useful
+          application is for checking that --TT mmaann output formats in the same
+          way as the mdoc(7) source it was generated from.
+
+     wwiiddtthh=_w_i_d_t_h
+          The output width is set to _w_i_d_t_h instead of the default of 78.  When
+          output is to a pager on a terminal that is less than 79 columns
+          wide, the default is reduced to one less than the terminal width.
+          In any case, lines that are output in literal mode are never wrapped
+          and may exceed the output width.
+
+   HHTTMMLL OOuuttppuutt
+     Output produced by --TT hhttmmll conforms to HTML5 using optional self-closing
+     tags.  Default styles use only CSS1.  Equations rendered from eqn(7)
+     blocks use MathML.
+
+     The _m_a_n_d_o_c_._c_s_s file documents style-sheet classes available for
+     customising output.  If a style-sheet is not specified with --OO ssttyyllee, --TT
+     hhttmmll defaults to simple output (via an embedded style-sheet) readable in
+     any graphical or text-based web browser.
+
+     Non-ASCII characters are rendered as hexadecimal Unicode character
+     references.
+
+     The following --OO arguments are accepted:
+
+     ffrraaggmmeenntt
+          Omit the <!DOCTYPE> declaration and the <html>, <head>, and <body>
+          elements and only emit the subtree below the <body> element.  The
+          ssttyyllee argument will be ignored.  This is useful when embedding
+          manual content within existing documents.
+
+     iinncclluuddeess=_f_m_t
+          The string _f_m_t, for example, _._._/_s_r_c_/_%_I_._h_t_m_l, is used as a template
+          for linked header files (usually via the IInn macro).  Instances of
+          `%I' are replaced with the include filename.  The default is not to
+          present a hyperlink.
+
+     mmaann=_f_m_t
+          The string _f_m_t, for example, _._._/_h_t_m_l_%_S_/_%_N_._%_S_._h_t_m_l, is used as a
+          template for linked manuals (usually via the XXrr macro).  Instances
+          of `%N' and `%S' are replaced with the linked manual's name and
+          section, respectively.  If no section is included, section 1 is
+          assumed.  The default is not to present a hyperlink.
+
+     ssttyyllee=_s_t_y_l_e_._c_s_s
+          The file _s_t_y_l_e_._c_s_s is used for an external style-sheet.  This must
+          be a valid absolute or relative URI.
+
+   LLooccaallee OOuuttppuutt
+     By default, mmaannddoocc automatically selects UTF-8 or ASCII output according
+     to the current locale(1).  If any of the environment variables LC_ALL,
+     LC_CTYPE, or LANG are set and the first one that is set selects the UTF-8
+     character encoding, it produces _U_T_F_-_8 _O_u_t_p_u_t; otherwise, it falls back to
+     _A_S_C_I_I _O_u_t_p_u_t.  This output mode can also be selected explicitly with --TT
+     llooccaallee.
+
+   MMaann OOuuttppuutt
+     Use --TT mmaann to translate mdoc(7) input into man(7) output format.  This is
+     useful for distributing manual sources to legacy systems lacking mdoc(7)
+     formatters.
+
+     If the input format of a file is man(7), the input is copied to the
+     output, expanding any roff(7) ssoo requests.  The parser is also run, and
+     as usual, the --WW level controls which _D_I_A_G_N_O_S_T_I_C_S are displayed before
+     copying the input to the output.
+
+   MMaarrkkddoowwnn OOuuttppuutt
+     Use --TT mmaarrkkddoowwnn to translate mdoc(7) input to the markdown format
+     conforming to _J_o_h_n _G_r_u_b_e_r_'_s _2_0_0_4 _s_p_e_c_i_f_i_c_a_t_i_o_n:
+     hhttttpp::////ddaarriinnggffiirreebbaallll..nneett//pprroojjeeccttss//mmaarrkkddoowwnn//ssyynnttaaxx..tteexxtt. The output also
+     almost conforms to the _C_o_m_m_o_n_M_a_r_k: hhttttpp::////ccoommmmoonnmmaarrkk..oorrgg// specification.
+
+     The character set used for the markdown output is ASCII.  Non-ASCII
+     characters are encoded as HTML entities.  Since that is not possible in
+     literal font contexts, because these are rendered as code spans and code
+     blocks in the markdown output, non-ASCII characters are transliterated to
+     ASCII approximations in these contexts.
+
+     Markdown is a very weak markup language, so all semantic markup is lost,
+     and even part of the presentational markup may be lost.  Do not use this
+     as an intermediate step in converting to HTML; instead, use --TT hhttmmll
+     directly.
+
+     The man(7), tbl(7), and eqn(7) input languages are not supported by --TT
+     mmaarrkkddoowwnn output mode.
+
+   PPDDFF OOuuttppuutt
+     PDF-1.1 output may be generated by --TT ppddff.  See _P_o_s_t_S_c_r_i_p_t _O_u_t_p_u_t for --OO
+     arguments and defaults.
+
+   PPoossttSSccrriipptt OOuuttppuutt
+     PostScript "Adobe-3.0" Level-2 pages may be generated by --TT ppss.  Output
+     pages default to letter sized and are rendered in the Times font family,
+     11-point.  Margins are calculated as 1/9 the page length and width.
+     Line-height is 1.4m.
+
+     Special characters are rendered as in _A_S_C_I_I _O_u_t_p_u_t.
+
+     The following --OO arguments are accepted:
+
+     ppaappeerr=_n_a_m_e
+          The paper size _n_a_m_e may be one of _a_3, _a_4, _a_5, _l_e_g_a_l, or _l_e_t_t_e_r.  You
+          may also manually specify dimensions as _N_N_x_N_N, width by height in
+          millimetres.  If an unknown value is encountered, _l_e_t_t_e_r is used.
+
+   UUTTFF--88 OOuuttppuutt
+     Use --TT uuttff88 to force text output in UTF-8 multi-byte character encoding,
+     ignoring the locale(1) settings in the environment.  See _A_S_C_I_I _O_u_t_p_u_t
+     regarding font styles and --OO arguments.
+
+     On operating systems lacking locale or wide character support, and on
+     those where the internal character representation is not UCS-4, mmaannddoocc
+     always falls back to _A_S_C_I_I _O_u_t_p_u_t.
+
+   SSyynnttaaxx ttrreeee oouuttppuutt
+     Use --TT ttrreeee to show a human readable representation of the syntax tree.
+     It is useful for debugging the source code of manual pages.  The exact
+     format is subject to change, so don't write parsers for it.
+
+     The first paragraph shows meta data found in the mdoc(7) prologue, on the
+     man(7) TTHH line, or the fallbacks used.
+
+     In the tree dump, each output line shows one syntax tree node.  Child
+     nodes are indented with respect to their parent node.  The columns are:
+
+     1.   For macro nodes, the macro name; for text and tbl(7) nodes, the
+          content.  There is a special format for eqn(7) nodes.
+     2.   Node type (text, elem, block, head, body, body-end, tail, tbl, eqn).
+     3.   Flags:
+          --   An opening parenthesis if the node is an opening delimiter.
+          --   An asterisk if the node starts a new input line.
+          --   The input line number (starting at one).
+          --   A colon.
+          --   The input column number (starting at one).
+          --   A closing parenthesis if the node is a closing delimiter.
+          --   A full stop if the node ends a sentence.
+          --   BROKEN if the node is a block broken by another block.
+          --   NOSRC if the node is not in the input file, but automatically
+              generated from macros.
+          --   NOPRT if the node is not supposed to generate output for any
+              output format.
+
+     The following --OO argument is accepted:
+
+     nnoovvaall
+          Skip validation and show the unvalidated syntax tree.  This can help
+          to find out whether a given behaviour is caused by the parser or by
+          the validator.  Meta data is not available in this case.
+
+EENNVVIIRROONNMMEENNTT
+     LC_CTYPE  The character encoding locale(1).  When _L_o_c_a_l_e _O_u_t_p_u_t is
+               selected, it decides whether to use ASCII or UTF-8 output
+               format.  It never affects the interpretation of input files.
+
+     MANPAGER  Any non-empty value of the environment variable MANPAGER is
+               used instead of the standard pagination program, more(1); see
+               man(1) for details.  Only used if --aa or --ll is specified.
+
+     PAGER     Specifies the pagination program to use when MANPAGER is not
+               defined.  If neither PAGER nor MANPAGER is defined, more(1) --ss
+               is used.  Only used if --aa or --ll is specified.
+
+EEXXIITT SSTTAATTUUSS
+     The mmaannddoocc utility exits with one of the following values, controlled by
+     the message _l_e_v_e_l associated with the --WW option:
+
+     0    No base system convention violations, style suggestions, warnings,
+          or errors occurred, or those that did were ignored because they were
+          lower than the requested _l_e_v_e_l.
+     1    At least one base system convention violation or style suggestion
+          occurred, but no warning or error, and --WW bbaassee or --WW ssttyyllee was
+          specified.
+     2    At least one warning occurred, but no error, and --WW wwaarrnniinngg or a
+          lower _l_e_v_e_l was requested.
+     3    At least one parsing error occurred, but no unsupported feature was
+          encountered, and --WW eerrrroorr or a lower _l_e_v_e_l was requested.
+     4    At least one unsupported feature was encountered, and --WW uunnssuupppp or a
+          lower _l_e_v_e_l was requested.
+     5    Invalid command line arguments were specified.  No input files have
+          been read.
+     6    An operating system error occurred, for example exhaustion of
+          memory, file descriptors, or process table entries.  Such errors
+          cause mmaannddoocc to exit at once, possibly in the middle of parsing or
+          formatting a file.
+
+     Note that selecting --TT lliinntt output mode implies --WW aallll.
+
+EEXXAAMMPPLLEESS
+     To page manuals to the terminal:
+
+           $ mandoc -l mandoc.1 man.1 apropos.1 makewhatis.8
+
+     To produce HTML manuals with _m_a_n_d_o_c_._c_s_s as the style-sheet:
+
+           $ mandoc -T html -O style=mandoc.css mdoc.7 > mdoc.7.html
+
+     To check over a large set of manuals:
+
+           $ mandoc -T lint `find /usr/src -name \*\.[1-9]`
+
+     To produce a series of PostScript manuals for A4 paper:
+
+           $ mandoc -T ps -O paper=a4 mdoc.7 man.7 > manuals.ps
+
+     Convert a modern mdoc(7) manual to the older man(7) format, for use on
+     systems lacking an mdoc(7) parser:
+
+           $ mandoc -T man foo.mdoc > foo.man
+
+DDIIAAGGNNOOSSTTIICCSS
+     Messages displayed by mmaannddoocc follow this format:
+
+           mmaannddoocc: _f_i_l_e:_l_i_n_e:_c_o_l_u_m_n: _l_e_v_e_l: _m_e_s_s_a_g_e: _m_a_c_r_o _a_r_g_s (_o_s)
+
+     Line and column numbers start at 1.  Both are omitted for messages
+     referring to an input file as a whole.  Macro names and arguments are
+     omitted where meaningless.  The _o_s operating system specifier is omitted
+     for messages that are relevant for all operating systems.  Fatal messages
+     about invalid command line arguments or operating system errors, for
+     example when memory is exhausted, may also omit the _f_i_l_e and _l_e_v_e_l
+     fields.
+
+     Message levels have the following meanings:
+
+     uunnssuupppp   An input file uses unsupported low-level roff(7) features.  The
+              output may be incomplete and/or misformatted, so using GNU troff
+              instead of mmaannddoocc to process the file may be preferable.
+
+     eerrrroorr    Indicates a risk of information loss or severe misformatting, in
+              most cases caused by serious syntax errors.
+
+     wwaarrnniinngg  Indicates a risk that the information shown or its formatting
+              may mismatch the author's intent in minor ways.  Additionally,
+              syntax errors are classified at least as warnings, even if they
+              do not usually cause misformatting.
+
+     ssttyyllee    An input file uses dubious or discouraged style.  This is not a
+              complaint about the syntax, and probably neither formatting nor
+              portability are in danger.  While great care is taken to avoid
+              false positives on the higher message levels, the ssttyyllee level
+              tries to reduce the probability that issues go unnoticed, so it
+              may occasionally issue bogus suggestions.  Please use your good
+              judgement to decide whether any particular ssttyyllee suggestion
+              really justifies a change to the input file.
+
+     bbaassee     A convention used in the base system of a specific operating
+              system is not adhered to.  These are not markup mistakes, and
+              neither the quality of formatting nor portability are in danger.
+              Messages of the bbaassee level are printed with the more intuitive
+              ssttyyllee _l_e_v_e_l tag.
+
+     Messages of the bbaassee, ssttyyllee, wwaarrnniinngg, eerrrroorr, and uunnssuupppp levels except
+     those about non-existent or unreadable input files are hidden unless
+     their level, or a lower level, is requested using a --WW option or --TT lliinntt
+     output mode.
+
+     As indicated below, all bbaassee and some ssttyyllee checks are only performed if
+     a specific operating system name occurs in the arguments of the --WW
+     command line option, of the OOss macro, of the --IIooss command line option,
+     or, if neither are present, in the return value of the uname(3) function.
+
+   CCoonnvveennttiioonnss ffoorr bbaassee ssyysstteemm mmaannuuaallss
+     MMddooccddaattee ffoouunndd
+     (mdoc, NetBSD) The DDdd macro uses CVS MMddooccddaattee keyword substitution, which
+     is not supported by the NetBSD base system.  Consider using the
+     conventional "Month dd, yyyy" format instead.
+
+     MMddooccddaattee mmiissssiinngg
+     (mdoc, OpenBSD) The DDdd macro does not use CVS MMddooccddaattee keyword
+     substitution, but using it is conventionally expected in the OpenBSD base
+     system.
+
+     uunnkknnoowwnn aarrcchhiitteeccttuurree
+     (mdoc, OpenBSD, NetBSD) The third argument of the DDtt macro does not match
+     any of the architectures this operating system is running on.
+
+     ooppeerraattiinngg ssyysstteemm eexxpplliicciittllyy ssppeecciiffiieedd
+     (mdoc, OpenBSD, NetBSD) The OOss macro has an argument.  In the base
+     system, it is conventionally left blank.
+
+     RRCCSS iidd mmiissssiinngg
+     (OpenBSD, NetBSD) The manual page lacks the comment line with the RCS
+     identifier generated by CVS OOppeennBBSSDD or NNeettBBSSDD keyword substitution as
+     conventionally used in these operating systems.
+
+     rreeffeerreenncceedd mmaannuuaall nnoott ffoouunndd
+     (mdoc) An XXrr macro references a manual page that is not found in the base
+     system.  The path to look for base system manuals is configurable at
+     compile time and defaults to _/_u_s_r_/_s_h_a_r_e_/_m_a_n: _/_u_s_r_/_X_1_1_R_6_/_m_a_n.
+
+   SSttyyllee ssuuggggeessttiioonnss
+     lleeggaaccyy mmaann((77)) ddaattee ffoorrmmaatt
+     (mdoc) The DDdd macro uses the legacy man(7) date format "yyyy-dd-mm".
+     Consider using the conventional mdoc(7) date format "Month dd, yyyy"
+     instead.
+
+     nnoorrmmaalliizziinngg ddaattee ffoorrmmaatt ttoo: ...
+     (mdoc, man) The DDdd or TTHH macro provides an abbreviated month name or a
+     day number with a leading zero.  In the formatted output, the month name
+     is written out in full and the leading zero is omitted.
+
+     lloowweerr ccaassee cchhaarraacctteerr iinn ddooccuummeenntt ttiittllee
+     (mdoc, man) The title is still used as given in the DDtt or TTHH macro.
+
+     dduupplliiccaattee RRCCSS iidd
+     A single manual page contains two copies of the RCS identifier for the
+     same operating system.  Consider deleting the later instance and moving
+     the first one up to the top of the page.
+
+     ppoossssiibbllee ttyyppoo iinn sseeccttiioonn nnaammee
+     (mdoc) Fuzzy string matching revealed that the argument of an SShh macro is
+     similar, but not identical to a standard section name.
+
+     uunntteerrmmiinnaatteedd qquuootteedd aarrgguummeenntt
+     (roff) Macro arguments can be enclosed in double quote characters such
+     that space characters and macro names contained in the quoted argument
+     need not be escaped.  The closing quote of the last argument of a macro
+     can be omitted.  However, omitting it is not recommended because it makes
+     the code harder to read.
+
+     uusseelleessss mmaaccrroo
+     (mdoc) A BBtt, TTnn, or UUdd macro was found.  Simply delete it: it serves no
+     useful purpose.
+
+     ccoonnssiiddeerr uussiinngg OOSS mmaaccrroo
+     (mdoc) A string was found in plain text or in a BBxx macro that could be
+     represented using OOxx, NNxx, FFxx, or DDxx.
+
+     eerrrrnnooss oouutt ooff oorrddeerr
+     (mdoc, NetBSD) The EErr items in a BBll list are not in alphabetical order.
+
+     dduupplliiccaattee eerrrrnnoo
+     (mdoc, NetBSD) A BBll list contains two consecutive IItt entries describing
+     the same EErr number.
+
+     ttrraaiilliinngg ddeelliimmiitteerr
+     (mdoc) The last argument of an EExx, FFoo, NNdd, NNmm, OOss, SShh, SSss, SStt, or SSxx
+     macro ends with a trailing delimiter.  This is usually bad style and
+     often indicates typos.  Most likely, the delimiter can be removed.
+
+     nnoo bbllaannkk bbeeffoorree ttrraaiilliinngg ddeelliimmiitteerr
+     (mdoc) The last argument of a macro that supports trailing delimiter
+     arguments is longer than one byte and ends with a trailing delimiter.
+     Consider inserting a blank such that the delimiter becomes a separate
+     argument, thus moving it out of the scope of the macro.
+
+     ffiillll mmooddee aallrreeaaddyy eennaabblleedd,, sskkiippppiinngg
+     (man) A ffii request occurs even though the document is still in fill mode,
+     or already switched back to fill mode.  It has no effect.
+
+     ffiillll mmooddee aallrreeaaddyy ddiissaabblleedd,, sskkiippppiinngg
+     (man) An nnff request occurs even though the document already switched to
+     no-fill mode and did not switch back to fill mode yet.  It has no effect.
+
+     vveerrbbaattiimm ""----"",, mmaayybbee ccoonnssiiddeerr uussiinngg \\((eemm
+     (mdoc) Even though the ASCII output device renders an em-dash as "--",
+     that is not a good way to write it in an input file because it renders
+     poorly on all other output devices.
+
+     ffuunnccttiioonn nnaammee wwiitthhoouutt mmaarrkkuupp
+     (mdoc) A word followed by an empty pair of parentheses occurs on a text
+     line.  Consider using an FFnn or XXrr macro.
+
+     wwhhiitteessppaaccee aatt eenndd ooff iinnppuutt lliinnee
+     (mdoc, man, roff) Whitespace at the end of input lines is almost never
+     semantically significant -- but in the odd case where it might be, it is
+     extremely confusing when reviewing and maintaining documents.
+
+     bbaadd ccoommmmeenntt ssttyyllee
+     (roff) Comment lines start with a dot, a backslash, and a double-quote
+     character.  The mmaannddoocc utility treats the line as a comment line even
+     without the backslash, but leaving out the backslash might not be
+     portable.
+
+   WWaarrnniinnggss rreellaatteedd ttoo tthhee ddooccuummeenntt pprroolloogguuee
+     mmiissssiinngg mmaannuuaall ttiittllee,, uussiinngg UUNNTTIITTLLEEDD
+     (mdoc) A DDtt macro has no arguments, or there is no DDtt macro before the
+     first non-prologue macro.
+
+     mmiissssiinngg mmaannuuaall ttiittllee,, uussiinngg """"
+     (man) There is no TTHH macro, or it has no arguments.
+
+     mmiissssiinngg mmaannuuaall sseeccttiioonn,, uussiinngg """"
+     (mdoc, man) A DDtt or TTHH macro lacks the mandatory section argument.
+
+     uunnkknnoowwnn mmaannuuaall sseeccttiioonn
+     (mdoc) The section number in a DDtt line is invalid, but still used.
+
+     mmiissssiinngg ddaattee,, uussiinngg ttooddaayy''ss ddaattee
+     (mdoc, man) The document was parsed as mdoc(7) and it has no DDdd macro, or
+     the DDdd macro has no arguments or only empty arguments; or the document
+     was parsed as man(7) and it has no TTHH macro, or the TTHH macro has less
+     than three arguments or its third argument is empty.
+
+     ccaannnnoott ppaarrssee ddaattee,, uussiinngg iitt vveerrbbaattiimm
+     (mdoc, man) The date given in a DDdd or TTHH macro does not follow the
+     conventional format.
+
+     ddaattee iinn tthhee ffuuttuurree,, uussiinngg iitt aannyywwaayy
+     (mdoc, man) The date given in a DDdd or TTHH macro is more than a day ahead
+     of the current system time(3).
+
+     mmiissssiinngg OOss mmaaccrroo,, uussiinngg """"
+     (mdoc) The default or current system is not shown in this case.
+
+     llaattee pprroolloogguuee mmaaccrroo
+     (mdoc) A DDdd or OOss macro occurs after some non-prologue macro, but still
+     takes effect.
+
+     pprroolloogguuee mmaaccrrooss oouutt ooff oorrddeerr
+     (mdoc) The prologue macros are not given in the conventional order DDdd,
+     DDtt, OOss.  All three macros are used even when given in another order.
+
+   WWaarrnniinnggss rreeggaarrddiinngg ddooccuummeenntt ssttrruuccttuurree
+     ..ssoo iiss ffrraaggiillee,, bbeetttteerr uussee llnn((11))
+     (roff) Including files only works when the parser program runs with the
+     correct current working directory.
+
+     nnoo ddooccuummeenntt bbooddyy
+     (mdoc, man) The document body contains neither text nor macros.  An empty
+     document is shown, consisting only of a header and a footer line.
+
+     ccoonntteenntt bbeeffoorree ffiirrsstt sseeccttiioonn hheeaaddeerr
+     (mdoc, man) Some macros or text precede the first SShh or SSHH section
+     header.  The offending macros and text are parsed and added to the top
+     level of the syntax tree, outside any section block.
+
+     ffiirrsstt sseeccttiioonn iiss nnoott NNAAMMEE
+     (mdoc) The argument of the first SShh macro is not `NAME'.  This may
+     confuse makewhatis(8) and apropos(1).
+
+     NNAAMMEE sseeccttiioonn wwiitthhoouutt NNmm bbeeffoorree NNdd
+     (mdoc) The NAME section does not contain any NNmm child macro before the
+     first NNdd macro.
+
+     NNAAMMEE sseeccttiioonn wwiitthhoouutt ddeessccrriippttiioonn
+     (mdoc) The NAME section lacks the mandatory NNdd child macro.
+
+     ddeessccrriippttiioonn nnoott aatt tthhee eenndd ooff NNAAMMEE
+     (mdoc) The NAME section does contain an NNdd child macro, but other content
+     follows it.
+
+     bbaadd NNAAMMEE sseeccttiioonn ccoonntteenntt
+     (mdoc) The NAME section contains plain text or macros other than NNmm and
+     NNdd.
+
+     mmiissssiinngg ccoommmmaa bbeeffoorree nnaammee
+     (mdoc) The NAME section contains an NNmm macro that is neither the first
+     one nor preceded by a comma.
+
+     mmiissssiinngg ddeessccrriippttiioonn lliinnee,, uussiinngg """"
+     (mdoc) The NNdd macro lacks the required argument.  The title line of the
+     manual will end after the dash.
+
+     ddeessccrriippttiioonn lliinnee oouuttssiiddee NNAAMMEE sseeccttiioonn
+     (mdoc) An NNdd macro appears outside the NAME section.  The arguments are
+     printed anyway and the following text is used for apropos(1), but none of
+     that behaviour is portable.
+
+     sseeccttiioonnss oouutt ooff ccoonnvveennttiioonnaall oorrddeerr
+     (mdoc) A standard section occurs after another section it usually
+     precedes.  All section titles are used as given, and the order of
+     sections is not changed.
+
+     dduupplliiccaattee sseeccttiioonn ttiittllee
+     (mdoc) The same standard section title occurs more than once.
+
+     uunneexxppeecctteedd sseeccttiioonn
+     (mdoc) A standard section header occurs in a section of the manual where
+     it normally isn't useful.
+
+     ccrroossss rreeffeerreennccee ttoo sseellff
+     (mdoc) An XXrr macro refers to a name and section matching the section of
+     the present manual page and a name mentioned in an NNmm macro in the NAME
+     or SYNOPSIS section, or in an FFnn or FFoo macro in the SYNOPSIS.  Consider
+     using NNmm or FFnn instead of XXrr.
+
+     uunnuussuuaall XXrr oorrddeerr
+     (mdoc) In the SEE ALSO section, an XXrr macro with a lower section number
+     follows one with a higher number, or two XXrr macros referring to the same
+     section are out of alphabetical order.
+
+     uunnuussuuaall XXrr ppuunnccttuuaattiioonn
+     (mdoc) In the SEE ALSO section, punctuation between two XXrr macros differs
+     from a single comma, or there is trailing punctuation after the last XXrr
+     macro.
+
+     AAUUTTHHOORRSS sseeccttiioonn wwiitthhoouutt AAnn mmaaccrroo
+     (mdoc) An AUTHORS sections contains no AAnn macros, or only empty ones.
+     Probably, there are author names lacking markup.
+
+   WWaarrnniinnggss rreellaatteedd ttoo mmaaccrrooss aanndd nneessttiinngg
+     oobbssoolleettee mmaaccrroo
+     (mdoc) See the mdoc(7) manual for replacements.
+
+     mmaaccrroo nneeiitthheerr ccaallllaabbllee nnoorr eessccaappeedd
+     (mdoc) The name of a macro that is not callable appears on a macro line.
+     It is printed verbatim.  If the intention is to call it, move it to its
+     own input line; otherwise, escape it by prepending `\&'.
+
+     sskkiippppiinngg ppaarraaggrraapphh mmaaccrroo
+     In mdoc(7) documents, this happens
+     --   at the beginning and end of sections and subsections
+     --   right before non-compact lists and displays
+     --   at the end of items in non-column, non-compact lists
+     --   and for multiple consecutive paragraph macros.
+     In man(7) documents, it happens
+     --   for empty PP, PPPP, and LLPP macros
+     --   for IIPP macros having neither head nor body arguments
+     --   for bbrr or sspp right after SSHH or SSSS
+
+     mmoovviinngg ppaarraaggrraapphh mmaaccrroo oouutt ooff lliisstt
+     (mdoc) A list item in a BBll list contains a trailing paragraph macro.  The
+     paragraph macro is moved after the end of the list.
+
+     sskkiippppiinngg nnoo--ssppaaccee mmaaccrroo
+     (mdoc) An input line begins with an NNss macro, or the next argument after
+     an NNss macro is an isolated closing delimiter.  The macro is ignored.
+
+     bblloocckkss bbaaddllyy nneesstteedd
+     (mdoc) If two blocks intersect, one should completely contain the other.
+     Otherwise, rendered output is likely to look strange in any output
+     format, and rendering in SGML-based output formats is likely to be
+     outright wrong because such languages do not support badly nested blocks
+     at all.  Typical examples of badly nested blocks are "AAoo BBoo AAcc BBcc" and
+     "AAoo BBqq AAcc".  In these examples, AAcc breaks BBoo and BBqq, respectively.
+
+     nneesstteedd ddiissppllaayyss aarree nnoott ppoorrttaabbllee
+     (mdoc) A BBdd, DD11, or DDll display occurs nested inside another BBdd display.
+     This works with mmaannddoocc, but fails with most other implementations.
+
+     mmoovviinngg ccoonntteenntt oouutt ooff lliisstt
+     (mdoc) A BBll list block contains text or macros before the first IItt macro.
+     The offending children are moved before the beginning of the list.
+
+     ffiirrsstt mmaaccrroo oonn lliinnee
+     Inside a BBll --ccoolluummnn list, a TTaa macro occurs as the first macro on a line,
+     which is not portable.
+
+     lliinnee ssccooppee bbrrookkeenn
+     (man) While parsing the next-line scope of the previous macro, another
+     macro is found that prematurely terminates the previous one.  The
+     previous, interrupted macro is deleted from the parse tree.
+
+   WWaarrnniinnggss rreellaatteedd ttoo mmiissssiinngg aarrgguummeennttss
+     sskkiippppiinngg eemmppttyy rreeqquueesstt
+     (roff, eqn) The macro name is missing from a macro definition request, or
+     an eqn(7) control statement or operation keyword lacks its required
+     argument.
+
+     ccoonnddiittiioonnaall rreeqquueesstt ccoonnttrroollss eemmppttyy ssccooppee
+     (roff) A conditional request is only useful if any of the following
+     follows it on the same logical input line:
+     --   The `\{' keyword to open a multi-line scope.
+     --   A request or macro or some text, resulting in a single-line scope.
+     --   The immediate end of the logical line without any intervening
+         whitespace, resulting in next-line scope.
+     Here, a conditional request is followed by trailing whitespace only, and
+     there is no other content on its logical input line.  Note that it
+     doesn't matter whether the logical input line is split across multiple
+     physical input lines using `\' line continuation characters.  This is one
+     of the rare cases where trailing whitespace is syntactically significant.
+     The conditional request controls a scope containing whitespace only, so
+     it is unlikely to have a significant effect, except that it may control a
+     following eell clause.
+
+     sskkiippppiinngg eemmppttyy mmaaccrroo
+     (mdoc) The indicated macro has no arguments and hence no effect.
+
+     eemmppttyy bblloocckk
+     (mdoc, man) A BBdd, BBkk, BBll, DD11, DDll, MMTT, RRSS, or UURR block contains nothing in
+     its body and will produce no output.
+
+     eemmppttyy aarrgguummeenntt,, uussiinngg 00nn
+     (mdoc) The required width is missing after BBdd or BBll --ooffffsseett or --wwiiddtthh.
+
+     mmiissssiinngg ddiissppllaayy ttyyppee,, uussiinngg --rraaggggeedd
+     (mdoc) The BBdd macro is invoked without the required display type.
+
+     lliisstt ttyyppee iiss nnoott tthhee ffiirrsstt aarrgguummeenntt
+     (mdoc) In a BBll macro, at least one other argument precedes the type
+     argument.  The mmaannddoocc utility copes with any argument order, but some
+     other mdoc(7) implementations do not.
+
+     mmiissssiinngg --wwiiddtthh iinn --ttaagg lliisstt,, uussiinngg 88nn
+     (mdoc) Every BBll macro having the --ttaagg argument requires --wwiiddtthh, too.
+
+     mmiissssiinngg uuttiilliittyy nnaammee,, uussiinngg """"
+     (mdoc) The EExx --ssttdd macro is called without an argument before NNmm has
+     first been called with an argument.
+
+     mmiissssiinngg ffuunnccttiioonn nnaammee,, uussiinngg """"
+     (mdoc) The FFoo macro is called without an argument.  No function name is
+     printed.
+
+     eemmppttyy hheeaadd iinn lliisstt iitteemm
+     (mdoc) In a BBll --ddiiaagg, --hhaanngg, --iinnsseett, --oohhaanngg, or --ttaagg list, an IItt macro
+     lacks the required argument.  The item head is left empty.
+
+     eemmppttyy lliisstt iitteemm
+     (mdoc) In a BBll --bbuulllleett, --ddaasshh, --eennuumm, or --hhyypphheenn list, an IItt block is
+     empty.  An empty list item is shown.
+
+     mmiissssiinngg aarrgguummeenntt,, uussiinngg nneexxtt lliinnee
+     (mdoc) An IItt macro in a BBdd --ccoolluummnn list has no arguments.  While mmaannddoocc
+     uses the text or macros of the following line, if any, for the cell,
+     other formatters may misformat the list.
+
+     mmiissssiinngg ffoonntt ttyyppee,, uussiinngg \\ffRR
+     (mdoc) A BBff macro has no argument.  It switches to the default font.
+
+     uunnkknnoowwnn ffoonntt ttyyppee,, uussiinngg \\ffRR
+     (mdoc) The BBff argument is invalid.  The default font is used instead.
+
+     nnootthhiinngg ffoolllloowwss pprreeffiixx
+     (mdoc) A PPff macro has no argument, or only one argument and no macro
+     follows on the same input line.  This defeats its purpose; in particular,
+     spacing is not suppressed before the text or macros following on the next
+     input line.
+
+     eemmppttyy rreeffeerreennccee bblloocckk
+     (mdoc) An RRss macro is immediately followed by an RRee macro on the next
+     input line.  Such an empty block does not produce any output.
+
+     mmiissssiinngg sseeccttiioonn aarrgguummeenntt
+     (mdoc) An XXrr macro lacks its second, section number argument.  The first
+     argument, i.e. the name, is printed, but without subsequent parentheses.
+
+     mmiissssiinngg --ssttdd aarrgguummeenntt,, aaddddiinngg iitt
+     (mdoc) An EExx or RRvv macro lacks the required --ssttdd argument.  The mmaannddoocc
+     utility assumes --ssttdd even when it is not specified, but other
+     implementations may not.
+
+     mmiissssiinngg ooppttiioonn ssttrriinngg,, uussiinngg """"
+     (man) The OOPP macro is invoked without any argument.  An empty pair of
+     square brackets is shown.
+
+     mmiissssiinngg rreessoouurrccee iiddeennttiiffiieerr,, uussiinngg """"
+     (man) The MMTT or UURR macro is invoked without any argument.  An empty pair
+     of angle brackets is shown.
+
+     mmiissssiinngg eeqqnn bbooxx,, uussiinngg """"
+     (eqn) A diacritic mark or a binary operator is found, but there is
+     nothing to the left of it.  An empty box is inserted.
+
+   WWaarrnniinnggss rreellaatteedd ttoo bbaadd mmaaccrroo aarrgguummeennttss
+     dduupplliiccaattee aarrgguummeenntt
+     (mdoc) A BBdd or BBll macro has more than one --ccoommppaacctt, more than one
+     --ooffffsseett, or more than one --wwiiddtthh argument.  All but the last instances of
+     these arguments are ignored.
+
+     sskkiippppiinngg dduupplliiccaattee aarrgguummeenntt
+     (mdoc) An AAnn macro has more than one --sspplliitt or --nnoosspplliitt argument.  All
+     but the first of these arguments are ignored.
+
+     sskkiippppiinngg dduupplliiccaattee ddiissppllaayy ttyyppee
+     (mdoc) A BBdd macro has more than one type argument; the first one is used.
+
+     sskkiippppiinngg dduupplliiccaattee lliisstt ttyyppee
+     (mdoc) A BBll macro has more than one type argument; the first one is used.
+
+     sskkiippppiinngg --wwiiddtthh aarrgguummeenntt
+     (mdoc) A BBll --ccoolluummnn, --ddiiaagg, --oohhaanngg, --iinnsseett, or --iitteemm list has a --wwiiddtthh
+     argument.  That has no effect.
+
+     wwrroonngg nnuummbbeerr ooff cceellllss
+     In a line of a BBll --ccoolluummnn list, the number of tabs or TTaa macros is less
+     than the number expected from the list header line or exceeds the
+     expected number by more than one.  Missing cells remain empty, and all
+     cells exceeding the number of columns are joined into one single cell.
+
+     uunnkknnoowwnn AATT&&TT UUNNIIXX vveerrssiioonn
+     (mdoc) An AAtt macro has an invalid argument.  It is used verbatim, with
+     "AT&T UNIX " prefixed to it.
+
+     ccoommmmaa iinn ffuunnccttiioonn aarrgguummeenntt
+     (mdoc) An argument of an FFaa or FFnn macro contains a comma; it should
+     probably be split into two arguments.
+
+     ppaarreenntthheessiiss iinn ffuunnccttiioonn nnaammee
+     (mdoc) The first argument of an FFcc or FFnn macro contains an opening or
+     closing parenthesis; that's probably wrong, parentheses are added
+     automatically.
+
+     uunnkknnoowwnn lliibbrraarryy nnaammee
+     (mdoc, not on OpenBSD) An LLbb macro has an unknown name argument and will
+     be rendered as "library "_n_a_m_e"".
+
+     iinnvvaalliidd ccoonntteenntt iinn RRss bblloocckk
+     (mdoc) An RRss block contains plain text or non-% macros.  The bogus
+     content is left in the syntax tree.  Formatting may be poor.
+
+     iinnvvaalliidd BBoooolleeaann aarrgguummeenntt
+     (mdoc) An SSmm macro has an argument other than oonn or ooffff.  The invalid
+     argument is moved out of the macro, which leaves the macro empty, causing
+     it to toggle the spacing mode.
+
+     uunnkknnoowwnn ffoonntt,, sskkiippppiinngg rreeqquueesstt
+     (man, tbl) A roff(7) fftt request or a tbl(7) ff layout modifier has an
+     unknown _f_o_n_t argument.
+
+     oodddd nnuummbbeerr ooff cchhaarraacctteerrss iinn rreeqquueesstt
+     (roff) A ttrr request contains an odd number of characters.  The last
+     character is mapped to the blank character.
+
+   WWaarrnniinnggss rreellaatteedd ttoo ppllaaiinn tteexxtt
+     bbllaannkk lliinnee iinn ffiillll mmooddee,, uussiinngg ..sspp
+     (mdoc) The meaning of blank input lines is only well-defined in non-fill
+     mode: In fill mode, line breaks of text input lines are not supposed to
+     be significant.  However, for compatibility with groff, blank lines in
+     fill mode are replaced with sspp requests.
+
+     ttaabb iinn ffiilllleedd tteexxtt
+     (mdoc, man) The meaning of tab characters is only well-defined in non-
+     fill mode: In fill mode, whitespace is not supposed to be significant on
+     text input lines.  As an implementation dependent choice, tab characters
+     on text lines are passed through to the formatters in any case.  Given
+     that the text before the tab character will be filled, it is hard to
+     predict which tab stop position the tab will advance to.
+
+     nneeww sseenntteennccee,, nneeww lliinnee
+     (mdoc) A new sentence starts in the middle of a text line.  Start it on a
+     new input line to help formatters produce correct spacing.
+
+     iinnvvaalliidd eessccaappee sseeqquueennccee
+     (roff) An escape sequence has an invalid opening argument delimiter,
+     lacks the closing argument delimiter, or the argument has too few
+     characters.  If the argument is incomplete, \\** and \\nn expand to an empty
+     string, \\BB to the digit `0', and \\ww to the length of the incomplete
+     argument.  All other invalid escape sequences are ignored.
+
+     uunnddeeffiinneedd ssttrriinngg,, uussiinngg """"
+     (roff) If a string is used without being defined before, its value is
+     implicitly set to the empty string.  However, defining strings explicitly
+     before use keeps the code more readable.
+
+   WWaarrnniinnggss rreellaatteedd ttoo ttaabblleess
+     ttbbll lliinnee ssttaarrttss wwiitthh ssppaann
+     (tbl) The first cell in a table layout line is a horizontal span (`ss').
+     Data provided for this cell is ignored, and nothing is printed in the
+     cell.
+
+     ttbbll ccoolluummnn ssttaarrttss wwiitthh ssppaann
+     (tbl) The first line of a table layout specification requests a vertical
+     span (`^^').  Data provided for this cell is ignored, and nothing is
+     printed in the cell.
+
+     sskkiippppiinngg vveerrttiiccaall bbaarr iinn ttbbll llaayyoouutt
+     (tbl) A table layout specification contains more than two consecutive
+     vertical bars.  A double bar is printed, all additional bars are
+     discarded.
+
+   EErrrroorrss rreellaatteedd ttoo ttaabblleess
+     nnoonn--aallpphhaabbeettiicc cchhaarraacctteerr iinn ttbbll ooppttiioonnss
+     (tbl) The table options line contains a character other than a letter,
+     blank, or comma where the beginning of an option name is expected.  The
+     character is ignored.
+
+     sskkiippppiinngg uunnkknnoowwnn ttbbll ooppttiioonn
+     (tbl) The table options line contains a string of letters that does not
+     match any known option name.  The word is ignored.
+
+     mmiissssiinngg ttbbll ooppttiioonn aarrgguummeenntt
+     (tbl) A table option that requires an argument is not followed by an
+     opening parenthesis, or the opening parenthesis is immediately followed
+     by a closing parenthesis.  The option is ignored.
+
+     wwrroonngg ttbbll ooppttiioonn aarrgguummeenntt ssiizzee
+     (tbl) A table option argument contains an invalid number of characters.
+     Both the option and the argument are ignored.
+
+     eemmppttyy ttbbll llaayyoouutt
+     (tbl) A table layout specification is completely empty, specifying zero
+     lines and zero columns.  As a fallback, a single left-justified column is
+     used.
+
+     iinnvvaalliidd cchhaarraacctteerr iinn ttbbll llaayyoouutt
+     (tbl) A table layout specification contains a character that can neither
+     be interpreted as a layout key character nor as a layout modifier, or a
+     modifier precedes the first key.  The invalid character is discarded.
+
+     uunnmmaattcchheedd ppaarreenntthheessiiss iinn ttbbll llaayyoouutt
+     (tbl) A table layout specification contains an opening parenthesis, but
+     no matching closing parenthesis.  The rest of the input line, starting
+     from the parenthesis, has no effect.
+
+     ttbbll wwiitthhoouutt aannyy ddaattaa cceellllss
+     (tbl) A table does not contain any data cells.  It will probably produce
+     no output.
+
+     iiggnnoorriinngg ddaattaa iinn ssppaannnneedd ttbbll cceellll
+     (tbl) A table cell is marked as a horizontal span (`ss') or vertical span
+     (`^^') in the table layout, but it contains data.  The data is ignored.
+
+     iiggnnoorriinngg eexxttrraa ttbbll ddaattaa cceellllss
+     (tbl) A data line contains more cells than the corresponding layout line.
+     The data in the extra cells is ignored.
+
+     ddaattaa bblloocckk ooppeenn aatt eenndd ooff ttbbll
+     (tbl) A data block is opened with TT{{, but never closed with a matching
+     TT}}.  The remaining data lines of the table are all put into one cell, and
+     any remaining cells stay empty.
+
+   EErrrroorrss rreellaatteedd ttoo rrooffff,, mmddoocc,, aanndd mmaann ccooddee
+     dduupplliiccaattee pprroolloogguuee mmaaccrroo
+     (mdoc) One of the prologue macros occurs more than once.  The last
+     instance overrides all previous ones.
+
+     sskkiippppiinngg llaattee ttiittllee mmaaccrroo
+     (mdoc) The DDtt macro appears after the first non-prologue macro.
+     Traditional formatters cannot handle this because they write the page
+     header before parsing the document body.  Even though this technical
+     restriction does not apply to mmaannddoocc, traditional semantics is preserved.
+     The late macro is discarded including its arguments.
+
+     iinnppuutt ssttaacckk lliimmiitt eexxcceeeeddeedd,, iinnffiinniittee lloooopp??
+     (roff) Explicit recursion limits are implemented for the following
+     features, in order to prevent infinite loops:
+     --   expansion of nested escape sequences including expansion of strings
+         and number registers,
+     --   expansion of nested user-defined macros,
+     --   and ssoo file inclusion.
+     When a limit is hit, the output is incorrect, typically losing some
+     content, but the parser can continue.
+
+     sskkiippppiinngg bbaadd cchhaarraacctteerr
+     (mdoc, man, roff) The input file contains a byte that is not a printable
+     ascii(7) character.  The message mentions the character number.  The
+     offending byte is replaced with a question mark (`?').  Consider editing
+     the input file to replace the byte with an ASCII transliteration of the
+     intended character.
+
+     sskkiippppiinngg uunnkknnoowwnn mmaaccrroo
+     (mdoc, man, roff) The first identifier on a request or macro line is
+     neither recognized as a roff(7) request, nor as a user-defined macro,
+     nor, respectively, as an mdoc(7) or man(7) macro.  It may be mistyped or
+     unsupported.  The request or macro is discarded including its arguments.
+
+     sskkiippppiinngg iinnsseeccuurree rreeqquueesstt
+     (roff) An input file attempted to run a shell command or to read or write
+     an external file.  Such attempts are denied for security reasons.
+
+     sskkiippppiinngg iitteemm oouuttssiiddee lliisstt
+     (mdoc, eqn) An IItt macro occurs outside any BBll list, or an eqn(7) aabboovvee
+     delimiter occurs outside any pile.  It is discarded including its
+     arguments.
+
+     sskkiippppiinngg ccoolluummnn oouuttssiiddee ccoolluummnn lliisstt
+     (mdoc) A TTaa macro occurs outside any BBll --ccoolluummnn block.  It is discarded
+     including its arguments.
+
+     sskkiippppiinngg eenndd ooff bblloocckk tthhaatt iiss nnoott ooppeenn
+     (mdoc, man, eqn, tbl, roff) Various syntax elements can only be used to
+     explicitly close blocks that have previously been opened.  An mdoc(7)
+     block closing macro, a man(7) MMEE, RREE or UUEE macro, an eqn(7) right
+     delimiter or closing brace, or the end of an equation, table, or roff(7)
+     conditional request is encountered but no matching block is open.  The
+     offending request or macro is discarded.
+
+     ffeewweerr RRSS bblloocckkss ooppeenn,, sskkiippppiinngg
+     (man) The RREE macro is invoked with an argument, but less than the
+     specified number of RRSS blocks is open.  The RREE macro is discarded.
+
+     iinnsseerrttiinngg mmiissssiinngg eenndd ooff bblloocckk
+     (mdoc, tbl) Various mdoc(7) macros as well as tables require explicit
+     closing by dedicated macros.  A block that doesn't support bad nesting
+     ends before all of its children are properly closed.  The open child
+     nodes are closed implicitly.
+
+     aappppeennddiinngg mmiissssiinngg eenndd ooff bblloocckk
+     (mdoc, man, eqn, tbl, roff) At the end of the document, an explicit
+     mdoc(7) block, a man(7) next-line scope or MMTT, RRSS or UURR block, an
+     equation, table, or roff(7) conditional or ignore block is still open.
+     The open block is closed implicitly.
+
+     eessccaappeedd cchhaarraacctteerr nnoott aalllloowweedd iinn aa nnaammee
+     (roff) Macro, string and register identifiers consist of printable, non-
+     whitespace ASCII characters.  Escape sequences and characters and strings
+     expressed in terms of them cannot form part of a name.  The first
+     argument of an aamm, aass, ddee, ddss, nnrr, or rrrr request, or any argument of an
+     rrmm request, or the name of a request or user defined macro being called,
+     is terminated by an escape sequence.  In the cases of aass, ddss, and nnrr, the
+     request has no effect at all.  In the cases of aamm, ddee, rrrr, and rrmm, what
+     was parsed up to this point is used as the arguments to the request, and
+     the rest of the input line is discarded including the escape sequence.
+     When parsing for a request or a user-defined macro name to be called,
+     only the escape sequence is discarded.  The characters preceding it are
+     used as the request or macro name, the characters following it are used
+     as the arguments to the request or macro.
+
+     NNOOTT IIMMPPLLEEMMEENNTTEEDD:: BBdd --ffiillee
+     (mdoc) For security reasons, the BBdd macro does not support the --ffiillee
+     argument.  By requesting the inclusion of a sensitive file, a malicious
+     document might otherwise trick a privileged user into inadvertently
+     displaying the file on the screen, revealing the file content to
+     bystanders.  The argument is ignored including the file name following
+     it.
+
+     sskkiippppiinngg ddiissppllaayy wwiitthhoouutt aarrgguummeennttss
+     (mdoc) A BBdd block macro does not have any arguments.  The block is
+     discarded, and the block content is displayed in whatever mode was active
+     before the block.
+
+     mmiissssiinngg lliisstt ttyyppee,, uussiinngg --iitteemm
+     (mdoc) A BBll macro fails to specify the list type.
+
+     aarrgguummeenntt iiss nnoott nnuummeerriicc,, uussiinngg 11
+     (roff) The argument of a ccee request is not a number.
+
+     mmiissssiinngg mmaannuuaall nnaammee,, uussiinngg """"
+     (mdoc) The first call to NNmm, or any call in the NAME section, lacks the
+     required argument.
+
+     uunnaammee((33)) ssyysstteemm ccaallll ffaaiilleedd,, uussiinngg UUNNKKNNOOWWNN
+     (mdoc) The OOss macro is called without arguments, and the uname(3) system
+     call failed.  As a workaround, mmaannddoocc can be compiled with
+     --DDOOSSNNAAMMEE==""\\""_s_t_r_i_n_g\\"""".
+
+     uunnkknnoowwnn ssttaannddaarrdd ssppeecciiffiieerr
+     (mdoc) An SStt macro has an unknown argument and is discarded.
+
+     sskkiippppiinngg rreeqquueesstt wwiitthhoouutt nnuummeerriicc aarrgguummeenntt
+     (roff, eqn) An iitt request or an eqn(7) ssiizzee or ggssiizzee statement has a non-
+     numeric or negative argument or no argument at all.  The invalid request
+     or statement is ignored.
+
+     NNOOTT IIMMPPLLEEMMEENNTTEEDD:: ..ssoo wwiitthh aabbssoolluuttee ppaatthh oorr ""....""
+     (roff) For security reasons, mmaannddoocc allows ssoo file inclusion requests
+     only with relative paths and only without ascending to any parent
+     directory.  By requesting the inclusion of a sensitive file, a malicious
+     document might otherwise trick a privileged user into inadvertently
+     displaying the file on the screen, revealing the file content to
+     bystanders.  mmaannddoocc only shows the path as it appears behind ssoo.
+
+     ..ssoo rreeqquueesstt ffaaiilleedd
+     (roff) Servicing a ssoo request requires reading an external file, but the
+     file could not be opened.  mmaannddoocc only shows the path as it appears
+     behind ssoo.
+
+     sskkiippppiinngg aallll aarrgguummeennttss
+     (mdoc, man, eqn, roff) An mdoc(7) BBtt, EEdd, EEff, EEkk, EEll, LLpp, PPpp, RRee, RRss, or
+     UUdd macro, an IItt macro in a list that don't support item heads, a man(7)
+     LLPP, PP, or PPPP macro, an eqn(7) EEQQ or EENN macro, or a roff(7) bbrr, ffii, or nnff
+     request or `..' block closing request is invoked with at least one
+     argument.  All arguments are ignored.
+
+     sskkiippppiinngg eexxcceessss aarrgguummeennttss
+     (mdoc, man, roff) A macro or request is invoked with too many arguments:
+       --   FFoo, MMTT, PPDD, RRSS, UURR, fftt, or sspp with more than one argument
+       --   AAnn with another argument after --sspplliitt or --nnoosspplliitt
+       --   RREE with more than one argument or with a non-integer argument
+       --   OOPP or a request of the ddee family with more than two arguments
+       --   DDtt with more than three arguments
+       --   TTHH with more than five arguments
+       --   BBdd, BBkk, or BBll with invalid arguments
+     The excess arguments are ignored.
+
+   UUnnssuuppppoorrtteedd ffeeaattuurreess
+     iinnppuutt ttoooo llaarrggee
+     (mdoc, man) Currently, mmaannddoocc cannot handle input files larger than its
+     arbitrary size limit of 2^31 bytes (2 Gigabytes).  Since useful manuals
+     are always small, this is not a problem in practice.  Parsing is aborted
+     as soon as the condition is detected.
+
+     uunnssuuppppoorrtteedd ccoonnttrrooll cchhaarraacctteerr
+     (roff) An ASCII control character supported by other roff(7)
+     implementations but not by mmaannddoocc was found in an input file.  It is
+     replaced by a question mark.
+
+     uunnssuuppppoorrtteedd rrooffff rreeqquueesstt
+     (roff) An input file contains a roff(7) request supported by GNU troff or
+     Heirloom troff but not by mmaannddoocc, and it is likely that this will cause
+     information loss or considerable misformatting.
+
+     eeqqnn ddeelliimm ooppttiioonn iinn ttbbll
+     (eqn, tbl) The options line of a table defines equation delimiters.  Any
+     equation source code contained in the table will be printed unformatted.
+
+     uunnssuuppppoorrtteedd ttaabbllee llaayyoouutt mmooddiiffiieerr
+     (tbl) A table layout specification contains an `mm' modifier.  The
+     modifier is discarded.
+
+     iiggnnoorriinngg mmaaccrroo iinn ttaabbllee
+     (tbl, mdoc, man) A table contains an invocation of an mdoc(7) or man(7)
+     macro or of an undefined macro.  The macro is ignored, and its arguments
+     are handled as if they were a text line.
+
+SSEEEE AALLSSOO
+     apropos(1), man(1), eqn(7), man(7), mandoc_char(7), mdoc(7), roff(7),
+     tbl(7)
+
+HHIISSTTOORRYY
+     The mmaannddoocc utility first appeared in OpenBSD 4.8.  The option --II appeared
+     in OpenBSD 5.2, and --aaCCccffhhKKkkllMMSSssww in OpenBSD 5.7.
+
+AAUUTTHHOORRSS
+     The mmaannddoocc utility was written by Kristaps Dzonsons <_k_r_i_s_t_a_p_s_@_b_s_d_._l_v> and
+     is maintained by Ingo Schwarze <_s_c_h_w_a_r_z_e_@_o_p_e_n_b_s_d_._o_r_g>.
+
+GRIEF Edit 3.2             $Mdocdate: July 28 2018 $            GRIEF Edit 3.2

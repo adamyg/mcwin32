@@ -40,15 +40,24 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #endif /* _WIN32 */
 
 /*
+ * Updater Meta Data
+ *  nameID      typeID  {  raw data  }
+ */
+
+UPDATER HostURL { "\0" }
+UPDATER Channel { "release\0" }
+
+
+/*
  *      Version Information
-
-        o FILEVERSION versionBinary     version number for the file. The version consists of two 32-bit integers, defined by four 16-bit integers.
-                                        For example, "FILEVERSION 3,10,0,61" is translated into two doublewords: 0x0003000a and 0x0000003d, in that order.
-                                        Therefore, if version is defined by the DWORD values dw1 and dw2, they need to appear in the FILEVERSION
-                                        statement as follows: HIWORD(dw1), LOWORD(dw1), HIWORD(dw2), LOWORD(dw2).
-
-        o PRODUCTVERSION versionBinary  version number for the product with which the file is distributed. The version parameter is two 32-bit integers,
-                                        defined by four 16-bit integers. For more information about version, see the FILEVERSION description.
+ *
+ *      o FILEVERSION versionBinary     version number for the file. The version consists of two 32-bit integers, defined by four 16-bit integers.
+ *                                      For example, "FILEVERSION 3,10,0,61" is translated into two doublewords: 0x0003000a and 0x0000003d, in that order.
+ *                                      Therefore, if version is defined by the DWORD values dw1 and dw2, they need to appear in the FILEVERSION
+ *                                      statement as follows: HIWORD(dw1), LOWORD(dw1), HIWORD(dw2), LOWORD(dw2).
+ *
+ *      o PRODUCTVERSION versionBinary  version number for the product with which the file is distributed. The version parameter is two 32-bit integers,
+ *                                      defined by four 16-bit integers. For more information about version, see the FILEVERSION description.
  */
 
 VS_VERSION_INFO VERSIONINFO

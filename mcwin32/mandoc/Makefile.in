@@ -1,0 +1,406 @@
+# -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
+# $Id: Makefile.in,v 1.1 2025/04/02 16:17:20 cvsuser Exp $
+# libbsdmdoc and grmanddoc
+#
+#
+# Copyright (c) 2014 - 2025, Adam Young.
+# All rights reserved.
+#
+# This file is part of the Midnight Commander.
+#
+# The Midnight Commander is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, version 3 of the License.
+#
+# The Midnight Commander is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+# ==end==
+#
+
+@SET_MAKE@
+ROOT=		@abs_top_builddir@
+top_builddir=	@top_builddir@
+
+# File extensions
+
+E=
+C=		.c
+O=		.o
+H=		.h
+A=		.a
+LP=		lib
+
+CLEAN=		*.bak *~ *.BAK *.swp *.tmp core *.core a.out
+XCLEAN=
+
+# Compilers, programs
+
+CC=		@CC@
+CXX=		@CXX@
+RM=		@RM@
+RC=		@RC@
+AR=		@AR@
+RANLIB=		@RANLIB@
+LIBTOOL=	@LIBTOOL@
+PERL=		@PERL@
+
+# Configuration
+
+QUIETOUT:=	>/dev/null 2>&1
+ifeq ($(VERBOSE),1)
+QUIETOUT:=
+else ifeq ($(VERBOSE),0)
+else ifeq ($(VERBOSE),)
+else
+$(error VERBOSE: unexpected value 0 or 1 required, $(VERBOSE) given]))
+endif
+
+ifeq ("$(BUILD_TYPE)","")	#default
+BUILD_TYPE=	debug
+MAKEFLAGS+=	BUILD_TYPE=debug
+endif
+ifneq ("$(BUILD_TYPE)","release")
+RTSUFFIX=d
+endif
+
+# Directories
+
+D_INC=		$(ROOT)/include
+D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
+D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/mcmandoc
+D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
+
+# Common flags
+
+XFLAGS=
+CFLAGS=		@CFLAGS@
+ifeq ("gcc","@CC@")
+CWARN=		$(filter-out -Wshadow -Wmissing-prototypes -Wsign-compare, @CWARN@ $(CWALL))
+CWARN+=		-Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-implicit-fallthrough
+CWARN+=		-Wno-cast-function-type -Wno-misleading-indentation
+else
+CWARN=		@CWARN@ $(CWALL)
+ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+CWARN+=		-wcd=107 -wcd=201
+endif
+endif
+CDEBUG=		@CDEBUG@
+CRELEASE=	@CRELEASE@
+LDDEBUG=	@LDDEBUG@
+LDRELEASE=	@LDRELEASE@
+
+CINCLUDE=	-I. -I$(D_INC) @CINCLUDE@
+CEXTRA=		@DEFS@ 
+ifeq ("win32","@build_os@")
+CEXTRA+=	-DWIN32 -DLIBW32_DYNAMIC
+endif
+
+ifeq ("$(BUILD_TYPE)","release")
+CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDRELEASE) @LDFLAGS@
+else
+CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+LDFLAGS=	$(LDDEBUG) @LDFLAGS@
+endif
+ifeq (gcc,$(findstring gcc,$(CC)))
+ifeq ("linux","@build_os@")
+LDFLAGS+=	-rdynamic
+endif
+endif
+
+LDLIBS=		-L$(D_LIB) -lbsdmdoc -lz -lregex @LDLIBS@ @LIBS@ @LIBM@ @EXTRALIBS@
+
+YFLAGS=		-d
+ARFLAGS=	rcv
+RMFLAGS=	-f
+RMDFLAGS=	-rf
+
+
+#########################################################################################
+# Targets
+
+VERSION=	1.14.6.gr
+RELDATE=	23 Sept 2021
+
+PACKED=		mandoc-$(VERSION).tgz
+VPATH=		./mandoc-$(VERSION) ./sqlite3 ./compat
+
+	#---------------------------------------------------
+
+COMPAT_OBJS=\
+	$(D_OBJ)/compat_err$(O)		\
+	$(D_OBJ)/compat_fts$(O)		\
+	$(D_OBJ)/compat_getline$(O)	\
+	$(D_OBJ)/compat_getsubopt$(O)	\
+	$(D_OBJ)/compat_mkdtemp$(O)	\
+	$(D_OBJ)/compat_mkstemps$(O)	\
+	$(D_OBJ)/compat_ohash$(O)	\
+	$(D_OBJ)/compat_progname$(O)	\
+	$(D_OBJ)/compat_reallocarray$(O) \
+	$(D_OBJ)/compat_recallocarray$(O) \
+	$(D_OBJ)/compat_strcasestr$(O)	\
+	$(D_OBJ)/compat_stringlist$(O)	\
+	$(D_OBJ)/compat_strlcat$(O)	\
+	$(D_OBJ)/compat_strlcpy$(O)	\
+	$(D_OBJ)/compat_strndup$(O)	\
+	$(D_OBJ)/compat_strsep$(O)	\
+	$(D_OBJ)/compat_strtonum$(O)	\
+
+COMPAT_OBJS+=\
+	$(D_OBJ)/glob$(O)		\
+	$(D_OBJ)/isblank$(O)		\
+	$(D_OBJ)/vasprintf$(O)		\
+	$(D_OBJ)/asprintf$(O)
+
+LIBMAN_OBJS=\
+	$(D_OBJ)/man$(O)		\
+	$(D_OBJ)/man_macro$(O)		\
+	$(D_OBJ)/man_validate$(O)
+
+LIBMDOC_OBJS=\
+	$(D_OBJ)/arch$(O)		\
+	$(D_OBJ)/att$(O)		\
+	$(D_OBJ)/lib$(O)		\
+	$(D_OBJ)/mdoc$(O)		\
+	$(D_OBJ)/mdoc_argv$(O)		\
+	$(D_OBJ)/mdoc_macro$(O)		\
+	$(D_OBJ)/mdoc_state$(O)		\
+	$(D_OBJ)/mdoc_validate$(O)	\
+	$(D_OBJ)/mdoc_markdown$(O)	\
+	$(D_OBJ)/st$(O)
+
+LIBROFF_OBJS=\
+	$(D_OBJ)/eqn$(O)		\
+	$(D_OBJ)/roff$(O)		\
+	$(D_OBJ)/roff_term$(O)		\
+	$(D_OBJ)/roff_validate$(O)	\
+	$(D_OBJ)/tbl$(O)		\
+	$(D_OBJ)/tbl_data$(O)		\
+	$(D_OBJ)/tbl_layout$(O)		\
+	$(D_OBJ)/tbl_opts$(O)
+
+LIBMANDOC_OBJS=\
+	$(LIBMAN_OBJS)			\
+	$(LIBMDOC_OBJS)			\
+	$(LIBROFF_OBJS)			\
+	$(COMPAT_OBJS)			\
+	$(D_OBJ)/chars$(O)		\
+	$(D_OBJ)/mandoc$(O)		\
+	$(D_OBJ)/mandoc_aux$(O)		\
+	$(D_OBJ)/mandoc_msg$(O)		\
+	$(D_OBJ)/mandoc_ohash$(O)	\
+	$(D_OBJ)/mandoc_xr$(O)		\
+	$(D_OBJ)/msec$(O)		\
+	$(D_OBJ)/read$(O)		\
+	$(D_OBJ)/preconv$(O)
+
+LIBMANDOC=	$(D_LIB)/$(LP)bsdmdoc$(A)
+
+	#---------------------------------------------------
+
+MANDOC_HTML_OBJS=\
+	$(D_OBJ)/eqn_html$(O)		\
+	$(D_OBJ)/html$(O)		\
+	$(D_OBJ)/man_html$(O)		\
+	$(D_OBJ)/mdoc_html$(O)		\
+	$(D_OBJ)/roff_html$(O)		\
+	$(D_OBJ)/tbl_html$(O)
+
+MANDOC_MAN_OBJS=\
+	$(D_OBJ)/mdoc_man$(O)
+
+MANDOC_TERM_OBJS=\
+	$(D_OBJ)/eqn_term$(O)		\
+	$(D_OBJ)/man_term$(O)		\
+	$(D_OBJ)/mdoc_term$(O)		\
+	$(D_OBJ)/term$(O)		\
+	$(D_OBJ)/term_ascii$(O)		\
+	$(D_OBJ)/term_ps$(O)		\
+	$(D_OBJ)/term_tab$(O)		\
+	$(D_OBJ)/term_tag$(O)		\
+	$(D_OBJ)/tbl_term$(O)
+
+MANDOC_SEARCH_OBJS=\
+	$(D_OBJ)/mandocdb$(O)		\
+	$(D_OBJ)/mansearch$(O)
+
+MANDOC_DB_OBJS=\
+	$(D_OBJ)/sqlite3$(O)		\
+	$(D_OBJ)/dba$(O)		\
+	$(D_OBJ)/dba_read$(O)		\
+	$(D_OBJ)/dba_write$(O)		\
+	$(D_OBJ)/dba_array$(O)		\
+	$(D_OBJ)/dbm$(O)		\
+	$(D_OBJ)/dbm_map$(O)
+
+MANDOC_OBJS=\
+	$(MANDOC_HTML_OBJS)		\
+	$(MANDOC_MAN_OBJS)		\
+	$(MANDOC_TERM_OBJS)		\
+	$(D_OBJ)/main$(O)		\
+	$(D_OBJ)/manpath$(O)		\
+	$(D_OBJ)/out$(O)		\
+	$(D_OBJ)/tag$(O)		\
+	$(D_OBJ)/tree$(O)		\
+	$(D_OBJ)/mandocdb$(O)		\
+	$(D_OBJ)/mansearch$(O)		\
+	$(MANDOC_DB_OBJS)
+
+MANDOC_RESOURCES=	mcmandoc.rc
+
+ifeq ("win32","@build_os@")
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+MANDOC_OBJS+=		$(addprefix $(D_OBJ)/,$(subst .rc,_res.o,$(MANDOC_RESOURCES)))
+else
+MANDOC_OBJS+=		$(addprefix $(D_OBJ)/,$(subst .rc,.res,$(MANDOC_RESOURCES)))
+endif
+endif #build_os
+
+MANDOC=		$(D_BIN)/mcmandoc$(E)
+
+	#---------------------------------------------------
+
+CGI_OBJS=\
+	$(MANDOC_HTML_OBJS)		\
+	$(D_OBJ)/cgi$(O)		\
+	$(D_OBJ)/mansearch$(O)		\
+	$(D_OBJ)/out$(O)		\
+	$(D_OBJ)/tag$(O)		\
+	$(MANDOC_DB_OBJS)
+
+CGI=	$(D_BIN)/grman.cgi$(E)
+
+	#---------------------------------------------------
+
+DEMANDOC_OBJS=\
+	$(D_OBJ)/demandoc$(O)		\
+	$(D_OBJ)/tag$(O)
+
+DEMANDOC=	$(D_BIN)/grdemandoc$(E)
+
+	#---------------------------------------------------
+
+SOELIM_OBJS=\
+	$(D_OBJ)/soelim$(O)		\
+	$(D_OBJ)/compat_err$(O) 	\
+	$(D_OBJ)/compat_getline$(O)	\
+	$(D_OBJ)/compat_progname$(O)	\
+	$(D_OBJ)/compat_reallocarray$(O) \
+	$(D_OBJ)/compat_stringlist$(O)	\
+	$(D_OBJ)/sqlite3$(O)
+
+SOELIM=		$(D_BIN)/grsoelim$(E)
+
+	#---------------------------------------------------
+
+OBJS=\
+	$(LIBMANDOC_OBJS)		\
+	$(MANDOC_OBJS)			\
+	$(CGI_OBJS)			\
+	$(DEMANDOC_OBJS)		\
+	$(SOELIM_OBJS)
+
+LIBRARIES=	$(LIBMANDOC)
+TSKS=		$(MANDOC) $(CGI) $(DEMANDOC) $(SOELIM)
+CLEANFILES=	mdocversion.h
+
+
+#########################################################################################
+# Rules
+
+ifeq ("cygwin","@build_os@")
+# libiberty has a local implementation of getopt; an invalid optarg binding results, conflicting local/dllexport usage.
+# filter and explicity link again libcygwin, as libtool *may* also include.
+LDLIBS:=	$(patsubst -lmisc,-lmisc -lcygwin, $(filter-out -liberty, $(LDLIBS)))
+endif
+
+.PHONY:			build release debug
+build:			source unpacked
+unpacked:		mdocversion.h $(LIBRARIES) $(MANDOC) $(CGI) $(DEMANDOC) $(SOELIM)
+
+release:
+		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
+debug:
+		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+regress-exec:		.unpacked.$(VERSION).regress
+	cd ./mandoc-$(VERSION)/regress && $(PERL) ./regress.pl --path=$(D_BIN)/mcmandoc .
+
+.unpacked.$(VERSION).regress: ./mandoc-$(VERSION)/regress/regress.tgz
+	@echo "do not delete, managed file" > $@
+	cd ./mandoc-$(VERSION)/regress && gzip -c -d regress.tgz | tar -xvf -
+
+regress-clean:
+	cd ./mandoc-$(VERSION)/regress && $(PERL) ./regress.pl . clean
+
+XCLEAN+=	$(basename $(MANDOC)).map
+$(MANDOC):		MAPFILE=$(basename $@).map
+$(MANDOC):		$(MANDOC_OBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(MANDOC_OBJS) $(LDLIBS) @LDMAPFILE@
+
+XCLEAN+=	$(basename $(CGI)).map
+$(CGI):			MAPFILE=$(basename $@).map
+$(CGI):			$(CGI_OBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(CGI_OBJS) $(LDLIBS) @LDMAPFILE@
+
+XCLEAN+=	$(basename $(DEMANDOC)).map
+$(DEMANDOC):		MAPFILE=$(basename $@).map
+$(DEMANDOC):		$(DEMANDOC_OBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(DEMANDOC_OBJS) $(LDLIBS) @LDMAPFILE@
+
+XCLEAN+=	$(basename $(SOELIM)).map
+$(SOELIM):		MAPFILE=$(basename $@).map
+$(SOELIM):		$(SOELIM_OBJS)
+		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(SOELIM_OBJS) $(LDLIBS) @LDMAPFILE@
+
+$(LIBMANDOC):		$(D_OBJ)/.created $(LIBMANDOC_OBJS)
+		$(RM) $(RMFLAGS) $@
+		$(AR) $(ARFLAGS) $@ $(LIBMANDOC_OBJS)
+		$(RANLIB) $@
+
+mdocversion.h:		Makefile
+	@$(PERL) ./mdocversion.pl -o $@ -v "$(VERSION)" -r "$(RELDATE)"
+
+source:			.unpacked.$(VERSION)
+		$(MAKE) unpacked
+
+ifeq ($(PACKED),)
+.unpacked.$(VERSION):
+else
+.unpacked.$(VERSION):	$(PACKED)
+		@echo "do not delete, managed file" > $@
+		@echo "unpacking source $(PACKED)"
+		@gzip -c -d $(PACKED) | tar -xvf -
+endif
+
+CLEAN +=
+
+$(D_OBJ)/.created:
+		-@mkdir $(D_OBJ)
+		@echo "do not create" > $@
+
+clean:
+		@echo $(BUILD_TYPE) clean
+		-$(LIBTOOL) --mode=clean $(RM) $(TSKS) $(QUIETOUT)
+		-@$(RM) $(RMFLAGS) $(LIBRARIES) $(OBJS) $(CLEANFILES) $(QUIETOUT)
+		-@$(RM) $(RMFLAGS) $(BAK) $(CLEAN) $(XCLEAN) $(QUIETOUT)
+
+$(D_OBJ)/sqlite3$(O):	CFLAGS := $(filter-out -gw -hw,$(CFLAGS))
+	# open-watcom debug breaks due to the module size
+
+$(D_OBJ)/%$(O):		%$(C)
+		$(CC) $(CFLAGS) -o $@ -I ./compat -I ./sqlite3 -DHAVE_SQLITE3 -c $<
+
+$(D_OBJ)/%.res:		%.rc
+		$(RC) -fo $@ $<
+
+$(D_OBJ)/%_res.o:	%.rc
+		$(RC) -o $@ $<
+
+#end
+

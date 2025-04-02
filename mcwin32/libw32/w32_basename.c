@@ -115,7 +115,7 @@ w32_basenameW(wchar_t *path)
 	 * basename() shall return a pointer to the string ".".
 	 */
 	if (path == NULL || *path == '\0')
-		return (__DECONST(wchar_t *, "."));
+		return (__DECONST(wchar_t *, L"."));
 
 	/* Find end of last pathname component and null terminate it. */
 	ptr = path + wcslen(path);

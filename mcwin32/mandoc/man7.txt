@@ -1,0 +1,618 @@
+MAN(7)                 Miscellaneous Information Manual                 MAN(7)
+
+NNAAMMEE
+     mmaann - legacy formatting language for manual pages
+
+DDEESSCCRRIIPPTTIIOONN
+     Traditionally, the mmaann language has been used to write UNIX manuals for
+     the man(1) utility.  It supports limited control of presentational
+     details like fonts, indentation and spacing.  This reference document
+     describes the structure of manual pages and the syntax and usage of the
+     man language.
+
+     _D_o _n_o_t _u_s_e mmaann _t_o _w_r_i_t_e _y_o_u_r _m_a_n_u_a_l_s_: It lacks support for semantic
+     markup.  Use the mdoc(7) language, instead.
+
+     In a mmaann document, lines beginning with the control character `.' are
+     called "macro lines".  The first word is the macro name.  It usually
+     consists of two capital letters.  For a list of available macros, see
+     _M_A_C_R_O _O_V_E_R_V_I_E_W.  The words following the macro name are arguments to the
+     macro.
+
+     Lines not beginning with the control character are called "text lines".
+     They provide free-form text to be printed; the formatting of the text
+     depends on the respective processing context:
+
+           .SH Macro lines change control state.
+           Text lines are interpreted within the current state.
+
+     Many aspects of the basic syntax of the mmaann language are based on the
+     roff(7) language; see the _L_A_N_G_U_A_G_E _S_Y_N_T_A_X and _M_A_C_R_O _S_Y_N_T_A_X sections in
+     the roff(7) manual for details, in particular regarding comments, escape
+     sequences, whitespace, and quoting.
+
+MMAANNUUAALL SSTTRRUUCCTTUURREE
+     Each mmaann document must contain the _T_H macro describing the document's
+     section and title.  It may occur anywhere in the document, although
+     conventionally it appears as the first macro.
+
+     Beyond _T_H, at least one macro or text line must appear in the document.
+
+     The following is a well-formed skeleton mmaann file for a utility
+     "progname":
+
+           .TH PROGNAME 1 2009-10-10
+           .SH NAME
+           \fBprogname\fR \(en one line about what it does
+           .\" .SH LIBRARY
+           .\" For sections 2, 3, and 9 only.
+           .\" Not used in OpenBSD.
+           .SH SYNOPSIS
+           \fBprogname\fR [\fB\-options\fR] \fIfile ...\fR
+           .SH DESCRIPTION
+           The \fBfoo\fR utility processes files ...
+           .\" .Sh CONTEXT
+           .\" For section 9 functions only.
+           .\" .SH IMPLEMENTATION NOTES
+           .\" Not used in OpenBSD.
+           .\" .SH RETURN VALUES
+           .\" For sections 2, 3, and 9 function return values only.
+           .\" .SH ENVIRONMENT
+           .\" For sections 1, 6, 7, and 8 only.
+           .\" .SH FILES
+           .\" .SH EXIT STATUS
+           .\" For sections 1, 6, and 8 only.
+           .\" .SH EXAMPLES
+           .\" .SH DIAGNOSTICS
+           .\" For sections 1, 4, 6, 7, 8, and 9 printf/stderr messages only.
+           .\" .SH ERRORS
+           .\" For sections 2, 3, 4, and 9 errno settings only.
+           .\" .SH SEE ALSO
+           .\" .BR foobar ( 1 )
+           .\" .SH STANDARDS
+           .\" .SH HISTORY
+           .\" .SH AUTHORS
+           .\" .SH CAVEATS
+           .\" .SH BUGS
+           .\" .SH SECURITY CONSIDERATIONS
+           .\" Not used in OpenBSD.
+
+     The sections in a mmaann document are conventionally ordered as they appear
+     above.  Sections should be composed as follows:
+
+           _N_A_M_E
+           The name(s) and a short description of the documented material.
+           The syntax for this is generally as follows:
+
+                 \fBname\fR \(en description
+
+           _L_I_B_R_A_R_Y
+           The name of the library containing the documented material, which
+           is assumed to be a function in a section 2 or 3 manual.  For
+           functions in the C library, this may be as follows:
+
+                 Standard C Library (libc, -lc)
+
+           _S_Y_N_O_P_S_I_S
+           Documents the utility invocation syntax, function call syntax, or
+           device configuration.
+
+           For the first, utilities (sections 1, 6, and 8), this is generally
+           structured as follows:
+
+                 \fBname\fR [-\fBab\fR] [-\fBc\fR\fIarg\fR] \fBpath\fR...
+
+           For the second, function calls (sections 2, 3, 9):
+
+                 .B char *name(char *\fIarg\fR);
+
+           And for the third, configurations (section 4):
+
+                 .B name* at cardbus? function?
+
+           Manuals not in these sections generally don't need a _S_Y_N_O_P_S_I_S.
+
+           _D_E_S_C_R_I_P_T_I_O_N
+           This expands upon the brief, one-line description in _N_A_M_E.  It
+           usually contains a break-down of the options (if documenting a
+           command).
+
+           _C_O_N_T_E_X_T
+           This section lists the contexts in which functions can be called in
+           section 9.  The contexts are autoconf, process, or interrupt.
+
+           _I_M_P_L_E_M_E_N_T_A_T_I_O_N _N_O_T_E_S
+           Implementation-specific notes should be kept here.  This is useful
+           when implementing standard functions that may have side effects or
+           notable algorithmic implications.
+
+           _R_E_T_U_R_N _V_A_L_U_E_S
+           This section documents the return values of functions in sections
+           2, 3, and 9.
+
+           _E_N_V_I_R_O_N_M_E_N_T
+           Documents any usages of environment variables, e.g., environ(7).
+
+           _F_I_L_E_S
+           Documents files used.  It's helpful to document both the file name
+           and a short description of how the file is used (created, modified,
+           etc.).
+
+           _E_X_I_T _S_T_A_T_U_S
+           This section documents the command exit status for section 1, 6,
+           and 8 utilities.  Historically, this information was described in
+           _D_I_A_G_N_O_S_T_I_C_S, a practise that is now discouraged.
+
+           _E_X_A_M_P_L_E_S
+           Example usages.  This often contains snippets of well-formed, well-
+           tested invocations.  Make sure that examples work properly!
+
+           _D_I_A_G_N_O_S_T_I_C_S
+           Documents error conditions.  In section 4 and 9 manuals, these are
+           usually messages printed by the kernel to the console and to the
+           kernel log.  In section 1, 6, 7, and 8, these are usually messages
+           printed by userland programs to the standard error output.
+
+           Historically, this section was used in place of _E_X_I_T _S_T_A_T_U_S for
+           manuals in sections 1, 6, and 8; however, this practise is
+           discouraged.
+
+           _E_R_R_O_R_S
+           Documents errno(2) settings in sections 2, 3, 4, and 9.
+
+           _S_E_E _A_L_S_O
+           References other manuals with related topics.  This section should
+           exist for most manuals.
+
+                 .BR bar ( 1 ),
+
+           Cross-references should conventionally be ordered first by section,
+           then alphabetically.
+
+           _S_T_A_N_D_A_R_D_S
+           References any standards implemented or used, such as
+
+                 IEEE Std 1003.2 (\(lqPOSIX.2\(rq)
+
+           If not adhering to any standards, the _H_I_S_T_O_R_Y section should be
+           used.
+
+           _H_I_S_T_O_R_Y
+           A brief history of the subject, including where support first
+           appeared.
+
+           _A_U_T_H_O_R_S
+           Credits to the person or persons who wrote the code and/or
+           documentation.  Authors should generally be noted by both name and
+           email address.
+
+           _C_A_V_E_A_T_S
+           Common misuses and misunderstandings should be explained in this
+           section.
+
+           _B_U_G_S
+           Known bugs, limitations, and work-arounds should be described in
+           this section.
+
+           _S_E_C_U_R_I_T_Y _C_O_N_S_I_D_E_R_A_T_I_O_N_S
+           Documents any security precautions that operators should consider.
+
+MMAACCRROO OOVVEERRVVIIEEWW
+     This overview is sorted such that macros of similar purpose are listed
+     together, to help find the best macro for any given purpose.  Deprecated
+     macros are not included in the overview, but can be found in the
+     alphabetical reference below.
+
+   PPaaggee hheeaaddeerr aanndd ffooootteerr mmeettaa--ddaattaa
+     _T_H           set the title: _t_i_t_l_e _s_e_c_t_i_o_n _d_a_t_e [_s_o_u_r_c_e [_v_o_l_u_m_e]]
+     _A_T           display AT&T UNIX version in the page footer (<= 1 argument)
+     _U_C           display BSD version in the page footer (<= 1 argument)
+
+   SSeeccttiioonnss aanndd ppaarraaggrraapphhss
+     _S_H           section header (one line)
+     _S_S           subsection header (one line)
+     _P_P, _L_P, _P    start an undecorated paragraph (no arguments)
+     _R_S, _R_E       reset the left margin: [_w_i_d_t_h]
+     _I_P           indented paragraph: [_h_e_a_d [_w_i_d_t_h]]
+     _T_P           tagged paragraph: [_w_i_d_t_h]
+     _H_P           hanged paragraph: [_w_i_d_t_h]
+     _P_D           set vertical paragraph distance: [_h_e_i_g_h_t]
+     _f_i, _n_f       fill mode and no-fill mode (no arguments)
+     _i_n           additional indent: [_w_i_d_t_h]
+
+   PPhhyyssiiccaall mmaarrkkuupp
+     _B            boldface font
+     _I            italic font
+     _S_B           small boldface font
+     _S_M           small roman font
+     _B_I           alternate between boldface and italic fonts
+     _B_R           alternate between boldface and roman fonts
+     _I_B           alternate between italic and boldface fonts
+     _I_R           alternate between italic and roman fonts
+     _R_B           alternate between roman and boldface fonts
+     _R_I           alternate between roman and italic fonts
+
+MMAACCRROO RREEFFEERREENNCCEE
+     This section is a canonical reference to all macros, arranged
+     alphabetically.  For the scoping of individual macros, see _M_A_C_R_O _S_Y_N_T_A_X.
+
+   AATT
+     Sets the volume for the footer for compatibility with man pages from AT&T
+     UNIX releases.  The optional arguments specify which release it is from.
+
+   BB
+     Text is rendered in bold face.
+
+     See also _I.
+
+   BBII
+     Text is rendered alternately in bold face and italic.  Thus, `.BI this
+     word and that' causes `this' and `and' to render in bold face, while
+     `word' and `that' render in italics.  Whitespace between arguments is
+     omitted in output.
+
+     Examples:
+
+           .BI bold italic bold italic
+
+     The output of this example will be emboldened "bold" and italicised
+     "italic", with spaces stripped between arguments.
+
+     See also _I_B, _B_R, _R_B, _R_I, and _I_R.
+
+   BBRR
+     Text is rendered alternately in bold face and roman (the default font).
+     Whitespace between arguments is omitted in output.
+
+     See _B_I for an equivalent example.
+
+     See also _B_I, _I_B, _R_B, _R_I, and _I_R.
+
+   DDTT
+     Restore the default tabulator positions.  They are at intervals of 0.5
+     inches.  This has no effect unless the tabulator positions were changed
+     with the roff(7) ttaa request.
+
+   EEEE
+     This is a non-standard GNU extension, included only for compatibility.
+     In mandoc(1), it does the same as _f_i.
+
+   EEXX
+     This is a non-standard GNU extension, included only for compatibility.
+     In mandoc(1), it does the same as _n_f.
+
+   HHPP
+     Begin a paragraph whose initial output line is left-justified, but
+     subsequent output lines are indented, with the following syntax:
+
+           ._H_P [_w_i_d_t_h]
+
+     The _w_i_d_t_h argument is a roff(7) scaling width.  If specified, it's saved
+     for later paragraph left-margins; if unspecified, the saved or default
+     width is used.
+
+     See also _I_P, _L_P, _P, _P_P, and _T_P.
+
+   II
+     Text is rendered in italics.
+
+     See also _B.
+
+   IIBB
+     Text is rendered alternately in italics and bold face.  Whitespace
+     between arguments is omitted in output.
+
+     See _B_I for an equivalent example.
+
+     See also _B_I, _B_R, _R_B, _R_I, and _I_R.
+
+   IIPP
+     Begin an indented paragraph with the following syntax:
+
+           ._I_P [_h_e_a_d [_w_i_d_t_h]]
+
+     The _w_i_d_t_h argument is a roff(7) scaling width defining the left margin.
+     It's saved for later paragraph left-margins; if unspecified, the saved or
+     default width is used.
+
+     The _h_e_a_d argument is used as a leading term, flushed to the left margin.
+     This is useful for bulleted paragraphs and so on.
+
+     See also _H_P, _L_P, _P, _P_P, and _T_P.
+
+   IIRR
+     Text is rendered alternately in italics and roman (the default font).
+     Whitespace between arguments is omitted in output.
+
+     See _B_I for an equivalent example.
+
+     See also _B_I, _I_B, _B_R, _R_B, and _R_I.
+
+   LLPP
+     Begin an undecorated paragraph.  The scope of a paragraph is closed by a
+     subsequent paragraph, sub-section, section, or end of file.  The saved
+     paragraph left-margin width is reset to the default.
+
+     See also _H_P, _I_P, _P, _P_P, and _T_P.
+
+   MMEE
+     End a mailto block.  This is a non-standard GNU extension, included only
+     for compatibility.  See _M_T.
+
+   MMTT
+     Begin a mailto block.  This is a non-standard GNU extension, included
+     only for compatibility.  It has the following syntax:
+
+           ._M_T _a_d_d_r_e_s_s
+           link description to be shown
+           ._M_E
+
+   OOPP
+     Optional command-line argument.  This is a non-standard GNU extension,
+     included only for compatibility.  It has the following syntax:
+
+           ._O_P _k_e_y [_v_a_l_u_e]
+
+     The _k_e_y is usually a command-line flag and _v_a_l_u_e its argument.
+
+   PP
+     Synonym for _L_P.
+
+     See also _H_P, _I_P, _L_P, _P_P, and _T_P.
+
+   PPDD
+     Specify the vertical space to be inserted before each new paragraph.
+     The syntax is as follows:
+
+           ._P_D [_h_e_i_g_h_t]
+
+     The _h_e_i_g_h_t argument is a roff(7) scaling width.  It defaults to 11vv.  If
+     the unit is omitted, vv is assumed.
+
+     This macro affects the spacing before any subsequent instances of _H_P, _I_P,
+     _L_P, _P, _P_P, _S_H, _S_S, and _T_P.
+
+   PPPP
+     Synonym for _L_P.
+
+     See also _H_P, _I_P, _L_P, _P, and _T_P.
+
+   RRBB
+     Text is rendered alternately in roman (the default font) and bold face.
+     Whitespace between arguments is omitted in output.
+
+     See _B_I for an equivalent example.
+
+     See also _B_I, _I_B, _B_R, _R_I, and _I_R.
+
+   RREE
+     Explicitly close out the scope of a prior _R_S.  The default left margin is
+     restored to the state before that _R_S invocation.
+
+     The syntax is as follows:
+
+           ._R_E [_l_e_v_e_l]
+
+     Without an argument, the most recent _R_S block is closed out.  If _l_e_v_e_l is
+     1, all open _R_S blocks are closed out.  Otherwise, _l_e_v_e_l - 1 nested _R_S
+     blocks remain open.
+
+   RRII
+     Text is rendered alternately in roman (the default font) and italics.
+     Whitespace between arguments is omitted in output.
+
+     See _B_I for an equivalent example.
+
+     See also _B_I, _I_B, _B_R, _R_B, and _I_R.
+
+   RRSS
+     Temporarily reset the default left margin.  This has the following
+     syntax:
+
+           ._R_S [_w_i_d_t_h]
+
+     The _w_i_d_t_h argument is a roff(7) scaling width.  If not specified, the
+     saved or default width is used.
+
+     See also _R_E.
+
+   SSBB
+     Text is rendered in small size (one point smaller than the default font)
+     bold face.
+
+   SSHH
+     Begin a section.  The scope of a section is only closed by another
+     section or the end of file.  The paragraph left-margin width is reset to
+     the default.
+
+   SSMM
+     Text is rendered in small size (one point smaller than the default font).
+
+   SSSS
+     Begin a sub-section.  The scope of a sub-section is closed by a
+     subsequent sub-section, section, or end of file.  The paragraph left-
+     margin width is reset to the default.
+
+   TTHH
+     Sets the title of the manual page for use in the page header and footer
+     with the following syntax:
+
+           ._T_H _t_i_t_l_e _s_e_c_t_i_o_n _d_a_t_e [_s_o_u_r_c_e [_v_o_l_u_m_e]]
+
+     Conventionally, the document _t_i_t_l_e is given in all caps.  The recommended
+     _d_a_t_e format is YYYYYYYY--MMMM--DDDD as specified in the ISO-8601 standard; if the
+     argument does not conform, it is printed verbatim.  If the _d_a_t_e is empty
+     or not specified, the current date is used.  The optional _s_o_u_r_c_e string
+     specifies the organisation providing the utility.  When unspecified,
+     mandoc(1) uses its --IIooss argument.  The _v_o_l_u_m_e string replaces the default
+     rendered volume, which is dictated by the manual section.
+
+     Examples:
+
+           .TH CVS 5 1992-02-12 GNU
+
+   TTPP
+     Begin a paragraph where the head, if exceeding the indentation width, is
+     followed by a newline; if not, the body follows on the same line after a
+     buffer to the indentation width.  Subsequent output lines are indented.
+     The syntax is as follows:
+
+           ._T_P [_w_i_d_t_h]
+
+     The _w_i_d_t_h argument is a roff(7) scaling width.  If specified, it's saved
+     for later paragraph left-margins; if unspecified, the saved or default
+     width is used.
+
+     See also _H_P, _I_P, _L_P, _P, and _P_P.
+
+   UUCC
+     Sets the volume for the footer for compatibility with man pages from BSD
+     releases.  The optional first argument specifies which release it is
+     from.
+
+   UUEE
+     End a uniform resource identifier block.  This is a non-standard GNU
+     extension, included only for compatibility.  See _U_E.
+
+   UURR
+     Begin a uniform resource identifier block.  This is a non-standard GNU
+     extension, included only for compatibility.  It has the following syntax:
+
+           ._U_R _u_r_i
+           link description to be shown
+           ._U_E
+
+   ffii
+     End literal mode begun by _n_f.
+
+   iinn
+     Indent relative to the current indentation:
+
+           ._i_n [_w_i_d_t_h]
+
+     If _w_i_d_t_h is signed, the new offset is relative.  Otherwise, it is
+     absolute.  This value is reset upon the next paragraph, section, or sub-
+     section.
+
+   nnff
+     Begin literal mode: all subsequent free-form lines have their end of line
+     boundaries preserved.  May be ended by _f_i.  Literal mode is implicitly
+     ended by _S_H or _S_S.
+
+MMAACCRROO SSYYNNTTAAXX
+     The mmaann macros are classified by scope: line scope or block scope.  Line
+     macros are only scoped to the current line (and, in some situations, the
+     subsequent line).  Block macros are scoped to the current line and
+     subsequent lines until closed by another block macro.
+
+   LLiinnee MMaaccrrooss
+     Line macros are generally scoped to the current line, with the body
+     consisting of zero or more arguments.  If a macro is scoped to the next
+     line and the line arguments are empty, the next line, which must be text,
+     is used instead.  Thus:
+
+           .I
+           foo
+
+     is equivalent to `.I foo'.  If next-line macros are invoked
+     consecutively, only the last is used.  If a next-line macro is followed
+     by a non-next-line macro, an error is raised.
+
+     The syntax is as follows:
+
+           .YO [body...]
+           [body...]
+
+           _M_a_c_r_o     _A_r_g_u_m_e_n_t_s     _S_c_o_p_e         _N_o_t_e_s
+           _A_T        <=1           current
+           _B         n             next-line
+           _B_I        n             current
+           _B_R        n             current
+           _D_T        0             current
+           _E_E        0             current       compat
+           _E_X        0             current       compat
+           _I         n             next-line
+           _I_B        n             current
+           _I_R        n             current
+           _O_P        0, 1          current       compat
+           _P_D        1             current
+           _R_B        n             current
+           _R_I        n             current
+           _S_B        n             next-line
+           _S_M        n             next-line
+           _T_H        >1, <6        current
+           _U_C        <=1           current
+           _f_i        0             current       compat
+           _i_n        1             current       compat
+           _n_f        0             current       compat
+
+     Macros marked as "compat" are included for compatibility with the
+     significant corpus of existing manuals that mix dialects of roff.  These
+     macros should not be used for portable mmaann manuals.
+
+   BBlloocckk MMaaccrrooss
+     Block macros comprise a head and body.  As with in-line macros, the head
+     is scoped to the current line and, in one circumstance, the next line
+     (the next-line stipulations as in _L_i_n_e _M_a_c_r_o_s apply here as well).
+
+     The syntax is as follows:
+
+           .YO [head...]
+           [head...]
+           [body...]
+
+     The closure of body scope may be to the section, where a macro is closed
+     by _S_H; sub-section, closed by a section or _S_S; part, closed by a section,
+     sub-section, or _R_E; or paragraph, closed by a section, sub-section, part,
+     _H_P, _I_P, _L_P, _P, _P_P, or _T_P.  No closure refers to an explicit block closing
+     macro.
+
+     As a rule, block macros may not be nested; thus, calling a block macro
+     while another block macro scope is open, and the open scope is not
+     implicitly closed, is syntactically incorrect.
+
+           _M_a_c_r_o    _A_r_g_u_m_e_n_t_s    _H_e_a_d _S_c_o_p_e    _B_o_d_y _S_c_o_p_e     _N_o_t_e_s
+           _H_P       <2           current       paragraph
+           _I_P       <3           current       paragraph
+           _L_P       0            current       paragraph
+           _P        0            current       paragraph
+           _P_P       0            current       paragraph
+           _R_E       0            current       none           compat
+           _R_S       1            current       part           compat
+           _S_H       >0           next-line     section
+           _S_S       >0           next-line     sub-section
+           _T_P       n            next-line     paragraph
+           _U_E       0            current       none           compat
+           _U_R       1            current       part           compat
+
+     Macros marked "compat" are as mentioned in _L_i_n_e _M_a_c_r_o_s.
+
+     If a block macro is next-line scoped, it may only be followed by in-line
+     macros for decorating text.
+
+   FFoonntt hhaannddlliinngg
+     In mmaann documents, both _P_h_y_s_i_c_a_l _m_a_r_k_u_p macros and roff(7) `\f' font
+     escape sequences can be used to choose fonts.  In text lines, the effect
+     of manual font selection by escape sequences only lasts until the next
+     macro invocation; in macro lines, it only lasts until the end of the
+     macro scope.  Note that macros like _B_R open and close a font scope for
+     each argument.
+
+SSEEEE AALLSSOO
+     man(1), mandoc(1), eqn(7), mandoc_char(7), mdoc(7), roff(7), tbl(7)
+
+HHIISSTTOORRYY
+     The mmaann language first appeared as a macro package for the roff
+     typesetting system in Version 7 AT&T UNIX.  It was later rewritten by
+     James Clark as a macro package for groff.  Eric S. Raymond wrote the
+     extended mmaann macros for groff in 2007.  The stand-alone implementation
+     that is part of the mandoc(1) utility written by Kristaps Dzonsons
+     appeared in OpenBSD 4.6.
+
+AAUUTTHHOORRSS
+     This mmaann reference was written by Kristaps Dzonsons <_k_r_i_s_t_a_p_s_@_b_s_d_._l_v>.
+
+CCAAVVEEAATTSS
+     Do not use this language.  Use mdoc(7), instead.
+
+GRIEF Edit 3.2             $Mdocdate: April 5 2018 $            GRIEF Edit 3.2

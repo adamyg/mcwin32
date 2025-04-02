@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.18 2025/02/16 12:03:54 cvsuser Exp $
+# $Id: makelib.in,v 1.19 2025/04/02 16:09:47 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -97,6 +97,7 @@ $PACKAGE_FILE	= 'package.h';
 	'src/kbtest',
 	'src/coninfo',
 	'diff',
+	'mandoc',
 	'apps',
 	'autoupdater'
 	);

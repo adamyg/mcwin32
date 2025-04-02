@@ -1,0 +1,8 @@
+mdocml-1.12.*
+mdocml-1.13.*
+mandoc-1.14.*
+mdocversion.h
+Makefile
+.unpacked*
+*.err
+

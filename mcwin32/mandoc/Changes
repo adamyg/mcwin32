@@ -1,0 +1,72 @@
+Thu Mar 24 12:06:16 2022 adamy
+
+	* 1.14.6 port
+
+		o Makefile,
+
+			- version
+			- added, compat_mkstemps.c
+			- added, tag_term.c
+
+		o config.h,
+
+			- OSENUM=MANDOC_OS_OTHER (TODO)
+
+		o main.c WIN32,
+
+			- termios.h.
+			- winsize usage omitted.
+			- startdir omitted, fchdir() etc.
+			- run_pager, specialisation.
+
+		o deman.c,
+
+			- optind, removed extern definition.
+
+		o cgi.c,
+
+			- conditional ITIMER_VIRTUAL definition.
+
+		o mansearch.c,
+
+			- mergeman, missing returN NULL.
+			- mergeman_term, restructur case to if/else, const expr issues.
+
+		o tag.c,
+
+			- tag support disabled (TODO).
+
+		o tag_term.c,
+
+			- tag support disabled (TODO).
+
+		o term_ps.c,
+
+			- MAXCHAR, redefined as PSMAXCHAR
+
+		o dbm.c,
+
+			- #ifndef EFTYPE, use EBADF
+
+		o dbm_map.c,
+
+			- #ifndef EFTYPE, use EBADF
+
+		o compat_fts.h,
+
+			- fts_compare, __cdecl calling convention
+
+		o compat_xxx.c,
+
+			- #ifdef HAVE_XXX checks
+
+		o compat_strcasestr.c,
+
+			- optional __UNCONST definition
+
+/*
+ * Local Variables: ***
+ * mode: changelog ***
+ * End: ***
+ */
+

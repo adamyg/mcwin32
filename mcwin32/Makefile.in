@@ -694,6 +694,7 @@ TARGETS=\
 	$(D_BIN)/mcdiff$(E)			\
 	$(D_BIN)/mcview$(E)			\
 	$(D_BIN)/mcbsddiff$(E)			\
+	$(D_BIN)/mcmandoc$(E)			\
 	$(D_BIN)/kbtest$(E)			\
 	$(D_BIN)/coninfo$(E)			\
 	$(D_BIN)/man2hlp.pl
@@ -924,6 +925,7 @@ clean:
 		$(MAKE) -C libw32 clean
 		$(MAKE) -C apps clean
 		$(MAKE) -C diff clean
+		$(MAKE) -C mandoc clean
 		$(MAKE) -C src/kbtest clean
 		$(MAKE) -C src/coninfo clean
 		$(MAKE) -C autoupdater clean
@@ -951,6 +953,9 @@ $(D_BIN)/mcdiff$(E) $(D_BIN)/mcedit$(E) $(D_BIN)/mcview$(E):
 
 $(D_BIN)/mcbsddiff$(E):
 		$(MAKE) -C diff
+
+$(D_BIN)/mcmandoc$(E):
+		$(MAKE) -C mandoc
 
 $(D_BIN)/kbtest$(E):
 		$(MAKE) -C src/kbtest
