@@ -588,6 +588,9 @@ WIN32_PLUGIN_SRC=	./win32_plugin
 WIN32_SKINS_SRC=	./win32_skins
 WIN32_DOC_SRC=		./doc
 
+Unique=		$(if $(1),$(strip $(word 1,$(1)) $(call Unique,$(filter-out $(word 1,$(1)),$(1)))))
+Reverse=	$(if $(1),$(call Reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
+
 CFG_ETC=\
 	$(D_ETC)/filehighlight.ini		\
 	$(D_ETC)/mc.ext.ini			\
@@ -631,6 +634,15 @@ CFG_SHARE_SYNTAX:=	$(addprefix $(D_SHARE)/syntax/, \
 
 CFG_SHARE_MACROS_D:=	$(addprefix $(D_SHARE)/macros.d/, \
 				$(filter-out CVS, $(notdir $(wildcard $(MACROSDATA_SRC)/*sh))))
+
+CFG_SHARE_MANDIRS:=	$(subst $(MAN_SRC)/,,$(filter-out %/CVS/, $(call Unique, $(dir $(wildcard $(MAN_SRC)/*/)))))
+CFG_SHARE_MAN:=		$(addprefix $(D_SHARE)/man/, \
+				$(subst .in,,$(filter-out CVS, $(notdir $(wildcard $(MAN_SRC)/*.in))))) \
+			$(foreach dir, $(CFG_SHARE_MANDIRS), $(addprefix $(D_SHARE)/man/$(dir), \
+				$(subst .in,,$(filter-out CVS, $(notdir $(wildcard $(MAN_SRC)/$(dir)/*.in))))))
+
+##$(info CFG_SHARE_MANDIRS=$(CFG_SHARE_MANDIRS))
+##$(info CFG_SHARE_MAN=$(CFG_SHARE_MAN))
 
 CFG_WIN32_SKINS:=	$(filter-out CVS, $(notdir $(wildcard $(WIN32_SKINS_SRC)/*.ini)))
 
@@ -679,6 +691,7 @@ CONFIGURATION=\
 	$(CFG_SHARE_SKINS)			\
 	$(CFG_SHARE_SYNTAX)			\
 	$(CFG_SHARE_MACROS_D)			\
+	$(CFG_SHARE_MAN)			\
 	$(CFG_PLUGIN)				\
 	$(CFG_PLUGIN_EXTFS_D)			\
 	$(CFG_PLUGIN_SHELL)			\
@@ -777,6 +790,7 @@ DIRECTORIES:=\
 		$(D_SHARE)/help/.created	\
 		$(D_SHARE)/hints/.created	\
 		$(D_SHARE)/man/.created		\
+			$(foreach dir, $(CFG_SHARE_MANDIRS), $(D_SHARE)/man/$(dir)/.created) \
 		$(D_SHARE)/skins/.created	\
 		$(D_SHARE)/syntax/.created	\
 		$(D_SHARE)/macros.d/.created
@@ -1133,6 +1147,11 @@ $(D_SHARE)/macros.d/% :		$(MACROSDATA_SRC)/%
 		@echo importing $@ ..
 		@$(CP) $^ $@
 		@$(BUSYBOX) dos2unix $@
+
+# .. share/man
+$(D_SHARE)/man/% :		$(MAN_SRC)/%.in
+		@$(PERL) ./support/sedin.pl --man --version="$(PKG_VERSION)" --iswin64="@ISWIN64@" -u $^ $@
+		@$(D_BIN)/mcmandoc -K utf-8 -T utf8 $@ > $@.man
 
 # .. docs
 $(D_DOC)/AUTHORS :		$(MCSOURCE)/AUTHORS

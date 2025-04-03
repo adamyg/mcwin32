@@ -3,7 +3,7 @@
 # $Id: sedin.pl,v 1.7 2023/10/02 08:13:36 cvsuser Exp $
 # sed in processing tool, processing embedded @PERL@ @PYTHON@ etc
 #
-# Copyright Adam Young 2017 - 2023
+# Copyright Adam Young 2017 - 2025
 #
 # This file is part of the Midnight Commander.
 #
@@ -23,6 +23,7 @@
 #
 
 use strict;
+use POSIX qw(strftime asctime);
 
 sub usage {
         my ($msg) = shift;
@@ -31,22 +32,43 @@ sub usage {
         exit 1;
 }
 
+my $mode    = "script";
 my $outenc  = "";
+my $version = "0.0.1";
+my $iswin64 = undef;
 my $infile  = 0;
 my $verbose = 0;
 
-while (defined $ARGV[0] && ($ARGV[0] =~ /^--?[a-z]+$/)) {
-        if ($ARGV[0] eq '-u' || $ARGV[0] eq '--unix') {
+sub scriptin();
+sub manin();
+
+while (defined $ARGV[0] && ($ARGV[0] =~ /^--?[a-z]/)) {
+
+        my $arg = $ARGV[0];
+
+        if ($arg eq '-u' || $arg eq '--unix') {
                 $outenc = ":raw :bytes";        # unix mode
 
-        } elsif ($ARGV[0] eq '-i' || $ARGV[0] eq '--in') {
+        } elsif ($arg eq '-i' || $arg eq '--in') {
                 ++$infile;
 
-        } elsif ($ARGV[0] eq '-v' || $ARGV[0] eq '--verbose') {
+        } elsif ($arg eq '--script') {
+                $mode = "script";
+
+        } elsif ($arg eq '--man') {
+                $mode = "man";
+
+        } elsif ($arg =~ /^--version=(.*)$/) {
+                $version = $1;
+
+        } elsif ($arg =~ /^--iswin64=(.*)$/) {
+                $iswin64 = $1;
+
+        } elsif ($arg eq '-v' || $arg eq '--verbose') {
                 ++$verbose;
 
         } else {
-                usage("unknown option <$ARGV[0]>");
+                usage("unknown option <$arg>");
         }
         shift @ARGV;
 }
@@ -80,8 +102,13 @@ if (!open (OUT, ">${outenc}", $out)) {          # output
         exit 1;
 }
 
+if ($mode eq "script") {
+        scriptin();
+} else {
+        manin();
+}
 
-# Process tokens
+# Process script tokens
 #
 #       @EXTHELPERSDIR@     [runtime]
 #
@@ -97,64 +124,104 @@ if (!open (OUT, ">${outenc}", $out)) {          # output
 #       @ZIP@               busybox zip
 #
 
-my $busybox = '$(MC_BUSYBOX)';
-my $line;
+sub
+scriptin()
+{
+        my $busybox = '$(MC_BUSYBOX)';
+        my $line;
 
-$line = <IN>;
-if ($line) {                # see: win32_utl.c
-        # line 1, #! @PERL@ || @PYTHON@
-        if ($line !~ s/(\@PERL\@)/\/usr\/bin\/perl/ &&
-                        $line !~ s/(\@PYTHON\@)/\/usr\/bin\/python/) {
-                while ($line =~ /(\@[A-Za-z_]+\@)/g) {
-                        printf "${in} (1): warning $1\n";
-                }
+        $line = <IN>;
+        if ($line) {                # see: win32_utl.c
+                # line 1, #! @PERL@ || @PYTHON@
+                if ($line !~ s/(\@PERL\@)/\/usr\/bin\/perl/ &&
+                                $line !~ s/(\@PYTHON\@)/\/usr\/bin\/python/) {
+                        while ($line =~ /(\@[A-Za-z_]+\@)/g) {
+                                printf "${in} (1): warning $1\n";
+                        }
 
-        } else {
-                if ($1 eq '@PERL@') {
-                        $busybox = '${ENV{MC_BUSYBOX}}';
                 } else {
-                        $busybox = 'os.environ.get(\'MC_BUSYBOX\')';
+                        if ($1 eq '@PERL@') {
+                                $busybox = '${ENV{MC_BUSYBOX}}';
+                        } else {
+                                $busybox = 'os.environ.get(\'MC_BUSYBOX\')';
+                        }
                 }
+                chomp $line;
+                print OUT "${line}\n";
         }
-        chomp $line;
-        print OUT "${line}\n";
+
+        while ($line = <IN>) {
+                # other lines
+                if ($verbose) {
+                        pos($line) = 1;
+                        while ($line =~ /(\@[A-Za-z_]+\@)/g) {
+                                printf "${in} ($.): $1\n";
+                        }
+                }
+
+                $line =~ s/\@AWK\@/${busybox} awk/g;
+                $line =~ s/\@GREP\@/${busybox} grep/g;
+                $line =~ s/\@SED\@/${busybox} sed/g;
+
+                $line =~ s/\@HAVE_ZIPINFO\@/0/g;
+                $line =~ s/\@MANDOC\@/mandoc/g;
+                $line =~ s/\@MAN_FLAGS\@//g;
+                $line =~ s/\@PERL\@/perl/g;
+                $line =~ s/\@PYTHON\@/python/g;
+                $line =~ s/\@RUBY\@/ruby/g;
+                $line =~ s/\@UNZIP\@/${busybox} unzip/g;
+                $line =~ s/\@ZIP\@/${busybox} zip/g;
+
+                if ($line =~ /(\@[A-Za-z_]+\@)/) {
+                        my $var = $1;
+                        if ($var ne '@EXTHELPERSDIR@') {
+                                printf "WARNING ${in} ($.): unknown variable (${var})\n";
+                        }
+                }
+
+                chomp $line;
+                print OUT "${line}\n";
+        }
+
+        close(IN);
+        close(OUT);
 }
 
-while ($line = <IN>) {
-        # other lines
-        if ($verbose) {
-                pos($line) = 1;
-                while ($line =~ /(\@[A-Za-z_]+\@)/g) {
-                        printf "${in} ($.): $1\n";
+
+# Process man-page tokens
+#
+
+sub
+manin()
+{
+        my $date = strftime('%B %Y', localtime);
+        my $line;
+
+        while ($line = <IN>) {
+                if ($verbose) {
+                        while ($line =~ /(\@[A-Za-z_]+\@)/g) {
+                                printf "${in} ($.): $1\n";
+                        }
                 }
+
+                $line =~ s/\%DATE_OF_MAN_PAGE\%/$date/g;
+                $line =~ s/\%MAN_VERSION\%/$version/g;
+
+#               $line =~ s/\Q%sysconfdir%\E/@sysconfdir@/g;
+#               $line =~ s/\Q%libexecdir%\E/@libexecdir@/g;
+#               $line =~ s/\Q%pkglibexecdir%\E/$(libexecdir)/@PACKAGE@/g;
+#               $line =~ s/\Q%pkgdatadir%/$(datadir)\E/@PACKAGE@/g;
+
+                chomp $line;
+                print OUT "${line}\n";
         }
 
-        $line =~ s/\@AWK\@/${busybox} awk/g;
-        $line =~ s/\@GREP\@/${busybox} grep/g;
-        $line =~ s/\@SED\@/${busybox} sed/g;
-
-        $line =~ s/\@HAVE_ZIPINFO\@/0/g;
-        $line =~ s/\@MANDOC\@/mandoc/g;
-        $line =~ s/\@MAN_FLAGS\@//g;
-        $line =~ s/\@PERL\@/perl/g;
-        $line =~ s/\@PYTHON\@/python/g;
-        $line =~ s/\@RUBY\@/ruby/g;
-        $line =~ s/\@UNZIP\@/${busybox} unzip/g;
-        $line =~ s/\@ZIP\@/${busybox} zip/g;
-
-        if ($line =~ /(\@[A-Za-z_]+\@)/) {
-                my $var = $1;
-                if ($var ne '@EXTHELPERSDIR@') {
-                        printf "WARNING ${in} ($.): unknown variable (${var})\n";
-                }
-        }
-
-        chomp $line;
-        print OUT "${line}\n";
+        close(IN);
+        close(OUT);
 }
-
-close(IN);
-close(OUT);
 
 exit 0;
+
+
+
 

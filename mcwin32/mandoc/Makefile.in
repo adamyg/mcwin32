@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.1 2025/04/02 16:17:20 cvsuser Exp $
+# $Id: Makefile.in,v 1.2 2025/04/03 20:38:43 cvsuser Exp $
 # libbsdmdoc and grmanddoc
 #
 #
@@ -82,11 +82,11 @@ CFLAGS=		@CFLAGS@
 ifeq ("gcc","@CC@")
 CWARN=		$(filter-out -Wshadow -Wmissing-prototypes -Wsign-compare, @CWARN@ $(CWALL))
 CWARN+=		-Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-implicit-fallthrough
-CWARN+=		-Wno-cast-function-type -Wno-misleading-indentation
+CWARN+=		-Wno-cast-function-type -Wno-misleading-indentation -Wno-format-truncation
 else
 CWARN=		@CWARN@ $(CWALL)
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
-CWARN+=		-wcd=107 -wcd=201
+CWARN+=		-wcd=107 -wcd=201 -wcd=303
 endif
 endif
 CDEBUG=		@CDEBUG@
@@ -155,7 +155,8 @@ COMPAT_OBJS+=\
 	$(D_OBJ)/glob$(O)		\
 	$(D_OBJ)/isblank$(O)		\
 	$(D_OBJ)/vasprintf$(O)		\
-	$(D_OBJ)/asprintf$(O)
+	$(D_OBJ)/asprintf$(O)		\
+	$(D_OBJ)/wcwidth$(O)
 
 LIBMAN_OBJS=\
 	$(D_OBJ)/man$(O)		\
@@ -273,7 +274,7 @@ CGI_OBJS=\
 	$(D_OBJ)/tag$(O)		\
 	$(MANDOC_DB_OBJS)
 
-CGI=	$(D_BIN)/grman.cgi$(E)
+CGI=	$(D_BIN)/mcman.cgi$(E)
 
 	#---------------------------------------------------
 
@@ -281,7 +282,7 @@ DEMANDOC_OBJS=\
 	$(D_OBJ)/demandoc$(O)		\
 	$(D_OBJ)/tag$(O)
 
-DEMANDOC=	$(D_BIN)/grdemandoc$(E)
+DEMANDOC=	$(D_BIN)/mcdemandoc$(E)
 
 	#---------------------------------------------------
 
@@ -294,7 +295,7 @@ SOELIM_OBJS=\
 	$(D_OBJ)/compat_stringlist$(O)	\
 	$(D_OBJ)/sqlite3$(O)
 
-SOELIM=		$(D_BIN)/grsoelim$(E)
+SOELIM=		$(D_BIN)/mcsoelim$(E)
 
 	#---------------------------------------------------
 
@@ -316,7 +317,7 @@ CLEANFILES=	mdocversion.h
 ifeq ("cygwin","@build_os@")
 # libiberty has a local implementation of getopt; an invalid optarg binding results, conflicting local/dllexport usage.
 # filter and explicity link again libcygwin, as libtool *may* also include.
-LDLIBS:=	$(patsubst -lmisc,-lmisc -lcygwin, $(filter-out -liberty, $(LDLIBS)))
+LDLIBS:=	$(patsubst -lregex,-lregex -lcygwin, $(filter-out -liberty, $(LDLIBS)))
 endif
 
 .PHONY:			build release debug

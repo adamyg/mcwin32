@@ -1,8 +1,24 @@
 #pragma once
 #ifndef LIBCOMPACT_H_INCLUDED
 #define LIBCOMPACT_H_INCLUDED
+
 //
-//  libcompat
+//  libcompat - libmandoc support functions
+//
+//  Copyright (c) 2014 - 2025, Adam Young.
+//  All rights reserved.
+//
+//  Permission to use, copy, modify, and distribute this software for any
+//  purpose with or without fee is hereby granted, provided that the above
+//  copyright notice and this permission notice appear in all copies.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHORS DISCLAIM ALL WARRANTIES
+//  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+//  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR
+//  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+//  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+//  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+//  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
 #include "w32config.h"
@@ -41,6 +57,15 @@ extern int vasprintf(char **str, const char *fmt, va_list ap);
 extern int isblank(int ch);
 #if !defined(LIBCOMPAT_SOURCE)
 #define HAVE_ISBLANK 1
+#endif
+#endif
+
+#if !defined(HAVE_WCWIDTH)
+extern int wcwidth(wchar_t ucs);
+extern int wcswidth(const wchar_t *pwcs, size_t n);
+#if !defined(LIBCOMPAT_SOURCE)
+#define HAVE_WCWIDTH 1
+#define HAVE_WCSWIDTH 1
 #endif
 #endif
 

@@ -1,3 +1,18 @@
+Thu Apr  3 20:56:50 2025 adamy
+
+	* 1.14.6 port
+
+		o term_ascii,
+
+			- HAVE_WCHAR enabled
+			- win32 specialised console/file utf8 drivers
+
+				o filewchar - explicit UTF8 conversion; stdout redirection.
+				o consolewchar - console code-page CP_UTF8.
+				o streamwchar - stdio, locale supported.
+
+			  Note: setlocale() running under non-UCRT, Windows 10 version 1803 or greater runtimes, do not support UTF8.
+
 Thu Mar 24 12:06:16 2022 adamy
 
 	* 1.14.6 port

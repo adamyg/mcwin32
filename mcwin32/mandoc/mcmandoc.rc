@@ -81,7 +81,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "CompanyName",		""
 				VALUE "FileDescription",	"mcmandoc"
 				VALUE "FileVersion",		VERSION ", Build:" BUILD_DATE "-" BUILD_NUMBER
-				VALUE "InternalName",		"grmandoc"
+				VALUE "InternalName",		"Midnight Commander Win32 - mandoc"
 				VALUE "Copyright",
 					"Copyright (C) 2014 - " BUILD_YEAR ", Adam Young. \n"
 					"Copyright (C) Authors, The mandoc UNIX manpage compiler toolset. \n"
@@ -89,10 +89,10 @@ VS_VERSION_INFO VERSIONINFO
 					"This is free software; see the source for copying conditions. \n"
 					"There is NO warranty; not even for MERCHANTABILITY \n"
 					"or FITNESS FOR A PARTICULAR PURPOSE. \0"
-				VALUE "Maintainers",		"https://github.com/adamyg/grief\n"
+				VALUE "Maintainers",		"https://github.com/adamyg/mcwin32\n"
 				VALUE "LegalTrademarks",	"see mandoc license, http://mdocml.bsd.lv/"
-				VALUE "OriginalFilename",	"grmandoc.exe"
-				VALUE "ProductName",		"GRIEF"
+				VALUE "OriginalFilename",	"mcmandoc.exe"
+				VALUE "ProductName",		"Win32 Midnight Commander"
 			END
 		END
 

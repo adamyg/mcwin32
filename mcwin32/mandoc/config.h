@@ -1,7 +1,7 @@
 #ifndef MANDOC_CONFIG_H_INCLUDED
 #define MANDOC_CONFIG_H_INCLUDED
 /* -*- mode: c; indent-width: 4; -*- */
-/* $Id: config.h,v 1.1 2025/04/02 16:17:20 cvsuser Exp $
+/* $Id: config.h,v 1.2 2025/04/03 20:38:43 cvsuser Exp $
  * mandoc config.h
  *
  * Copyright (c) 2014 - 2025, Adam Young.
@@ -23,47 +23,55 @@
  */
 
 /*
+ *  Configuration
  */
 
 #include "w32config.h"
-
-#if !defined(HAVE_PROGNAME)
-#define HAVE_PROGNAME 1        /*libw32*/
-#endif
-#if !defined(HAVE_GETSUBOPT)
-#define HAVE_GETSUBOPT 1       /*libw32*/
-#endif
 
 #include <stddef.h>
 #include <malloc.h>
 #include <unistd.h>
 
+#if !defined(HAVE_PROGNAME)
+#define HAVE_PROGNAME 1         /*libw32*/
+#endif
+#if !defined(HAVE_GETSUBOPT)
+#define HAVE_GETSUBOPT 1        /*libw32*/
+#endif
+
+#define HAVE_WCHAR 1            /*enable utf8 support*/
+#define UTF8_LOCALE "en_US.UTF-8"
+
+/*
+ *  Function mapping
+ */
+
 #ifndef  snprintf
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
-#define  snprintf _snprintf    /*2015+*/
+#define snprintf _snprintf      /*2015+*/
 #endif
 #endif
 
-#ifndef  mktemp
-#define  mktemp _mktemp
+#ifndef mktemp
+#define mktemp _mktemp
 #endif
-#ifndef  chdir
-#define  chdir w32_chdir
+#ifndef chdir
+#define chdir w32_chdir
 #endif
-#ifndef  mkdir
-#define  mkdir w32_mkdir
+#ifndef mkdir
+#define mkdir w32_mkdir
 #endif
-#ifndef  rmdir
-#define  rmdir w32_rmdir
+#ifndef rmdir
+#define rmdir w32_rmdir
 #endif
-#ifndef  getcwd
-#define  getcwd w32_getcwd
+#ifndef getcwd
+#define getcwd w32_getcwd
 #endif
-#ifndef  realpath
-#define  realpath w32_realpath
+#ifndef realpath
+#define realpath w32_realpath
 #endif
-#ifndef  lstat
-#define  lstat w32_lstat
+#ifndef lstat
+#define lstat w32_lstat
 #endif
 
 #if !defined(__MINGW32__) && !defined(inline)
@@ -71,6 +79,10 @@
 #endif
 
 #include "../libw32/win32_child.h"
+
+/*
+ *  Versioning
+ */
 
 #include "mdocversion.h"        /*VERSION and binary names*/
 
