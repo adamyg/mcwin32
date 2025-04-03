@@ -1251,7 +1251,7 @@ $(D_OBJRT)/%$(O) :		$(MCSOURCE)/src/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJMC)/%$(O) :		$(MCSOURCE)/src/file/%.c
-		$(CC) $(CFLAGS) -o $@ -c $<)
+		$(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJFM)/%$(O) :		$(MCSOURCE)/src/filemanager/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

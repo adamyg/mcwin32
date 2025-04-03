@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.44 2025/04/01 18:55:56 cvsuser Exp $
+# $Id: makelib.pl,v 1.45 2025/04/03 21:28:30 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -3346,8 +3346,10 @@ Makefile($$$)           # (type, dir, file)
                         }
                     }
 
-                    s/\$</\$(subst \/,\\,\$<)/;
-                    s/\$\^/\$(subst \/,\\,\$^)/;
+                    if (/\(CC\)/ || /\(CXX\)/ || /\(AR\)/) {
+                        s/\$</\$(subst \/,\\,\$<)/;
+                        s/\$\^/\$(subst \/,\\,\$^)/;
+                    }
 
                 } elsif (/[\\]$/) {
                     $continuation = 1;          # LIBTOOL, continuation?
