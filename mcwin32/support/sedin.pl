@@ -24,6 +24,7 @@
 
 use strict;
 use POSIX qw(strftime asctime);
+use File::Basename;
 
 sub usage {
         my ($msg) = shift;
@@ -127,28 +128,44 @@ if ($mode eq "script") {
 sub
 scriptin()
 {
+        my $filename = basename($out);
         my $busybox = '$(MC_BUSYBOX)';
         my $line;
 
         $line = <IN>;
         if ($line) {                # see: win32_utl.c
+                my $extra = '';
+
                 # line 1, #! @PERL@ || @PYTHON@
                 if ($line !~ s/(\@PERL\@)/\/usr\/bin\/perl/ &&
                                 $line !~ s/(\@PYTHON\@)/\/usr\/bin\/python/) {
-                        while ($line =~ /(\@[A-Za-z_]+\@)/g) {
-                                printf "${in} (1): warning $1\n";
+
+                        if ($line =~ /\/bin\/sh/) {
+                                $busybox = '';  # shell
+                                $extra = <<'END'
+if [ ! -z "${MC_DIRECTORY}" ]; then
+    export PATH="${MC_DIRECTORY}:${PATH}"
+fi
+END
+                        } else {
+                                while ($line =~ /(\@[A-Za-z_]+\@)/g) {
+                                        printf "${in} (1): warning $1\n";
+                                }
                         }
 
                 } else {
-                        if ($1 eq '@PERL@') {
+                        if ($1 eq '@PERL@') {   # perl
                                 $busybox = '${ENV{MC_BUSYBOX}}';
-                        } else {
+                        } else {                # python
                                 $busybox = 'os.environ.get(\'MC_BUSYBOX\')';
                         }
                 }
                 chomp $line;
-                print OUT "${line}\n";
+                print OUT "${line}\n${extra}";
         }
+
+        $busybox .= ' '                         # trailing space
+                if ($busybox);
 
         while ($line = <IN>) {
                 # other lines
@@ -159,18 +176,25 @@ scriptin()
                         }
                 }
 
-                $line =~ s/\@AWK\@/${busybox} awk/g;
-                $line =~ s/\@GREP\@/${busybox} grep/g;
-                $line =~ s/\@SED\@/${busybox} sed/g;
+                $line =~ s/\@AWK\@/${busybox}awk/g;
+                $line =~ s/\@GREP\@/${busybox}grep/g;
+                $line =~ s/\@SED\@/${busybox}sed/g;
 
                 $line =~ s/\@HAVE_ZIPINFO\@/0/g;
-                $line =~ s/\@MANDOC\@/mandoc/g;
-                $line =~ s/\@MAN_FLAGS\@//g;
                 $line =~ s/\@PERL\@/perl/g;
                 $line =~ s/\@PYTHON\@/python/g;
                 $line =~ s/\@RUBY\@/ruby/g;
-                $line =~ s/\@UNZIP\@/${busybox} unzip/g;
-                $line =~ s/\@ZIP\@/${busybox} zip/g;
+                $line =~ s/\@UNZIP\@/${busybox}unzip/g;
+                $line =~ s/\@ZIP\@/${busybox}zip/g;
+
+                if ($filename eq 'text.sh') {   # local mandoc
+                        $line =~ s/\@MANDOC\@//g;
+                        $line =~ s/\@MAN_FLAGS\@//g;
+                        $line =~ s/man -P cat/mcmandoc -T utf8/g;
+                        $line =~ s/nroff[ ]+/mcmandoc -T utf8 /g;
+                }
+
+                $line =~ s/\@PACKAGE\@/mcwin32/g;
 
                 if ($line =~ /(\@[A-Za-z_]+\@)/) {
                         my $var = $1;
@@ -221,6 +245,7 @@ manin()
 }
 
 exit 0;
+
 
 
 
