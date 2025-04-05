@@ -275,27 +275,31 @@ error:;
 static DWORD
 WaitForMultiplePipes (DWORD waitcount, HANDLE *handles, DWORD timeout)
 {
-    DWORD h, avail, waitcnt = 0;
+#define PIPEPEEK_INTERVAL 25
+    DWORD h;
 
     if (waitcount) {
         while (1) {
             for (h = 0; h < waitcount; ++h) {
-                if (0 == PeekNamedPipe(handles[h], NULL, 0, NULL, &avail, NULL)) {
+                DWORD avail = 0;
+
+                if (! PeekNamedPipe(handles[h], NULL, 0, NULL, &avail, NULL)) {
                     if (GetLastError() == ERROR_BROKEN_PIPE) {
                         return h + WAIT_ABANDONED_0;
                     }
                     return WAIT_FAILED;
+
                 } else if (avail > 0) {
                     return h + WAIT_OBJECT_0;
                 }
             }
 
             if (INFINITE != timeout) {
-                if (timeout < 20) return WAIT_TIMEOUT;
-                timeout -= 20;
+                if (timeout < PIPEPEEK_INTERVAL) return WAIT_TIMEOUT;
+                timeout -= PIPEPEEK_INTERVAL;
             }
 
-            SleepEx(20, TRUE);
+            SleepEx(PIPEPEEK_INTERVAL, TRUE);
         }
     }
     return WAIT_FAILED;
@@ -352,19 +356,21 @@ pipe_read (mc_pipe_t *p, gboolean fdout, gboolean fderr, GError **error)
 
     if (fdout) {                                // stdout
         assert(args->hOutput && INVALID_HANDLE_VALUE != args->hOutput);
-        handles[waitcnt] = args->hOutput;
         streams[waitcnt] = &p->out;
+        handles[waitcnt] = args->hOutput;
         buflens[waitcnt] = p->out.len;
         p->out.len = MC_PIPE_STREAM_UNREAD;
+        p->out.pos = 0;                         // buffer position, see: mc_pstream_get_string()
         ++waitcnt;
     }
 
     if (fderr) {                                // stderr
         assert(args->hError && INVALID_HANDLE_VALUE != args->hError);
-        handles[waitcnt] = args->hError;
         streams[waitcnt] = &p->err;
+        handles[waitcnt] = args->hError;
         buflens[waitcnt] = p->err.len;
         p->err.len = MC_PIPE_STREAM_UNREAD;
+        p->err.pos = 0;                         // buffer position, see: mc_pstream_get_string()
         ++waitcnt;
     }
                                                 // select(handles)
@@ -372,9 +378,9 @@ pipe_read (mc_pipe_t *p, gboolean fdout, gboolean fderr, GError **error)
 
     while (1) {                                 // stream ready?
          if (ret >= WAIT_OBJECT_0 && ret < (WAIT_OBJECT_0 + 2)) {
-            mc_pipe_stream_t *ps = streams[ret - WAIT_OBJECT_0];
-            HANDLE handle = handles[ret - WAIT_OBJECT_0];
-            size_t buflen = buflens[ret - WAIT_OBJECT_0];
+            const unsigned sid = ret - WAIT_OBJECT_0;
+            mc_pipe_stream_t *ps = streams[ sid ];
+            size_t buflen = buflens[ sid ];
             DWORD count = 0;
 
             if (buflen >= MC_PIPE_BUFSIZE) {
@@ -382,33 +388,31 @@ pipe_read (mc_pipe_t *p, gboolean fdout, gboolean fderr, GError **error)
             }
             assert(buflen && buflen <= MC_PIPE_BUFSIZE);
 
-            ps->error = 0;                      // last error.
+            ps->error = 0;                      // last error
 
-            if (ReadFile(handle, ps->buf, buflen, &count, NULL)) {
-                if (count) {
-                    if (ps->null_term) {        // optional terminator
-                        ps->buf[count] = '\0';
-                    }
-                    ps->len = (int)count;
-                } else {
-                    ps->len = 0;
+            if (ReadFile(handles[ sid ], ps->buf, buflen, &count, NULL)) {
+                ps->len = (int) count;
+                if (ps->null_term) {            // optional terminator
+                    ps->buf[count] = '\0';
                 }
                 rc = TRUE;
 
             } else {                            // error conditions
-                const DWORD lastError = GetLastError();
-                if (ERROR_BROKEN_PIPE == lastError) {
+                const DWORD rc = GetLastError();
+                if (ERROR_BROKEN_PIPE == rc) {
                     ps->len = MC_PIPE_STREAM_EOF;
                 } else {
                     ps->len = MC_PIPE_ERROR_READ;
-                    ps->error = w32_errno_cnv(lastError);
+                    mc_propagate_error(error, MC_PIPE_ERROR_READ,
+                        _("Unexpected error in reading data from a child process : %s"),
+                        unix_error_string(w32_errno_cnv(rc)));
                 }
             }
 
-            if (2 == waitcnt--) {               // poll alternative input
+            if (2 == waitcnt--) {               // poll alternative
                 const DWORD alt = (WAIT_OBJECT_0 == ret ? 1 : 0);
 
-                ret = WaitForMultiplePipes(1, handles + alt, 0 /*NON-BLOCKING*/);
+                ret = WaitForMultiplePipes(1, handles + alt, PIPEPEEK_INTERVAL);
                 if (WAIT_OBJECT_0 == ret || WAIT_ABANDONED_0 == ret) {
                     ret += alt;
                     continue;
@@ -422,13 +426,23 @@ pipe_read (mc_pipe_t *p, gboolean fdout, gboolean fderr, GError **error)
                 ps->len = MC_PIPE_STREAM_EOF;   
             }
 
+            if (2 == waitcnt--) {               // poll alternative
+                const DWORD alt = (WAIT_ABANDONED_0 == ret ? 1 : 0);
+
+                ret = WaitForMultiplePipes(1, handles + alt, PIPEPEEK_INTERVAL);
+                if (WAIT_OBJECT_0 == ret || WAIT_ABANDONED_0 == ret) {
+                    ret += alt;
+                    continue;
+                }
+            }
+
         } else if (ret == WAIT_TIMEOUT) {       // timeout
             if (fdout) p->out.len = MC_PIPE_STREAM_EOF;
             if (fderr) p->err.len = MC_PIPE_STREAM_EOF;
 
         } else {                                // unknown condition.
             mc_propagate_error (error, MC_PIPE_ERROR_READ,
-                _("Unexpected error in pread() reading data from a child process : %s"),
+                _("Unexpected error in wait from a child process : %s"),
                 unix_error_string(w32_errno_cnv(GetLastError())));
         }
 

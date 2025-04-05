@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.23 2025/04/01 16:15:15 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.24 2025/04/05 17:56:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -877,19 +877,64 @@ w32_ostype(void)
 
 
 LIBW32_API int
-w32_getexedir(char *buf, int maxlen)
+w32_getprogdir(char *buf, int maxlen)
 {
-    if (GetModuleFileNameA(NULL, buf, maxlen)) {
-        const int len = (int)strlen(buf);
-        char *cp;
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        if (buf && maxlen) {
+            wchar_t wpath[WIN32_PATH_MAX];
+            int len;
 
-        for (cp = buf + len; (cp > buf) && (*cp != '\\'); cp--)
-            /*cont*/;
-        if ('\\' == *cp) {
-            cp[1] = '\0';                       // remove program
-            return (int)((cp - buf) + 1);
+            if ((len = w32_getprogdirW(wpath, _countof(wpath))) > 0) {
+                if ((len = w32_wc2utf(wpath, buf, maxlen)) > 0) {
+                    return len - 1;             // excluding nul.
+                }
+            }
         }
-        return len;
+    }
+#endif  //UTF8FILENAMES
+        
+    return w32_getprogdirA(buf, maxlen);
+}
+
+
+LIBW32_API int
+w32_getprogdirA(char* buf, int maxlen)
+{
+    if (buf && maxlen) {
+        if (GetModuleFileNameA(NULL, buf, maxlen)) {
+            const size_t len = strlen(buf);
+            char *cp;
+
+            for (cp = buf + len; (cp > buf) && (*cp != '\\'); cp--)
+                /*cont*/;
+            if ('\\' == *cp) {
+                cp[1] = '\0';                   // remove program
+                return (int)((cp - buf) + 1);
+            }
+            return len;
+        }
+    }
+    return -1;
+}
+
+
+LIBW32_API int
+w32_getprogdirW(wchar_t *buf, int maxlen)
+{
+    if (buf && maxlen) {
+        if (GetModuleFileNameW(NULL, buf, maxlen)) {
+            const size_t len = wcslen(buf);
+            wchar_t *cp;
+
+            for (cp = buf + len; (cp > buf) && (*cp != '\\'); cp--)
+                /*cont*/;
+            if ('\\' == *cp) {
+                cp[1] = '\0';                   // remove program
+                return (int)((cp - buf) + 1);
+            }
+            return len;
+        }
     }
     return -1;
 }

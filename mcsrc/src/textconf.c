@@ -199,6 +199,8 @@ show_version (void)
     TYPE_INFO (void *);
     TYPE_INFO (size_t);
     TYPE_INFO (off_t);
+    TYPE_INFO (mc_off_t);
+    TYPE_INFO (time_t);
     TYPE_INFO (uintmax_t);
 #undef TYPE_INFO
     (void) puts ("");

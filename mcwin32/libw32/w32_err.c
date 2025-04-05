@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_err_c,"$Id: w32_err.c,v 1.4 2024/02/25 16:50:07 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_err_c,"$Id: w32_err.c,v 1.5 2025/04/05 17:55:29 cvsuser Exp $")
 
 /*-
  * Copyright (c) 1993
@@ -66,10 +66,10 @@ err_set_exit(void (*ef)(int))
 LIBW32_API void
 err(int eval, const char *fmt, ...)
 {
-      va_list ap;
-      va_start(ap, fmt);
-      verrc(eval, errno, fmt, ap);
-      va_end(ap);
+	va_list ap;
+	va_start(ap, fmt);
+	verrc(eval, errno, fmt, ap);
+	va_end(ap);
 }
 
 LIBW32_API void
@@ -92,14 +92,16 @@ verrc(int eval, int code, const char *fmt, va_list ap)
 {
 	if (err_file == 0)
 		err_set_file((FILE *)0);
-	fprintf(err_file, "%s: ", getprogname());
-	if (fmt != NULL) {
-		vfprintf(err_file, fmt, ap);
-		fprintf(err_file, ": ");
-	}
-	fprintf(err_file, "%s\n", strerror(code));
-	if (err_exit)
+	if (err_file) {
+		fprintf(err_file, "%s: ", getprogname());
+		if (fmt != NULL) {
+			vfprintf(err_file, fmt, ap);
+			fprintf(err_file, ": ");
+		}
+		fprintf(err_file, "%s\n", strerror(code));
+		if (err_exit)
 		err_exit(eval);
+	}
 	exit(eval);
 }
 
@@ -117,12 +119,14 @@ verrx(int eval, const char *fmt, va_list ap)
 {
 	if (err_file == 0)
 		err_set_file((FILE *)0);
-	fprintf(err_file, "%s: ", getprogname());
-	if (fmt != NULL)
-		vfprintf(err_file, fmt, ap);
-	fprintf(err_file, "\n");
-	if (err_exit)
-		err_exit(eval);
+	if (err_file) {
+		fprintf(err_file, "%s: ", getprogname());
+		if (fmt != NULL)
+			vfprintf(err_file, fmt, ap);
+		fprintf(err_file, "\n");
+		if (err_exit)
+			err_exit(eval);
+	}
 	exit(eval);
 }
 
@@ -155,12 +159,14 @@ vwarnc(int code, const char *fmt, va_list ap)
 {
 	if (err_file == 0)
 		err_set_file((FILE *)0);
-	fprintf(err_file, "%s: ", getprogname());
-	if (fmt != NULL) {
-		vfprintf(err_file, fmt, ap);
-		fprintf(err_file, ": ");
+	if (err_file) {
+		fprintf(err_file, "%s: ", getprogname());
+		if (fmt != NULL) {
+			vfprintf(err_file, fmt, ap);
+			fprintf(err_file, ": ");
+		}
+		fprintf(err_file, "%s\n", strerror(code));
 	}
-	fprintf(err_file, "%s\n", strerror(code));
 }
 
 LIBW32_API void
@@ -177,10 +183,12 @@ vwarnx(const char *fmt, va_list ap)
 {
 	if (err_file == 0)
 		err_set_file((FILE *)0);
-	fprintf(err_file, "%s: ", getprogname());
-	if (fmt != NULL)
-		vfprintf(err_file, fmt, ap);
-	fprintf(err_file, "\n");
+	if (err_file) {
+		fprintf(err_file, "%s: ", getprogname());
+		if (fmt != NULL)
+			vfprintf(err_file, fmt, ap);
+		fprintf(err_file, "\n");
+	}
 }
 
 /*end*/

@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_MISC_H_INCLUDED
 #define LIBW32_WIN32_MISC_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.19 2025/03/30 17:16:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_misc_h,"$Id: win32_misc.h,v 1.20 2025/04/05 17:56:43 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -61,7 +61,10 @@ HANDLE                      w32_ftoh(int pid);
 HANDLE                      w32_osfhandle(int fildes);
 
 LIBW32_API enum w32ostype   w32_ostype(void);
-LIBW32_API int              w32_getexedir(char *buf, int maxlen);
+
+LIBW32_API int              w32_getprogdir(char *buf, int maxlen);
+LIBW32_API int              w32_getprogdirA(char *buf, int maxlen);
+LIBW32_API int              w32_getprogdirW(wchar_t *buf, int maxlen);
 
 LIBW32_API int              w32_getsysdir(int id, char *buf, int maxlen);
 LIBW32_API int              w32_getsysdirA(int id, char *buf, int maxlen);
