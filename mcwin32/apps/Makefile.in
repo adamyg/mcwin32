@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.2 2025/02/13 17:53:33 cvsuser Exp $
+# $Id: Makefile.in,v 1.4 2025/04/07 06:25:25 cvsuser Exp $
 # mcdiff/mcedit/mcdiff, application shims
 #
 #
@@ -134,6 +134,7 @@ MCSHIMSRC=	.
 MCDIFFTSK=	$(D_BIN)/mcdiff$(E)
 MCEDITTSK=	$(D_BIN)/mcedit$(E)
 MCVIEWTSK=	$(D_BIN)/mcview$(E)
+MCHELPTSK=	$(D_BIN)/mchelp$(E)
 
 VPATH+=		$(MCSHIMSRC)
 LIBCSOURCES=\
@@ -148,11 +149,16 @@ EDITCSOURCES=\
 VIEWCSOURCES=\
 	mcdiff.c
 
+HELPCPPSOURCES=\
+	mchelp.cpp		\
+	getopt.cpp
+
 LIBOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(LIBCSOURCES)))
 
 MCDIFFOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(DIFFCSOURCES)))
 MCEDITOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(EDITCSOURCES)))
 MCVIEWOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(VIEWCSOURCES)))
+MCHELPOBJS=	$(addprefix $(D_OBJ)/,$(subst .cpp,$(O),$(HELPCPPSOURCES)))
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 MCDIFFOBJS+=	$(D_OBJ)/mcdiff_res.o
@@ -172,10 +178,16 @@ else
 MCVIEWOBJS+=	$(D_OBJ)/mcview.res
 endif
 
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+MCHELPOBJS+=	$(D_OBJ)/mchelp_res.o
+else
+MCHELPOBJS+=	$(D_OBJ)/mchelp.res
+endif
+
 OBJS=		$(LIBOBJS) $(TSKOBJS)
 LIBS=		$(MCSHIMLIB)
 DLLS=
-TSKS=		$(MCDIFFTSK) $(MCEDITTSK) $(MCVIEWTSK)
+TSKS=		$(MCDIFFTSK) $(MCEDITTSK) $(MCVIEWTSK) $(MCHELPTSK)
 INSTALLED=
 GENERATED=
 
@@ -196,7 +208,7 @@ $(MCSHIMLIB):		$(D_OBJ)/.created $(LIBOBJS)
 		$(AR) $(ARFLAGS) $@ $(LIBOBJS)
 		$(RANLIB) $@
 
-$(MCDIFFTSK) $(MCEDITTSK) $(MCVIEWTSK): $(MCSHIMLIB)
+$(MCDIFFTSK) $(MCEDITTSK) $(MCVIEWTSK) $(MCHELPTSK): $(MCSHIMLIB)
 
 $(MCDIFFTSK):		MAPFILE=$(basename $@).map
 $(MCDIFFTSK):		$(D_OBJ)/.created $(MCDIFFOBJS)
@@ -210,6 +222,10 @@ $(MCVIEWTSK):		MAPFILE=$(basename $@).map
 $(MCVIEWTSK):		$(D_OBJ)/.created $(MCVIEWOBJS)
 		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(MCVIEWOBJS) $(MCSHIMLIB) $(LDLIBS) -MAP:$(MAPFILE)
 
+$(MCHELPTSK):		MAPFILE=$(basename $@).map
+$(MCHELPTSK):		$(D_OBJ)/.created $(MCHELPOBJS)
+		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(MCHELPOBJS) $(MCSHIMLIB) $(LDLIBS) -MAP:$(MAPFILE)
+
 %/.created:
 		-@mkdir $(@D)
 		@echo "do not delete, managed directory" > $@
@@ -221,7 +237,7 @@ clean:
 		-@$(RM) $(LIBOBJS) $(QUIETOUT)
 
 $(D_OBJ)/%$(O):		%.cpp
-		$(CC) $(CXXFLAGS) -o $@ -c $<
+		$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 $(D_OBJ)/%$(O):		%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

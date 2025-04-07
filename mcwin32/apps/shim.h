@@ -33,6 +33,7 @@
 extern "C" {
 #endif
 void ApplicationShim(const wchar_t *name, const wchar_t *alias);
+void ApplicationShimCmd(const wchar_t *name, const wchar_t *alias, const wchar_t *cmdline);
 #ifdef __cplusplus
 }
 #endif

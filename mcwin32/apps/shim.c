@@ -87,18 +87,21 @@ Basename(wchar_t *path)
 
 
 static BOOL
-CreateChild(PROCESS_INFORMATION *ppi, const wchar_t *name, const wchar_t *path, wchar_t *cmdline)
+CreateChild(PROCESS_INFORMATION *ppi, const wchar_t *name, const wchar_t *path, const wchar_t *cmdline)
 {
+    wchar_t *t_cmdline = wcsdup(cmdline); // command line, cloned.
     STARTUPINFOW si = {0};
 
     GetStartupInfoW(&si); // process information
 
-    if (! CreateProcessW(path, cmdline, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, NULL, &si, ppi)) {
-        const DWORD error = GetLastError();
+    if (NULL == t_cmdline ||
+            ! CreateProcessW(path, t_cmdline, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, NULL, &si, ppi)) {
+
+        const DWORD wrc = GetLastError();
         wchar_t *message = NULL;
 
         if (FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) &message, 0, NULL) && message) {
+                NULL, wrc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) &message, 0, NULL) && message) {
 
             wchar_t *nl, *rt; // trailing newline/return
 
@@ -108,10 +111,10 @@ CreateChild(PROCESS_INFORMATION *ppi, const wchar_t *name, const wchar_t *path, 
             if (nl) *nl = 0;
             if (rt) *rt = 0;
 
-            wprintf(L"%s: unable to execute child : %s (0x%08lx)\n", name, message, error);
+            wprintf(L"%s: unable to execute child : %s (0x%08lx)\n", name, message, wrc);
 
         } else {
-            wprintf(L"%s: unable to execute child : 0x%08lx.\n", name, error);
+            wprintf(L"%s: unable to execute child : 0x%08lx.\n", name, wrc);
         }
 
         LocalFree(message);
@@ -137,10 +140,16 @@ static wchar_t newpath[1024] = {0};
 void
 ApplicationShim(const wchar_t *name, const wchar_t *alias)
 {
+    ApplicationShimCmd(name, alias, GetCommandLineW());
+}
+
+
+void
+ApplicationShimCmd(const wchar_t *name, const wchar_t *alias, const wchar_t *cmdline)
+{
     const BOOL diagositics = Diagnostics(); // optional runtime diagnostics
     const unsigned aliassz = wcslen(alias), // alias length, in characters.
         pathsz = GetModuleFileNameW(NULL, orgpath, _countof(orgpath)); // fully qualified path.
-    wchar_t *cmdline = wcsdup(GetCommandLineW()); // original command line, cloned.
     wchar_t *base;
 
     HANDLE job = INVALID_HANDLE_VALUE;
