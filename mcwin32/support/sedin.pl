@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: sedin.pl,v 1.8 2025/04/07 06:31:09 cvsuser Exp $
+# $Id: sedin.pl,v 1.9 2025/04/07 16:12:23 cvsuser Exp $
 # sed in processing tool, processing embedded @PERL@ @PYTHON@ etc
 #
 # Copyright Adam Young 2017 - 2025
@@ -176,22 +176,25 @@ END
                         }
                 }
 
-                $line =~ s/\@AWK\@/${busybox}awk/g;
-                $line =~ s/\@GREP\@/${busybox}grep/g;
-                $line =~ s/\@SED\@/${busybox}sed/g;
-
-                $line =~ s/\@HAVE_ZIPINFO\@/0/g;
+                $line =~ s/\@PERL_FOR_BUILD\@/\/usr\/bin\/perl/g;
                 $line =~ s/\@PERL\@/perl/g;
                 $line =~ s/\@PYTHON\@/python/g;
                 $line =~ s/\@RUBY\@/ruby/g;
+
+                $line =~ s/\@HAVE_ZIPINFO\@/0/g;
+                $line =~ s/\@AWK\@/${busybox}awk/g;
+                $line =~ s/\@GREP\@/${busybox}grep/g;
+                $line =~ s/\@SED\@/${busybox}sed/g;
                 $line =~ s/\@UNZIP\@/${busybox}unzip/g;
                 $line =~ s/\@ZIP\@/${busybox}zip/g;
 
-                if ($filename eq 'text.sh') {   # local mandoc
+                if ($filename eq 'text.sh' || $filename eq 'mc.menu.in' || $filename eq 'mcedit.menu.in') {
+                        # local mandoc
                         $line =~ s/\@MANDOC\@//g;
                         $line =~ s/\@MAN_FLAGS\@//g;
                         $line =~ s/man -P cat/mcmandoc -T utf8/g;
                         $line =~ s/nroff[ ]+/mcmandoc -T utf8 /g;
+                        $line =~ s/roff[ ]+/mcmandoc -T utf8 /g;
                 }
 
                 $line =~ s/\@PACKAGE\@/mcwin32/g;
@@ -245,8 +248,3 @@ manin()
 }
 
 exit 0;
-
-
-
-
-

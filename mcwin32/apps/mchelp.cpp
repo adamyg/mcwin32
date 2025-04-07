@@ -103,7 +103,7 @@ Cmdline(const char *topic, unsigned section)
     wchar_t *buf = static_cast<wchar_t *>(calloc(total_len, sizeof(wchar_t)));
     size_t aptlen, len;
 
-    aptlen = swprintf(buf, total_len, L"%s ", WMCVIEW);
+    aptlen = swprintf(buf, total_len, L"%s \"", WMCVIEW);
 
     if ((len = GetModuleFileNameW(NULL, buf + aptlen, MAX_PATH)) > 0) {
         wchar_t *cp;
@@ -123,6 +123,7 @@ Cmdline(const char *topic, unsigned section)
             *cp++ = *cursor;
         }
 
+        *cp++ = '"';
         *cp = '\0';
 
         for (; (cp > (buf + aptlen)); cp--)

@@ -637,10 +637,12 @@ CFG_SHARE_MACROS_D:=	$(addprefix $(D_SHARE)/macros.d/, \
 
 CFG_SHARE_MANDIRS:=	$(subst $(MAN_SRC)/,,$(filter-out %/CVS/, $(call Unique, $(dir $(wildcard $(MAN_SRC)/*/)))))
 CFG_SHARE_MAN:=		$(addprefix $(D_SHARE)/man/, \
-				$(subst .in,,$(filter-out CVS, $(notdir $(wildcard $(MAN_SRC)/*.in))))) \
+				$(subst .in,,$(notdir $(wildcard $(MAN_SRC)/*.in)))) \
 			$(foreach dir, $(CFG_SHARE_MANDIRS), $(addprefix $(D_SHARE)/man/$(dir), \
-				$(subst .in,,$(filter-out CVS, $(notdir $(wildcard $(MAN_SRC)/$(dir)/*.in)))))) \
-			$(addprefix $(D_SHARE)/man/$(dir), \
+				$(subst .in,,$(notdir $(wildcard $(MAN_SRC)/$(dir)/*.in))))) \
+			$(addprefix $(D_SHARE)/man/, \
+				$(subst .in,,$(notdir $(wildcard ./support/*.1.in)))) \
+			$(addprefix $(D_SHARE)/man/, \
 				$(notdir $(wildcard ./mandoc/*.man)))
 
 ##$(info CFG_SHARE_MANDIRS=$(CFG_SHARE_MANDIRS))
@@ -1159,6 +1161,11 @@ $(D_SHARE)/man/% :		$(MAN_SRC)/%.in
 $(D_SHARE)/man/% :		./mandoc/%
 		@echo importing $@ ..
 		@$(CP) $^ $@
+
+$(D_SHARE)/man/% :		./support/%.in
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(D_BIN)/mcmandoc -K utf-8 -T utf8 $@ > $@.man
 
 # .. docs
 $(D_DOC)/AUTHORS :		$(MCSOURCE)/AUTHORS
