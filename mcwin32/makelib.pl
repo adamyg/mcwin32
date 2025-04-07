@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.45 2025/04/03 21:28:30 cvsuser Exp $
+# $Id: makelib.pl,v 1.46 2025/04/07 06:34:25 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -1150,7 +1150,7 @@ my @x_functions     = (
         'strncasecmp', '__strncasecmp', 'strnicmp',
         'strnlen',
         'strerror',
-        'strftime',
+        'strftime', 'strptime',
         'strchr', 'strrchr', 'strdup',
         'strlcpy', 'strlcat',                   # bsd/linux
             'strsep', 'strnstr', 'strcasestr', 'strcasestr_l', 'strtonum',

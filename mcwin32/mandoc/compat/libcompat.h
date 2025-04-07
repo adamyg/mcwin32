@@ -60,6 +60,16 @@ extern int isblank(int ch);
 #endif
 #endif
 
+#if !defined(HAVE_STRPTIME)     /*time.h*/
+typedef void * locale_t;
+extern char *strptime(const char *buf, const char *fmt, struct tm *tm);
+extern char *strptime_l(const char *buf, const char *fmt, struct tm *tm, locale_t loc);
+#if !defined(LIBCOMPAT_SOURCE)
+#define HAVE_STRPTIME 1
+#define HAVE_STRPTIME_L 1
+#endif
+#endif
+
 #if !defined(HAVE_WCWIDTH)
 extern int wcwidth(wchar_t ucs);
 extern int wcswidth(const wchar_t *pwcs, size_t n);

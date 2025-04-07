@@ -128,7 +128,7 @@ static void             set_term (void);
 static void             set_home (void);
 static void             set_tmpdir (void);
 static void             set_editor (void);
-static void             set_busybox (void);
+static void             set_appdirs (void);
 
 static void             unixpath (char *path);
 static void             dospath (char *path);
@@ -198,7 +198,7 @@ WIN32_Setup(void)
     set_term();
     set_home();
     set_editor();
-    set_busybox();
+    set_appdirs();
     set_tmpdir();
 }
 
@@ -322,22 +322,27 @@ SHGetFolderPathU(HWND hwnd, int csidl, HANDLE hToken, DWORD dwFlags, char *path,
 
 
 /**
- *  MC_BUSYBOX setup
+ *  Set application directories
+ * 
+ *      <MC_DIRECTORY>, <MC_BUSYBOX> 
+ * 
+ *  MC_BUSYBOX
  *
- *      <exepath>\busybox.exe
- *      <exepath>\..\share\
+ *      <mc_directory>\busybox.exe>
  */
 static void
-set_busybox(void)
+set_appdirs(void)
 {
     const char *busybox = NULL;
     char buffer[MAX_PATH];
 
+    // MC_DIRECTORY
     buffer[0] = 0;
     if (w32_getprogdir(buffer, sizeof(buffer)) > 0) {
-        mc_setpathenv ("MC_DIRECTORY", buffer, TRUE, TRUE);
+        mc_setpathenv ("MC_DIRECTORY", buffer, TRUE, FALSE);
     }
 
+    // MC_BUSYBOX, import existing
     if (NULL != (busybox = ugetenv("MC_BUSYBOX")) && *busybox) {
         char *t_busybox;
         
@@ -353,10 +358,13 @@ set_busybox(void)
         return;
     }
 
+    // MC_BUSYBOX, export
     busybox = "busybox";
 
     if (buffer[0]) {
-        strncat(buffer, "/busybox.exe", sizeof(buffer));
+        const size_t buflen = strlen(buffer);
+
+        strncpy(buffer + buflen, "/busybox.exe", sizeof(buffer) - buflen);
         buffer[sizeof(buffer) - 1] = 0;
         canonicalize_pathname(buffer);
         dospath(buffer);

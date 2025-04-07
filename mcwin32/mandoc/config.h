@@ -1,7 +1,7 @@
 #ifndef MANDOC_CONFIG_H_INCLUDED
 #define MANDOC_CONFIG_H_INCLUDED
 /* -*- mode: c; indent-width: 4; -*- */
-/* $Id: config.h,v 1.2 2025/04/03 20:38:43 cvsuser Exp $
+/* $Id: config.h,v 1.3 2025/04/06 14:48:30 cvsuser Exp $
  * mandoc config.h
  *
  * Copyright (c) 2014 - 2025, Adam Young.
@@ -90,9 +90,9 @@
 
 #define OSVERSTRING(__x) __OSVERSTRING(__x)
 #define __OSVERSTRING(__x) #__x
-#define OSNAME PACKAGE_NAME " " OSVERSTRING(VERSION_1) "." OSVERSTRING(ERSION_2)
+#define OSNAME PACKAGE_NAME " " OSVERSTRING(VERSION_1) "." OSVERSTRING(VERSION_2)
 #define OSENUM MANDOC_OS_OTHER
-#define BINM_PAGER "less"
+#define BINM_PAGER "less"       // TODO: dynamic less/more
 
 /*
  *  Toolchain specific

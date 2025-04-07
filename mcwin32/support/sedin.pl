@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: sedin.pl,v 1.7 2023/10/02 08:13:36 cvsuser Exp $
+# $Id: sedin.pl,v 1.8 2025/04/07 06:31:09 cvsuser Exp $
 # sed in processing tool, processing embedded @PERL@ @PYTHON@ etc
 #
 # Copyright Adam Young 2017 - 2025

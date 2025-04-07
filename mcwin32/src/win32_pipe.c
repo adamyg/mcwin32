@@ -398,14 +398,15 @@ pipe_read (mc_pipe_t *p, gboolean fdout, gboolean fderr, GError **error)
                 rc = TRUE;
 
             } else {                            // error conditions
-                const DWORD rc = GetLastError();
-                if (ERROR_BROKEN_PIPE == rc) {
+                const DWORD wrc = GetLastError();
+
+                if (ERROR_BROKEN_PIPE == wrc) {
                     ps->len = MC_PIPE_STREAM_EOF;
                 } else {
                     ps->len = MC_PIPE_ERROR_READ;
                     mc_propagate_error(error, MC_PIPE_ERROR_READ,
                         _("Unexpected error in reading data from a child process : %s"),
-                        unix_error_string(w32_errno_cnv(rc)));
+                        unix_error_string(w32_errno_cnv(wrc)));
                 }
             }
 

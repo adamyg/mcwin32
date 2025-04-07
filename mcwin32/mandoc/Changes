@@ -1,4 +1,4 @@
-Thu Apr  3 20:56:50 2025 adamy
+Sun Apr  6 16:27:24 2025 adamy
 
 	* 1.14.6 port
 
@@ -7,7 +7,7 @@ Thu Apr  3 20:56:50 2025 adamy
 			- HAVE_WCHAR enabled
 			- win32 specialised console/file utf8 drivers
 
-				o filewchar - explicit UTF8 conversion; stdout redirection.
+				o filewchar - explicit UTF8 conversion; stdout redirection, \r\n conversion.
 				o consolewchar - console code-page CP_UTF8.
 				o streamwchar - stdio, locale supported.
 

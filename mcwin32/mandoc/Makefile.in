@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.2 2025/04/03 20:38:43 cvsuser Exp $
+# $Id: Makefile.in,v 1.4 2025/04/06 20:25:34 cvsuser Exp $
 # libbsdmdoc and grmanddoc
 #
 #
@@ -43,6 +43,7 @@ XCLEAN=
 CC=		@CC@
 CXX=		@CXX@
 RM=		@RM@
+CP=		@CP@
 RC=		@RC@
 AR=		@AR@
 RANLIB=		@RANLIB@
@@ -128,7 +129,8 @@ VERSION=	1.14.6.gr
 RELDATE=	23 Sept 2021
 
 PACKED=		mandoc-$(VERSION).tgz
-VPATH=		./mandoc-$(VERSION) ./sqlite3 ./compat
+SOURCE=		./mandoc-$(VERSION)
+VPATH=		$(SOURCE) ./sqlite3 ./compat
 
 	#---------------------------------------------------
 
@@ -152,10 +154,11 @@ COMPAT_OBJS=\
 	$(D_OBJ)/compat_strtonum$(O)	\
 
 COMPAT_OBJS+=\
+	$(D_OBJ)/asprintf$(O)		\
 	$(D_OBJ)/glob$(O)		\
 	$(D_OBJ)/isblank$(O)		\
+	$(D_OBJ)/strptime$(O)		\
 	$(D_OBJ)/vasprintf$(O)		\
-	$(D_OBJ)/asprintf$(O)		\
 	$(D_OBJ)/wcwidth$(O)
 
 LIBMAN_OBJS=\
@@ -306,6 +309,11 @@ OBJS=\
 	$(DEMANDOC_OBJS)		\
 	$(SOELIM_OBJS)
 
+MANPAGES=\
+	mandoc.1.man			\
+	mandoc.3.man			\
+	mdoc.7.man
+
 LIBRARIES=	$(LIBMANDOC)
 TSKS=		$(MANDOC) $(CGI) $(DEMANDOC) $(SOELIM)
 CLEANFILES=	mdocversion.h
@@ -320,9 +328,9 @@ ifeq ("cygwin","@build_os@")
 LDLIBS:=	$(patsubst -lregex,-lregex -lcygwin, $(filter-out -liberty, $(LDLIBS)))
 endif
 
-.PHONY:			build release debug
+.PHONY:			build release debug manpages
 build:			source unpacked
-unpacked:		mdocversion.h $(LIBRARIES) $(MANDOC) $(CGI) $(DEMANDOC) $(SOELIM)
+unpacked:		mdocversion.h $(LIBRARIES) $(MANDOC) $(CGI) $(DEMANDOC) $(SOELIM) manpages
 
 release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
@@ -363,6 +371,13 @@ $(LIBMANDOC):		$(D_OBJ)/.created $(LIBMANDOC_OBJS)
 		$(RM) $(RMFLAGS) $@
 		$(AR) $(ARFLAGS) $@ $(LIBMANDOC_OBJS)
 		$(RANLIB) $@
+
+manpages:		$(MANPAGES)
+
+XCLEAN+=	$(MANPAGES)
+%.man:			$(SOURCE)/%
+		@echo creating $@ ..
+		@$(MANDOC) -T utf8 $< > $@
 
 mdocversion.h:		Makefile
 	@$(PERL) ./mdocversion.pl -o $@ -v "$(VERSION)" -r "$(RELDATE)"

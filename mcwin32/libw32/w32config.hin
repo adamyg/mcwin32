@@ -1,7 +1,7 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.27 2025/03/06 16:59:47 cvsuser Exp $
+/* $Id: w32config.hin,v 1.28 2025/04/06 16:46:13 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
@@ -505,6 +505,7 @@
 #undef HAVE_STRRCHR
 #undef HAVE_STRDUP
 #undef HAVE_STRFTIME
+#undef HAVE_STRPTIME
 #undef HAVE_STRTOUL
 #undef HAVE_STRTOF
 #undef HAVE_STRTOLD
