@@ -3,11 +3,11 @@
 
 ## Installation instructions
 
-The project can be built from source, using one of several supported tool-chains. 
+The project can be built from source, using one of several supported tool-chains.
 The following environments and toolchains are supported.
 
-  * MSVC 2015 - 2022; or
-  * Open-Watcom 1.9 or 2.0; or
+  * Microsoft Visual C++ (MSVC) 2015 - 2022; or
+  * Open-Watcom (OWC) 1.9 or 2.0; or
   * Mingw64, both 32 and 64 bit targets.
 
 The build status of these packages is below.
@@ -19,7 +19,7 @@ The build status of these packages is below.
 To build and install mcwin32, you shall need:
 
   * Clone of the source repository.
-  * A supported operating system; Windows 10 or 11, plus in theory XP+ and Windows 7.
+  * A supported operating system; Windows 10 or 11, plus in theory older version XP thru to Windows 7.
   * Git tooling for windows.
   * Perl 5 with core modules, see [NOTES-PERL.md](doc/NOTES-PERL.md).
   * CoreUtils, includes various text and system utilities.
@@ -30,14 +30,14 @@ To build and install mcwin32, you shall need:
 For additional platform specific requirements, solutions to specific issues and other details, please read one of these:
 
   * [Notes on Perl](doc/NOTES-PERL.md)
-  
-Plus additional information is available within the _GitHub_ [workflows](.github/workflows/build.yml).   
+
+Plus additional information is available within the _GitHub_ [workflows](.github/workflows/build.yml).
 
 Quick Installation Guide
 ========================
 
-If you just want to get going without bothering too much about the details, 
-here is the short version of how to build and install Midnight Commander Win32. 
+If you just want to get going without bothering too much about the details,
+here is the short version of how to build and install Midnight Commander Win32.
 
 Confirm both a _Perl_ and tooling which provides _CoreUtils_ and git are installed; for example [__GIT for Windows__](https://gitforwindows.org/). Additional information can be found in later sections.
 
@@ -46,29 +46,47 @@ Create a suitable developer command prompt. If you are using Visual Studio, for 
 Clone the github repository
 
 ````
-    git clone https://github.com/adamyg/mcwin32.git mc
+ git clone https://github.com/adamyg/mcwin32.git mc
+````
+
+Change directory to the primary tree
+
+```
+ cd mc\mcwin32
+```
+
+Update external dependencies
+
+````
+ git submodule update --init --recursive
 ````
 
 Dependent on the available toolchain, prime using a suitable configuration profile.
 
 ```
-    cd mc\mcwin32
-    .\support\vc2019config
-```                      
+ .\support\vc2019config
+```
 
 Several alternative profiles are available:
 
- * owcconfig - Open Watcom 1.9
- * owcconfig - Open Watcom 2.0
- * vc2015config - Visual Studio C/C++ 2015.
- * vc2019config - Visual Studio C/C++ 2019.
- * vc2022config - Visual Studio C/C++ 2022.
- * mingw32config - mingW64 tool-chain.  
+  * Microsoft Visual C++ (MSVC) 2015 - 2022; or
 
-and
+    * vc2015config - Visual Studio C/C++ 2015.
+    * vc2017config - Visual Studio C/C++ 2017.
+    * vc2019config - Visual Studio C/C++ 2019.
+    * vc2022config - Visual Studio C/C++ 2022.
 
- * mingw64config - mingW64, 64bit application.
- 
+  * Open-Watcom (OWC) 1.9 or 2.0; or
+
+    * owcconfig - Open Watcom 1.9
+    * owc20config - Open Watcom 2.0   
+
+  * MingW64, both 32 and 64 bit targets.
+
+    * mingw32config - mingW64 tool-chain.
+    * mingw64config - mingW64, 64bit tool-chain.
+
+
 The resulting build profile and options shall be available.
 
 ```
@@ -95,23 +113,23 @@ The resulting build profile and options shall be available.
  -           Internal editor: yes
  -               Diff viewer: yes
  -
- 
+
  Review the options above for accuracy.
-                        
+
  Execute to build:
-                         
+
     "make release"          - build software.
-                             
+
  To generate an installer:
-                              
+
     "make release package"  - build installer.
-                                  
+
  Optionally after installation:
-                                   
-    "make release clean"    - remove build tree.                                      
+
+    "make release clean"    - remove build tree.
 ```
 
-Once reviewed execute the following:  
+Once reviewed execute the following:
 
     $ .\win32\gmake-42 release
 
@@ -133,7 +151,7 @@ The follow offers a more detailed discussion of the requirements and instruction
 
 Native builds using Open-Watcom C/C++
 ====================================
- 
+
 ### Perl
 
 A Perl installation needs to be available plus the installation should be visible within the current PATH.
@@ -222,8 +240,8 @@ Quick start
 
     From the source root, a suitable environment can be setup using the one of the following dependent on the desired toolchain, were ``C:\Watcom`` is the toolchain installation directory.
 
-      * owcsetenv - Open Watcom 1.9
-      * owc20setenv - Open Watcom 2.0
+      * owcconfig- Open Watcom 1.9
+      * owc20config - Open Watcom 2.0   
 
   * From the root of the source directory perform the following:
 
@@ -257,20 +275,57 @@ Quick start
 
       * Build mcwin32 and associated third-party components.
 
-            $ .\win32\gmake-42 release build
+            $ .\support\gmake-42 release build
 
       * Optionally, build the installer.
 
-            $ .\win32\gmake-42 release package
+            $ .\support\gmake-42 release package
 
          Alternatively zip and copy the ``bin.<toolchain>/release`` tree to your desired install location.
+
+The resulting work flow could look like the following, inside a Open Watcom 1.9 developer prompt:
+
+```
+cd c:\projects
+
+git clone https://github.com/adamyg/mcwin32.git mc
+ 
+cd c:\projects\mc\mcwin32
+
+git submodule update --init --recursive
+
+set PERL=c:\Strawberry\perl\bin\perl
+set PATH=c:\msys64\usr\bin;%PATH%
+
+%PERL% .\support\owcconfig
+
+.\support\gmake-42 release
+.\support\gmake-42 release package
+```
+
 
 Native builds using Visual C/C++
 ================================
 
 Visual C/C++ offers an alternative way to build native __mcwin32__, similar to Open-Watcom C/C++ builds.
 
-Note: Since these are proprietary and ever-changing we cannot test them all. Older versions may not work. Use a recent version wherever possible.
+Microsoft Visual is available in several, all are suitable:
+
+  * Microsoft Visual C++ 2015 - 2002 Professional -
+
+      Standard Microsoft Visual C++ installations. 
+
+  * Microsoft Visual C++ 2015 - 2022 Community Edition -
+
+      These free versions of Visual C++ 2015-2022 Professional contain the same compilers and linkers that ship with the full versions, 
+      and also contain everything necessary to build mcwin32.
+        
+  * Microsoft C++ Build Tools -    
+
+      There's also a standalone (IDE-less) version of the build tools mentioned above containing the MSVC compiler
+      available for download from https://visualstudio.microsoft.com/visual-cpp-build-tools/.
+    
+Note: Since these are proprietary and ever-changing I cannot test them all. Older versions may not work, it is recommended to use a recent version wherever possible.
 
   * Install _Perl_
 
@@ -285,8 +340,9 @@ Note: Since these are proprietary and ever-changing we cannot test them all. Old
   * Select a suitable build profile
 
       * vc2015config - Visual Studio C/C++ 2015.
+      * vc2017config - Visual Studio C/C++ 2017.
       * vc2019config - Visual Studio C/C++ 2019.
-      * vc2022config - Visual Studio C/C++ 2022.    
+      * vc2022config - Visual Studio C/C++ 2022.
 
   * From the root of the source directory perform the following:
 
@@ -300,19 +356,38 @@ Note: Since these are proprietary and ever-changing we cannot test them all. Old
 
       * Build mcwin32 and associated third-party components.
 
-            $ .\win32\gmake-42 release
+            $ .\support\gmake-42 release
 
       * Optionally, build the installer.
 
-            $ .\win32\gmake-42 release package
+            $ .\support\gmake-42 release package
 
+The resulting work flow could look like the following, inside a 2019 developer prompt:
+
+```
+cd c:\projects
+
+git clone https://github.com/adamyg/mcwin32.git mc
+ 
+cd c:\projects\mc\mcwin32
+
+git submodule update --init --recursive
+
+set PERL=c:\Strawberry\perl\bin\perl
+set PATH=c:\msys64\usr\bin;%PATH%
+
+%PERL% .\support\vc2019config
+
+.\support\gmake-42 release
+.\support\gmake-42 release package
+```
 
 Native builds using Mingw
 =========================
 
 Mingw64 (32/64) offers another alternative way to build native __mcwin32__, similar to Open-Watcom C/C++ builds.
 
-MSYS2 provides GNU tools, a Unix-like command prompt, and a UNIX compatibility layer for applications. However, in this context it is only used for building mcwin32. The resulting application does not rely on MSYS2 to run and is fully native.
+MSYS2 provides GNU tools, a Unix-like command prompt, and a UNIX compatibility layer for applications, available from https://www.mingw-w64.org. However, in this context it is only used for building mcwin32. The resulting application does not rely on MSYS2 to run and is fully native.
 
   * _MSYS2_ shell, from https://www.msys2.org/
 
@@ -351,11 +426,11 @@ MSYS2 provides GNU tools, a Unix-like command prompt, and a UNIX compatibility l
 
       * Build mcwin32 and associated third-party components.
 
-            $ .\win32\gmake-42 release
+            $ .\support\gmake-42 release
 
       * Optionally, build the installer.
 
-            $ .\win32\gmake-42 release package
+            $ .\suppor\gmake-42 release package
 
 Last updated: _April/25_
 

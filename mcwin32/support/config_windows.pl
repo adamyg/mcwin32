@@ -1,13 +1,13 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: config_windows.pl,v 1.1 2025/02/13 17:56:42 cvsuser Exp $
+# $Id: config_windows.pl,v 1.2 2025/04/08 16:27:06 cvsuser Exp $
 # Configure front-end for native windows targets.
 #
 
 use strict;
 use warnings 'all';
 
-use Cwd;
+use Cwd 'realpath', 'getcwd';
 use File::Which qw(which where);
 
 sub
@@ -114,12 +114,12 @@ ResolveCoreUtils	# ()
 	my @cmds = ("mkdir", "rmdir", "cp", "mv", "rm", "egrep", "gzip", "tar", "unzip", "zip");
 
 	foreach my $path (@paths) {
-		my $success = 1;
 		if (! $path) {
+	                my $success = 1;
 			foreach my $app (@cmds) {
 				if (! which($app) ) {
 					$success = 0;
-					goto LAST;
+					last;
 				}
 			}
 			if ($success) {
@@ -128,11 +128,12 @@ ResolveCoreUtils	# ()
 			}
 		} else {
 			my $bin = "${path}/bin";
-			if (-d $bin) {
+	        	my $success = (-d $bin);
+			if ($success) {
 				foreach my $app (@cmds) {
 					if (! -f "${bin}/${app}") {
 						$success = 0;
-						goto LAST;
+						last;
 					}
 				}
 			}
@@ -142,9 +143,11 @@ ResolveCoreUtils	# ()
 			}
 		}
 	}
+
 	die "config_windows: unable to determine coreutils\n";
 }
 
+my $perlpath    = undef;
 my $busybox	= Resolve('./support/busybox', 'busybox');
 my $wget	= Resolve('./support/wget', 'wget');
 my $bison	= Resolve('$(D_BIN)/byacc', 'bison', 'yacc');
@@ -164,9 +167,11 @@ my $ohelp = 0;
 
 my $script  = shift @ARGV;
 foreach (@ARGV) {
-	if (/^--busybox=(.*)$/) {
+	if (/^--busybox=(.*)$/) {                   # busybox path, otherwise located.
 		$busybox = $1;
-	} elsif (/^--binpath=(.*)$/) {
+	} elsif (/^--perlpath=(.*)$/) {             # Perl binary path, otherwise resolved.
+		$perlpath = $1;
+	} elsif (/^--binpath=(.*)$/) {              # Path to coreutils, otherwise these are assumed to be in the path.
 		$coreutils = $1;
 	} elsif (/^--wget=(.*)$/) {
 		$wget = $1;
@@ -213,18 +218,37 @@ EOU
 	exit 3;
 }
 
+if (! defined $perlpath) {
+	my $running = lc realpath($^X);
+
+	my $perl = which("perl");
+	$perl = lc realpath($perl)
+		if (defined $perl);
+
+	if (! $perl || $perl eq 'perl' || $perl ne $running) {
+						     # non-found, generic or alternative
+		print "config_windows: Perl=${running} (resolved, ${perl})\n";
+		push @options, "--perlpath=\"${running}\"";
+	} else {
+		print "config_windows: Perl=PATH\n";
+	}
+} else {
+	print "config_windows: Perl=${perlpath}\n";
+	push @options, "--perlpath=\"${perlpath}\"";
+}
+
 $coreutils = ResolveCoreUtils()
 	if (! $coreutils);
 if ($coreutils) {
 	if ($core_symlink) {
 		if ($coreutils =~ / /) { # spaces, symlink
-			print "config_windows: CoreUtils: ./CoreUtils => ${coreutils} (symlink)\n";
+			print "config_windows: coreutils: ./CoreUtils => ${coreutils} (symlink)\n";
 			system "mklink /J CoreUtils \"${coreutils}\""
 				if (! -d "CoreUtils/bin");
-			push @options, "--binpath=./CoreUtils/bin";
+			push @options, "--binpath=\"./CoreUtils/bin\"";
 
 		} else {
-			push @options, "--binpath=${coreutils}/bin";
+			push @options, "--binpath=\"${coreutils}/bin\"";
 		}
 	} else {
 		die "config_windows: coreutils detected yet not in PATH, add <$coreutils/bin> before proceeding.\n";
@@ -235,8 +259,13 @@ if ($coreutils) {
 die "config_windows: target missing\n"
 	if (! $otarget);
 
-print "\n$^X ${script}\n => --busybox=\"${busybox}\" --wget=\"${wget}\" --flex=\"${flex}\" --bison=\"${bison}\" @options ${otarget}\n\n";
+push @options, "--busybox=\"${busybox}\"";
+push @options, "--wget=\"${wget}\"";
+push @options, "--flex=\"${flex}\"";
+push @options, "--bison=\"${bison}\"";
 
-system "$^X ${script} --busybox=\"${busybox}\" --wget=\"${wget}\" --flex=\"${flex}\" --bison=\"${bison}\" @options ${otarget}";
+print "\n$^X ${script}\n => @options ${otarget}\n\n";
+
+system "$^X ${script} @options ${otarget}";
 
 #end
