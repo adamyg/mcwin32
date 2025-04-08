@@ -298,6 +298,7 @@ set PERL=c:\Strawberry\perl\bin\perl
 set PATH=c:\msys64\usr\bin;%PATH%
 
 .\support\owcconfig
+
 .\support\gmake-42 release
 .\support\gmake-42 release package
 ```
@@ -376,6 +377,7 @@ set PERL=c:\Strawberry\perl\bin\perl
 set PATH=c:\msys64\usr\bin;%PATH%
 
 .\support\vc2019config
+
 .\support\gmake-42 release
 .\support\gmake-42 release package
 ```
@@ -385,7 +387,9 @@ Native builds using Mingw
 
 Mingw64 (32/64) offers another alternative way to build native __mcwin32__, similar to Open-Watcom C/C++ builds.
 
-MSYS2 provides GNU tools, a Unix-like command prompt, and a UNIX compatibility layer for applications, available from https://www.mingw-w64.org. However, in this context it is only used for building mcwin32. The resulting application does not rely on MSYS2 to run and is fully native.
+MSYS2 provides GNU tools, a Unix-like command prompt, and a UNIX compatibility layer for applications, 
+available from https://www.mingw-w64.org. However, in this context it is only used for building mcwin32. 
+The resulting application does not rely on MSYS2 to run and is fully native.
 
   * _MSYS2_ shell, from https://www.msys2.org/
 
@@ -398,15 +402,14 @@ MSYS2 provides GNU tools, a Unix-like command prompt, and a UNIX compatibility l
     To install the minimal tools required:
 
         $ pacman --noconfirm -S base-devel
-        $ pacman --noconfirm -S bison
-        $ pacman --noconfirm -S
 
     plus one of the following
 
         $ pacman --noconfirm -S mingw-w64-x86_64-gcc
         $ pacman --noconfirm -S mingw-w64-i686-gcc
 
-    These compilers must be on your MSYS2 \$PATH, example below assuming the default installation path ``c:/msys64/``. A common error is to not have these on your \$PATH. The MSYS2 version of gcc will not work correctly here.
+    These compilers must be on your MSYS2 \$PATH, example below assuming the default installation path ``c:/msys64/``. 
+    A common error is to not have these on your \$PATH. The MSYS2 version of gcc will not work correctly here.
 
   * From the root of the source directory perform the following:
 
@@ -428,7 +431,27 @@ MSYS2 provides GNU tools, a Unix-like command prompt, and a UNIX compatibility l
 
       * Optionally, build the installer.
 
-            $ .\suppor\gmake-42 release package
+            $ .\support\gmake-42 release package
+            
+The resulting work flow could look like the following, inside a msys prompt:
+
+```
+cd c:\projects
+
+git clone https://github.com/adamyg/mcwin32.git mc
+ 
+cd c:\projects\mc\mcwin32
+
+git submodule update --init --recursive
+
+set PERL=c:\Strawberry\perl\bin\perl
+set PATH=c:\msys64\mingw32\bin;c:\msys64\usr\bin;%PATH%
+
+.\support\mingw32config
+
+.\support\gmake-42 release
+.\support\gmake-42 release package
+```
 
 Last updated: _April/25_
 
