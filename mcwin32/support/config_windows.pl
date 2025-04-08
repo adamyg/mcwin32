@@ -25,6 +25,7 @@ ProgramFiles
 my $PROGRAMFILES = ProgramFiles();
 my $olocalutils = 0;
 my $omingw = undef;
+my $trace = 0;
 
 foreach (@ARGV) {
 	if (/^--cfg-localutils$/) {
@@ -37,6 +38,14 @@ foreach (@ARGV) {
 			if (! -d $omingw);
 		print "config_windows: using mingw=${omingw}\n";
 	}
+}
+
+
+sub
+Trace
+{
+        print "config_windows: (V) " . sprintf(shift, @_) . "\n"
+                if ($trace);
 }
 
 
@@ -107,6 +116,7 @@ ResolveCoreUtils	# ()
 	my @paths = (
 		"",                                 # PATH
 		"c:/msys64/usr",                    # MSYS installation
+		"d:/msys64/usr",
 		"${PROGRAMFILES}/Git/usr",          # Git for Windows
 		"c:/GnuWin32",                      # https://sourceforge.net/projects/getgnuwin32/files (legacy)
 		"C:/Program Files (x86)/GnuWin32",  # choco install gnuwin32-coreutils.install (legacy)
@@ -114,27 +124,38 @@ ResolveCoreUtils	# ()
 	my @cmds = ("mkdir", "rmdir", "cp", "mv", "rm", "egrep", "gzip", "tar", "unzip", "zip");
 
 	foreach my $path (@paths) {
-		if (! $path) {
-	                my $success = 1;
+		if (! $path) {                      # PATH
+			my $success = 1;
+			Trace("checking CoreUtils against <PATH>");
 			foreach my $app (@cmds) {
-				if (! which($app) ) {
+				my $resolved = which($app);
+				$resolved = which("${app}.exe")
+					if (! $resolved);
+				Trace("  $app=%s", $resolved ? $resolved : "(unresolved)");
+				if (! $resolved) {
 					$success = 0;
 					last;
 				}
+				++$success;
 			}
 			if ($success) {
 				print "config_windows: CoreUtils=PATH\n";
 				return "";
 			}
-		} else {
+
+		} else {                            # explicit
 			my $bin = "${path}/bin";
-	        	my $success = (-d $bin);
+			my $success = (-d $bin);
 			if ($success) {
+				Trace("checking CoreUtils against <${bin}>");
 				foreach my $app (@cmds) {
-					if (! -f "${bin}/${app}") {
+					my $resolved = (-f "${bin}/${app}" || "${bin}/${app}.exe");
+					Trace("  $app=%s", $resolved ? "${bin}/${app}" : "(unresolved)");
+					if (! $resolved) {
 						$success = 0;
 						last;
 					}
+					++$success;
 				}
 			}
 			if ($success) {
@@ -188,6 +209,8 @@ foreach (@ARGV) {
 		# consume
 	} elsif (/^--help$/) {
 		$ohelp = 1;
+	} elsif (/^--trace$/) {
+		$trace = 1;
 	} else {
 		if (/^--/) {
 			if (/^--(.*)=(.*)$/) {
