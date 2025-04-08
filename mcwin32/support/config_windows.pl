@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: config_windows.pl,v 1.3 2025/04/08 18:16:53 cvsuser Exp $
+# $Id: config_windows.pl,v 1.4 2025/04/08 18:31:31 cvsuser Exp $
 # Configure front-end for native windows targets.
 #
 
@@ -9,6 +9,7 @@ use warnings 'all';
 
 use Cwd 'realpath', 'getcwd';
 use File::Which qw(which where);
+use File::Basename;
 
 sub
 ProgramFiles
@@ -239,6 +240,7 @@ EOU
 
 if (! defined $perlpath) {
 	my $running = lc realpath($^X);
+        my $resolved = dirname(${running});
 
 	my $perl = which("perl");
 	$perl = lc realpath($perl)
@@ -246,10 +248,10 @@ if (! defined $perlpath) {
 
 	if (! $perl || $perl eq 'perl' || $perl ne $running) {
 							# non-found, generic or alternative
-		print "config_windows: Perl=${running} (resolved, ${perl})\n";
-		push @options, "--perlpath=\"${running}\"";
+		print "config_windows: Perl=${resolved} (resolved, ${perl})\n";
+		push @options, "--perlpath=\"${resolved}\"";
 	} else {
-		print "config_windows: Perl=PATH\n";
+		print "config_windows: Perl=PATH (${resolved})\n";
 	}
 } else {
 	print "config_windows: Perl=${perlpath}\n";
