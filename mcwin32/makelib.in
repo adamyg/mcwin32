@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.19 2025/04/02 16:09:47 cvsuser Exp $
+# $Id: makelib.in,v 1.20 2025/04/08 10:28:51 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -102,48 +102,82 @@ $PACKAGE_FILE	= 'package.h';
 	'autoupdater'
 	);
 
+## Build notes
+
+sub
+NOTES()
+{
+        my $notes = <<EOT;
+ -
+ -      Virtual File Systems: cpio, extfs, shell, ftp, sfs, sftp, tar (see: config.h)
+ -            Screen library: console
+ -             Mouse support: native
+ -          Subshell support: n/a
+ -     Background operations: n/a
+ -           Internal editor: yes
+ -               Diff viewer: yes
+ -
+
+ Review the options above for accuracy.
+
+ Execute to build:
+
+    "make release"          - build software.
+
+ To generate an installer:
+
+    "make release package"  - build installer.
+
+ Optionally after installation:
+
+    "make release clean"    - remove build tree.
+
+EOT
+        return $notes;
+}
+
 ## Toolchain
 
 sub
 ResolveWINKITx86()
 {
-        my $ProgramFiles = $ENV{"ProgramFiles(x86)"};
-        $ProgramFiles =~ s/\\/\//g;
+	my $ProgramFiles = $ENV{"ProgramFiles(x86)"};
+	$ProgramFiles =~ s/\\/\//g;
 
-        my @WINKIT = (                                  # Vista+
-                # https://en.wikipedia.org/wiki/Microsoft_Windows_SDK
-                "${ProgramFiles}/Windows Kits/8.0/Lib/win8/um/x86",
-                "${ProgramFiles}/Windows Kits/8.1/Lib/winv6.3/um/x86",
-                "${ProgramFiles}/Windows Kits/10",
-                "${ProgramFiles}/Windows Kits/11"
-                );
+	my @WINKIT = (                           # Vista+
+		# https://en.wikipedia.org/wiki/Microsoft_Windows_SDK
+		"${ProgramFiles}/Windows Kits/8.0/Lib/win8/um/x86",
+		"${ProgramFiles}/Windows Kits/8.1/Lib/winv6.3/um/x86",
+		"${ProgramFiles}/Windows Kits/10",
+		"${ProgramFiles}/Windows Kits/11"
+		);
 
-        my @sdks;
-        foreach (@WINKIT) {
-                my $sdk = $_;
-                next if (! -d $sdk);
+	my @sdks;
+	foreach (@WINKIT) {
+		my $sdk = $_;
+		next if (! -d $sdk);
 
-                if (/\/1[01]$/) {                       # "Lib/10.0.xxxxx.0/um/x86"
-                    my @winsdk10 = glob("'${sdk}/Lib/*/um/x86'");
-                    foreach (@winsdk10) {
-                        next if (! -f "$_/Kernel32.lib");
-                        push @sdks, $_;
-                    }
+		if (/\/1[01]$/) {                # "Lib/10.0.xxxxx.0/um/x86"
+			my @winsdk10 = glob("'${sdk}/Lib/*/um/x86'");
+			foreach (@winsdk10) {
+				next if (! -f "$_/Kernel32.lib");
+				push @sdks, $_;
+			}
 
-                } else {
-                    next if (! -f "${sdk}/Kernel32.lib");
-                    push @sdks, $sdk;
-                }
-        }
+		} else {
+			next if (! -f "${sdk}/Kernel32.lib");
+			push @sdks, $sdk;
+		}
+	}
 
-        die "cannot locate any suitable winsdks\n"
-                if (! scalar @sdks);
+	die "cannot locate any suitable winsdks\n"
+		if (! scalar @sdks);
 
-        foreach (@sdks) {
-                print "WINKIT:   $_\n";
-        }
+	foreach (@sdks) {
+		print "WINKIT:   $_\n";
+	}
 
-        set_winsdk($sdks[0]);
+	set_winsdk($sdks[0]);
 }
 
 
@@ -169,7 +203,7 @@ Configure()
 		add_define('_CRT_SECURE_NO_DEPRECATE');
 		add_define('_CRT_NONSTDC_NO_DEPRECATE');
 
-		add_xinclude('$(ROOT)/libw32'); 	# Extra includes; C and compiler tests.
+		add_xinclude('$(ROOT)/libw32');		# Extra includes; C and compiler tests.
 		add_xinclude('$(ROOT)/libw32/msvc');	# MSVC specials
 
 		add_application_library('libw32.lib');

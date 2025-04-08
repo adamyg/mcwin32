@@ -72,16 +72,77 @@ mchelp mc
 
 ## Distributions
 
-Latest builds:
+### Binaries and installers
+
+Midnight Commander:
 
    * https://github.com/adamyg/mcwin32/releases
-   * https://sourceforge.net/projects/mcwin32
+   * https://sourceforge.net/projects/mcwin32 (Mirror)
 
 Aspell:
 
    * https://github.com/adamyg/aspell-win32/releases
 
-Source:
+### Source
 
    * https://github.com/adamyg/mcwin32
+   
+The project can be built from source, the method dependent on the target host. 
+See [INSTALL](mcwin32/doc/INSTALL.md) for details, plus working examples are visible within the GitHub workflows.
+
+    https://github.com/adamyg/mcwin32f/blob/master/.github/workflows/build.yml
+   
+For example, for several tool-chains configuration profiles are available.
+
+```
+    cd mcwin32
+    .\support\vc2019config
+```                      
+
+the following build profile and options shall be available.
+
+```
+ -
+ -  Configuration:
+ -
+ -               PackageName: Midnight Commander WIN32
+ -                   Version: 4.8.33
+ -
+ -                 ToolChain: Visual Studio 2019
+ -                  Compiler: cl / cl
+ -                    CFLAGS: -nologo -MD$(RTSUFFIX) -fp:precise
+ -                  CXXFLAGS: -nologo -MD$(RTSUFFIX) -EHsc -fp:precise -Zc:offsetof-
+ -                       Release: -O2 -GL -Gy -DNDEBUG
+ -                       Debug:   -Zi -RTC1 -Od
+ -                   LDFLAGS: -nologo -MD$(RTSUFFIX)
+ -
+ -
+ -      Virtual File Systems: cpio, extfs, shell, ftp, sfs, sftp, tar (see: config.h)
+ -            Screen library: console
+ -             Mouse support: native
+ -          Subshell support: n/a
+ -     Background operations: n/a
+ -           Internal editor: yes
+ -               Diff viewer: yes
+ -
+ 
+ Review the options above for accuracy.
+                        
+ Execute to build:
+                         
+    "make release"          - build software.
+                             
+ To generate an installer:
+                              
+    "make release package"  - build installer.
+                                  
+ Optionally after installation:
+                                   
+    "make release clean"    - remove build tree.
+                                       
+```
+
+## Status:
+
+Please feel free to raise tickets on **GitHub** when issues are encountered.
 

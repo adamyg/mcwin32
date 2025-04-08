@@ -1,4 +1,4 @@
-# $Id: makeconfig.pm,v 1.7 2025/02/13 17:51:35 cvsuser Exp $
+# $Id: makeconfig.pm,v 1.8 2025/04/08 10:28:51 cvsuser Exp $
 # Makefile generation under Win32.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -156,6 +156,8 @@ sub LoadConfigure($$$$$$)
     die "${makelib}: PACKAGE not defined\n"
         if (! $PACKAGE);
 
+    $self->{NOTES} = NOTES();
+
     if (defined $PACKAGE_H) {
         print "\n";
         print "WARNING: importing legacy PACKAGE_H from <${makelib}>, replace with PACKAGE_FILE\n";
@@ -310,6 +312,8 @@ sub __ExportConfigurations
 
     $self->{PACKAGE}        = $PACKAGE if (defined $PACKAGE);
     $self->{PACKAGE_NAME}   = $PACKAGE_NAME;
+    $self->{PACKAGE_VERSION} = $PACKAGE_VERSION;
+
     $self->{PACKAGE_PATH}   = $PACKAGE_PATH if ($PACKAGE_PATH);
     $self->{PACKAGE_H}      = $PACKAGE_H    if ($PACKAGE_H);
     $self->{PACKAGE_FILE}   = $PACKAGE_FILE if ($PACKAGE_FILE);
