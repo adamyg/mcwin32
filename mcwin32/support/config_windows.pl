@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: config_windows.pl,v 1.2 2025/04/08 16:27:06 cvsuser Exp $
+# $Id: config_windows.pl,v 1.3 2025/04/08 18:16:53 cvsuser Exp $
 # Configure front-end for native windows targets.
 #
 
@@ -40,17 +40,15 @@ foreach (@ARGV) {
 	}
 }
 
-
 sub
 Trace
 {
-        print "config_windows: (V) " . sprintf(shift, @_) . "\n"
-                if ($trace);
+	print "config_windows: (V) " . sprintf(shift, @_) . "\n"
+		if ($trace);
 }
 
-
 sub
-Resolve 		# (default, apps ...)
+Resolve			# (default, apps ...)
 {
 	my $default = shift;
 	return $default
@@ -114,24 +112,22 @@ sub
 ResolveCoreUtils	# ()
 {
 	my @paths = (
-		"",                                 # PATH
-		"c:/msys64/usr",                    # MSYS installation
+		"",					# PATH
+		"c:/msys64/usr",			# MSYS installation(s)
 		"d:/msys64/usr",
-		"${PROGRAMFILES}/Git/usr",          # Git for Windows
-		"c:/GnuWin32",                      # https://sourceforge.net/projects/getgnuwin32/files (legacy)
-		"C:/Program Files (x86)/GnuWin32",  # choco install gnuwin32-coreutils.install (legacy)
+		"${PROGRAMFILES}/Git/usr",		# Git for Windows
+		"c:/GnuWin32",				# https://sourceforge.net/projects/getgnuwin32/files (legacy)
+		"c:/Program Files (x86)/GnuWin32",	# choco install gnuwin32-coreutils.install (legacy)
 		);
-	my @cmds = ("mkdir", "rmdir", "cp", "mv", "rm", "egrep", "gzip", "tar", "unzip", "zip");
+	my @cmds = ("mkdir", "rmdir", "cp", "mv", "rm", "grep", "gzip", "tar", "unzip", "zip");
 
 	foreach my $path (@paths) {
-		if (! $path) {                      # PATH
+		if (! $path) {				# PATH
 			my $success = 1;
 			Trace("checking CoreUtils against <PATH>");
 			foreach my $app (@cmds) {
 				my $resolved = which($app);
-				$resolved = which("${app}.exe")
-					if (! $resolved);
-				Trace("  $app=%s", $resolved ? $resolved : "(unresolved)");
+				Trace("  $app=%s", $resolved ? lc $resolved : "(unresolved)");
 				if (! $resolved) {
 					$success = 0;
 					last;
@@ -143,7 +139,7 @@ ResolveCoreUtils	# ()
 				return "";
 			}
 
-		} else {                            # explicit
+		} else {				# explicit; test possible solutions
 			my $bin = "${path}/bin";
 			my $success = (-d $bin);
 			if ($success) {
@@ -188,11 +184,11 @@ my $ohelp = 0;
 
 my $script  = shift @ARGV;
 foreach (@ARGV) {
-	if (/^--busybox=(.*)$/) {                   # busybox path, otherwise located.
+	if (/^--busybox=(.*)$/) {			# busybox path, otherwise located.
 		$busybox = $1;
-	} elsif (/^--perlpath=(.*)$/) {             # Perl binary path, otherwise resolved.
+	} elsif (/^--perlpath=(.*)$/) {			# Perl binary path, otherwise resolved.
 		$perlpath = $1;
-	} elsif (/^--binpath=(.*)$/) {              # Path to coreutils, otherwise these are assumed to be in the path.
+	} elsif (/^--binpath=(.*)$/) {			# Path to coreutils, otherwise these are assumed to be in the path.
 		$coreutils = $1;
 	} elsif (/^--wget=(.*)$/) {
 		$wget = $1;
@@ -249,7 +245,7 @@ if (! defined $perlpath) {
 		if (defined $perl);
 
 	if (! $perl || $perl eq 'perl' || $perl ne $running) {
-						     # non-found, generic or alternative
+							# non-found, generic or alternative
 		print "config_windows: Perl=${running} (resolved, ${perl})\n";
 		push @options, "--perlpath=\"${running}\"";
 	} else {
@@ -264,7 +260,7 @@ $coreutils = ResolveCoreUtils()
 	if (! $coreutils);
 if ($coreutils) {
 	if ($core_symlink) {
-		if ($coreutils =~ / /) { # spaces, symlink
+		if ($coreutils =~ / /) {		# spaces, symlink
 			print "config_windows: coreutils: ./CoreUtils => ${coreutils} (symlink)\n";
 			system "mklink /J CoreUtils \"${coreutils}\""
 				if (! -d "CoreUtils/bin");
@@ -288,7 +284,6 @@ push @options, "--flex=\"${flex}\"";
 push @options, "--bison=\"${bison}\"";
 
 print "\n$^X ${script}\n => @options ${otarget}\n\n";
-
 system "$^X ${script} @options ${otarget}";
 
 #end
