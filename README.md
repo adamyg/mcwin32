@@ -92,7 +92,7 @@ See [INSTALL](mcwin32/doc/INSTALL.md) for details, plus working examples are vis
 
     https://github.com/adamyg/mcwin32f/blob/master/.github/workflows/build.yml
    
-For example, for several tool-chains configuration profiles are available.
+For actively supported tool-chains, configuration profiles are available.
 
 ```
     cd mcwin32

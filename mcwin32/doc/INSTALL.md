@@ -131,11 +131,11 @@ The resulting build profile and options shall be available.
 
 Once reviewed execute the following:
 
-    $ .\win32\gmake-42 release
+    $ .\support\gmake-42 release
 
 and optionally a local installer
 
-    $ .\win32\gmake-42 release package
+    $ .\support\gmake-42 release package
 
 alternatively zip and copy the ``bin.<toolchain>/release`` tree to your desired install location.
 
@@ -253,7 +253,7 @@ Quick start
 
         on completion the make system is ready, run only make shall present usage information:
 
-            $ .\win32\gmake-42
+            $ .\support\gmake-42
 
             |
             | make [VERBOSE=1] [release or debug] target
@@ -297,8 +297,7 @@ git submodule update --init --recursive
 set PERL=c:\Strawberry\perl\bin\perl
 set PATH=c:\msys64\usr\bin;%PATH%
 
-%PERL% .\support\owcconfig
-
+.\support\owcconfig
 .\support\gmake-42 release
 .\support\gmake-42 release package
 ```
@@ -376,8 +375,7 @@ git submodule update --init --recursive
 set PERL=c:\Strawberry\perl\bin\perl
 set PATH=c:\msys64\usr\bin;%PATH%
 
-%PERL% .\support\vc2019config
-
+.\support\vc2019config
 .\support\gmake-42 release
 .\support\gmake-42 release package
 ```

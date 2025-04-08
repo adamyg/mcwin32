@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: sedin.pl,v 1.9 2025/04/07 16:12:23 cvsuser Exp $
+# $Id: sedin.pl,v 1.10 2025/04/08 18:59:28 cvsuser Exp $
 # sed in processing tool, processing embedded @PERL@ @PYTHON@ etc
 #
 # Copyright Adam Young 2017 - 2025
@@ -188,7 +188,7 @@ END
                 $line =~ s/\@UNZIP\@/${busybox}unzip/g;
                 $line =~ s/\@ZIP\@/${busybox}zip/g;
 
-                if ($filename eq 'text.sh' || $filename eq 'mc.menu.in' || $filename eq 'mcedit.menu.in') {
+                if ($filename eq 'text.sh' || $filename eq 'mc.menu' || $filename eq 'mcedit.menu') {
                         # local mandoc
                         $line =~ s/\@MANDOC\@//g;
                         $line =~ s/\@MAN_FLAGS\@//g;
