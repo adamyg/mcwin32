@@ -63,7 +63,7 @@ The primary way to learn about midnight-commander is to use the context-sensitiv
 
 ![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample06.png?raw=true)
 
-There are also have extensive manual pages, which are the primary source of official documentation.
+There are also extensive manual pages, which are the primary source of official documentation.
 Topics include ``mc``, ``mcdiff``, ``mcedit``, and ``mcview`` available using the **mchelp** utility.
 
 ```
