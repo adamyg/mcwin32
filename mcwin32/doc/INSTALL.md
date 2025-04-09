@@ -190,7 +190,7 @@ Minimal tools required are:
 
       * rm - _remove files or directories_.
 
-      * egrep - _print lines that match patterns_.
+      * grep/egrep - _print lines that match patterns_.
 
       * gzip, gunzip, zcat - _compress or expand files_.
 
@@ -433,7 +433,18 @@ The resulting application does not rely on MSYS2 to run and is fully native.
 
             $ .\support\gmake-42 release package
             
-The resulting work flow could look like the following, inside a msys prompt:
+The resulting work flow could look like the following, inside either a terminal/command or msys prompt:
+
+Install any missing components
+
+```
+c:\msys64\usr\bin\pacman --noconfirm -S base-devel
+c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-i686-gcc
+c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-i686-gettext-tools
+c:\msys64\usr\bin\pacman --noconfirm -S zip
+```
+
+Prime sandbox and build
 
 ```
 cd c:\projects

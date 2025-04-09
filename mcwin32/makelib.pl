@@ -1472,18 +1472,18 @@ EOU
 
     --help                  Command line help.
 
-    --libtool=<path>        Path to libtool_win32.pl.
+    --libtool=<path>        libtool_win32.pl path.
 
-    --binpath=<path>        Path to coreutils, otherwise these are assumed to be in the path.
+    --binpath=<path>        CoreUtils path, otherwise these are assumed to be in the path.
 
     --perlpath=<path>       Perl binary path, otherwise assumed in the path.
 
-    --gnuwin32=<path>       gnuwin32 g++ tool installation path; see --gnulibs
-
     --contib                Enable local contrib libraries (default).
-    or --gnulibs            Search and enable gnuwin32 libraries, using gnuwin32 path.
+    or --gnulibs            Search and enable gnuwin32 libraries, using gnuwin32 path (legacy).
 
-    --version=<version>     compiler version
+    --gnuwin32=<path>       gnuwin32 g++ tool installation path; see --gnulibs (legacy)
+
+    --version=<version>     compiler version.
 
     --clean                 clean build, ignoring cache.
 
@@ -1498,6 +1498,7 @@ Configuration:
     --busybox=<path>        busybox-w32 installation path.
     --bison=<path>          yacc/bison installation path.
     --flex=<path>           flex installation path.
+    --wget=<path>           wget installation path.
     --inno=<path>           inno-setup installation path.
 
 Toolchain / command:

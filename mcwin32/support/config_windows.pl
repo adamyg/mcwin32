@@ -165,12 +165,13 @@ ResolveCoreUtils	# ()
 	die "config_windows: unable to determine coreutils\n";
 }
 
-my $perlpath    = undef;
+my $perlpath	= undef;
 my $busybox	= Resolve('./support/busybox', 'busybox');
 my $wget	= Resolve('./support/wget', 'wget');
 my $bison	= Resolve('$(D_BIN)/byacc', 'bison', 'yacc');
 my $flex	= Resolve('$(D_BIN)/flex', 'flex');
 my $coreutils	= undef;
+my $inno	= undef;
 
 ##  build command line
 
@@ -191,13 +192,15 @@ foreach (@ARGV) {
 		$perlpath = $1;
 	} elsif (/^--binpath=(.*)$/) {			# Path to coreutils, otherwise these are assumed to be in the path.
 		$coreutils = $1;
-	} elsif (/^--wget=(.*)$/) {
+	} elsif (/^--wget=(.*)$/) {			# wget installation path.
 		$wget = $1;
-	} elsif (/^--bison=(.*)$/) {
+	} elsif (/^--bison=(.*)$/) {			# yacc/bison installation path.
 		$bison = $1;
-	} elsif (/^--flex=(.*)$/) {
+	} elsif (/^--flex=(.*)$/) {			# flex installation path.
 		$flex = $1;
-	} elsif (/^--cfg-symlink$/) { # undocumented
+	} elsif (/^--inno=(.*)$/) {			# inno-setup installation path.
+		$inno = $1;
+	} elsif (/^--cfg-symlink$/) {			# undocumented
 		# --cfg-symlink, Symlink detected coreutils to ./CoreUtils.
 		$core_symlink = 1;
 	} elsif (/^--cfg-localutils$/) {
@@ -209,7 +212,7 @@ foreach (@ARGV) {
 	} elsif (/^--trace$/) {
 		$trace = 1;
 	} else {
-		if (/^--/) {
+		if (/^--/) {				# others, pass-thru
 			if (/^--(.*)=(.*)$/) {
 				push @options, "--$1=\"$2\"";
 			} else {
@@ -284,6 +287,8 @@ push @options, "--busybox=\"${busybox}\"";
 push @options, "--wget=\"${wget}\"";
 push @options, "--flex=\"${flex}\"";
 push @options, "--bison=\"${bison}\"";
+push @options, "--inno=\"${inno}\""
+        if ($inno);
 
 print "\n$^X ${script}\n => @options ${otarget}\n\n";
 system "$^X ${script} @options ${otarget}";
