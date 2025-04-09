@@ -208,7 +208,7 @@ typedef struct copyoutctx {
 static int              vio_init(void);
 static COORD            vio_size(HANDLE console, int *rows, int *cols);
 static void             vio_profile(int rebuild);
-static void             vio_setsize(int rows, int cols);
+static BOOL             vio_setsize(int rows, int cols);
 static void             vio_reset(void);
 static void             vio_setcursor(int col, int row);
 static int              rgb_search(const int maxval, const COLORREF rgb);
@@ -1192,22 +1192,46 @@ IsConsole2(void)
 }
 
 
-static void
+static BOOL
 vio_setsize(int rows, int cols)
 {
     const int orows = vio.rows, ocols = vio.cols;
     HANDLE chandle = vio.chandle;
-    SMALL_RECT rect = {0, 0, 0, 0};
+    SMALL_RECT rect = { 0, 0, 0, 0 };
     COORD msize, nbufsz;
     int bufwin = FALSE;
 
     msize = GetLargestConsoleWindowSize(chandle);
 
-    if (rows <= 0) rows = orows;                // current
-    else if (rows >= msize.Y) rows = msize.Y-1; // limit
+    if (vio.isvirtualconsole) {
+        //
+        //  GetLargestConsoleWindowSize() reports an incorrectly scaled value.
+        //  It uses the current screen resolution (in pixels) and divides by an invalid font size.
+        //
+        return FALSE;                           // not-supported
+    }
 
-    if (cols <= 0) cols = ocols;                // current
-    else if (cols >= msize.X) cols = msize.X-1; // limit
+    if (rows <= 0) {
+        rows = orows;                           // current
+    } else {
+        if (rows >= msize.Y) {
+            rows = msize.Y - 1;                 // limit
+        }
+        if (rows >= VIO_MAXROWS) {
+            rows = VIO_MAXROWS;
+        }
+    }
+
+    if (cols <= 0) {
+        cols = ocols;                           // current
+    } else {
+        if (cols >= msize.X) {
+            cols = msize.X - 1;                 // limit
+        }
+        if (cols >= VIO_MAXCOLS) {
+            cols = VIO_MAXCOLS;
+        }
+    }
 
     rect.Top    = 0;
     rect.Bottom = (SHORT)(rows - 1);
@@ -1243,6 +1267,8 @@ vio_setsize(int rows, int cols)
         SetConsoleScreenBufferSize(chandle, nbufsz);
         SetConsoleWindowInfo(chandle, TRUE, &rect);
     }
+
+    return TRUE;
 }
 
 
@@ -3198,13 +3224,18 @@ vio_toggle_size(int *rows, int *cols)
     if (0 == vio.inited) return -1;             /* uninitialised */
 
     if (vio.maximised <= 0) {
+        if (! vio_setsize(0xffff, 0xffff)) {
+            return -1;                          /* not supported */
+        }
+
         if (-1 == vio.maximised) {
             vio.maximised_oldrows = vio.rows;
             vio.maximised_oldcols = vio.cols;
         }
-        vio_setsize(0xffff, 0xffff);
+
         vio.maximised = 1;
         ret = 1;
+
     } else {
         vio_setsize(vio.maximised_oldrows, vio.maximised_oldcols);
         vio.maximised = 0;
