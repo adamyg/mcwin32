@@ -767,7 +767,7 @@ lookup_key_by_code (const int keycode)
         }
 
         if (mod & KEY_M_CTRL) {
-            /* non printeble chars like a CTRL-[A..Z] */
+            /* non printable chars like a CTRL-[A..Z] */
             if (k < 32)
                 k += 64;                        /* A...^, includes ESC & Ctrl-\ */
 
@@ -1174,7 +1174,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                 return EV_NONE;
             }
         } else {
-            if (ESC_CHAR == c) c = key_esc_special();
+            if (ESC_CHAR == c) c = key_esc_special ();
             assert(EV_MOUSE == c || c > 0);
             return c;                           // reportable event
         }
@@ -1287,7 +1287,7 @@ key_esc_special(void)
 
                     } else if (VK_ESCAPE == wVirtualKeyCode) {
                         if (key->wRepeatCount) {
-                            c = ESC_CHAR;       // ESC-ESC, surpress 2nd
+                            c = ESC_CHAR;       // ESC-ESC, suppress 2nd
                         }
 
                     } else if (VK_SPACE == wVirtualKeyCode) {
@@ -1300,7 +1300,7 @@ key_esc_special(void)
                             c = ALT(UnicodeChar); // ESC followed by an ASCII character
 
                         } else if (UnicodeChar > 0x7f) {
-                            return ESC_CHAR;    // Unicode, short circuit rtn ESC
+                            return ESC_CHAR;    // Unicode, short circuit return ESC
                         }
                     }
 
@@ -1314,10 +1314,14 @@ key_esc_special(void)
                 } else {
                     (void) ReadConsoleInputW(hConsoleIn, &ir, 1, &count);
                     if (VK_ESCAPE == key->wVirtualKeyCode) {
-                        timeoutms = 20*1000;    // upper limit, 20-seconds
-                        if (old_esc_mode_timeout > 0) { // microseconds to ms
-                            timeoutms =  (old_esc_mode_timeout / G_USEC_PER_SEC) * 1000;
-                            timeoutms += (old_esc_mode_timeout % G_USEC_PER_SEC) / 1000;
+                        if (old_esc_mode_timeout < 0) {
+                            timeoutms = INFINITE;
+                        } else {
+                            timeoutms = 1000;   // 1-second (default)
+                            if (old_esc_mode_timeout > 0) { // microseconds to ms
+                                timeoutms = (old_esc_mode_timeout / G_USEC_PER_SEC) * 1000;
+                                timeoutms += (old_esc_mode_timeout % G_USEC_PER_SEC) / 1000;
+                            }
                         }
                     }
                     continue;                   // consume
