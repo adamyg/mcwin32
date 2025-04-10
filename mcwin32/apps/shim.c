@@ -41,9 +41,6 @@
 #ifndef _countof
 #define _countof(__type) (sizeof(__type)/sizeof(__type[0]))
 #endif
-#if defined(__WATCOMC__)
-#define wcsdup(__x) _wcsdup(__x)
-#endif
 
 BOOL WINAPI CtrlHandler(DWORD ctrlType);
 
@@ -89,7 +86,7 @@ Basename(wchar_t *path)
 static BOOL
 CreateChild(PROCESS_INFORMATION *ppi, const wchar_t *name, const wchar_t *path, const wchar_t *cmdline)
 {
-    wchar_t *t_cmdline = wcsdup(cmdline); // command line, cloned.
+    wchar_t *t_cmdline = _wcsdup(cmdline); // command line, cloned.
     STARTUPINFOW si = {0};
 
     GetStartupInfoW(&si); // process information
@@ -196,6 +193,9 @@ ApplicationShimCmd(const wchar_t *name, const wchar_t *alias, const wchar_t *cmd
     }
 
     // redirect signals and monitor termination
+#if defined(_MSC_VER)
+#pragma warning(disable:6387) // handle maybe 0
+#endif
     SetConsoleCtrlHandler(CtrlHandler, TRUE);
     AssignProcessToJobObject(job, pi.hProcess);
     ResumeThread(pi.hThread);

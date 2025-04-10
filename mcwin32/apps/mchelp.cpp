@@ -59,7 +59,7 @@ static const wchar_t WMANPATH[] = {L"share\\man\\"};
 int
 main(int argc, char **argv)
 {
-    unsigned list = 0, section = 1;
+    unsigned section = 1;
     int ch;
 
     while (-1 != (ch = Updater::Getopt(argc, argv, "s:h"))) {

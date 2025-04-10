@@ -1,4 +1,4 @@
-// $Id: getopt.cpp,v 1.1 2025/04/07 06:25:25 cvsuser Exp $
+// $Id: getopt.cpp,v 1.2 2025/04/09 10:11:21 cvsuser Exp $
 //
 //  getopt() implementation
 //
@@ -44,7 +44,7 @@ Getopt(int nargc, char **nargv, const char *ostr)
     }
                                                 /* option letter okay? */
     if ((optopt = (int)*place++) == (int)':' ||
-                !(oli = strchr(ostr,optopt))) {
+                NULL == (oli = strchr(ostr,optopt))) {
         if (!*place) ++optind;
         OPTERR(": illegal option -- ");
     }
@@ -54,12 +54,17 @@ Getopt(int nargc, char **nargv, const char *ostr)
         if (!*place) ++optind;
 
     } else {                                    /* need an argument */
-        if (*place) optarg = place;             /* no white space */
-        else if (nargc <= ++optind) {           /* no arg */
-        place = OPTEMSG;
-        OPTERR(": option requires an argument -- ");
+        if (*place) {
+            optarg = place;                     /* no white space */
 
-    } else optarg = nargv[optind];              /* white space */
+        } else if (nargc <= ++optind) {         /* no arg */
+            place = OPTEMSG;
+            OPTERR(": option requires an argument -- ");
+
+        } else {
+            optarg = nargv[optind];             /* white space */
+        }
+
         place = OPTEMSG;
         ++optind;
     }
