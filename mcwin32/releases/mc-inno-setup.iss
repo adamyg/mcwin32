@@ -117,11 +117,12 @@ Source: "..\{#BinDir}\enca.exe";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\kbtest.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\*.dll";         DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\man2hlp.pl";    DestDir: "{app}"; Flags: ignoreversion
-Source: "..\{#BinDir}\etc\*";         Excludes: ".created"; DestDir: "{app}\etc";    Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\plugin\*";      Excludes: ".created"; DestDir: "{app}\plugin"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\share\*";       Excludes: ".created"; DestDir: "{app}\share";  Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\doc\*";         Excludes: ".created"; DestDir: "{app}\doc";    Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\locale\*";      Excludes: ".created"; DestDir: "{app}\locale"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\etc\*";         Excludes: ".created"; DestDir: "{app}\etc";     Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\plugin\*";      Excludes: ".created"; DestDir: "{app}\plugin";  Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\libexec\*";     Excludes: ".created"; DestDir: "{app}\libexec"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\share\*";       Excludes: ".created"; DestDir: "{app}\share";   Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\doc\*";         Excludes: ".created"; DestDir: "{app}\doc";     Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\locale\*";      Excludes: ".created"; DestDir: "{app}\locale";  Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Dont use "Flags: ignoreversion" on any shared system files
 
 [Icons]

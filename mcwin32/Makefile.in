@@ -180,6 +180,7 @@ D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)
 LW=		$(D_LIB)/$(LP)
 
 D_ETC=		$(D_BIN)/etc
+D_LIBEXEC=	$(D_BIN)/libexec
 D_PLUGIN=	$(D_BIN)/plugin
 D_SHARE=	$(D_BIN)/share
 D_DOC=		$(D_BIN)/doc
@@ -585,7 +586,8 @@ PO_SRC=			$(MCSOURCE)/po
 
 WIN32_ETC_SRC=		./win32_etc
 WIN32_PLUGIN_SRC=	./win32_plugin
-WIN32_SKINS_SRC=	./win32_skins
+WIN32_WRAPPER_SRC=	./win32_wrapper
+WIN32_SKINS_SRC=	./win32_skins 
 WIN32_DOC_SRC=		./doc
 
 Unique=		$(if $(1),$(strip $(word 1,$(1)) $(call Unique,$(filter-out $(word 1,$(1)),$(1)))))
@@ -662,6 +664,9 @@ CFG_PLUGIN_SHELL:=	$(addprefix $(D_PLUGIN)/shell/, \
 CFG_WIN32_PLUGIN:=	$(filter-out CVS extfs.d, $(notdir $(wildcard $(WIN32_PLUGIN_SRC)/*)))
 CFG_WIN32_PLUGIN_EXTFS_D:=$(filter-out CVS, $(notdir $(wildcard $(WIN32_PLUGIN_SRC)/extfs.d/*.in)))
 
+CFG_LIBEXEC=		$(addprefix $(D_LIBEXEC)/, \
+				$(subst .in,,$(filter-out CVS, $(notdir $(wildcard $(WIN32_WRAPPER_SRC)/*.in)))))
+
 CFG_DOC=\
 	$(D_DOC)/FAQ				\
 	$(D_DOC)/COPYING			\
@@ -699,6 +704,7 @@ CONFIGURATION=\
 	$(CFG_PLUGIN)				\
 	$(CFG_PLUGIN_EXTFS_D)			\
 	$(CFG_PLUGIN_SHELL)			\
+	$(CFG_LIBEXEC)				\
 	$(CFG_DOC)
 
 
@@ -791,6 +797,7 @@ DIRECTORIES:=\
 		$(D_PLUGIN)/.created		\
 		$(D_PLUGIN)/extfs.d/.created	\
 		$(D_PLUGIN)/shell/.created	\
+		$(D_LIBEXEC)/.created		\
 		$(D_SHARE)/.created		\
 		$(D_SHARE)/help/.created	\
 		$(D_SHARE)/hints/.created	\
@@ -798,7 +805,7 @@ DIRECTORIES:=\
 			$(foreach dir, $(CFG_SHARE_MANDIRS), $(D_SHARE)/man/$(dir)/.created) \
 		$(D_SHARE)/skins/.created	\
 		$(D_SHARE)/syntax/.created	\
-		$(D_SHARE)/macros.d/.created
+		$(D_SHARE)/macros.d/.created	\
 
 
 #########################################################################################
@@ -1098,6 +1105,12 @@ $(D_PLUGIN)/shell/% :		$(SHELL_SRC)/%
 		@echo importing $@ ..
 		@$(CP) $^ $@
 		@$(BUSYBOX) dos2unix $@
+
+# .. libexec
+$(D_LIBEXEC)/% :		$(WIN32_WRAPPER_SRC)/%.in
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) unix2dos $@
 
 # .. share
 $(D_SHARE)/mc.charsets :	$(MISC_SRC)/mc.charsets.in
