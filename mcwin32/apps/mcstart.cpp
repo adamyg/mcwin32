@@ -30,7 +30,7 @@
 #include <Shellapi.h>
 #include <ObjBase.h>
 
-#include <stdlib.h>
+#include <stdio.h>
 #include "getopt.h"
 
 #ifndef _countof        /*MSVC _countof()*/
