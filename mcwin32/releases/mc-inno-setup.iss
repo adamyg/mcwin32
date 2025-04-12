@@ -112,6 +112,7 @@ Source: "..\{#BinDir}\mcbsddiff.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcupdater.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcmandoc.exe";  DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcfile.exe";    DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mcstart.exe";   DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\enca.exe";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\kbtest.exe";    DestDir: "{app}"; Flags: ignoreversion

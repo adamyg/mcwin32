@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.4 2025/04/07 06:25:25 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2025/04/12 18:01:04 cvsuser Exp $
 # mcdiff/mcedit/mcdiff, application shims
 #
 #
@@ -135,6 +135,7 @@ MCDIFFTSK=	$(D_BIN)/mcdiff$(E)
 MCEDITTSK=	$(D_BIN)/mcedit$(E)
 MCVIEWTSK=	$(D_BIN)/mcview$(E)
 MCHELPTSK=	$(D_BIN)/mchelp$(E)
+MCSTARTTSK=	$(D_BIN)/mcstart$(E)
 
 VPATH+=		$(MCSHIMSRC)
 LIBCSOURCES=\
@@ -153,12 +154,18 @@ HELPCPPSOURCES=\
 	mchelp.cpp		\
 	getopt.cpp
 
+STARTCPPSOURCES=\
+	mcstart.cpp		\
+	getopt.cpp
+
 LIBOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(LIBCSOURCES)))
 
 MCDIFFOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(DIFFCSOURCES)))
 MCEDITOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(EDITCSOURCES)))
 MCVIEWOBJS=	$(addprefix $(D_OBJ)/,$(subst .c,$(O),$(VIEWCSOURCES)))
 MCHELPOBJS=	$(addprefix $(D_OBJ)/,$(subst .cpp,$(O),$(HELPCPPSOURCES)))
+MCSTARTOBJS=	$(addprefix $(D_OBJ)/,$(subst .cpp,$(O),$(STARTCPPSOURCES)))
+
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 MCDIFFOBJS+=	$(D_OBJ)/mcdiff_res.o
@@ -184,10 +191,16 @@ else
 MCHELPOBJS+=	$(D_OBJ)/mchelp.res
 endif
 
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+MCSTARTOBJS+=	$(D_OBJ)/mcstart_res.o
+else
+MCSTARTOBJS+=	$(D_OBJ)/mchelp.res
+endif
+
 OBJS=		$(LIBOBJS) $(TSKOBJS)
 LIBS=		$(MCSHIMLIB)
 DLLS=
-TSKS=		$(MCDIFFTSK) $(MCEDITTSK) $(MCVIEWTSK) $(MCHELPTSK)
+TSKS=		$(MCDIFFTSK) $(MCEDITTSK) $(MCVIEWTSK) $(MCHELPTSK) $(MCSTARTTSK)
 INSTALLED=
 GENERATED=
 
@@ -225,6 +238,13 @@ $(MCVIEWTSK):		$(D_OBJ)/.created $(MCVIEWOBJS)
 $(MCHELPTSK):		MAPFILE=$(basename $@).map
 $(MCHELPTSK):		$(D_OBJ)/.created $(MCHELPOBJS)
 		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(MCHELPOBJS) $(MCSHIMLIB) $(LDLIBS) -MAP:$(MAPFILE)
+
+$(MCSTARTTSK):		MAPFILE=$(basename $@).map
+ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+$(MCSTARTTSK):		LDFLAGS += -municode
+endif
+$(MCSTARTTSK):		$(D_OBJ)/.created $(MCSTARTOBJS)
+		$(LIBTOOL) --mode=link $(CXX) $(LDFLAGS) -o $@ $(MCSTARTOBJS) $(MCSHIMLIB) $(LDLIBS) -MAP:$(MAPFILE)
 
 %/.created:
 		-@mkdir $(@D)

@@ -34,6 +34,10 @@ extern "C" {
 #endif
 void ApplicationShim(const wchar_t *name, const wchar_t *alias);
 void ApplicationShimCmd(const wchar_t *name, const wchar_t *alias, const wchar_t *cmdline);
+
+int  ShimCreateChild(PROCESS_INFORMATION *ppi, const wchar_t *name, const wchar_t *path, const wchar_t *cmdline);
+void ShimErrorMessage(const wchar_t *name, DWORD wrc);
+
 #ifdef __cplusplus
 }
 #endif

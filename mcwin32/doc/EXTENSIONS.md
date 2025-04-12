@@ -19,6 +19,12 @@ For example, for use within a command shell setup an aliases:
 doskey mc=call "%ProgramFiles(x86)%\Midnight Commander\libexec\mc-wrapper.bat" $*
 ```
 
+
+## Opening files
+
+Midnight Commander reads the MC_XDG_OPEN environment variable to open files, which defaults to _mcstart_ when unset; mcstart is the equivalent of the window _start_ command. 
+
+
 ## Application mappings
 
 Word, Excel and PowerPoint, mapping:

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: sedin.pl,v 1.10 2025/04/08 18:59:28 cvsuser Exp $
+# $Id: sedin.pl,v 1.12 2025/04/12 18:02:46 cvsuser Exp $
 # sed in processing tool, processing embedded @PERL@ @PYTHON@ etc
 #
 # Copyright Adam Young 2017 - 2025
@@ -33,7 +33,7 @@ sub usage {
         exit 1;
 }
 
-my $mode    = "script";
+my $mode    = "script.in";
 my $outenc  = "";
 my $version = "0.0.1";
 my $iswin64 = undef;
@@ -41,6 +41,7 @@ my $infile  = 0;
 my $verbose = 0;
 
 sub scriptin();
+sub script();
 sub manin();
 
 while (defined $ARGV[0] && ($ARGV[0] =~ /^--?[a-z]/)) {
@@ -53,8 +54,11 @@ while (defined $ARGV[0] && ($ARGV[0] =~ /^--?[a-z]/)) {
         } elsif ($arg eq '-i' || $arg eq '--in') {
                 ++$infile;
 
+        } elsif ($arg eq '--script.in') {
+                $mode = "script.in";
+
         } elsif ($arg eq '--script') {
-                $mode = "script";
+                $mode = "script"
 
         } elsif ($arg eq '--man') {
                 $mode = "man";
@@ -83,7 +87,7 @@ if (scalar @ARGV < 2) {                         # in/out
 my $in  = $ARGV[0];
 my $out = $ARGV[1];
 
-if ($in !~ /\.in$/) {
+if ($in !~ /\.in$/ && ($mode ne "script")) {
         print "sedin: input file <$in> missing '.in' extension\n";
         exit 1;
 }
@@ -103,8 +107,10 @@ if (!open (OUT, ">${outenc}", $out)) {          # output
         exit 1;
 }
 
-if ($mode eq "script") {
+if ($mode eq "script.in") {
         scriptin();
+} elsif ($mode eq "script") {
+        script();
 } else {
         manin();
 }
@@ -188,6 +194,8 @@ END
                 $line =~ s/\@UNZIP\@/${busybox}unzip/g;
                 $line =~ s/\@ZIP\@/${busybox}zip/g;
 
+                $line =~ s/\QMC_XDG_OPEN="xdg-open"\E/MC_XDG_OPEN="mcstart"/g;
+
                 if ($filename eq 'text.sh' || $filename eq 'mc.menu' || $filename eq 'mcedit.menu') {
                         # local mandoc
                         $line =~ s/\@MANDOC\@//g;
@@ -214,6 +222,57 @@ END
         close(OUT);
 }
 
+# Process simple script
+#
+#       Variable            Run-time
+#       MC_XDG_OPEN         start
+#
+
+sub
+script()
+{
+        my $filename = basename($out);
+        my $line;
+
+        $line = <IN>;
+        if ($line) {
+                my $extra = '';
+                if ($line =~ /\/bin\/sh/) {
+                        $extra = <<'END'
+if [ ! -z "${MC_DIRECTORY}" ]; then
+    export PATH="${MC_DIRECTORY}:${PATH}"
+fi
+END
+                }
+                chomp $line;
+                print OUT "${line}\n${extra}";
+        }
+
+        while ($line = <IN>) {
+                # other lines
+                if ($verbose) {
+                        pos($line) = 1;
+                        while ($line =~ /(\@[A-Za-z_]+\@)/g) {
+                                printf "${in} ($.): $1\n";
+                        }
+                }
+
+                $line =~ s/\QMC_XDG_OPEN="xdg-open"\E/MC_XDG_OPEN="mcstart"/g;
+
+                if ($line =~ /(\@[A-Za-z_]+\@)/) {
+                        my $var = $1;
+                        if ($var ne '@EXTHELPERSDIR@') {
+                                printf "WARNING ${in} ($.): unknown variable (${var})\n";
+                        }
+                }
+
+                chomp $line;
+                print OUT "${line}\n";
+        }
+
+        close(IN);
+        close(OUT);
+}
 
 # Process man-page tokens
 #

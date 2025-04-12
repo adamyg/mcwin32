@@ -1084,9 +1084,7 @@ $(D_ETC)/magic.mgc:		libmagic/magic.mgc
 
 # .. plugin
 $(D_PLUGIN)/% :			$(EXTD_SRC)/%
-		@echo importing $@ ..
-		@$(CP) $^ $@
-		@$(BUSYBOX) dos2unix $@
+		@$(PERL) ./support/sedin.pl -u --script $^ $@
 
 $(D_PLUGIN)/% :			$(EXTD_SRC)/%.in
 		@$(PERL) ./support/sedin.pl -u $^ $@
