@@ -55,7 +55,7 @@ static void Usage();
 #if defined(__MINGW32__)
 extern "C"
 #endif
-wmain(int argc, wchar_t *argv[])
+int wmain(int argc, wchar_t *argv[])
 {
     BOOL owait = 0, ocmd = 0;
     int ch;
