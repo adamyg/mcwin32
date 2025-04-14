@@ -260,7 +260,7 @@ ShellAssociation(const wchar_t *argv0)
 
     memset(&sei, 0, sizeof(sei));
     sei.cbSize = sizeof(sei);
-    sei.fMask = SEE_MASK_NOCLOSEPROCESS|SEE_MASK_NO_CONSOLE|SEE_MASK_FLAG_NO_UI;
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS|SEE_MASK_NO_CONSOLE;
     if (! overbose) sei.fMask |= SEE_MASK_FLAG_NO_UI;
         // SEE_MASK_NOCLOSEPROCESS
         //      Use to indicate that the hProcess member receives the process handle.
@@ -297,7 +297,7 @@ ShellAssociation(const wchar_t *argv0)
         ShimErrorMessage(PROGNAME, dwExitCode);
 
     } else {
-        ret = EV_SUCCESS;
+        rc = EV_SUCCESS;
         if (owait && sei.hProcess) {
             DWORD dwExitCode = 0;
             WaitForSingleObject(sei.hProcess, INFINITE);
