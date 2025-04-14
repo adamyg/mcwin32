@@ -26,10 +26,16 @@
  * ==end==
  */
 
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT < 0x0601)
+#undef  _WIN32_WINNT                            // ASSOCSTR's
+#endif
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0601
 #endif
-#define _WIN32_IE 0x0800                        // ASSOCSTR_...
+#if defined(__WATCOMC__)
+#define _WIN32_IE 0x0800                        // ASSOCSTR's
+#endif
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif

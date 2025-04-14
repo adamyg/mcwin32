@@ -7,21 +7,26 @@ Windows XP+/32 bit native port of GNU Midnight Commander, based on
 the current 4.8.x development stream.
 
         Version         Build Notes
-
+        
         4.8.33          232
 
-                                - internal tools front-ends, externalized (#78)
+                                - internal tools
 
-                                        o mchelp (#116)
+		                        o mandoc / mchelp integration (#116)
+		                        o mcstart, file-extension utility (#124)
+		                        o mc-wrapper's (#69)
 
                                 - upgrades/bug-fixes
-
-                                        o obey NODRIVES group policy (#121)
-                                        o getmntinfo, networked/mapped drive (#120)
-                                        o non-ascii group name handling (#118)
-                                        o mandoc integration (#116)
-                                        o stat/seek64 (#35) and (#89)
-                                        o unzip vfs (#88)
+                                
+		                        o documentation enhancements
+		                        o MSTerminal maximize disabled (#122)
+		                        o obey NODRIVES group policy (#121)
+		                        o getmntinfo, networked/mapped drive (#120)
+		                        o script enhancements, MC_XDG_OPEN as "start" (#119)
+		                        o non-ascii group name handling (#118)
+		                        o stat/seek64 (#35) and (#89)
+		                        o unzip vfs (#88)
+		                        o ESC timeout, -1 enables an infinite wait (#36)
 
         4.8.33          231 (mc merge 4.8.33)
 
