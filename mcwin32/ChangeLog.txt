@@ -1,13 +1,25 @@
-Mon Apr  7 14:34:02 2025 adamy
+Mon Apr 14 22:01:53 2025 adamy
+
+	* build-233
+
+		o mcstart enhancements (#124)
+
+Mon Apr 14 20:01:53 2025 adamy
 
 	* build-232
-
+	
+		o documentation enhancements
+		o mcstart, file-extension utility (#124)
+		o MSTerminal maximize disabled (#122)
 		o obey NODRIVES group policy (#121)
 		o getmntinfo, networked/mapped drive (#120)
+		o script enhancements, MC_XDG_OPEN as "start" (#119)
 		o non-ascii group name handling (#118)
-		o mandoc integration and mchelp (#116)
+		o mandoc / mchelp integration (#116)
 		o stat/seek64 (#35) and (#89)
 		o unzip vfs (#88)
+		o mc-wrapper's (#69)
+		o ESC timeout, -1 enables an infinite wait (#36)
 
 Wed Mar 19 16:03:57 2025 adamy
 
