@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.25 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.26 2025/03/30 17:16:02 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -51,7 +51,6 @@ __CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.25 2025/03/06 16:59:46 cvsus
 #pragma warning(disable : 4244) // conversion from 'xxx' to 'xxx', possible loss of data
 #pragma warning(disable : 4312) // type cast' : conversion from 'xxx' to 'xxx' of greater size
 #endif
-
 struct procdata {
     int                 type;
     DWORD               dwProcessId;
@@ -321,7 +320,7 @@ w32_waitpid(int pid, int *status, int options)
         /*
          *  wait for the child whose process ID is equal to the value of pid.
          */
-        if (w32_child_wait(w32_ITOH(pid), status, options & WNOHANG)) {
+        if (w32_child_wait(w32_ftoh(pid), status, options & WNOHANG)) {
             ret = pid;
         }
     }
@@ -449,7 +448,7 @@ LIBW32_API int
 w32_kill(int pid, int value)
 {
     if (pid > 0) {
-        HANDLE hProc = w32_ITOH(pid);
+        HANDLE hProc = w32_ftoh(pid);
 
         /* Still running ?? */
         if (WaitForSingleObject(hProc, 0) != WAIT_TIMEOUT) {

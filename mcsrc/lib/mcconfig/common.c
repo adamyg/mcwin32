@@ -107,7 +107,7 @@ mc_config_t *
 mc_config_init (const gchar *ini_path, gboolean read_only)
 {
     mc_config_t *mc_config;
-    struct stat st;
+    mc_stat_t st;
 
     mc_config = g_try_malloc0 (sizeof (mc_config_t));
     if (mc_config == NULL)

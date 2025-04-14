@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.13 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.14 2025/03/30 17:16:03 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -328,7 +328,7 @@ uname(struct utsname *u)
                             if (oviex.wProductType == VER_NT_SERVER ||
                                         oviex.wProductType == VER_NT_DOMAIN_CONTROLLER) {
                                 if (oviex.wSuiteMask & VER_SUITE_DATACENTER) {
-                                    osname = "2000 Dataenter-Server";
+                                    osname = "2000 DataCenter-Server";
                                 } else if (oviex.wSuiteMask & VER_SUITE_ENTERPRISE) {
                                     osname = "2000 Advanced-Server";
                                 } else {

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.16 2025/03/20 17:23:29 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.17 2025/03/30 17:16:03 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -36,7 +36,10 @@ __CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.16 2025/03/20 17:23:29
  * ==extra==
  */
 
+#define _LARGEFILE64_SOURCE
+
 #include "win32_internal.h"
+#include "win32_misc.h"
 
 #include <stdio.h>
 #ifdef HAVE_WCHAR_H
@@ -44,78 +47,64 @@ __CIDENT_RCSID(gr_w32_truncate_c,"$Id: w32_truncate.c,v 1.16 2025/03/20 17:23:29
 #endif
 #include <unistd.h>
 
-#if !defined(_OFF64_T)
-#define _OFF64_T 1
-typedef __int64 _off64_t;
-#endif
-
 static int Truncate32(HANDLE handle, off_t length);
-static int Truncate64(HANDLE handle, _off64_t length);
-
-int truncate64(const char *path, _off64_t length);
-int truncate64A(const char * path, _off64_t length);
-int truncate64W(const wchar_t* path, _off64_t length);
-
-int ftruncate64(int fildes, _off64_t length);
-int ftruncate64A(int fildes, _off64_t length);
-int fruncate64W(int filedes, _off64_t length);
-
+static int Truncate64(HANDLE handle, off64_t length);
 
 /*
-//    NAME
-//       ftruncate, truncate - truncate a file to a specified length
+//  NAME
+//      ftruncate, truncate - truncate a file to a specified length
 //
-//    SYNOPSIS
+//  SYNOPSIS
 //
-//       #include <unistd.h>
+//      #include <unistd.h>
 //
-//       int ftruncate(int fildes, off_t length);
-//       int truncate(const char *path, off_t length);
+//      int ftruncate(int fildes, off_t length);
+//      int truncate(const char *path, off_t length);
 //
-//       int ftruncate64(int fildes, off64_t length);
-//       int truncate64(const char *path, off64_t length);
+//      int ftruncate64(int fildes, off64_t length);
+//      int truncate64(const char *path, off64_t length);
 //
-//    DESCRIPTION
+//  DESCRIPTION
 //
-//       The ftruncate() function causes the regular file referenced by fildes to have a
-//       size of length bytes.
+//      The ftruncate() function causes the regular file referenced by fildes to have a
+//      size of length bytes.
 //
-//       The truncate() function causes the regular file named by path to have a size of
-//       length bytes.
+//      The truncate() function causes the regular file named by path to have a size of
+//      length bytes.
 //
-//       If the file previously was larger than length, the extra data is discarded. If it
-//       was previously shorter than length, it is unspecified whether the file is changed
-//       or its size increased. If the file is extended, the extended area appears as if it
-//       were zero-filled. If fildes references a shared memory object, ftruncate() sets the
-//       size of the shared memory object to length. If the file is not a regular file or a
-//       shared memory object, the result is unspecified.
+//      If the file previously was larger than length, the extra data is discarded. If it
+//      was previously shorter than length, it is unspecified whether the file is changed
+//      or its size increased. If the file is extended, the extended area appears as if it
+//      were zero-filled. If fildes references a shared memory object, ftruncate() sets the
+//      size of the shared memory object to length. If the file is not a regular file or a
+//      shared memory object, the result is unspecified.
 //
-//       With ftruncate(), the file must be open for writing; for truncate(), the process
-//       must have write permission for the file.
+//      With ftruncate(), the file must be open for writing; for truncate(), the process
+//      must have write permission for the file.
 //
-//       If the effect of truncation is to decrease the size of a file or shared memory
-//       object and whole pages beyond the new end were previously mapped, then the whole
-//       pages beyond the new end will be discarded. References to the discarded pages
-//       result in generation of a SIGBUS signal.
+//      If the effect of truncation is to decrease the size of a file or shared memory
+//      object and whole pages beyond the new end were previously mapped, then the whole
+//      pages beyond the new end will be discarded. References to the discarded pages
+//      result in generation of a SIGBUS signal.
 //
-//       If the request would cause the file size to exceed the soft file size limit for the
-//       process, the request will fail and the implementation will generate the SIGXFSZ
-//       signal for the process.
+//      If the request would cause the file size to exceed the soft file size limit for the
+//      process, the request will fail and the implementation will generate the SIGXFSZ
+//      signal for the process.
 //
-//       These functions do not modify the file offset for any open file descriptions
-//       associated with the file. On successful completion, if the file size is changed,
-//       these functions will mark for update the st_ctime and st_mtime fields of the file,
-//       and if the file is a regular file, the S_ISUID and S_ISGID bits of the file mode
-//       may be cleared.
+//      These functions do not modify the file offset for any open file descriptions
+//      associated with the file. On successful completion, if the file size is changed,
+//      these functions will mark for update the st_ctime and st_mtime fields of the file,
+//      and if the file is a regular file, the S_ISUID and S_ISGID bits of the file mode
+//      may be cleared.
 //
-//    RETURN VALUE
+//  RETURN VALUE
 //
-//       Upon successful completion, ftruncate() and truncate() return 0. Otherwise a -1 is
-//       returned, and errno is set to indicate the error.
+//      Upon successful completion, ftruncate() and truncate() return 0. Otherwise a -1 is
+//      returned, and errno is set to indicate the error.
 //
-//    ERRORS
+//  ERRORS
 //
-//       The ftruncate() and truncate() functions will fail if:
+//      The ftruncate() and truncate() functions will fail if:
 //
 //       [EINTR]
 //           A signal was caught during execution.
@@ -176,7 +165,7 @@ int fruncate64W(int filedes, _off64_t length);
 //           whose length exceeds {PATH_MAX}.
 */
 
-int
+LIBW32_API int
 ftruncate(int fildes, off_t length)
 {
     HANDLE handle;
@@ -184,33 +173,35 @@ ftruncate(int fildes, off_t length)
     if (length < 0) {
         errno = EINVAL;
         return -1;
-    } else if (fildes < 0 ||
-                (handle = (HANDLE) _get_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
-        errno = EBADF;
+
+    } else if ((handle = w32_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
+        errno = EBADF;                          // socket or invalid file-descriptor
         return -1;
     }
+
     return Truncate32(handle, length);
 }
 
 
-int
-ftruncate64(int fildes, _off64_t length)
+LIBW32_API int
+ftruncate64(int fildes, off64_t length)
 {
     HANDLE handle;
 
     if (length < 0) {
         errno = EINVAL;
         return -1;
-    } else if (fildes < 0 ||
-                (handle = (HANDLE) _get_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
-        errno = EBADF;
+
+    } else if ((handle = w32_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
+        errno = EBADF;                          // socket or invalid file-descriptor
         return -1;
     }
+
     return Truncate64(handle, length);
 }
 
 
-int
+LIBW32_API int
 truncate(const char *path, off_t length)
 {
 #if defined(UTF8FILENAMES)
@@ -230,8 +221,8 @@ truncate(const char *path, off_t length)
 }
 
 
-int
-truncate64(const char *path, _off64_t length)
+LIBW32_API int
+truncate64(const char *path, off64_t length)
 {
 #if defined(UTF8FILENAMES)
     if (w32_utf8filenames_state()) {
@@ -250,7 +241,7 @@ truncate64(const char *path, _off64_t length)
 }
 
 
-int
+LIBW32_API int
 truncateA(const char *path, off_t length)
 {
     HANDLE handle;
@@ -274,8 +265,8 @@ truncateA(const char *path, off_t length)
 }
 
 
-int
-truncate64A(const char *path, _off64_t length)
+LIBW32_API int
+truncate64A(const char *path, off64_t length)
 {
     HANDLE handle;
     int ret = -1;
@@ -298,7 +289,7 @@ truncate64A(const char *path, _off64_t length)
 }
 
 
-int
+LIBW32_API int
 truncateW(const wchar_t *path, off_t length)
 {
     HANDLE handle;
@@ -322,8 +313,8 @@ truncateW(const wchar_t *path, off_t length)
 }
 
 
-int
-truncate64W(const wchar_t *path, _off64_t length)
+LIBW32_API int
+truncate64W(const wchar_t *path, off64_t length)
 {
     HANDLE handle;
     int ret = -1;
@@ -344,7 +335,6 @@ truncate64W(const wchar_t *path, _off64_t length)
     }
     return ret;
 }
-
 
 
 static int
@@ -374,7 +364,7 @@ Truncate32(HANDLE handle, off_t length)
 
 
 static int
-Truncate64(HANDLE handle, _off64_t length)
+Truncate64(HANDLE handle, off64_t length)
 {
     LARGE_INTEGER li;
 

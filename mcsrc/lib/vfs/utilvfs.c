@@ -412,7 +412,7 @@ vfs_get_timespecs_from_timesbuf (mc_timesbuf_t *times, mc_timespec_t *atime, mc_
 /* --------------------------------------------------------------------------------------------- */
 
 void
-vfs_get_timesbuf_from_stat (const struct stat *s, mc_timesbuf_t *times)
+vfs_get_timesbuf_from_stat (const mc_stat_t *s, mc_timesbuf_t *times)
 {
 #ifdef HAVE_UTIMENSAT
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
@@ -447,7 +447,7 @@ vfs_get_timesbuf_from_stat (const struct stat *s, mc_timesbuf_t *times)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-vfs_copy_stat_times (const struct stat *src, struct stat *dst)
+vfs_copy_stat_times (const mc_stat_t *src, mc_stat_t *dst)
 {
     dst->st_atime = src->st_atime;
     dst->st_mtime = src->st_mtime;
@@ -471,9 +471,9 @@ vfs_copy_stat_times (const struct stat *src, struct stat *dst)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-vfs_zero_stat_times (struct stat *s)
+vfs_zero_stat_times (mc_stat_t *s)
 {
-    const struct stat empty = { 0 };
+    const mc_stat_t empty = { 0 };
 
     vfs_copy_stat_times (&empty, s);
 }

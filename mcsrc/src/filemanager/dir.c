@@ -149,7 +149,7 @@ clean_sort_keys (dir_list *list, int start, int count)
  */
 
 static gboolean
-handle_dirent (struct vfs_dirent *dp, const file_filter_t *filter, struct stat *buf1,
+handle_dirent (struct vfs_dirent *dp, const file_filter_t *filter, mc_stat_t *buf1,
                gboolean *link_to_dir, gboolean *stale_link)
 {
     vfs_path_t *vpath;
@@ -196,7 +196,7 @@ handle_dirent (struct vfs_dirent *dp, const file_filter_t *filter, struct stat *
 /** get info about ".." */
 
 static gboolean
-dir_get_dotdot_stat (const vfs_path_t *vpath, struct stat *st)
+dir_get_dotdot_stat (const vfs_path_t *vpath, mc_stat_t *st)
 {
     gboolean ret = FALSE;
 
@@ -296,7 +296,7 @@ dir_list_grow (dir_list *list, int delta)
  */
 
 gboolean
-dir_list_append (dir_list *list, const char *fname, const struct stat *st,
+dir_list_append (dir_list *list, const char *fname, const mc_stat_t *st,
                  gboolean link_to_dir, gboolean stale_link)
 {
     file_entry_t *fentry;
@@ -593,7 +593,7 @@ dir_list_init (dir_list *list)
 /* Return values: FALSE = don't add, TRUE = add to the list */
 
 gboolean
-handle_path (const char *path, struct stat *buf1, gboolean *link_to_dir, gboolean *stale_link)
+handle_path (const char *path, mc_stat_t *buf1, gboolean *link_to_dir, gboolean *stale_link)
 {
     vfs_path_t *vpath;
 
@@ -615,7 +615,7 @@ handle_path (const char *path, struct stat *buf1, gboolean *link_to_dir, gboolea
     *stale_link = FALSE;
     if (S_ISLNK (buf1->st_mode))
     {
-        struct stat buf2;
+        mc_stat_t buf2;
 
         if (mc_stat (vpath, &buf2) == 0)
             *link_to_dir = S_ISDIR (buf2.st_mode) != 0;
@@ -636,7 +636,7 @@ dir_list_load (dir_list *list, const vfs_path_t *vpath, GCompareFunc sort,
 {
     DIR *dirp;
     struct vfs_dirent *dp;
-    struct stat st;
+    mc_stat_t st;
     file_entry_t *fentry;
     const char *vpath_str;
     gboolean ret = TRUE;
@@ -692,7 +692,7 @@ dir_list_load (dir_list *list, const vfs_path_t *vpath, GCompareFunc sort,
 gboolean
 if_link_is_exe (const vfs_path_t *full_name_vpath, const file_entry_t *file)
 {
-    struct stat b;
+    mc_stat_t b;
 
     if (S_ISLNK (file->st.st_mode) && mc_stat (full_name_vpath, &b) == 0)
         return is_exe (b.st_mode);
@@ -710,7 +710,7 @@ dir_list_reload (dir_list *list, const vfs_path_t *vpath, GCompareFunc sort,
     DIR *dirp;
     struct vfs_dirent *dp;
     int i;
-    struct stat st;
+    mc_stat_t st;
     int marked_cnt;
     GHashTable *marked_files;
     const char *tmp_path;

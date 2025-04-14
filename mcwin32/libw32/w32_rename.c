@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.11 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.13 2025/04/01 16:15:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -38,6 +38,7 @@ __CIDENT_RCSID(gr_w32_rename_c, "$Id: w32_rename.c,v 1.11 2025/03/06 16:59:46 cv
 
 #include "win32_internal.h"
 #include "win32_misc.h"
+#include "win32_io.h"
 
 #include <stdio.h>
 #ifdef HAVE_WCHAR_H
@@ -136,7 +137,8 @@ w32_rename(const char *ofile, const char *nfile)
 LIBW32_API int
 w32_renameA(const char *ofile, const char *nfile)
 {
-    BY_HANDLE_FILE_INFORMATION oft = {0};
+    char osymbuf[WIN32_PATH_MAX], nsymbuf[WIN32_PATH_MAX];
+    BY_HANDLE_FILE_INFORMATION oft = { 0 };
     const char *exopath;
     int ret = 0;
 
@@ -150,8 +152,10 @@ w32_renameA(const char *ofile, const char *nfile)
         return -1;
     }
 
+    osymbuf[0] = nsymbuf[0] = 0;
+
     if (NULL != (exopath = w32_extendedpathA(ofile))) {
-        ofile = exopath;                        // abs-path to expanded
+        ofile = exopath;                        // extended abs-path 
     }
 
     if (FileStatA(ofile, &oft, FILE_FLAG_OPEN_REPARSE_POINT) &&
@@ -165,13 +169,21 @@ w32_renameA(const char *ofile, const char *nfile)
                 ret = -1;
             }
         }
+    } else if (GetLastError() == ERROR_PATH_NOT_FOUND) {
+        if (w32_expandlinkA(ofile, osymbuf, _countof(osymbuf), SHORTCUT_COMPONENT)) {
+            ofile = osymbuf;                    // expanded short-cut
+        }
     }
 
     if (0 == ret) {
-        const char* exnpath;
+        const char *exnpath;
 
         if (NULL != (exnpath = w32_extendedpathA(nfile))) {
-            nfile = exnpath;                    // abs-path to expanded
+            nfile = exnpath;                    // extended abs-path
+        }
+
+        if (w32_expandlinkA(nfile, nsymbuf, _countof(nsymbuf), SHORTCUT_COMPONENT)) {
+            nfile = nsymbuf;                    // expanded short-cut
         }
 
 #undef rename
@@ -203,6 +215,7 @@ w32_renameA(const char *ofile, const char *nfile)
 LIBW32_API int
 w32_renameW(const wchar_t *ofile, const wchar_t *nfile)
 {
+    wchar_t osymbuf[WIN32_PATH_MAX], nsymbuf[WIN32_PATH_MAX];
     BY_HANDLE_FILE_INFORMATION oft = {0};
     const wchar_t *exopath;
     int ret = 0;
@@ -217,8 +230,10 @@ w32_renameW(const wchar_t *ofile, const wchar_t *nfile)
         return -1;
     }
 
+    osymbuf[0] = nsymbuf[0] = 0;
+
     if (NULL != (exopath = w32_extendedpathW(ofile))) {
-        ofile = exopath;                        // abs-path to expanded
+        ofile = exopath;                        // extended abs-path
     }
 
     if (FileStatW(ofile, &oft, FILE_FLAG_OPEN_REPARSE_POINT) &&
@@ -232,13 +247,21 @@ w32_renameW(const wchar_t *ofile, const wchar_t *nfile)
                 ret = -1;
             }
         }
+    } else if (GetLastError() == ERROR_PATH_NOT_FOUND) {
+        if (w32_expandlinkW(ofile, osymbuf, _countof(osymbuf), SHORTCUT_COMPONENT)) {
+            ofile = osymbuf;                    // expanded short-cut
+        }
     }
 
     if (0 == ret) {
         const wchar_t *exnpath;
 
         if (NULL != (exnpath = w32_extendedpathW(nfile))) {
-            nfile = exnpath;                    // abs-path to expanded
+            nfile = exnpath;                    // extended abs-path
+        }
+
+        if (w32_expandlinkW(nfile, nsymbuf, _countof(nsymbuf), SHORTCUT_COMPONENT)) {
+            nfile = nsymbuf;                    // expanded short-cut
         }
 
 #undef _wrename
@@ -263,7 +286,6 @@ w32_renameW(const wchar_t *ofile, const wchar_t *nfile)
     }
 
     free((void*)exopath);
-
     return ret;
 }
 

@@ -196,7 +196,7 @@ char *load_mc_home_file (const char *from, const char *filename, char **allocate
 /* uid/gid managing */
 void init_groups (void);
 void destroy_groups (void);
-int get_user_permissions (struct stat *buf);
+int get_user_permissions (mc_stat_t *buf);
 
 void init_uid_gid_cache (void);
 const char *get_group (gid_t gid);

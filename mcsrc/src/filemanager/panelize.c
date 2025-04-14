@@ -362,7 +362,7 @@ do_external_panelize (const char *command)
         {
             char *name;
             gboolean link_to_dir, stale_link;
-            struct stat st;
+            mc_stat_t st;
 
             /* handle a \n-separated file list */
 

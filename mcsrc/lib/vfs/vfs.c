@@ -224,7 +224,7 @@ vfs_get_openfile (int handle)
 static gboolean
 vfs_test_current_dir (const vfs_path_t *vpath)
 {
-    struct stat my_stat, my_stat2;
+    mc_stat_t my_stat, my_stat2;
 
     return (mc_global.vfs.cd_symlinks && mc_stat (vpath, &my_stat) == 0
             && mc_stat (vfs_get_raw_current_dir (), &my_stat2) == 0
@@ -717,7 +717,7 @@ vfs_get_cwd (void)
  */
 
 int
-vfs_preallocate (int dest_vfs_fd, off_t src_fsize, off_t dest_fsize)
+vfs_preallocate (int dest_vfs_fd, mc_off_t src_fsize, mc_off_t dest_fsize)
 {
 #ifndef HAVE_POSIX_FALLOCATE
     (void) dest_vfs_fd;

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.22 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.24 2025/04/05 17:56:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -203,7 +203,7 @@ w32_gethomeA(int ignore_env)
                     t_path[len] = 0;
                 }
             }
-            w32_dos2unix(t_path);
+            w32_dos2unixA(t_path);
         }
 
         x_home = WIN32_STRDUP(done ? t_path : "c:/");
@@ -477,7 +477,7 @@ w32_wc2utfa(const wchar_t *src, size_t *len)
 }
 
 
-char *
+LIBW32_API char *
 w32_extendedpathA(const char *path)
 {
     if (NULL == path || !*path)
@@ -495,14 +495,20 @@ w32_extendedpathA(const char *path)
             char *expath;
 
             if (NULL != (expath = malloc((len + 5) * sizeof(char)))) {
-
-                memcpy(expath, L"\\\\?\\", 4);
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:6386) // buffer overflow
+#endif
+                memcpy(expath, "\\\\?\\", 4);
                 memcpy(expath + 4, path, len + 1 /*NUL*/);
-                w32_unix2dos(expath + 4);
-
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+                w32_unix2dosA(expath + 4);
                 return expath;
             }
         }
+
     } else if (ISSLASH(path[0]) && ISSLASH(path[1]) && path[2] == '?') {
         //
         //  explicit prefix, unix2dos required
@@ -513,7 +519,7 @@ w32_extendedpathA(const char *path)
         if (NULL != (expath = malloc(tlen * sizeof(char)))) {
             memcpy(expath, path, tlen);
 
-            w32_unix2dos(expath + 4);
+            w32_unix2dosA(expath + 4);
             return expath;
         }
     }
@@ -521,7 +527,7 @@ w32_extendedpathA(const char *path)
 }
 
 
-wchar_t *
+LIBW32_API wchar_t *
 w32_extendedpathW(const wchar_t *path)
 {
     if (NULL == path || !*path)
@@ -539,11 +545,16 @@ w32_extendedpathW(const wchar_t *path)
             wchar_t *expath;
 
             if (NULL != (expath = malloc((len + 5) * sizeof(wchar_t)))) {
-
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:6386) // buffer overflow
+#endif
                 wmemcpy(expath, L"\\\\?\\", 4);
                 wmemcpy(expath + 4, path, len + 1 /*NUL*/);
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
                 w32_unix2dosW(expath + 4);
-
                 return expath;
             }
         }
@@ -710,7 +721,7 @@ w32_filenamecmpW(const wchar_t *f1, const wchar_t *f2, unsigned flags)
 
 
 LIBW32_API char *
-w32_dos2unix(char *path)
+w32_dos2unixA(char *path)
 {
     if (path) {
         char *p;
@@ -736,7 +747,7 @@ w32_dos2unixW(wchar_t *path)
 
 
 LIBW32_API char *
-w32_unix2dos(char *path)
+w32_unix2dosA(char *path)
 {
     if (path) {
         char *p;
@@ -762,7 +773,7 @@ w32_unix2dosW(wchar_t *path)
 
 
 LIBW32_API const char *
-w32_strslash(const char *path)
+w32_strslashA(const char *path)
 {
     if (path) {
         for (;*path; ++path) {
@@ -776,7 +787,7 @@ w32_strslash(const char *path)
 
 
 LIBW32_API const wchar_t *
-w32_wcsslash(const wchar_t *path)
+w32_strslashW(const wchar_t *path)
 {
     if (path) {
         for (;*path; ++path) {
@@ -866,19 +877,64 @@ w32_ostype(void)
 
 
 LIBW32_API int
-w32_getexedir(char *buf, int maxlen)
+w32_getprogdir(char *buf, int maxlen)
 {
-    if (GetModuleFileNameA(NULL, buf, maxlen)) {
-        const int len = (int)strlen(buf);
-        char *cp;
+#if defined(UTF8FILENAMES)
+    if (w32_utf8filenames_state()) {
+        if (buf && maxlen) {
+            wchar_t wpath[WIN32_PATH_MAX];
+            int len;
 
-        for (cp = buf + len; (cp > buf) && (*cp != '\\'); cp--)
-            /*cont*/;
-        if ('\\' == *cp) {
-            cp[1] = '\0';                       // remove program
-            return (int)((cp - buf) + 1);
+            if ((len = w32_getprogdirW(wpath, _countof(wpath))) > 0) {
+                if ((len = w32_wc2utf(wpath, buf, maxlen)) > 0) {
+                    return len - 1;             // excluding nul.
+                }
+            }
         }
-        return len;
+    }
+#endif  //UTF8FILENAMES
+        
+    return w32_getprogdirA(buf, maxlen);
+}
+
+
+LIBW32_API int
+w32_getprogdirA(char* buf, int maxlen)
+{
+    if (buf && maxlen) {
+        if (GetModuleFileNameA(NULL, buf, maxlen)) {
+            const size_t len = strlen(buf);
+            char *cp;
+
+            for (cp = buf + len; (cp > buf) && (*cp != '\\'); cp--)
+                /*cont*/;
+            if ('\\' == *cp) {
+                cp[1] = '\0';                   // remove program
+                return (int)((cp - buf) + 1);
+            }
+            return len;
+        }
+    }
+    return -1;
+}
+
+
+LIBW32_API int
+w32_getprogdirW(wchar_t *buf, int maxlen)
+{
+    if (buf && maxlen) {
+        if (GetModuleFileNameW(NULL, buf, maxlen)) {
+            const size_t len = wcslen(buf);
+            wchar_t *cp;
+
+            for (cp = buf + len; (cp > buf) && (*cp != '\\'); cp--)
+                /*cont*/;
+            if ('\\' == *cp) {
+                cp[1] = '\0';                   // remove program
+                return (int)((cp - buf) + 1);
+            }
+            return len;
+        }
     }
     return -1;
 }

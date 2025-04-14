@@ -1,0 +1,43 @@
+@echo off
+REM # mc-wrapper.bat -- batch version of mc_wrapper.sh
+REM #
+REM # create alias for mc.exe using:
+REM #
+REM #   doskey mc=call <install-directory>\libexec\mc-wrapper.bat" $*
+REM #
+REM # Notes:
+REM #
+REM #   mc-wrapper.bat assumes it is within the sub-directory libexec.
+REM #
+
+:loop
+set mc_tmp_file=%TMP%\mc_%RANDOM%_%RANDOM%.tmp
+if exist %filename% goto loop
+
+set mc_exe_dir=%~dp0..
+
+if exist "%mc_exe_dir%\mc.exe" (
+	"%mc_exe_dir%\mc" "--printwd=%mc_tmp_file%" $*
+
+) else if exist "%ProgramFiles(x86)%\Midnight Commander\mc.exe" (
+	"%ProgramFiles(x86)%\Midnight Commander\mc" "--printwd=%mc_tmp_file%" $*
+
+) else if exist "%ProgramFiles%\Midnight Commander\mc.exe" (
+	"%ProgramFiles%\Midnight Commander\mc" "--printwd=%mc_tmp_file%" $*
+
+) else (
+	call mc "--printwd=%mc_tmp_file%" $*
+)
+
+set mc_tmp_cd=
+if exist "%mc_tmp_file%" set /P mc_tmp_cd=< %mc_tmp_file%
+
+if exist "%mc_tmp_file%" (
+	if NOT "%mc_tmp_cd%" == "" cd /D "%mc_tmp_cd%"
+	del %mc_tmp_file%
+)
+
+set mc_exe_dir=
+set mc_tmp_file=
+set mc_tmp_cd=
+

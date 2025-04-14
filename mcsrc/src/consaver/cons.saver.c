@@ -163,7 +163,7 @@ main (int argc, char **argv)
 {
     unsigned char action = 0, console_flag = 3;
     int console_fd, vcsa_fd, console_minor, buffer_size;
-    struct stat st;
+    mc_stat_t st;
     uid_t uid, euid;
     char *buffer, *tty_name, console_name[16], vcsa_name[16];
     const char *p, *q;

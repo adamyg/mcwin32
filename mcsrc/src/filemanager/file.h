@@ -39,7 +39,7 @@ struct dirsize_status_msg_t
 
 /*** declarations of public functions ************************************************************/
 
-gboolean file_is_symlink_to_dir (const vfs_path_t * path, struct stat *st, gboolean * stale_link);
+gboolean file_is_symlink_to_dir (const vfs_path_t * path, mc_stat_t *st, gboolean * stale_link);
 
 FileProgressStatus copy_file_file (file_op_context_t * ctx, const char *src_path,
                                    const char *dst_path);

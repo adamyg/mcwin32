@@ -333,7 +333,7 @@ free_linklist (GSList *lp)
 /* --------------------------------------------------------------------------------------------- */
 
 static const link_t *
-is_in_linklist (const GSList *lp, const vfs_path_t *vpath, const struct stat *sb)
+is_in_linklist (const GSList *lp, const vfs_path_t *vpath, const mc_stat_t *sb)
 {
     const struct vfs_class *class;
     ino_t ino = sb->st_ino;
@@ -361,7 +361,7 @@ is_in_linklist (const GSList *lp, const vfs_path_t *vpath, const struct stat *sb
  */
 
 static hardlink_status_t
-check_hardlinks (file_op_context_t *ctx, const vfs_path_t *src_vpath, const struct stat *src_stat,
+check_hardlinks (file_op_context_t *ctx, const vfs_path_t *src_vpath, const mc_stat_t *src_stat,
                  const vfs_path_t *dst_vpath, gboolean *ignore_all)
 {
     link_t *lnk;
@@ -377,7 +377,7 @@ check_hardlinks (file_op_context_t *ctx, const vfs_path_t *src_vpath, const stru
     if (lnk != NULL)
     {
         int stat_result;
-        struct stat link_stat;
+        mc_stat_t link_stat;
 
         stat_result = mc_stat (lnk->src_vpath, &link_stat);
 
@@ -507,7 +507,7 @@ make_symlink (file_op_context_t *ctx, const vfs_path_t *src_vpath, const vfs_pat
     char link_target[MC_MAXPATHLEN];
     int len;
     FileProgressStatus return_status;
-    struct stat dst_stat;
+    mc_stat_t dst_stat;
     gboolean dst_is_symlink;
     vfs_path_t *link_target_vpath = NULL;
 
@@ -644,7 +644,7 @@ do_compute_dir_size (const vfs_path_t *dirname_vpath, dirsize_status_msg_t *dsm,
 
     status_msg_t *sm = STATUS_MSG (dsm);
     int res;
-    struct stat s;
+    mc_stat_t s;
     DIR *dir;
     struct vfs_dirent *dirent;
     FileProgressStatus ret = FILE_CONT;
@@ -716,7 +716,7 @@ panel_compute_totals (const WPanel *panel, dirsize_status_msg_t *sm, size_t *ret
     for (i = 0; i < panel->dir.len; i++)
     {
         const file_entry_t *fe = &panel->dir.list[i];
-        const struct stat *s;
+        const mc_stat_t *s;
 
         if (fe->f.marked == 0)
             continue;
@@ -750,7 +750,7 @@ panel_compute_totals (const WPanel *panel, dirsize_status_msg_t *sm, size_t *ret
 /** Initialize variables for progress bars */
 static FileProgressStatus
 panel_operate_init_totals (const WPanel *panel, const vfs_path_t *source,
-                           const struct stat *source_stat, file_op_context_t *ctx,
+                           const mc_stat_t *source_stat, file_op_context_t *ctx,
                            gboolean compute_totals, filegui_dialog_type_t dialog_type)
 {
     FileProgressStatus status;
@@ -778,7 +778,7 @@ panel_operate_init_totals (const WPanel *panel, const vfs_path_t *source,
                                            ctx->follow_links);
         else if (S_ISDIR (source_stat->st_mode)
                  || (ctx->follow_links
-                     && file_is_symlink_to_dir (source, (struct stat *) source_stat, &stale_link)
+                     && file_is_symlink_to_dir (source, (mc_stat_t *) source_stat, &stale_link)
                      && !stale_link))
         {
             size_t dir_count = 0;
@@ -819,7 +819,7 @@ panel_operate_init_totals (const WPanel *panel, const vfs_path_t *source,
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-progress_update_one (gboolean success, file_op_context_t *ctx, off_t add)
+progress_update_one (gboolean success, file_op_context_t *ctx, mc_off_t add)
 {
     gint64 tv_current;
     static gint64 tv_start = -1;
@@ -925,8 +925,8 @@ warn_same_file (file_op_context_t *ctx, const char *fmt, const char *a, const ch
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-check_same_file (file_op_context_t *ctx, const char *a, const struct stat *ast, const char *b,
-                 const struct stat *bst, FileProgressStatus *status)
+check_same_file (file_op_context_t *ctx, const char *a, const mc_stat_t *ast, const char *b,
+                 const mc_stat_t *bst, FileProgressStatus *status)
 {
     if (ast->st_dev != bst->st_dev || ast->st_ino != bst->st_ino)
         return FALSE;
@@ -1082,23 +1082,23 @@ query_recursive (file_op_context_t *ctx, const char *s)
 /* --------------------------------------------------------------------------------------------- */
 
 static FileProgressStatus
-query_replace (file_op_context_t *ctx, const char *src, struct stat *src_stat, const char *dst,
-               struct stat *dst_stat)
+query_replace (file_op_context_t *ctx, const char *src, mc_stat_t *src_stat, const char *dst,
+               mc_stat_t *dst_stat)
 {
 /* *INDENT-OFF* */
     union
     {
         void *p;
         FileProgressStatus (*f) (file_op_context_t *, enum OperationMode, const char *,
-                                 struct stat *, const char *, struct stat *);
+                                 mc_stat_t *, const char *, mc_stat_t *);
     } pntr;
 /* *INDENT-ON* */
 
     pntr.f = file_progress_real_query_replace;
 
     if (mc_global.we_are_background)
-        return parent_call (pntr.p, ctx, 4, strlen (src), src, sizeof (struct stat), src_stat,
-                            strlen (dst), dst, sizeof (struct stat), dst_stat);
+        return parent_call (pntr.p, ctx, 4, strlen (src), src, sizeof (mc_stat_t), src_stat,
+                            strlen (dst), dst, sizeof (mc_stat_t), dst_stat);
     else
         return file_progress_real_query_replace (ctx, Foreground, src, src_stat, dst, dst_stat);
 }
@@ -1123,8 +1123,8 @@ query_recursive (file_op_context_t *ctx, const char *s)
 /* --------------------------------------------------------------------------------------------- */
 
 static FileProgressStatus
-query_replace (file_op_context_t *ctx, const char *src, struct stat *src_stat, const char *dst,
-               struct stat *dst_stat)
+query_replace (file_op_context_t *ctx, const char *src, mc_stat_t *src_stat, const char *dst,
+               mc_stat_t *dst_stat)
 {
     return file_progress_real_query_replace (ctx, Foreground, src, src_stat, dst, dst_stat);
 }
@@ -1154,8 +1154,8 @@ files_error (file_op_context_t *ctx, const char *format, const char *file1, cons
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-calc_copy_file_progress (file_op_context_t *ctx, gint64 tv_current, off_t file_part,
-                         off_t file_size)
+calc_copy_file_progress (file_op_context_t *ctx, gint64 tv_current, mc_off_t file_part,
+                         mc_off_t file_size)
 {
     double dt;
 
@@ -1226,7 +1226,7 @@ try_remove_file (file_op_context_t *ctx, const vfs_path_t *vpath, FileProgressSt
 static FileProgressStatus
 move_file_file (const WPanel *panel, file_op_context_t *ctx, const char *s, const char *d)
 {
-    struct stat src_stat, dst_stat;
+    mc_stat_t src_stat, dst_stat;
     FileProgressStatus return_status = FILE_CONT;
     gboolean copy_done = FALSE;
     gboolean old_ask_overwrite;
@@ -1396,7 +1396,7 @@ move_file_file (const WPanel *panel, file_op_context_t *ctx, const char *s, cons
 static FileProgressStatus
 erase_file (file_op_context_t *ctx, const vfs_path_t *vpath)
 {
-    struct stat buf;
+    mc_stat_t buf;
     FileProgressStatus return_status;
 
     /* check buttons if deleting info was changed */
@@ -1468,7 +1468,7 @@ recursive_erase (file_op_context_t *ctx, const vfs_path_t *vpath)
     while ((next = mc_readdir (reading)) && return_status != FILE_ABORT)
     {
         vfs_path_t *tmp_vpath;
-        struct stat buf;
+        mc_stat_t buf;
 
         if (DIR_IS_DOT (next->d_name) || DIR_IS_DOTDOT (next->d_name))
             continue;
@@ -1631,7 +1631,7 @@ erase_dir_after_copy (file_op_context_t *ctx, const vfs_path_t *vpath, FileProgr
 static FileProgressStatus
 do_move_dir_dir (const WPanel *panel, file_op_context_t *ctx, const char *s, const char *d)
 {
-    struct stat src_stat, dst_stat;
+    mc_stat_t src_stat, dst_stat;
     FileProgressStatus return_status = FILE_CONT;
     gboolean move_over = FALSE;
     gboolean dstat_ok;
@@ -1821,7 +1821,7 @@ panel_get_file (const WPanel *panel)
 /* --------------------------------------------------------------------------------------------- */
 
 static const char *
-check_single_entry (const WPanel *panel, gboolean force_single, struct stat *src_stat)
+check_single_entry (const WPanel *panel, gboolean force_single, mc_stat_t *src_stat)
 {
     const char *source;
     gboolean ok;
@@ -1883,7 +1883,7 @@ check_single_entry (const WPanel *panel, gboolean force_single, struct stat *src
 
 static char *
 panel_operate_generate_prompt (const WPanel *panel, FileOperation operation,
-                               const struct stat *src_stat)
+                               const mc_stat_t *src_stat)
 {
     char *sp;
     char *format_string;
@@ -1964,7 +1964,7 @@ panel_operate_generate_prompt (const WPanel *panel, FileOperation operation,
 
 static char *
 do_confirm_copy_move (const WPanel *panel, gboolean force_single, const char *source,
-                      struct stat *src_stat, file_op_context_t *ctx, gboolean *do_bg)
+                      mc_stat_t *src_stat, file_op_context_t *ctx, gboolean *do_bg)
 {
     const char *tmp_dest_dir;
     char *dest_dir;
@@ -2018,7 +2018,7 @@ do_confirm_copy_move (const WPanel *panel, gboolean force_single, const char *so
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-do_confirm_erase (const WPanel *panel, const char *source, struct stat *src_stat)
+do_confirm_erase (const WPanel *panel, const char *source, mc_stat_t *src_stat)
 {
     int i;
     char *format;
@@ -2054,7 +2054,7 @@ do_confirm_erase (const WPanel *panel, const char *source, struct stat *src_stat
 
 static FileProgressStatus
 operate_single_file (const WPanel *panel, file_op_context_t *ctx, const char *src,
-                     struct stat *src_stat, const char *dest, filegui_dialog_type_t dialog_type)
+                     mc_stat_t *src_stat, const char *dest, filegui_dialog_type_t dialog_type)
 {
     FileProgressStatus value;
     vfs_path_t *src_vpath;
@@ -2156,7 +2156,7 @@ operate_single_file (const WPanel *panel, file_op_context_t *ctx, const char *sr
 
 static FileProgressStatus
 operate_one_file (const WPanel *panel, file_op_context_t *ctx, const char *src,
-                  struct stat *src_stat, const char *dest)
+                  mc_stat_t *src_stat, const char *dest)
 {
     FileProgressStatus value = FILE_CONT;
     vfs_path_t *src_vpath;
@@ -2266,9 +2266,9 @@ attrs_ignore_error (const int e)
  * @return TRUE if file symlink to directory, ELSE otherwise.
  */
 gboolean
-file_is_symlink_to_dir (const vfs_path_t *vpath, struct stat *st, gboolean *stale_link)
+file_is_symlink_to_dir (const vfs_path_t *vpath, mc_stat_t *st, gboolean *stale_link)
 {
-    struct stat st2;
+    mc_stat_t st2;
     gboolean stale = FALSE;
     gboolean res = FALSE;
 
@@ -2282,7 +2282,7 @@ file_is_symlink_to_dir (const vfs_path_t *vpath, struct stat *st, gboolean *stal
 
     if (S_ISLNK (st->st_mode))
     {
-        struct stat st3;
+        mc_stat_t st3;
 
         stale = (mc_stat (vpath, &st3) != 0);
 
@@ -2307,12 +2307,12 @@ copy_file_file (file_op_context_t *ctx, const char *src_path, const char *dst_pa
 
     int src_desc, dest_desc = -1;
     mode_t src_mode = 0;        /* The mode of the source file */
-    struct stat src_stat, dst_stat;
+    mc_stat_t src_stat, dst_stat;
     mc_timesbuf_t times;
     unsigned long attrs = 0;
     gboolean attrs_ok = ctx->preserve;
     gboolean dst_exists = FALSE, appending = FALSE;
-    off_t file_size = -1;
+    mc_off_t file_size = -1;
     FileProgressStatus return_status, temp_status;
     dest_status_t dst_status = DEST_NONE;
     int open_flags;
@@ -2734,7 +2734,7 @@ copy_file_file (file_op_context_t *ctx, const char *src_path, const char *dst_pa
 
     if (return_status == FILE_CONT)
     {
-        off_t file_part = 0;
+        mc_off_t file_part = 0;
         gint64 tv_last_update = ctx->transfer_start;
         gint64 tv_last_input = 0;
         gboolean is_first_time = TRUE;
@@ -3036,7 +3036,7 @@ copy_dir_dir (file_op_context_t *ctx, const char *s, const char *d, gboolean top
               gboolean move_over, gboolean do_delete, GSList *parent_dirs)
 {
     struct vfs_dirent *next;
-    struct stat dst_stat, src_stat;
+    mc_stat_t dst_stat, src_stat;
     unsigned long attrs = 0;
     gboolean attrs_ok = ctx->preserve;
     DIR *reading;
@@ -3535,7 +3535,7 @@ panel_operate (void *source_panel, FileOperation operation, gboolean force_singl
     char *dest = NULL;
     vfs_path_t *dest_vpath = NULL;
     vfs_path_t *save_cwd = NULL, *save_dest = NULL;
-    struct stat src_stat;
+    mc_stat_t src_stat;
     gboolean ret_val = TRUE;
     int i;
     FileProgressStatus value;
@@ -3674,7 +3674,7 @@ panel_operate (void *source_panel, FileOperation operation, gboolean force_singl
         while (operation != OP_DELETE)
         {
             int dst_result;
-            struct stat dst_stat;
+            mc_stat_t dst_stat;
 
             dst_result = mc_stat (dest_vpath, &dst_stat);
 

@@ -142,7 +142,7 @@ exec_cleanup_file_name (const vfs_path_t *filename_vpath, gboolean has_changed)
 
     if (has_changed)
     {
-        struct stat mystat;
+        mc_stat_t mystat;
 
         mc_stat (localfilecopy_vpath, &mystat);
         has_changed = localmtime != mystat.st_mtime;
@@ -162,7 +162,7 @@ exec_get_file_name (const vfs_path_t *filename_vpath)
 
     if (localfilecopy_vpath == NULL)
     {
-        struct stat mystat;
+        mc_stat_t mystat;
         localfilecopy_vpath = mc_getlocalcopy (filename_vpath);
         if (localfilecopy_vpath == NULL)
             return NULL;
@@ -1021,7 +1021,7 @@ regex_command_for (void *target, const vfs_path_t *filename_vpath, const char *a
     gboolean found = FALSE;
     gboolean error_flag = FALSE;
     int ret = 0;
-    struct stat mystat;
+    mc_stat_t mystat;
     int view_at_line_number = 0;
 #ifdef USE_FILE_CMD
     gboolean have_type = FALSE; /* Flag used by regex_check_type() */

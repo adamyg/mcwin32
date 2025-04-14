@@ -1,25 +1,36 @@
 
-Package List: build 223
+Package List: build 232
 
         mc.exe
+        mcdiff.exe
+        mcedit.exe
+        mchelp.exe
+        
+        mcbsddiff.exe
+        mcmandoc.exe
         mcupdater.exe
+        mcfile.exe
         busybox.exe
-        file.exe
+        
         magic.mgc
-        man2hlp.pl
 
-        libautoupdater.1.0.dll
-        libglib-2.0.2.51.dll
-        libgmodule-2.0.2.51.dll
-        libintl.1.0.dll
-        libmagic.5.41.dll
-        libmbedcrypto.2.27.dll
-        libmbedtls.2.27.dll
-        libmbedx509.2.27.dll
-        libssh2.1.10.dll
-        libw32.1.2.dll
-        libz.1.2.dll
-
+        libautoupdater.1.0.1.dll
+        libenca.1.19.dll        
+        libglib.2.54.3.dll      
+        libgmodule.2.54.3.dll   
+        libintl.1.0.1.dll       
+        libmagic.5.45.dll       
+        libmbedcrypto.3.6.2.dll 
+        libmbedtls.3.6.2.dll    
+        libmbedx509.3.6.2.dll   
+        libpcre2-16.10.45.dll   
+        libpcre2-32.10.45.dll   
+        libpcre2-8.10.45.dll    
+        libpcre2posix.10.45.dll 
+        libssh2.1.11.1.dll      
+        libw32.1.2.0.dll        
+        libz.1.3.1.dll          
+        
         mt7r19.dll
         plbr19.dll
         clbr19.dll

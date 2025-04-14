@@ -96,7 +96,7 @@ typedef struct
 #endif
 
     dir_list dir;               /* Directory contents */
-    struct stat dir_stat;       /* Stat of current dir: used by execute () */
+    mc_stat_t dir_stat;         /* Stat of current dir: used by execute () */
 
     vfs_path_t *cwd_vpath;      /* Current Working Directory */
     vfs_path_t *lwd_vpath;      /* Last Working Directory */

@@ -116,7 +116,7 @@ resolve_symlinks (const vfs_path_t *vpath)
 {
     char *p, *p2;
     char *buf, *buf2, *q, *r, c;
-    struct stat mybuf;
+    mc_stat_t mybuf;
 
     if (vpath->relative)
         return NULL;
@@ -1361,7 +1361,7 @@ Q_ (const char *s)
 gboolean
 mc_util_make_backup_if_possible (const char *file_name, const char *backup_suffix)
 {
-    struct stat stat_buf;
+    mc_stat_t stat_buf;
     char *backup_path;
     gboolean ret;
 

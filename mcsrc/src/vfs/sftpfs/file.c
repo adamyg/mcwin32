@@ -189,15 +189,15 @@ sftpfs_open_file (vfs_file_handler_t *fh, int flags, mode_t mode, GError **mcerr
     if (do_append)
     {
 #if defined(WIN32)
-        struct stat file_info = {0};
+        mc_stat_t file_info = {0};
 #else
-        struct stat file_info = {
+        mc_stat_t file_info = {
             .st_dev = 0
         };
 #endif
         /* In case of
 
-           struct stat file_info = { 0 };
+           mc_stat_t file_info = { 0 };
 
            gcc < 4.7 [1] generates the following:
 
@@ -224,7 +224,7 @@ sftpfs_open_file (vfs_file_handler_t *fh, int flags, mode_t mode, GError **mcerr
  */
 
 int
-sftpfs_fstat (void *data, struct stat *buf, GError **mcerror)
+sftpfs_fstat (void *data, mc_stat_t *buf, GError **mcerror)
 {
     int res;
     LIBSSH2_SFTP_ATTRIBUTES attrs;
@@ -301,7 +301,7 @@ sftpfs_read_file (vfs_file_handler_t *fh, char *buffer, size_t count, GError **m
     }
     while (rc == LIBSSH2_ERROR_EAGAIN);
 
-    fh->pos = (off_t) libssh2_sftp_tell64 (file->handle);
+    fh->pos = (mc_off_t) libssh2_sftp_tell64 (file->handle);
 
     return rc;
 }
@@ -328,7 +328,7 @@ sftpfs_write_file (vfs_file_handler_t *fh, const char *buffer, size_t count, GEr
 
     mc_return_val_if_error (mcerror, -1);
 
-    fh->pos = (off_t) libssh2_sftp_tell64 (file->handle);
+    fh->pos = (mc_off_t) libssh2_sftp_tell64 (file->handle);
 
     do
     {
@@ -383,8 +383,8 @@ sftpfs_close_file (vfs_file_handler_t *fh, GError **mcerror)
  * @return 0 on success, negative value otherwise
  */
 
-off_t
-sftpfs_lseek (vfs_file_handler_t *fh, off_t offset, int whence, GError **mcerror)
+mc_off_t
+sftpfs_lseek (vfs_file_handler_t *fh, mc_off_t offset, int whence, GError **mcerror)
 {
     sftpfs_file_handler_t *file = SFTP_FILE_HANDLER (fh);
 
@@ -420,7 +420,7 @@ sftpfs_lseek (vfs_file_handler_t *fh, off_t offset, int whence, GError **mcerror
     }
 
     libssh2_sftp_seek64 (file->handle, fh->pos);
-    fh->pos = (off_t) libssh2_sftp_tell64 (file->handle);
+    fh->pos = (mc_off_t) libssh2_sftp_tell64 (file->handle);
 
     return fh->pos;
 }

@@ -58,16 +58,22 @@ static int
 isconsole (int fd)
 {
     HANDLE h = (HANDLE) _get_osfhandle(fd);
-    if (h == INVALID_HANDLE_VALUE || GetFileType(h) != FILE_TYPE_CHAR)
+
+    if (h == INVALID_HANDLE_VALUE || GetFileType(h) != FILE_TYPE_CHAR) {
         return 0;
+    }
+
     if (STDIN_FILENO == fd) { // input
         DWORD mode;
-        if (! GetConsoleMode(h, &mode))
+        if (! GetConsoleMode(h, &mode)) {
             return 0;
+        }
+
     } else { // output
         CONSOLE_SCREEN_BUFFER_INFO sbi = {0};
-        if (! GetConsoleScreenBufferInfo(h, &sbi))
+        if (! GetConsoleScreenBufferInfo(h, &sbi)) {
             return 0;
+        }
     }
     return 1;
 }

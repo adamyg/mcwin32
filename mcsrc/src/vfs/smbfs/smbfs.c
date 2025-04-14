@@ -100,7 +100,7 @@ typedef struct
 {
     struct cli_state *cli;
     int fnum;
-    off_t nread;
+    mc_off_t nread;
     uint16 attr;
 } smbfs_handle;
 
@@ -108,7 +108,7 @@ typedef struct dir_entry
 {
     char *text;
     struct dir_entry *next;
-    struct stat my_stat;
+    mc_stat_t my_stat;
     int merrno;
 } dir_entry;
 
@@ -1431,7 +1431,7 @@ smbfs_opendir (const vfs_path_t * vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-smbfs_fake_server_stat (const char *server_url, const char *path, struct stat *buf)
+smbfs_fake_server_stat (const char *server_url, const char *path, mc_stat_t *buf)
 {
     dir_entry *dentry;
     const char *p;
@@ -1457,7 +1457,7 @@ smbfs_fake_server_stat (const char *server_url, const char *path, struct stat *b
             {
                 DEBUG (4, ("smbfs_fake_server_stat: %s:%4o\n",
                            dentry->text, (unsigned int) dentry->my_stat.st_mode));
-                memcpy (buf, &dentry->my_stat, sizeof (struct stat));
+                memcpy (buf, &dentry->my_stat, sizeof (mc_stat_t));
                 return 0;
             }
             dentry = dentry->next;
@@ -1470,7 +1470,7 @@ smbfs_fake_server_stat (const char *server_url, const char *path, struct stat *b
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-smbfs_fake_share_stat (const char *server_url, const char *path, struct stat *buf)
+smbfs_fake_share_stat (const char *server_url, const char *path, mc_stat_t *buf)
 {
     dir_entry *dentry;
     if (strlen (path) < strlen (server_url))
@@ -1518,7 +1518,7 @@ smbfs_fake_share_stat (const char *server_url, const char *path, struct stat *bu
         {
             DEBUG (6, ("smbfs_fake_share_stat: %s:%4o\n",
                        dentry->text, (unsigned int) dentry->my_stat.st_mode));
-            memcpy (buf, &dentry->my_stat, sizeof (struct stat));
+            memcpy (buf, &dentry->my_stat, sizeof (mc_stat_t));
             return 0;
         }
         dentry = dentry->next;
@@ -1531,7 +1531,7 @@ smbfs_fake_share_stat (const char *server_url, const char *path, struct stat *bu
 /* stat a single file */
 
 static int
-smbfs_get_remote_stat (smbfs_connection * sc, const char *path, struct stat *buf)
+smbfs_get_remote_stat (smbfs_connection * sc, const char *path, mc_stat_t *buf)
 {
     uint16 attribute = aDIR | aSYSTEM | aHIDDEN;
     char *mypath;
@@ -1557,7 +1557,7 @@ smbfs_get_remote_stat (smbfs_connection * sc, const char *path, struct stat *buf
         return -1;              /* cli_list returns number of files */
     }
 
-    memcpy (buf, &single_entry->my_stat, sizeof (struct stat));
+    memcpy (buf, &single_entry->my_stat, sizeof (mc_stat_t));
 
     /* don't free here, use for smbfs_fstat() */
     /*      g_free(single_entry->text);
@@ -1569,14 +1569,14 @@ smbfs_get_remote_stat (smbfs_connection * sc, const char *path, struct stat *buf
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-smbfs_search_dir_entry (dir_entry * dentry, const char *text, struct stat *buf)
+smbfs_search_dir_entry (dir_entry * dentry, const char *text, mc_stat_t *buf)
 {
     while (dentry)
     {
         if (strcmp (text, dentry->text) == 0)
         {
-            memcpy (buf, &dentry->my_stat, sizeof (struct stat));
-            memcpy (&single_entry->my_stat, &dentry->my_stat, sizeof (struct stat));
+            memcpy (buf, &dentry->my_stat, sizeof (mc_stat_t));
+            memcpy (&single_entry->my_stat, &dentry->my_stat, sizeof (mc_stat_t));
             return 0;
         }
         dentry = dentry->next;
@@ -1587,7 +1587,7 @@ smbfs_search_dir_entry (dir_entry * dentry, const char *text, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-smbfs_get_stat_info (smbfs_connection * sc, const char *path, struct stat *buf)
+smbfs_get_stat_info (smbfs_connection * sc, const char *path, mc_stat_t *buf)
 {
     char *p;
 #if 0
@@ -1625,9 +1625,9 @@ smbfs_get_stat_info (smbfs_connection * sc, const char *path, struct stat *buf)
             mydir = p + 1;      /* advance util last '/' */
         if (strcmp (mydir, mypath) == 0)
         {                       /* fake a stat for ".." */
-            memset (buf, 0, sizeof (struct stat));
+            memset (buf, 0, sizeof (mc_stat_t));
             buf->st_mode = (S_IFDIR | S_IRUSR | S_IRGRP | S_IROTH) & myumask;
-            memcpy (&single_entry->my_stat, buf, sizeof (struct stat));
+            memcpy (&single_entry->my_stat, buf, sizeof (mc_stat_t));
             g_free (mdp);
             DEBUG (1, ("	PARENT:found in %s\n", current_info->dirname));
             return 0;
@@ -1647,9 +1647,9 @@ smbfs_get_stat_info (smbfs_connection * sc, const char *path, struct stat *buf)
         }
         if (strcmp (mypath, dnp) == 0)
         {
-            memset (buf, 0, sizeof (struct stat));
+            memset (buf, 0, sizeof (mc_stat_t));
             buf->st_mode = (S_IFDIR | S_IRUSR | S_IRGRP | S_IROTH) & myumask;
-            memcpy (&single_entry->my_stat, buf, sizeof (struct stat));
+            memcpy (&single_entry->my_stat, buf, sizeof (mc_stat_t));
             DEBUG (1, ("	CURRENT:found in %s\n", current_info->dirname));
             return 0;
         }
@@ -1727,7 +1727,7 @@ smbfs_loaddir_by_name (const vfs_path_t * vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-smbfs_stat (const vfs_path_t * vpath, struct stat *buf)
+smbfs_stat (const vfs_path_t * vpath, mc_stat_t *buf)
 {
     smbfs_connection *sc;
     pstring server_url;
@@ -1798,7 +1798,7 @@ smbfs_stat (const vfs_path_t * vpath, struct stat *buf)
         {
             /* make server name appear as directory */
             DEBUG (1, ("smbfs_stat: showing server as directory\n"));
-            memset (buf, 0, sizeof (struct stat));
+            memset (buf, 0, sizeof (mc_stat_t));
             buf->st_mode = (S_IFDIR | S_IRUSR | S_IRGRP | S_IROTH) & myumask;
             g_free (service);
             return 0;
@@ -1836,8 +1836,8 @@ smbfs_stat (const vfs_path_t * vpath, struct stat *buf)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static off_t
-smbfs_lseek (void *data, off_t offset, int whence)
+static mc_off_t
+smbfs_lseek (void *data, mc_off_t offset, int whence)
 {
     smbfs_handle *info = (smbfs_handle *) data;
     size_t size;
@@ -2192,7 +2192,7 @@ smbfs_rename (const vfs_path_t * vpath1, const vfs_path_t * vpath2)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-smbfs_fstat (void *data, struct stat *buf)
+smbfs_fstat (void *data, mc_stat_t *buf)
 {
     smbfs_handle *remote_handle = (smbfs_handle *) data;
 
@@ -2200,7 +2200,7 @@ smbfs_fstat (void *data, struct stat *buf)
 
     /* use left over from previous smbfs_get_remote_stat, if available */
     if (single_entry)
-        memcpy (buf, &single_entry->my_stat, sizeof (struct stat));
+        memcpy (buf, &single_entry->my_stat, sizeof (mc_stat_t));
     else
     {                           /* single_entry not set up: bug */
         my_errno = EFAULT;

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.11 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.13 2025/04/01 16:15:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -31,7 +31,7 @@ __CIDENT_RCSID(gr_w32_wdirent_c,"$Id: w32_wdirent.c,v 1.11 2025/03/06 16:59:47 c
  */
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT            0x0501          /* reparse */
+#define _WIN32_WINNT 0x0501 /* reparse */
 #endif
 
 #define _DIRENT_SOURCE
@@ -140,11 +140,11 @@ _wopendir(const wchar_t *dirname)
 
     /* Is a directory ? */
     if (0 != wcscmp(path, L".")) {
-        UINT  errormode;
+        EMODEINIT()
         DWORD attr;
         int rc = 0;
 
-        errormode = SetErrorMode(0);            // disable hard errors
+        EMODESUPPRESS()                         // disable hard errors
         if (INVALID_FILE_ATTRIBUTES == (attr = GetFileAttributesW(path))) {
             switch(GetLastError()) {
             case ERROR_ACCESS_DENIED:
@@ -171,7 +171,7 @@ _wopendir(const wchar_t *dirname)
                 }
             }
         }
-        (void) SetErrorMode(errormode);         // restore errors
+        EMODERESTORE()                          // restore errors
 
         if (rc) {
             if (w32_unc_rootW(path, NULL)) {    // "//servername[/]"
@@ -242,7 +242,7 @@ isshortcut(const wchar_t *name)
 
     for (cursor = name + len; --cursor >= name;) {
         if (*cursor == '.') {                   // extension
-            return (*++cursor && 0 == w32_io_wstricmp(cursor, "lnk"));
+            return (*++cursor && 0 == w32_iostricmpW(cursor, "lnk"));
         }
         if (*cursor == '/' || *cursor == '\\') {
             break;                              // delimiter
@@ -290,13 +290,13 @@ dir_populate(_WDIR *dp, const wchar_t *path)
     WIN32_FIND_DATAW fd = {0};
     struct _wdirlist *dplist = NULL;
     HANDLE hSearch = INVALID_HANDLE_VALUE;
-    UINT errormode;
+    EMODEINIT()
     BOOL isHPFS = FALSE;
     int rc, ret = 0;
 
-    errormode = SetErrorMode(0);                // disable hard errors
+    EMODESUPPRESS()                             // disable hard errors
     hSearch = FindFirstFileW(path, &fd);
-    (void) SetErrorMode(errormode);             // restore errors
+    EMODERESTORE()                              // restore errors
 
     if (INVALID_HANDLE_VALUE == hSearch) {
         return dir_errno(GetLastError());
@@ -765,8 +765,8 @@ d_Wow64RevertWow64FsRedirection(PVOID OldValue)
 static int
 dir_ishpf(const wchar_t *directory)
 {
+    EMODEINIT()
     int namelen;
-    UINT errormode;
     DWORD flags = 0, maxname;
     BOOL rc = 0;
 
@@ -791,10 +791,10 @@ dir_ishpf(const wchar_t *directory)
         }
         *cursor = 0;
 
-        errormode = SetErrorMode(0);            // disable hard errors
+        EMODESUPPRESS()                         // disable hard errors
         rc = GetVolumeInformationW(rootdir, (LPWSTR)NULL, 0,
                     (LPDWORD)NULL, &maxname, &flags, (LPWSTR)NULL, 0);
-        (void) SetErrorMode(errormode);         // restore errors
+        EMODERESTORE()                          // restore errors
 
     } else {
         wchar_t rootdir[4] = L"x:\\";
@@ -811,10 +811,11 @@ dir_ishpf(const wchar_t *directory)
         }
 
         rootdir[0] = (char)(driveno + 'A');
-        errormode = SetErrorMode(0);            // disable hard errors
+
+        EMODESUPPRESS()                         // disable hard errors
         rc = GetVolumeInformationW(rootdir, (LPWSTR)NULL, 0,
                     (LPDWORD)NULL, &maxname, &flags, (LPWSTR)NULL, 0);
-        (void) SetErrorMode(errormode);         // restore errors
+        EMODERESTORE()                          // restore errors
     }
 
     return ((rc) &&

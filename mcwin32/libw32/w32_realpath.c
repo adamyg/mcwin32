@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.17 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_realpath_c, "$Id: w32_realpath.c,v 1.19 2025/04/01 16:15:15 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -116,6 +116,10 @@ w32_realpath2(const char *path, char *resolved_path, size_t maxlen)
 
         w32_utf2wc(path, wpath, _countof(wpath));
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:6255)
+#endif
         if (NULL != (wresolved_path = alloca(sizeof(wchar_t *) * WIN32_PATH_MAX))) {
             if (w32_realpathW(wpath, wresolved_path, WIN32_PATH_MAX)) {
                 if (NULL == resolved_path) {    // dynamic; implementation specific.
@@ -131,6 +135,10 @@ w32_realpath2(const char *path, char *resolved_path, size_t maxlen)
                 }
             }
         }
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
         return NULL;
     }
 #endif  //UTF8FILENAMES
@@ -175,9 +183,9 @@ w32_realpathA(const char *path, char *resolved_path, size_t maxlen)
             }
         }
 
-        if (result) {                           // resolve symlink component
+        if (result) {
             if (w32_expandlinkA(path, symlink, _countof(symlink), SHORTCUT_COMPONENT)) {
-                path = symlink;
+                path = symlink;                 // expanded short-cut 
             }
         }
 
@@ -300,9 +308,9 @@ w32_realpathW(const wchar_t *path, wchar_t *resolved_path, size_t maxlen)
             }
         }
 
-        if (result) {                           // resolve symlink component
+        if (result) {
             if (w32_expandlinkW(path, symlink, _countof(symlink), SHORTCUT_COMPONENT)) {
-                path = symlink;
+                path = symlink;                 // expanded short-cut
             }
         }
 

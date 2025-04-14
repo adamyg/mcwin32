@@ -60,7 +60,7 @@ GString *sftpfs_filename_buffer = NULL;
 /* Adjust block size and number of blocks */
 
 static void
-sftpfs_blksize (struct stat *s)
+sftpfs_blksize (mc_stat_t *s)
 {
 #ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
     s->st_blksize = LIBSSH2_CHANNEL_WINDOW_DEFAULT;     /* FIXME */
@@ -250,7 +250,7 @@ sftpfs_op_init (sftpfs_super_t **super, const vfs_path_element_t **path_element,
 /* --------------------------------------------------------------------------------------------- */
 
 void
-sftpfs_attr_to_stat (const LIBSSH2_SFTP_ATTRIBUTES *attrs, struct stat *s)
+sftpfs_attr_to_stat (const LIBSSH2_SFTP_ATTRIBUTES *attrs, mc_stat_t *s)
 {
     if ((attrs->flags & LIBSSH2_SFTP_ATTR_UIDGID) != 0)
     {
@@ -287,7 +287,7 @@ sftpfs_attr_to_stat (const LIBSSH2_SFTP_ATTRIBUTES *attrs, struct stat *s)
  */
 
 int
-sftpfs_lstat (const vfs_path_t *vpath, struct stat *buf, GError **mcerror)
+sftpfs_lstat (const vfs_path_t *vpath, mc_stat_t *buf, GError **mcerror)
 {
     sftpfs_super_t *super = NULL;
     const vfs_path_element_t *path_element = NULL;
@@ -315,7 +315,7 @@ sftpfs_lstat (const vfs_path_t *vpath, struct stat *buf, GError **mcerror)
  */
 
 int
-sftpfs_stat (const vfs_path_t *vpath, struct stat *buf, GError **mcerror)
+sftpfs_stat (const vfs_path_t *vpath, mc_stat_t *buf, GError **mcerror)
 {
     sftpfs_super_t *super = NULL;
     const vfs_path_element_t *path_element = NULL;

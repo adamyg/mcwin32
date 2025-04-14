@@ -128,7 +128,7 @@ static void             set_term (void);
 static void             set_home (void);
 static void             set_tmpdir (void);
 static void             set_editor (void);
-static void             set_busybox (void);
+static void             set_appdirs (void);
 
 static void             unixpath (char *path);
 static void             dospath (char *path);
@@ -198,7 +198,7 @@ WIN32_Setup(void)
     set_term();
     set_home();
     set_editor();
-    set_busybox();
+    set_appdirs();
     set_tmpdir();
 }
 
@@ -322,19 +322,31 @@ SHGetFolderPathU(HWND hwnd, int csidl, HANDLE hToken, DWORD dwFlags, char *path,
 
 
 /**
- *  MC_BUSYBOX setup
+ *  Set application directories
+ * 
+ *      <MC_DIRECTORY>, <MC_BUSYBOX> 
+ * 
+ *  MC_BUSYBOX
  *
- *      <exepath>\busybox.exe
- *      <exepath>\..\share\
+ *      <mc_directory>\busybox.exe>
  */
 static void
-set_busybox(void)
+set_appdirs(void)
 {
     const char *busybox = NULL;
-    char buffer[MAX_PATH] = {0};
+    char buffer[MAX_PATH];
 
+    // MC_DIRECTORY
+    buffer[0] = 0;
+    if (w32_getprogdir(buffer, sizeof(buffer)) > 0) {
+        mc_setpathenv ("MC_DIRECTORY", buffer, TRUE, FALSE);
+    }
+
+    // MC_BUSYBOX, import existing
     if (NULL != (busybox = ugetenv("MC_BUSYBOX")) && *busybox) {
-        char *t_busybox = strdup(busybox);      // import external version.
+        char *t_busybox;
+        
+        t_busybox = strdup(busybox);            // import external version.
         if ('"' == t_busybox[0]) {              // remove quotes; optional.
             size_t len = strlen(t_busybox);
             if ('"' == t_busybox[len-1]) {
@@ -346,13 +358,17 @@ set_busybox(void)
         return;
     }
 
+    // MC_BUSYBOX, export
     busybox = "busybox";
-    if (w32_getexedir(buffer, sizeof(buffer) - 16) > 0) {
-        strcat(buffer, "/busybox.exe");
+
+    if (buffer[0]) {
+        const size_t buflen = strlen(buffer);
+
+        strncpy(buffer + buflen, "/busybox.exe", sizeof(buffer) - buflen);
         buffer[sizeof(buffer) - 1] = 0;
-        canonicalize_pathname (buffer);
+        canonicalize_pathname(buffer);
+        dospath(buffer);
         if (0 == _access(buffer, X_OK)) {
-            dospath(buffer);
             busybox = buffer;
         }
     }
@@ -480,7 +496,7 @@ mc_aspell_dllpath(void)
     }
 
     // <EXEPATH>
-    if ((len = w32_getexedir(x_buffer, sizeof(x_buffer))) > 0) {
+    if ((len = w32_getprogdir(x_buffer, sizeof(x_buffer))) > 0) {
         _snprintf(x_buffer + len, sizeof(x_buffer) - len, "\\%s.dll", ASPELL_DLLNAME);
         x_buffer[sizeof(x_buffer) - 1] = 0;
         if (0 == w32_access(x_buffer, 0)) {
@@ -579,7 +595,7 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
     }
 
     // <EXEPATH>, generally same as INSTALLDIR
-    if ((len = w32_getexedir(buffer, buflen)) > 0) {
+    if ((len = w32_getprogdir(buffer, buflen)) > 0) {
         _snprintf(buffer + len, buflen - len, "/%s/", subdir);
         buffer[buflen - 1] = 0;
         if (0 == w32_access(buffer, 0)) {
@@ -1069,7 +1085,7 @@ get_group(gid_t gid)
 
 
 int
-get_user_permissions(struct stat *st)
+get_user_permissions(mc_stat_t *st)
 {
     static gboolean initialized = FALSE;
     static gid_t *groups;

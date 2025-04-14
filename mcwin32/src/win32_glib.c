@@ -34,6 +34,7 @@
  */
 
 #include <config.h>
+
 #include "libw32.h"
 
 #include <stdio.h>

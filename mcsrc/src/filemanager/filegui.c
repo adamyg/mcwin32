@@ -230,7 +230,7 @@ typedef struct
     replace_action_t replace_result;
     gboolean dont_overwrite_with_zero;
 
-    struct stat *src_stat, *dst_stat;
+    mc_stat_t *src_stat, *dst_stat;
 } file_progress_ui_t;
 
 /*** forward declarations (file scope functions) *************************************************/
@@ -1046,7 +1046,7 @@ file_progress_ui_destroy (file_op_context_t *ctx)
  */
 
 void
-file_progress_show (file_op_context_t *ctx, off_t done, off_t total,
+file_progress_show (file_op_context_t *ctx, mc_off_t done, mc_off_t total,
                     const char *stalled_msg, gboolean force_update)
 {
     file_progress_ui_t *ui;
@@ -1275,8 +1275,8 @@ file_progress_show_deleting (file_op_context_t *ctx, const vfs_path_t *vpath, si
 
 FileProgressStatus
 file_progress_real_query_replace (file_op_context_t *ctx, enum OperationMode mode,
-                                  const char *src, struct stat *src_stat,
-                                  const char *dst, struct stat *dst_stat)
+                                  const char *src, mc_stat_t *src_stat,
+                                  const char *dst, mc_stat_t *dst_stat)
 {
     file_progress_ui_t *ui;
     FileProgressStatus replace_with_zero;
@@ -1418,7 +1418,7 @@ file_mask_dialog (file_op_context_t *ctx, gboolean only_one, const char *format,
         char *source_mask = NULL;
         char *orig_mask;
         int val;
-        struct stat buf;
+        mc_stat_t buf;
 
 #if defined(WIN32)  //WIN32, quick
 #ifdef ENABLE_BACKGROUND

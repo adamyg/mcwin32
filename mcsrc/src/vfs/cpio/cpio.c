@@ -134,7 +134,7 @@ typedef struct
     struct vfs_s_super base;    /* base class */
 
     int fd;
-    struct stat st;
+    mc_stat_t st;
     int type;                   /* Type of the archive */
     GSList *deferred;           /* List of inodes for which another entries may appear */
 } cpio_super_t;
@@ -151,7 +151,7 @@ static ssize_t cpio_read_crc_head (struct vfs_class *me, struct vfs_s_super *sup
 static struct vfs_s_subclass cpio_subclass;
 static struct vfs_class *vfs_cpiofs_ops = VFS_CLASS (&cpio_subclass);
 
-static off_t cpio_position;
+static mc_off_t cpio_position;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -372,7 +372,7 @@ cpio_find_head (struct vfs_class *me, struct vfs_s_super *super)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, struct stat *st, char *name)
+cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, mc_stat_t *st, char *name)
 {
     cpio_super_t *arch = CPIO_SUPER (super);
     struct vfs_s_inode *inode = NULL;
@@ -551,7 +551,7 @@ cpio_read_bin_head (struct vfs_class *me, struct vfs_s_super *super)
     cpio_super_t *arch = CPIO_SUPER (super);
     ssize_t len;
     char *name;
-    struct stat st;
+    mc_stat_t st;
 
     len = mc_read (arch->fd, (char *) &u.buf, HEAD_LENGTH);
     if (len < HEAD_LENGTH)
@@ -596,7 +596,7 @@ cpio_read_bin_head (struct vfs_class *me, struct vfs_s_super *super)
 #ifdef HAVE_STRUCT_STAT_ST_RDEV
     st.st_rdev = u.buf.c_rdev;
 #endif
-    st.st_size = ((off_t) u.buf.c_filesizes[0] << 16) | u.buf.c_filesizes[1];
+    st.st_size = ((mc_off_t) u.buf.c_filesizes[0] << 16) | u.buf.c_filesizes[1];
 
     vfs_zero_stat_times (&st);
 
@@ -618,7 +618,7 @@ cpio_read_oldc_head (struct vfs_class *me, struct vfs_s_super *super)
     struct new_cpio_header hd;
     union
     {
-        struct stat st;
+        mc_stat_t st;
         char buf[HEAD_LENGTH + 1];
     } u;
     ssize_t len;
@@ -689,7 +689,7 @@ cpio_read_crc_head (struct vfs_class *me, struct vfs_s_super *super)
     struct new_cpio_header hd;
     union
     {
-        struct stat st;
+        mc_stat_t st;
         char buf[HEAD_LENGTH + 1];
     } u;
     ssize_t len;
@@ -804,7 +804,7 @@ cpio_open_archive (struct vfs_s_super *super, const vfs_path_t *vpath,
 static void *
 cpio_super_check (const vfs_path_t *vpath)
 {
-    static struct stat sb;
+    static mc_stat_t sb;
     int stat_result;
 
     stat_result = mc_stat (vpath, &sb);
@@ -817,7 +817,7 @@ static int
 cpio_super_same (const vfs_path_element_t *vpath_element, struct vfs_s_super *parc,
                  const vfs_path_t *vpath, void *cookie)
 {
-    struct stat *archive_stat = cookie; /* stat of main archive */
+    mc_stat_t *archive_stat = cookie; /* stat of main archive */
 
     (void) vpath_element;
 
@@ -846,7 +846,7 @@ cpio_read (void *fh, char *buffer, size_t count)
     vfs_file_handler_t *file = VFS_FILE_HANDLER (fh);
     struct vfs_class *me = VFS_FILE_HANDLER_SUPER (fh)->me;
     int fd = CPIO_SUPER (VFS_FILE_HANDLER_SUPER (fh))->fd;
-    off_t begin = file->ino->data_offset;
+    mc_off_t begin = file->ino->data_offset;
     ssize_t res;
 
     if (mc_lseek (fd, begin + file->pos, SEEK_SET) != begin + file->pos)

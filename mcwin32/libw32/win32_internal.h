@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_INTERNAL_H_INCLUDED
 #define LIBW32_WIN32_INTERNAL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.29 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_internal_h,"$Id: win32_internal.h,v 1.31 2025/04/01 16:15:15 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -107,26 +107,26 @@ __BEGIN_DECLS
 #define WIN32_FILDES_MAX    (8*1024)            /* was 2048, now 8192/2019 */
 
 extern int              x_w32_cwdn;             /* current/last working drive number, A=1 etc */
-extern const char *     x_w32_cwdd[26];         /* last directory, prr drive */
+extern const char *     x_w32_cwdd[26];         /* last directory, per drive */
 extern const char *     x_w32_vfscwd;           /* current UNC path, if any */
 
-int                     w32_io_stricmp (const char *s1, const char *s2);
-int                     w32_io_strnicmp (const char *s1, const char *s2, int slen);
-int                     w32_io_wstricmp (const wchar_t *s1, const char *s2);
-int                     w32_io_wstrnicmp (const wchar_t *s1, const char *s2, int slen);
+int                     w32_iostricmpA (const char *s1, const char *s2);
+int                     w32_iostricmpW (const wchar_t* s1, const char* s2);
+int                     w32_iostrnicmpA (const char *s1, const char *s2, int slen);
+int                     w32_iostrnicmpW (const wchar_t *s1, const char *s2, int slen);
 
 LIBW32_API int          w32_utf8filenames_enable (void);
 LIBW32_API int          w32_utf8filenames_disable (void);
 LIBW32_API int          w32_utf8filenames_set (int state);
 LIBW32_API int          w32_utf8filenames_state (void);
 
-LIBW32_API ino_t        w32_ino_hash (const char *name);
-LIBW32_API ino_t        w32_ino_whash (const wchar_t *name);
+LIBW32_API ino_t        w32_ino_hashA (const char *name);
+LIBW32_API ino_t        w32_ino_hashW (const wchar_t *name);
 LIBW32_API ino_t        w32_ino_gen (const DWORD fileIndexLow, const DWORD fileIndexHigh);
 LIBW32_API ino_t        w32_ino_handle (HANDLE handle);
 LIBW32_API ino_t        w32_ino_fildes (int fildes);
-LIBW32_API ino_t        w32_ino_file (const char *name);
-LIBW32_API ino_t        w32_ino_wfile(const wchar_t *name);
+LIBW32_API ino_t        w32_ino_fileA (const char *name);
+LIBW32_API ino_t        w32_ino_fileW (const wchar_t *name);
 
 LIBW32_API int          w32_utf2wc (const char *src, wchar_t *dest, size_t max);
 LIBW32_API int          w32_utf2wcl (const char *src);
@@ -142,21 +142,21 @@ LIBW32_API const struct passwd *w32_passwd_user (void);
 LIBW32_API const struct group *w32_group_user (void);
 
 LIBW32_API char *       w32_extendedpathA (const char *path);
-LIBW32_API wchar_t*     w32_extendedpathW (const wchar_t *path);
+LIBW32_API wchar_t *    w32_extendedpathW (const wchar_t *path);
 
-#define FNCMP_FILENAME (0x01)           // Matching a file-name otherwise a directory,  allowing optional trailing slashes.
-#define FNCMP_CASE_SENSITIVE (0x02)     // Enable case sensitively.
+#define FNCMP_FILENAME (0x01)                   // Matching a file-name otherwise a directory,  allowing optional trailing slashes.
+#define FNCMP_CASE_SENSITIVE (0x02)             // Enable case sensitively.
 
 LIBW32_API int          w32_filenamecmpA (const char *f1, const char *f2, unsigned flags);
 LIBW32_API int          w32_filenamecmpW (const wchar_t *f1, const wchar_t *f2, unsigned flags);
 
-LIBW32_API char *       w32_dos2unix (char *path);
+LIBW32_API char *       w32_dos2unixA (char *path);
 LIBW32_API wchar_t *    w32_dos2unixW (wchar_t *path);
-LIBW32_API char *       w32_unix2dos (char *path);
+LIBW32_API char *       w32_unix2dosA (char *path);
 LIBW32_API wchar_t *    w32_unix2dosW (wchar_t *path);
 
-LIBW32_API const char * w32_strslash (const char *path);
-LIBW32_API const wchar_t * w32_wcsslash (const wchar_t *path);
+LIBW32_API const char * w32_strslashA (const char *path);
+LIBW32_API const wchar_t * w32_strslashW (const wchar_t *path);
 
 LIBW32_API int          w32_neterrno_map (int nerrno);
 LIBW32_API int          w32_neterrno_set (void);
@@ -175,6 +175,9 @@ LIBW32_API int          w32_issockfd (int fd, SOCKET *s);
 
 LIBW32_API int          w32_reparse_readA (const char *name, char *buf, size_t maxlen);
 LIBW32_API int          w32_reparse_readW (const wchar_t *name, wchar_t *buf, size_t maxlen);
+
+int                     w32_link_resolveA (const char* path, char *buf, size_t maxlen);
+int                     w32_link_resolveW (const wchar_t* path, wchar_t *buf, size_t maxlen);
 
 __END_DECLS
 

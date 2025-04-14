@@ -1,0 +1,35 @@
+# mc-wrapper.ps1 -- powershell version of mc_wrapper.sh
+#
+# create alias for mc.exe using:
+#
+#  set-alias mc <install-directory>\libexec\mc-wrapper.ps1
+#
+# Notes:
+#
+#   mc-wrapper.ps1 assumes it is within the sub-directory libexec.
+#
+
+$ErrorActionPreference = 'Stop'
+$mc_exe_dir = "${PSScriptRoot}"
+$mc_exe_path = "${mc_exe_dir}/../mc.exe"
+
+# get a random tmp file for mc --printwd
+# mc stores exit path in this file
+# make sure that it doesn't exist, mc will not overwrite
+$mc_printwd_path = [System.IO.Path]::GetTempFileName()
+Remove-Item "${mc_printwd_path}"
+
+# run mc with --printwd and pass any additional cmdline args
+& "${mc_exe_path}" "--printwd=${mc_printwd_path}" "${args}"
+
+# mc has exited, get mc_exitpath and cd
+try {
+	$mc_exitpath = get-content -Path "${mc_printwd_path}"
+	cd "${mc_exitpath}"
+	remove-item -Force -Path "${mc_printwd_path}"
+} catch {
+	# catch everything prevents unecessary error msgs
+	# some $args result in mc_printwd_path not being created
+	# e.g. -V, --help
+}
+

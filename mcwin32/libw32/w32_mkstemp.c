@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.19 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.20 2025/03/30 17:16:02 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -369,7 +369,14 @@ static unsigned
 generate_seed(void)
 {
     static unsigned seed;
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:28159) // GetTickCount()
+#endif
     if (0 == seed) seed = (WIN32_GETPID() * GetTickCount());
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
     seed = (1103515245 * seed + 12345);
     return seed;
 }

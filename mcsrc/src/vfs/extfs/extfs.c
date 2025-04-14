@@ -84,7 +84,7 @@ struct extfs_super_t
 
     int fstype;
     char *local_name;
-    struct stat local_stat;
+    mc_stat_t local_stat;
     dev_t rdev;
 };
 
@@ -195,7 +195,7 @@ extfs_generate_entry (struct extfs_super_t *archive, const char *name, struct vf
                       mode_t mode)
 {
     struct vfs_class *me = VFS_SUPER (archive)->me;
-    struct stat st;
+    mc_stat_t st;
     mode_t myumask;
     struct vfs_s_inode *inode;
     struct vfs_s_entry *entry;
@@ -356,7 +356,7 @@ extfs_free_archive (struct vfs_class *me, struct vfs_s_super *psup)
 
     if (archive->local_name != NULL)
     {
-        struct stat my;
+        mc_stat_t my;
         vfs_path_t *local_name_vpath, *name_vpath;
 
         local_name_vpath = vfs_path_from_str (archive->local_name);
@@ -396,7 +396,7 @@ static int
 extfs_add_file (struct extfs_super_t *archive, const char *file_name)
 {
     struct vfs_s_super *super = VFS_SUPER (archive);
-    struct stat hstat;
+    mc_stat_t hstat;
     char *current_file_name = NULL, *current_link_name = NULL;
     int ret = 0;
 
@@ -466,7 +466,7 @@ extfs_add_file (struct extfs_super_t *archive, const char *file_name)
             }
             else
             {
-                struct stat st;
+                mc_stat_t st;
 
                 memset (&st, 0, sizeof (st));
                 st.st_ino = super->ino_usage++;
@@ -516,7 +516,7 @@ extfs_open_archive (int fstype, const char *name, struct extfs_super_t **pparc, 
     mc_pipe_t *result = NULL;
     mode_t mode;
     char *cmd = NULL;
-    struct stat mystat;
+    mc_stat_t mystat;
     struct extfs_super_t *current_archive;
     struct vfs_s_entry *root_entry;
     char *tmp = NULL;
@@ -1167,7 +1167,7 @@ extfs_close (void *fh)
     /* Commit the file if it has changed */
     if (file->changed)
     {
-        struct stat file_status;
+        mc_stat_t file_status;
 
         if (extfs_cmd
             (" copyin ", EXTFS_SUPER (VFS_FILE_HANDLER_SUPER (fh)), file->ino->ent,
@@ -1259,7 +1259,7 @@ extfs_closedir (void *data)
 
 
 static void
-extfs_stat_move (struct stat *buf, const struct vfs_s_inode *inode)
+extfs_stat_move (mc_stat_t *buf, const struct vfs_s_inode *inode)
 {
     const time_t atime = inode->st.st_atime;
     const time_t mtime = inode->st.st_mtime;
@@ -1282,7 +1282,7 @@ extfs_stat_move (struct stat *buf, const struct vfs_s_inode *inode)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-extfs_internal_stat (const vfs_path_t *vpath, struct stat *buf, gboolean resolve)
+extfs_internal_stat (const vfs_path_t *vpath, mc_stat_t *buf, gboolean resolve)
 {
     struct extfs_super_t *archive;
     const char *q;
@@ -1310,7 +1310,7 @@ extfs_internal_stat (const vfs_path_t *vpath, struct stat *buf, gboolean resolve
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-extfs_stat (const vfs_path_t *vpath, struct stat *buf)
+extfs_stat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     return extfs_internal_stat (vpath, buf, TRUE);
 }
@@ -1318,7 +1318,7 @@ extfs_stat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-extfs_lstat (const vfs_path_t *vpath, struct stat *buf)
+extfs_lstat (const vfs_path_t *vpath, mc_stat_t *buf)
 {
     return extfs_internal_stat (vpath, buf, FALSE);
 }
@@ -1326,7 +1326,7 @@ extfs_lstat (const vfs_path_t *vpath, struct stat *buf)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-extfs_fstat (void *fh, struct stat *buf)
+extfs_fstat (void *fh, mc_stat_t *buf)
 {
     vfs_file_handler_t *file = VFS_FILE_HANDLER (fh);
 
@@ -1512,8 +1512,8 @@ extfs_chdir (const vfs_path_t *vpath)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static off_t
-extfs_lseek (void *fh, off_t offset, int whence)
+static mc_off_t
+extfs_lseek (void *fh, mc_off_t offset, int whence)
 {
     vfs_file_handler_t *file = VFS_FILE_HANDLER (fh);
 
@@ -1627,7 +1627,7 @@ extfs_get_plugins (const char *where, gboolean silent)
     while ((filename = g_dir_read_name (dir)) != NULL)
     {
         char fullname[MC_MAXPATHLEN];
-        struct stat s;
+        mc_stat_t s;
 
         g_snprintf (fullname, sizeof (fullname), "%s" PATH_SEP_STR "%s", dirname, filename);
 

@@ -104,23 +104,26 @@ Root: HKLM; Subkey: "Software\Midnight-Commander"; ValueType: dword;  ValueName:
 Source: "..\{#BinDir}\README.txt";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\ChangeLog.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; Flags: ignoreversion
-        ;;Source: "..\{#BinDir}\mc.exe";        DestDir: "{app}"; DestName: "mcedit.exe"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcdiff.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcedit.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcview.exe";    DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mchelp.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcbsddiff.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcupdater.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\{#BinDir}\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mcmandoc.exe";  DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\mcfile.exe";    DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\mcstart.exe";   DestDir: "{app}"; Flags: ignoreversion
+Source: "..\{#BinDir}\busybox.exe";   DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\enca.exe";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\kbtest.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\*.dll";         DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\man2hlp.pl";    DestDir: "{app}"; Flags: ignoreversion
-Source: "..\{#BinDir}\etc\*";         Excludes: ".created"; DestDir: "{app}\etc";    Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\plugin\*";      Excludes: ".created"; DestDir: "{app}\plugin"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\share\*";       Excludes: ".created"; DestDir: "{app}\share";  Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\doc\*";         Excludes: ".created"; DestDir: "{app}\doc";    Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\locale\*";      Excludes: ".created"; DestDir: "{app}\locale"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\etc\*";         Excludes: ".created"; DestDir: "{app}\etc";     Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\plugin\*";      Excludes: ".created"; DestDir: "{app}\plugin";  Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\libexec\*";     Excludes: ".created"; DestDir: "{app}\libexec"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\share\*";       Excludes: ".created"; DestDir: "{app}\share";   Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\doc\*";         Excludes: ".created"; DestDir: "{app}\doc";     Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\locale\*";      Excludes: ".created"; DestDir: "{app}\locale";  Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Dont use "Flags: ignoreversion" on any shared system files
 
 [Icons]

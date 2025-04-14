@@ -156,11 +156,12 @@ main(int argc, char *argv[])
 {
         HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
         CONSOLE_SCREEN_BUFFER_INFOEX sbi = {0};
+        CONSOLE_FONT_INFOEX cfi = {sizeof(CONSOLE_FONT_INFOEX)};
         wchar_t iso639[16] = {0}, iso3166[16] = {0},
             countryname[256], abbrevcountryname[10] = {0},
             displayname[256] = {0};
         LCID lcid, setlcid = 0;
-        COORD lbws;
+        COORD fsz, lbws;
 
         if (argc == 2) {
                 const char *option = argv[1], *val;
@@ -207,6 +208,12 @@ main(int argc, char *argv[])
 
         sbi.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
         GetConsoleScreenBufferInfoEx(console, &sbi);
+
+        GetCurrentConsoleFontEx(console, FALSE, &cfi);
+        fsz = GetConsoleFontSize(console, cfi.nFont);
+                // Note: Retrieval of the font size is not possible within the Windows Terminal by design; always 0x16
+                // https://github.com/microsoft/terminal/issues/6395
+
         lbws = GetLargestConsoleWindowSize(console);
 
         OutputA("SIZE:     %u/%u\n", (unsigned)sbi.dwSize.X, (unsigned)sbi.dwSize.Y);
@@ -214,7 +221,9 @@ main(int argc, char *argv[])
         OutputA("WIN:      %u/%u to %u/%u\n",
             (unsigned)sbi.srWindow.Left, (unsigned)sbi.srWindow.Top, (unsigned)sbi.srWindow.Right, (unsigned)sbi.srWindow.Bottom);
         OutputA("FULL:     %s\n", sbi.wPopupAttributes ? "yes" : "no");
-        OutputA("CON:      %u/%u\n", (unsigned)lbws.X, (unsigned)lbws.Y);
+        OutputA("\n");
+        OutputA("FONT:     %u, %u/%u\n", (unsigned)cfi.nFont, (unsigned)fsz.X, (unsigned)fsz.Y);
+        OutputA("LARGEST:  %u/%u\n", (unsigned)lbws.X, (unsigned)lbws.Y);
         OutputA("\n");
 
         ////////////////////////////
@@ -251,7 +260,7 @@ main(int argc, char *argv[])
 
         OutputA("LCID: set    %u/0x%x\n", setlcid, setlcid);
         SetThreadLocale(setlcid);
-        SetThreadUILanguage(setlcid);
+        SetThreadUILanguage((LANGID)setlcid);
 
         lcid = GetUserDefaultLCID();
         OutputA("LCID: user   %u/0x%x\n", lcid, lcid);
@@ -329,4 +338,4 @@ OutputW(const wchar_t *fmt, ...)
         va_end(ap);
 }
 
-//end
+//end

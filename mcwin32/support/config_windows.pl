@@ -1,14 +1,15 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: config_windows.pl,v 1.1 2025/02/13 17:56:42 cvsuser Exp $
+# $Id: config_windows.pl,v 1.5 2025/04/09 11:53:01 cvsuser Exp $
 # Configure front-end for native windows targets.
 #
 
 use strict;
 use warnings 'all';
 
-use Cwd;
+use Cwd 'realpath', 'getcwd';
 use File::Which qw(which where);
+use File::Basename;
 
 sub
 ProgramFiles
@@ -25,6 +26,7 @@ ProgramFiles
 my $PROGRAMFILES = ProgramFiles();
 my $olocalutils = 0;
 my $omingw = undef;
+my $trace = 0;
 
 foreach (@ARGV) {
 	if (/^--cfg-localutils$/) {
@@ -39,9 +41,15 @@ foreach (@ARGV) {
 	}
 }
 
+sub
+Trace
+{
+	print "config_windows: (V) " . sprintf(shift, @_) . "\n"
+		if ($trace);
+}
 
 sub
-Resolve 		# (default, apps ...)
+Resolve			# (default, apps ...)
 {
 	my $default = shift;
 	return $default
@@ -105,35 +113,46 @@ sub
 ResolveCoreUtils	# ()
 {
 	my @paths = (
-		"",                                 # PATH
-		"c:/msys64/usr",                    # MSYS installation
-		"${PROGRAMFILES}/Git/usr",          # Git for Windows
-		"c:/GnuWin32",                      # https://sourceforge.net/projects/getgnuwin32/files (legacy)
-		"C:/Program Files (x86)/GnuWin32",  # choco install gnuwin32-coreutils.install (legacy)
+		"",					# PATH
+		"c:/msys64/usr",			# MSYS installation(s)
+		"d:/msys64/usr",
+		"${PROGRAMFILES}/Git/usr",		# Git for Windows
+		"c:/GnuWin32",				# https://sourceforge.net/projects/getgnuwin32/files (legacy)
+		"c:/Program Files (x86)/GnuWin32",	# choco install gnuwin32-coreutils.install (legacy)
 		);
-	my @cmds = ("mkdir", "rmdir", "cp", "mv", "rm", "egrep", "gzip", "tar", "unzip", "zip");
+	my @cmds = ("mkdir", "rmdir", "cp", "mv", "rm", "grep", "gzip", "tar", "unzip", "zip");
 
 	foreach my $path (@paths) {
-		my $success = 1;
-		if (! $path) {
+		if (! $path) {				# PATH
+			my $success = 1;
+			Trace("checking CoreUtils against <PATH>");
 			foreach my $app (@cmds) {
-				if (! which($app) ) {
+				my $resolved = which($app);
+				Trace("  $app=%s", $resolved ? lc $resolved : "(unresolved)");
+				if (! $resolved) {
 					$success = 0;
-					goto LAST;
+					last;
 				}
+				++$success;
 			}
 			if ($success) {
 				print "config_windows: CoreUtils=PATH\n";
 				return "";
 			}
-		} else {
+
+		} else {				# explicit; test possible solutions
 			my $bin = "${path}/bin";
-			if (-d $bin) {
+			my $success = (-d $bin);
+			if ($success) {
+				Trace("checking CoreUtils against <${bin}>");
 				foreach my $app (@cmds) {
-					if (! -f "${bin}/${app}") {
+					my $resolved = (-f "${bin}/${app}" || "${bin}/${app}.exe");
+					Trace("  $app=%s", $resolved ? "${bin}/${app}" : "(unresolved)");
+					if (! $resolved) {
 						$success = 0;
-						goto LAST;
+						last;
 					}
+					++$success;
 				}
 			}
 			if ($success) {
@@ -142,14 +161,17 @@ ResolveCoreUtils	# ()
 			}
 		}
 	}
+
 	die "config_windows: unable to determine coreutils\n";
 }
 
+my $perlpath	= undef;
 my $busybox	= Resolve('./support/busybox', 'busybox');
 my $wget	= Resolve('./support/wget', 'wget');
 my $bison	= Resolve('$(D_BIN)/byacc', 'bison', 'yacc');
 my $flex	= Resolve('$(D_BIN)/flex', 'flex');
 my $coreutils	= undef;
+my $inno	= undef;
 
 ##  build command line
 
@@ -164,17 +186,21 @@ my $ohelp = 0;
 
 my $script  = shift @ARGV;
 foreach (@ARGV) {
-	if (/^--busybox=(.*)$/) {
+	if (/^--busybox=(.*)$/) {			# busybox path, otherwise located.
 		$busybox = $1;
-	} elsif (/^--binpath=(.*)$/) {
+	} elsif (/^--perlpath=(.*)$/) {			# Perl binary path, otherwise resolved.
+		$perlpath = $1;
+	} elsif (/^--binpath=(.*)$/) {			# Path to coreutils, otherwise these are assumed to be in the path.
 		$coreutils = $1;
-	} elsif (/^--wget=(.*)$/) {
+	} elsif (/^--wget=(.*)$/) {			# wget installation path.
 		$wget = $1;
-	} elsif (/^--bison=(.*)$/) {
+	} elsif (/^--bison=(.*)$/) {			# yacc/bison installation path.
 		$bison = $1;
-	} elsif (/^--flex=(.*)$/) {
+	} elsif (/^--flex=(.*)$/) {			# flex installation path.
 		$flex = $1;
-	} elsif (/^--cfg-symlink$/) { # undocumented
+	} elsif (/^--inno=(.*)$/) {			# inno-setup installation path.
+		$inno = $1;
+	} elsif (/^--cfg-symlink$/) {			# undocumented
 		# --cfg-symlink, Symlink detected coreutils to ./CoreUtils.
 		$core_symlink = 1;
 	} elsif (/^--cfg-localutils$/) {
@@ -183,8 +209,10 @@ foreach (@ARGV) {
 		# consume
 	} elsif (/^--help$/) {
 		$ohelp = 1;
+	} elsif (/^--trace$/) {
+		$trace = 1;
 	} else {
-		if (/^--/) {
+		if (/^--/) {				# others, pass-thru
 			if (/^--(.*)=(.*)$/) {
 				push @options, "--$1=\"$2\"";
 			} else {
@@ -213,18 +241,38 @@ EOU
 	exit 3;
 }
 
+if (! defined $perlpath) {
+	my $running = lc realpath($^X);
+        my $resolved = dirname(${running});
+
+	my $perl = which("perl");
+	$perl = lc realpath($perl)
+		if (defined $perl);
+
+	if (! $perl || $perl eq 'perl' || $perl ne $running) {
+							# non-found, generic or alternative
+		print "config_windows: Perl=${resolved} (resolved, ${perl})\n";
+		push @options, "--perlpath=\"${resolved}\"";
+	} else {
+		print "config_windows: Perl=PATH (${resolved})\n";
+	}
+} else {
+	print "config_windows: Perl=${perlpath}\n";
+	push @options, "--perlpath=\"${perlpath}\"";
+}
+
 $coreutils = ResolveCoreUtils()
 	if (! $coreutils);
 if ($coreutils) {
 	if ($core_symlink) {
-		if ($coreutils =~ / /) { # spaces, symlink
-			print "config_windows: CoreUtils: ./CoreUtils => ${coreutils} (symlink)\n";
+		if ($coreutils =~ / /) {		# spaces, symlink
+			print "config_windows: coreutils: ./CoreUtils => ${coreutils} (symlink)\n";
 			system "mklink /J CoreUtils \"${coreutils}\""
 				if (! -d "CoreUtils/bin");
-			push @options, "--binpath=./CoreUtils/bin";
+			push @options, "--binpath=\"./CoreUtils/bin\"";
 
 		} else {
-			push @options, "--binpath=${coreutils}/bin";
+			push @options, "--binpath=\"${coreutils}/bin\"";
 		}
 	} else {
 		die "config_windows: coreutils detected yet not in PATH, add <$coreutils/bin> before proceeding.\n";
@@ -235,8 +283,14 @@ if ($coreutils) {
 die "config_windows: target missing\n"
 	if (! $otarget);
 
-print "\n$^X ${script}\n => --busybox=\"${busybox}\" --wget=\"${wget}\" --flex=\"${flex}\" --bison=\"${bison}\" @options ${otarget}\n\n";
+push @options, "--busybox=\"${busybox}\"";
+push @options, "--wget=\"${wget}\"";
+push @options, "--flex=\"${flex}\"";
+push @options, "--bison=\"${bison}\"";
+push @options, "--inno=\"${inno}\""
+        if ($inno);
 
-system "$^X ${script} --busybox=\"${busybox}\" --wget=\"${wget}\" --flex=\"${flex}\" --bison=\"${bison}\" @options ${otarget}";
+print "\n$^X ${script}\n => @options ${otarget}\n\n";
+system "$^X ${script} @options ${otarget}";
 
 #end

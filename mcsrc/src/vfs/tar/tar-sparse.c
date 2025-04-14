@@ -121,8 +121,8 @@ struct tar_sparse_optab
 struct tar_sparse_file
 {
     int fd;                     /**< File descriptor */
-    off_t dumped_size;          /**< Number of bytes actually written to the archive */
-    struct tar_stat_info *stat_info;    /**< Information about the file */
+    mc_off_t dumped_size;       /**< Number of bytes actually written to the archive */
+    struct tar_stat_info *stat_info; /**< Information about the file */
     struct tar_sparse_optab const *optab;
     void *closure;              /**< Any additional data optab calls might reqiure */
 };
@@ -387,7 +387,7 @@ oldgnu_add_sparse (struct tar_sparse_file *file, struct sparse *s)
 {
     struct sp_array sp;
 #if !defined(WIN32) //WIN32: stdckdint.h
-    off_t size;
+    mc_off_t size;
 #endif
 
     if (s->numbytes[0] == '\0')
@@ -429,7 +429,7 @@ oldgnu_fixup_header (struct tar_sparse_file *file)
 {
     /* NOTE! st_size was initialized from the header which actually contains archived size.
        The following fixes it */
-    off_t realsize;
+    mc_off_t realsize;
 
     realsize = OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
     file->stat_info->archive_file_size = file->stat_info->stat.st_size;
@@ -494,7 +494,7 @@ star_fixup_header (struct tar_sparse_file *file)
 {
     /* NOTE! st_size was initialized from the header which actually contains archived size.
        The following fixes it */
-    off_t realsize;
+    mc_off_t realsize;
 
     realsize = OFF_FROM_HEADER (current_header->star_in_header.realsize);
     file->stat_info->archive_file_size = file->stat_info->stat.st_size;
@@ -571,7 +571,7 @@ pax_decode_header (tar_super_t *archive, struct tar_sparse_file *file)
         char *p;
         size_t sparse_map_len;
         size_t i;
-        off_t start;
+        mc_off_t start;
 
         start = tar_current_block_ordinal (archive);
         tar_set_next_block_after (current_header);
@@ -600,11 +600,11 @@ pax_decode_header (tar_super_t *archive, struct tar_sparse_file *file)
         {
             struct sp_array sp;
 #if !defined(WIN32) //WIN32: stdckdint.h
-            off_t size;
+            mc_off_t size;
 #endif
 
             COPY_BUF (archive, blk, nbuf, p);
-            if (!decode_num (&u, nbuf, TYPE_MAXIMUM (off_t)))
+            if (!decode_num (&u, nbuf, TYPE_MAXIMUM (mc_off_t)))
             {
                 /* malformed sparse archive member */
                 return FALSE;
@@ -616,7 +616,7 @@ pax_decode_header (tar_super_t *archive, struct tar_sparse_file *file)
             if (!decode_num(&u, nbuf, TYPE_MAXIMUM(size_t)) || INT_ADD_OVERFLOW(sp.offset, u)
                 || (uintmax_t)file->stat_info->stat.st_size < sp.offset + u)
 #else
-            if (!decode_num (&u, nbuf, TYPE_MAXIMUM (off_t)) || ckd_add (&size, sp.offset, u)
+            if (!decode_num (&u, nbuf, TYPE_MAXIMUM (mc_off_t)) || ckd_add (&size, sp.offset, u)
                 || file->stat_info->stat.st_size < size)
 #endif
             {

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_proctitle_c,"$Id: w32_proctitle.c,v 1.6 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_proctitle_c,"$Id: w32_proctitle.c,v 1.7 2025/03/30 17:16:03 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -120,10 +120,29 @@ setproctitle(const char *fmt, ...)
 {
     va_list ap;
 
+//  #if defined(UTF8FILENAMES)
+//      if (w32_utf8filenames_state()) {
+//          if (fmt) { // BUG: utf8 arguments problematic
+//          }
+//      }
+//  #endif
+
     va_start(ap, fmt);
     setproctitle_impl(fmt, ap);
     va_end(ap);
 }
+
+
+//  LIBW32_API void
+//  setproctitleA (const char *fmt, ...)
+//  {
+//  }
+
+
+//  LIBW32_API void
+//  setproctitleW (const wchar_t *fmt, ...)
+//  {
+//  }
 
 
 LIBW32_API void
@@ -135,6 +154,18 @@ setproctitle_fast(const char *fmt, ...)
     setproctitle_impl(fmt, ap);
     va_end(ap);
 }
+
+
+//  LIBW32_API void
+//  setproctitle_fastA (const char *fmt, ...)
+//  {
+//  }
+
+
+//  LIBW32_API void
+//  setproctitle_fastW (const wchar_t *fmt, ...)
+//  {
+//  }
 
 
 static void
@@ -163,7 +194,7 @@ setproctitle_impl(const char *fmt, va_list ap)
                 WCHAR t_title[2 * 1024];
                 DWORD ret;
 
-                //console
+                // console
                 if (0 != (ret = GetConsoleTitleW(t_title, _countof(t_title)))) {
                     const size_t sz = (ret + 1) * sizeof(WCHAR);
                         //If the function succeeds, the return value is the length of the console window's title, in characters.
@@ -190,9 +221,9 @@ setproctitle_impl(const char *fmt, va_list ap)
             }
 
             if (! SetConsoleTitleA(n_title)) {
-                if (!hWnd) hWnd = GetActiveWindow();
+                if (! hWnd) hWnd = GetActiveWindow();
                 if (hWnd) {
-                    SetWindowTextA(hWnd, n_title);      
+                    SetWindowTextA(hWnd, n_title);
                 }
             }
         }

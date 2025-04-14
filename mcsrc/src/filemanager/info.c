@@ -111,7 +111,7 @@ info_show_info (WInfo *info)
     static int i18n_adjust = 0;
     static const char *file_label;
     GString *buff;
-    struct stat st;
+    mc_stat_t st;
     char rp_cwd[PATH_MAX];
     const char *p_rp_cwd;
 

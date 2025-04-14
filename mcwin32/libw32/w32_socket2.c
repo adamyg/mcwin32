@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.16 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_socket2_c,"$Id: w32_socket2.c,v 1.17 2025/03/30 17:16:03 cvsuser Exp $")
 
 /*
  * win32 socket () system calls
@@ -352,7 +352,14 @@ w32_sendmsg_native(int fd, const struct msghdr *message, int flags)
 
     } else if ((osf = nativehandle(fd)) != (SOCKET)INVALID_SOCKET) {
 #if defined(_MSC_VER) || defined(__WATCOMC__)
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:6255)
+#endif
         WSABUF *wsabufs = _alloca(sizeof(WSABUF) * message->msg_iovlen);
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 #else
         WSABUF *wsabufs = alloca(sizeof(WSABUF) * message->msg_iovlen);
 #endif

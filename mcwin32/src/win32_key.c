@@ -2,39 +2,37 @@
 /*
    win32 tty/keys implementation
 
-        #include "../lib/tty/key.h"
+        init_key
+        init_key_input_fd
+        done_key
 
-        void        init_key (void);
-        void        init_key_input_fd (void);
-        void        done_key (void);
+        define_sequence
 
-        gboolean    define_sequence (int code, const char *seq, int action);
+        lookup_key
+        lookup_key_by_code
 
-        long        lookup_key (const char *name, char **label);
-        char *      lookup_key_by_code (const int keycode);
+        add_select_channel
+        delete_select_channel
+        remove_select_channel
 
-        void        add_select_channel (int fd, select_fn callback, void *info);
-        void        delete_select_channel (int fd);
-        void        remove_select_channel (int fd);
+        channels_up
+        channels_down
 
-        void        channels_up (void);
-        void        channels_down (void);
+        load_xtra_key_defines
 
-        void        load_xtra_key_defines (void);
+        learn_key
 
-        char *      learn_key (void);
+        tty_get_event
+        is_idle
+        tty_getch
 
-        int         tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block);
-        gboolean    is_idle (void);
-        int         tty_getch (void);
+        get_key_code
 
-        int         get_key_code (int nodelay);
+        numeric_keypad_mode
+        application_keypad_mode
 
-        void        numeric_keypad_mode (void);
-        void        application_keypad_mode (void);
-
-        void        enable_bracketed_paste (void);
-        void        disable_bracketed_paste (void);
+        enable_bracketed_paste
+        disable_bracketed_paste
 
    Adam Young 2015 - 2025
 
@@ -769,7 +767,7 @@ lookup_key_by_code (const int keycode)
         }
 
         if (mod & KEY_M_CTRL) {
-            /* non printeble chars like a CTRL-[A..Z] */
+            /* non printable chars like a CTRL-[A..Z] */
             if (k < 32)
                 k += 64;                        /* A...^, includes ESC & Ctrl-\ */
 
@@ -1176,7 +1174,7 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
                 return EV_NONE;
             }
         } else {
-            if (ESC_CHAR == c) c = key_esc_special();
+            if (ESC_CHAR == c) c = key_esc_special ();
             assert(EV_MOUSE == c || c > 0);
             return c;                           // reportable event
         }
@@ -1289,7 +1287,7 @@ key_esc_special(void)
 
                     } else if (VK_ESCAPE == wVirtualKeyCode) {
                         if (key->wRepeatCount) {
-                            c = ESC_CHAR;       // ESC-ESC, surpress 2nd
+                            c = ESC_CHAR;       // ESC-ESC, suppress 2nd
                         }
 
                     } else if (VK_SPACE == wVirtualKeyCode) {
@@ -1302,7 +1300,7 @@ key_esc_special(void)
                             c = ALT(UnicodeChar); // ESC followed by an ASCII character
 
                         } else if (UnicodeChar > 0x7f) {
-                            return ESC_CHAR;    // Unicode, short circuit rtn ESC
+                            return ESC_CHAR;    // Unicode, short circuit return ESC
                         }
                     }
 
@@ -1316,10 +1314,14 @@ key_esc_special(void)
                 } else {
                     (void) ReadConsoleInputW(hConsoleIn, &ir, 1, &count);
                     if (VK_ESCAPE == key->wVirtualKeyCode) {
-                        timeoutms = 20*1000;    // upper limit, 20-seconds
-                        if (old_esc_mode_timeout > 0) { // microseconds to ms
-                            timeoutms =  (old_esc_mode_timeout / G_USEC_PER_SEC) * 1000;
-                            timeoutms += (old_esc_mode_timeout % G_USEC_PER_SEC) / 1000;
+                        if (old_esc_mode_timeout < 0) {
+                            timeoutms = INFINITE;
+                        } else {
+                            timeoutms = 1000;   // 1-second (default)
+                            if (old_esc_mode_timeout > 0) { // microseconds to ms
+                                timeoutms = (old_esc_mode_timeout / G_USEC_PER_SEC) * 1000;
+                                timeoutms += (old_esc_mode_timeout % G_USEC_PER_SEC) / 1000;
+                            }
                         }
                     }
                     continue;                   // consume

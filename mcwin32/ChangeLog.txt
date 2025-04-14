@@ -1,3 +1,14 @@
+Mon Apr  7 14:34:02 2025 adamy
+
+	* build-232
+
+		o obey NODRIVES group policy (#121)
+		o getmntinfo, networked/mapped drive (#120)
+		o non-ascii group name handling (#118)
+		o mandoc integration and mchelp (#116)
+		o stat/seek64 (#35) and (#89)
+		o unzip vfs (#88)
+
 Wed Mar 19 16:03:57 2025 adamy
 
 	* build-231
@@ -12,6 +23,7 @@ Wed Mar 19 16:03:57 2025 adamy
 
 	* upgrades/bugfixes
 
+		o vio: wide-character handling (#115)
 		o wputenv() cross tool-chain usage (#113)
 		o pcre2 10.45 (#106)
 		o appupdater (#102)

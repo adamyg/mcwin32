@@ -108,8 +108,13 @@ extern struct vfs_dirent *mc_readdir_result;
 #define MKDIR           w32_mkdir
 #define LINK            w32_link
 #define UNLINK          w32_unlink
+#if defined(_LARGEFILE64_SOURCE)
+#define STAT            w32_stat64
+#define LSTAT           w32_lstat64
+#else
 #define STAT            w32_stat
 #define LSTAT           w32_lstat
+#endif
 #define WRITE           w32_write
 #define READ            w32_read
 
@@ -130,7 +135,7 @@ mc_def_getlocalcopy (const vfs_path_t * filename_vpath)
     int fdin = -1, fdout = -1;
     ssize_t i;
     char buffer[BUF_1K * 8];
-    struct stat mystat;
+    mc_stat_t mystat;
 
     fdin = mc_open (filename_vpath, O_RDONLY | O_LINEAR);
     if (fdin == -1)
@@ -356,7 +361,7 @@ rettype mc_##name inarg \
 
 MC_HANDLEOP (ssize_t, read, (int handle, void *buf, size_t count), (fsinfo, buf, count))
 MC_HANDLEOP (ssize_t, write, (int handle, const void *buf, size_t count), (fsinfo, buf, count))
-MC_HANDLEOP (int, fstat, (int handle, struct stat *buf), (fsinfo, buf))
+MC_HANDLEOP (int, fstat, (int handle, mc_stat_t *buf), (fsinfo, buf))
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -576,7 +581,7 @@ mc_closedir (DIR * dirp)
 /* *INDENT-OFF* */
 
 #define MC_STATOP(name) \
-int mc_##name (const vfs_path_t *vpath, struct stat *buf) \
+int mc_##name (const vfs_path_t *vpath, mc_stat_t *buf) \
 { \
     int result = -1; \
     struct vfs_class *me; \
@@ -738,12 +743,12 @@ mc_chdir (const vfs_path_t * vpath)
 
 /* --------------------------------------------------------------------------------------------- */
 
-off_t
-mc_lseek (int fd, off_t offset, int whence)
+mc_off_t
+mc_lseek (int fd, mc_off_t offset, int whence)
 {
     struct vfs_class *vfs;
     void *fsinfo = NULL;
-    off_t result;
+    mc_off_t result;
 
     if (fd == -1)
         return (-1);
@@ -752,7 +757,7 @@ mc_lseek (int fd, off_t offset, int whence)
     if (vfs == NULL)
         return (-1);
 
-    result = vfs->lseek ? vfs->lseek (fsinfo, offset, whence) : -1;
+    result = vfs->lseek ? (vfs->lseek) (fsinfo, offset, whence) : -1;
     if (result == -1)
         errno = vfs->lseek ? vfs_ferrno (vfs) : ENOTSUP;
     return result;
@@ -819,7 +824,7 @@ mc_tmpdir (void)
     static const char *tmpdir = NULL;
     const char *sys_tmp;
     struct passwd *pwd;
-    struct stat st;
+    mc_stat_t st;
     const char *error = NULL;
 
     /* Check if already correctly initialized */

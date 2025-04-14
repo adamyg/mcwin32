@@ -125,7 +125,7 @@ mcview_update_filesize (WView *view)
 {
     if (view->datasource == DS_FILE)
     {
-        struct stat st;
+        mc_stat_t st;
         if (mc_fstat (view->ds_file_fd, &st) != -1)
             view->ds_file_filesize = st.st_size;
     }
@@ -367,7 +367,7 @@ mcview_close_datasource (WView *view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_datasource_file (WView *view, int fd, const struct stat *st)
+mcview_set_datasource_file (WView *view, int fd, const mc_stat_t *st)
 {
     view->datasource = DS_FILE;
     view->ds_file_fd = fd;

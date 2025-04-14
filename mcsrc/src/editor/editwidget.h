@@ -138,7 +138,7 @@ struct WEdit
     unsigned long redo_stack_bottom;
     unsigned int redo_stack_reset:1;    /* If 1, need clear redo stack */
 
-    struct stat stat1;          /* Result of mc_fstat() on the file */
+    mc_stat_t stat1;            /* Result of mc_fstat() on the file */
     unsigned long attrs;        /* Result of mc_fgetflags() on the file */
     gboolean attrs_ok;          /* mc_fgetflags() == 0 */
 

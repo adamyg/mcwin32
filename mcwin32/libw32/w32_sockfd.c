@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.17 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.18 2025/03/30 17:16:03 cvsuser Exp $")
 
 /*
  * win32 socket file-descriptor support
@@ -54,9 +54,9 @@ __CIDENT_RCSID(gr_w32_sockfd_c,"$Id: w32_sockfd.c,v 1.17 2025/03/06 16:59:47 cvs
 #include <stdarg.h>
 #include <assert.h>
 
-static int                  x_fdhard;           /* hard limit */
-static int                  x_fdlimit = WIN32_FILDES_DEF; /* soft limit */
-static SOCKET *             x_fdsockets;
+static int      x_fdhard;                       /* hard limit */
+static int      x_fdlimit = WIN32_FILDES_DEF;   /* soft limit */
+static SOCKET * x_fdsockets;
 
 
 /*
@@ -66,12 +66,18 @@ LIBW32_API void
 w32_fdsetinit(void)
 {
     if (0 == x_fdhard) {
-        unsigned s;
-
         if (NULL != (x_fdsockets = (SOCKET *)calloc(WIN32_FILDES_MAX, sizeof(SOCKET)))) {
+            unsigned s;
+
             for (s = 0; s < WIN32_FILDES_MAX; ++s) {
                 x_fdsockets[s] = INVALID_SOCKET;
             }
+
+#if (defined(_MSC_VER) && (_MSC_VER > 1900)) || defined(__MINGW32__)
+            if (_getmaxstdio() > x_fdlimit)     // verify soft-limit, MSVC 2015+
+                x_fdlimit = _getmaxstdio();
+#endif
+
             x_fdhard = WIN32_FILDES_MAX;
         }
     }
@@ -130,6 +136,7 @@ w32_fdsockget(int fd)
          */
         } else if (fd < x_fdlimit) {
             SOCKET s;
+
             if ((s = _get_osfhandle(fd)) != (SOCKET)INVALID_HANDLE_VALUE) {
                 return s;
             }
@@ -198,7 +205,7 @@ w32_issockfd(int fd, SOCKET *s)
              *  MSVC 2015+ no longer suitable; asserts when out-of-range.
              *  Unfortunately socket handles can be small numeric values yet so are file descriptors.
              */
-            if (fd >= 0x80 && 0 == (fd & 0x3) && IsSocket(w32_ITOH(fd))) {
+            if (fd >= 0x80 && 0 == (fd & 0x3) && IsSocket(w32_ftoh(fd))) {
                 t_s = (SOCKET)fd;
 
             } else if (fd >= x_fdlimit ||

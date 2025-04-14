@@ -3627,7 +3627,7 @@ dview_diff_cmd (const void *f0, const void *f1)
             /* run from command line */
             const char *p0 = (const char *) f0;
             const char *p1 = (const char *) f1;
-            struct stat st;
+            mc_stat_t st;
 
             file0 = vfs_path_from_str (p0);
             if (mc_stat (file0, &st) == 0)
@@ -3677,7 +3677,7 @@ dview_diff_cmd (const void *f0, const void *f1)
         if (file0 != NULL && file1 != NULL)
         {
             int use_copy0, use_copy1;
-            struct stat st0, st1;
+            mc_stat_t st0, st1;
             vfs_path_t *real_file0, *real_file1;
 
             GET_FILE_AND_STAMP (0);

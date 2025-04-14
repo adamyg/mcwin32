@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mmap_c,"$Id: w32_mmap.c,v 1.16 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mmap_c,"$Id: w32_mmap.c,v 1.17 2025/03/30 17:16:03 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -37,6 +37,8 @@ __CIDENT_RCSID(gr_w32_mmap_c,"$Id: w32_mmap.c,v 1.16 2025/03/06 16:59:46 cvsuser
  */
 
 #include "win32_internal.h"
+#include "win32_misc.h"
+
 #include <unistd.h>
 
 #include <sys/types.h>
@@ -306,7 +308,7 @@ mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
      *  Convert 'fd' to system handle; unless an ANON mapping.
      */
     if (0 == (flags & MAP_ANONYMOUS) &&         /* extension */
-            INVALID_HANDLE_VALUE == (hFile = (HANDLE)_get_osfhandle(fildes))) {
+            INVALID_HANDLE_VALUE == (hFile = w32_osfhandle(fildes))) {
         errno = EBADF;
 
     /*

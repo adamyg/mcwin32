@@ -82,7 +82,7 @@ enum { IO_BUFSIZE = 256 * 1024 };
 /* *INDENT-ON* */
 
 static inline size_t
-io_blksize (struct stat sb)
+io_blksize (mc_stat_t sb)
 {
     size_t blksize = ST_BLKSIZE (sb);
 

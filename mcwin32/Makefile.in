@@ -7,8 +7,7 @@
 #
 # The Midnight Commander is free software: you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation, either version 3 of the License,
-# or (at your option) any later version.
+# published by the Free Software Foundation, version 3 of the License.
 #
 # The Midnight Commander is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -181,6 +180,7 @@ D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)
 LW=		$(D_LIB)/$(LP)
 
 D_ETC=		$(D_BIN)/etc
+D_LIBEXEC=	$(D_BIN)/libexec
 D_PLUGIN=	$(D_BIN)/plugin
 D_SHARE=	$(D_BIN)/share
 D_DOC=		$(D_BIN)/doc
@@ -221,7 +221,7 @@ XFLAGS=
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
 ifeq ("gcc","@CC@")
-CWARN+=		-Wno-sign-compare -Wno-missing-prototypes
+CWARN+=		-Wno-sign-compare -Wno-missing-prototypes -Wno-type-limits
 CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function -Wno-unused-label
 CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
 endif
@@ -586,8 +586,12 @@ PO_SRC=			$(MCSOURCE)/po
 
 WIN32_ETC_SRC=		./win32_etc
 WIN32_PLUGIN_SRC=	./win32_plugin
-WIN32_SKINS_SRC=	./win32_skins
+WIN32_WRAPPER_SRC=	./win32_wrapper
+WIN32_SKINS_SRC=	./win32_skins 
 WIN32_DOC_SRC=		./doc
+
+Unique=		$(if $(1),$(strip $(word 1,$(1)) $(call Unique,$(filter-out $(word 1,$(1)),$(1)))))
+Reverse=	$(if $(1),$(call Reverse,$(wordlist 2,$(words $(1)),$(1)))) $(firstword $(1))
 
 CFG_ETC=\
 	$(D_ETC)/filehighlight.ini		\
@@ -633,6 +637,19 @@ CFG_SHARE_SYNTAX:=	$(addprefix $(D_SHARE)/syntax/, \
 CFG_SHARE_MACROS_D:=	$(addprefix $(D_SHARE)/macros.d/, \
 				$(filter-out CVS, $(notdir $(wildcard $(MACROSDATA_SRC)/*sh))))
 
+CFG_SHARE_MANDIRS:=	$(subst $(MAN_SRC)/,,$(filter-out %/CVS/, $(call Unique, $(dir $(wildcard $(MAN_SRC)/*/)))))
+CFG_SHARE_MAN:=		$(addprefix $(D_SHARE)/man/, \
+				$(subst .in,,$(notdir $(wildcard $(MAN_SRC)/*.in)))) \
+			$(foreach dir, $(CFG_SHARE_MANDIRS), $(addprefix $(D_SHARE)/man/$(dir), \
+				$(subst .in,,$(notdir $(wildcard $(MAN_SRC)/$(dir)/*.in))))) \
+			$(addprefix $(D_SHARE)/man/, \
+				$(subst .in,,$(notdir $(wildcard ./support/*.1.in)))) \
+			$(addprefix $(D_SHARE)/man/, \
+				$(notdir $(wildcard ./mandoc/*.man)))
+
+##$(info CFG_SHARE_MANDIRS=$(CFG_SHARE_MANDIRS))
+##$(info CFG_SHARE_MAN=$(CFG_SHARE_MAN))
+
 CFG_WIN32_SKINS:=	$(filter-out CVS, $(notdir $(wildcard $(WIN32_SKINS_SRC)/*.ini)))
 
 CFG_PLUGIN:=		$(addprefix $(D_PLUGIN)/, \
@@ -646,6 +663,9 @@ CFG_PLUGIN_SHELL:=	$(addprefix $(D_PLUGIN)/shell/, \
 
 CFG_WIN32_PLUGIN:=	$(filter-out CVS extfs.d, $(notdir $(wildcard $(WIN32_PLUGIN_SRC)/*)))
 CFG_WIN32_PLUGIN_EXTFS_D:=$(filter-out CVS, $(notdir $(wildcard $(WIN32_PLUGIN_SRC)/extfs.d/*.in)))
+
+CFG_LIBEXEC=		$(addprefix $(D_LIBEXEC)/, \
+				$(subst .in,,$(filter-out CVS, $(notdir $(wildcard $(WIN32_WRAPPER_SRC)/*.in)))))
 
 CFG_DOC=\
 	$(D_DOC)/FAQ				\
@@ -680,9 +700,11 @@ CONFIGURATION=\
 	$(CFG_SHARE_SKINS)			\
 	$(CFG_SHARE_SYNTAX)			\
 	$(CFG_SHARE_MACROS_D)			\
+	$(CFG_SHARE_MAN)			\
 	$(CFG_PLUGIN)				\
 	$(CFG_PLUGIN_EXTFS_D)			\
 	$(CFG_PLUGIN_SHELL)			\
+	$(CFG_LIBEXEC)				\
 	$(CFG_DOC)
 
 
@@ -694,7 +716,9 @@ TARGETS=\
 	$(D_BIN)/mcedit$(E)			\
 	$(D_BIN)/mcdiff$(E)			\
 	$(D_BIN)/mcview$(E)			\
+	$(D_BIN)/mchelp$(E)			\
 	$(D_BIN)/mcbsddiff$(E)			\
+	$(D_BIN)/mcmandoc$(E)			\
 	$(D_BIN)/kbtest$(E)			\
 	$(D_BIN)/coninfo$(E)			\
 	$(D_BIN)/man2hlp.pl
@@ -773,13 +797,15 @@ DIRECTORIES:=\
 		$(D_PLUGIN)/.created		\
 		$(D_PLUGIN)/extfs.d/.created	\
 		$(D_PLUGIN)/shell/.created	\
+		$(D_LIBEXEC)/.created		\
 		$(D_SHARE)/.created		\
 		$(D_SHARE)/help/.created	\
 		$(D_SHARE)/hints/.created	\
 		$(D_SHARE)/man/.created		\
+			$(foreach dir, $(CFG_SHARE_MANDIRS), $(D_SHARE)/man/$(dir)/.created) \
 		$(D_SHARE)/skins/.created	\
 		$(D_SHARE)/syntax/.created	\
-		$(D_SHARE)/macros.d/.created
+		$(D_SHARE)/macros.d/.created	\
 
 
 #########################################################################################
@@ -925,6 +951,7 @@ clean:
 		$(MAKE) -C libw32 clean
 		$(MAKE) -C apps clean
 		$(MAKE) -C diff clean
+		$(MAKE) -C mandoc clean
 		$(MAKE) -C src/kbtest clean
 		$(MAKE) -C src/coninfo clean
 		$(MAKE) -C autoupdater clean
@@ -947,11 +974,14 @@ $(D_BIN)/mc$(E):	MAPFILE=$(basename $@).map
 $(D_BIN)/mc$(E):		$(MC_OBJS) $(MC_RES) $(LDLIBRARIES)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS) @LDMAPFILE@
 
-$(D_BIN)/mcdiff$(E) $(D_BIN)/mcedit$(E) $(D_BIN)/mcview$(E):
+$(D_BIN)/mcdiff$(E) $(D_BIN)/mcedit$(E) $(D_BIN)/mcview$(E) $(D_BIN)/mchelp$(E):
 		$(MAKE) -C apps
 
 $(D_BIN)/mcbsddiff$(E):
 		$(MAKE) -C diff
+
+$(D_BIN)/mcmandoc$(E):
+		$(MAKE) -C mandoc
 
 $(D_BIN)/kbtest$(E):
 		$(MAKE) -C src/kbtest
@@ -1054,9 +1084,7 @@ $(D_ETC)/magic.mgc:		libmagic/magic.mgc
 
 # .. plugin
 $(D_PLUGIN)/% :			$(EXTD_SRC)/%
-		@echo importing $@ ..
-		@$(CP) $^ $@
-		@$(BUSYBOX) dos2unix $@
+		@$(PERL) ./support/sedin.pl -u --script $^ $@
 
 $(D_PLUGIN)/% :			$(EXTD_SRC)/%.in
 		@$(PERL) ./support/sedin.pl -u $^ $@
@@ -1075,6 +1103,12 @@ $(D_PLUGIN)/shell/% :		$(SHELL_SRC)/%
 		@echo importing $@ ..
 		@$(CP) $^ $@
 		@$(BUSYBOX) dos2unix $@
+
+# .. libexec
+$(D_LIBEXEC)/% :		$(WIN32_WRAPPER_SRC)/%.in
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(BUSYBOX) unix2dos $@
 
 # .. share
 $(D_SHARE)/mc.charsets :	$(MISC_SRC)/mc.charsets.in
@@ -1129,6 +1163,20 @@ $(D_SHARE)/macros.d/% :		$(MACROSDATA_SRC)/%
 		@echo importing $@ ..
 		@$(CP) $^ $@
 		@$(BUSYBOX) dos2unix $@
+
+# .. share/man
+$(D_SHARE)/man/% :		$(MAN_SRC)/%.in
+		@$(PERL) ./support/sedin.pl --man --version="$(PKG_VERSION)" --iswin64="@ISWIN64@" -u $^ $@
+		@$(D_BIN)/mcmandoc -K utf-8 -T utf8 $@ > $@.man
+
+$(D_SHARE)/man/% :		./mandoc/%
+		@echo importing $@ ..
+		@$(CP) $^ $@
+
+$(D_SHARE)/man/% :		./support/%.in
+		@echo importing $@ ..
+		@$(CP) $^ $@
+		@$(D_BIN)/mcmandoc -K utf-8 -T utf8 $@ > $@.man
 
 # .. docs
 $(D_DOC)/AUTHORS :		$(MCSOURCE)/AUTHORS
@@ -1228,7 +1276,7 @@ $(D_OBJRT)/%$(O) :		$(MCSOURCE)/src/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJMC)/%$(O) :		$(MCSOURCE)/src/file/%.c
-		$(CC) $(CFLAGS) -o $@ -c $<)
+		$(CC) $(CFLAGS) -o $@ -c $<
 
 $(D_OBJFM)/%$(O) :		$(MCSOURCE)/src/filemanager/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

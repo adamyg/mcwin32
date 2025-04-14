@@ -65,7 +65,7 @@ const idx_t record_size = DEFAULT_BLOCKING * BLOCKSIZE;
 /* As we open one archive at a time, it is safe to have these static */
 union block *record_end;        /* last+1 block of archive record */
 union block *current_block;     /* current block of archive */
-off_t record_start_block;       /* block ordinal at record_start */
+mc_off_t record_start_block;    /* block ordinal at record_start */
 
 union block *current_header;
 
@@ -251,7 +251,7 @@ uid_from_header (const char *p, size_t s)
 static void
 tar_calc_sparse_offsets (struct vfs_s_inode *inode)
 {
-    off_t begin = inode->data_offset;
+    mc_off_t begin = inode->data_offset;
     GArray *sm = (GArray *) inode->user_data;
     size_t i;
 
@@ -643,7 +643,7 @@ tar_read_header (struct vfs_class *me, struct vfs_s_super *archive)
             size_t name_size = current_stat_info.stat.st_size;
             size_t n;
 #endif
-            off_t size;
+            mc_off_t size;
             union block *header_copy;
             char *bp;
             size_t written;
@@ -656,7 +656,7 @@ tar_read_header (struct vfs_class *me, struct vfs_s_super *archive)
             size = name_size + BLOCKSIZE;
             if (n != 0)
                 size += BLOCKSIZE - n;
-            if ((off_t)name_size != current_stat_info.stat.st_size || size < (off_t)name_size)
+            if ((mc_off_t)name_size != current_stat_info.stat.st_size || size < (mc_off_t)name_size)
 #else
             if (ckd_add (&size, current_stat_info.stat.st_size, 2 * BLOCKSIZE - 1))
 #endif
@@ -698,7 +698,7 @@ tar_read_header (struct vfs_class *me, struct vfs_s_super *archive)
                 }
 
                 written = tar_available_space_after (data_block);
-                if ((off_t) written > size)
+                if ((mc_off_t) written > size)
                     written = (size_t) size;
 
                 memcpy (bp, data_block->buffer, written);
@@ -1060,7 +1060,7 @@ tar_open_archive (struct vfs_s_super *archive, const vfs_path_t *vpath,
 static void *
 tar_super_check (const vfs_path_t *vpath)
 {
-    static struct stat stat_buf;
+    static mc_stat_t stat_buf;
     int stat_result;
 
     stat_result = mc_stat (vpath, &stat_buf);
@@ -1074,7 +1074,7 @@ static int
 tar_super_same (const vfs_path_element_t *vpath_element, struct vfs_s_super *parc,
                 const vfs_path_t *vpath, void *cookie)
 {
-    struct stat *archive_stat = cookie; /* stat of main archive */
+    mc_stat_t *archive_stat = cookie; /* stat of main archive */
 
     (void) vpath_element;
 
@@ -1112,7 +1112,7 @@ tar_super_same (const vfs_path_element_t *vpath_element, struct vfs_s_super *par
  */
 
 static ssize_t
-tar_get_sparse_chunk_idx (const GArray *sparse_map, off_t offset)
+tar_get_sparse_chunk_idx (const GArray *sparse_map, mc_off_t offset)
 {
     size_t k;
 
@@ -1144,7 +1144,7 @@ tar_read_sparse (vfs_file_handler_t *fh, char *buffer, size_t count)
     const GArray *sm = (const GArray *) fh->ino->user_data;
     ssize_t chunk_idx;
     const struct sp_array *chunk;
-    off_t remain;
+    mc_off_t remain;
     ssize_t res;
 
     chunk_idx = tar_get_sparse_chunk_idx (sm, fh->pos);
@@ -1152,7 +1152,7 @@ tar_read_sparse (vfs_file_handler_t *fh, char *buffer, size_t count)
     {
         /* we are in the chunk -- read data until chunk end */
         chunk = &g_array_index (sm, struct sp_array, chunk_idx - 1);
-        remain = MIN ((off_t) count, chunk->offset + chunk->numbytes - fh->pos);
+        remain = MIN ((mc_off_t) count, chunk->offset + chunk->numbytes - fh->pos);
         res = mc_read (fd, buffer, (size_t) remain);
     }
     else
@@ -1160,7 +1160,7 @@ tar_read_sparse (vfs_file_handler_t *fh, char *buffer, size_t count)
         if (chunk_idx == 0)
         {
             /* we are in the hole after last chunk -- return zeros until file end */
-            remain = MIN ((off_t) count, fh->ino->st.st_size - fh->pos);
+            remain = MIN ((mc_off_t) count, fh->ino->st.st_size - fh->pos);
             /* FIXME: can remain be negative? */
             remain = MAX (remain, 0);
         }
@@ -1168,7 +1168,7 @@ tar_read_sparse (vfs_file_handler_t *fh, char *buffer, size_t count)
         {
             /* we are in the hole -- return zeros until next chunk start */
             chunk = &g_array_index (sm, struct sp_array, -chunk_idx - 1);
-            remain = MIN ((off_t) count, chunk->offset - fh->pos);
+            remain = MIN ((mc_off_t) count, chunk->offset - fh->pos);
         }
 
         memset (buffer, 0, (size_t) remain);
@@ -1180,15 +1180,15 @@ tar_read_sparse (vfs_file_handler_t *fh, char *buffer, size_t count)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static off_t
-tar_lseek_sparse (vfs_file_handler_t *fh, off_t offset)
+static mc_off_t
+tar_lseek_sparse (vfs_file_handler_t *fh, mc_off_t offset)
 {
-    off_t saved_offset = offset;
+    mc_off_t saved_offset = offset;
     int fd = TAR_SUPER (fh->ino->super)->fd;
     const GArray *sm = (const GArray *) fh->ino->user_data;
     ssize_t chunk_idx;
     const struct sp_array *chunk;
-    off_t res;
+    mc_off_t res;
 
     chunk_idx = tar_get_sparse_chunk_idx (sm, offset);
     if (chunk_idx > 0)
@@ -1241,7 +1241,7 @@ tar_read (void *fh, char *buffer, size_t count)
     struct vfs_class *me = VFS_FILE_HANDLER_SUPER (fh)->me;
     vfs_file_handler_t *file = VFS_FILE_HANDLER (fh);
     int fd = TAR_SUPER (VFS_FILE_HANDLER_SUPER (fh))->fd;
-    off_t begin = file->pos;
+    mc_off_t begin = file->pos;
     ssize_t res;
 
     if (file->ino->user_data != NULL)
@@ -1258,7 +1258,7 @@ tar_read (void *fh, char *buffer, size_t count)
         if (mc_lseek (fd, begin, SEEK_SET) != begin)
             ERRNOR (EIO, -1);
 
-        count = (size_t) MIN ((off_t) count, file->ino->st.st_size - file->pos);
+        count = (size_t) MIN ((mc_off_t) count, file->ino->st.st_size - file->pos);
         res = mc_read (fd, buffer, count);
     }
 

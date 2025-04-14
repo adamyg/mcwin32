@@ -602,7 +602,7 @@ size_decoder (struct tar_stat_info *st, const char *keyword, const char *arg, si
 
     (void) size;
 
-    if (!decode_num (&u, arg, TYPE_MAXIMUM (off_t), keyword))
+    if (!decode_num (&u, arg, TYPE_MAXIMUM (mc_off_t), keyword))
         return FALSE;
 
     st->stat.st_size = u;
@@ -813,7 +813,7 @@ sparse_size_decoder (struct tar_stat_info *st, const char *keyword, const char *
 
     (void) size;
 
-    if (!decode_num (&u, arg, TYPE_MAXIMUM (off_t), keyword))
+    if (!decode_num (&u, arg, TYPE_MAXIMUM (mc_off_t), keyword))
         return FALSE;
 
     st->real_size_set = TRUE;
@@ -852,7 +852,7 @@ sparse_offset_decoder (struct tar_stat_info *st, const char *keyword, const char
 
     (void) size;
 
-    if (!decode_num (&u, arg, TYPE_MAXIMUM (off_t), keyword))
+    if (!decode_num (&u, arg, TYPE_MAXIMUM (mc_off_t), keyword))
         return FALSE;
 
     s = &g_array_index (st->sparse_map, struct sp_array, st->sparse_map->len - 1);
@@ -896,11 +896,11 @@ sparse_map_decoder (struct tar_stat_info *st, const char *keyword, const char *a
 
     while (TRUE)
     {
-        off_t u;
+        mc_off_t u;
         char *delim = NULL;
         gboolean overflow = FALSE;
 
-        u = stoint (arg, &delim, &overflow, 0, TYPE_MAXIMUM (off_t));
+        u = stoint (arg, &delim, &overflow, 0, TYPE_MAXIMUM (mc_off_t));
 
         if (delim == arg)
         {
@@ -994,7 +994,7 @@ tar_xheader_decode (struct tar_stat_info *st)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-tar_xheader_read (tar_super_t *archive, struct xheader *xhdr, union block *p, off_t size)
+tar_xheader_read (tar_super_t *archive, struct xheader *xhdr, union block *p, mc_off_t size)
 {
     size_t j = 0;
     size_t size_plus_1;

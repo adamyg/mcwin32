@@ -312,7 +312,7 @@ test_condition (const Widget *edit_widget, char *p, gboolean *condition)
             break;
         case 'x':              /* executable */
             {
-                struct stat status;
+                mc_stat_t status;
 
                 p = extract_arg (p, arg, sizeof (arg));
                 *condition = stat (arg, &status) == 0 && is_exe (status.st_mode);
@@ -627,7 +627,7 @@ execute_menu_command (const Widget *edit_widget, const char *commands, gboolean 
 static gboolean
 menu_file_own (char *path)
 {
-    struct stat st;
+    mc_stat_t st;
 
     if (stat (path, &st) == 0 && (st.st_uid == 0 || (st.st_uid == geteuid ()) != 0)
         && ((st.st_mode & (S_IWGRP | S_IWOTH)) == 0))

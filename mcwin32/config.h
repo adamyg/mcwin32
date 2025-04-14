@@ -9,8 +9,7 @@
  *
  *  The Midnight Commander is free software: you can redistribute it
  *  and/or modify it under the terms of the GNU General Public License as
- *  published by the Free Software Foundation, either version 3 of the License,
- *  or (at your option) any later version.
+ *  published by the Free Software Foundation, version 3 of the License.
  *
  *  The Midnight Commander is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,6 +21,10 @@
  *  ==end==
  */
 
+#if !defined(_LARGEFILE64_SOURCE)
+#define _LARGEFILE64_SOURCE                     /* enable large-file support */
+#endif
+
 #include "w32config.h"                          /* common configuration */
 
 #define WIN32_UNISTD_MAP                        /* enable unistd API mapping */
@@ -31,7 +34,9 @@
 #include <unistd.h>
 
 #if defined(_MSC_VER)
+#pragma warning (disable : 4102)                /* unreferenced label */
 #pragma warning (disable : 4127)                /* conditional expression is constant */
+#pragma warning (disable : 4146)                /* unary minus operator applied to unsigned type, result still unsigned */
 #pragma warning (disable : 4201)                /* nonstandard extension used : nameless struct/union */
 #pragma warning (disable : 4204)                /* nonstandard extension used : non-constant aggregate initializer */
 #pragma warning (disable : 4244)                /* possible loss of data */
@@ -47,6 +52,7 @@
 #pragma disable_message(124)                    /* Comparison result always 0 */
 #endif
 
+
 /*
  *  build information
  */
@@ -60,6 +66,16 @@
  */
 #define MC_USERCONF_DIR     MC_APPLICATION_DIR  /* see: fileloc.h, default "mc" */
 #undef  MC_HOMEDIR_XDG                          /* enforce Freedesktop recommended dirs, not required */
+
+#if defined(_LARGEFILE64_SOURCE)
+typedef struct stat64 mc_stat_t;
+typedef off64_t mc_off_t;
+#define SIZEOF_OFF_T 8
+#else
+typedef struct stat mc_stat_t;
+typedef off_t mc_off_t;
+#define SIZEOF_OFF_T 4
+#endif
 
 const char *                mc_aspell_dllpath(void);
 const char *                mc_get_locale(void);

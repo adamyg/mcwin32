@@ -27,22 +27,11 @@
 
 #include "shim.h"
 
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
-#endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <Windows.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 
 #ifndef _countof
 #define _countof(__type) (sizeof(__type)/sizeof(__type[0]))
-#endif
-#if defined(__WATCOMC__)
-#define wcsdup(__x) _wcsdup(__x)
 #endif
 
 BOOL WINAPI CtrlHandler(DWORD ctrlType);
@@ -86,40 +75,48 @@ Basename(wchar_t *path)
 }
 
 
-static BOOL
-CreateChild(PROCESS_INFORMATION *ppi, const wchar_t *name, const wchar_t *path, wchar_t *cmdline)
+int
+ShimCreateChild(PROCESS_INFORMATION *ppi, const wchar_t *name, const wchar_t *path, const wchar_t *cmdline)
 {
+    wchar_t *t_cmdline = _wcsdup(cmdline); // command line, cloned.
     STARTUPINFOW si = {0};
 
     GetStartupInfoW(&si); // process information
 
-    if (! CreateProcessW(path, cmdline, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, NULL, &si, ppi)) {
-        const DWORD error = GetLastError();
-        wchar_t *message = NULL;
+    if (NULL == t_cmdline ||
+            ! CreateProcessW(path, t_cmdline, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, NULL, &si, ppi)) {
 
-        if (FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) &message, 0, NULL) && message) {
-
-            wchar_t *nl, *rt; // trailing newline/return
-
-            nl = wcsrchr(message, '\n'); // trim
-            rt = wcsrchr(message, '\r'); // trim
-
-            if (nl) *nl = 0;
-            if (rt) *rt = 0;
-
-            wprintf(L"%s: unable to execute child : %s (0x%08lx)\n", name, message, error);
-
-        } else {
-            wprintf(L"%s: unable to execute child : 0x%08lx.\n", name, error);
-        }
-
-        LocalFree(message);
+        ShimErrorMessage(name, GetLastError());
         return FALSE;
     }
     return TRUE;
 }
 
+
+void
+ShimErrorMessage(const wchar_t *name, DWORD wrc)
+{
+    wchar_t *message = NULL;
+
+    if (FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL, wrc, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) &message, 0, NULL) && message) {
+
+        wchar_t *nl, *rt; // trailing newline/return
+
+        nl = wcsrchr(message, '\n'); // trim
+        rt = wcsrchr(message, '\r'); // trim
+
+        if (nl) *nl = 0;
+        if (rt) *rt = 0;
+
+        wprintf(L"%s: unable to execute child : %s (0x%08lx)\n", name, message, wrc);
+
+    } else {
+        wprintf(L"%s: unable to execute child : 0x%08lx.\n", name, wrc);
+    }
+
+    LocalFree(message);
+}
 
 static wchar_t orgpath[1024] = {0};
 static wchar_t newpath[1024] = {0};
@@ -137,10 +134,16 @@ static wchar_t newpath[1024] = {0};
 void
 ApplicationShim(const wchar_t *name, const wchar_t *alias)
 {
+    ApplicationShimCmd(name, alias, GetCommandLineW());
+}
+
+
+void
+ApplicationShimCmd(const wchar_t *name, const wchar_t *alias, const wchar_t *cmdline)
+{
     const BOOL diagositics = Diagnostics(); // optional runtime diagnostics
     const unsigned aliassz = wcslen(alias), // alias length, in characters.
         pathsz = GetModuleFileNameW(NULL, orgpath, _countof(orgpath)); // fully qualified path.
-    wchar_t *cmdline = wcsdup(GetCommandLineW()); // original command line, cloned.
     wchar_t *base;
 
     HANDLE job = INVALID_HANDLE_VALUE;
@@ -182,11 +185,14 @@ ApplicationShim(const wchar_t *name, const wchar_t *alias)
     joli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK;
     SetInformationJobObject(job, JobObjectExtendedLimitInformation, &joli, sizeof(joli));
 
-    if (! CreateChild(&pi, name, newpath, cmdline)) {
+    if (! ShimCreateChild(&pi, name, newpath, cmdline)) {
         return;
     }
 
     // redirect signals and monitor termination
+#if defined(_MSC_VER)
+#pragma warning(disable:6387) // handle maybe 0
+#endif
     SetConsoleCtrlHandler(CtrlHandler, TRUE);
     AssignProcessToJobObject(job, pi.hProcess);
     ResumeThread(pi.hThread);

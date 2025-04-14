@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_CHILD_H_INCLUDED
 #define LIBW32_WIN32_CHILD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.17 2025/03/06 16:59:47 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.18 2025/03/30 17:16:03 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -124,6 +124,11 @@ LIBW32_API int          w32_pread_err (FILE *file, char *buf, int length);
 /*unistd.h*/
 LIBW32_API ssize_t      pread (int fildes, void *buf, size_t nbyte, off_t offset);
 LIBW32_API ssize_t      pwrite (int fildes, const void *buf, size_t nbyte, off_t offset);
+
+#if defined(_LARGEFILE64_SOURCE)
+LIBW32_API ssize_t      pread64 (int fildes, void* buf, size_t nbyte, off64_t offset);
+LIBW32_API ssize_t      pwrite64 (int fildes, const void* buf, size_t nbyte, off64_t offset);
+#endif
 
 __END_DECLS
 
