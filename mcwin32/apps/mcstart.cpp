@@ -52,13 +52,15 @@
 #define EV_NOTOOL       3       // A required tool could not be found.
 #define EV_FAILURE      4       // The action failed.
 
+#pragma comment(lib, "Shlwapi.lib")
+
 typedef BOOL (WINAPI *ShellExecuteExW_t)(SHELLEXECUTEINFOW *);
 
 static void Usage();
 static const wchar_t *ExitvalueString(int rc);
 
-static int  StartAssociation(const wchar_t *cmd);
-static int  ShellAssociation(const wchar_t *cmd);
+static int StartAssociation(const wchar_t *cmd);
+static int ShellAssociation(const wchar_t *cmd);
 static BOOL IsOpenWith(const wchar_t *cmd);
 static void QueryAssociation(const wchar_t* cmd);
 
@@ -76,19 +78,19 @@ int wmain(int argc, wchar_t *argv[])
 
     while (-1 != (ch = Updater::Getopt(argc, argv, "CGWvVh"))) {
         switch (ch) {
-        case 'C':   // command
+        case 'C':   // Command
             ocmd = 1;
             break;
-        case 'G':   // gui
+        case 'G':   // GUI
             ogui = 1;
             break;
-        case 'W':   // wait
+        case 'W':   // Wait
             owait = 1;
             break;
         case 'v':   // verbose
             overbose = 1;
             break;
-        case 'V':   // version
+        case 'V':   // Version
             fputws(PROGNAME _L(" ") _L(VERSION) _L(".") _L(BUILD_NUMBER) _L(" (") _L(BUILD_DATE) _L(")\n"), stderr);
             return EV_FAILURE;
         case 'h':
@@ -215,26 +217,31 @@ StartAssociation(const wchar_t *argv0)
     if (overbose) fwprintf(stdout, L"CMD: %ls, %ls\n", comspec, cmd);
 
     if (! ShimCreateChild(&pi, L"start", comspec, cmd)) {
+        const DWORD attrs = GetFileAttributesW(argv0);
         int rc = EV_FAILURE;
-        if (! PathFileExistsW(argv0)) {
+
+        if (attrs == INVALID_FILE_ATTRIBUTES ||
+                (attrs & FILE_ATTRIBUTE_DIRECTORY)) {
             if (overbose) fwprintf(stderr, L"\n%ls: <%ls> not found\n", PROGNAME, argv0);
             rc = EV_NOT_FOUND;
         }
         return rc;
     }
 
-    ResumeThread(pi.hThread);
-    CloseHandle(pi.hThread);
-
-    if (owait && pi.hProcess) {
-        DWORD dwExitCode = 0;
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        GetExitCodeProcess(pi.hProcess, &dwExitCode);
-        CloseHandle(pi.hProcess);
-        if (overbose) fwprintf(stderr, L"\n%ls: rc=%u\n", PROGNAME, (unsigned)dwExitCode);
+    if (pi.hThread) {
+        ResumeThread(pi.hThread);
+        CloseHandle(pi.hThread);
     }
 
-    CloseHandle(pi.hProcess);
+    if (pi.hProcess) {
+        if (owait) {
+            DWORD dwExitCode = 0;
+            WaitForSingleObject(pi.hProcess, INFINITE);
+            GetExitCodeProcess(pi.hProcess, &dwExitCode);
+            if (overbose) fwprintf(stderr, L"\n%ls: rc=%u\n", PROGNAME, (unsigned)dwExitCode);
+        }
+        CloseHandle(pi.hProcess);
+    }
 
     return EV_SUCCESS;
 }
@@ -251,7 +258,6 @@ ShellAssociation(const wchar_t *argv0)
     HMODULE hShell32;
     ShellExecuteExW_t shellExecuteEx;
     int rc = EV_FAILURE;
-    BOOL ret;
 
 #if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
 #pragma GCC diagnostic push
@@ -305,9 +311,12 @@ ShellAssociation(const wchar_t *argv0)
         case ERROR_PATH_NOT_FOUND:  // The specified path was not found.
             rc = EV_NOT_FOUND;
             break;
-        case ERROR_CANCELLED:       // The function prompted the user for additional information, but the user canceled the request.
-            if (! PathFileExistsW(argv0)) {
-                rc = EV_NOT_FOUND;
+        case ERROR_CANCELLED: {     // The function prompted the user for additional information, but the user canceled the request.
+                const DWORD attrs = GetFileAttributesW(argv0);
+                if (attrs == INVALID_FILE_ATTRIBUTES ||
+                        (attrs & FILE_ATTRIBUTE_DIRECTORY)) {
+                    rc = EV_NOT_FOUND;
+                }
             }
             break;
         case ERROR_NO_ASSOCIATION:  // There is no application associated with the specified file name extension.
@@ -319,13 +328,15 @@ ShellAssociation(const wchar_t *argv0)
 
     } else {
         rc = EV_SUCCESS;
-        if (owait && sei.hProcess) {
-            DWORD dwExitCode = 0;
-            WaitForSingleObject(sei.hProcess, INFINITE);
-            GetExitCodeProcess(sei.hProcess, &dwExitCode);
-            if (overbose) fwprintf(stderr, L"\n%ls: rc=%u\n", PROGNAME, (unsigned)dwExitCode);
+        if (sei.hProcess) {
+            if (owait) {
+                DWORD dwExitCode = 0;
+                WaitForSingleObject(sei.hProcess, INFINITE);
+                GetExitCodeProcess(sei.hProcess, &dwExitCode);
+                if (overbose) fwprintf(stderr, L"\n%ls: rc=%u\n", PROGNAME, (unsigned)dwExitCode);
+            }
+            CloseHandle(sei.hProcess);
         }
-        CloseHandle(sei.hProcess);
     }
 
     CoUninitialize();
