@@ -3,6 +3,7 @@ Wed Apr 16 21:45:01 2025 adamy
 	* build-233
 
 		o utilize GitHub for updater (#127)
+		o mchelp locale (#126)
 		o mcstart enhancements (#124)
 
 Mon Apr 14 20:01:53 2025 adamy
