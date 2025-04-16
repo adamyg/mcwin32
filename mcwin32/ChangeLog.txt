@@ -1,13 +1,14 @@
-Mon Apr 14 22:01:53 2025 adamy
+Wed Apr 16 21:45:01 2025 adamy
 
 	* build-233
 
+		o utilize GitHub for updater (#127)
 		o mcstart enhancements (#124)
 
 Mon Apr 14 20:01:53 2025 adamy
 
 	* build-232
-	
+
 		o documentation enhancements
 		o mcstart, file-extension utility (#124)
 		o MSTerminal maximize disabled (#122)

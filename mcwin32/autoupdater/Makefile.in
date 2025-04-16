@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.14 2024/01/13 16:27:53 cvsuser Exp $
+# $Id: Makefile.in,v 1.15 2025/04/16 14:42:00 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -128,38 +128,22 @@ else
 EXPATSRC=	./libappupdater/expat
 endif
 SIGNSRC=	./libappupdater/sign
+CJSONSRC=	./libappupdater/cjson
 
-VPATH=		$(UPDATERSRC) $(UPDATERSRC)/src $(UPDATERSRC)/localisation $(UPDATERSRC)/localisation/test $(EXPATSRC) $(SIGNSRC) ./sign
+VPATH=		$(UPDATERSRC) $(UPDATERSRC)/src $(UPDATERSRC)/localisation $(UPDATERSRC)/localisation/test $(EXPATSRC) $(CJSONSRC) $(SIGNSRC) ./sign
+
+LIBCPPSOURCES=\
+	$(filter-out CVS test.c, $(notdir $(wildcard $(UPDATERSRC)/*.cpp))) \
+	$(filter-out CVS AutoVersionTest.cpp, $(notdir $(wildcard $(UPDATERSRC)/src/*.cpp))) \
+	$(filter-out CVS NSRes.cpp, $(notdir $(wildcard $(UPDATERSRC)/localisation/*.cpp)))
+
+LIBCSOURCES=\
+	$(filter-out CVS, $(notdir $(wildcard $(EXPATSRC)/*.c))) \
+	$(filter-out CVS, $(notdir $(wildcard $(CJSONSRC)/*.c)))
 
 DLLOBJS=\
-	$(D_OBJ)/libautoupdater.lo	\
-	$(D_OBJ)/AutoConfig.lo		\
-	$(D_OBJ)/AutoConsole.lo		\
-	$(D_OBJ)/AutoDialog.lo		\
-	$(D_OBJ)/AutoDownLoad.lo	\
-	$(D_OBJ)/AutoError.lo		\
-	$(D_OBJ)/AutoLogger.lo		\
-	$(D_OBJ)/AutoManifest.lo	\
-	$(D_OBJ)/AutoUpdater.lo		\
-	$(D_OBJ)/AutoVersion.lo		\
-	\
-	$(D_OBJ)/CProgressDialog.lo	\
-	$(D_OBJ)/CSimpleBrowser.lo	\
-	$(D_OBJ)/CUpdateInstallDlg.lo	\
-	$(D_OBJ)/CUpdatePromptDlg.lo	\
-	$(D_OBJ)/CUptodateDlg.lo	\
-	$(D_OBJ)/TProgressBar.lo	\
-	\
-	$(D_OBJ)/NSLocalizedCollection.lo \
-	$(D_OBJ)/NSLocalizedCollectionImpl.lo \
-	$(D_OBJ)/NSLocalizedDefault.lo	\
-	$(D_OBJ)/NSLocalizedString.lo	\
-	$(D_OBJ)/NSFormat.lo		\
-	$(D_OBJ)/NSFormatTests.lo	\
-	\
-	$(D_OBJ)/xmlparse.lo		\
-	$(D_OBJ)/xmlrole.lo		\
-	$(D_OBJ)/xmltok.lo
+	$(addprefix $(D_OBJ)/,$(subst .cpp,.lo,$(LIBCPPSOURCES))) \
+	$(addprefix $(D_OBJ)/,$(subst .c,.lo,$(LIBCSOURCES)))
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 DLLOBJS+=	$(D_OBJ)/AutoUpdater_res.o
