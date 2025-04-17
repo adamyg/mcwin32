@@ -1,4 +1,6 @@
+libappupdater.local_git
 libappupdater
 Makefile
 *.mbr
 *.err
+

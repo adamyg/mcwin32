@@ -1,4 +1,4 @@
-//  $Id: mcsignature.cpp,v 1.7 2025/03/09 13:43:38 cvsuser Exp $
+//  $Id: mcsignature.cpp,v 1.9 2025/04/17 17:07:31 cvsuser Exp $
 //
 //  AutoUpdater: Manifest generation tool.
 //
@@ -34,16 +34,19 @@ int
 main(int argc, char *argv[])
 {
     const char *version = NULL,
-#if defined(_M_AMD64)           // x64; XXX as channel?
-            *hosturl = "https://sourceforge.net/projects/mcwin32/files/mcwin32x64.manifest/download";
+#if defined(_M_AMD64)           // x64; or as channel?
+            *hosturl2 = "https://sourceforge.net/projects/mcwin32/files/mcwin32x64.manifest/download",
+            *hosturl1 = "https://api.github.com/repos/adamyg/mcwin32~mcwin32x64.manifest";
 #else
-            *hosturl = "https://sourceforge.net/projects/mcwin32/files/mcwin32.manifest/download";
+            *hosturl2 = "https://sourceforge.net/projects/mcwin32/files/mcwin32.manifest/download",
+            *hosturl1 = "https://api.github.com/repos/adamyg/mcwin32~mcwin32.manifest";
 #endif
+    const char *hosturl = hosturl1;
     const char *exename = NULL;
     int ch;
 
     x_progname = Basename(argv[0]);
-    while (-1 != (ch = Updater::Getopt(argc, argv, "V:E:H:h"))) {
+    while (-1 != (ch = Updater::Getopt(argc, argv, "V:E:H:2h"))) {
         switch (ch) {
         case 'V':   /* application version */
             version = Updater::optarg;
@@ -53,6 +56,9 @@ main(int argc, char *argv[])
             break;
         case 'H':   /* host URL template */
             hosturl = Updater::optarg;
+            break;
+        case '2':   /* legacy source */
+            hosturl = hosturl2;
             break;
         case 'h':
         default:
@@ -121,12 +127,13 @@ Usage()
 {
     std::cerr <<
         "\n"\
-        "Autoupdater manifest signature generator               version 1.01\n"\
+        "Autoupdater manifest signature generator, " VERSION "." BUILD_NUMBER " (" BUILD_DATE ")\n"\
         "\n"\
         "   mcsignature [options] <input> [<output>]\n"\
         "\n"\
         "Options:\n"\
-        "   -H <manifest>       HostURL template.\n"\
+        "   -H <host>           Explicit source URL,\n"\
+        "   -l                  or Legacy sourceforge source.\n"\
         "   -V <version>        Version label.\n"\
         "\n"\
         "Arguments:\n"\

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.15 2025/04/16 14:42:00 cvsuser Exp $
+# $Id: Makefile.in,v 1.16 2025/04/17 17:07:31 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -135,7 +135,8 @@ VPATH=		$(UPDATERSRC) $(UPDATERSRC)/src $(UPDATERSRC)/localisation $(UPDATERSRC)
 LIBCPPSOURCES=\
 	$(filter-out CVS test.c, $(notdir $(wildcard $(UPDATERSRC)/*.cpp))) \
 	$(filter-out CVS AutoVersionTest.cpp, $(notdir $(wildcard $(UPDATERSRC)/src/*.cpp))) \
-	$(filter-out CVS NSRes.cpp, $(notdir $(wildcard $(UPDATERSRC)/localisation/*.cpp)))
+	$(filter-out CVS NSRes.cpp, $(notdir $(wildcard $(UPDATERSRC)/localisation/*.cpp))) \
+	$(filter-out CVS, $(notdir $(wildcard $(UPDATERSRC)/localisation/test/*.cpp)))
 
 LIBCSOURCES=\
 	$(filter-out CVS, $(notdir $(wildcard $(EXPATSRC)/*.c))) \

@@ -1,4 +1,4 @@
-//  $Id: mcupdater.cpp,v 1.10 2025/04/16 14:42:00 cvsuser Exp $
+//  $Id: mcupdater.cpp,v 1.12 2025/04/17 17:07:31 cvsuser Exp $
 //
 //  Midnight Commander AutoUpdater command line.
 //
@@ -33,23 +33,27 @@ main(int argc, char *argv[])
 {
     const char *version = VERSION "." BUILD_NUMBER,
 #if defined(_M_AMD64)           // x64; or as channel?
-         // *hosturl2 = "https://sourceforge.net/projects/mcwin32/files/mcwin32x64.manifest/download";
-            *hosturl  = "https://api.github.com/repos/adamyg/mcwin32~mcwin32x64.manifest";
+            *hosturl2 = "https://sourceforge.net/projects/mcwin32/files/mcwin32x64.manifest/download",
+            *hosturl1 = "https://api.github.com/repos/adamyg/mcwin32~mcwin32x64.manifest";
 #else
-         // *hosturl2 = "https://sourceforge.net/projects/mcwin32/files/mcwin32.manifest/download";
-            *hosturl  = "https://api.github.com/repos/adamyg/mcwin32~mcwin32.manifest";
+            *hosturl2 = "https://sourceforge.net/projects/mcwin32/files/mcwin32.manifest/download",
+            *hosturl1 = "https://api.github.com/repos/adamyg/mcwin32~mcwin32.manifest";
 #endif
+    const char *hosturl = hosturl1;
     int mode = 2, interactive = 0;
     int ch;
 
     x_progname = Basename(argv[0]);
-    while (-1 != (ch = Updater::Getopt(argc, argv, "V:H:L:icvh"))) {
+    while (-1 != (ch = Updater::Getopt(argc, argv, "V:H:2L:icvh"))) {
         switch (ch) {
         case 'V':   /* application version */
             version= Updater::optarg;
             break;
         case 'H':   /* host URL */
             hosturl = Updater::optarg;
+            break;
+        case '2':   /* legacy source */
+            hosturl = hosturl2;
             break;
         case 'L':   /* logpath */
             autoupdate_logger_path(Updater::optarg);
@@ -142,7 +146,7 @@ Usage()
 {
     std::cerr <<
         "\n"\
-        "Midnight Commander updater                                         version 1.02\n"\
+        "Midnight Commander updater, " VERSION "." BUILD_NUMBER " (" BUILD_DATE ")\n"\
         "\n"\
         "   mcupdater [options] mode\n"\
         "\n"\
@@ -161,7 +165,8 @@ Usage()
         "\n"\
         "Options:\n"\
         "   -V <version>        Version label.\n"\
-        "   -H <host>           Host URL.\n"\
+        "   -H <host>           Explicit source URL,\n"\
+        "   -2                  or Legacy sourceforge source.\n"\
         "   -L <logpath>        Diagnostics log path.\n"\
         "   -i                  Interactive ('auto' only).\n"\
         "   -c                  Console mode.\n"\
