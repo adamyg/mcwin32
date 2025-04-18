@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.39 2025/04/01 16:15:14 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.40 2025/04/18 08:29:38 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -3279,6 +3279,7 @@ W32StatByNameA(const char *name, struct StatHandle *sb)
 {
     const char *expath;
     HANDLE handle;
+    BOOL ret = FALSE;
 
     if (NULL != (expath = w32_extendedpathA(name))) {
         name = expath;                          // extended abs-path
@@ -3295,12 +3296,11 @@ W32StatByNameA(const char *name, struct StatHandle *sb)
 
         fullname[0] = 0;
         namelen = my_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
-        if (W32StatCommon(handle, NULL, sb, fullname, namelen)) {
-            return TRUE;
-        }
+        ret = W32StatCommon(handle, NULL, sb, fullname, namelen);
+        CloseHandle(handle);
     }
 
-    return FALSE;
+    return ret;
 }
 
 
@@ -3314,6 +3314,7 @@ W32StatByNameW(const wchar_t *name, struct StatHandle *sb)
 {
     const wchar_t *expath;
     HANDLE handle;
+    BOOL ret = FALSE;
 
     if (NULL != (expath = w32_extendedpathW(name))) {
         name = expath;                          // abs-path to expanded
@@ -3330,12 +3331,11 @@ W32StatByNameW(const wchar_t *name, struct StatHandle *sb)
 
         fullname[0] = 0;
         namelen = my_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
-        if (W32StatCommon(handle, NULL, sb, fullname, namelen)) {
-            return TRUE;
-        }
+        ret = W32StatCommon(handle, NULL, sb, fullname, namelen);
+        CloseHandle(handle);
     }
 
-    return FALSE;
+    return ret;
 }
 
 
