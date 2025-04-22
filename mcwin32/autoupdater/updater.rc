@@ -62,7 +62,8 @@ CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "./libappupdater/manifest.xml"
 
 UPDATER HostURL		{ "\0" }
 UPDATER Channel		{ "release\0" }
-
+UPDATER EdDSAPubKey     { "\0" }
+UPDATER EdDSAKeyVer     { "\0" }
 
 /*
  * Version Information
@@ -97,6 +98,8 @@ VS_VERSION_INFO VERSIONINFO
 
 				VALUE "Copyright",
 					"Copyright (C) 2012-" BUILD_YEAR ", Adam Young. All rights reserved. \n"
+					"Ed25519, Copyright (c) 2015 Orson Peters <orsonpeters@gmail.com>. \n"
+					"Copyright (c) 2009-2017 Dave Gamble and cJSON contributors. \n"
 					"Copyright (c) 1998-2000 Thai Open Source Software Center Ltd and Clark Cooper. \n"
 					"Copyright (c) 2001-2019 Expat maintainers. \n"
 					"This is free software; see the source for copying conditions. \n"

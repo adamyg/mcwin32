@@ -1,4 +1,4 @@
-libappupdater.local_git
+libappupdater.*
 libappupdater
 Makefile
 *.mbr

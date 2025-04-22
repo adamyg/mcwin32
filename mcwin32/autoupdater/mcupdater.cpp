@@ -1,22 +1,14 @@
-//  $Id: mcupdater.cpp,v 1.12 2025/04/17 17:07:31 cvsuser Exp $
+//  $Id: mcupdater.cpp,v 1.13 2025/04/22 18:24:21 cvsuser Exp $
 //
 //  Midnight Commander AutoUpdater command line.
 //
 
-#include <cstdlib>
-#include <string.h>
-#include <iostream>
+#include "update/updatetoolshim.h"
+
+#include "hosturls.inc"
+#include "public_version1.inc"
 
 #include "../buildinfo.h"
-
-#include "libautoupdater.h"
-#include "getopt.h"
-
-static void                 Usage();
-static const char *         Basename(const char *name);
-
-static const char *         x_progname;
-
 
 //  Function: Main
 //      Application entry.
@@ -28,163 +20,24 @@ static const char *         x_progname;
 //      3  - Update available.
 //      99 - Usage
 //
+
 int
 main(int argc, char *argv[])
 {
-    const char *version = VERSION "." BUILD_NUMBER,
-#if defined(_M_AMD64)           // x64; or as channel?
-            *hosturl2 = "https://sourceforge.net/projects/mcwin32/files/mcwin32x64.manifest/download",
-            *hosturl1 = "https://api.github.com/repos/adamyg/mcwin32~mcwin32x64.manifest";
-#else
-            *hosturl2 = "https://sourceforge.net/projects/mcwin32/files/mcwin32.manifest/download",
-            *hosturl1 = "https://api.github.com/repos/adamyg/mcwin32~mcwin32.manifest";
-#endif
-    const char *hosturl = hosturl1;
-    int mode = 2, interactive = 0;
-    int ch;
+    struct UpdateToolArgs args = {0};
 
-    x_progname = Basename(argv[0]);
-    while (-1 != (ch = Updater::Getopt(argc, argv, "V:H:2L:icvh"))) {
-        switch (ch) {
-        case 'V':   /* application version */
-            version= Updater::optarg;
-            break;
-        case 'H':   /* host URL */
-            hosturl = Updater::optarg;
-            break;
-        case '2':   /* legacy source */
-            hosturl = hosturl2;
-            break;
-        case 'L':   /* logpath */
-            autoupdate_logger_path(Updater::optarg);
-            break;
-        case 'i':   /* interactive */
-            ++interactive;
-            break;
-        case 'c':   /* console */
-            autoupdate_set_console_mode(1);
-            break;
-        case 'v':   /* verbose */
-            autoupdate_logger_stdout(1);
-            break;
-        case 'h':
-        default:
-            Usage();
-            break;
-        }
-    }
+    args.progname = "mcupdater";
+    args.progtitle = "Midnight Commander, updater (" VERSION "." BUILD_NUMBER ")";
 
-    argv += Updater::optind;
-    if ((argc -= Updater::optind) < 1) {
-        std::cerr << "\n" <<
-            x_progname << ": expected arguments <mode>" << std::endl;
-        Usage();
-    } else if (argc > 1) {
-        std::cerr << "\n" <<
-            x_progname << ": unexpected arguments '" << argv[1] << "' ..." << std::endl;
-        Usage();
-    }
+    args.appname = "Midnight Commander";
+    args.version = VERSION "." BUILD_NUMBER;
 
-    const char *arg = argv[0];
+    args.hosturl = hosturl1;
+    args.hosturlalt = hosturl2;
+    args.publickey = public_key_base64;
+    args.keyversion = key_version;
 
-#if defined(__MINGW32__)
-#define STRICMP(__a,__b) strcasecmp(__a,__b)
-#else
-#define STRICMP(__a,__b) _stricmp(__a,__b)
-#endif
-
-    if (0 == STRICMP("disable", arg)) {
-        mode = 0;
-    } else if (0 == STRICMP("enable", arg)) {
-        mode = 1;
-    } else if (0 == STRICMP("auto", arg)) {
-        mode = 2;
-    } else if (0 == STRICMP("prompt", arg)) {
-        mode = 3;
-    } else if (0 == STRICMP("force", arg)) {
-        mode = 4;
-    } else if (0 == STRICMP("reinstall", arg)) {
-        mode = 5;
-    } else if (0 == STRICMP("reset", arg)) {
-        mode = -1;
-    } else if (0 == STRICMP("dump", arg)) {
-        mode = -2;
-    } else if (0 == STRICMP("config", arg)) {
-        std::cout
-            << PACKAGE_NAME << "\n"
-            << "Built:   " << BUILD_DATE << "\n"
-            << "Version: " << version << "\n"
-            << "Host:    " << hosturl << "\n";
-        return 0;
-    } else {
-        std::cerr << "\n" <<
-            x_progname << ": unknown mode '" << arg << "'" << std::endl;
-        Usage();
-    }
-
-    if (mode >= 1) {
-        autoupdate_appversion_set(version);
-        autoupdate_hosturl_set(hosturl);
-        autoupdate_appname_set("Midnight Commander"); // match installer
-    }
-
-    return autoupdate_execute(mode, interactive);
+    return UpdateToolShim(argc, argv, &args);
 }
 
-
-//  Function: Usage
-//      Echo the command line usage and exit.
-//
-//  Parameters:
-//      none
-//
-//  Returns:
-//      n/a
-//
-static void
-Usage()
-{
-    std::cerr <<
-        "\n"\
-        "Midnight Commander updater, " VERSION "." BUILD_NUMBER " (" BUILD_DATE ")\n"\
-        "\n"\
-        "   mcupdater [options] mode\n"\
-        "\n"\
-        "Modes:\n"\
-        "   auto -              Periodically check for updates.\n"\
-        "   prompt -            Re-prompt user when periodic updates are disabled.\n"\
-        "   force -             Prompt ignoring skip status.\n"\
-        "   reinstall -         Prompt unconditionally, even if up-to-date/skipped.\n"\
-        "\n"\
-        "   enable -            Enable periodic checks.\n"\
-        "   disable -           Disable automatic periodic checks.\n"\
-        "   reset -             Reset the updater status.\n"\
-        "\n"\
-        "   config -            Configuration.\n"\
-        "\n"\
-        "\n"\
-        "Options:\n"\
-        "   -V <version>        Version label.\n"\
-        "   -H <host>           Explicit source URL,\n"\
-        "   -2                  or Legacy sourceforge source.\n"\
-        "   -L <logpath>        Diagnostics log path.\n"\
-        "   -i                  Interactive ('auto' only).\n"\
-        "   -c                  Console mode.\n"\
-        "   -v                  Verbose diagnostice.\n"\
-        "\n" << std::endl;
-    std::exit(99);
-}
-
-
-//  Function: Basename
-//      Retrieve the file basename from the specified file path.
-//
-static const char *
-Basename(const char *filename)
-{
-    const char *name;
-    return (NULL != (name = strrchr(filename, '/')))
-                || (NULL != (name = strrchr(filename, '\\'))) ? name + 1 : filename;
-}
-
-/*end*/
+//end
