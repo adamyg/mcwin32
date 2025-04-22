@@ -41,6 +41,7 @@
 ;
 AppId={{CBB4464D-7081-4F1D-9F6D-F5288A4A9B82}
 AppName=GNU Midnight Commander
+VersionInfoVersion={#VERSION_1}.{#VERSION_2}.{#VERSION_3}.{#VERSION_4}
 AppVersion={#VERSION} (build: {#BUILD_DATE}-{#BUILD_NUMBER})
 AppPublisher=The Free Software Foundation, Inc.
 AppPublisherURL=https://www.midnight-commander.org/
