@@ -1,35 +1,68 @@
 
 Native GNU Midnight Commander for Win32
-
 --------------------------------------------
 
 Windows XP+/32 bit native port of GNU Midnight Commander, based on
 the current 4.8.x development stream.
 
-        Version         Latest Build
-        
+        Version         Build Notes
+
+        4.8.33          233
+
+                                - internal tools
+
+                                        o mcupdater
+                                            - Ed25519 support (#129) libappupdater-1.0.3
+                                            - utilize GitHub for updater (#127)
+                                        o mchelp locale (#126)
+                                        o mcstart enhancements (#124)
+
+                                - upgrades/bug-fixes
+
+                                        o handle resource leak (#128)
+
+        4.8.33          232
+
+                                - internal tools
+
+                                        o mandoc / mchelp integration (#116)
+                                        o mcstart, file-extension utility (#124)
+                                        o mc-wrapper's (#69)
+
+                                - upgrades/bug-fixes
+
+                                        o documentation enhancements
+                                        o MSTerminal maximize disabled (#122)
+                                        o obey NODRIVES group policy (#121)
+                                        o getmntinfo, networked/mapped drive (#120)
+                                        o script enhancements, MC_XDG_OPEN as "start" (#119)
+                                        o non-ascii group name handling (#118)
+                                        o stat/seek64 (#35) and (#89)
+                                        o unzip vfs (#88)
+                                        o ESC timeout, -1 enables an infinite wait (#36)
+
         4.8.33          231 (mc merge 4.8.33)
-        
-	                        - internal tools front-ends, externalized (#78)
 
-		                        o mcedit
-		                        o mcdiff and mcbsddiff (diff backend)
-		                        o mcview
+                                - internal tools front-ends, externalized (#78)
 
-	                        - upgrades/bugfixes
+                                        o mcedit
+                                        o mcdiff and mcbsddiff (diff backend)
+                                        o mcview
 
-		                        o vio: wide-character handling (#115)
-		                        o wputenv() cross tool-chain usage (#113)
-		                        o pcre2 10.45 (#106)
-		                        o appupdater (#102)
-		                        o glib 2.54.3 (#102)
-		                        o zlib-1.3.1 (#102)
-		                        o mbedtls-3.6.2 (#100)
-		                        o improved UNC and extended prefix support, plus stat optimisations (#98)
-		                        o libssh2-1.11.1 (#95)
-		                        o enhanced utf8 support, directory plus username; non-ascii user name support (#97)
-		                        o EXDEV, cross-device detection rename failure; allowing alt move logic (#85)
-		                        o x64 installer path (#79)
+                                - upgrades/bugfixes
+
+                                        o vio: wide-character handling (#115)
+                                        o wputenv() cross tool-chain usage (#113)
+                                        o pcre2 10.45 (#106)
+                                        o appupdater (#102)
+                                        o glib 2.54.3 (#102)
+                                        o zlib-1.3.1 (#102)
+                                        o mbedtls-3.6.2 (#100)
+                                        o improved UNC and extended prefix support, plus stat optimisations (#98)
+                                        o libssh2-1.11.1 (#95)
+                                        o enhanced utf8 support, directory plus username; non-ascii user name support (#97)
+                                        o EXDEV, cross-device detection rename failure; allowing alt move logic (#85)
+                                        o x64 installer path (#79)
 
         4.8.31          230 (mc merge 4.8.31)
 
@@ -239,3 +272,8 @@ A few items are unix specific (e.g. chown), which shall be updated over
 time.
 
 -end-
+
+
+
+
+
