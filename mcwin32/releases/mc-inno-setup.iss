@@ -41,6 +41,7 @@
 ;
 AppId={{CBB4464D-7081-4F1D-9F6D-F5288A4A9B82}
 AppName=GNU Midnight Commander
+VersionInfoVersion={#VERSION_1}.{#VERSION_2}.{#VERSION_3}.{#VERSION_4}
 AppVersion={#VERSION} (build: {#BUILD_DATE}-{#BUILD_NUMBER})
 AppPublisher=The Free Software Foundation, Inc.
 AppPublisherURL=https://www.midnight-commander.org/
@@ -118,12 +119,13 @@ Source: "..\{#BinDir}\enca.exe";      DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\kbtest.exe";    DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\*.dll";         DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#BinDir}\man2hlp.pl";    DestDir: "{app}"; Flags: ignoreversion
-Source: "..\{#BinDir}\etc\*";         Excludes: ".created"; DestDir: "{app}\etc";     Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\plugin\*";      Excludes: ".created"; DestDir: "{app}\plugin";  Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\libexec\*";     Excludes: ".created"; DestDir: "{app}\libexec"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\share\*";       Excludes: ".created"; DestDir: "{app}\share";   Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\doc\*";         Excludes: ".created"; DestDir: "{app}\doc";     Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\{#BinDir}\locale\*";      Excludes: ".created"; DestDir: "{app}\locale";  Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\etc\*";         Excludes: ".created"; DestDir: "{app}\etc";       Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\plugin\*";      Excludes: ".created"; DestDir: "{app}\plugin";    Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\libexec\*";     Excludes: ".created"; DestDir: "{app}\libexec";   Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\share\*";       Excludes: ".created"; DestDir: "{app}\share";     Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\share\man\*";   Excludes: ".created"; DestDir: "{app}\share\man"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\doc\*";         Excludes: ".created"; DestDir: "{app}\doc";       Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\{#BinDir}\locale\*";      Excludes: ".created"; DestDir: "{app}\locale";    Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Dont use "Flags: ignoreversion" on any shared system files
 
 [Icons]

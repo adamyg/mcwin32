@@ -1391,8 +1391,13 @@ system_impl (int flags, const char *shell, const char *cmd)
 
                 for (i = 0; i < _countof(busyboxcmds); ++i) {
                     if (0 == strcmp(busyboxcmds[i], argv[0])) {
-                        ret = w32_shell(busybox, cmd, NULL, NULL, NULL);
-                        return ret;
+                        char *t_cmd;            /* via busybox thru shell for redir support */
+
+                        if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
+                            ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
+                            g_free(t_cmd);
+                            return ret;
+                        }
                     }
                 }
             }

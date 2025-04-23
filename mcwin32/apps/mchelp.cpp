@@ -31,32 +31,40 @@
 #include <iostream>
 
 #include "getopt.h"
+#include "..\buildinfo.h"
 
 #ifndef _countof
 #define _countof(__type) (sizeof(__type)/sizeof(__type[0]))
 #endif
+#define __L(__t)    L##__t
+#define _L(__t)     __L(__t)
 
-static wchar_t *Cmdline(const char *topic, unsigned section);
+static wchar_t *CommandLine(const char *topic, const char *locale, unsigned section);
+static const char *GetLocale(void);
 static void Usage();
 
-static const char PROGNAME[] = {"mchelp"};
-static const wchar_t WMCVIEW[] = {L"mcview"};
-
-static const char MANPATH[] = {"share\\man\\"};
-static const wchar_t WMANPATH[] = {L"share\\man\\"};
-
+static const wchar_t PROGNAME[] = {L"mchelp"};
+static const wchar_t MANPATH[] = {L"share\\man\\"};
+static const wchar_t MCVIEW[] = { L"mcview" };
 
 int
-main(int argc, char **argv)
+main(int argc, char *argv[])
 {
+    const char *locale = GetLocale();
     unsigned section = 1;
     int ch;
 
-    while (-1 != (ch = Updater::Getopt(argc, argv, "s:h"))) {
+    while (-1 != (ch = Updater::Getopt(argc, argv, "l:s:Vh"))) {
         switch (ch) {
-        case 's':   /* section */
+        case 'l':   // locale
+            locale = Updater::optarg;
+            break;
+        case 's':   // section
             section = static_cast<unsigned>(strtoul(Updater::optarg, NULL, 10));
             break;
+        case 'V':   // version
+            fwprintf(stderr, L"%ls: " _L(VERSION) _L(".") _L(BUILD_NUMBER) _L(" (") _L(BUILD_DATE) _L(")\n"), PROGNAME);
+            return EXIT_FAILURE;
         case 'h':
         default:
             Usage();
@@ -66,103 +74,171 @@ main(int argc, char **argv)
 
     argv += Updater::optind;
     if ((argc -= Updater::optind) < 1) {
-        std::cerr << "\n" <<
-            PROGNAME << ": expected a topic" << std::endl;
+        fwprintf(stderr, L"\n%ls: expected a topic\n", PROGNAME);
         Usage();
 
     } else if (argc > 1) {
-        std::cerr << "\n" <<
-            PROGNAME << ": unexpected arguments '" << argv[1] << "' ..." << std::endl;
+        fwprintf(stderr, L"\n%ls: unexpected argument(s) after topic", PROGNAME);
         Usage();
 
     } else {
-        ApplicationShimCmd(WMCVIEW, L"mc.exe", Cmdline(argv[0], section));
+        ApplicationShimCmd(MCVIEW, L"mc.exe", CommandLine(argv[0], locale, section));
     }
 
     return EXIT_FAILURE;
 }
 
 
+/**
+ *  CommandLine ---
+ *      Build the mcview command line, resolving help source.
+ */
 static wchar_t *
-Cmdline(const char *topic, unsigned section)
+CommandLine(const char *topic, const char *locale, unsigned section)
 {
     char suffix[32];
     _snprintf(suffix, _countof(suffix), ".%u.man", section);
 
-    const size_t total_len = (_countof(WMCVIEW) + MAX_PATH) + 32 + strlen(topic) + strlen(suffix);
+    const size_t total_len = (_countof(MCVIEW) + MAX_PATH + 8) +
+                    strlen(locale) + strlen(topic) + strlen(suffix);
     wchar_t *buf = static_cast<wchar_t *>(calloc(total_len, sizeof(wchar_t)));
     size_t aptlen, len;
 
-    aptlen = swprintf(buf, total_len, L"%s \"", WMCVIEW);
+    aptlen = swprintf(buf, total_len, L"%ls \"", MCVIEW);
 
     if ((len = GetModuleFileNameW(NULL, buf + aptlen, MAX_PATH)) > 0) {
-        wchar_t *cp;
+        wchar_t *path = buf + aptlen, *cp;
 
         len += aptlen;
 
-        for (cp = buf + len; (cp > (buf + aptlen)) && (*cp != '\\'); cp--)
-            --len;                              // remove application-name
+        // remove application-name
+        for (cp = buf + len; (cp > (buf + aptlen)) && (*cp != '\\'); cp--) {
+            --len;
+        }
 
         if ('\\' == *cp) ++cp;
+        cp += swprintf(cp, total_len - len, MANPATH);
 
-        cp += swprintf(cp, total_len - len, WMANPATH);
-        for (const char *cursor = topic; *cursor; ++cursor) {
-            *cp++ = *cursor;
-        }
-        for (const char *cursor = suffix; *cursor; ++cursor) {
-            *cp++ = *cursor;
-        }
+        // search locale
+        do {
+            wchar_t *end = cp;
+
+            if (locale) {                       // ../<locale>/<topic>
+                if (!*locale) {
+                    locale = NULL; // empty
+                } else {
+                    for (const char *cursor = locale; *cursor; ++cursor) {
+                        *end++ = *cursor;
+                    }
+                    *end++ = '\\';
+                }
+            }
+
+            for (const char *cursor = topic; *cursor; ++cursor) {
+                *end++ = *cursor;
+            }
+
+            for (const char *cursor = suffix; *cursor; ++cursor) {
+                *end++ = *cursor;
+            }
+            *end = '\0';
+
+            if (locale) {
+                const DWORD attrs = GetFileAttributesW(path);
+
+                if (attrs == INVALID_FILE_ATTRIBUTES ||
+                            (attrs & FILE_ATTRIBUTE_DIRECTORY)) {
+                    if ((locale = strchr(locale, '_')) != NULL) {
+                        ++locale; // next component.
+                    }
+                    continue; // next component, otherwise without. 
+                }
+            }
+            cp = end;
+            break;
+
+        } while (1);
 
         *cp++ = '"';
         *cp = '\0';
 
-        for (; (cp > (buf + aptlen)); cp--)
-            if (*cp == '\\') *cp = '/';         // path conversion
+        // path conversion
+        for (; (cp > (buf + aptlen)); cp--) {
+            if (*cp == '\\') *cp = '/';
+        }
+
+    } else {
+        swprintf(buf, total_len, L"%ls \"mc\"", MCVIEW);
     }
     return buf;
 }
 
 
+/**
+ *  GetLocale ---
+ *      Retrieve current locale.
+ */
+static const char *
+GetLocale(void)
+{
+    static char x_lang[64] = {0};
+
+    if (0 == x_lang[0]) {
+        char iso639[16] = {0}, iso3166[16] = {0};
+        LCID lcid = GetThreadLocale();
+
+        if (GetLocaleInfoA(lcid, LOCALE_SISO639LANGNAME, iso639, sizeof(iso639)) &&
+                GetLocaleInfoA(lcid, LOCALE_SISO3166CTRYNAME, iso3166, sizeof(iso3166))) {
+            snprintf(x_lang, sizeof(x_lang), "%s_%s", iso639, iso3166); // "9_9"
+            x_lang[sizeof(x_lang) - 1] = '\0';
+        }
+    }
+    return x_lang[0] ? x_lang : NULL;
+}
+
+
+/**
+ *  Usage ---
+ *      Command line usage, plus list of available topics.
+ */
 static void
 Usage()
 {
-    char path[MAX_PATH];
+    wchar_t path[MAX_PATH];
     size_t len;
 
-    std::cerr <<
-        "\nusage: " << PROGNAME << " -s [section] topic\n";
+    fwprintf(stderr, L"\nusage: %ls -l [locale] -s [section] topic\n", PROGNAME);
 
-    if ((len = GetModuleFileNameA(NULL, path, MAX_PATH)) > 0) {
-        char *cp;
+    if ((len = GetModuleFileNameW(NULL, path, _countof(path))) > 0) {
+        wchar_t *cp;
 
         for (cp = path + len; (cp > path) && (*cp != '\\'); cp--)
             --len;                              // remove application-name
 
         if ('\\' == *cp) {                      // expand
-            WIN32_FIND_DATAA ffd = {0};
+            WIN32_FIND_DATAW ffd = {0};
             HANDLE h = INVALID_HANDLE_VALUE;
 
-            _snprintf(cp, _countof(path) - len, "\\%s\\*.man", MANPATH);
+            _snwprintf(cp, _countof(path) - len, L"\\%ls\\*.man", MANPATH);
 
-            if ((h = FindFirstFileA(path, &ffd)) != INVALID_HANDLE_VALUE) {
-                std::cerr <<
-                    "\ntopics:\n   ";
+            if ((h = FindFirstFileW(path, &ffd)) != INVALID_HANDLE_VALUE) {
+                fwprintf(stderr, L"\ntopics:\n");
 
                 do {
                     if (0 == (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-                        ffd.cFileName[strlen(ffd.cFileName) - 4] = 0;
-                        std::cerr << ' ' << ffd.cFileName;
+                        ffd.cFileName[wcslen(ffd.cFileName) - 4] = 0;
+                        fwprintf(stderr, L" %ls", ffd.cFileName);
                     }
-                } while (FindNextFileA(h, &ffd));
+                } while (FindNextFileW(h, &ffd));
 
                 FindClose(h);
 
-                std::cerr << "\n";
+                fwprintf(stderr, L"\n");
             }
         }
     }
 
-    std::cerr << std::endl;
+    fwprintf(stderr, L"\n");
     std::exit(EXIT_FAILURE);
 }
 

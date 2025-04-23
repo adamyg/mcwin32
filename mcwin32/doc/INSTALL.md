@@ -129,6 +129,27 @@ The resulting build profile and options shall be available.
     "make release clean"    - remove build tree.
 ```
 
+make options are presented when no target are stated, example
+
+```
+  |
+  | make [VERBOSE=1] [release or debug] target
+  |
+  |       Build one or more of the following targets recursively within each sub-directory
+  |       for the toolchain "Visual Studio 2019" (vs160).
+  |
+  | Options:
+  |       VERBOSE - increase run-time diagnostics; suppress stderr filtering.
+  |
+  | Targets:
+  |
+  |       build - build everything.
+  |       package - build package.
+  |       clean - delete everything which can be remade.
+  |       vclean - delete all.
+  |       help - command line usage.
+  .
+```
 Once reviewed execute the following:
 
     $ .\support\gmake-42 release
@@ -139,7 +160,6 @@ and optionally a local installer
 
 alternatively zip and copy the ``bin.<toolchain>/release`` tree to your desired install location.
 
-
 Tool-chains
 ===========
 
@@ -148,6 +168,11 @@ The follow offers a more detailed discussion of the requirements and instruction
   - [Native builds using Open-Watcom](#native-builds-using-openwatcom-c-c)
   - [Native builds using Visual C++](#native-builds-using-visual-c-c)
   - [Native builds using MinGW64](#native-builds-using-mingw)
+
+Finally, please review the packaged example alternative configurations as win32 development environments can be problematic, dependent on the host setup:                                                                                                              
+
+  - .github/workflows, github build actions for owc, msvc and mingw64 toolchains.
+  - Appveyor CI integration notes [Appveyor CI](CINotes.md).           
 
 Native builds using Open-Watcom C/C++
 ====================================

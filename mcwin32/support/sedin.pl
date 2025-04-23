@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: sedin.pl,v 1.12 2025/04/12 18:02:46 cvsuser Exp $
-# sed in processing tool, processing embedded @PERL@ @PYTHON@ etc
+# $Id: sedin.pl,v 1.13 2025/04/14 18:44:47 cvsuser Exp $
+# sed in processing tool, processing embedded script tokens
 #
 # Copyright Adam Young 2017 - 2025
 #
@@ -151,6 +151,7 @@ scriptin()
                                 $extra = <<'END'
 if [ ! -z "${MC_DIRECTORY}" ]; then
     export PATH="${MC_DIRECTORY}:${PATH}"
+    [ -n "$DISPLAY" ] || DISPLAY="console"
 fi
 END
                         } else {
@@ -241,6 +242,7 @@ script()
                         $extra = <<'END'
 if [ ! -z "${MC_DIRECTORY}" ]; then
     export PATH="${MC_DIRECTORY}:${PATH}"
+    [ -n "$DISPLAY" ] || DISPLAY="console"
 fi
 END
                 }

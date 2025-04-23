@@ -1,5 +1,9 @@
 
     Source: mbed TLS 3.6.2
+    
+        Notes:
+        
+                2017+ only: https://github.com/Mbed-TLS/mbedtls/issues/8770
 
         Makefile.in:
 

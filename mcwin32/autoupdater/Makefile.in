@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.14 2024/01/13 16:27:53 cvsuser Exp $
+# $Id: Makefile.in,v 1.17 2025/04/22 18:24:21 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -67,6 +67,9 @@ ifeq ("gcc","@CC@")
 #CWARN+=	-Wno-unused-parameter -Wno-unused-function
 #CWARN+=	-Wno-missing-field-initializers -Wno-implicit-fallthrough
 endif
+ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
+CFLAGS+=	-wcd=124
+endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 CXXFLAGS=	@CXXFLAGS@
@@ -85,7 +88,7 @@ LDDEBUG=	@LDDEBUG@
 LDRELEASE=	@LDRELEASE@
 
 CINCLUDE=	-I$(D_INC) @CINCLUDE@
-CEXTRA=		@DEFS@ @LIBCURL_CPPFLAGS@ -DLIBTRE_DLL
+CEXTRA=		@DEFS@ @LIBCURL_CPPFLAGS@
 ifdef PURIFY
 CEXTRA+=	-DUSING_PURIFY
 endif
@@ -114,7 +117,7 @@ RMDFLAGS=	-rf
 #########################################################################################
 # Targets
 
-VERSION=	1.0.1
+VERSION=	1.0.3
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 
 UPDATERDLL=	$(D_LIB)/$(LP)autoupdater.la
@@ -128,38 +131,30 @@ else
 EXPATSRC=	./libappupdater/expat
 endif
 SIGNSRC=	./libappupdater/sign
+UPDATESRC=	./libappupdater/update
+CJSONSRC=	./libappupdater/cjson
+ED25519SRC=	./libappupdater/ed25519/src
 
-VPATH=		$(UPDATERSRC) $(UPDATERSRC)/src $(UPDATERSRC)/localisation $(UPDATERSRC)/localisation/test $(EXPATSRC) $(SIGNSRC) ./sign
+VPATH=\
+	$(UPDATERSRC) $(UPDATERSRC)/src $(UPDATERSRC)/util \
+	$(UPDATERSRC)/localisation $(UPDATERSRC)/localisation/test \
+	$(EXPATSRC) $(CJSONSRC) $(ED25519SRC) \
+	$(SIGNSRC) $(UPDATESRC)
+
+LIBCPPSOURCES=\
+	$(filter-out CVS test.c, $(notdir $(wildcard $(UPDATERSRC)/*.cpp))) \
+	$(filter-out CVS AutoVersionTest.cpp, $(notdir $(wildcard $(UPDATERSRC)/src/*.cpp))) \
+	$(filter-out CVS, $(notdir $(wildcard $(UPDATERSRC)/localisation/*.cpp))) \
+	$(filter-out CVS, $(notdir $(wildcard $(UPDATERSRC)/localisation/test/*.cpp)))
+
+LIBCSOURCES=\
+	$(filter-out CVS, $(notdir $(wildcard $(EXPATSRC)/*.c))) \
+	$(filter-out CVS, $(notdir $(wildcard $(CJSONSRC)/*.c))) \
+	$(filter-out CVS, $(notdir $(wildcard $(ED25519SRC)/*.c)))
 
 DLLOBJS=\
-	$(D_OBJ)/libautoupdater.lo	\
-	$(D_OBJ)/AutoConfig.lo		\
-	$(D_OBJ)/AutoConsole.lo		\
-	$(D_OBJ)/AutoDialog.lo		\
-	$(D_OBJ)/AutoDownLoad.lo	\
-	$(D_OBJ)/AutoError.lo		\
-	$(D_OBJ)/AutoLogger.lo		\
-	$(D_OBJ)/AutoManifest.lo	\
-	$(D_OBJ)/AutoUpdater.lo		\
-	$(D_OBJ)/AutoVersion.lo		\
-	\
-	$(D_OBJ)/CProgressDialog.lo	\
-	$(D_OBJ)/CSimpleBrowser.lo	\
-	$(D_OBJ)/CUpdateInstallDlg.lo	\
-	$(D_OBJ)/CUpdatePromptDlg.lo	\
-	$(D_OBJ)/CUptodateDlg.lo	\
-	$(D_OBJ)/TProgressBar.lo	\
-	\
-	$(D_OBJ)/NSLocalizedCollection.lo \
-	$(D_OBJ)/NSLocalizedCollectionImpl.lo \
-	$(D_OBJ)/NSLocalizedDefault.lo	\
-	$(D_OBJ)/NSLocalizedString.lo	\
-	$(D_OBJ)/NSFormat.lo		\
-	$(D_OBJ)/NSFormatTests.lo	\
-	\
-	$(D_OBJ)/xmlparse.lo		\
-	$(D_OBJ)/xmlrole.lo		\
-	$(D_OBJ)/xmltok.lo
+	$(addprefix $(D_OBJ)/,$(subst .cpp,.lo,$(LIBCPPSOURCES))) \
+	$(addprefix $(D_OBJ)/,$(subst .c,.lo,$(LIBCSOURCES)))
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 DLLOBJS+=	$(D_OBJ)/AutoUpdater_res.o
@@ -169,7 +164,8 @@ endif
 
 UPDATEROBJS=\
 	$(D_OBJ)/mcupdater$(O)		\
-	$(D_OBJ)/getopt$(O)
+	$(D_OBJ)/updatetoolshim$(O)	\
+	$(D_OBJ)/upgetopt$(O)
 
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 UPDATEROBJS+=	$(D_OBJ)/updater_res.o
@@ -179,8 +175,9 @@ endif
 
 SIGNATUREOBJS=\
 	$(D_OBJ)/mcsignature$(O)	\
-	$(D_OBJ)/signature$(O)		\
-	$(D_OBJ)/getopt$(O)
+	$(D_OBJ)/signtoolshim$(O)	\
+	$(D_OBJ)/signmanifest$(O)	\
+	$(D_OBJ)/upgetopt$(O)
 
 OBJS=		$(DLLOBJS) $(UPDATEROBJS) $(SIGNATUREOBJS)
 LIBS=
@@ -208,7 +205,7 @@ $(UPDATERDLL):		CEXTRA += -D_WIN32
 ifdef USE_DEBUG
 $(UPDATERDLL):		CEXTRA += -D_DEBUG
 endif
-$(UPDATERDLL):		CEXTRA += -DBUILDING_LIBAUTOUPDATER
+$(UPDATERDLL):		CEXTRA += -DBUILDING_LIBAUTOUPDATER -DED25519_BUILD_DLL
 $(UPDATERDLL):		$(D_OBJ)/.created $(DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(DLLOBJS) -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) $(LDLIBS) version.lib wininet.lib advapi32.lib user32.lib
