@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.26 2025/03/30 17:16:02 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.27 2025/04/23 06:41:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -725,8 +725,10 @@ done:;  free(buf);
 
     /* Close any unnecessary handles. */
     if (hProc) {                                // success
-        if (! CloseHandle(pi.hThread)) {
-            InternalError("CloseHandle (thread)");
+        if (pi.hThread) {
+            if (! CloseHandle(pi.hThread)) {
+                InternalError("CloseHandle (thread)");
+            }
         }
     }
 
@@ -849,8 +851,10 @@ done:;  free(buf);
 
     /* Close any unnecessary handles. */
     if (hProc) {                                // success
-        if (! CloseHandle(pi.hThread)) {
-            InternalError("CloseHandle (thread)");
+        if (pi.hThread) {
+            if (! CloseHandle(pi.hThread)) {
+                InternalError("CloseHandle (thread)");
+            }
         }
     }
 

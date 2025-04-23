@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.24 2025/03/30 17:16:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.25 2025/04/23 06:41:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -93,7 +93,7 @@ static void             InternalError(const char *pszAPI);
 
 /*
  *  w32_shell ---
- *      System specfic shell interface.
+ *      System specific shell interface.
  */
 int
 w32_shell(const char *shell, const char *cmd,
@@ -233,11 +233,11 @@ ShellA(const char *shell, const char *cmd,
         }
 
     } else {
-        // Create a duplicate of the output (file) handle for thestd error write handle.
+        // Create a duplicate of the output (file) handle for the std error write handle.
         // This is necessary in case the child application closes one of its std output handles.
         //
         if (! Dup(hOutFile, &pd.hError, TRUE)) {
-            InternalError("shell: dup (fileout)");
+            InternalError("shell: dup (out)");
         }
     }
 
@@ -378,11 +378,11 @@ ShellW(const wchar_t *shell, const wchar_t  *cmd,
         }
 
     } else {
-        // Create a duplicate of the output (file) handle for thestd error write handle.
+        // Create a duplicate of the output (file) handle for the std error write handle.
         // This is necessary in case the child application closes one of its std output handles.
         //
         if (! Dup(hOutFile, &pd.hError, TRUE)) {
-            InternalError("shell: dup (fileout)");
+            InternalError("shell: dup (out)");
         }
     }
 
@@ -486,7 +486,7 @@ ShellCleanup(void *p)
  *
  *  Parameters:
  *      Stdout -    [in]  Process 'stdout' file descriptor.
- *      Stderr -    [in]  Optional, process 'stderr' file descritor.
+ *      Stderr -    [in]  Optional, process 'stderr' file descriptor.
  *      Stdin -     [out] Storage to the processes 'stdin' pipe.
  *
  *  Returns:
@@ -943,7 +943,7 @@ ImportArgv(const char **argv)
                     return NULL;
                 }
                 if (0 == argc) {
-                    while (*cursor) {           // convert slashs within arg0.
+                    while (*cursor) {           // convert slashes within arg0.
                         if ('/' == *cursor) *cursor = '\\';
                         ++cursor;
                     }
@@ -1001,7 +1001,7 @@ ImportEnvv(const char **envv)
     }
 
     /*
-     *  Build the environment vector by importing the env collection.
+     *  Build the environment vector by importing the environment collection.
      */
     ret = (const wchar_t **)buffer;
 
@@ -1066,7 +1066,8 @@ w32_execA(win32_exec_t *args)
     }
 
     // Create new output read handle and the input write handles, set as non inheritable.
-    // Otherwise, the child inherits the properties and, as a result, non-closeable handles to the pipes are created.
+    // Otherwise, the child inherits the properties and, as a result,
+    // non-closeable handles to the pipes are created.
     if (! Dup(hInputWriteTmp, &hInputWrite, FALSE) ||
             ! Dup(hOutputReadTmp, &hOutputRead, FALSE) ||
             ! Dup(hErrorReadTmp, &hErrorRead, FALSE)) {
@@ -1124,7 +1125,8 @@ w32_execW(win32_execw_t *args)
     }
 
     // Create new output read handle and the input write handles, set as non inheritable.
-    // Otherwise, the child inherits the properties and, as a result, non-closeable handles to the pipes are created.
+    // Otherwise, the child inherits the properties and, as a result,
+    // non-closeable handles to the pipes are created.
     if (! Dup(hInputWriteTmp, &hInputWrite, FALSE) ||
             ! Dup(hOutputReadTmp, &hOutputRead, FALSE) ||
             ! Dup(hErrorReadTmp, &hErrorRead, FALSE)) {
@@ -1242,18 +1244,24 @@ StartRedirectThread(
     DWORD tid;
     Redirect_t *p;
 
-    if (NULL == (p = malloc(sizeof(*p)))) {
+    if (NULL == (p = (Redirect_t *)malloc(sizeof(*p)))) {
         InternalError("malloc");
+        return -1;
     }
+
     p->what = what;
     p->hPipe = hPipe;
     p->hDupPipe = hDupPipe;
     p->fd = fd;
+
     if ((hThread = CreateThread(NULL, 0, RedirectThread, (LPVOID)p, 0, &tid)) == 0) {
         InternalError("CreateThread");
     }
-    if (!CloseHandle(hThread)) {
-        InternalError("closeHandle (hThread)");
+
+    if (hThread) {
+        if (! CloseHandle(hThread)) {
+            InternalError("closeHandle (hThread)");
+        }
     }
     return 0;
 }
