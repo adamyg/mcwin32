@@ -1,7 +1,9 @@
-Wed Apr 16 21:45:01 2025 adamy
+Wed Apr 23 17:33:24 2025 adamy
 
 	* build-233
 
+		o Ed25519 support (#129) libappupdater-1.0.3
+		o handle resource leak (#128)
 		o utilize GitHub for updater (#127)
 		o mchelp locale (#126)
 		o mcstart enhancements (#124)
