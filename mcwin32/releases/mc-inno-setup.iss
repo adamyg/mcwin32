@@ -68,7 +68,7 @@ AppPublisherURL={#APP_PUBLISHER_URL}
 AppSupportURL={#APP_SUPPORT_URL}
 AppUpdatesURL={#APP_SUPPORT_URL}
 
-DefaultDirName={pf}\{#APP_NAME}
+DefaultDirName={commonpf}\{#APP_NAME}
 DefaultGroupName={#APP_NAME}
 LicenseFile=..\{#BinDir}\doc\COPYING
 
