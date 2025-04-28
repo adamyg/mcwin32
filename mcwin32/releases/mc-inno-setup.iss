@@ -95,13 +95,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 
 [CustomMessages]
-en.AddFolderToPath=Add application directory to your environmental path
-en.AlreadyInstalled=is currently installed.'
-en.UninstallProgramFirst=Do you want to uninstall it first?
+english.AddFolderToPath=Add application directory to your environmental path
+english.AlreadyInstalled=is currently installed.'
+english.UninstallProgramFirst=Do you want to uninstall it first?
 
-it.AddFolderToPath=Aggiungi la cartella dell'applicazione alla variabile ambiente PATH
-it.AlreadyInstalled=è attualmnte installatao.'
-it.UninstallProgramFirst=Vuoi disinstallarlo?
+italian.AddFolderToPath=Aggiungi la cartella dell'applicazione alla variabile ambiente PATH
+italian.AlreadyInstalled=è attualmnte installatao.'
+italian.UninstallProgramFirst=Vuoi disinstallarlo?
 
 [Tasks]
 Name: modifypath; Description: {cm:AddFolderToPath}; Flags: unchecked
