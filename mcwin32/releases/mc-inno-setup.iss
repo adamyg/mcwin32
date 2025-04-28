@@ -19,23 +19,27 @@
 ;
 
 #if defined(BUILD_INFO)
-#include "../buildinfo.h"
+  #include "..\buildinfo.h"
 #else
-#include "../packageinfo.h"
+  #include "..\packageinfo.h"
 #endif
 
 #if defined(BUILD_TOOLCHAIN)
-#if defined(BUILD_TYPE)
-#define BinDir "bin" + BUILD_TOOLCHAIN + "\\" + BUILD_TYPE
+   #if defined(BUILD_TYPE)
+      #define BinDir "bin" + BUILD_TOOLCHAIN + "\" + BUILD_TYPE
+   #else
+      #define BinDir "bin" + BUILD_TOOLCHAIN
+   #endif
 #else
-#define BinDir "bin" + BUILD_TOOLCHAIN
-#endif
-#else
-#define BinDir "bin"
+   #define BinDir "bin"
 #endif
 
 #define APP_NAME          "Midnight Commander"
-#define FULL_APP_NAME     "GNU " + APP_NAME
+#if defined(BUILD_ISWIN64)
+    #define FULL_APP_NAME "GNU " + APP_NAME
+#else
+    #define FULL_APP_NAME "GNU " + APP_NAME + " 64bit"
+#endif
 #define APP_PUBLISHER_URL "https://www.midnight-commander.org/"
 #define APP_SUPPORT_URL   "https://github/adamyg/mcwin32/"
 #define APP_AUTHOR        "The Free Software Foundation, Inc."
@@ -50,7 +54,7 @@
 AppId={{CBB4464D-7081-4F1D-9F6D-F5288A4A9B82}
 AppName={#FULL_APP_NAME}
 AppVersion={#VERSION} (build: {#BUILD_DATE}-{#BUILD_NUMBER})
-AppVerName={##FULL_APP_NAME} {#VERSION} (build: {#BUILD_DATE}-{#BUILD_NUMBER})
+AppVerName={#FULL_APP_NAME} {#VERSION} (build: {#BUILD_DATE}-{#BUILD_NUMBER})
 
 VersionInfoVersion={#VERSION_1}.{#VERSION_2}.{#VERSION_3}.{#VERSION_4}
 VersionInfoDescription={#APP_NAME} installer
@@ -74,12 +78,12 @@ LanguageDetectionMethod=uilanguage
 
 OutputDir=.
 #if defined(BUILD_TOOLNAME)
-OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-{#BUILD_TOOLNAME}-setup
+   OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-{#BUILD_TOOLNAME}-setup
 #else
-OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
+   OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
 #endif
 #if defined(BUILD_ISWIN64)
-ArchitecturesInstallIn64BitMode=x64
+   ArchitecturesInstallIn64BitMode=x64
 #endif
 Compression=lzma
 SolidCompression=yes
@@ -188,7 +192,7 @@ begin
         if MidnightCommanderInstalled(version,uninst)
         then
                 begin
-                msgres:= MsgBox('Midnight Commander '+version+' {cm:AlreadyInstalled}'+#13#13+'{cm:UninstallProgramFirst}', mbError, MB_YESNOCANCEL);
+                msgres:= MsgBox('{#APP_NAME} '+version+' {cm:AlreadyInstalled}'+#13#13+'{cm:UninstallProgramFirst}', mbError, MB_YESNOCANCEL);
                 case msgres of
                 IdYes: begin
                         Exec(uninst, '', '', SW_SHOWNORMAL, true, execres);
