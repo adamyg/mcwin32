@@ -2999,57 +2999,120 @@ ImageSave(HANDLE console, unsigned pos, unsigned cnt)
  *      Restore the buffer; from a previous via_save()
  **/
 LIBVIO_API void
-vio_restore(void)
+vio_restore_lines(int top, int bottom, int to)
 {
     HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
-    COORD iHome = {0,0};
-    CHAR_INFO * nimage;
     int rows = 0, cols = 0;
 
-    if (NULL == vio_state.image)                // initialised?
+    if (NULL == vio_state.image)                // initialised ?
         return;
+
+    assert(to >= -1);
 
     vio_size(console, &rows, &cols);
     if (0 == rows || 0 == cols)
         return;
-                                                // resize
-    if ((rows != vio_state.rows || cols != vio_state.cols) &&
-            (nimage = calloc(rows * cols, sizeof(CHAR_INFO))) != NULL) {
 
-        const CHAR_INFO blank = { {' '}, FOREGROUND_INTENSITY };
-        const int cnt = (cols > vio_state.cols ? vio_state.cols : cols) * sizeof(CHAR_INFO);
-        int r, c;
+    // resize; if required, space fill
+    if ((rows != vio_state.rows || cols != vio_state.cols)) {
+        CHAR_INFO *nimage;
 
-        for (r = 0; r < rows; ++r) {
-            if (r < vio_state.rows) {           // merge previous image.
-                memcpy(nimage + (r * cols),
-                    (const void *)(vio_state.image + (r * vio_state.cols)), cnt);
-            }
+        if ((nimage = calloc(rows * cols, sizeof(CHAR_INFO))) != NULL) {
+
+            const CHAR_INFO blank = { {' '}, FOREGROUND_INTENSITY };
+            const int cnt = (cols > vio_state.cols ? vio_state.cols : cols) * sizeof(CHAR_INFO);
+            int r, c;
+
+            for (r = 0; r < rows; ++r) {
+                if (r < vio_state.rows) {       // merge previous image.
+                    memcpy(nimage + (r * cols),
+                        (const void *)(vio_state.image + (r * vio_state.cols)), cnt);
+                }
                                                 // blank new cells.
-            if ((c = (r >= vio_state.rows ? 0 : vio_state.cols)) < cols) {
-                CHAR_INFO *p = nimage + (r * cols) + c;
-                do {
-                    *p++ = blank;
-                } while (++c < cols);
+                if ((c = (r >= vio_state.rows ? 0 : vio_state.cols)) < cols) {
+                    CHAR_INFO *p = nimage + (r *cols) + c;
+                    do {
+                        *p++ = blank;
+                    } while (++c < cols);
+                }
             }
-        }
 
-        free((void *)vio_state.image);          // replace image.
-        vio_state.image = nimage;
-        vio_state.rows = rows;
-        vio_state.cols = cols;
+            free((void *)vio_state.image);      // replace image.
+            vio_state.image = nimage;
+            vio_state.rows = rows;
+            vio_state.cols = cols;
+        }
     }
 
-    /*
-     *  Restore image and cursor
-     */
-    SetConsoleCursorPosition(console, iHome);   // home cursor.
+    // Restore to console
+    if (top == -1 && bottom == -1) {
+        // Full restore, image and cursor.
 
-    ImageRestore(console, 0, rows * cols);      // write out image.
+        top = 0;
+        bottom = rows - 1;
 
-                                                // original cursor
-    SetConsoleCursorPosition(console, vio_state.cursorcoord);
-    SetConsoleCursorInfo(console, &vio_state.cursorinfo);
+        if (to == -1) {
+            COORD iHome = {0, 0};               // home cursor.
+
+            SetConsoleCursorPosition(console, iHome);
+            ImageRestore(console, 0, rows * cols);
+
+                                                // original cursor.
+            SetConsoleCursorPosition(console, vio_state.cursorcoord);
+            SetConsoleCursorInfo(console, &vio_state.cursorinfo);
+        }
+
+    } else {
+        // Update selection
+
+        if (bottom > rows) 
+            bottom = rows;                      // lower limit.
+
+        if (top < 0)
+            top = 0;                            // upper limit.
+
+        if (to == -1) {
+            if (top < bottom) {                 // non-inclusive bottom.
+                const unsigned lines = (unsigned)(bottom - top);
+
+                ImageRestore(console, top * cols, lines * cols);
+            }
+        }
+    }
+    
+    // Publish to buffer
+    if (to >= 0) {
+        for (; top < bottom && to < rows; ++top, ++to) {
+            const CHAR_INFO *icursor = vio_state.image + (top * cols);
+            WCHAR_INFO *cursor = vio.c_screen[to].text, *end = cursor + cols;
+            WCHAR_INFO nchr = {0};
+            unsigned flags = 0;
+
+            nchr.Info.fg = -1;
+            nchr.Info.bg = -1;
+
+            for (; cursor != end; ++cursor, ++icursor) {
+
+                nchr.Info.Attributes = icursor->Attributes;
+                nchr.Char.UnicodeChar = icursor->Char.UnicodeChar;
+
+                if (WCHAR_COMPARE(cursor, &nchr))
+                    continue;
+
+                *cursor = nchr;
+                flags |= TOUCHED;
+            }
+
+            vio.c_screen[to].flags |= flags;
+        }
+    }
+}
+
+
+LIBVIO_API void
+vio_restore(void)
+{
+    vio_restore_lines(-1, -1, -1);
 }
 
 
@@ -3062,8 +3125,8 @@ ImageRestore(HANDLE console, unsigned pos, unsigned cnt)
     DWORD rc;
 
     assert(pos < (unsigned)(rows * cols));
-    assert(0 == (pos % cols));
-    assert(cnt && 0 == (cnt % rows));
+    assert(0 == (pos % cols));                  // col=0  
+    assert(cnt && 0 == (cnt % cols));           // and column width
     assert((pos + cnt) <= (unsigned)(rows * cols));
 
     wr.Left   = 0;                              // src. screen rectangle.

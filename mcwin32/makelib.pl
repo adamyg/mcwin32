@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.48 2025/04/09 11:52:43 cvsuser Exp $
+# $Id: makelib.pl,v 1.50 2025/04/26 19:15:43 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -112,6 +112,7 @@ my %x_environment   = (
             CXXFLAGS        => '@CXXVER@ -fno-strength-reduce',
             CXXVER          => '-std=c++11',
             CDEBUG          => '-g',
+            CRELEASE        => '-O2 -DNDEBUG',
             CWARN           => '-W -Wall -Wshadow -Wmissing-prototypes',
             CXXWARN         => '-W -Wall -Wshadow',
             LDFLAGS         => '',
@@ -153,6 +154,7 @@ my %x_environment   = (
             CXXFLAGS        => '-m32 @CXXVER@ -fno-strength-reduce',
             CXXVER          => '-std=c++11',
             CDEBUG          => '-g',
+            CRELEASE        => '-O2 -DNDEBUG',
             CWARN           => '-W -Wall -Wshadow -Wmissing-prototypes',
             CXXWARN         => '-W -Wall -Wshadow',
             LDFLAGS         => '',
@@ -185,6 +187,7 @@ my %x_environment   = (
             CXXFLAGS        => '-m64 @CXXVER@ -fno-strength-reduce',
             CXXVER          => '-std=c++11',
             CDEBUG          => '-g',
+            CRELEASE        => '-O2 -DNDEBUG',
             CWARN           => '-W -Wall -Wshadow -Wmissing-prototypes',
             CXXWARN         => '-W -Wall -Wshadow',
             LDFLAGS         => '',
@@ -3658,7 +3661,9 @@ Profile($)
  -                  CXXFLAGS: $$env{CXXFLAGS}
  -                       Release: $$env{CRELEASE}
  -                       Debug:   $$env{CDEBUG}
- -                   LDFLAGS: $$env{LDFLAGS}
+ -                   LDFLAGS: $x_tokens{LDFLAGS}
+ -                      LIBS: $x_tokens{LIBS}
+ -                 EXTRALIBS: $x_tokens{EXTRALIBS}
  -
 EOT
 

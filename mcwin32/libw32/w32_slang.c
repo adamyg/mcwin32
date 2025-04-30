@@ -259,6 +259,13 @@ SLtt_restore(void)
 }
 
 
+void
+SLtt_restore_lines(int top, int bottom, int to)
+{
+    vio_restore_lines(top, bottom, to);
+}
+
+
 /*
  *  SLsmg_touch_lines ---
  *      Mark the stated lines as trashed; requiring them to redrawn.

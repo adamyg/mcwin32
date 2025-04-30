@@ -11,10 +11,6 @@
         lookup_key
         lookup_key_by_code
 
-        add_select_channel
-        delete_select_channel
-        remove_select_channel
-
         channels_up
         channels_down
 
