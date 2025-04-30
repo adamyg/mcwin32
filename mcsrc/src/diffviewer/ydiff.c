@@ -2687,7 +2687,7 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
 #ifdef HAVE_CHARSET
                     if (dview->utf8)
                     {
-#if defined(WIN32) //bugfix
+#if defined(WIN32) //bug-fix
                         if (width > p->u.len)
                         {
                             k = dview_str_utf8_offset_to_pos (p->p, p->u.len);
@@ -2756,7 +2756,7 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
 #ifdef HAVE_CHARSET
                 if (dview->utf8)
                 {
-#if defined(WIN32) //bugfix
+#if defined(WIN32) //bug-fix
                     if (width > p->u.len)
                     {
                         k = dview_str_utf8_offset_to_pos (p->p, p->u.len);

@@ -213,8 +213,20 @@ mc_shell_recognize_real_path (mc_shell_t *mc_shell)
         mc_shell->type = SHELL_MKSH;
         mc_shell->name = "mksh";
     }
-#if defined(WIN32) //WIN32, TODO/XXX
-#endif
+#if defined(WIN32) //WIN32
+    else if (strcasestr (mc_shell->path, "cmd.exe") != NULL
+             || strcasestr (mc_shell->real_path, "cmd.exe") != NULL)
+    {
+        mc_shell->type = SHELL_CMD;
+        mc_shell->name = "cmd";
+    }
+    else if (strcasestr (mc_shell->path, "powershell.exe") != NULL
+             || strcasestr (mc_shell->real_path, "powershell.exe") != NULL)
+    {
+        mc_shell->type = SHELL_POWER;
+        mc_shell->name = "powershell";
+    }
+#endif // WIN32
     else
         mc_shell->type = SHELL_NONE;
 }
