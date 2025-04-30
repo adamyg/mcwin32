@@ -1,3 +1,10 @@
+Thu Apr 24 18:05:53 2025 adamy
+
+	* build-234
+
+		o command view; non-panel mode (#137)
+		o specialised x64 manifest name
+
 Wed Apr 23 17:33:24 2025 adamy
 
 	* build-233

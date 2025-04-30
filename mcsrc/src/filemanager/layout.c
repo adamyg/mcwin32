@@ -136,6 +136,9 @@ typedef struct
     gboolean message_visible;
     gboolean xterm_title;
     gboolean free_space;
+#ifdef ENABLE_CMDVIEW //WIN32
+    gboolean use_cmdview;
+#endif
     int output_lines;
 } layout_t;
 
@@ -179,7 +182,10 @@ static struct
     { N_("&Keybar visible"), &mc_global.keybar_visible, NULL },
     { N_("H&intbar visible"), &mc_global.message_visible, NULL },
     { N_("&XTerm window title"), &xterm_title, NULL },
-    { N_("&Show free space"), &free_space, NULL }
+    { N_("&Show free space"), &free_space, NULL },
+#ifdef ENABLE_CMDVIEW //WIN32
+    { N_("C&ommand view"), &mc_global.use_cmdview, NULL },
+#endif
     /* *INDENT-ON* */
 };
 
@@ -470,6 +476,10 @@ layout_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 xterm_title = check_options[5].widget->state;
             else if (sender == WIDGET (check_options[6].widget))
                 free_space = check_options[6].widget->state;
+#ifdef ENABLE_CMDVIEW //WIN32
+            else if (sender == WIDGET (check_options[7].widget))
+                mc_global.use_cmdview = check_options[7].widget->state;
+#endif
             else
                 ok = FALSE;
 
@@ -682,6 +692,9 @@ layout_save (void)
     old_layout.message_visible = mc_global.message_visible;
     old_layout.xterm_title = xterm_title;
     old_layout.free_space = free_space;
+#ifdef ENABLE_CMDVIEW //WIN32
+    old_layout.use_cmdview = mc_global.use_cmdview;
+#endif
     old_layout.output_lines = -1;
 
     _output_lines = output_lines;
@@ -700,6 +713,9 @@ layout_restore (void)
     mc_global.message_visible = old_layout.message_visible;
     xterm_title = old_layout.xterm_title;
     free_space = old_layout.free_space;
+#ifdef ENABLE_CMDVIEW //WIN32
+    mc_global.use_cmdview = old_layout.use_cmdview;
+#endif
     output_lines = old_layout.output_lines;
 
     panels_layout = old_panels_layout;
@@ -898,7 +914,7 @@ setup_panels (void)
 #ifdef ENABLE_SUBSHELL
         if (!mc_global.tty.use_subshell || !do_load_prompt ())
 #endif
-            setup_cmdline ();
+            setup_cmdline (CONST_WIDGET (mw));
     }
     else
     {
@@ -979,10 +995,9 @@ panels_split_less (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-setup_cmdline (void)
+setup_cmdline (const Widget *widget)
 {
-    const Widget *mw = CONST_WIDGET (filemanager);
-    const WRect *r = &mw->rect;
+    const WRect *r = &widget->rect;
     int prompt_width;
     int y;
     char *tmp_prompt = (char *) mc_prompt;

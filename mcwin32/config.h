@@ -46,10 +46,12 @@
 #pragma warning (disable : 4996)                /* 'xxx' was declared deprecated */
 
 #elif defined(__WATCOMC__) //WIN32/c11
+#if !defined(__cplusplus)
 #pragma disable_message(136)                    /* Comparison equivalent to 'unsigned == 0' */
 #pragma disable_message(201)                    /* Unreachable code */
 #pragma disable_message(202)                    /* Unreferenced */
 #pragma disable_message(124)                    /* Comparison result always 0 */
+#endif
 #endif
 
 
@@ -118,6 +120,9 @@ extern const char *         mc_inet_ntop(int af, const void *src, char *dst, siz
 #if !defined(HAVE_STRTOK_R)
 extern char *               strtok_r(char *s, const char *delim, char **lasts);
 #endif
+#if !defined(HAVE_STRCASESTR)
+extern char *               strcasestr(const char *s, const char *find);
+#endif
 
 extern char **              GetUTF8Arguments(int *pargc);
 
@@ -154,7 +159,6 @@ extern void                 tty_set_title(const char *title);
 #define HAVE_ASPELL 1
 #define ASPELL_DLLPATH mc_aspell_dllpath()
 #define ASPELL_DLLNAME "libaspell-0.60"
-#undef  HAVE_SUBSHELL_SUPPORT
 #define HAVE_CHARSET 1
 #define HAVE_SLANG 1
 #undef  HAVE_TEXTMODE_X11_SUPPORT
@@ -195,6 +199,8 @@ extern void                 tty_set_title(const char *title);
 #define ENABLE_NLS
 #undef  ENABLE_BACKGROUND
 #undef  ENABLE_SUBSHELL
+    //#define ENABLE_SUBSHELL 1
+#define ENABLE_CMDVIEW                          /* 4.8.33+ (WIN32 specialisation) */
 #define ENABLE_CONFIGURE_ARGS 1                 /* 4.8.24+ */
 
 #define ENABLE_VFS 1
@@ -212,4 +218,3 @@ extern void                 tty_set_title(const char *title);
 #define PROMOTED_MODE_T int
 
 #endif  /*CONFIG_H_INCLUDED*/
-

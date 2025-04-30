@@ -63,6 +63,9 @@ GArray *viewer_hex_keymap = NULL;
 #ifdef USE_DIFF_VIEW
 GArray *diff_keymap = NULL;
 #endif
+#ifdef ENABLE_CMDVIEW //WIN32
+GArray *cmdview_keymap = NULL;
+#endif
 
 const global_keymap_t *filemanager_map = NULL;
 const global_keymap_t *filemanager_x_map = NULL;
@@ -80,6 +83,9 @@ const global_keymap_t *viewer_map = NULL;
 const global_keymap_t *viewer_hex_map = NULL;
 #ifdef USE_DIFF_VIEW
 const global_keymap_t *diff_map = NULL;
+#endif
+#ifdef ENABLE_CMDVIEW //WIN32
+const global_keymap_t *cmdview_map;
 #endif
 
 /*** file scope macro definitions ****************************************************************/
@@ -626,6 +632,20 @@ static const global_keymap_ini_t default_diff_keymap[] = {
 };
 #endif
 
+#ifdef ENABLE_CMDVIEW //WIN32
+/* cmdview */
+static const global_keymap_ini_t default_cmdview_keymap[] = {
+    {"Help", "f1"},
+    {"Quit", "f10"},
+    {"Shell", "ctrl-o"},
+    {"HistoryPrev", "down"},
+    {"HistoryNext", "up"},
+    {"Complete", "tab"},
+    {NULL, NULL}
+};
+const global_keymap_t *cmdview_map;
+#endif
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -669,8 +689,11 @@ create_default_keymap (void)
 #endif
     create_default_keymap_section (keymap, KEYMAP_SECTION_VIEWER, default_viewer_keymap);
     create_default_keymap_section (keymap, KEYMAP_SECTION_VIEWER_HEX, default_viewer_hex_keymap);
-#ifdef  USE_DIFF_VIEW
+#ifdef USE_DIFF_VIEW
     create_default_keymap_section (keymap, KEYMAP_SECTION_DIFFVIEWER, default_diff_keymap);
+#endif
+#ifdef ENABLE_CMDVIEW //WIN32
+    create_default_keymap_section (keymap, KEYMAP_SECTION_CMDVIEW, default_cmdview_keymap);
 #endif
 
     return keymap;
@@ -919,6 +942,9 @@ keymap_load (gboolean load_from_file)
 #ifdef USE_DIFF_VIEW
         LOAD_KEYMAP (DIFFVIEWER, diff);
 #endif
+#ifdef ENABLE_CMDVIEW //WIN32
+        LOAD_KEYMAP (CMDVIEW, cmdview);
+#endif
 
 #undef LOAD_KEYMAP
         mc_config_deinit (mc_global_keymap);
@@ -948,6 +974,9 @@ keymap_load (gboolean load_from_file)
     SET_MAP (viewer_hex);
 #ifdef USE_DIFF_VIEW
     SET_MAP (diff);
+#endif
+#ifdef ENABLE_CMDVIEW //WIN32
+    SET_MAP (cmdview);
 #endif
 
 #undef SET_MAP
@@ -983,6 +1012,9 @@ keymap_free (void)
     FREE_KEYMAP (viewer_hex);
 #ifdef USE_DIFF_VIEW
     FREE_KEYMAP (diff);
+#endif
+#ifdef ENABLE_CMDVIEW //WIN32
+    FREE_KEYMAP (cmdview);
 #endif
 
 #undef FREE_KEYMAP

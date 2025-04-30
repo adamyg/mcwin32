@@ -579,7 +579,11 @@ command_completion_function (const char *text, int state, input_complete_t flags
 
     if (state == 0)
     {                           /* Initialize us a little bit */
+#if defined(WIN32) //WIN32, path
+        isabsolute = strchr2 (u_text, PATH_SEP, PATH_SEP2) != NULL;
+#else
         isabsolute = strchr (u_text, PATH_SEP) != NULL;
+#endif
         if (!isabsolute)
         {
             words = bash_reserved;
@@ -1293,8 +1297,14 @@ try_complete (char *text, int *lc_start, int *lc_end, input_complete_t flags)
     state.flags = flags;
 
     SHOW_C_CTX ("try_complete");
-#if defined(WIN32) //WIN32, mc-bugfix
-    state.word = g_strndup (text + *lc_start, strnlen (text + *lc_start, *lc_end - *lc_start));   
+#if defined(WIN32) //WIN32, bug-fix
+    if (*lc_start < *lc_end && *lc_start < strlen (text))
+        state.word = g_strndup (text + *lc_start, *lc_end - *lc_start);
+    else
+    {
+        state.word = g_strdup(text);
+        *lc_start = 0;
+    }
 #else
     state.word = g_strndup (text + *lc_start, *lc_end - *lc_start);
 #endif
