@@ -1001,7 +1001,7 @@ mc_maybe_editor_or_viewer (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/*static, WIN32*/ void
+static void
 show_editor_viewer_history (void)
 {
     char *s;
@@ -1043,7 +1043,7 @@ show_editor_viewer_history (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/*static, Win32*/ gboolean
+static gboolean
 quit_cmd_internal (int quiet)
 {
     int q = quit;
@@ -1086,7 +1086,7 @@ quit_cmd_internal (int quiet)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static gboolean
+/*static/WIN32*/ gboolean
 quit_cmd (void)
 {
     return quit_cmd_internal (0);
