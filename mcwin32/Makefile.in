@@ -660,6 +660,8 @@ CFG_SHARE_MAN:=		$(addprefix $(D_SHARE)/man/, \
 			$(foreach dir, $(CFG_SHARE_MANDIRS), $(addprefix $(D_SHARE)/man/$(dir), \
 				$(subst .in,,$(notdir $(wildcard $(MAN_SRC)/$(dir)/*.in))))) \
 			$(addprefix $(D_SHARE)/man/, \
+				$(subst .in,,$(notdir $(wildcard ./diff/*.1.in)))) \
+			$(addprefix $(D_SHARE)/man/, \
 				$(subst .in,,$(notdir $(wildcard ./support/*.1.in)))) \
 			$(addprefix $(D_SHARE)/man/, \
 				$(notdir $(wildcard ./mandoc/*.man)))
@@ -1190,7 +1192,8 @@ $(D_SHARE)/man/% :		./mandoc/%
 		@echo importing $@ ..
 		@$(CP) $^ $@
 
-$(D_SHARE)/man/% :		./support/%.in
+vpath %.in		./diff ./support
+$(D_SHARE)/man/% :		%.in
 		@echo importing $@ ..
 		@$(CP) $^ $@
 		@$(D_BIN)/mcmandoc -K utf-8 -T utf8 $@ > $@.man
