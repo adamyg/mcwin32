@@ -481,8 +481,12 @@ toggle_subshell (void)
 #ifdef ENABLE_CMDVIEW //WIN32
     if (mc_global.tty.console_flag != '\0' && !mc_global.tty.use_subshell && mc_global.use_cmdview)
     {
-        if (cmdview_cmd ())
+        if (cmdview_cmd())
+        {
+            if (quit & 1)   /* shutdown file-manager, wasn't active during 'exit' processing, as such not informed */
+                dlg_close (filemanager);
             return;
+        }
     }
 #endif
 

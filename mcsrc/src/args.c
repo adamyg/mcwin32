@@ -89,6 +89,9 @@ static GOptionContext *context;
 #ifdef ENABLE_SUBSHELL
 static gboolean mc_args__nouse_subshell = FALSE;
 #endif /* ENABLE_SUBSHELL */
+#ifdef ENABLE_CMDVIEW //WIN32
+static gboolean mc_args__nouse_cmdview = FALSE;
+#endif
 static gboolean mc_args__show_datadirs = FALSE;
 static gboolean mc_args__show_datadirs_extended = FALSE;
 #ifdef ENABLE_CONFIGURE_ARGS
@@ -152,6 +155,22 @@ static const GOptionEntry argument_main_table[] = {
      "nosubshell", 'u', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE,
      &mc_args__nouse_subshell,
      N_("Disables subshell support"),
+     NULL
+    },
+#endif
+
+#ifdef ENABLE_CMDVIEW //WIN32
+    {
+     "cmdview", '\0', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE,
+     &mc_global.use_cmdview,
+     N_("Enables cmdview support (default)"),
+     NULL
+    },
+
+    {
+     "nocmdview", '\0', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE,
+     &mc_args__nouse_cmdview,
+     N_("Disables cmdvew support"),
      NULL
     },
 #endif
@@ -760,6 +779,11 @@ mc_setup_by_args (int argc, char **argv, GError **mcerror)
 #ifdef ENABLE_SUBSHELL
     if (mc_args__nouse_subshell)
         mc_global.tty.use_subshell = FALSE;
+#endif /* ENABLE_SUBSHELL */
+
+#ifdef ENABLE_CMDVIEW //WIN32
+    if (mc_args__nouse_cmdview)
+        mc_global.use_cmdview = FALSE;
 #endif /* ENABLE_SUBSHELL */
 
 #ifdef ENABLE_VFS_FTP

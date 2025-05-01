@@ -1,13 +1,14 @@
 /*
    Command line viewer
 
-   Copyright (C) 2025, Adam Young
+   Copyright (C) 2025, Adam Young (https://github.com/adamyg/)
 
    This file is part of the Midnight Commander.
 
    The Midnight Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
-   published by the Free Software Foundation, either version 3 of the License.
+   published by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
    The Midnight Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,7 +18,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include <config.h>
 
@@ -31,11 +31,13 @@
 #include "lib/util.h"
 #include "lib/widget.h"
 
+#include "src/filemanager/cmd.h"
 #include "src/filemanager/command.h"    /* cmdline */
 #include "src/filemanager/filemanager.h"    /* the_prompt */
 #include "src/consaver/cons.saver.h"    /* show_console_contents */
 
 #include "src/keymap.h"
+#include "src/history.h"
 #include "src/setup.h"
 
 #include "cmdview.h"
@@ -85,8 +87,58 @@ cmdview_labels (WCmd *cview)
     b = buttonbar_find (DIALOG (d->owner));
 
     buttonbar_set_label (b, 1, Q_ ("ButtonBar|Help"), d->keymap, d);
+    buttonbar_set_label (b, 3, Q_ ("ButtonBar|View"), d->keymap, d);
+    buttonbar_set_label (b, 4, Q_ ("ButtonBar|Edit"), d->keymap, d);
     buttonbar_set_label (b, 10, Q_ ("ButtonBar|Quit"), d->keymap, d);
 }
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+cmdview_edit_view_file (int command)
+{
+    vfs_path_t *vpath = NULL;
+    char *fname = NULL;
+
+    switch (command)
+    {
+    case CK_Edit:
+        fname = input_expand_dialog (_("Edit file"), _("Enter file name:"),
+                                     MC_HISTORY_EDIT_LOAD, "", INPUT_COMPLETE_FILENAMES);
+        break;
+    case CK_View:
+        fname = input_expand_dialog (_("View file"), _("Enter file name:"),
+                                     MC_HISTORY_FM_VIEW_FILE, "", INPUT_COMPLETE_FILENAMES);
+        break;
+    default:
+        break;
+    }
+
+    if (fname == NULL)
+        return;
+
+    if (*fname != '\0')
+        vpath = vfs_path_from_str (fname);
+
+    if (vpath)
+    {
+        switch (command)
+        {
+        case CK_Edit:
+            edit_file_at_line (vpath, use_internal_edit, 0);
+            break;
+        case CK_View:
+            view_file (vpath, use_internal_view, FALSE);
+            break;
+        default:
+            break;
+        }
+        vfs_path_free (vpath, TRUE);
+    }
+
+    g_free (fname);
+}
+
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -100,6 +152,10 @@ cmdview_execute_cmd (WCmd *cview, long command)
     case CK_Quit:
     case CK_Shell:
         cview->view_quit = TRUE;
+        break;
+    case CK_Edit:
+    case CK_View:
+        cmdview_edit_view_file (command);
         break;
     case CK_History:
     case CK_HistoryNext:
@@ -223,9 +279,9 @@ cmdview_dialog_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, 
 /* --------------------------------------------------------------------------------------------- */
 
 /**
- * Borrow the widget from its current owner, insert into the additional group, 
+ * Borrow the widget from its current owner, insert into the additional group,
  * returning the previous owner. Make the inserted widget current.
- * It is intended for the ownership to be returned when local context completes.
+ * It is intended for the ownership to be returned when the local context completes.
  *
  */
 
@@ -268,8 +324,6 @@ group_return_widget (WGroup *g, Widget *w, WGroup *previous_owner)
 
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
-
-const global_keymap_t *cmd_map = NULL;
 
 gboolean
 cmdview_cmd (void)
@@ -318,6 +372,12 @@ cmdview_cmd (void)
 
     dlg_run (cview_dlg);
 
+    if (!original_command_prompt)
+    {
+        widget_hide (WIDGET(cmdline));
+        widget_hide (WIDGET(the_prompt));
+    }
+
     group_return_widget (g, WIDGET (the_prompt), ogroups[1]);
     group_return_widget (g, WIDGET (cmdline), ogroups[0]);
 
@@ -327,12 +387,6 @@ cmdview_cmd (void)
     /* Cleanup */
     if (widget_get_state (dw, WST_CLOSED))
         widget_destroy (dw);
-
-    if (! original_command_prompt)
-    {
-        widget_hide (WIDGET (cmdline));
-        widget_hide (WIDGET (the_prompt));
-    }
 
     return TRUE;
 }

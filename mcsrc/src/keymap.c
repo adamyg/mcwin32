@@ -636,6 +636,8 @@ static const global_keymap_ini_t default_diff_keymap[] = {
 /* cmdview */
 static const global_keymap_ini_t default_cmdview_keymap[] = {
     {"Help", "f1"},
+    {"View", "f3"},
+    {"Edit", "f4"},
     {"Quit", "f10"},
     {"Shell", "ctrl-o"},
     {"HistoryPrev", "down"},
