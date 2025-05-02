@@ -767,7 +767,7 @@ vio_profile(int rebuild)
         } else if (IsVirtualConsole(&depth)) {
 #if defined(WIN32_CONSOLEVIRTUAL)
             if (depth > 16) {
-                printf("Running under a virtual console, enabling 256/true-color support\n");
+              //printf("Running under a virtual console, enabling 256/true-color support\n");
                 vio.isvirtualconsole = 1;
                 vio.maxcolors = 256;
             } else {
