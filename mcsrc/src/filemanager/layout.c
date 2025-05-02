@@ -185,6 +185,7 @@ static struct
     { N_("&Show free space"), &free_space, NULL },
 #ifdef ENABLE_CMDVIEW //WIN32
     { N_("C&ommand view"), &mc_global.use_cmdview, NULL },
+#define LAYOUT_CMDVIEW_OPTION 7
 #endif
     /* *INDENT-ON* */
 };
@@ -630,6 +631,11 @@ layout_dlg_create (void)
         check_options[i].widget = check_new (i + 2, 6 + l1, XTRACT (i));
         group_add_widget (g, check_options[i].widget);
     }
+
+#ifdef ENABLE_CMDVIEW //WIN32
+    if (mc_global.tty.console_flag == '\0')
+        widget_set_state (WIDGET (check_options[LAYOUT_CMDVIEW_OPTION].widget), WST_DISABLED, TRUE);
+#endif
 
 #undef XTRACT
 
