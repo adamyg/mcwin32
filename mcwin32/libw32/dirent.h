@@ -1,7 +1,7 @@
 #ifndef LIBW32_DIRENT_H_INCLUDED
 #define LIBW32_DIRENT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.22 2025/03/12 16:08:09 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_dirent_h,"$Id: dirent.h,v 1.23 2025/05/01 08:49:21 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -242,9 +242,11 @@ LIBW32_API void         _wseekdir __P((_WDIR *, long));
 LIBW32_API long         _wtelldir __P((_WDIR *));
 LIBW32_API int          _wreaddir_r __P((_WDIR *, struct _wdirent *, struct _wdirent **)); /*deprecated*/
 
+/* libcompat
 LIBW32_API int          alphasort __P((const struct dirent **, const struct dirent **));
 LIBW32_API int          scandir __P((const char *, struct dirent ***,
                             int (*sel)(const struct dirent *), int (*compar)(const struct dirent **, const struct dirent **)));
+ */                            
 
 #endif  /*_POSIX_SOURCE*/
 

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.40 2025/04/18 08:29:38 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.41 2025/04/30 19:29:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -259,11 +259,11 @@ w32_utf8filenames_state (void)
 
 /*
 //  NAME
-//      handle conversion
+//      Handle conversion to file-descriptor
 //
 //  SYNOPSIS
-//      int w32_HTOI(HANDLE handle)
-//      HANDLE w32_ITOH(int fd)
+//      int w32_htof(HANDLE handle)
+//      HANDLE w32_ftoh(int fd)
 //
 //  NOTES:
 //
@@ -274,6 +274,10 @@ w32_utf8filenames_state (void)
 //          so it is safe to truncate the handle (when passing it from 64-bit to 32-bit) or sign-extend the handle (when passing it from 32-bit to 64-bit).
 //          Handles that can be shared include handles to user objects such as windows (HWND), handles to GDI objects such as pens and brushes (HBRUSH and HPEN),
 //          and handles to named objects such as mutex's, semaphores, and file handles.
+//
+//          Reference:
+//          https://learn.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication
+//          https://msdn.microsoft.com/en-us/library/windows/desktop/aa384203.aspx [original]
 //
 //  RETURN VALUE
 //      Converted handle.
@@ -287,7 +291,7 @@ w32_htof(HANDLE handle)
 #pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
 #endif
 #if defined(_WIN32) && (_MSC_VER >= 1700)
-    // note: sage to convert HANDLES 64 to 32; only lower 32-bits are used.
+    // Note: safe to convert HANDLES 64 to 32; only lower 32-bits are used.
     assert((0xffffffff00000000LLU & (uint64_t)handle) == 0 || handle == INVALID_HANDLE_VALUE);
 #pragma warning(disable:4311)
 #endif
@@ -499,7 +503,7 @@ W32StatA(const char *path, struct StatHandle *sb)
     }
 
     if (ret < 0 || (ret = W32StatAFile(path, sb)) < 0) {
-        if (-ENOTDIR == ret) {                  
+        if (-ENOTDIR == ret) {
             if (path != symbuf &&               // component error, expand embedded shortcut
                     w32_expandlinkA(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = W32StatAFile(symbuf, sb)) >= 0) {
@@ -700,7 +704,7 @@ W32StatLinkA(const char *path, struct StatHandle *sb)
     }
 
     if (ret < 0 || (ret = W32StatAFile(path, sb)) < 0) {
-        if (-ENOTDIR == ret) { 
+        if (-ENOTDIR == ret) {
             char lnkbuf[WIN32_PATH_MAX];
                                                 // component error, expand embedded shortcut
             if (w32_expandlinkA(path, lnkbuf, _countof(lnkbuf), SHORTCUT_COMPONENT)) {
@@ -730,7 +734,7 @@ W32StatLinkW(const wchar_t *path, struct StatHandle *sb)
     if (ret < 0 || (ret = W32StatWFile(path, sb)) < 0) {
         if (-ENOTDIR == ret) {
             wchar_t lnkbuf[WIN32_PATH_MAX];
-                                                // component error, expand embedded shortcut 
+                                                // component error, expand embedded shortcut
             if (w32_expandlinkW(path, lnkbuf, _countof(lnkbuf), SHORTCUT_COMPONENT)) {
                 if ((ret = W32StatWFile(lnkbuf, sb)) >= 0) {
                     return ret;

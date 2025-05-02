@@ -731,8 +731,8 @@ group_handle_mouse_event (Widget *w, Gpm_Event *event)
 
             /* Don't use widget_is_selectable() here.
                If WOP_SELECTABLE option is not set, widget can handle mouse events.
-               For example, commandl line in file manager */
-            if (widget_get_state (w, WST_VISIBLE) && !widget_get_state (wp, WST_DISABLED))
+               For example, command-line in file manager */
+            if (widget_get_state (wp /*WIN32/bug-fix*/, WST_VISIBLE) && !widget_get_state(wp, WST_DISABLED))
             {
                 /* put global cursor position to the widget */
                 int ret;
@@ -972,3 +972,4 @@ group_send_broadcast_msg (WGroup *g, widget_msg_t msg)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
