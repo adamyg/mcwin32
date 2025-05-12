@@ -417,7 +417,11 @@ extfs_add_file (struct extfs_super_t *archive, const char *file_name)
             p = strchr (cfn, '\0');
             if (p != cfn && IS_PATH_SEP (p[-1]))
                 p[-1] = '\0';
+#if defined(WIN32) //WIN32, path
+            p = strrchr2 (cfn, PATH_SEP, PATH_SEP2);
+#else
             p = strrchr (cfn, PATH_SEP);
+#endif
             if (p == NULL)
             {
                 p = cfn;

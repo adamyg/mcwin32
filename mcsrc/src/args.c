@@ -431,25 +431,21 @@ mc_args_add_usage_info (void)
 static void
 mc_args_add_extended_info_to_help (void)
 {
-#if defined(BUILD_NUMBER) //WIN32/APY, build
-    mc_args__loc__footer_string =
-        g_strdup_printf ("%s",
-                         _
-                         ("\n"
-                         "Please send any bug reports (including the output of 'mc -V')\n"
-                         "as tickets at https://github/adamyg/mcwin32\n"
-                         "you may also review tickets at www.midnight-commander.org\n"));
-    mc_args__loc__header_string =
-        g_strdup_printf (_("GNU Midnight Commander %s  (build: %s)\n"), mc_global.mc_version, BUILD_NUMBER);
+#if defined(BUILD_NUMBER) //WIN32, build
+    mc_args__loc__footer_string = g_strdup_printf ("%s%s",
 #else
     mc_args__loc__footer_string = g_strdup_printf ("%s",
+#endif
                                                    _
                                                    ("\n"
                                                     "Please send any bug reports (including the output of 'mc -V')\n"
-                                                    "as tickets at www.midnight-commander.org\n"));
+                                                    "as tickets at www.midnight-commander.org\n")
+#if defined(BUILD_NUMBER) //WIN32, build
+                                                    , "win32, see tickets at https://github/adamyg/mcwin32\n"
+#endif
+                                                    );
     mc_args__loc__header_string =
         g_strdup_printf (_("GNU Midnight Commander %s\n"), mc_global.mc_version);
-#endif
 
     g_option_context_set_description (context, mc_args__loc__footer_string);
     g_option_context_set_summary (context, mc_args__loc__header_string);

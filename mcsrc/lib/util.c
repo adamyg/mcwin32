@@ -129,7 +129,11 @@ resolve_symlinks (const vfs_path_t *vpath)
 
     do
     {
+#if defined(WIN32) //WIN32, path
+        q = strchr2 (p + 1, PATH_SEP, PATH_SEP2);
+#else
         q = strchr (p + 1, PATH_SEP);
+#endif
         if (q == NULL)
         {
             q = strchr (p + 1, '\0');

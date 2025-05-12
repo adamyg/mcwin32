@@ -1266,7 +1266,11 @@ panel_correct_path_to_show (const WPanel *panel)
 
         /* get previous path element for catching archive name */
         prev_path_element = vfs_path_get_by_index (panel->cwd_vpath, -2);
+#if defined(WIN32) //WIN32, path
+        archive_name = strrchr2 (prev_path_element->path, PATH_SEP, PATH_SEP2);
+#else
         archive_name = strrchr (prev_path_element->path, PATH_SEP);
+#endif
         if (archive_name != NULL)
             last_vpath = vfs_path_from_str_flags (archive_name + 1, VPF_NO_CANON);
         else
@@ -3114,7 +3118,11 @@ chdir_other_panel (WPanel *panel)
     else
     {
         new_dir_vpath = vfs_path_append_new (panel->cwd_vpath, "..", (char *) NULL);
+#if defined(WIN32) //WIN32, path
+        curr_entry = strrchr2 (vfs_path_get_last_path_str(panel->cwd_vpath), PATH_SEP, PATH_SEP2);
+#else
         curr_entry = strrchr (vfs_path_get_last_path_str (panel->cwd_vpath), PATH_SEP);
+#endif
     }
 
     p = change_panel ();
@@ -3192,11 +3200,19 @@ chdir_to_readlink (WPanel *panel)
     {
         char *p;
 
+#if defined(WIN32) //WIN32, path
+        p = strrchr2 (buffer, PATH_SEP, PATH_SEP2);
+#else
         p = strrchr (buffer, PATH_SEP);
+#endif
         if (p != NULL && p[1] == '\0')
         {
             *p = '\0';
+#if defined(WIN32) //WIN32, path
+            p = strrchr2 (buffer, PATH_SEP, PATH_SEP2);
+#else
             p = strrchr (buffer, PATH_SEP);
+#endif
         }
         if (p == NULL)
             return;
@@ -3442,7 +3458,11 @@ get_parent_dir_name (const vfs_path_t *cwd_vpath, const vfs_path_t *lwd_vpath)
 
         cwd = vfs_path_as_str (cwd_vpath);
 
+#if defined(WIN32) //WIN32, path
+        p = strrchr2 (lwd, PATH_SEP, PATH_SEP2);
+#else
         p = strrchr (lwd, PATH_SEP);
+#endif
 
         if (p != NULL && strncmp (cwd, lwd, (size_t) (p - lwd)) == 0
             && (clen == (size_t) (p - lwd) || (p == lwd && IS_PATH_SEP (cwd[0]) && cwd[1] == '\0')))

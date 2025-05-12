@@ -263,7 +263,11 @@ vfs_url_split (const char *path, int default_port, vfs_url_flags_t flags)
         char *dir;
 
         /* locate path component */
+#if defined(WIN32) //WIN32, path
+        dir = strchr2 (pcopy, PATH_SEP, PATH_SEP2);
+#else
         dir = strchr (pcopy, PATH_SEP);
+#endif
 
         if (dir == NULL)
             path_element->path = g_strdup (PATH_SEP_STR);

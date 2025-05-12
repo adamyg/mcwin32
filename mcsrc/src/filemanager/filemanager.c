@@ -1429,13 +1429,13 @@ midnight_execute_cmd (Widget *sender, long command)
         break;
 #if defined(WIN32) //WIN32, drive
     case CK_DriveChangeA:
-        drive_cmd_a();
+        drive_cmd_a ();
         break;
     case CK_DriveChangeB:
-        drive_cmd_b();
+        drive_cmd_b ();
         break;
     case CK_DriveChange:
-        drive_cmd();
+        drive_cmd ();
         break;
 #endif
     default:

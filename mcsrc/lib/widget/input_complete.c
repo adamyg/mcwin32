@@ -301,8 +301,16 @@ filename_completion_function (const char *text, int state, input_complete_t flag
         if (isdir)
             g_string_append_c (temp, PATH_SEP);
 
+#if defined(WIN32) //WIN32, d2u
+        {
+            char *result = g_string_free (temp, FALSE);
+            canonicalize_pathname_custom (result, CANON_PATH_NOCHANGE);
+            return result;
+        }
+#else
         return g_string_free (temp, FALSE);
-    }
+#endif
+   }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -674,7 +682,11 @@ command_completion_function (const char *text, int state, input_complete_t flags
         MC_PTR_FREE (path);
     else
     {
+#if defined(WIN32) //WIN32, path
+        p = strrchr2 (found, PATH_SEP, PATH_SEP2);
+#else
         p = strrchr (found, PATH_SEP);
+#endif
         if (p != NULL)
         {
             char *tmp = found;
@@ -1302,7 +1314,7 @@ try_complete (char *text, int *lc_start, int *lc_end, input_complete_t flags)
         state.word = g_strndup (text + *lc_start, *lc_end - *lc_start);
     else
     {
-        state.word = g_strdup(text);
+        state.word = g_strdup (text);
         *lc_start = 0;
     }
 #else
