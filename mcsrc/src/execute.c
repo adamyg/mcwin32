@@ -346,12 +346,7 @@ do_executev (const char *shell, int flags, char *const argv[])
             printf ("\r\n");
             fflush (stdout);
         }
-#ifdef ENABLE_CMDVIEW //WIN32
-        if (mc_global.tty.console_flag != '\0' && 
-                (mc_global.cmdview_visible || output_lines != 0) && mc_global.keybar_visible)
-#else
         if (mc_global.tty.console_flag != '\0' && output_lines != 0 && mc_global.keybar_visible)
-#endif
         {
             putchar ('\n');
             fflush (stdout);

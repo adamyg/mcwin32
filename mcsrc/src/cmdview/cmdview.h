@@ -7,12 +7,19 @@
 
 /*** structures declarations (and typedefs of structures)*****************************************/
 
-typedef struct WCmd
+typedef struct WCmdView
 {
     Widget widget;
     WButtonBar *bar;
     gboolean view_quit;
-} WCmd;
+
+    /*previous state*/
+    int original_output_lines;
+    gboolean original_command_prompt;
+    WGroup *ogroups[2];
+} WCmdView;
+
+#define CMDVIEW(x) ((WCmdView *)(x))
 
 /*** global variables defined in .c file *********************************************************/
 
