@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.25 2025/04/23 06:41:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.26 2025/05/12 15:14:25 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -291,7 +291,7 @@ ShellA(const char *shell, const char *cmd,
 
 
 static int
-ShellW(const wchar_t *shell, const wchar_t  *cmd,
+ShellW(const wchar_t *shell, const wchar_t *cmd,
     const wchar_t *fstdin, const wchar_t *fstdout, const wchar_t *fstderr)
 {
     static const wchar_t *sharg[] = {           // shell arguments
@@ -387,7 +387,7 @@ ShellW(const wchar_t *shell, const wchar_t  *cmd,
     }
 
     // command or interactive
-    (void)memset(&args, 0, sizeof(args));
+    (void) memset(&args, 0, sizeof(args));
 
      if (IsAbsPathW(shname))                     // abs-path
         args.arg0 = shname;
