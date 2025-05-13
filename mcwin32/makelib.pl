@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.50 2025/04/26 19:15:43 cvsuser Exp $
+# $Id: makelib.pl,v 1.51 2025/05/13 15:42:25 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -1194,6 +1194,7 @@ my @x_functions     = (
               '_get_timezone',
         'mktime',
         'timegm',                               # bsd/linux extensions
+        'gettimeofday', 'nanosleep', 'usleep',
         'feclearexpect',                        # fenv.h/c99
         'fpclassify',                           # math.h/c99
             'isnan', '_isnan',

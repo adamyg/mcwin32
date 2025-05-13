@@ -61,9 +61,9 @@
 /* --------------------------------------------------------------------------------------------- */
 
 /**
- * Borrow the widget from its current owner, insert into the additional group,
- * returning the previous owner. Make the inserted widget current.
- * It is intended for the ownership to be returned when the local context completes.
+ * Borrow the widget from its current owner, insert into the additional group, returning the 
+ * previous owner. It is intended for the ownership to be returned when the local context completes.
+ * Current widget remains unchanged.
  *
  */
 
@@ -76,7 +76,6 @@ group_borrow_widget (WGroup *g, Widget *w)
 
     w->owner = g;
     g->widgets = g_list_append (g->widgets, w);
-    g->current = g_list_last (g->widgets);
 
     return previous_owner;
 }
@@ -309,6 +308,9 @@ cmdview_set_state (Widget *w, widget_state_t state, gboolean enable)
                 cview->ogroups[0] = NULL;
             }
             break;
+
+        default:
+            break;
         }
     }
 
@@ -329,6 +331,7 @@ cmdview_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *d
     case MSG_INIT:
         cmdview_labels (cview);
         cmdview_compute_areas (cview);
+        assert (w->set_state == widget_default_set_state);
         assert (w->set_state != cmdview_set_state);
         w->set_state = cmdview_set_state;
         return MSG_HANDLED;
