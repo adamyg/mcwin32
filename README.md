@@ -30,14 +30,20 @@ Main panels.
 
 ![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample03.png?raw=true)
 
-Internal diff viewer.
+### Internal diff viewer.
 
 ![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample04.png?raw=true)
 
-Internal editor.
+### Internal editor.
 
 ![](https://github.com/adamyg/mcwin32/blob/master/mcwin32/art/sample05.png?raw=true)
 
+### Command view.
+
+Optional command view mode, available as a layout option when no sub-shell is active/available.
+Functionality is a reproduction of the original *Ctrl-O* _no-panel_ mode of Norton Commander.
+
+![](mcwin32/art/sample07.png?raw=true)
 
 ## Installation
 
