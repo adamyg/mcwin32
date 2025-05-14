@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.25 2025/04/23 06:41:44 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.27 2025/05/14 13:42:32 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -149,10 +149,22 @@ static int
 ShellA(const char *shell, const char *cmd,
     const char *fstdin, const char *fstdout, const char *fstderr)
 {
-    static const char * sharg[] = {             // shell arguments
-            "/C",       // command
-            "/k"        // interactive
+    static const char *cmdargs[] = {            // Windows command shell arguments
+                "/C",               // Exec command and then terminates.
+                "/k"                // Exec command but remains.
             };
+
+    static const char *pwshargs[][2] = {        // PowerShell arguments
+                { // PowerShell
+                    "-Command",     // -Command
+                    NULL
+                },
+                { // pwsh
+                    "-c",           // -Command | -c
+                    "-i"            // -Interactive | -i
+                }
+            };
+
     const int interactive = ((NULL == cmd || !*cmd) ? 1 : 0);
     char *slash, *shname = WIN32_STRDUP(shell && *shell ? shell : w32_getshell());
     int xstdout = FALSE, xstderr = FALSE;       // mode (TRUE == append)
@@ -164,7 +176,7 @@ ShellA(const char *shell, const char *cmd,
     HANDLE hProc = 0;
     int status = 0;
 
-    // sync or async
+    // sync or asynchronous
     sa.nLength = sizeof(sa);
     sa.lpSecurityDescriptor = NULL;
     sa.bInheritHandle = TRUE;                   // inherited
@@ -254,22 +266,42 @@ ShellA(const char *shell, const char *cmd,
         }
 
         if (!interactive &&                     // /C embedded
-                cmd[0] == sharg[0][0] && cmd[1] == sharg[0][1]) {
+                cmd[0] == cmdargs[0][0] && cmd[1] == cmdargs[0][1]) {
             argv[0] = shname;
             argv[1] = cmd;
             argv[2] = NULL;
 
         } else {
             argv[0] = shname;
-            argv[1] = sharg[ interactive ];     // /C or /K
+            argv[1] = cmdargs[ interactive ];   // /C or /K
             argv[2] = cmd;
             argv[3] = NULL;
         }
 
     } else {
-        argv[0] = shname;
-        argv[1] = cmd;
-        argv[2] = NULL;
+        const int pwsh = w32_ispowershellA(shname);
+
+        assert(pwsh >= 0 && pwsh <= 2);
+        if (pwsh) {
+            unsigned idx = 0;
+
+            slash = shname - 1;
+            while ((slash = strchr(slash + 1, XSLASHCHAR)) != NULL) {
+                *slash = SLASHCHAR;             // convert slashes
+            }
+
+            argv[idx++] = shname;
+            if (pwshargs[pwsh - 1][interactive]) {
+                argv[idx++] = pwshargs[pwsh - 1][interactive];
+            }
+            argv[idx++] = cmd;
+            argv[idx] = NULL;
+
+        } else {
+            argv[0] = shname;
+            argv[1] = cmd;
+            argv[2] = NULL;
+        }
     }
 
     // create child process
@@ -291,13 +323,25 @@ ShellA(const char *shell, const char *cmd,
 
 
 static int
-ShellW(const wchar_t *shell, const wchar_t  *cmd,
+ShellW(const wchar_t *shell, const wchar_t *cmd,
     const wchar_t *fstdin, const wchar_t *fstdout, const wchar_t *fstderr)
 {
-    static const wchar_t *sharg[] = {           // shell arguments
-            L"/C",      // command
-            L"/k"       // interactive
+    static const wchar_t *cmdargs[] = {         // Windows command shell arguments
+                L"/C",              // Exec command and then terminates.
+                L"/k"               // Exec command but remains.
             };
+
+    static const wchar_t *pwshargs[][2] = {     // PowerShell arguments
+                { // PowerShell
+                    L"-Command",    // -Command
+                    NULL,
+                },
+                { // pwsh
+                    L"-c",          // -Command | -c
+                    L"-i"           // -Interactive | -i
+                }
+            };
+
     const int interactive = ((NULL == cmd || !*cmd) ? 1 : 0);
     wchar_t *slash, *shname = WIN32_STRDUPW(shell && *shell ? shell : w32_getshellW());
     int xstdout = FALSE, xstderr = FALSE;       // mode (TRUE == append)
@@ -309,7 +353,7 @@ ShellW(const wchar_t *shell, const wchar_t  *cmd,
     HANDLE hProc = 0;
     int status = 0;
 
-    // sync or async
+    // sync or asynchronous
     sa.nLength = sizeof(sa);
     sa.lpSecurityDescriptor = NULL;
     sa.bInheritHandle = TRUE;                   // inherited
@@ -387,7 +431,7 @@ ShellW(const wchar_t *shell, const wchar_t  *cmd,
     }
 
     // command or interactive
-    (void)memset(&args, 0, sizeof(args));
+    (void) memset(&args, 0, sizeof(args));
 
      if (IsAbsPathW(shname))                     // abs-path
         args.arg0 = shname;
@@ -399,25 +443,44 @@ ShellW(const wchar_t *shell, const wchar_t  *cmd,
         }
 
         if (!interactive &&                     // /C embedded
-                cmd[0] == sharg[0][0] && cmd[1] == sharg[0][1]) {
+                cmd[0] == cmdargs[0][0] && cmd[1] == cmdargs[0][1]) {
             argv[0] = shname;
             argv[1] = cmd;
             argv[2] = NULL;
 
         } else {
             argv[0] = shname;
-            argv[1] = sharg[ interactive ];     // /C or /K
+            argv[1] = cmdargs[ interactive ];   // /C or /K
             argv[2] = cmd;
             argv[3] = NULL;
         }
-
     } else {
-        argv[0] = shname;
-        argv[1] = cmd;
-        argv[2] = NULL;
+        const int pwsh = w32_ispowershellW(shname);
+
+        assert(pwsh >= 0 && pwsh <= 2);
+        if (pwsh) {
+            unsigned idx = 0;
+
+            slash = shname - 1;
+            while ((slash = wcschr(slash + 1, XSLASHCHAR)) != NULL) {
+                *slash = SLASHCHAR;             // convert slashes
+            }
+
+            argv[idx++] = shname;
+            if (pwshargs[pwsh - 1][interactive]) {
+                argv[idx++] = pwshargs[pwsh - 1][interactive];
+            }
+            argv[idx++] = cmd;
+            argv[idx] = NULL;
+
+        } else {
+            argv[0] = shname;
+            argv[1] = cmd;
+            argv[2] = NULL;
+        }
     }
 
-    // create child process   
+    // create child process
     args.argv = argv;
     args._dwFlags = 0;
 

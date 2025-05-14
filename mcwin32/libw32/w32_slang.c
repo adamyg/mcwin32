@@ -259,6 +259,13 @@ SLtt_restore(void)
 }
 
 
+void
+SLtt_restore_lines(int top, int bottom, int to)
+{
+    vio_restore_lines(top, bottom, to);
+}
+
+
 /*
  *  SLsmg_touch_lines ---
  *      Mark the stated lines as trashed; requiring them to redrawn.
@@ -520,8 +527,6 @@ acs_lookup(uint32_t ch)
 static void
 set_position(int row, int col)
 {
-    assert(row >= 0 && row < vio.rows);
-    assert(col >= 0 && col < vio.cols);
     vio.c_row = (row < 0 ? 0 : (row >= vio.rows ? vio.rows-1 : row));
     vio.c_col = (col < 0 ? 0 : (col >= vio.cols ? vio.cols-1 : col));
 }

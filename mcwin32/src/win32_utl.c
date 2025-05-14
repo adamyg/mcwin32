@@ -170,36 +170,38 @@ WIN32_Setup(void)
 {
     static int init = 0;
 
-    w32_utf8filenames_enable();
+    w32_utf8filenames_enable ();
     if (init) return;
     ++init;
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900)
-    _set_fmode(_O_BINARY);
+    _set_fmode (_O_BINARY);
 #else
     _fmode = _O_BINARY;                         /* force binary mode */
 #endif
 
-    InitializeCriticalSection(&pe_guard);
+    InitializeCriticalSection (&pe_guard);
 #if defined(ENABLE_VFS)
         {   WSADATA wsaData = {0};
             WORD wVersionRequested = MAKEWORD(2,2); /* winsock2 */
-            if (WSAStartup(wVersionRequested, &wsaData) != 0) {
-                const DWORD err = GetLastError();
+            if (WSAStartup (wVersionRequested, &wsaData) != 0) {
+                const DWORD err = GetLastError ();
                 char buffer[128];
 
-                (void) _snprintf(buffer, sizeof(buffer), "WSAStartup failed, rc: %ld", (long)err);
+                (void) _snprintf (buffer, sizeof(buffer), "WSAStartup failed, rc: %ld", (long)err);
                 buffer[ sizeof(buffer) - 1] = 0;
-                MessageBoxA(0, buffer, "Error", MB_OK);
+
+                MessageBoxA (0, buffer, "Error", MB_OK);
             }
         }
 #endif //ENABLE_VFS
-    set_shell();
-    set_term();
-    set_home();
-    set_editor();
-    set_appdirs();
-    set_tmpdir();
+
+    set_shell ();
+    set_term ();
+    set_home ();
+    set_editor ();
+    set_appdirs ();
+    set_tmpdir ();
 }
 
 
@@ -242,32 +244,32 @@ ugetenv(const char *varname)
     static const char *x_utf8xenv = NULL;       // last converted result.
     const char *env;
 
-    env = getenv(varname);
+    env = getenv (varname);
     if (env) {
 #define MAX_VARNAME 128
         wchar_t wvarname[MAX_VARNAME + 1 /*NUL*/];
         const wchar_t *wenv = NULL;
 
-        (void) MultiByteToWideChar(CP_UTF8, 0, varname, -1, wvarname, MAX_VARNAME);
+        (void) MultiByteToWideChar (CP_UTF8, 0, varname, -1, wvarname, MAX_VARNAME);
         wvarname[MAX_VARNAME] = 0;
 
-        wenv = _wgetenv(wvarname);
+        wenv = _wgetenv (wvarname);
         if (wenv) {                             // wide-char available, convert and compare.
-            const unsigned wenvsz = wcslen(wenv),
-                utf8sz = WideCharToMultiByte(CP_UTF8, 0, wenv, (int)wenvsz, NULL, 0, NULL, NULL);
+            const unsigned wenvsz = wcslen (wenv),
+                utf8sz = WideCharToMultiByte (CP_UTF8, 0, wenv, (int)wenvsz, NULL, 0, NULL, NULL);
             char *utf8env;
 
-            if (NULL != (utf8env = calloc(utf8sz + 1 /*NUL*/, sizeof(char)))) {
-                (void) WideCharToMultiByte(CP_UTF8, 0, wenv, (int)wenvsz, utf8env, utf8sz, NULL, NULL);
+            if (NULL != (utf8env = calloc (utf8sz + 1 /*NUL*/, sizeof(char)))) {
+                (void) WideCharToMultiByte (CP_UTF8, 0, wenv, (int)wenvsz, utf8env, utf8sz, NULL, NULL);
                 utf8env[utf8sz] = 0;
 
                 // when values differ, return utf8
-                if (strcmp(utf8env, env) != 0) {
-                    free((void *)x_utf8xenv);
+                if (strcmp (utf8env, env) != 0) {
+                    free ((void *)x_utf8xenv);
                     x_utf8xenv = utf8env;
                     return utf8env;
                 }
-                free(utf8env);
+                free (utf8env);
             }
         }
     }
@@ -284,8 +286,8 @@ ugetdir(const char *varname)
 {
     const char *env;
 
-    if (NULL != (env = ugetenv(varname))) {
-        if (env[0] && 0 == w32_access(env, 0)) {
+    if (NULL != (env = ugetenv (varname))) {
+        if (env[0] && 0 == w32_access (env, 0)) {
             return env;                         // exists
         }
     }
@@ -304,13 +306,13 @@ SHGetFolderPathU(HWND hwnd, int csidl, HANDLE hToken, DWORD dwFlags, char *path,
     HRESULT ret;
 
     path[0] = 0;
-    ret = SHGetFolderPathW(hwnd, csidl, hToken, dwFlags, wpath);
+    ret = SHGetFolderPathW (hwnd, csidl, hToken, dwFlags, wpath);
     if (SUCCEEDED(ret)) {
-        const unsigned wpathsz = wcslen(wpath),
-            pathsz = WideCharToMultiByte(CP_UTF8, 0, wpath, (int)wpathsz, NULL, 0, NULL, NULL);
+        const unsigned wpathsz = wcslen (wpath),
+            pathsz = WideCharToMultiByte (CP_UTF8, 0, wpath, (int)wpathsz, NULL, 0, NULL, NULL);
 
         if (pathsz < pathlen) {
-            (void) WideCharToMultiByte(CP_UTF8, 0, wpath, (int)wpathsz, path, pathlen, NULL, NULL);
+            (void) WideCharToMultiByte (CP_UTF8, 0, wpath, (int)wpathsz, path, pathlen, NULL, NULL);
             path[pathsz] = 0;
 
         } else {
@@ -323,9 +325,9 @@ SHGetFolderPathU(HWND hwnd, int csidl, HANDLE hToken, DWORD dwFlags, char *path,
 
 /**
  *  Set application directories
- * 
- *      <MC_DIRECTORY>, <MC_BUSYBOX> 
- * 
+ *
+ *      <MC_DIRECTORY>, <MC_BUSYBOX>
+ *
  *  MC_BUSYBOX
  *
  *      <mc_directory>\busybox.exe>
@@ -338,19 +340,19 @@ set_appdirs(void)
 
     // MC_DIRECTORY
     buffer[0] = 0;
-    if (w32_getprogdir(buffer, sizeof(buffer)) > 0) {
+    if (w32_getprogdir (buffer, sizeof(buffer)) > 0) {
         mc_setpathenv ("MC_DIRECTORY", buffer, TRUE, FALSE);
     }
 
     // MC_BUSYBOX, import existing
     if (NULL != (busybox = ugetenv("MC_BUSYBOX")) && *busybox) {
         char *t_busybox;
-        
-        t_busybox = strdup(busybox);            // import external version.
+
+        t_busybox = strdup (busybox);           // import external version.
         if ('"' == t_busybox[0]) {              // remove quotes; optional.
-            size_t len = strlen(t_busybox);
+            size_t len = strlen (t_busybox);
             if ('"' == t_busybox[len-1]) {
-                memmove(t_busybox, t_busybox + 1, --len);
+                memmove (t_busybox, t_busybox + 1, --len);
                 t_busybox[len - 1] = 0;
             }
         }
@@ -362,20 +364,20 @@ set_appdirs(void)
     busybox = "busybox";
 
     if (buffer[0]) {
-        const size_t buflen = strlen(buffer);
+        const size_t buflen = strlen (buffer);
 
-        strncpy(buffer + buflen, "/busybox.exe", sizeof(buffer) - buflen);
+        strncpy (buffer + buflen, "/busybox.exe", sizeof(buffer) - buflen);
         buffer[sizeof(buffer) - 1] = 0;
-        canonicalize_pathname(buffer);
-        dospath(buffer);
-        if (0 == _access(buffer, X_OK)) {
+        canonicalize_pathname (buffer);
+        dospath (buffer);
+        if (0 == _access (buffer, X_OK)) {
             busybox = buffer;
         }
     }
 
     /* publish, quote if path contains whitespace */
     mc_setpathenv ("MC_BUSYBOX", busybox, TRUE, TRUE);
-    busybox_path = strdup(busybox);
+    busybox_path = strdup (busybox);
 }
 
 
@@ -396,14 +398,14 @@ set_tmpdir(void)
 {
     const char *tmpdir = NULL;
 
-    if (NULL != (tmpdir = ugetenv("MC_TMPDIR"))) {
+    if (NULL != (tmpdir = ugetenv ("MC_TMPDIR"))) {
         if (tmpdir[0] &&                        // 4.8.27, verify either "/" or "X:/"
                 (IS_PATH_SEP(tmpdir[0]) || (':' == tmpdir[1] && !IS_PATH_SEP(tmpdir[2])))) {
             return;
         }
     }
 
-    if (NULL != (tmpdir = mc_TMPDIR()) && tmpdir[0]) {
+    if (NULL != (tmpdir = mc_TMPDIR ()) && tmpdir[0]) {
         char buffer[MAX_PATH] = {0};
         struct passwd *pwd;
         struct stat st = {0};
@@ -413,11 +415,11 @@ set_tmpdir(void)
         buffer[sizeof(buffer) - 1] = 0;
         canonicalize_pathname (buffer);
 
-        if (0 == w32_lstat(buffer, &st)) {
+        if (0 == w32_lstat (buffer, &st)) {
             if (! S_ISDIR(st.st_mode)) {
                 tmpdir = NULL;
             }
-        } else if (0 != w32_mkdir(buffer, S_IRWXU)) {
+        } else if (0 != w32_mkdir (buffer, S_IRWXU)) {
             tmpdir = NULL;
         }
 
@@ -438,21 +440,21 @@ mc_TMPDIR(void)
         const char *tmpdir;
 
         // explicit
-        tmpdir = ugetenv("MC_TMPDIR");          // 4.8.27
+        tmpdir = ugetenv ("MC_TMPDIR");         // 4.8.27
 
         // accessible temp directory
-        if (!tmpdir) tmpdir = ugetdir("TMP");
-        if (!tmpdir) tmpdir = ugetdir("TEMP");
-        if (!tmpdir) tmpdir = ugetdir("TMPDIR");
+        if (!tmpdir) tmpdir = ugetdir ("TMP");
+        if (!tmpdir) tmpdir = ugetdir ("TEMP");
+        if (!tmpdir) tmpdir = ugetdir ("TMPDIR");
 
         if (!tmpdir) {
-            if (NULL != (tmpdir = ugetenv("USERPROFILE"))) {
+            if (NULL != (tmpdir = ugetenv ("USERPROFILE"))) {
                 //
                 //  "%USERPROFILE%\AppData\Local\Temp": see #97
                 //
-                _snprintf(x_buffer, sizeof(x_buffer), "%s\\AppData\\Local\\Temp", tmpdir);
+                _snprintf (x_buffer, sizeof(x_buffer), "%s\\AppData\\Local\\Temp", tmpdir);
                 x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == w32_access(x_buffer, 0)) {
+                if (0 == w32_access (x_buffer, 0)) {
                     tmpdir = x_buffer;
                 }
             }
@@ -467,10 +469,10 @@ mc_TMPDIR(void)
         if (!tmpdir) tmpdir = TMPDIR_DEFAULT;
 
         if (tmpdir != x_buffer) {               // cache
-            strncpy(x_buffer, tmpdir, sizeof(x_buffer));
+            strncpy (x_buffer, tmpdir, sizeof(x_buffer));
             x_buffer[sizeof(x_buffer) - 1] = 0;
         }
-        unixpath(x_buffer);
+        unixpath (x_buffer);
     }
 
     return (x_buffer[0] ? x_buffer : NULL);
@@ -496,29 +498,29 @@ mc_aspell_dllpath(void)
     }
 
     // <EXEPATH>
-    if ((len = w32_getprogdir(x_buffer, sizeof(x_buffer))) > 0) {
-        _snprintf(x_buffer + len, sizeof(x_buffer) - len, "\\%s.dll", ASPELL_DLLNAME);
+    if ((len = w32_getprogdir (x_buffer, sizeof(x_buffer))) > 0) {
+        _snprintf (x_buffer + len, sizeof(x_buffer) - len, "\\%s.dll", ASPELL_DLLNAME);
         x_buffer[sizeof(x_buffer) - 1] = 0;
-        if (0 == w32_access(x_buffer, 0)) {
+        if (0 == w32_access (x_buffer, 0)) {
             x_buffer[len] = 0; //exclude delimiter
             return x_buffer;
         }
     }
 
     // <Software\Aspell\bin>
-    if (ERROR_SUCCESS == RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Aspell", 0, KEY_READ, &hKey)) {
+    if (ERROR_SUCCESS == RegOpenKeyExA (HKEY_LOCAL_MACHINE, "Software\\Aspell", 0, KEY_READ, &hKey)) {
         DWORD dwSize = sizeof(x_buffer) - (sizeof(ASPELL_DLLNAME) + 8);
 
-        if (ERROR_SUCCESS == RegQueryValueExA(hKey, "Path", NULL, NULL, (LPBYTE)x_buffer, &dwSize) && dwSize) {
+        if (ERROR_SUCCESS == RegQueryValueExA (hKey, "Path", NULL, NULL, (LPBYTE)x_buffer, &dwSize) && dwSize) {
             if (0 == x_buffer[dwSize]) --dwSize;
-            _snprintf(x_buffer + dwSize, sizeof(x_buffer) - dwSize, "\\%s.dll", ASPELL_DLLNAME);
+            _snprintf (x_buffer + dwSize, sizeof(x_buffer) - dwSize, "\\%s.dll", ASPELL_DLLNAME);
             x_buffer[sizeof(x_buffer) - 1] = 0;
-            if (0 == w32_access(x_buffer, 0)) {
+            if (0 == w32_access (x_buffer, 0)) {
                 x_buffer[dwSize] = 0; //exclude delimiter
                 return x_buffer;
             }
         }
-        RegCloseKey(hKey);
+        RegCloseKey (hKey);
     }
 
     return NULL;
@@ -536,11 +538,11 @@ mc_get_locale(void)
     if (0 == x_lang[0])
     {
         char iso639[16] = {0}, iso3166[16] = {0};
-        LCID lcid = GetThreadLocale();
+        LCID lcid = GetThreadLocale ();
 
-        if (GetLocaleInfoA(lcid, LOCALE_SISO639LANGNAME, iso639, sizeof(iso639)) &&
-                GetLocaleInfoA(lcid, LOCALE_SISO3166CTRYNAME, iso3166, sizeof(iso3166))) {
-            snprintf(x_lang, sizeof(x_lang), "%s_%s", iso639, iso3166); // "9_9"
+        if (GetLocaleInfoA (lcid, LOCALE_SISO639LANGNAME, iso639, sizeof(iso639)) &&
+                GetLocaleInfoA (lcid, LOCALE_SISO3166CTRYNAME, iso3166, sizeof(iso3166))) {
+            snprintf (x_lang, sizeof(x_lang), "%s_%s", iso639, iso3166); // "9_9"
             x_lang[sizeof(x_lang) - 1] = '\0';
         }
     }
@@ -559,9 +561,9 @@ mc_MAGICPATH(void)
     static char x_buffer[MAX_PATH];
 
     if (0 == x_buffer[0]) {
-        _snprintf(x_buffer, sizeof(x_buffer), "%s/magic", mc_SYSCONFDIR());
+        _snprintf (x_buffer, sizeof(x_buffer), "%s/magic", mc_SYSCONFDIR ());
         x_buffer[sizeof(x_buffer) - 1] = 0;
-        unixpath(x_buffer);
+        unixpath (x_buffer);
     }
     return x_buffer;
 }
@@ -595,21 +597,21 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
     }
 
     // <EXEPATH>, generally same as INSTALLDIR
-    if ((len = w32_getprogdir(buffer, buflen)) > 0) {
-        _snprintf(buffer + len, buflen - len, "/%s/", subdir);
+    if ((len = w32_getprogdir (buffer, buflen)) > 0) {
+        _snprintf (buffer + len, buflen - len, "/%s/", subdir);
         buffer[buflen - 1] = 0;
-        if (0 == w32_access(buffer, 0)) {
+        if (0 == w32_access (buffer, 0)) {
             done = TRUE;
         }
     }
 
     // <INSTALLPATH>
     if (! done) {
-        if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer, buflen))) {
-            len = strlen(buffer);
-            _snprintf(buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
+        if (SUCCEEDED(SHGetFolderPathU (NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer, buflen))) {
+            len = strlen (buffer);
+            _snprintf (buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
             buffer[buflen - 1] = 0;
-            if (0 == w32_access(buffer, 0)) {
+            if (0 == w32_access (buffer, 0)) {
                 done = TRUE;
             }
         }
@@ -617,11 +619,11 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
 
     // <APPDATA>
     if (! done)  {
-        if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_COMMON_APPDATA, NULL, 0, buffer, buflen))) {
-            len = strlen(buffer);
-            _snprintf(buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
+        if (SUCCEEDED(SHGetFolderPathU (NULL, CSIDL_COMMON_APPDATA, NULL, 0, buffer, buflen))) {
+            len = strlen (buffer);
+            _snprintf (buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
             buffer[buflen - 1] = 0;
-            if (0 == w32_access(buffer, 0)) {
+            if (0 == w32_access (buffer, 0)) {
                 done = TRUE;
             }
         }
@@ -631,25 +633,25 @@ get_conf_dir(const char *subdir, char *buffer, size_t buflen)
     if (! done) {
         const char *env;
 
-        if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer, buflen))) {
-            len = strlen(buffer);
-            _snprintf(buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
+        if (SUCCEEDED(SHGetFolderPathU (NULL, CSIDL_PROGRAM_FILES, NULL, 0, buffer, buflen))) {
+            len = strlen (buffer);
+            _snprintf (buffer + len, buflen - len, "/%s/%s/", MC_APPLICATION_DIR, subdir);
 
-        } else if (NULL != (env = ugetenv("ProgramFiles"))) {
-            _snprintf(buffer, buflen, "%s/%s/%s/", env, MC_APPLICATION_DIR, subdir);
+        } else if (NULL != (env = ugetenv ("ProgramFiles"))) {
+            _snprintf (buffer, buflen, "%s/%s/%s/", env, MC_APPLICATION_DIR, subdir);
 
         } else {
 #if defined(_WIN32)
-            _snprintf(buffer, buflen, "c:/Program Files (x86)/%s/%s/", MC_APPLICATION_DIR, subdir);
+            _snprintf (buffer, buflen, "c:/Program Files (x86)/%s/%s/", MC_APPLICATION_DIR, subdir);
 #else
-            _snprintf(buffer, buflen, "c:/Program Files/%s/%s/", MC_APPLICATION_DIR, subdir);
+            _snprintf (buffer, buflen, "c:/Program Files/%s/%s/", MC_APPLICATION_DIR, subdir);
 #endif
         }
         buffer[buflen - 1] = 0;
         mkdir(buffer, S_IRWXU);
     }
 
-    unixpath(buffer);
+    unixpath (buffer);
     return buffer;
 }
 
@@ -676,7 +678,7 @@ const char *
 mc_SYSCONFDIR(void)
 {
     static char x_buffer[MAX_PATH];
-    return get_conf_dir("etc", x_buffer, sizeof(x_buffer));
+    return get_conf_dir ("etc", x_buffer, sizeof(x_buffer));
 }
 
 
@@ -702,7 +704,7 @@ const char *
 mc_DATADIR(void)
 {
     static char x_buffer[MAX_PATH];
-    return get_conf_dir("share", x_buffer, sizeof(x_buffer));
+    return get_conf_dir ("share", x_buffer, sizeof(x_buffer));
 }
 
 
@@ -728,7 +730,7 @@ const char *
 mc_LOCALEDIR(void)
 {
     static char x_buffer[MAX_PATH];
-    return get_conf_dir("locale", x_buffer, sizeof(x_buffer));
+    return get_conf_dir ("locale", x_buffer, sizeof(x_buffer));
 }
 
 
@@ -754,7 +756,7 @@ const char *
 mc_LIBEXECDIR(void)
 {
     static char x_buffer[MAX_PATH];
-    return get_conf_dir("plugin", x_buffer, sizeof(x_buffer));
+    return get_conf_dir ("plugin", x_buffer, sizeof(x_buffer));
 }
 
 
@@ -779,7 +781,7 @@ mc_LIBEXECDIR(void)
 const char *
 mc_EXTHELPERSDIR(void)
 {
-    return mc_LIBEXECDIR();                     // one and the same ....
+    return mc_LIBEXECDIR ();                    // one and the same ....
 }
 
 
@@ -840,12 +842,12 @@ mc_USERCONFIGDIR(const char *subdir)
 
         // <PERSONAL>
         if (!done) {
-            if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_APPDATA, NULL, 0, x_buffer, sizeof(x_buffer))) &&
-                                (len = strlen(x_buffer)) > 0) {
+            if (SUCCEEDED(SHGetFolderPathU (NULL, CSIDL_APPDATA, NULL, 0, x_buffer, sizeof(x_buffer))) &&
+                                (len = strlen (x_buffer)) > 0) {
                                                 /* personal settings */
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
+                _snprintf (x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
                 x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == w32_access(x_buffer, 0)) {
+                if (0 == w32_access (x_buffer, 0)) {
                     x_buffer[len+1] = 0;
                     done = TRUE;
                 }
@@ -854,11 +856,11 @@ mc_USERCONFIGDIR(const char *subdir)
 
         // <APPDATA>
         if (! done) {
-            if ((env = ugetenv("APPDATA")) != NULL && (len = strlen(env)) > 0) {
+            if ((env = ugetenv ("APPDATA")) != NULL && (len = strlen (env)) > 0) {
                                                 /* personal settings */
-                _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
+                _snprintf (x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
                 x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == w32_access(x_buffer, 0)) {
+                if (0 == w32_access (x_buffer, 0)) {
                     x_buffer[len+1] = 0;
                     done = TRUE;
                 }
@@ -867,11 +869,11 @@ mc_USERCONFIGDIR(const char *subdir)
 
         // <HOME> --- XXX, consider as first option.
         if (! done) {
-            if ((env = ugetenv("HOME")) != NULL && (len = strlen(env)) > 0) {
+            if ((env = ugetenv ("HOME")) != NULL && (len = strlen (env)) > 0) {
                                                 /* personal settings, new */
-                _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
+                _snprintf (x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
                 x_buffer[sizeof(x_buffer) - 1] = 0;
-                if (0 == w32_access(x_buffer, 0)) {
+                if (0 == w32_access (x_buffer, 0)) {
                     x_buffer[len+1] = 0;
                     done = TRUE;
                 }
@@ -881,23 +883,23 @@ mc_USERCONFIGDIR(const char *subdir)
         // new user, create
         if (! done) {
                                                 /* personal settings */
-            if (SUCCEEDED(SHGetFolderPathU(NULL, CSIDL_APPDATA, NULL, 0, x_buffer, sizeof(x_buffer))) &&
-                                (len = strlen(x_buffer)) > 0) {
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
+            if (SUCCEEDED(SHGetFolderPathU (NULL, CSIDL_APPDATA, NULL, 0, x_buffer, sizeof(x_buffer))) &&
+                                (len = strlen (x_buffer)) > 0) {
+                _snprintf (x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
                 done = TRUE;
                                                 /* old school configuration */
-            } else if ((env = ugetenv("HOME")) != NULL && (len = strlen(env)) > 0) {
-                _snprintf(x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
+            } else if ((env = ugetenv ("HOME")) != NULL && (len = strlen (env)) > 0) {
+                _snprintf (x_buffer, sizeof(x_buffer), "%s/%s/", env, MC_USERCONF_DIR);
                 done = TRUE;
                                                 /* full back, current working directory */
-            } else if (w32_getcwd(x_buffer, sizeof(x_buffer)) && (len = strlen(x_buffer)) > 0) {
-                _snprintf(x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
+            } else if (w32_getcwd (x_buffer, sizeof(x_buffer)) && (len = strlen (x_buffer)) > 0) {
+                _snprintf (x_buffer + len, sizeof(x_buffer) - len, "/%s/", MC_USERCONF_DIR);
                 done = TRUE;
 
             }
 
             if (! done) {
-                strcpy(x_buffer, "./");         /* !! */
+                strcpy (x_buffer, "./");        /* !! */
             } else {
                 x_buffer[sizeof(x_buffer) - 1] = 0;
                 mkdir(x_buffer, S_IRWXU);
@@ -905,34 +907,34 @@ mc_USERCONFIGDIR(const char *subdir)
             }
         }
 
-        unixpath(x_buffer);
+        unixpath (x_buffer);
     }
 
     if (subdir && *subdir) {
-        const int dirlen = strlen(x_buffer) + strlen(subdir) + 2 /* '/' and NUL */;
-        char *dir = g_malloc(dirlen);
+        const int dirlen = strlen (x_buffer) + strlen (subdir) + 2 /* '/' and NUL */;
+        char *dir = g_malloc (dirlen);
 
         if (dir) {
-            (void) _snprintf(dir, dirlen, "%s%s/", x_buffer, subdir);
-            if (-1 == w32_access(dir, 0)) {
-                w32_mkdir(dir, 0666);
+            (void) _snprintf (dir, dirlen, "%s%s/", x_buffer, subdir);
+            if (-1 == w32_access (dir, 0)) {
+                w32_mkdir (dir, 0666);
             }
         }
         return dir;
     }
 
-    return g_strdup(x_buffer);
+    return g_strdup (x_buffer);
 }
 
 
 void
 mc_setenv(const char *name, const char *value, int overwrite)
 {
-    if ((1 == overwrite) || NULL == getenv(name)) {
+    if ((1 == overwrite) || NULL == getenv (name)) {
 #if defined(__WATCOMC__)
         setenv(name, value, 1);                 // putenv() semantics unclear
 #else
-        _putenv_s(name, value);                 // copy semantics
+        _putenv_s (name, value);                // copy semantics
 #endif
         (void) SetEnvironmentVariableA (name, value);
     }
@@ -942,7 +944,7 @@ mc_setenv(const char *name, const char *value, int overwrite)
 void
 mc_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
 {
-    if ((1 == overwrite) || NULL == getenv(name)) {
+    if ((1 == overwrite) || NULL == getenv (name)) {
         char t_path[WIN32_PATH_MAX], t_quoted[WIN32_PATH_MAX + 16];
         wchar_t *wname, *wvalue;
 
@@ -953,7 +955,7 @@ mc_setpathenv(const char *name, const char *value, int overwrite, int quote_ws)
         dospath (t_path);
         value = t_path;
 
-        if (quote_ws && strchr(value, ' ')) {
+        if (quote_ws && strchr (value, ' ')) {
             snprintf (t_quoted, sizeof(t_quoted) - 1, "\"%s\"", value);
             t_quoted[sizeof(t_quoted) - 1] = 0;
             value = t_quoted;
@@ -979,14 +981,14 @@ void
 WIN32_HeapInit(void)
 {
 #if defined(_MSC_VER) && !defined(NDEBUG)
-    int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+    int flags = _CrtSetDbgFlag (_CRTDBG_REPORT_FLAG);
 
   //flags = (flags & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_1024_DF;
   //flags = (flags & 0x0000FFFF) | _CRTDBG_CHECK_ALWAYS_DF;
     flags |= _CRTDBG_DELAY_FREE_MEM_DF;
     flags |= _CRTDBG_CHECK_CRT_DF;
 
-    _CrtSetDbgFlag(flags);
+    _CrtSetDbgFlag (flags);
 #endif //_MSC_VER
 }
 
@@ -997,21 +999,21 @@ WIN32_HeapCheck(void)
     int rc = 0;
 
 #if defined(_MSC_VER)
-    if (! _CrtCheckMemory()) {
-        puts("ERROR - heap corruption detected\n");
+    if (! _CrtCheckMemory ()) {
+        puts ("ERROR - heap corruption detected\n");
     }
 #endif //_MSC_VER
 
-    switch (_heapchk()) {
+    switch (_heapchk ()) {
     case _HEAPOK:
     case _HEAPEMPTY:
         break;
     case _HEAPBADBEGIN:
-        printf("ERROR - heapchk: heap is damaged\n");
+        printf ("ERROR - heapchk: heap is damaged\n");
         rc = -1;
         break;
     case _HEAPBADNODE:
-        printf("ERROR - heapchk: bad node in heap\n");
+        printf ("ERROR - heapchk: bad node in heap\n");
         rc = -1;
         break;
     }
@@ -1021,7 +1023,7 @@ WIN32_HeapCheck(void)
         int hstatus;
 
         for (;;) {
-            hstatus = _heapwalk(&hi);
+            hstatus = _heapwalk (&hi);
             if (hstatus != _HEAPOK) {
                 break;
             }
@@ -1031,13 +1033,13 @@ WIN32_HeapCheck(void)
         case _HEAPEMPTY:
             break;
         case _HEAPBADBEGIN:
-            puts("ERROR - heapwalk: heap is damaged\n");
+            puts ("ERROR - heapwalk: heap is damaged\n");
             break;
         case _HEAPBADPTR:
-            puts("ERROR - heapwalk: bad pointer to heap\n");
+            puts ("ERROR - heapwalk: bad pointer to heap\n");
             break;
         case _HEAPBADNODE:
-            puts("ERROR - heapwalk: bad node in heap\n");
+            puts ("ERROR - heapwalk: bad node in heap\n");
         }
     }
 #endif //NDEBUG
@@ -1195,7 +1197,7 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
     if (xargv && NULL != xargv[0]) {
 
         if ((flags & EXECUTE_AS_SHELL) && NULL == xargv[1]) {
-            cmd = my_unquote(xargv[0], TRUE);
+            cmd = my_unquote (xargv[0], TRUE);
 
         } else {
             const char *str;
@@ -1205,7 +1207,7 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
             for (argc = 0; xargv[argc]; ++argc)
                 continue;
 
-            if (NULL == (argv = calloc(argc + 1 /*NULL*/, sizeof(const char *)))) {
+            if (NULL == (argv = calloc (argc + 1 /*NULL*/, sizeof(const char *)))) {
                 return -1;
             }
 
@@ -1217,26 +1219,26 @@ my_systemv_flags (int flags, const char *command, char *const xargv[])
 
             for (idx = 0; idx < argc && NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
-                    const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+                    const int isquote = ('"' != *str && '\'' != *str && strchr (str, ' ') ? 1 : 0);
 
-                    slen += strlen(str) + 1 /*nul or space*/;
+                    slen += strlen (str) + 1 /*nul or space*/;
                     if (isquote) slen += 2; /*quotes*/
                 }
             }
 
-            if (NULL == (cmd = calloc(slen, 1))) {
+            if (NULL == (cmd = calloc (slen, 1))) {
                 goto error;
             }
 
             cursor = cmd;
             for (idx = 0; idx < argc && NULL != (str = argv[idx]); ++idx) {
                 if (*str) {
-                    const int isquote = ('"' != *str && '\'' != *str && strchr(str, ' ') ? 1 : 0);
+                    const int isquote = ('"' != *str && '\'' != *str && strchr (str, ' ') ? 1 : 0);
 
-                    slen = strlen(str);
+                    slen = strlen (str);
                     if (cursor != cmd) *cursor++ = ' ';
                     if (isquote) *cursor++ = '"';
-                    memcpy(cursor, str, slen);
+                    memcpy (cursor, str, slen);
                     cursor += slen;
                     if (isquote) *cursor++ = '"';
                 }
@@ -1255,7 +1257,7 @@ error:;
 #pragma warning(disable: 6001) // false positive, calloc() usage not understood
 #endif
         for (idx = 0; idx < argc && argv[idx]; ++idx) {
-            free((void *)argv[idx]);
+            free ((void *)argv[idx]);
         }
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -1284,7 +1286,7 @@ my_system (int flags, const char *shell, const char *cmd)
 
         if (NULL != (t_cmd = my_unquote (cmd, TRUE))) {
             int ret = system_impl (flags, shell, t_cmd);
-            free((void *)t_cmd);
+            free ((void *)t_cmd);
             return ret;
         }
     }
@@ -1296,43 +1298,81 @@ my_system (int flags, const char *shell, const char *cmd)
 static int
 system_impl (int flags, const char *shell, const char *cmd)
 {
-    const char *busybox = mc_BUSYBOX(), *exec = NULL;
+    const char *busybox = mc_BUSYBOX (), *exec = NULL;
     int shelllen, ret = -1;
+    int quotes = 0;
 
     if ((flags & EXECUTE_INTERNAL) && cmd) {
-        printf("%s\n", cmd);                    /* echo command */
+        printf ("%s\n", cmd);                   /* echo command */
     }
 
     if (cmd) {
+        quotes = (strchr (cmd, '"') && w32_iscommandA (shell));
+            // cmd.exe, command line semantics
+            //
+            //  If /C or /K is specified, then the remainder of the command line after
+            //  the switch is processed as a command line, where the following logic
+            //  is used to process quote(") characters:
+            //
+            //   1. If all of the following conditions are met, then quote characters
+            //      on the command line are preserved:
+            //
+            //      - no /S switch.
+            //      - exactly two quote characters.
+            //      - no special characters between the two quote characters, where special is one of : &<>()@^ |
+            //      - there are one or more whitespace characters between the two quote characters.
+            //      - the string between the two quote characters is the name of an executable file.
+            //
+            //   2. Otherwise, old behavior is to see if the first character is a quote
+            //      character and if so, strip the leading character and remove the last quote
+            //      character on the command line, preserving any text after the last
+            //      quote character.
+            //
+            //  If embedded quotes are detected, enable the older behavior by encasing the command
+            //  within double quotes when additional quotes are injected.
+
         while (' ' == *cmd) ++cmd;              /* consume leading whitespace (if any) */
             /*whitespace within "#! xxx" shall be visible; confusing matching logic below */
 
-         if (busybox && *busybox) {
-             if (shell && 0 == strncmp(shell, bin_sh, sizeof(bin_sh)-1)) {
-                 /*
-                  *  If <shell> = </bin/sh> <cmd ...>
-                  *  execute as <busybox cmd ...>
-                  */
-                 const char *space;
+        /*
+         *  Note:
+         *  Mainly legacy functionality, with similar available within mc_open().
+         *  mc_open() replaced vfs/extfs use-cases with explicit stdout/stderr redirection avoiding the local shell.
+         *
+         *  Retrained allowing user access to /usr/bin/sh as a shell.
+         */
+        if (busybox && *busybox) {
+            if (shell && 0 == strncmp (shell, bin_sh, sizeof(bin_sh)-1)) {
+                /*
+                 *  If <shell> = </bin/sh> <cmd ...>
+                 *  execute as <busybox cmd ...>
+                 */
+                const char *space;
 
-                 if (NULL != (space = strchr(cmd, ' '))) {
-                     const int cmdlen = space - cmd;
-                     unsigned i;
+                if (NULL != (space = strchr (cmd, ' '))) {
+                    const int cmdlen = space - cmd;
+                    unsigned i;
 
-                     for (i = 0; i < _countof(busyboxexts); ++i) {
-                         if (0 == strncmp(busyboxexts[i], cmd, cmdlen)) {
-                             char *t_cmd;
+                    for (i = 0; i < _countof(busyboxexts); ++i) {
+                        if (0 == strncmp (busyboxexts[i], cmd, cmdlen)) {
+                            char *t_cmd;
 
-                             if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
-                                 ret = w32_shell(NULL, t_cmd, NULL, NULL, NULL);
-                                 g_free(t_cmd);
-                             }
-                             return ret;
+                            if (quotes) {
+                                t_cmd = g_strconcat ("\"\"", busybox, "\" ", cmd, "\"", NULL);
+                            } else {
+                                t_cmd = g_strconcat ("\"", busybox, "\" ", cmd, NULL);
+                            }
+
+                            if (t_cmd) {
+                                ret = w32_shell (shell, t_cmd, NULL, NULL, NULL);
+                                g_free (t_cmd);
+                            }
+                            return ret;
                          }
                      }
                 }
 
-            } else if ((flags & EXECUTE_AS_SHELL) && NULL != (exec = mc_isscript(cmd))) {
+            } else if ((flags & EXECUTE_AS_SHELL) && NULL != (exec = mc_isscript (cmd))) {
                 /*
                  *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python | /usr/bin/env python>
                  *  note: currently limited to extfs usage.
@@ -1340,14 +1380,20 @@ system_impl (int flags, const char *shell, const char *cmd)
                 char *t_cmd;
 
                 if (exec[0] == 'p') {           /* perl/python */
-                    t_cmd = g_strconcat(exec, " ", cmd, NULL);
+                    t_cmd = g_strconcat (exec, " ", cmd, NULL);
                 } else {                        /* sh/ash/bash */
-                    t_cmd = g_strconcat("\"", busybox, "\" ", exec, " ", cmd, NULL);
+                    if (quotes) {
+                        t_cmd = g_strconcat ("\"\"", busybox, "\" ", exec, " ", cmd, "\"", NULL);
+                    } else {
+                        t_cmd = g_strconcat ("\"", busybox, "\" ", exec, " ", cmd, NULL);
+                    }
                 }
+
                 if (t_cmd) {
-                    ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
-                    g_free(t_cmd);
+                    ret = w32_shell (shell, t_cmd, NULL, NULL, NULL);
+                    g_free (t_cmd);
                 }
+
                 return ret;
 
             } else {
@@ -1357,13 +1403,13 @@ system_impl (int flags, const char *shell, const char *cmd)
                   */
                  const char *space;
 
-                 if (NULL != (space = strchr(cmd, ' ')) &&
-                         space == (cmd + (sizeof(bin_sh) - 1)) && 0 == strncmp(cmd, bin_sh, sizeof(bin_sh)-1)) {
+                 if (NULL != (space = strchr (cmd, ' ')) &&
+                         space == (cmd + (sizeof(bin_sh) - 1)) && 0 == strncmp (cmd, bin_sh, sizeof(bin_sh)-1)) {
                     char *t_cmd;
 
-                    if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" sh", space, NULL))) {
-                        ret = w32_shell(busybox, t_cmd, NULL, NULL, NULL);
-                        g_free(t_cmd);
+                    if (NULL != (t_cmd = g_strconcat ("sh", space, NULL))) {
+                        ret = w32_shell (busybox, t_cmd, NULL, NULL, NULL);
+                        g_free (t_cmd);
                     }
                     return ret;
                 }
@@ -1378,24 +1424,30 @@ system_impl (int flags, const char *shell, const char *cmd)
         char cbuf[MAX_CMDLINE];
         int argc;
 
-        (void) strncpy(cbuf, cmd, sizeof(cbuf));
-        if (strlen(cmd) < sizeof(cbuf) &&
-                (argc = system_bustargs(cbuf, argv, MAX_ARGV)) <= MAX_ARGV && argc > 0) {
+        (void) strncpy (cbuf, cmd, sizeof(cbuf));
+        if (strlen (cmd) < sizeof(cbuf) &&
+                (argc = system_bustargs (cbuf, argv, MAX_ARGV)) <= MAX_ARGV && argc > 0) {
 
-            if (0 == strcmp(argv[0], "set")) {
+            if (0 == strcmp (argv[0], "set")) {
                 return system_SET (argc, argv);
 
             } else if (use_internal_busybox) {
-                const size_t cmdlen = strlen(argv[0]);
+                const size_t cmdlen = strlen (argv[0]);
                 unsigned i;
 
                 for (i = 0; i < _countof(busyboxcmds); ++i) {
-                    if (0 == strcmp(busyboxcmds[i], argv[0])) {
-                        char *t_cmd;            /* via busybox thru shell for redir support */
+                    if (0 == strcmp (busyboxcmds[i], argv[0])) {
+                        char *t_cmd;            /* exec busybox via shell for redirection support */
 
-                        if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" ", cmd, NULL))) {
-                            ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
-                            g_free(t_cmd);
+                        if (quotes) {
+                            t_cmd = g_strconcat ("\"\"", busybox, "\" ", cmd, "\"", NULL);
+                        } else {
+                            t_cmd = g_strconcat ("\"", busybox, "\" ", cmd, NULL);
+                        }
+
+                        if (t_cmd) {
+                            ret = w32_shell (shell, t_cmd, NULL, NULL, NULL);
+                            g_free (t_cmd);
                             return ret;
                         }
                     }
@@ -1408,22 +1460,22 @@ system_impl (int flags, const char *shell, const char *cmd)
      *  If <cmd.exe> < ...>
      *  convert any / to \ in first word
      */
-    shelllen = (shell ? strlen(shell) : 0);
+    shelllen = (shell ? strlen (shell) : 0);
     if ((shelllen -= (sizeof(cmd_sh)-1)) >= 0 &&
-            0 == _strnicmp(shell + shelllen, cmd_sh, sizeof(cmd_sh)-1)) {
+            0 == _strnicmp (shell + shelllen, cmd_sh, sizeof(cmd_sh)-1)) {
         char *t_cmd, *cursor;
 
-        if (NULL != (t_cmd = strdup(cmd))) {
+        if (NULL != (t_cmd = strdup (cmd))) {
             for (cursor = t_cmd; *cursor && *cursor != ' '; ++cursor) {
                 if ('/' == *cursor) *cursor = '\\';
             }
-            ret = w32_shell(shell, t_cmd, NULL, NULL, NULL);
-            free(t_cmd);
+            ret = w32_shell (shell, t_cmd, NULL, NULL, NULL);
+            free (t_cmd);
             return ret;
         }
     }
 
-    ret = w32_shell(shell, cmd, NULL, NULL, NULL);
+    ret = w32_shell (shell, cmd, NULL, NULL, NULL);
     return ret;
 }
 
@@ -1441,14 +1493,14 @@ mc_busybox_exts(unsigned *count)
  */
 static void
 wputs(const wchar_t *buffer, ...)
-{ 
-    HANDLE cout = GetStdHandle(STD_OUTPUT_HANDLE);
+{
+    HANDLE cout = GetStdHandle (STD_OUTPUT_HANDLE);
     const wchar_t *nl;
     va_list ap;
 
     va_start (ap, buffer);
     while (buffer) {
-        size_t len = wcslen(buffer);
+        size_t len = wcslen (buffer);
 
         while ((nl = wcschr (buffer, '\n')) != NULL) {
             const int part = (nl - buffer) + 1;
@@ -1472,7 +1524,7 @@ system_SET(int argc, const char **argv)
         wchar_t **env = _wenviron;
         if (env) {
             while (*env) {
-                wputs(*env, L"\n", NULL);
+                wputs (*env, L"\n", NULL);
                 ++env;
             }
         }
@@ -1493,7 +1545,7 @@ system_SET(int argc, const char **argv)
 #endif
                 (void) SetEnvironmentVariableW (wname, wvalue);
 
-            } else if (NULL != (wvalue = _wgetenv(wname))) {
+            } else if (NULL != (wvalue = _wgetenv (wname))) {
                 wputs (wname, L"=", wvalue, L"\n", NULL);
 
             } else {
@@ -1517,28 +1569,28 @@ ScriptMagic(int fd)
     char magic[128] = { 0 };
     const char *script = NULL;
 
-    if (_read(fd, magic, sizeof(magic) - 1) > 2) {
+    if (_read (fd, magic, sizeof(magic) - 1) > 2) {
         if (magic[0] == '#' && magic[1] == '!') {
             const char *exec = magic + 2;       // sha-ban
             int len = -1;
 
             while (*exec && ' ' == *exec) ++exec;
             if (*exec == '/') {
-                if (0 == strncmp(exec, "/bin/sh", len = (sizeof("/bin/sh")-1))) {
+                if (0 == strncmp (exec, "/bin/sh", len = (sizeof("/bin/sh")-1))) {
                     script = "sh";
-                } else if (0 == strncmp(exec, "/bin/ash", len = (sizeof("/bin/ash")-1))) {
+                } else if (0 == strncmp (exec, "/bin/ash", len = (sizeof("/bin/ash")-1))) {
                     script = "ash";
-                } else if (0 == strncmp(exec, "/bin/bash", len = (sizeof("/bin/bash")-1))) {
+                } else if (0 == strncmp (exec, "/bin/bash", len = (sizeof("/bin/bash")-1))) {
                     script = "bash";
-                } else if (0 == strncmp(exec, "/bin/sed", len = (sizeof("/bin/sed")-1))) {
+                } else if (0 == strncmp (exec, "/bin/sed", len = (sizeof("/bin/sed")-1))) {
                     script = "sed";
-                } else if (0 == strncmp(exec, "/bin/awk", len = (sizeof("/bin/awk")-1))) {
+                } else if (0 == strncmp (exec, "/bin/awk", len = (sizeof("/bin/awk")-1))) {
                     script = "awk";
-                } else if (0 == strncmp(exec, "/usr/bin/perl", len = (sizeof("/usr/bin/perl")-1))) {
+                } else if (0 == strncmp (exec, "/usr/bin/perl", len = (sizeof("/usr/bin/perl")-1))) {
                     script = "perl";
-                } else if (0 == strncmp(exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1))) {
+                } else if (0 == strncmp (exec, "/usr/bin/python", len = (sizeof("/usr/bin/python")-1))) {
                     script = "python";
-                } else if (0 == strncmp(exec, "/usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
+                } else if (0 == strncmp (exec, "/usr/bin/env", len = (sizeof("/usr/bin/env")-1))) {
                     //
                     //  Example:
                     //  #! /usr/bin/env python
@@ -1546,10 +1598,10 @@ ScriptMagic(int fd)
                     int len2;
 
                     while (*exec2 && ' ' == *exec2) { ++exec2, ++len; }
-                    if (0 == strncmp(exec2, "python", len2 = (sizeof("python")-1))) {
+                    if (0 == strncmp (exec2, "python", len2 = (sizeof("python")-1))) {
                         script = "python";
                         len += len2;
-                    } else if (0 == strncmp(exec2, "python3", len2 = (sizeof("python3")-1))) {
+                    } else if (0 == strncmp (exec2, "python3", len2 = (sizeof("python3")-1))) {
                         script = "python3";
                         len += len2;
                     }
@@ -1574,24 +1626,24 @@ mc_isscript(const char *cmd)
     const char *argv[3] = { 0 };
     int fd;
 
-    strncpy(t_cmd, cmd, sizeof(t_cmd)-1);
-    if (system_bustargs(t_cmd, argv, 2) >= 1 && argv[0]) {
-        if (w32_utf8filenames_state()) {
+    strncpy (t_cmd, cmd, sizeof(t_cmd)-1);
+    if (system_bustargs (t_cmd, argv, 2) >= 1 && argv[0]) {
+        if (w32_utf8filenames_state ()) {
             wchar_t *warg0 = NULL;
 
-            if (NULL != (warg0 = w32_utf2wca(argv[0], NULL))) {
-                if ((fd = _wopen(warg0, O_RDONLY | O_BINARY)) >= 0) {
-                    script = ScriptMagic(fd);
-                    _close(fd);
+            if (NULL != (warg0 = w32_utf2wca (argv[0], NULL))) {
+                if ((fd = _wopen (warg0, O_RDONLY | O_BINARY)) >= 0) {
+                    script = ScriptMagic (fd);
+                    _close (fd);
                 }
-                free(warg0);
+                free (warg0);
             }
             return script;
         }
 
-        if ((fd = _open(argv[0], O_RDONLY | O_BINARY)) >= 0) {
-            script = ScriptMagic(fd);
-            _close(fd);
+        if ((fd = _open (argv[0], O_RDONLY | O_BINARY)) >= 0) {
+            script = ScriptMagic (fd);
+            _close (fd);
         }
     }
 
@@ -1611,8 +1663,8 @@ my_unquote(const char *cmd, int quotews)
 
     win32Trace(("mc_unqquote: in:<%s>", cmd))
 
-    blen = (cmd ? strlen(cmd) * 2 : 0);
-    if (0 == blen || NULL == (ret = (char *)calloc(blen, 1))) {
+    blen = (cmd ? strlen (cmd) * 2 : 0);
+    if (0 == blen || NULL == (ret = (char *)calloc (blen, 1))) {
         return NULL;
     }
 
@@ -1730,67 +1782,74 @@ my_unquote_test(void)
 
 /**
  *  popen() implementation
+ *
+ *  Note: legacy replaced with mc_popen() for most use-cases, primary usage now within external filters.
  */
 FILE *
 win32_popen(const char *cmd, const char *mode)
 {
-    const char *busybox = mc_BUSYBOX();
+    const char *busybox = mc_BUSYBOX ();
     const char *space, *exec;
     FILE *file = NULL;
 
     if (busybox && *busybox &&
-            NULL != (space = strchr(cmd, ' ')) &&
-                space == (cmd + (sizeof(bin_sh) - 1)) && 0 == strncmp(cmd, bin_sh, sizeof(bin_sh) - 1)) {
+            NULL != (space = strchr (cmd, ' ')) &&
+                space == (cmd + (sizeof(bin_sh) - 1)) && 0 == strncmp (cmd, bin_sh, sizeof(bin_sh) - 1)) {
         /*
          *  If <cmd> </bin/sh ...>
          *  execute as <shell> <busybox sh ...>
          */
         char *t_cmd;
 
-        if (NULL != (t_cmd = g_strconcat("\"", busybox, "\" sh", space, NULL))) {
-            file = w32_popen(t_cmd, mode);
-            g_free(t_cmd);
+        if (NULL != (t_cmd = g_strconcat ("\"", busybox, "\" sh", space, NULL))) {
+            file = w32_popen (t_cmd, mode);
+            g_free (t_cmd);
         }
 
-    } else if (busybox && *busybox && NULL != (exec = mc_isscript(cmd))) {
+    } else if (busybox && *busybox && NULL != (exec = mc_isscript (cmd))) {
         /*
          *  If <#!> </bin/sh | /usr/bin/perl | /usr/bin/python | /usr/bin/env python>
-         *      note: currently limited to extfs usage.
+         *  Note: currently limited to extfs usage.
          */
-        char *t_cmd = NULL;
+        char *t_cmd;
 
         if (exec[0] == 'p') {                   // perl/python
-            t_cmd = g_strconcat(exec, " ", cmd, NULL);
+            t_cmd = g_strconcat (exec, " ", cmd, NULL);
         } else {                                // sh/ash/bash
-            t_cmd = g_strconcat("\"", busybox, "\" ", exec, " ", cmd, NULL);
+            t_cmd = g_strconcat ("\"", busybox, "\" ", exec, " ", cmd, NULL);
         }
+
         if (t_cmd) {
-            file = w32_popen(t_cmd, mode);
-            g_free(t_cmd);
+            file = w32_popen (t_cmd, mode);
+            g_free (t_cmd);
         }
 
     } else {
+        /*
+         *  Generic
+         */
         char *t_cmd;
-        if (NULL != (t_cmd = my_unquote(cmd, TRUE))) {
-            file = w32_popen(t_cmd, mode);
-            free((void *)t_cmd);
+
+        if (NULL != (t_cmd = my_unquote (cmd, TRUE))) {
+            file = w32_popen (t_cmd, mode);
+            free ((void *)t_cmd);
         } else {
-            file = w32_popen(cmd, mode);
+            file = w32_popen (cmd, mode);
         }
     }
 
     if (pe_open >= 0) {
         if (NULL == file) {
-            pe_open += _snprintf(pe_buffer, PE_BUFFER_SIZE, "popen : %s", strerror(errno));
+            pe_open += _snprintf (pe_buffer, PE_BUFFER_SIZE, "popen : %s", strerror(errno));
 
         } else {
             HANDLE hThread;
 
             pe_stream = file;
-            if (0 != (hThread = CreateThread(NULL, 0, pipe_thread, NULL, 0, NULL))) {
-                SetThreadPriority(hThread, THREAD_PRIORITY_ABOVE_NORMAL);
-                CloseHandle(hThread);
-                sleep(3);                       // yield
+            if (0 != (hThread = CreateThread (NULL, 0, pipe_thread, NULL, 0, NULL))) {
+                SetThreadPriority (hThread, THREAD_PRIORITY_ABOVE_NORMAL);
+                CloseHandle (hThread);
+                sleep (3);                      // yield
             }
         }
     }
@@ -1804,10 +1863,10 @@ win32_popen(const char *cmd, const char *mode)
 int
 win32_pclose(FILE *file)
 {
-    EnterCriticalSection(&pe_guard);
+    EnterCriticalSection (&pe_guard);
     pe_stream = NULL;
-    LeaveCriticalSection(&pe_guard);
-    return w32_pclose(file);
+    LeaveCriticalSection (&pe_guard);
+    return w32_pclose (file);
 }
 
 
@@ -1832,11 +1891,11 @@ win32_perror(int error, const char *msg)
 {
     int len;
 
-    EnterCriticalSection(&pe_guard);
+    EnterCriticalSection (&pe_guard);
     len = pe_open;
     pe_open = -1;
     pe_stream = NULL;
-    LeaveCriticalSection(&pe_guard);
+    LeaveCriticalSection (&pe_guard);
     if (len <= 0) {
         return 0;                               /* nothing to show */
     }
@@ -1846,11 +1905,11 @@ win32_perror(int error, const char *msg)
         msg = pe_buffer;
 
     } else {                                    /* show given text and possible message from pipe */
-        const size_t textlen = strlen(msg);
+        const size_t textlen = strlen (msg);
 
         if (textlen + len < sizeof(pe_buffer)) {
-            memmove(pe_buffer + textlen + 1, (const char *)pe_buffer, len);
-            memmove(pe_buffer, msg, textlen);
+            memmove (pe_buffer + textlen + 1, (const char *)pe_buffer, len);
+            memmove (pe_buffer, msg, textlen);
             len += textlen + 1;
             pe_buffer[textlen] = '\n';
             pe_buffer[len] = 0;
@@ -1859,9 +1918,9 @@ win32_perror(int error, const char *msg)
     }
 
     if (error) {
-        query_dialog(MSG_ERROR, msg, D_ERROR, 1, _("&Dismiss"));
+        query_dialog (MSG_ERROR, msg, D_ERROR, 1, _("&Dismiss"));
     } else {
-        query_dialog(_("Warning"), msg, D_NORMAL, 1, _("&Ok"));
+        query_dialog (_("Warning"), msg, D_NORMAL, 1, _("&Ok"));
     }
     return 1;
 }
@@ -1877,18 +1936,18 @@ pipe_thread(void *data)
     char buffer[ PE_BUFFER_SIZE ];
 
     (void) data;
-    EnterCriticalSection(&pe_guard);
+    EnterCriticalSection (&pe_guard);
     if (pe_open >= 0 && NULL != (file = pe_stream)) {
         while (1) {
             int len;
 
-            LeaveCriticalSection(&pe_guard);    /* consume stderr */
-            len = w32_pread_err(pe_stream, buffer, sizeof(buffer));
-            EnterCriticalSection(&pe_guard);
+            LeaveCriticalSection (&pe_guard);   /* consume stderr */
+            len = w32_pread_err (pe_stream, buffer, sizeof(buffer));
+            EnterCriticalSection (&pe_guard);
 
             if (len >= 0 && pe_open >= 0 && file == pe_stream) {
                 if (0 == len) {
-                    if (GetLastError() == ERROR_BROKEN_PIPE) {
+                    if (GetLastError () == ERROR_BROKEN_PIPE) {
                         break;                  /* pipe done */
                     }
                 } else {
@@ -1911,7 +1970,7 @@ pipe_thread(void *data)
             break;                              /* stream invalid */
         }
     }
-    LeaveCriticalSection(&pe_guard);
+    LeaveCriticalSection (&pe_guard);
     return 0;
 }
 
@@ -2030,7 +2089,7 @@ tilde_expand(const char *directory)
     }
 
     if (PATH_SEP == directory[0] &&             /* fix '/X:', vfs work around */
-            directory[1] && ':' == directory[2] && isalpha((unsigned char)directory[1])) {
+            directory[1] && ':' == directory[2] && isalpha ((unsigned char)directory[1])) {
         ++directory;
     }
 
@@ -2062,11 +2121,11 @@ tilde_expand(const char *directory)
             return cwd;
         }
 
-    } else if (':' == directory[1] && isalpha((unsigned char)directory[0]) &&
+    } else if (':' == directory[1] && isalpha ((unsigned char)directory[0]) &&
                     (0 == directory[2] || ('.'== directory[2] && 0 == directory[3]))) {
         char path[WIN32_PATH_MAX];
 
-        if (w32_getcwdd(directory[0], path, sizeof(path))) {
+        if (w32_getcwdd (directory[0], path, sizeof(path))) {
             return g_strdup (path);             /* X: and X:. ==> <drive><cwd> */
         }
 
@@ -2081,7 +2140,7 @@ tilde_expand(const char *directory)
         if (!(*p) || (*p == PATH_SEP)) {        /* d = "~" or d = "~/" */
             passwd = getpwuid (geteuid ());
             if (passwd) home = passwd->pw_dir;
-            if (NULL == home || !*home) home = ugetenv("HOME");
+            if (NULL == home || !*home) home = ugetenv ("HOME");
             q = (*p == PATH_SEP) ? p + 1 : "";
 
         } else {
@@ -2128,10 +2187,10 @@ tilde_expand(const char *directory)
 static int
 current_drive(char *path)
 {
-    int driveno = w32_getdrive();
+    int driveno = w32_getdrive ();
 
-    if (driveno <= 0) driveno = w32_getlastdrive();
-    if (driveno <= 0) driveno = w32_getsystemdrive();
+    if (driveno <= 0) driveno = w32_getlastdrive ();
+    if (driveno <= 0) driveno = w32_getsystemdrive ();
     if (driveno > 0) {
         path[0] = driveno + ('A' - 1);
         path[1] = ':';
@@ -2171,7 +2230,7 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
 
         if (p[0] == PATH_SEP && p > (orgpath + 2))
         {
-            if (0 == strcmp(p + 1, ".."))
+            if (0 == strcmp (p + 1, ".."))
             {                                   /* "//servername/.." --> "X:/" */
                 if (current_drive (lpath))
                     return;
@@ -2191,13 +2250,13 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
     if (!unc)
     {
         if (PATH_SEP == lpath[0] &&
-                ':' == lpath[2] && isalpha((unsigned char)lpath[1])) {
+                ':' == lpath[2] && isalpha ((unsigned char)lpath[1])) {
             str_move (lpath, lpath + 1);        /* /X:, remove leading '/' vfs name mangling */
-            lpath[0] = toupper(lpath[0]);
+            lpath[0] = toupper (lpath[0]);
             lpath += 2;
 
-        } else if (':' == lpath[1] && isalpha((unsigned char)lpath[0])) {
-            lpath[0] = toupper(lpath[0]);
+        } else if (':' == lpath[1] && isalpha ((unsigned char)lpath[0])) {
+            lpath[0] = toupper (lpath[0]);
             lpath += 2;                         /* skip drive */
         }
     }
@@ -2255,8 +2314,7 @@ custom_canonicalize_pathname(char *orgpath, CANON_PATH_FLAGS flags)
 
         if (IS_PATH_SEP (lpath[len - 1])
             && (len < url_delim_len
-                || strncmp (lpath + len - url_delim_len, VFS_PATH_URL_DELIMITER,
-                            url_delim_len) != 0))
+                || strncmp (lpath + len - url_delim_len, VFS_PATH_URL_DELIMITER, url_delim_len) != 0))
             lpath[len - 1] = '\0';
         else if (lpath[len - 1] == '.' && IS_PATH_SEP (lpath[len - 2]))
         {
@@ -2423,11 +2481,11 @@ canonicalize_pathname(char *path)
 char *
 mc_realpath(const char *path, char *resolved_path)
 {
-    if (NULL == w32_realpath(path, resolved_path /*MAX_PATH*/)) {
-        strcpy(resolved_path, path);
+    if (NULL == w32_realpath (path, resolved_path /*MAX_PATH*/)) {
+        strcpy (resolved_path, path);
     }
 
-    unixpath(resolved_path);
+    unixpath (resolved_path);
     return resolved_path;
 }
 
@@ -2483,8 +2541,8 @@ mc_build_filenamev(const char *first_element, va_list args)
             //WIN32, drive
             if (NULL == strchr (path->str, ':') &&  // Neither special (ftp://)
                     PATH_SEP != path->str[1]) {     // nor url (//server ..)
-                int driveno = w32_getdrive();
-                if (driveno <= 0) driveno = w32_getlastdrive();
+                int driveno = w32_getdrive ();
+                if (driveno <= 0) driveno = w32_getlastdrive ();
 
                 // see: vfs_canon() generally when we are returning from a ftp/sftp or UNC reference.
                 if (driveno > 0)
@@ -2567,7 +2625,7 @@ mc_inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size)
     default:
         return NULL;
     }
-    return (WSAAddressToStringA((struct sockaddr *)&ss, sizeof(ss), NULL, dst, &s) == 0) ? dst : NULL;
+    return (WSAAddressToStringA ((struct sockaddr *)&ss, sizeof(ss), NULL, dst, &s) == 0) ? dst : NULL;
 #endif
 }
 

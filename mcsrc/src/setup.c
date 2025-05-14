@@ -283,6 +283,9 @@ static const struct
     { "horizontal_split", &panels_layout.horizontal_split },
     { "vertical_equal", &panels_layout.vertical_equal },
     { "horizontal_equal", &panels_layout.horizontal_equal },
+#ifdef ENABLE_CMDVIEW //WIN32
+    { "command_view", &mc_global.use_cmdview },
+#endif
     { NULL, NULL }
 };
 

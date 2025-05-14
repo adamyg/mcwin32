@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_strptime_c,"$Id: w32_strptime.c,v 1.3 2023/11/06 15:07:42 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_strptime_c,"$Id: w32_strptime.c,v 1.4 2025/05/13 15:42:35 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -34,6 +34,9 @@ __CIDENT_RCSID(gr_w32_strptime_c,"$Id: w32_strptime.c,v 1.3 2023/11/06 15:07:42 
  * ==native-notice==
  */
 
+#include "win32_internal.h"
+#include "tzfile.h"
+
 #include <sys/utypes.h>
 #include <unistd.h>
 
@@ -41,9 +44,6 @@ __CIDENT_RCSID(gr_w32_strptime_c,"$Id: w32_strptime.c,v 1.3 2023/11/06 15:07:42 
 #include <locale.h>
 #include <string.h>
 #include <time.h>
-
-#include "win32_internal.h"
-#include "tzfile.h"
 
 /*
  * We do not implement alternate representations. However, we always

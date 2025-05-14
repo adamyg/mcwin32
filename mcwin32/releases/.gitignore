@@ -2,5 +2,6 @@ midnight-commander.org
 mcwin32*manifest.bat
 mcwin32*signature.bat
 mcwin32*manifest*
+README.txt
 *.exe
 *.zip

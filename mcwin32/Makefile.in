@@ -230,6 +230,15 @@ CWARN+=		-wcd=118 -wcd=135
 endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
+CXXFLAGS=	@CXXFLAGS@
+CXXDEBUG=	@CXXDEBUG@
+ifeq ("$(CXXDEBUG)","")
+CXXDEBUG=	$(CDEBUG)
+endif
+CXXRELEASE=	@CXXRELEASE@
+ifeq ("$(CXXRELEASE)","")
+CXXRELEASE=	$(CRELEASE)
+endif
 LDDEBUG=	@LDDEBUG@
 LDRELEASE=	@LDRELEASE@
 
@@ -238,9 +247,11 @@ CINCLUDE=	-I. -I$(MCSOURCE) -I$(D_INC) -I$(D_INC)/glib-2.0 -I$(D_INC)/../libaspe
 CEXTRA=		@DEFS@ -DLIBW32_DYNAMIC
 ifeq ("$(BUILD_TYPE)","release")
 CFLAGS+=	$(CRELEASE) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXRELEASE) $(CXXWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDRELEASE) @LDFLAGS@
 else
 CFLAGS+=	$(CDEBUG) $(CWARN) $(CINCLUDE) $(CEXTRA) $(XFLAGS)
+CXXFLAGS+=	$(CXXDEBUG) $(CXXWARN) $(CINCLUDE) @CXXINCLUDE@ $(CEXTRA) $(XFLAGS)
 LDFLAGS=	$(LDDEBUG) @LDFLAGS@
 endif
 LDLIBS=		-L$(D_LIB) @LIBS@ @EXTRALIBS@
@@ -374,12 +385,16 @@ MC_DIFFVIEWER=\
 	$(D_OBJVW)/diffviewer_ydiff$(O)		\
 	$(D_OBJVW)/diffviewer_search$(O)
 
+MC_CMDVIEW=\
+	$(D_OBJVW)/cmdview_cmdview$(O)
+
 MC_OBJS=\
 	$(MC_ROOTSRC)				\
 	$(MC_FILEMANAGER)			\
 	$(MC_VIEWER)				\
 	$(MC_EDITOR)				\
-	$(MC_DIFFVIEWER)
+	$(MC_DIFFVIEWER)			\
+	$(MC_CMDVIEW)
 
 #mcutil
 #	lib
@@ -470,15 +485,17 @@ MC_LIBMC=\
 	$(D_OBJMC)/tty_tty$(O)			\
 	\
 	$(D_OBJMC)/compat_strtok_r$(O)		\
+	$(D_OBJMC)/compat_strcasestr$(O)	\
 	$(D_OBJMC)/strchr2$(O)			\
 	$(D_OBJMC)/win32_argv$(O)		\
-	$(D_OBJMC)/win32_key$(O)		\
-	$(D_OBJMC)/win32_tty$(O)		\
-	$(D_OBJMC)/win32_win$(O)		\
-	$(D_OBJMC)/win32_utl$(O)		\
-	$(D_OBJMC)/win32_pipe$(O)		\
-	$(D_OBJMC)/win32_trace$(O)		\
 	$(D_OBJMC)/win32_glib$(O)		\
+	$(D_OBJMC)/win32_key$(O)		\
+	$(D_OBJMC)/win32_pipe$(O)		\
+	$(D_OBJMC)/win32_subshell$(O)		\
+	$(D_OBJMC)/win32_trace$(O)		\
+	$(D_OBJMC)/win32_tty$(O)		\
+	$(D_OBJMC)/win32_utl$(O)		\
+	$(D_OBJMC)/win32_win$(O)		\
 	\
 	$(D_OBJMC)/vfs_direntry$(O)		\
 	$(D_OBJMC)/vfs_gc$(O)			\
@@ -642,6 +659,8 @@ CFG_SHARE_MAN:=		$(addprefix $(D_SHARE)/man/, \
 				$(subst .in,,$(notdir $(wildcard $(MAN_SRC)/*.in)))) \
 			$(foreach dir, $(CFG_SHARE_MANDIRS), $(addprefix $(D_SHARE)/man/$(dir), \
 				$(subst .in,,$(notdir $(wildcard $(MAN_SRC)/$(dir)/*.in))))) \
+			$(addprefix $(D_SHARE)/man/, \
+				$(subst .in,,$(notdir $(wildcard ./diff/*.1.in)))) \
 			$(addprefix $(D_SHARE)/man/, \
 				$(subst .in,,$(notdir $(wildcard ./support/*.1.in)))) \
 			$(addprefix $(D_SHARE)/man/, \
@@ -1173,7 +1192,8 @@ $(D_SHARE)/man/% :		./mandoc/%
 		@echo importing $@ ..
 		@$(CP) $^ $@
 
-$(D_SHARE)/man/% :		./support/%.in
+vpath %.in		./diff ./support
+$(D_SHARE)/man/% :		%.in
 		@echo importing $@ ..
 		@$(CP) $^ $@
 		@$(D_BIN)/mcmandoc -K utf-8 -T utf8 $@ > $@.man
@@ -1272,6 +1292,9 @@ endif
 $(D_OBJ)/%$(O) :		./%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
+$(D_OBJ)/%$(O):			%.cpp
+		$(CXX) $(CXXFLAGS) -o $@ -c $<
+
 $(D_OBJRT)/%$(O) :		$(MCSOURCE)/src/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
@@ -1290,12 +1313,18 @@ $(D_OBJVW)/viewer_%$(O) :	$(MCSOURCE)/src/viewer/%.c
 $(D_OBJVW)/diffviewer_%$(O) :	$(MCSOURCE)/src/diffviewer/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
+$(D_OBJVW)/cmdview_%$(O) :	$(MCSOURCE)/src/cmdview/%.c
+		$(CC) $(CFLAGS) -o $@ -c $<
+
 $(D_OBJED)/%$(O) :		$(MCSOURCE)/src/editor/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
 
 # .. libmcutil
 $(D_OBJMC)/%$(O)	:	./%.c
 		$(CC) $(CFLAGS) -o $@ -c $<
+
+$(D_OBJMC)/%$(O):		%.cpp
+		$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 $(D_OBJMC)/lib_%$(O)	:	$(MCSOURCE)/lib/%.c
 		$(CC) $(CFLAGS) -o $@ -c $<

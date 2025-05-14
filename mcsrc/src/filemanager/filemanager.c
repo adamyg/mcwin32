@@ -1001,7 +1001,7 @@ mc_maybe_editor_or_viewer (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/*static, WIN32*/ void
+static void
 show_editor_viewer_history (void)
 {
     char *s;
@@ -1043,7 +1043,7 @@ show_editor_viewer_history (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/*static, Win32*/ gboolean
+static gboolean
 quit_cmd_internal (int quiet)
 {
     int q = quit;
@@ -1086,7 +1086,7 @@ quit_cmd_internal (int quiet)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static gboolean
+/*static/WIN32*/ gboolean
 quit_cmd (void)
 {
     return quit_cmd_internal (0);
@@ -1429,13 +1429,13 @@ midnight_execute_cmd (Widget *sender, long command)
         break;
 #if defined(WIN32) //WIN32, drive
     case CK_DriveChangeA:
-        drive_cmd_a();
+        drive_cmd_a ();
         break;
     case CK_DriveChangeB:
-        drive_cmd_b();
+        drive_cmd_b ();
         break;
     case CK_DriveChange:
-        drive_cmd();
+        drive_cmd ();
         break;
 #endif
     default:

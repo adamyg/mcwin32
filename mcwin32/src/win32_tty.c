@@ -65,13 +65,13 @@ isconsole (int fd)
 
     if (STDIN_FILENO == fd) { // input
         DWORD mode;
-        if (! GetConsoleMode(h, &mode)) {
+        if (! GetConsoleMode (h, &mode)) {
             return 0;
         }
 
     } else { // output
         CONSOLE_SCREEN_BUFFER_INFO sbi = {0};
-        if (! GetConsoleScreenBufferInfo(h, &sbi)) {
+        if (! GetConsoleScreenBufferInfo (h, &sbi)) {
             return 0;
         }
     }
@@ -84,7 +84,7 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
 {
     mc_setenv ("TERM", "dos", FALSE);
 
-    if (tty_use_256colors(NULL)) {              /* TODO: command line, max colors. */
+    if (tty_use_256colors (NULL)) {             /* TODO: command line, max colors. */
         mc_setenv ("COLORTERM", "24bit", FALSE); /* allow true-color skins */
     } else {
         mc_setenv ("COLORTERM", "16", FALSE);
@@ -94,7 +94,7 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
     SLsmg_init_smg ();
 
     if (! isconsole (STDIN_FILENO)) {
-        fprintf(stderr, _("Console not detected.\n"));
+        fprintf (stderr, _("Console not detected.\n"));
         exit (EXIT_FAILURE);
     }
 
@@ -119,7 +119,7 @@ tty_shutdown (void)
 void
 tty_change_screen_size (void)
 {
-    SLsmg_reinit_smg();
+    SLsmg_reinit_smg ();
 
 #ifdef ENABLE_SUBSHELL
     if (mc_global.tty.use_subshell) {
@@ -134,10 +134,10 @@ tty_set_title (const char *title)
 {
     if (title) {
         WCHAR t_title[512] = {0};
-        if (MultiByteToWideChar(CP_UTF8, 0, title, -1, t_title, _countof(t_title)) > 0) {
-            SetConsoleTitleW(t_title);
+        if (MultiByteToWideChar (CP_UTF8, 0, title, -1, t_title, _countof(t_title)) > 0) {
+            SetConsoleTitleW (t_title);
         } else {
-            SetConsoleTitleA(title);
+            SetConsoleTitleA (title);
         }
     }
 }
@@ -146,13 +146,13 @@ tty_set_title (const char *title)
 void
 tty_reset_prog_mode (void)
 {
-    SLsmg_reinit_smg();
-    SLsmg_touch_screen();
+    SLsmg_reinit_smg ();
+    SLsmg_touch_screen ();
     if (0 == original_title[0]) {
-        GetConsoleTitleW(original_title, _countof(original_title));
+        GetConsoleTitleW (original_title, _countof(original_title));
     }
-    SetConsoleTitleA("Midnight Commander (" VERSION ")");
-    key_prog_mode();
+    SetConsoleTitleA ("Midnight Commander (" VERSION ")");
+    key_prog_mode ();
 }
 
 
@@ -160,10 +160,10 @@ void
 tty_reset_shell_mode (void)
 {
     if (original_title[0]) {
-        SetConsoleTitleW(original_title);
+        SetConsoleTitleW (original_title);
     }
-    SLsmg_touch_screen();
-    key_shell_mode();
+    SLsmg_touch_screen ();
+    key_shell_mode ();
 }
 
 
@@ -236,8 +236,8 @@ tty_gotoyx (int y, int x)
 void
 tty_getyx (int *py, int *px)
 {
-    *py = SLsmg_get_row();
-    *px = SLsmg_get_column();
+    *py = SLsmg_get_row ();
+    *px = SLsmg_get_column ();
 }
 
 
@@ -485,7 +485,7 @@ void
 tty_beep (void)
 {
     SLtt_Ignore_Beep = console_alert_mode;
-    SLtt_beep();
+    SLtt_beep ();
 }
 
 
@@ -497,8 +497,7 @@ void
 show_console_contents_win32 (
     int starty, unsigned char begin_line, unsigned char end_line )
 {
-    SLtt_restore();
-    SLsmg_touch_screen();
+    SLtt_restore_lines (begin_line, end_line, starty);
 }
 
 
@@ -511,11 +510,11 @@ handle_console_win32 (console_action_t action)
     case CONSOLE_DONE:
         break;
     case CONSOLE_SAVE:
-        SLtt_save();
+        SLtt_save ();
         break;
     case CONSOLE_RESTORE:
-        SLtt_restore();
-        SLsmg_touch_screen();
+        SLtt_restore ();
+        SLsmg_touch_screen ();
         break;
     default:
         break;

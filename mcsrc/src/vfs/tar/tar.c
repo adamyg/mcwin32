@@ -539,7 +539,11 @@ tar_insert_entry (struct vfs_class *me, struct vfs_s_super *archive, union block
     struct vfs_s_inode *parent;
     struct vfs_s_entry *entry;
 
+#if defined(WIN32) //WIN32, path
+    p = strrchr2 (file_name, PATH_SEP, PATH_SEP2);
+#else
     p = strrchr (file_name, PATH_SEP);
+#endif
     if (p == NULL)
     {
         len = strlen (file_name);

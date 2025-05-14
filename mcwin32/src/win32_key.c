@@ -11,10 +11,6 @@
         lookup_key
         lookup_key_by_code
 
-        add_select_channel
-        delete_select_channel
-        remove_select_channel
-
         channels_up
         channels_down
 
@@ -1013,11 +1009,8 @@ tty_get_event(struct Gpm_Event *event, gboolean redo_event, gboolean block)
         } else if (ctrlbreak_triggered) {
             ctrlbreak_triggered = 0;
             if (0 == ctrlbreak_running) {
-                const gboolean save_confirm_exit = confirm_exit;
                 ++ctrlbreak_running;
-                confirm_exit = TRUE;
-                (void) quit_cmd_internal (FALSE);
-                confirm_exit = save_confirm_exit;
+                quit_cmd ();
                 --ctrlbreak_running;
                 errno = EINTR;
                 return EV_NONE;

@@ -547,7 +547,7 @@ configure_box (void)
         char *time_out_new = NULL;
 
 #if defined(WIN32)  //WIN32, quick
-        quick_widget_t quick_widgets[35+2] = {0},
+        quick_widget_t quick_widgets[36 + 2] = {0},
             *qc = quick_widgets;
 
 #else
@@ -639,6 +639,7 @@ configure_box (void)
         qc =         XQUICK_CHECKBOX (qc, N_("Rotating d&ash"), &nice_rotating_dash, NULL),
         qc =         XQUICK_CHECKBOX (qc, N_("Cd follows lin&ks"), &mc_global.vfs.cd_symlinks, NULL),
         qc =         XQUICK_CHECKBOX (qc, N_("Sa&fe delete"), &safe_delete, NULL),
+        qc =         XQUICK_CHECKBOX (qc, N_("Safe overwrite"), &safe_overwrite, NULL), /* w/o hotkey */
         qc =         XQUICK_CHECKBOX (qc, N_("A&uto save setup"), &auto_save_setup, NULL),
         qc =         XQUICK_CHECKBOX (qc, N_("Use internal busybo&x"), &use_internal_busybox, NULL),
         qc =         XQUICK_SEPARATOR (qc, FALSE),
@@ -661,7 +662,7 @@ configure_box (void)
 
 #ifndef HAVE_POSIX_FALLOCATE
         mc_global.vfs.preallocate_space = FALSE;
-        quick_widgets[7].state = WST_DISABLED;
+        quick_widgets[6].state = WST_DISABLED; //WIN32/bug-fix
 #endif
 
         if (quick_dialog (&qdlg) == B_ENTER)

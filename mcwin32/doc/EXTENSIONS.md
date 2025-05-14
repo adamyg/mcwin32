@@ -50,6 +50,32 @@ Midnight Commander reads the MC_XDG_OPEN environment variable to open files, whi
       4 - The action failed.
 ```
 
+## Shell
+
+The Windows Command Shell serves as the default shell used by the command-line interface, 
+while other options such as PowerShell can also be employed as command-line alternatives.
+
+The selection of the shell is determined by the environment that exists at the time Midnight Commander is launched. 
+The system examines the following sources sequentially until it finds an appropriate shell. 
+
+The optional SHELL and ComSpec environment variables, typically set by the system which should not be modified,
+specify the full path to an appropriate command line interpreter, succeeded by a default specific to the system.
+
+   * SHELL - user's shell.
+   * ComSpec - system specifies the secondary command interpreter, normally cmd.exe.
+   * system dependent default.
+
+Examples:
+
+```
+   # original powershell  
+   SHELL=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+
+   # cross-platform, see https://aka.ms/pscore6
+   # example, "winget install Microsoft.Powershell"
+   SHELL=C:\Program Files\PowerShell\7\pwsh.exe
+```
+
 ## Application mappings
 
 Word, Excel and PowerPoint, mapping:

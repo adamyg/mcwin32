@@ -46,6 +46,9 @@ void load_hint (gboolean force);
 WPanel *change_panel (void);
 void save_cwds_stat (void);
 gboolean quiet_quit_cmd (void);
+#if defined(WIN32)
+gboolean quit_cmd (void);
+#endif
 gboolean do_nc (void);
 
 /*** inline functions ****************************************************************************/

@@ -74,6 +74,11 @@ mc_global_t mc_global =
     .message_visible = TRUE,
     .keybar_visible = TRUE,
 
+#ifdef ENABLE_CMDVIEW //WIN32
+    .use_cmdview = TRUE,
+    .cmdview_visible = FALSE,
+#endif
+
 #ifdef ENABLE_BACKGROUND
     .we_are_background = FALSE,
 #endif /* ENABLE_BACKGROUND */

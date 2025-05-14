@@ -197,6 +197,7 @@ LIBW32_API void             SLsmg_forward (int n);
 LIBW32_API int              SLtt_initialize (const char *term);
 LIBW32_API void             SLtt_save (void);
 LIBW32_API void             SLtt_restore (void);
+LIBW32_API void             SLtt_restore_lines (int, int, int);
 LIBW32_API const char *     SLtt_get_font (char *buffer, size_t buflen);
 LIBW32_API void             SLtt_set_color (int, const char *, const char *, const char *);
 LIBW32_API void             SLtt_set_mono (int, char *, SLtt_Char_Type);

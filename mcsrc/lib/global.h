@@ -79,9 +79,11 @@
 
 #define MC_ERROR g_quark_from_static_string (PACKAGE)
 
-//  #define DEFAULT_CHARSET "ASCII"
-//	WIN32/APY, conflict windows headers; renamed
-#define MC_DEFAULT_CHARSET "ASCII"
+#if defined(WIN32)
+#define MC_DEFAULT_CHARSET "ASCII"  /* conflict within windows headers */
+#else
+#define DEFAULT_CHARSET "ASCII"
+#endif
 
 /*** enums ***************************************************************************************/
 
@@ -139,6 +141,12 @@ typedef struct
     gboolean message_visible;
     /* Set if the nice and useful keybar is visible */
     gboolean keybar_visible;
+
+#ifdef ENABLE_CMDVIEW //WIN32
+    /* Set to enable command view */
+    gboolean use_cmdview;
+    gboolean cmdview_visible;
+#endif
 
 #if defined(ENABLE_BACKGROUND)
     /* If true, this is a background process */

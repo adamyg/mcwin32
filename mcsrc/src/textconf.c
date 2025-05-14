@@ -145,7 +145,15 @@ show_version (void)
 {
     size_t i;
 
+#if defined(BUILD_NUMBER) //WIN32, build
+    {
+        char *mc_version = g_strdup_printf ("%s, build:%s", mc_global.mc_version, BUILD_NUMBER);
+        printf (_("GNU Midnight Commander %s\n"), mc_version);
+        g_free (mc_version);
+    }
+#else
     printf (_("GNU Midnight Commander %s\n"), mc_global.mc_version);
+#endif
 
     printf (_("Built with GLib %d.%d.%d\n"),
             GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION);

@@ -1,7 +1,7 @@
 #ifndef WIN32_CONFIG_H_INCLUDED
 #define WIN32_CONFIG_H_INCLUDED
 /* -*- mode: c; set-indent: 4; -*- */
-/* $Id: w32config.hin,v 1.28 2025/04/06 16:46:13 cvsuser Exp $
+/* $Id: w32config.hin,v 1.29 2025/05/13 15:42:35 cvsuser Exp $
  * Machine configuration.
  *
  * System dependent <config.h> configuration template,
@@ -681,6 +681,11 @@
 
 #undef HAVE_ALLOCA
 #undef HAVE__ALLOCA
+
+#undef HAVE_GETTIMEOFDAY
+#undef HAVE_NANOSLEEP
+#undef HAVE_SLEEP
+#undef HAVE_USLEEP
 
         /* psuedo tty */
 #undef HAVE_PTY_H

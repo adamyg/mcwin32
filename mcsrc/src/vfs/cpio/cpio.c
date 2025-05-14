@@ -435,7 +435,11 @@ cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, mc_stat_t *s
     for (tn = name + strlen (name) - 1; tn >= name && IS_PATH_SEP (*tn); tn--)
         *tn = '\0';
 
+#if defined(WIN32) //WIN32, path
+    tn = strrchr2 (name, PATH_SEP, PATH_SEP2);
+#else
     tn = strrchr (name, PATH_SEP);
+#endif
     if (tn == NULL)
         tn = name;
     else if (tn == name + 1)
