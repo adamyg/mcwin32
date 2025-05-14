@@ -226,6 +226,12 @@ mc_shell_recognize_real_path (mc_shell_t *mc_shell)
         mc_shell->type = SHELL_POWER;
         mc_shell->name = "powershell";
     }
+    else if (strcasestr (mc_shell->path, "pwsh.exe") != NULL
+             || strcasestr (mc_shell->real_path, "pwsh.exe") != NULL)
+    {
+        mc_shell->type = SHELL_POWER;
+        mc_shell->name = "pwsh";
+    }
 #endif // WIN32
     else
         mc_shell->type = SHELL_NONE;

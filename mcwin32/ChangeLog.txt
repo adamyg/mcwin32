@@ -1,7 +1,8 @@
-Wed May 14 11:50:13 2025 adamy
+Wed May 14 10:50:13 2025 adamy
 
 	* build-234
 
+		o improve powershell support (#140)
 		o shell quoting (#139)
 		o command view, non-panel mode (#137)
 		o specialised x64 manifest name

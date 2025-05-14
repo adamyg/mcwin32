@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_CHILD_H_INCLUDED
 #define LIBW32_WIN32_CHILD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.18 2025/03/30 17:16:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_child_h,"$Id: win32_child.h,v 1.19 2025/05/14 13:42:32 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -93,6 +93,10 @@ LIBW32_API const wchar_t * w32_gethomeW (int ignore_env);
 LIBW32_API int          w32_iscommand (const char *);
 LIBW32_API int          w32_iscommandA (const char *);
 LIBW32_API int          w32_iscommandW (const wchar_t *);
+
+LIBW32_API int          w32_ispowershell (const char *);
+LIBW32_API int          w32_ispowershellA (const char *);
+LIBW32_API int          w32_ispowershellW (const wchar_t *);
 
 LIBW32_API int          w32_shell (const char *shell, const char *cmd,
                               const char *fstdin, const char *fstdout, const char *fstderr);
