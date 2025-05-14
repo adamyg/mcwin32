@@ -7,22 +7,25 @@
 
 ## Native Midnight Commander 4.8.33 for Windows/Win32
 
-Windows XP+/32 bit native port of GNU Midnight Commander, based on the [4.8.33](https://midnight-commander.org/wiki/NEWS-4.8.33) release.
+A native port of GNU Midnight Commander for Windows XP and later, available in both 32-bit and 64-bit versions, 
+based on the latest 4.8.x release series.
 
-Supports recent Windows 10/11 distributions, both MsTerminal and legacy console, 16 and 256 colour modes are available within all.
+Compatible with the latest Windows 10 and 11 versions, as well as older distributions, it supports both MsTerminal and the legacy console, 
+offering 16 and 256 color modes across all platforms.
 
-Midnight Commander (also known as mc) is a free cross-platform orthodox file manager and a clone of Norton Commander.
+Midnight Commander, commonly referred to as mc, is a free, cross-platform orthodox file manager that represents a modern clone 
+of Norton Commander (NC) from the 1990's.
 
 Features include the ability work with common archive formats as if they were simply another directory, and to function as an SFTP/FTP client.
-Midnight Commander also includes an built-in editor/viewer, features include syntax highlighting for many languages, macros, code snippets, 
-simple integration with external tools, automatic indentation, mouse support, clipboard and the ability to work in both ASCII and hex modes.
+Midnight Commander also includes an built-in editor/viewer, features include syntax highlighting for many languages, macros, code snippets,
+simple integration with external tools, automatic indentation, mouse support, clipboard and the ability to work in both ASCII and hex modes. 
+Both the editor and viewer are available standalone, as _mcedit_ and _mcview_.
 
 Midnight Commander supports accessing remote filesystems through several methods, including SSH’s Secure File Transfer Protocol, SFTP. 
 This is in addition to FISH, using either a SSH client or legacy RSH connections. This way you can easily transfer files between servers.
 
 Midnight Commander can also rename groups of files, move files to a different directory at the same time as it renames them. 
 It lets the user specify the original and resulting file names using wildcard characters.
-
 
 ## Examples
 

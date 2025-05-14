@@ -2,161 +2,167 @@
 Native GNU Midnight Commander for Win32
 --------------------------------------------
 
-Windows XP+/32 bit native port of GNU Midnight Commander, based on
-the current 4.8.x development stream.
+A native port of GNU Midnight Commander for Windows XP and later, available in both 32-bit and
+64-bit versions, based on the latest 4.8.x release series.
 
-        Version         Build   Notes
-        --------------------------------------------------------------------------------------------
-        4.8.33          234
+Compatible with the latest Windows 10 and 11 versions, as well as older distributions, it
+supports both MsTerminal and the legacy console, offering 16 and 256 color modes across all
+platforms.
 
-                                - upgrades/bug-fixes
+Midnight Commander, commonly referred to as mc, is a free, cross-platform orthodox file manager
+that represents a modern clone of Norton Commander (NC) from the 1990's.
 
-                                        o command view, subshell alternative; no-panel mode (#137)
-                                        o specialised x64 manifest name
-                                        o several toolchain issues
+Features include the ability work with common archive formats as if they were simply another
+directory, and to function as an SFTP/FTP client. Midnight Commander also includes an built-in
+editor/viewer, features include syntax highlighting for many languages, macros, code snippets, 
+simple integration with external tools, automatic indentation, mouse support, clipboard and the
+ability to work in both ASCII and hex modes. Both the editor and viewer are available 
+standalone, as _mcedit_ and _mcview_.
 
-        4.8.33          233
+Midnight Commander supports accessing remote filesystems through several methods, including
+SSH’s Secure File Transfer Protocol, SFTP. This is in addition to FISH, using either a SSH
+client or legacy RSH connections. This way you can easily transfer files between servers.
 
-                                - internal tools
+Midnight Commander can also rename groups of files, move files to a different directory at the
+same time as it renames them. It lets the user specify the original and resulting file names
+using wildcard characters.
 
-                                        o mcupdater
-                                            - Ed25519 support (#129) libappupdater-1.0.3
-                                            - utilize GitHub for updater (#127)
-                                        o mchelp locale (#126)
-                                        o mcstart enhancements (#124)
+   Version         Build   Notes
+   -------------------------------------------------------------------------------------------
+   4.8.33          234
 
-                                - upgrades/bug-fixes
+                           - upgrades/bug-fixes
 
-                                        o handle resource leak (#128)
+                                   o shell quoting (#139)
+                                   o command view, subshell alternative; no-panel mode (#137)
+                                   o specialised x64 manifest name
+                                   o several toolchain issues
 
-        4.8.33          232
+   4.8.33          233
 
-                                - internal tools
+                           - internal tools
 
-                                        o mandoc / mchelp integration (#116)
-                                        o mcstart, file-extension utility (#124)
-                                        o mc-wrapper's (#69)
+                                   o mcupdater
+                                       - Ed25519 support (#129) libappupdater-1.0.3
+                                       - utilize GitHub for updater (#127)
+                                   o mchelp locale (#126)
+                                   o mcstart enhancements (#124)
 
-                                - upgrades/bug-fixes
+                           - upgrades/bug-fixes
 
-                                        o documentation enhancements
-                                        o MSTerminal maximize disabled (#122)
-                                        o obey NODRIVES group policy (#121)
-                                        o getmntinfo, networked/mapped drive (#120)
-                                        o script enhancements, MC_XDG_OPEN as "start" (#119)
-                                        o non-ascii group name handling (#118)
-                                        o stat/seek64 (#35) and (#89)
-                                        o unzip vfs (#88)
-                                        o ESC timeout, -1 enables an infinite wait (#36)
+                                   o handle resource leak (#128)
 
-        4.8.33          231 (mc merge 4.8.33)
+   4.8.33          232
 
-                                - internal tools front-ends, externalized (#78)
+                           - internal tools
 
-                                        o mcedit
-                                        o mcdiff and mcbsddiff (diff backend)
-                                        o mcview
+                                   o mandoc / mchelp integration (#116)
+                                   o mcstart, file-extension utility (#124)
+                                   o mc-wrapper's (#69)
 
-                                - upgrades/bugfixes
+                           - upgrades/bug-fixes
 
-                                        o vio: wide-character handling (#115)
-                                        o wputenv() cross tool-chain usage (#113)
-                                        o pcre2 10.45 (#106)
-                                        o appupdater (#102)
-                                        o glib 2.54.3 (#102)
-                                        o zlib-1.3.1 (#102)
-                                        o mbedtls-3.6.2 (#100)
-                                        o improved UNC and extended prefix support, plus stat optimisations (#98)
-                                        o libssh2-1.11.1 (#95)
-                                        o enhanced utf8 support, directory plus username; non-ascii user name support (#97)
-                                        o EXDEV, cross-device detection rename failure; allowing alt move logic (#85)
-                                        o x64 installer path (#79)
+                                   o documentation enhancements
+                                   o MSTerminal maximize disabled (#122)
+                                   o obey NODRIVES group policy (#121)
+                                   o getmntinfo, networked/mapped drive (#120)
+                                   o script enhancements, MC_XDG_OPEN as "start" (#119)
+                                   o non-ascii group name handling (#118)
+                                   o stat/seek64 (#35) and (#89)
+                                   o unzip vfs (#88)
+                                   o ESC timeout, -1 enables an infinite wait (#36)
 
-        4.8.31          230 (mc merge 4.8.31)
+   4.8.33          231 (mc merge 4.8.33)
 
-                                 - mbedtls 3.5.2 (#67)
-                                 - AltGr detection (#71, #52)
-                                 - mcdiff integration (#74)
-                                 - cd/cdpath (#72)
+                           - internal tools front-ends, externalized (#78)
 
-        4.8.30          229 (mc merge 4.8.30)
+                                   o mcedit
+                                   o mcdiff and mcbsddiff (diff backend)
+                                   o mcview
 
-                                 - pcre2 10.42
-                                 - mbedtls 3.4.1
-                                 - enca 1.19
-                                 - file 5.45
-                                 - zlib 1.3
+                           - upgrades/bugfixes
 
-        4.8.29          228 (mc merge 4.8.29)
+                                   o vio: wide-character handling (#115)
+                                   o wputenv() cross tool-chain usage (#113)
+                                   o pcre2 10.45 (#106)
+                                   o appupdater (#102)
+                                   o glib 2.54.3 (#102)
+                                   o zlib-1.3.1 (#102)
+                                   o mbedtls-3.6.2 (#100)
+                                   o improved UNC and extended prefix support, plus stat optimisations (#98)
+                                   o libssh2-1.11.1 (#95)
+                                   o enhanced utf8 support, directory plus username; non-ascii user name support (#97)
+                                   o EXDEV, cross-device detection rename failure; allowing alt move logic (#85)
+                                   o x64 installer path (#79)
 
-                                 - libssh2 1.11.0
-                                 - mbedtls 3.3.0
-                                 - zlib 1.2.11
+   4.8.31          230 (mc merge 4.8.31)
 
-        4.8.28          227 (mc merge, 4.8.27)
+                            - mbedtls 3.5.2 (#67)
+                            - AltGr detection (#71, #52)
+                            - mcdiff integration (#74)
+                            - cd/cdpath (#72)
 
-        4.8.27          226 (#21 - FISH enabled)
+   4.8.30          229 (mc merge 4.8.30)
 
-                                FISH requires either an external SSH and/or RSH client, possible solutions include:
+                            - pcre2 10.42
+                            - mbedtls 3.4.1
+                            - enca 1.19
+                            - file 5.45
+                            - zlib 1.3
 
-                                o Windows portable OpenSSH [[ https://github.com/PowerShell/openssh-portable ]].
-                                o WinXSH [[ https://github.com/adamyg/winxsh ]].
+   4.8.29          228 (mc merge 4.8.29)
 
-        4.8.27          225 (enhancements #16 and #17).
-        4.8.27          224 (mc merge, libaspell - beta) See [https://github.com/adamyg/aspell-win32] for distributions.
+                            - libssh2 1.11.0
+                            - mbedtls 3.3.0
+                            - zlib 1.2.11
 
-        4.8.24          223 (bug fixes - unable to load skins)
-        4.8.24          222 (UTF8 exec/shell support, libmagic upgrade)
-        4.8.24          221 (bug fixes - whitespace handling, mbedtls and libssh2 upgrades)
-        4.8.24          220 (UTF8/widechar file support)
+   4.8.28          227 (mc merge, 4.8.27)
 
-        4.8.24          217 (enhancements / bug fixes / InnoSetup 5.x - beta3)
-        4.8.24          216 (bug fixes - beta2)
-        4.8.24          215 (beta)
+   4.8.27          226 (#21 - FISH enabled)
 
-        4.8.21          214 (bug fixes)
-        4.8.21          213 (windows 10 console)
-        4.8.21          209 (windows 10 console, beta)
+                           FISH requires either an external SSH and/or RSH client, possible solutions include:
 
-        4.8.19          204 (configuration updates), 201 (sftp/ssh)
+                           o Windows portable OpenSSH [[ https://github.com/PowerShell/openssh-portable ]].
+                           o WinXSH [[ https://github.com/adamyg/winxsh ]].
 
-        4.8.14          189 (beta)
+   4.8.27          225 (enhancements #16 and #17).
+   4.8.27          224 (mc merge, libaspell - beta) See [https://github.com/adamyg/aspell-win32] for distributions.
 
-        4.8.13          188, 187 (beta)
+   4.8.24          223 (bug fixes - unable to load skins)
+   4.8.24          222 (UTF8 exec/shell support, libmagic upgrade)
+   4.8.24          221 (bug fixes - whitespace handling, mbedtls and libssh2 upgrades)
+   4.8.24          220 (UTF8/widechar file support)
 
-        4.8.12          186
-        4.8.11          183
-        4.8.8           181
-        4.8.7           180
-        4.8.4           159
+   4.8.24          217 (enhancements / bug fixes / InnoSetup 5.x - beta3)
+   4.8.24          216 (bug fixes - beta2)
+   4.8.24          215 (beta)
 
-Midnight Commander (also known as mc) is a free cross-platform orthodox
-file manager and a clone of Norton Commander.
+   4.8.21          214 (bug fixes)
+   4.8.21          213 (windows 10 console)
+   4.8.21          209 (windows 10 console, beta)
 
-Features include the ability work with common archive formats as if they
-were simply another directory, and to function as an FTP. Midnight
-Commander also includes an builtin editor called mcedit, features
-include syntax highlighting for many languages, macros, code snippets,
-simple integration with external tools, automatic indentation, mouse
-support, clipboard and the ability to work in both ASCII and hex modes.
+   4.8.19          204 (configuration updates), 201 (sftp/ssh)
 
-Midnight Commander can also rename groups of files, move files to a
-different directory at the same time as it renames them. It lets the
-user specify the original and resulting file names using wildcard
-characters.
+   4.8.14          189 (beta)
 
-Midnight Commander is released under the GNU General Public License
-version 3 or any later version. A copy of the file is included with this
-distribution package.
+   4.8.13          188, 187 (beta)
 
+   4.8.12          186
+   4.8.11          183
+   4.8.8           181
+   4.8.7           180
+   4.8.4           159
+
+Midnight Commander is released under the GNU General Public License version 3 or any later
+version. A copy of the file is included with this distribution package.
 
 Install
 -------
 
 Install simply though use of the windows installer package.
 
-Default directories are as follows, available using the '-F' command
-line option, the installation directory maybe be changed at your option:
+Default directories are as follows, available using the '-F' command line option, the
+installation directory maybe be changed at your option:
 
  o Windows XP/Vista/7/8 and 10
 
@@ -279,6 +285,7 @@ A few items are unix specific (e.g. chown), which shall be updated over
 time.
 
 -end-
+
 
 
 

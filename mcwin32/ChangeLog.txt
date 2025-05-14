@@ -2,7 +2,8 @@ Wed May 14 11:50:13 2025 adamy
 
 	* build-234
 
-		o command view; non-panel mode (#137)
+		o shell quoting (#139)
+		o command view, non-panel mode (#137)
 		o specialised x64 manifest name
 		o several toolchain issues
 
