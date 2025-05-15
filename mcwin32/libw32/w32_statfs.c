@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.22 2025/04/01 16:15:15 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.23 2025/05/15 18:20:22 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -126,8 +126,8 @@ int
 statfsA(const char *path, struct statfs *sb)
 {
     char   volName[MNAMELEN], fsName[MFSNAMELEN];
-    DWORD  SectorsPerCluster, BytesPerSector, FreeClusters, Clusters;
     DWORD  MaximumComponentLength, FileSystemFlags;
+    BOOL   ready = FALSE, query_free = FALSE;
     size_t mnamelen;
     EMODEINIT()
 
@@ -138,23 +138,7 @@ statfsA(const char *path, struct statfs *sb)
 
     (void) memset(sb, 0, sizeof(*sb));
 
-    sb->f_bsize = 1024;                         /* block size */
-
     EMODESUPPRESS()
-
-    if (GetDiskFreeSpaceA(path, &SectorsPerCluster, &BytesPerSector, &FreeClusters, &Clusters)) {
-        /* KBytes available */
-        sb->f_bavail = (unsigned int)
-            (((__int64)SectorsPerCluster * BytesPerSector * FreeClusters) / 1024);
-
-        /* KBytes total */
-        sb->f_blocks = (unsigned int)
-            (((__int64)SectorsPerCluster * BytesPerSector * Clusters) / 1024);
-
-        /* inodes */
-        sb->f_ffree = FreeClusters/10;
-        sb->f_files = Clusters/10;
-    }
 
     strncpy(sb->f_mntonname, path, MNAMELEN-1); /* mount point */
     w32_dos2unixA(sb->f_mntonname);
@@ -165,28 +149,8 @@ statfsA(const char *path, struct statfs *sb)
         }
     }
 
-    switch (GetDriveTypeA(path)) {              /* device */
-    case DRIVE_REMOVABLE:
-        strncpy(sb->f_mntfromname, "Removable", MNAMELEN);
-        break;
-    case DRIVE_FIXED:
-        strncpy(sb->f_mntfromname, "Hard Disk", MNAMELEN);
-        break;
-    case DRIVE_REMOTE:
-        strncpy(sb->f_mntfromname, "Networked", MNAMELEN);
-        break;
-    case DRIVE_CDROM:
-        strncpy(sb->f_mntfromname, "CD-ROM", MNAMELEN);
-        break;
-    case DRIVE_RAMDISK:
-        strncpy(sb->f_mntfromname, "RAM disk", MNAMELEN);
-        break;
-    default:
-        strncpy(sb->f_mntfromname, "Unknown", MNAMELEN);
-        break;
-    }
+    sb->f_type = MOUNT_PC;                      /* TODO */
 
-    sb->f_type = MOUNT_PC;
     strncpy(sb->f_fstypename, "unknown", MFSNAMELEN);
     if (GetVolumeInformationA(path,
             volName, MNAMELEN,                  /* VolumeName and size */
@@ -194,6 +158,56 @@ statfsA(const char *path, struct statfs *sb)
     {                                           /* FileSystem type/NTFS, FAT etc */
         if (fsName[0]) {
             strncpy(sb->f_fstypename, fsName, MFSNAMELEN);
+        }
+        ready = TRUE;
+    }
+
+    switch (GetDriveTypeA(path)) {              /* device */
+    case DRIVE_REMOVABLE:
+        strncpy(sb->f_mntfromname, "Removable", MNAMELEN);
+        query_free = ready;
+        break;
+    case DRIVE_FIXED:
+        strncpy(sb->f_mntfromname, "Hard Disk", MNAMELEN);
+        query_free = TRUE;
+        break;
+    case DRIVE_REMOTE:
+        strncpy(sb->f_mntfromname, "Networked", MNAMELEN);
+        if (0 == strcmp(sb->f_fstypename, "9P"))
+            query_free = ready;                 /* WSL2 */
+        break;
+    case DRIVE_CDROM:
+        strncpy(sb->f_mntfromname, "CD-ROM", MNAMELEN);
+        query_free = ready;
+        break;
+    case DRIVE_RAMDISK:
+        strncpy(sb->f_mntfromname, "RAM disk", MNAMELEN);
+        query_free = TRUE;
+        break;
+    case DRIVE_NO_ROOT_DIR:
+    default:
+        strncpy(sb->f_mntfromname, "Unknown", MNAMELEN);
+        break;
+    }
+
+    sb->f_bsize = 1024;                         /* block size */
+
+    if (query_free)
+    {
+        DWORD  SectorsPerCluster, BytesPerSector, FreeClusters, Clusters;
+
+        if (GetDiskFreeSpaceA(path, &SectorsPerCluster, &BytesPerSector, &FreeClusters, &Clusters)) {
+            /* KBytes available */
+            sb->f_bavail = (unsigned int)
+                (((__int64)SectorsPerCluster * BytesPerSector * FreeClusters) / 1024);
+
+            /* KBytes total */
+            sb->f_blocks = (unsigned int)
+                (((__int64)SectorsPerCluster * BytesPerSector * Clusters) / 1024);
+
+            /* inodes */
+            sb->f_ffree = FreeClusters / 10;
+            sb->f_files = Clusters / 10;
         }
     }
 
@@ -207,8 +221,8 @@ int
 statfsW(const wchar_t *path, struct statfs *sb)
 {
     wchar_t volName[MNAMELEN], fsName[MFSNAMELEN];
-    DWORD   SectorsPerCluster, BytesPerSector, FreeClusters, Clusters;
     DWORD   MaximumComponentLength, FileSystemFlags;
+    BOOL    ready = FALSE, query_free = FALSE;
     size_t  mnamelen;
     EMODEINIT()
 
@@ -219,23 +233,7 @@ statfsW(const wchar_t *path, struct statfs *sb)
 
     (void) memset(sb, 0, sizeof(*sb));
 
-    sb->f_bsize = 1024;                         /* block size */
-
     EMODESUPPRESS()
-
-    if (GetDiskFreeSpaceW(path, &SectorsPerCluster, &BytesPerSector, &FreeClusters, &Clusters)) {
-        /* KBytes available */
-        sb->f_bavail = (unsigned int)
-            (((__int64)SectorsPerCluster * BytesPerSector * FreeClusters) / 1024);
-
-        /* KBytes total */
-        sb->f_blocks = (unsigned int)
-            (((__int64)SectorsPerCluster * BytesPerSector * Clusters) / 1024);
-
-        /* inodes */
-        sb->f_ffree = FreeClusters/10;
-        sb->f_files = Clusters/10;
-    }
 
     w32_wc2utf(path, sb->f_mntonname, sizeof(sb->f_mntonname));
     w32_dos2unixA(sb->f_mntonname);
@@ -246,35 +244,64 @@ statfsW(const wchar_t *path, struct statfs *sb)
         }
     }
 
+    sb->f_type = MOUNT_PC;                      /* TODO */
+
+    strncpy(sb->f_fstypename, "unknown", MFSNAMELEN);
+    if (GetVolumeInformationW(path,
+            volName, MNAMELEN,                  /* VolumeName and size */
+            NULL, &MaximumComponentLength, &FileSystemFlags, fsName, MFSNAMELEN)) /* file system type */
+    {                                           /* FileSystem type/NTFS, FAT etc */
+        if (fsName[0]) {
+            w32_wc2utf(fsName, sb->f_fstypename, sizeof(sb->f_fstypename));
+        }
+        ready = TRUE;
+    }
+
     switch (GetDriveTypeW(path)) {              /* device */
     case DRIVE_REMOVABLE:
         strncpy(sb->f_mntfromname, "Removable", MNAMELEN);
+        query_free = ready;
         break;
     case DRIVE_FIXED:
         strncpy(sb->f_mntfromname, "Hard Disk", MNAMELEN);
+        query_free = TRUE;
         break;
     case DRIVE_REMOTE:
         strncpy(sb->f_mntfromname, "Networked", MNAMELEN);
+        if (0 == strcmp(sb->f_fstypename, "9P"))
+            query_free = ready;                 /* WSL2 */
         break;
     case DRIVE_CDROM:
         strncpy(sb->f_mntfromname, "CD-ROM", MNAMELEN);
+        query_free = ready;
         break;
     case DRIVE_RAMDISK:
         strncpy(sb->f_mntfromname, "RAM disk", MNAMELEN);
+        query_free = TRUE;
         break;
+    case DRIVE_NO_ROOT_DIR:
     default:
         strncpy(sb->f_mntfromname, "Unknown", MNAMELEN);
         break;
     }
 
-    sb->f_type = MOUNT_PC;
-    strncpy(sb->f_fstypename, "unknown", MFSNAMELEN);
-    if (GetVolumeInformationW(path,
-            volName, MNAMELEN,                  /* VolumeName and size */
-            NULL, &MaximumComponentLength, &FileSystemFlags, fsName, MFSNAMELEN)) /* filesystem type */
-    {                                           /* FileSystem type/NTFS, FAT etc */
-        if (fsName[0]) {
-            w32_wc2utf(fsName, sb->f_fstypename, sizeof(sb->f_fstypename));
+    sb->f_bsize = 1024;                         /* block size */
+
+    if (query_free) {
+        DWORD SectorsPerCluster = 0, BytesPerSector = 0, FreeClusters = 0, Clusters = 0;
+
+        if (GetDiskFreeSpaceW(path, &SectorsPerCluster, &BytesPerSector, &FreeClusters, &Clusters)) {
+            /* KBytes available */
+            sb->f_bavail = (unsigned int)
+                (((__int64)SectorsPerCluster * BytesPerSector * FreeClusters) / 1024);
+
+            /* KBytes total */
+            sb->f_blocks = (unsigned int)
+                (((__int64)SectorsPerCluster * BytesPerSector * Clusters) / 1024);
+
+            /* inodes */
+            sb->f_ffree = FreeClusters / 10;
+            sb->f_files = Clusters / 10;
         }
     }
 
