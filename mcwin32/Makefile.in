@@ -740,6 +740,7 @@ TARGETS=\
 	$(D_BIN)/mcmandoc$(E)			\
 	$(D_BIN)/kbtest$(E)			\
 	$(D_BIN)/coninfo$(E)			\
+	$(D_BIN)/volinfo$(E)			\
 	$(D_BIN)/man2hlp.pl
 
 IMPORT=\
@@ -973,6 +974,7 @@ clean:
 		$(MAKE) -C mandoc clean
 		$(MAKE) -C src/kbtest clean
 		$(MAKE) -C src/coninfo clean
+		$(MAKE) -C src/volinfo clean
 		$(MAKE) -C autoupdater clean
 		-$(RM) $(MSGOBJS) $(MSGDIRS) $(QUIETOUT)
 		-$(RM) $(CONFIGURATION) $(QUIETOUT)
@@ -1007,6 +1009,9 @@ $(D_BIN)/kbtest$(E):
 
 $(D_BIN)/coninfo$(E):
 		$(MAKE) -C src/coninfo
+
+$(D_BIN)/volinfo$(E):
+		$(MAKE) -C src/volinfo
 
 $(MC_RES):			config.h buildinfo.h
 
