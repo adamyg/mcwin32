@@ -441,7 +441,7 @@ mc_args_add_extended_info_to_help (void)
                                                     "Please send any bug reports (including the output of 'mc -V')\n"
                                                     "as tickets at www.midnight-commander.org\n")
 #if defined(BUILD_NUMBER) //WIN32, build
-                                                    , "win32, see tickets at https://github/adamyg/mcwin32\n"
+                                                    , "win32, tickets at https://github/adamyg/mcwin32\n"
 #endif
                                                     );
     mc_args__loc__header_string =
@@ -646,6 +646,15 @@ mc_setup_run_mode (char **argv)
 
 /* --------------------------------------------------------------------------------------------- */
 
+#if defined(WIN32) //WIN32, utf8
+static void 
+print_handler (const gchar *string)
+{   // alternative g_printf(), avoids issues with
+    // tool-chain specific utf8 stream inconsistent behaviour.
+    tty_oputs (string);
+}
+#endif
+
 gboolean
 mc_args_parse (int *argc, char ***argv, const char *translation_domain, GError **mcerror)
 {
@@ -686,9 +695,13 @@ mc_args_parse (int *argc, char ***argv, const char *translation_domain, GError *
     g_option_context_add_group (context, color_group);
     g_option_group_set_translation_domain (color_group, translation_domain);
 
+#if defined(WIN32)
+    g_set_print_handler (print_handler);
+#endif
+
     if (!g_option_context_parse (context, argc, argv, mcerror))
     {
-        if (*mcerror == NULL)
+        if (mcerror && *mcerror == NULL)
             mc_propagate_error (mcerror, 0, "%s\n", _("Arguments parse error!"));
         else
         {
@@ -718,6 +731,10 @@ mc_args_parse (int *argc, char ***argv, const char *translation_domain, GError *
     g_option_context_free (context);
     mc_args_clean_temp_help_strings ();
 
+#if defined(WIN32) //WIN32, utf8
+    g_set_print_handler (NULL);
+#endif
+
 #ifdef ENABLE_NLS
     if (!str_isutf8 (_system_codepage))
         bind_textdomain_codeset ("mc", _system_codepage);
@@ -727,6 +744,22 @@ mc_args_parse (int *argc, char ***argv, const char *translation_domain, GError *
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+#if defined(WIN32) //WIN32, utf8
+gboolean mc_args_show_info_original (void);
+
+gboolean
+mc_args_show_info(void) // replacement
+{
+#define mc_args_show_info mc_args_show_info_original
+    int old_utf8_mode, ret;
+
+    old_utf8_mode = tty_utf8_mode (1);
+    ret = mc_args_show_info_original ();
+    tty_utf8_mode (old_utf8_mode);
+    return ret;
+}
+#endif
 
 gboolean
 mc_args_show_info (void)

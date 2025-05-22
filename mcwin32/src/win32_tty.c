@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -47,6 +48,21 @@
 #include "src/consaver/cons.saver.h"            /* CONSOLE_xxx */
 
 #include "win32_key.h"
+
+#ifndef VA_COPY
+# if defined(HAVE_VA_COPY) || defined(va_copy)
+ /* ISO C99 and later */
+#define VA_COPY(__dst, __src)   va_copy(__dst, __src)
+# elif defined(HAVE___VA_COPY) || defined(__va_copy)
+ /* gnu */
+#define VA_COPY(__dst, __src)   __va_copy(__dst, __src)
+# elif defined(__WATCOMC__)
+ /* Older Watcom implementations */
+#define VA_COPY(__dst, __src)   memcpy((__dst), (__src), sizeof (va_list))
+# else
+#define VA_COPY(__dst, __src)   (__dst) = (__src)
+# endif
+#endif  /*VA_COPY*/
 
 static int tty_mouse_enabled = 0;               /* mouse mode; true/false */
 static wchar_t original_title[512];             /* original title */
@@ -105,14 +121,14 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
         exit (EXIT_FAILURE);
     }
 
-    SLsmg_touch_screen();
+    SLsmg_touch_screen ();
 }
 
 
 void
 tty_shutdown (void)
 {
-    SLsmg_reset_smg();
+    SLsmg_reset_smg ();
 }
 
 
@@ -164,6 +180,97 @@ tty_reset_shell_mode (void)
     }
     SLsmg_touch_screen ();
     key_shell_mode ();
+}
+
+
+int
+tty_utf8_mode (int state)
+{
+    const DWORD cp = GetConsoleOutputCP ();
+
+    if (state == 1) { // enable, note a valid code-page
+        if (cp != CP_UTF8) {
+            (void) SetConsoleOutputCP (CP_UTF8);
+        }
+
+    } else if (state > 1) { // restore
+        if (cp != (DWORD) state) {
+            (void) SetConsoleOutputCP (state);
+        }
+    }
+
+    return (int) cp;
+}
+
+
+static void
+uputs (HANDLE handle, const char *buffer, size_t size)
+{
+    const DWORD cp = GetConsoleOutputCP ();
+
+    if (cp != CP_UTF8) {
+        (void) SetConsoleOutputCP (CP_UTF8);
+    }
+    WriteConsoleA (handle, buffer, size, NULL, NULL);
+    if (cp != CP_UTF8) {
+        (void) SetConsoleOutputCP (cp);
+    }
+}
+
+
+static void
+uprintf (HANDLE handle, const char *fmt, va_list ap)
+{
+    va_list tap;
+    int size;
+
+    VA_COPY (tap, ap);
+    size = vsnprintf (NULL, 0, fmt, tap);
+    if (size > 0) {
+        char *buffer;
+
+        if (NULL != (buffer = (char*)malloc (size + 32))) {
+            size = vsprintf (buffer, fmt, ap);
+            uputs (handle, buffer, size);
+            free ((void*)buffer);
+        }
+    }
+}
+
+
+void
+tty_oprintf (const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start (ap, fmt);
+    uprintf (GetStdHandle (STD_OUTPUT_HANDLE), fmt, ap);
+    va_end (ap);
+} 
+
+
+void
+tty_oputs (const char *str)
+{
+    uputs (GetStdHandle (STD_OUTPUT_HANDLE), str, (int) strlen (str));
+}
+
+
+void
+tty_eprintf (const char* fmt, ...)
+{
+    va_list ap;
+
+    va_start (ap, fmt);
+    uprintf (GetStdHandle (STD_ERROR_HANDLE), fmt, ap);
+    va_end (ap);
+}
+
+
+void
+tty_eputs (const char* str)
+{
+    uputs (GetStdHandle (STD_ERROR_HANDLE), str, (int) strlen (str));
 }
 
 

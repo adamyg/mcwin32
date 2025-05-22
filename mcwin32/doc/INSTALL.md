@@ -23,6 +23,7 @@ To build and install mcwin32, you shall need:
   * Git tooling for windows.
   * Perl 5 with core modules, see [NOTES-PERL.md](doc/NOTES-PERL.md).
   * CoreUtils, includes various text and system utilities.
+  * Gettext
   * Make.
   * An ANSI C/C++ compiler.
   * A development environment in the form of development libraries and C header files.
@@ -79,7 +80,7 @@ Several alternative profiles are available:
   * Open-Watcom (OWC) 1.9 or 2.0; or
 
     * owcconfig - Open Watcom 1.9
-    * owc20config - Open Watcom 2.0   
+    * owc20config - Open Watcom 2.0
 
   * MingW64, both 32 and 64 bit targets.
 
@@ -169,10 +170,10 @@ The follow offers a more detailed discussion of the requirements and instruction
   - [Native builds using Visual C++](#native-builds-using-visual-c-c)
   - [Native builds using MinGW64](#native-builds-using-mingw)
 
-Finally, please review the packaged example alternative configurations as win32 development environments can be problematic, dependent on the host setup:                                                                                                              
+Finally, please review the packaged example alternative configurations as win32 development environments can be problematic, dependent on the host setup:
 
   - .github/workflows, github build actions for owc, msvc and mingw64 toolchains.
-  - Appveyor CI integration notes [Appveyor CI](CINotes.md).           
+  - Appveyor CI integration notes [Appveyor CI](CINotes.md).
 
 Native builds using Open-Watcom C/C++
 ====================================
@@ -226,6 +227,14 @@ Minimal tools required are:
 
       Once installed the required commands should be visible within the path.
 
+  * gettext - gettext utilities are a set of tools that provides a framework to help packages produce multi-lingual messages.
+
+      Several options are available including:
+
+      * msys64 - ```pacman --noconfirm -S mingw-w64-i686-gettext-tools```
+
+      * [gettext for windows](https://github.com/mlocati/gettext-iconv-windows)
+
 To support native Windows builds, the make tool ``gmake-42``, web tool ``wget`` and the shell support tool ``busybox`` are bundled within the source repository sub-directory ``win32/``.
 
   - ``gmake`` was built from its original source available from [GNU binutils](https://www.gnu.org/software/binutils/).
@@ -266,7 +275,7 @@ Quick start
     From the source root, a suitable environment can be setup using the one of the following dependent on the desired toolchain, were ``C:\Watcom`` is the toolchain installation directory.
 
       * owcconfig- Open Watcom 1.9
-      * owc20config - Open Watcom 2.0   
+      * owc20config - Open Watcom 2.0
 
   * From the root of the source directory perform the following:
 
@@ -314,7 +323,7 @@ The resulting work flow could look like the following, inside a Open Watcom 1.9 
 cd c:\projects
 
 git clone https://github.com/adamyg/mcwin32.git mc
- 
+
 cd c:\projects\mc\mcwin32
 
 git submodule update --init --recursive
@@ -338,18 +347,18 @@ Microsoft Visual is available in several, all are suitable:
 
   * Microsoft Visual C++ 2015 - 2002 Professional -
 
-      Standard Microsoft Visual C++ installations. 
+      Standard Microsoft Visual C++ installations.
 
   * Microsoft Visual C++ 2015 - 2022 Community Edition -
 
-      These free versions of Visual C++ 2015-2022 Professional contain the same compilers and linkers that ship with the full versions, 
+      These free versions of Visual C++ 2015-2022 Professional contain the same compilers and linkers that ship with the full versions,
       and also contain everything necessary to build mcwin32.
-        
-  * Microsoft C++ Build Tools -    
+
+  * Microsoft C++ Build Tools -
 
       There's also a standalone (IDE-less) version of the build tools mentioned above containing the MSVC compiler
       available for download from https://visualstudio.microsoft.com/visual-cpp-build-tools/.
-    
+
 Note: Since these are proprietary and ever-changing I cannot test them all. Older versions may not work, it is recommended to use a recent version wherever possible.
 
   * Install _Perl_
@@ -393,7 +402,7 @@ The resulting work flow could look like the following, inside a 2019 developer p
 cd c:\projects
 
 git clone https://github.com/adamyg/mcwin32.git mc
- 
+
 cd c:\projects\mc\mcwin32
 
 git submodule update --init --recursive
@@ -412,8 +421,8 @@ Native builds using Mingw
 
 Mingw64 (32/64) offers another alternative way to build native __mcwin32__, similar to Open-Watcom C/C++ builds.
 
-MSYS2 provides GNU tools, a Unix-like command prompt, and a UNIX compatibility layer for applications, 
-available from https://www.mingw-w64.org. However, in this context it is only used for building mcwin32. 
+MSYS2 provides GNU tools, a Unix-like command prompt, and a UNIX compatibility layer for applications,
+available from https://www.mingw-w64.org. However, in this context it is only used for building mcwin32.
 The resulting application does not rely on MSYS2 to run and is fully native.
 
   * _MSYS2_ shell, from https://www.msys2.org/
@@ -433,8 +442,13 @@ The resulting application does not rely on MSYS2 to run and is fully native.
         $ pacman --noconfirm -S mingw-w64-x86_64-gcc
         $ pacman --noconfirm -S mingw-w64-i686-gcc
 
-    These compilers must be on your MSYS2 \$PATH, example below assuming the default installation path ``c:/msys64/``. 
+    These compilers must be on your MSYS2 \$PATH, example below assuming the default installation path ``c:/msys64/``.
     A common error is to not have these on your \$PATH. The MSYS2 version of gcc will not work correctly here.
+
+    finally, any additional components
+
+        $ pacman --noconfirm -S mingw-w64-i686-gettext-tools
+        $ pacman --noconfirm -S zip
 
   * From the root of the source directory perform the following:
 
@@ -457,7 +471,7 @@ The resulting application does not rely on MSYS2 to run and is fully native.
       * Optionally, build the installer.
 
             $ .\support\gmake-42 release package
-            
+
 The resulting work flow could look like the following, inside either a terminal/command or msys prompt:
 
 Install any missing components
@@ -475,7 +489,7 @@ Prime sandbox and build
 cd c:\projects
 
 git clone https://github.com/adamyg/mcwin32.git mc
- 
+
 cd c:\projects\mc\mcwin32
 
 git submodule update --init --recursive

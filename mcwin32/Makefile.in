@@ -869,7 +869,7 @@ directories:			$(DIRECTORIES)
 artifacts:			buildinfo busyboxcmds BUILDNUMBER
 
 %/.created:
-		-@$(PERL) ./support/mkdir_p.pl $(@D)
+		-@$(MKDIR_P) $(@D)
 		@echo "++ do not delete, midnight commander managed content ++" > $@
 
 targets:			$(LIBRARIES) $(TARGETS)
