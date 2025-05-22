@@ -3004,7 +3004,8 @@ vio_restore_lines(int top, int bottom, int to)
 
     assert(to >= -1);
 
-    if (NULL == state->image) return;           // uninitialised
+    if (NULL == state || NULL == state->image)  // uninitialised
+        return;
 
     // Size arena
     vio_size(console, &rows, &cols);
@@ -3067,7 +3068,8 @@ vio_restore(void)
         vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
     int rows = 0, cols = 0;
 
-    if (NULL == vio_state.alt.image) return;    // uninitialised
+    if (NULL == vio_state.alt.image)            // uninitialised
+        return;
 
     // Size arena
     vio_size(console, &rows, &cols);

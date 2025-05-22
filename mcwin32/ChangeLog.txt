@@ -1,8 +1,10 @@
-Fri May 15 11:47:09 2025 adamy
+Thu May 22 14:03:24 2025 adamy
 
 	* build-235
 
-		o network drive interaction (#141)
+		o improve command-line locale/utf-8 support (#147)
+		o screen buffer save/restore (#143)
+		o network drive enumeration (#141)
 
 Wed May 14 10:50:13 2025 adamy
 

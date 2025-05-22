@@ -49,6 +49,8 @@ static void OutputW(const wchar_t *, ...);
 
 static int otimestamp       = 0;
 static int overbose         = 0;
+static int onetconnected    = 1;
+
 static int ovolumeinfo      = 0;
 static int odrivetype       = 0;
 static int oattributes      = 0;
@@ -77,6 +79,11 @@ main(int argc, char *argv[])
                         otimestamp = 1;
                 } else if ((val = IsOption(option, "--verbose")) != NULL) {
                         overbose = 1;
+
+                } else if ((val = IsOption(option, "--netconnected")) != NULL) {
+                        onetconnected = 1;
+                } else if ((val = IsOption(option, "--netremembered")) != NULL) {
+                        onetconnected = 0;
 
                 } else if ((val = IsOption(option, "--volumeinfo")) != NULL) {
                         ovolumeinfo = 1;
@@ -285,6 +292,10 @@ static void  NetworkDisplayStruct(unsigned i, LPNETRESOURCEW lpnrLocal);
 static BOOL WINAPI
 EnumNetworkFunc(LPNETRESOURCEW lpnr)
 {
+        const DWORD dwScope = (onetconnected ? RESOURCE_CONNECTED : RESOURCE_REMEMBERED);
+                // CONNECTED -  Open connections.
+                // REMEMBERED - PERSISTED, aka are connected at log-on.
+
         DWORD cbBuffer = 16384;                     // buffer size
         DWORD dwResult, dwResultEnum;
         DWORD cEntries = (DWORD)-1;                 // enumerate all possible entries
@@ -292,7 +303,7 @@ EnumNetworkFunc(LPNETRESOURCEW lpnr)
         HANDLE hEnum = NULL;
 
         // Enumerate all currently connected resources.
-        dwResult = WNetOpenEnumW(RESOURCE_CONNECTED, RESOURCETYPE_DISK, 0, lpnr, &hEnum);
+        dwResult = WNetOpenEnumW(dwScope, RESOURCETYPE_DISK, 0, lpnr, &hEnum);
         if (dwResult != NO_ERROR) {
                 OutputA("WnetOpenEnum: failure %u\n", (unsigned)dwResult);
                 return FALSE;
@@ -679,21 +690,23 @@ Usage(void)
             "   Query disk information using on the following operations:\n" \
             "\n" \
             "Operations:\n" \
-            "   volumes -       iterate by volume enumeration.\n" \
-            "   network -       iterate by network enumeration.\n" \
-            "   drives -        iterate published drive letters.\n" \
-            "   all -           all available methods.\n" \
+            "   volumes -           Iterate by volume enumeration.\n" \
+            "   network -           Iterate by network enumeration.\n" \
+            "   drives -            Iterate published drive letters.\n" \
+            "   all -               All available methods.\n" \
             "\n" \
             "Attributes:\n" \
-            "   --volumeinfo    Volume information.\n" \
-            "   --drivetype     Drive type.\n" \
-            "   --attributes    Attributes.\n" \
-            "   --freespace     Free space.\n" \
-            "   --statfs        statfs, all attributes.\n" \
+            "   --volumeinfo        Volume information.\n" \
+            "   --drivetype         Drive type.\n" \
+            "   --attributes        Attributes.\n" \
+            "   --freespace         Free space.\n" \
+            "   --statfs            statfs, all attributes.\n" \
             "\n" \
             "Options:\n" \
-            "   --time          Access timestamps.\n" \
-            "   --verbose       Additional info.\n" \
+            "   --time              Access timestamps.\n" \
+            "   --verbose           Additional info.\n" \
+            "   --netconnected      Network status (default: connected).\n" \
+            "   or --netremembered.\n" \
             "   --help\n" \
             "\n");
 }
@@ -733,4 +746,3 @@ OutputW(const wchar_t *fmt, ...)
 }
 
 //end
-
