@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_open_c, "$Id: w32_open.c,v 1.4 2025/05/23 11:21:14 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_open_c, "$Id: w32_open.c,v 1.5 2025/05/23 12:01:53 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -49,6 +49,7 @@ __CIDENT_RCSID(gr_w32_open_c, "$Id: w32_open.c,v 1.4 2025/05/23 11:21:14 cvsuser
 #endif
 
 #include "win32_internal.h"
+#include "win32_misc.h"
 #include "win32_io.h"
 
 static int W32OpenA(const char *path, int oflag, int mode);
