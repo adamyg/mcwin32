@@ -63,6 +63,12 @@ my $cmd_list = ($op_has_zipinfo ? $cmd_list_zi : $cmd_list_nzi);
 ## my ($qarchive, $aqarchive) = map (quotemeta, $archive, $aarchive);
 my ($qarchive, $aqarchive) = ($archive, $aarchive);
 
+$qarchive = '"'.$qarchive.'"' # WIN32: spaces, enclose file name.
+  if ($qarchive =~ /\s/);
+
+$aqarchive = '"'.$aqarchive.'"' # WIN32: spaces, enclose file name.
+  if ($aqarchive =~ /\s/);
+
 # Strip all "." and ".." path components from a pathname.
 sub zipfs_canonicalize_pathname($) {
   my ($fname) = @_;
