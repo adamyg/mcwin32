@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: config_windows.pl,v 1.6 2025/05/22 03:45:58 cvsuser Exp $
+# $Id: config_windows.pl,v 1.7 2025/05/23 13:50:44 cvsuser Exp $
 # Configure front-end for native windows targets.
 #
 
@@ -118,19 +118,24 @@ SugguestCoreUtils	# (app, path)
 	$path = "" if (! $path);
 
 	print "config_windows: CoreUtils=${app} missing\n\n";
-	print "Possible solution using msys64:\n";
+	print "Possible solutions include -\n\n";
+	print "  o msys64:\n\n";
 
 	if ($app eq 'msgfmt') {
-		printf "    ${path}pacman -S mingw-w64-i686-gettext-tools\n";
+		printf "     ${path}pacman -S mingw-w64-i686-gettext-tools\n";
 
 	} elsif ($app eq 'zip' || $app eq 'unzip') {
-		printf "    ${path}pacman -S ${app}\n";
+		printf "     ${path}pacman -S ${app}\n";
 
 	} else {		# coreutils etc
-		printf "    ${path}pacman -S base-devl\n";
+		printf "     ${path}pacman -S base-devl\n";
 	}
 
-	printf "\n";
+	print "\n";
+	print "  o Git for Windows:\n\n";
+	print "     winget install --id Git.Git -e --source winget\n";
+
+	print "\n";
 }
 
 
@@ -144,6 +149,7 @@ ResolveCoreUtils	# ()
 		"${PROGRAMFILES}/Git/usr",		# Git for Windows
 		"c:/GnuWin32",				# https://sourceforge.net/projects/getgnuwin32/files (legacy)
 		"c:/Program Files (x86)/GnuWin32",	# choco install gnuwin32-coreutils.install (legacy)
+	     ## "C:/Users/${USERNAME}/AppData/Local/GitHubDesktop/app-x.x.x/resources/app/git/usr/bin"
 		);
 	my @cmds = ("mkdir", "rmdir", "cp", "mv", "rm", "grep", "gzip", "tar", "zip", "unzip", "msgfmt");
 
