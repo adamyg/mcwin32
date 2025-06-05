@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.24 2025/05/18 14:46:08 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.25 2025/06/05 16:05:43 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -337,7 +337,7 @@ statvfs(const char *path, struct statvfs *vfs)
 
 /*
 //  NAME
-//      getmntinfo getmntinfo64 -- get information about mounted file systems
+//      getmntinfo -- get information about mounted file systems
 //
 //  SYNOPSIS
 //      #include <sys/param.h>
@@ -346,32 +346,33 @@ statvfs(const char *path, struct statvfs *vfs)
 //
 //      int getmntinfo(struct statfs **mntbufp, int flags);
 //
-//      DESCRIPTION
-//          The getmntinfo() function returns an array of statfs structures describing each currently mounted file system
-//          The getmntinfo() function passes its flags argument transparently to getfsstat(2).
+//  DESCRIPTION
+//      The getmntinfo() function returns an array of statfs structures describing each currently mounted file system
 //
-//      RETURN VALUES
-//          On successful completion, getmntinfo() returns a count of the number of elements in the array.The pointer to
-//          the array is stored into mntbufp.
+//      The getmntinfo() function passes its flags argument transparently to getfsstat(2).
 //
-//          If an error occurs, zero is returned and the external variable errno is set to indicate the error. Although the
-//          pointer mntbufp will be unmodified, any information previously returned by getmntinfo() will be lost.
+//  RETURN VALUES
+//      On successful completion, getmntinfo() returns a count of the number of elements in the array.The pointer to
+//      the array is stored into mntbufp.
 //
-//      ERRORS
-//          The getmntinfo() function may fail and set errno for any of the errors specified for the library routines
-//          getfsstat(2) or malloc(3).
+//      If an error occurs, zero is returned and the external variable errno is set to indicate the error. Although the
+//      pointer mntbufp will be unmodified, any information previously returned by getmntinfo() will be lost.
 //
-//      SEE ALSO
-//          getfsstat(2), mount(2), stat(2), statfs(2), mount(8)
+//  ERRORS
+//      The getmntinfo() function may fail and set errno for any of the errors specified for the library routines
+//      getfsstat(2) or malloc(3).
 //
-//      HISTORY
-//          /The getmntinfo() function first appeared in 4.4BSD.
+//  SEE ALSO
+//      getfsstat(2), mount(2), stat(2), statfs(2), mount(8)
 //
-//      BUGS
-//          The getmntinfo() function writes the array of structures to an internal static object and returns a pointer to that object.
-//          Subsequent calls to getmntinfo() will modify the same object.
+//  HISTORY
+//      The getmntinfo() function first appeared in 4.4BSD.
 //
-//          The memory allocated by getmntinfo() cannot be free'd by the application.
+//  BUGS
+//      The getmntinfo() function writes the array of structures to an internal static object and returns a pointer to that object.
+//      Subsequent calls to getmntinfo() will modify the same object.
+//
+//      The memory allocated by getmntinfo() cannot be free'd by the application.
 */
 
 struct StatBlock {
@@ -381,12 +382,26 @@ struct StatBlock {
     uint32_t drives;
 };
 
+struct NetworkConnections { 
+    unsigned ndrives;
+    time_t timestamp;
+    struct StatBlock sb;
+    CRITICAL_SECTION lock;
+    HANDLE thread;
+};
+
 static void enum_volumes(struct StatBlock *sb);
 static void enum_connections(struct StatBlock *sb);
+
+static void NetworkEnum(unsigned ndrives);
+static void NetworkConnections(struct StatBlock *sb);
+static DWORD WINAPI NetworkEnumThread(LPVOID lpParam);
 
 static int sfcreate(struct StatBlock *sb, size_t count);
 static struct statfs *sfalloc(struct StatBlock *sb);
 static uint32_t drive_mask(int drive);
+
+static struct NetworkConnections nestat;        // enumeration status
 
 
 int
@@ -400,7 +415,7 @@ getfsstat(struct statfs *buf, long bufsize, int mode)
         struct StatBlock sb = { NULL };
 
         enum_volumes(&sb);
-        enum_connections(&sb);
+     // enum_connections(&sb);
         if (sb.result) {
             free((void *) sb.result);           // release temporary; only returning the count.
             mnts = (int)sb.count;
@@ -445,9 +460,11 @@ getmntinfo(struct statfs **psb, int flags)
         return -1;
     }
 
+    NetworkEnum(ndrives);                       // trigger background enumeration
+
     if (ndrives) {
         enum_volumes(&sb);                      // by volumes
-        enum_connections(&sb);                  // by connections
+        NetworkConnections(&sb);                // cached connections.
     }
 
     if (ndrives) {                              // by drives
@@ -631,6 +648,99 @@ enum_connections(struct StatBlock *sb)
 
     GlobalFree((HGLOBAL)lpnrLocal);
     (void) WNetCloseEnum(hEnum);
+}
+
+
+static void 
+NetworkEnum(unsigned ndrives)
+{
+    if (0 == nestat.thread) {
+#if defined(_MSC_VER)
+#pragma warning(suppress:28125)                 // InitializeCriticalSection() try/catch
+#endif
+        InitializeCriticalSection(&nestat.lock);
+        nestat.thread = INVALID_HANDLE_VALUE;
+    }
+
+    EnterCriticalSection(&nestat.lock);         // --- network enum lock
+
+    if (INVALID_HANDLE_VALUE == nestat.thread) {
+        if (ndrives != nestat.ndrives ||        // drive change or stale result (45 seconds)
+                time(NULL) >= (nestat.timestamp + 45)) {
+            DWORD dwThreadId = 0;
+            nestat.thread =
+                CreateThread(NULL, 0, NetworkEnumThread, (void *)(ndrives), 0, &dwThreadId);
+        }
+    }
+
+    LeaveCriticalSection(&nestat.lock);         // --- network enum release
+}
+
+
+static void
+NetworkConnections(struct StatBlock *sb)
+{   
+    const struct statfs *nsf, *nend;
+
+    EnterCriticalSection(&nestat.lock);         // --- network enum lock
+
+    nsf = nestat.sb.result;
+    nend = nsf + nestat.sb.count;
+
+    for (; nsf != nend; ++nsf) {
+        const wchar_t disk = nsf->f_mntonname[0];
+
+        if (disk && nsf->f_mntonname[1] == ':') {
+            const uint32_t mask = drive_mask(disk);
+
+            if ((mask & sb->drives) == 0) {     // import
+                struct statfs *sf;
+
+                if (NULL != (sf = sfalloc(sb))) {
+                    *sf = *nsf;                 // re-statfs() local connections?
+                    sb->drives |= mask;
+                    ++sb->count;
+                }
+            }
+        }
+    }
+
+    LeaveCriticalSection(&nestat.lock);         // --- network enum release
+}
+
+
+static DWORD WINAPI
+NetworkEnumThread(LPVOID lpParam)
+{
+    const unsigned ndrives = (unsigned)(lpParam);
+    struct StatBlock sb = { NULL };
+    struct statfs *previous = NULL;
+    HANDLE thread;
+
+    // enumerate network connections
+    if (sfcreate(&sb, ndrives) != -1) {
+        enum_connections(&sb);
+    }
+
+    // publish results
+    EnterCriticalSection(&nestat.lock);         // --- network enum lock
+
+    if (sb.alloced) {
+        nestat.ndrives = ndrives;
+        nestat.timestamp = time(NULL);
+        previous = nestat.sb.result;            // previous result
+        nestat.sb = sb;                         // update
+    }
+
+    thread = nestat.thread;
+    nestat.thread = INVALID_HANDLE_VALUE;       // worker complete
+
+    LeaveCriticalSection(&nestat.lock);         // --- network enum release
+
+    CloseHandle(thread);
+    free(previous);
+
+    return 0;
 }
 
 
