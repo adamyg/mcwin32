@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: config_windows.pl,v 1.7 2025/05/23 13:50:44 cvsuser Exp $
+# $Id: config_windows.pl,v 1.8 2025/06/03 19:01:15 cvsuser Exp $
 # Configure front-end for native windows targets.
 #
 
@@ -136,6 +136,10 @@ SugguestCoreUtils	# (app, path)
 	print "     winget install --id Git.Git -e --source winget\n";
 
 	print "\n";
+	print "  o Busybox for Windows:\n\n";
+	print "     busybox --install c:/busybox\n";
+
+	print "\n";
 }
 
 
@@ -147,6 +151,9 @@ ResolveCoreUtils	# ()
 		"c:/msys64/usr",			# MSYS installation(s)
 		"d:/msys64/usr",
 		"${PROGRAMFILES}/Git/usr",		# Git for Windows
+		"c:/Busybox",				# Busybox for Windows (https://frippery.org/busybox/)
+		"c:/Program Files/Busybox",
+		"c:/Program Files (x86)/Busybox",
 		"c:/GnuWin32",				# https://sourceforge.net/projects/getgnuwin32/files (legacy)
 		"c:/Program Files (x86)/GnuWin32",	# choco install gnuwin32-coreutils.install (legacy)
 	     ## "C:/Users/${USERNAME}/AppData/Local/GitHubDesktop/app-x.x.x/resources/app/git/usr/bin"

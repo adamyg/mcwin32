@@ -235,7 +235,7 @@ Minimal tools required are:
 
       * [gettext for windows](https://github.com/mlocati/gettext-iconv-windows)
 
-To support native Windows builds, the make tool ``gmake-42``, web tool ``wget`` and the shell support tool ``busybox`` are bundled within the source repository sub-directory ``win32/``.
+To support native Windows builds, the make tool ``gmake-42``, web tool ``wget`` and the shell support tool ``busybox`` are bundled within the source repository sub-directory ``support/``.
 
   - ``gmake`` was built from its original source available from [GNU binutils](https://www.gnu.org/software/binutils/).
 
