@@ -44,7 +44,6 @@
 #include <unistd.h>             /* getsid() */
 
 #include "lib/global.h"
-
 #include "lib/event.h"
 #include "lib/tty/tty.h"
 #include "lib/tty/key.h"        /* For init_key() */
@@ -269,8 +268,9 @@ main (int argc, char *argv[])
     int exit_code = EXIT_FAILURE;
     const char *tmpdir = NULL;
 
-#if defined(WIN32)
+#if defined(WIN32) //WIN32, config
     WIN32_HeapInit ();
+    argc = WIN32_Arguments (argc, &argv);
 #endif
 
     mc_global.run_from_parent_mc = !check_sid ();
@@ -283,30 +283,22 @@ main (int argc, char *argv[])
     (void) textdomain (PACKAGE);
 
 #if defined(WIN32) //WIN32, config
-    WIN32_Setup();
+    WIN32_Setup ();
 #endif
 
     /* do this before args parsing */
     str_init_strings (NULL);
-
-#if defined(WIN32)
-    { // tool-chain independent wide-char/utf8 conversion command-line parser.
-        int uargc = 0;
-        char **uargv;
-
-        uargv = GetUTF8Arguments(&uargc);
-        assert(uargv && uargc == argc);
-        argv = uargv;
-        argc = uargc;
-    }
-#endif //WIN32
 
     mc_setup_run_mode (argv);   /* are we mc? editor? viewer? etc... */
 
     if (!mc_args_parse (&argc, &argv, "mc", &mcerror))
     {
       startup_exit_falure:
+#if defined(WIN32) //WIN32, utf8
+        tty_eprintf (_("Failed to run:\n%s\n"), mcerror->message);
+#else
         fprintf (stderr, _("Failed to run:\n%s\n"), mcerror->message);
+#endif
         g_error_free (mcerror);
       startup_exit_ok:
         mc_shell_deinit ();

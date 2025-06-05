@@ -56,7 +56,7 @@ CtrlHandler(DWORD ctrlType)
 static BOOL
 Diagnostics(void)
 {
-    const char *mcshim_diagositics = getenv("MCSHIM_DIAGNOSTICS"); // optional runtime diagnostics
+    const char *mcshim_diagositics = getenv("LIBSHIM_DIAGNOSTICS"); // optional runtime diagnostics
     return (mcshim_diagositics && mcshim_diagositics[0] && mcshim_diagositics[0] != '0'); // non-zero
 }
 
@@ -86,7 +86,7 @@ ShimCreateChild(PROCESS_INFORMATION *ppi, const wchar_t *name, const wchar_t *pa
     if (NULL == t_cmdline ||
             ! CreateProcessW(path, t_cmdline, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, NULL, &si, ppi)) {
 
-        ShimErrorMessage(name, GetLastError());
+        ShimErrorMessageEx(name, path, GetLastError());
         return FALSE;
     }
     return TRUE;
@@ -95,6 +95,13 @@ ShimCreateChild(PROCESS_INFORMATION *ppi, const wchar_t *name, const wchar_t *pa
 
 void
 ShimErrorMessage(const wchar_t *name, DWORD wrc)
+{
+    ShimErrorMessageEx(name, NULL, wrc);
+}
+
+
+void
+ShimErrorMessageEx(const wchar_t *name, const wchar_t *path, DWORD wrc)
 {
     wchar_t *message = NULL;
 
@@ -108,11 +115,14 @@ ShimErrorMessage(const wchar_t *name, DWORD wrc)
 
         if (nl) *nl = 0;
         if (rt) *rt = 0;
+    }
 
-        wprintf(L"%s: unable to execute child : %s (0x%08lx)\n", name, message, wrc);
-
+    if (path) {
+        wprintf(L"%ls: unable to execute child <%ls>: %ls (0x%08lx)\n",
+            name, path, (message ? message : L""), wrc);
     } else {
-        wprintf(L"%s: unable to execute child : 0x%08lx.\n", name, wrc);
+        wprintf(L"%ls: unable to execute child: %ls (0x%08lx)\n",
+            name, (message ? message : L""), wrc);
     }
 
     LocalFree(message);
@@ -122,7 +132,14 @@ static wchar_t orgpath[1024] = {0};
 static wchar_t newpath[1024] = {0};
 
 /*
- *  ApplicationShim - application execution redirect shim.
+ *  ApplicationShim -
+ *      application execution redirect shim.
+ *
+ *  ApplicationShim0 -
+ *      application shim replacing the first command-line argument with 'name'.
+ *
+ *  ApplicationShimCmd -
+ *      shim with an explicit command-line.
  *
  *  Parameters:
  *      name - Application name.
@@ -139,10 +156,62 @@ ApplicationShim(const wchar_t *name, const wchar_t *alias)
 
 
 void
+ApplicationShim0(const wchar_t *name, const wchar_t *alias)
+{
+    const BOOL diagositics = Diagnostics(); // optional runtime diagnostics
+    const wchar_t *cmdline = GetCommandLineW();
+    wchar_t *ncmdline = NULL, *arg1 = NULL;
+    size_t ocmdlen = 0, ncmdlen = 0;
+
+    if (diagositics) {
+        wprintf(L"ARG:  %ls\n", cmdline);
+    }
+
+    if (cmdline[0] == '"' || cmdline[0] == '\'') { // quoted arg0
+        arg1 = wcschr(cmdline + 1, cmdline[0]);
+        if (NULL == arg1) {
+            wprintf(L"%ls: application name invalid <%ls>.\n", name, cmdline);
+            return;
+        }
+        arg1++; // consume closing quote
+
+    } else {
+        arg1 = wcspbrk(cmdline, L" \t"); // first whitespace
+    }
+
+    if (arg1) {
+        while (*arg1 == ' ' || *arg1 == '\t') {
+            ++arg1; // consume whitespace
+        }
+    }
+
+    ocmdlen = (arg1 ? wcslen(arg1) + 1 : 0);
+    ncmdlen = wcslen(name) + ocmdlen + 1;
+
+    if (NULL == (ncmdline = (wchar_t *) calloc(ncmdlen, sizeof(wchar_t)))) {
+        wprintf(L"%ls: memory allocation error.\n", name);
+        return;
+    }
+
+    wcscpy_s(ncmdline, ncmdlen, name);
+    if (arg1) {
+        wcscat_s(ncmdline, ncmdlen, L" ");
+        wcscat_s(ncmdline, ncmdlen, arg1);
+    }
+
+    if (diagositics) {
+        wprintf(L"NARG: %ls\n", ncmdline);
+    }
+
+    ApplicationShimCmd(name, alias, ncmdline);
+}
+
+
+void
 ApplicationShimCmd(const wchar_t *name, const wchar_t *alias, const wchar_t *cmdline)
 {
     const BOOL diagositics = Diagnostics(); // optional runtime diagnostics
-    const unsigned aliassz = wcslen(alias), // alias length, in characters.
+    const DWORD aliassz = (DWORD) wcslen(alias), // alias length, in characters.
         pathsz = GetModuleFileNameW(NULL, orgpath, _countof(orgpath)); // fully qualified path.
     wchar_t *base;
 
@@ -155,32 +224,35 @@ ApplicationShimCmd(const wchar_t *name, const wchar_t *alias, const wchar_t *cmd
 
     // build path
     if (pathsz >= _countof(orgpath)) {
-        wprintf(L"%s: command line too long.\n", name);
+        wprintf(L"%ls: command line too long.\n", name);
         return;
     }
 
     if (diagositics) {
-        wprintf(L"ORG: %s\n", orgpath);
-        wprintf(L"CMD: %s\n", cmdline);
+        wprintf(L"ORG:  %ls\n", orgpath);
+        wprintf(L"CMD:  %ls\n", cmdline);
     }
 
     wmemcpy(newpath, orgpath, pathsz);
     if (NULL == (base = Basename(newpath)) || !*base) {
-        wprintf(L"%s: command line invalid.\n", name);
+        wprintf(L"%ls: command line invalid.\n", name);
         return;
 
     } else if ((base + aliassz) >= (newpath + _countof(newpath))) {
-        wprintf(L"%s: command line too long.\n", name);
+        wprintf(L"%ls: command line too long.\n", name);
         return;
     }
-    wmemcpy(base, alias, aliassz + 1 /*NUL*/);
+    wmemcpy(base, alias, (size_t)aliassz + 1 /*NUL*/);
 
-        //wmemcpy(newpath, L".\\testapp.exe", 13 + 1);
     if (diagositics) {
-        wprintf(L"NEW: %s\n", newpath);
+        wprintf(L"NEW:  %ls\n", newpath);
     }
 
     // execute child
+#if defined(_MSC_VER)
+#pragma warning(disable:6387) // handle maybe 0
+#endif
+
     job = CreateJobObject(NULL, NULL);
     joli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK;
     SetInformationJobObject(job, JobObjectExtendedLimitInformation, &joli, sizeof(joli));
@@ -190,9 +262,6 @@ ApplicationShimCmd(const wchar_t *name, const wchar_t *alias, const wchar_t *cmd
     }
 
     // redirect signals and monitor termination
-#if defined(_MSC_VER)
-#pragma warning(disable:6387) // handle maybe 0
-#endif
     SetConsoleCtrlHandler(CtrlHandler, TRUE);
     AssignProcessToJobObject(job, pi.hProcess);
     ResumeThread(pi.hThread);

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.41 2025/04/30 19:29:57 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.42 2025/05/23 11:21:14 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -330,6 +330,22 @@ w32_osfhandle(int fildes)
             handle = (HANDLE) _get_osfhandle(fildes);
     }
     return handle;
+}
+
+
+int
+w32_osfdup(HANDLE osfhandle, int flags)
+{
+    if (osfhandle && osfhandle != INVALID_HANDLE_VALUE) {
+        const HANDLE self = GetCurrentProcess();
+        HANDLE dup = INVALID_HANDLE_VALUE;
+
+        if (DuplicateHandle(self, osfhandle, self, &dup, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
+            return _open_osfhandle ((intptr_t) dup, flags);
+        }
+    }
+    errno = EINVAL;
+    return -1;
 }
 
 
@@ -2676,7 +2692,7 @@ ReadlinkW(const wchar_t *path, const char **suffixes, wchar_t *buf, size_t maxle
         /* reparse point - symlink/mount-point */
         } else if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
             if ((ret = w32_reparse_readW(path, buf, maxlen)) >= 0) {
-                ret = (int) wcslen(buf);
+                ret = (int)wcslen(buf);
             } else {
                 ret = -EIO;
             }

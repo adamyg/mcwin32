@@ -99,6 +99,8 @@ const char *                mc_EXTHELPERSDIR(void);
 #define EXTHELPERSDIR       mc_EXTHELPERSDIR()  /* ???, 4.8.7 */
 
 extern void                 WIN32_Setup(void);
+extern int                  WIN32_Arguments(int argc, char ***argv);
+
 extern void                 WIN32_HeapInit(void);
 extern int                  WIN32_HeapCheck(void);
 
@@ -124,8 +126,12 @@ extern char *               strtok_r(char *s, const char *delim, char **lasts);
 extern char *               strcasestr(const char *s, const char *find);
 #endif
 
-extern char **              GetUTF8Arguments(int *pargc);
+extern void                 tty_oprintf(const char *fmt, ...);
+extern void                 tty_oputs(const char *str);
+extern void                 tty_eprintf(const char *fmt, ...);
+extern void                 tty_eputs(const char *str);
 
+extern int                  tty_utf8_mode(int state);
 extern void                 tty_set_title(const char *title);
 
 /*

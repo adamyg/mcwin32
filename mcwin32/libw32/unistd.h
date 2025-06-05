@@ -1,7 +1,7 @@
 #ifndef LIBW32_UNISTD_H_INCLUDED
 #define LIBW32_UNISTD_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.49 2025/03/30 17:16:02 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_unistd_h,"$Id: unistd.h,v 1.50 2025/05/26 18:41:54 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -469,7 +469,7 @@ LIBW32_API int          WIFEXITED (int status);
 LIBW32_API int          WIFSIGNALED (int status);
 LIBW32_API int          WTERMSIG (int status);
 LIBW32_API int          WCOREDUMP (int status);
-LIBW32_API int          WIFSTOPPED(int status);
+LIBW32_API int          WIFSTOPPED (int status);
 #endif
 
 /* <stdlib.h> */

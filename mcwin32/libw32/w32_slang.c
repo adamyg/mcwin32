@@ -244,7 +244,7 @@ SLtt_initialize(const char *term)
 void
 SLtt_save(void)
 {
-    vio_save();
+    vio_save_lines(1);
 }
 
 
