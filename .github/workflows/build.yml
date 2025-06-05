@@ -131,7 +131,7 @@ jobs:
 
     - name: Release artifacts
       if: startsWith(matrix.config.name, 'Windows')
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: ./mcwin32/releases/mcwin32-build*-setup.exe
         draft: true
