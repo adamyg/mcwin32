@@ -287,7 +287,7 @@ DisplayVolume(const wchar_t *VolumeName)
 //  Enumerate network connections.
 //
 
-static void  NetworkDisplayStruct(unsigned i, LPNETRESOURCEW lpnrLocal);
+static void NetworkDisplayStruct(unsigned i, LPNETRESOURCEW lpnrLocal);
 
 static BOOL WINAPI
 EnumNetworkFunc(LPNETRESOURCEW lpnr)
@@ -426,10 +426,10 @@ NetworkDisplayStruct(unsigned i, LPNETRESOURCEW lpnrLocal)
                 OutputA("attached ");
         OutputA("\n");
 
-        OutputW(L"    LocalName:   %s\n", lpnrLocal->lpLocalName  ? lpnrLocal->lpLocalName  : L"");
-        OutputW(L"    RemoteName:  %s\n", lpnrLocal->lpRemoteName ? lpnrLocal->lpRemoteName : L"");
-        OutputW(L"    Comment:     %s\n", lpnrLocal->lpComment    ? lpnrLocal->lpComment    : L"");
-        OutputW(L"    Provider:    %s\n", lpnrLocal->lpProvider   ? lpnrLocal->lpProvider   : L"");
+        OutputW(L"    LocalName:   %ls\n", lpnrLocal->lpLocalName  ? lpnrLocal->lpLocalName  : L"");
+        OutputW(L"    RemoteName:  %ls\n", lpnrLocal->lpRemoteName ? lpnrLocal->lpRemoteName : L"");
+        OutputW(L"    Comment:     %ls\n", lpnrLocal->lpComment    ? lpnrLocal->lpComment    : L"");
+        OutputW(L"    Provider:    %ls\n", lpnrLocal->lpProvider   ? lpnrLocal->lpProvider   : L"");
 
         if (lpnrLocal->dwType == RESOURCETYPE_DISK && lpnrLocal->lpLocalName) {
                 if (lpnrLocal->lpLocalName[0] && lpnrLocal->lpLocalName[1] == ':') {
@@ -479,7 +479,7 @@ StatDrive(const wchar_t *drive)
         }
 
         Tally(0, NULL);
-        OutputW(L"  %s\t", drive);
+        OutputW(L"  %ls\t", drive);
 
         if (ovolumeinfo || ostatfs) {
                 const ULONGLONG start = GetTickCount64();
@@ -491,8 +491,8 @@ StatDrive(const wchar_t *drive)
                 }
 
                 Tally(start, "GetVolumeInformation");
-                OutputW(L" <%s>%*s | fsflags:0x%08x, maxln:%4u",
-                    fsName, _countof(fsName) - wcslen(fsName), "", fsFlags, maxLength);
+                OutputW(L" <%ls>%*ls | fsflags:0x%08x, maxln:%4u",
+                    fsName, _countof(fsName) - wcslen(fsName), L"", fsFlags, maxLength);
         }
 
         if (ostatfs && overbose) {
@@ -510,7 +510,7 @@ StatDrive(const wchar_t *drive)
                 }
 
                 Tally(start, "QueryDosDevice");
-                OutputW(L", [%-16.16s]", ret);
+                OutputW(L", [%-16.16ls]", ret);
         }
 
         if (odrivetype || ostatfs) {
