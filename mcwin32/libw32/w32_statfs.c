@@ -376,18 +376,19 @@ statvfs(const char *path, struct statvfs *vfs)
 */
 
 struct StatBlock {
-    struct statfs *result;
-    size_t count;
-    size_t alloced;
+    uint32_t references;
+    uint32_t count;
+    uint32_t alloced;
     uint32_t drives;
+    struct statfs result[1];
 };
 
 struct NetworkConnections { 
     unsigned ndrives;
     time_t timestamp;
-    struct StatBlock sb;
     CRITICAL_SECTION lock;
     HANDLE thread;
+    struct StatBlock *sb;
 };
 
 static void enum_volumes(struct StatBlock *sb);
@@ -397,11 +398,15 @@ static void NetworkEnum(unsigned ndrives);
 static void NetworkConnections(struct StatBlock *sb);
 static DWORD WINAPI NetworkEnumThread(LPVOID lpParam);
 
-static int sfcreate(struct StatBlock *sb, size_t count);
-static struct statfs *sfalloc(struct StatBlock *sb);
+static struct StatBlock *sbcreate(size_t count);
+static struct statfs *sballoc(struct StatBlock *sb);
+static const struct statfs *sbacquire(struct StatBlock *sb);
+static void sbrelease(struct StatBlock *sb);
+
 static uint32_t drive_mask(int drive);
 
-static struct NetworkConnections nestat;        // enumeration status
+static struct StatBlock *x_getmntinfo;          // global instance
+static struct NetworkConnections x_nestat;      // enumeration status
 
 
 int
@@ -411,14 +416,40 @@ getfsstat(struct statfs *buf, long bufsize, int mode)
 
     if (MNT_WAIT != mode && MNT_NOWAIT != mode) {
         errno = EINVAL;
-    } else {
-        struct StatBlock sb = { NULL };
 
-        enum_volumes(&sb);
-     // enum_connections(&sb);
-        if (sb.result) {
-            free((void *) sb.result);           // release temporary; only returning the count.
-            mnts = (int)sb.count;
+    } else {
+        struct StatBlock *sb = sbcreate(26);
+
+        if (sb) {
+            enum_volumes(sb);
+            if (mode == MNT_NOWAIT) {
+                NetworkConnections(sb);         // cached
+            } else {
+                enum_connections(sb);
+            }
+
+            if (sb->count) {
+                uint32_t count = sb->count;
+
+                if (buf) {             
+                    // The buffer is filled with an array of statfs structures,
+                    // return one for each mounted file system up to the byte
+                    // count specified by bufsize.
+                    mnts = 0;
+                    while (count && bufsize >= sizeof(struct statfs)) {
+                        memcpy(buf + mnts, sb->result + mnts, sizeof(struct statfs));
+                        bufsize -= sizeof(struct statfs);
+                        --count;
+                        ++mnts;
+                    }
+                    
+                } else {
+                    // If buf is NULL, returns the mounted count.
+                    mnts = (int)count;
+                }
+            }
+
+            sbrelease(sb);
         }
     }
     return mnts;
@@ -428,12 +459,9 @@ getfsstat(struct statfs *buf, long bufsize, int mode)
 int
 getmntinfo(struct statfs **psb, int flags)
 {
-    static struct statfs *x_getmntinfo = NULL;  // global instance
-
-    struct StatBlock sb = { NULL };
     wchar_t szDrivesAvail[32 * 4], *cursor;
+    struct StatBlock *sb;
     size_t ndrives = 0;
-    int cnt = -1;
 
     if (! psb) {                                // invalid
         errno = EINVAL;
@@ -447,7 +475,7 @@ getmntinfo(struct statfs **psb, int flags)
     *psb = NULL;
 
     if (x_getmntinfo) {                         // release previous result
-        free((void *) x_getmntinfo);
+        sbrelease(x_getmntinfo);
         x_getmntinfo = NULL;
     }
 
@@ -456,15 +484,15 @@ getmntinfo(struct statfs **psb, int flags)
         ++ndrives;                              // A:\<nul>B:\<nul>C:\<nul>...<nul>
     }
 
-    if (sfcreate(&sb, ndrives) == -1) {
+    NetworkEnum(ndrives);                       // trigger background enumeration
+
+    if (NULL == (sb = sbcreate(ndrives))) {
         return -1;
     }
 
-    NetworkEnum(ndrives);                       // trigger background enumeration
-
     if (ndrives) {
-        enum_volumes(&sb);                      // by volumes
-        NetworkConnections(&sb);                // cached connections.
+        enum_volumes(sb);                       // by volumes
+        NetworkConnections(sb);                 // cached connections.
     }
 
     if (ndrives) {                              // by drives
@@ -475,17 +503,10 @@ getmntinfo(struct statfs **psb, int flags)
                 continue;                       // skip floppies/removable
             }
 
-            if ((mask & sb.drives) == 0) {      // not enumerated
+            if ((mask & sb->drives) == 0) {     // not enumerated
                 struct statfs *sf;
 
-                if (NULL != (sf = sfalloc(&sb))) {
-                /*
-                 *  if (0 == statfsW(cursor, sf)) {
-                 *      ++sb.count;
-                 *      continue;
-                 *  }
-                 */
-
+                if (NULL != (sf = sballoc(sb))) {
                     (void) memset(sf, 0, sizeof(*sf));
                     sf->f_type = MOUNT_PC;
                     sf->f_mntonname[0] = (char) cursor[0];
@@ -494,20 +515,20 @@ getmntinfo(struct statfs **psb, int flags)
                     strncpy(sf->f_fstypename, "unknown", MFSNAMELEN);
                     strncpy(sf->f_mntfromname, "Networked", MNAMELEN);
                     sf->f_bsize = 1024;
-                    ++sb.count;
+                    ++sb->count;
                 }
             }
         }
     }
 
-    if ((cnt = (int)sb.count) != 0) {
-        x_getmntinfo = sb.result;
-        *psb = sb.result;
-    } else {
-        free((void *) sb.result);
+    if (sb->count) {
+        x_getmntinfo = sb;
+        *psb = sb->result;
+        return (int) sb->count;
     }
 
-    return cnt;
+    sbrelease(sb);
+    return 0;
 }
 
 
@@ -560,7 +581,7 @@ enum_volumes(struct StatBlock *sb)
                         const unsigned len = (unsigned)wcslen(cursor);
                         struct statfs *sf;
 
-                        if (NULL != (sf = sfalloc(sb))) {
+                        if (NULL != (sf = sballoc(sb))) {
                             if (0 == statfsW(cursor, sf)) {
                                 if (sf->f_mntonname[1] == ':') {
                                     sb->drives |= drive_mask(sf->f_mntonname[0]);
@@ -629,7 +650,7 @@ enum_connections(struct StatBlock *sb)
                             struct statfs *sf;
 
                             drive[0] = disk;
-                            if (NULL != (sf = sfalloc(sb))) {
+                            if (NULL != (sf = sballoc(sb))) {
                                 if (0 == statfsW(drive, sf)) {
                                     sb->drives |= mask;
                                     ++sb->count;
@@ -654,58 +675,66 @@ enum_connections(struct StatBlock *sb)
 static void 
 NetworkEnum(unsigned ndrives)
 {
-    if (0 == nestat.thread) {
+    if (0 == x_nestat.thread) {
 #if defined(_MSC_VER)
 #pragma warning(suppress:28125)                 // InitializeCriticalSection() try/catch
 #endif
-        InitializeCriticalSection(&nestat.lock);
-        nestat.thread = INVALID_HANDLE_VALUE;
+        InitializeCriticalSection(&x_nestat.lock);
+        x_nestat.thread = INVALID_HANDLE_VALUE;
     }
 
-    EnterCriticalSection(&nestat.lock);         // --- network enum lock
+    EnterCriticalSection(&x_nestat.lock);       // --- network enum lock
 
-    if (INVALID_HANDLE_VALUE == nestat.thread) {
-        if (ndrives != nestat.ndrives ||        // drive change or stale result (45 seconds)
-                time(NULL) >= (nestat.timestamp + 45)) {
+    if (INVALID_HANDLE_VALUE == x_nestat.thread) {
+        if (ndrives != x_nestat.ndrives ||      // drive change or stale result (45 seconds)
+                time(NULL) >= (x_nestat.timestamp + 45)) {
             DWORD dwThreadId = 0;
-            nestat.thread =
+            x_nestat.thread =
                 CreateThread(NULL, 0, NetworkEnumThread, (void *)(ndrives), 0, &dwThreadId);
         }
     }
 
-    LeaveCriticalSection(&nestat.lock);         // --- network enum release
+    LeaveCriticalSection(&x_nestat.lock);       // --- network enum release
 }
 
 
 static void
 NetworkConnections(struct StatBlock *sb)
 {   
+    struct StatBlock *active;
     const struct statfs *nsf, *nend;
 
-    EnterCriticalSection(&nestat.lock);         // --- network enum lock
+    EnterCriticalSection(&x_nestat.lock);       // --- network enum lock
 
-    nsf = nestat.sb.result;
-    nend = nsf + nestat.sb.count;
+    active = x_nestat.sb;
+    nsf = sbacquire(active);
 
-    for (; nsf != nend; ++nsf) {
-        const wchar_t disk = nsf->f_mntonname[0];
+    LeaveCriticalSection(&x_nestat.lock);       // --- network enum release
 
-        if (disk && nsf->f_mntonname[1] == ':') {
-            const uint32_t mask = drive_mask(disk);
+    if (nsf)
+    {
+        nend = nsf + active->count;
 
-            if ((mask & sb->drives) == 0) {     // import
-                struct statfs *sf;
+        for (; nsf != nend; ++nsf) {
+            const wchar_t disk = nsf->f_mntonname[0];
 
-                if (NULL != (sf = sfalloc(sb))) {
-                    *sf = *nsf;                 // re-statfs() local connections?
-                    sb->drives |= mask;
-                    ++sb->count;
+            if (disk && nsf->f_mntonname[1] == ':') {
+                const uint32_t mask = drive_mask(disk);
+
+                if ((mask & sb->drives) == 0) { // import
+                    struct statfs *sf;
+
+                    if (NULL != (sf = sballoc(sb))) {
+                        *sf = *nsf;             // re-statfs() local connections?
+                        sb->drives |= mask;
+                        ++sb->count;
+                    }
                 }
             }
         }
-    }
 
-    LeaveCriticalSection(&nestat.lock);         // --- network enum release
+        sbrelease(active);
+    }
 }
 
 
@@ -713,63 +742,94 @@ static DWORD WINAPI
 NetworkEnumThread(LPVOID lpParam)
 {
     const unsigned ndrives = (unsigned)(lpParam);
-    struct StatBlock sb = { NULL };
-    struct statfs *previous = NULL;
+    struct StatBlock *previous = NULL, *sb;
+    const time_t then = time(NULL);
     HANDLE thread;
 
     // enumerate network connections
-    if (sfcreate(&sb, ndrives) != -1) {
-        enum_connections(&sb);
+    if (NULL != (sb = sbcreate(ndrives))) {
+        enum_connections(sb);
     }
 
     // publish results
-    EnterCriticalSection(&nestat.lock);         // --- network enum lock
+    EnterCriticalSection(&x_nestat.lock);       // --- network enum lock
 
-    if (sb.alloced) {
-        nestat.ndrives = ndrives;
-        nestat.timestamp = time(NULL);
-        previous = nestat.sb.result;            // previous result
-        nestat.sb = sb;                         // update
-    }
+    x_nestat.ndrives = ndrives;
+    x_nestat.timestamp = then;
 
-    thread = nestat.thread;
-    nestat.thread = INVALID_HANDLE_VALUE;       // worker complete
+    previous = x_nestat.sb;                     // previous result
+    x_nestat.sb = sb;                           // update
 
-    LeaveCriticalSection(&nestat.lock);         // --- network enum release
+    thread = x_nestat.thread;
+    x_nestat.thread = INVALID_HANDLE_VALUE;     // worker complete
+
+    LeaveCriticalSection(&x_nestat.lock);       // --- network enum release
 
     CloseHandle(thread);
-    free(previous);
+    sbrelease(previous);
 
     return 0;
 }
 
 
-static int
-sfcreate(struct StatBlock *sb, size_t count)
-{
-    (void) memset(sb, 0, sizeof(*sb));
-    if (0 == count ||
-            NULL != (sb->result = (struct statfs*) calloc(count, sizeof(struct statfs)))) {
-        sb->alloced = count;
-        return 0;
+static struct StatBlock *
+sbcreate(size_t count)
+{ 
+    if (count) {
+        const size_t sbbytes = (sizeof(struct statfs) * count);
+        struct StatBlock *sb;
+
+        if (NULL != (sb =                       // preliminary block
+                (struct StatBlock *) malloc(sizeof(struct StatBlock) + sbbytes))) {
+            memset(sb, 0, sizeof(*sb));
+            sb->references = 1;
+            sb->alloced = count;
+            return sb;
+        }
     }
-    return -1;
+    return NULL;
 }
 
 
 static struct statfs *
-sfalloc(struct StatBlock *sb)
+sballoc(struct StatBlock *sb)
 {
+    assert(sb->references == 1);                // single-ownership
+
     if (sb->count >= sb->alloced) {
-        struct statfs *result =
-            realloc(sb->result, (sb->alloced + 16) * sizeof(struct statfs));
-        if (NULL == result) {
+        const size_t sbbytes = (sizeof(struct statfs) * (sb->alloced + 8));
+        struct StatBlock *sbrealloc;
+
+        if (NULL == (sbrealloc =
+                (struct StatBlock *) realloc(sb, sizeof(struct StatBlock) + sbbytes))) {
             return NULL;                        // no-memory or overflow
         }
-        sb->result = result;
-        sb->alloced += 16;
+
+        sbrealloc->alloced += 16;
     }
     return (sb->result + sb->count);
+}
+
+
+static const struct statfs *
+sbacquire(struct StatBlock *sb)
+{
+    if (sb) {
+        InterlockedIncrement(&sb->references);
+        return sb->result;
+    }
+    return NULL;
+}
+
+
+static void
+sbrelease(struct StatBlock *sb)
+{
+    if (sb) {
+        if (InterlockedDecrement(&sb->references) == 0) {
+            free((void *)sb);
+        }
+    }
 }
 
 

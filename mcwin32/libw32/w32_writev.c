@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.9 2025/03/30 17:16:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.10 2025/06/08 05:24:10 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -121,7 +121,6 @@ writev(int fildes, const struct iovec *iov, int iovcnt)
                 }
                 break;
             }
-            ++i;
         }
 
     } else {
