@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_UIO_H_INCLUDED
 #define LIBW32_SYS_UIO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_uio_h,"$Id: uio.h,v 1.11 2025/03/08 16:40:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_uio_h,"$Id: uio.h,v 1.12 2025/06/09 05:04:05 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -48,7 +48,7 @@ __BEGIN_DECLS
 
 struct iovec {
     void *     iov_base;
-    int        iov_len;
+    size_t     iov_len;
 };
 
 LIBW32_API int /*ssize_t*/  readv(int, const struct iovec *, int);
