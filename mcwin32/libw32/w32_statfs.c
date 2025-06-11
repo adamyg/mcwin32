@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.27 2025/06/09 05:18:38 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.28 2025/06/11 17:30:58 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -383,11 +383,13 @@ struct StatBlock {
     struct statfs result[1];
 };
 
-struct NetworkConnections { 
+enum { NCUninit = 0, NCIdle, NCRunning };
+
+struct NetworkConnections {
+    LONG status;
     unsigned ndrives;
     time_t timestamp;
     CRITICAL_SECTION lock;
-    HANDLE thread;
     struct StatBlock *sb;
 };
 
@@ -443,7 +445,7 @@ getfsstat(struct statfs *buf, long bufsize, int mode)
                 if (bufsize >= (long)sizeof(struct statfs)) { // zero trailing element
                     memset(buf + mnts, 0, sizeof(struct statfs));
                 }
-                    
+
             } else {
                 // If buf is NULL, returns the mounted count.
                 mnts = (int)count;
@@ -477,7 +479,7 @@ getmntinfo(struct statfs **psb, int flags)
 
     sbrelease(x_getmntinfo);                    // release previous result
     x_getmntinfo = sb;
-    
+
     if (sb->count) {
         *psb = sb->result;
     }
@@ -685,35 +687,53 @@ enum_connections(struct StatBlock *sb)
 }
 
 
-static void 
+static void
 NetworkEnum(unsigned ndrives)
 {
-    if (0 == x_nestat.thread) {
+    BOOL trigger = FALSE;
+    const LONG status =
+        InterlockedCompareExchange(&x_nestat.status, NCIdle, NCUninit);
+
+    // verify cache age/state
+    if (status == NCUninit) {
 #if defined(_MSC_VER)
 #pragma warning(suppress:28125)                 // InitializeCriticalSection() try/catch
 #endif
         InitializeCriticalSection(&x_nestat.lock);
-        x_nestat.thread = INVALID_HANDLE_VALUE;
+        trigger = TRUE;
+
+    } else if (status == NCIdle) {
+        const time_t now = time(NULL);
+
+        EnterCriticalSection(&x_nestat.lock);   // --- network enum lock
+
+        if (ndrives != x_nestat.ndrives ||      // drive change or stale result (60 seconds)
+                now >= (x_nestat.timestamp + 60)) {
+            trigger = TRUE;
+        }
+
+        LeaveCriticalSection(&x_nestat.lock);   // --- network enum release
     }
 
-    EnterCriticalSection(&x_nestat.lock);       // --- network enum lock
-
-    if (INVALID_HANDLE_VALUE == x_nestat.thread) {
-        if (ndrives != x_nestat.ndrives ||      // drive change or stale result (45 seconds)
-                time(NULL) >= (x_nestat.timestamp + 45)) {
+    // enumeration worker
+    if (trigger) {
+        if (InterlockedCompareExchange(&x_nestat.status, NCRunning, NCIdle) == NCIdle) {
             DWORD dwThreadId = 0;
-            x_nestat.thread =
-                CreateThread(NULL, 0, NetworkEnumThread, (void *)(ndrives), 0, &dwThreadId);
+            HANDLE thread =
+                CreateThread(NULL, 0, NetworkEnumThread, (void*)(ndrives), 0, &dwThreadId);
+            if (thread != NULL) {
+                CloseHandle(thread); // detach
+            } else { // thread failure
+                InterlockedExchange(&x_nestat.status, NCIdle);
+            }
         }
     }
-
-    LeaveCriticalSection(&x_nestat.lock);       // --- network enum release
 }
 
 
 static void
 NetworkCached(struct StatBlock *sb)
-{   
+{
     struct StatBlock *active;
 
     EnterCriticalSection(&x_nestat.lock);       // --- network enum lock
@@ -758,7 +778,6 @@ NetworkEnumThread(LPVOID lpParam)
     const unsigned ndrives = (unsigned)(lpParam);
     struct StatBlock *previous = NULL, *sb;
     const time_t then = time(NULL);
-    HANDLE thread;
 
     // enumerate network connections
     if (NULL != (sb = sbcreate(ndrives))) {
@@ -773,13 +792,11 @@ NetworkEnumThread(LPVOID lpParam)
     previous = x_nestat.sb;                     // previous result
     x_nestat.sb = sb;                           // update
 
-    thread = x_nestat.thread;
-    x_nestat.thread = INVALID_HANDLE_VALUE;     // worker complete
-
     LeaveCriticalSection(&x_nestat.lock);       // --- network enum release
 
+    // cleanup
+    InterlockedExchange(&x_nestat.status, NCIdle);
     sbrelease(previous);
-    CloseHandle(thread);
 
     return 0;
 }
@@ -787,7 +804,7 @@ NetworkEnumThread(LPVOID lpParam)
 
 static struct StatBlock *
 sbcreate(size_t count)
-{ 
+{
     if (count) {
         const size_t sbbytes = (sizeof(struct statfs) * count);
         struct StatBlock *sb;
