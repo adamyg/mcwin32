@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_CDEFS_H_INCLUDED
 #define LIBW32_SYS_CDEFS_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_cdefs_h,"$Id: cdefs.h,v 1.14 2025/03/08 16:40:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_cdefs_h,"$Id: cdefs.h,v 1.15 2025/06/11 17:33:57 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*-
@@ -64,6 +64,7 @@ __CPRAGMA_ONCE
         #else
             #define LIBW32_API __declspec(dllexport)
         #endif
+        #define LIBW32_VAR extern
     #else
         #ifdef __GNUC__
             #define LIBW32_API __attribute__((dllimport)) extern
@@ -72,6 +73,7 @@ __CPRAGMA_ONCE
         #else
             #define LIBW32_API __declspec(dllimport)
         #endif
+        #define LIBW32_VAR LIBW32_API
     #endif
 
 #else   /*static*/
@@ -88,8 +90,6 @@ __CPRAGMA_ONCE
 #ifndef LIBW32_API
 #define LIBW32_API
 #define LIBW32_VAR extern
-#else
-#define LIBW32_VAR LIBW32_API
 #endif
 
 #endif //!LIBW32_API

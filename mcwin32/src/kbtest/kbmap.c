@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(kbmap_c,"$Id: kbmap.c,v 1.10 2025/01/29 13:33:04 cvsuser Exp $")
+__CIDENT_RCSID(kbmap_c,"$Id: kbmap.c,v 1.11 2025/06/11 17:33:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -48,13 +48,13 @@ __CIDENT_RCSID(kbmap_c,"$Id: kbmap.c,v 1.10 2025/01/29 13:33:04 cvsuser Exp $")
 struct xkb {
 #define VK_VOID                         0xffff
 #define __VKVALUE(__v)                  __v
-#define VK(__v)                         { __VKVALUE(VK_##__v), VK_VOID, 0,   #__v }
-#define VKN(__v,__n)                    { __VKVALUE(VK_##__v), VK_VOID, 0,   #__v, __n }
-#define VKALT(__v,__a)                  { __VKVALUE(VK_##__v), VK_VOID, __a, #__v }
-#define VKALTN(__v,__a,__n)             { __VKVALUE(VK_##__v), VK_VOID, __a, #__v, __n }
-#define VKSCAN(__v,__s)                 { __VKVALUE(VK_##__v), __s,     0,   #__v }
-#define VKSCANALT(__v,__s,__a)          { __VKVALUE(VK_##__v), __s,     __a, #__v }
-#define VKSCANALTN(__v,__s,__a,__n)     { __VKVALUE(VK_##__v), __s,     __a, #__v, __n }
+#define VK(__v)                         { __VKVALUE(VK_##__v), VK_VOID, 0,   #__v, NULL }
+#define VKN(__v,__n)                    { __VKVALUE(VK_##__v), VK_VOID, 0,   #__v, __n  }
+#define VKALT(__v,__a)                  { __VKVALUE(VK_##__v), VK_VOID, __a, #__v, NULL }
+#define VKALTN(__v,__a,__n)             { __VKVALUE(VK_##__v), VK_VOID, __a, #__v, __n  }
+#define VKSCAN(__v,__s)                 { __VKVALUE(VK_##__v), __s,     0,   #__v, NULL }
+#define VKSCANALT(__v,__s,__a)          { __VKVALUE(VK_##__v), __s,     __a, #__v, NULL }
+#define VKSCANALTN(__v,__s,__a,__n)     { __VKVALUE(VK_##__v), __s,     __a, #__v, __n  }
 
 	WORD wVirtualKeyCode;                                       // virtual key code.
 	WORD wVirtualScanCode;                                      // optional scan-code.

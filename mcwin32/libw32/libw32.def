@@ -7,6 +7,7 @@ EXPORTS
 	SLsmg_Display_Eight_Bit DATA
 	SLtt_Screen_Rows DATA
 	SLtt_Screen_Cols DATA
+	SLtt_Ignore_Beep DATA
 	SLtt_Use_Ansi_Colors DATA
 	SLtt_Try_Termcap DATA
 ; socket interface

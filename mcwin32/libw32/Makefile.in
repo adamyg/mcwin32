@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.31 2025/04/01 16:15:14 cvsuser Exp $
+# $Id: Makefile.in,v 1.32 2025/06/11 17:33:56 cvsuser Exp $
 # libwin32 makefile.
 #
 #
@@ -78,6 +78,9 @@ D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libw32
 XFLAGS=
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CWARN+=		-Wno-deprecated-declarations -Wno-unused-function -Wno-pragma-pack
+endif 
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
 CXXFLAGS=	@CXXFLAGS@
@@ -250,7 +253,10 @@ $(W32LIB):		$(D_OBJ)/.created $(LIBOBJS)
 
 INSTALLED+=	$(D_BIN)/libw32.$(VERSION).dll
 $(W32DLL):		CEXTRA += -DLIBW32_DYNAMIC -DLIBW32_LIBRARY
-$(W32DLL):		DLLDEF = -export-symbols libw32.def
+$(W32DLL):		DLLDEF  = -export-symbols libw32.def
+ifneq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
+$(W32DLL):		DLLDEF += -export-symbols libw32_getopt.def
+endif
 $(W32DLL):		$(DLLOBJS)
 		$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ -version-number $(VERSIONSPEC) \
 			-rpath $(D_LIB) -bindir $(D_BIN) $(DLLDEF) $^ $(LDLIBS)

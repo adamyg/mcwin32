@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.4 2025/04/06 20:25:34 cvsuser Exp $
+# $Id: Makefile.in,v 1.5 2025/06/11 17:33:57 cvsuser Exp $
 # libbsdmdoc and grmanddoc
 #
 #
@@ -81,14 +81,14 @@ D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
 XFLAGS=
 CFLAGS=		@CFLAGS@
 ifeq ("gcc","@CC@")
-CWARN=		$(filter-out -Wshadow -Wmissing-prototypes -Wsign-compare, @CWARN@ $(CWALL))
 CWARN+=		-Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-implicit-fallthrough
 CWARN+=		-Wno-cast-function-type -Wno-misleading-indentation -Wno-format-truncation
-else
-CWARN=		@CWARN@ $(CWALL)
+endif
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CWARN+=		-Wno-deprecated-declarations -Wno-return-type
+endif
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
 CWARN+=		-wcd=107 -wcd=201 -wcd=303
-endif
 endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@

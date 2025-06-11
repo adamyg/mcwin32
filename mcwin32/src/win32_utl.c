@@ -1853,7 +1853,7 @@ win32_popen(const char *cmd, const char *mode)
             HANDLE hThread;
 
             pe_stream = file;
-            if (0 != (hThread = CreateThread (NULL, 0, pipe_thread, NULL, 0, NULL))) {
+            if (NULL != (hThread = CreateThread (NULL, 0, pipe_thread, NULL, 0, NULL))) {
                 SetThreadPriority (hThread, THREAD_PRIORITY_ABOVE_NORMAL);
                 CloseHandle (hThread);
                 sleep (3);                      // yield

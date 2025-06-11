@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.16 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.17 2025/06/11 17:33:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -31,7 +31,7 @@ __CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.16 2025/03/06 16:59:46 cvsus
  * Notice: Portions of this text are reprinted and reproduced in electronic form. from
  * IEEE Portable Operating System Interface (POSIX), for reference only. Copyright (C)
  * 2001-2003 by the Institute of. Electrical and Electronics Engineers, Inc and The Open
- * Group. Copyright remains with the authors and the original Standard can be obtained 
+ * Group. Copyright remains with the authors and the original Standard can be obtained
  * online at http://www.opengroup.org/unix/online.html.
  * ==extra==
  */
@@ -169,6 +169,17 @@ __w32_check_attr(mode_t mode)
 #if defined(S_IFDOOR) && (S_IFDOOR)
     case S_IFBLK:                               /* solaris special */
 #endif
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
+int
+__w32_check_errno(int rc)
+{
+    switch (rc) {
+    case ENOTCONN:
         return TRUE;
     }
     return FALSE;

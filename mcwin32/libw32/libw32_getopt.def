@@ -1,0 +1,9 @@
+; libw32 library
+EXPORTS
+; global variables, see: w32_getopt_vars.c
+        opterr DATA
+        optind DATA
+        optopt DATA
+        optreset DATA
+        optarg DATA
+; end

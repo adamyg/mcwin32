@@ -176,7 +176,7 @@ char * GetUTF8Argument0 (void);
 int
 WIN32_Arguments(int argc, char ***argv)
 {
-    unsigned i, o;
+    unsigned i;
     int nargc = 0;
     char **nargv;
 
@@ -186,7 +186,7 @@ WIN32_Arguments(int argc, char ***argv)
 #define OPT_LOCALE  "--locale="
 
     nargc = 0;
-    for (i = 0, o = 0; nargv[i]; ++i) {
+    for (i = 0; nargv[i]; ++i) {
         const char *arg = nargv[i];
 
         if (arg[0] == '-' && arg[1] == '-') {   // options "--"

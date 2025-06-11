@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.16 2025/05/22 03:45:58 cvsuser Exp $
+# $Id: Makefile.in,v 1.17 2025/06/11 17:33:56 cvsuser Exp $
 # libglib makefile.
 #
 #
@@ -99,9 +99,14 @@ CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
 ifeq ("gcc","@CC@")
 CWARN+=		-Wno-shadow -Wno-sign-compare -Wno-type-limits
-CWARN+=		-Wno-unused-variable -Wno-unused-parameter
-CWARN+=		-Wno-unused-parameter -Wno-unused-function
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-function
 CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-function
+CWARN+=		-Wno-unused-local-typedef
+CWARN+=		-Wno-int-conversion
+CWARN+=		-Wno-deprecated-declarations
 endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@

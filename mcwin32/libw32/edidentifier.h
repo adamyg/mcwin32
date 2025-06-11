@@ -2,7 +2,7 @@
 #define LIBW32_EDIDENTIFIER_H_INCLUDED
 
 /* -*- mode: c; indent-width: 4; -*- */
-/*  $Id: edidentifier.h,v 1.9 2025/03/06 16:59:45 cvsuser Exp $
+/*  $Id: edidentifier.h,v 1.10 2025/06/11 17:33:56 cvsuser Exp $
  *  Compiler specific object identify functionality.
  *
  *      __CIDENT(description)
@@ -77,6 +77,12 @@
 #   define __CIDENT_XX(__id)    _Pragma(__id)
 #   define __CIDENT(__id)       __CIDENT_XX(comment (user, #__id))
 
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunneeded-internal-declaration"
+#   define __CIDENT(__id)       __CIDENT_ASM(.ident __id)
+#pragma clang diagnostic pop
+
 #elif defined(_MSC_VER)
 #if (_MSC_VER >= 1600)
 #   define __CIDENT_XX(__id)    __pragma(__id)
@@ -103,7 +109,7 @@
 #endif
 
 #if !defined(__CPRAGMA_ONCE)
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #   define __CPRAGMA_ONCE       _Pragma("once")
 
 #elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
@@ -157,6 +163,10 @@ static void __CIDENT_JOIN(RCSFN_,__tag)(const char *tag) {          \
 }
 #   endif
 
+#elif defined(__clang__)
+#   define __CIDENT_RCSID(__tag,__rcsid)        /* local vars */    \
+static char __attribute__ ((unused)) __CIDENT_JOIN(RCSID_,__tag)[] = __rcsid;
+
 #elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
 #   if (!defined(__cplusplus) || (_SUNPRO_CC >= 0x590))
 #       define __CIDENT_RCSID(__tag,__rcsid)    __CIDENT(__rcsid)
@@ -180,7 +190,7 @@ static void __CIDENT_JOIN(RCSFN_,__tag)(const char *tag) {          \
     const char *t_tag = __CIDENT_JOIN(RCSID_,__tag);                \
     __CIDENT_JOIN(RCSFN_,__tag)(tag ? tag : t_tag);                 \
 }
-#endif
+#endif  /*default*/
 #endif  /*__CIDENT_RCSID*/
 
 #ifndef __RCSID

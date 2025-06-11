@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -*- mode: perl; -*-
-# $Id: libtool_win32.pl,v 1.24 2025/02/13 17:54:23 cvsuser Exp $
+# $Id: libtool_win32.pl,v 1.25 2025/06/11 17:33:56 cvsuser Exp $
 # libtool emulation for WIN32 builds.
 #
 #   **Warning**
@@ -173,7 +173,9 @@ Main
 sub
 Compile()
 {
-    my $cc = shift @ARGV;
+    my $ccfull = shift @ARGV;
+    my $cc = basename($ccfull);
+
     my $object;
     my $source;
     my $compile;
@@ -265,7 +267,7 @@ Compile()
     $source = shift @ARGV;
 
     Error("compile: unsupported compiler <$cc>")
-        if (!('cl' eq $cc || 'wcl386' eq $cc || 'owcc' eq $cc || 'gcc' eq $cc || 'g++' eq $cc));
+        if (!('cl' eq $cc || 'clang-cl' eq $cc || 'wcl386' eq $cc || 'owcc' eq $cc || 'gcc' eq $cc || 'g++' eq $cc));
     Error("compile: unable to determine object")
         if (!$object);
     Error("compile: object file suffix not <.lo>")
@@ -278,7 +280,7 @@ Compile()
     my $true_path = unix2dos(dirname($object))."\\${x_libdir}";
     my $true_object = ${true_path}.basename($object, 'lo')."obj";
 
-    Verbose "cc:       ${cc}";
+    Verbose "cc:       ${ccfull}";
     Verbose "extra:    @STUFF";
     Verbose "defines:";
         foreach(@DEFINES) { Verbose "\t$_"; }
@@ -290,8 +292,11 @@ Compile()
 
     my $cmd = '';
 
-    if ('cl' eq $cc) {
-        $cmd  = "$cc @STUFF /DDLL=1";
+    $ccfull = "\"${ccfull}\""                   # quote argv[0]
+        if ($ccfull =~ /[ ]/);
+    
+    if ('cl' eq $cc || 'clang-cl' eq $cc) {
+        $cmd  = "${ccfull} @STUFF /DDLL=1";
         foreach (@DEFINES) { $cmd .= " /D$_"; }
         foreach (@INCLUDES) { $cmd .= " /I$_"; }
         $cmd .= " /Fo$true_object";
@@ -300,7 +305,7 @@ Compile()
 
     } elsif ('wcl386' eq $cc) {     # OpenWatcom, legacy interface.
         # http://www.openwatcom.org/index.php/Writing_DLLs
-        $cmd  = "$cc @STUFF -dDLL=1";
+        $cmd  = "${ccfull} @STUFF -dDLL=1";
         $cmd .= " -bd";                         # DLL builds
         foreach (@DEFINES) { $cmd .= " -d$_"; }
         foreach (@INCLUDES) { $cmd .= " -I=\"$_\""; }
@@ -308,7 +313,7 @@ Compile()
         $cmd .= " -c ".unix2dos($source);
 
     } elsif ('owcc' eq $cc) {       # OpenWatcom, posix driver.
-        $cmd  = "$cc @STUFF -DDLL=1";
+        $cmd  = "${ccfull} @STUFF -DDLL=1";
         $cmd .= " -shared";                     # DLL builds
         foreach (@DEFINES) { $cmd .= " -D$_"; }
         foreach (@INCLUDES) { $cmd .= " -I \"$_\""; }
@@ -316,7 +321,7 @@ Compile()
         $cmd .= " -c ".unix2dos($source);
 
     } elsif ('gcc' eq $cc || 'g++' eq $cc) {
-        $cmd  = "$cc @STUFF -D DLL=1 -shared";
+        $cmd  = "${ccfull} @STUFF -D DLL=1 -shared";
         foreach (@DEFINES) { $cmd .= " -D $_"; }
         foreach (@INCLUDES) { $cmd .= " -I \"$_\""; }
         $cmd .= " -o \"$true_object\"";
@@ -352,7 +357,8 @@ Compile()
 sub
 Link()
 {
-    my $cc = shift @ARGV;
+    my $ccfull = shift @ARGV;
+    my $cc = basename($ccfull);
 
     my ($output, $dlbase, $rpath, $bindir, $module, $mapfile);
     my $version_number = '';
@@ -374,7 +380,7 @@ Link()
     my @STUFF;
 
     $cc = 'gcc' if ('g++' eq $cc);              # alises
-    if ($cc eq 'cl') {
+    if ('cl' eq $cc || 'clang-cl' eq $cc) {
         if (defined $ENV{'VSCMD_ARG_TGT_ARCH'} && $ENV{'VSCMD_ARG_TGT_ARCH'} eq "x64") {
             $targetarch = 'x64';
         }
@@ -542,7 +548,7 @@ Link()
                 $rpath = $val;
             }
 
-        } elsif (/^-RTC[1csu]+$/ && ('cl' eq $cc)) {
+        } elsif (/^-RTC[1csu]+$/ && ('cl' eq $cc || 'clang-cl' eq $cc)) {
             next; # compile-only
 
         } elsif (/^-R(.*)$/) {
@@ -603,7 +609,7 @@ Link()
 
         } else {
             # toolchain specific
-            if ('cl' eq $cc) {
+            if ('cl' eq $cc || 'clang-cl' eq $cc) {
 
                 # Optimisation
                 if (/^[-\/]GL$/i) {             # /GL (Whole Program Optimization)
@@ -755,7 +761,7 @@ Link()
     }
 
     Error("link: unsupported compiler <$cc>")
-        if (!('cl' eq $cc || 'wcl386' eq $cc || 'owcc' eq $cc || 'gcc' eq $cc));
+        if (!('cl' eq $cc || 'clang-cl' eq $cc || 'wcl386' eq $cc || 'owcc' eq $cc || 'gcc' eq $cc));
     Error("link: unable to determine output")
         if (!$output);
     if ($linktype eq 'dll') {
@@ -763,7 +769,7 @@ Link()
           if ($output !~ /.la$/);
     }
 
-    Verbose "cc:       $cc";
+    Verbose "cc:       ${ccfull}";
     Verbose "extra:    @STUFF";
     Verbose "ignored:  @IGNORED";
     Verbose "output:   $output";
@@ -863,7 +869,7 @@ print "*** non-libtool objects @BAD_OBJECTS is not portable!\n";
             if ($output !~ /\.exe$/i);
     }
 
-    if ('cl' eq $cc) {
+    if ('cl' eq $cc || 'clang-cl' eq $cc) {
         #
         #   MSVC/Watcom
         #
@@ -1971,3 +1977,4 @@ Error {
 }
 
 #end
+

@@ -1,8 +1,7 @@
 #ifndef LIBW32_WIN32_ERRNO_H_INCLUDED
 #define LIBW32_WIN32_ERRNO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.16 2025/03/06 16:59:47 cvsuser Exp $")
-__CPRAGMA_ONCE
+__CIDENT_RCSID(gr_libw32_win32_errno_h,"$Id: win32_errno.h,v 1.17 2025/06/11 17:33:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*

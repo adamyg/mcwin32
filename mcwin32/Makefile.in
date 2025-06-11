@@ -225,6 +225,11 @@ CWARN+=		-Wno-sign-compare -Wno-missing-prototypes -Wno-type-limits
 CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function -Wno-unused-label
 CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
 endif
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CWARN+=		-Wno-sign-compare -Wno-missing-prototypes -Wno-type-limits
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function -Wno-unused-label -Wno-unused-local-typedef
+CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
 CWARN+=		-wcd=118 -wcd=135
 endif

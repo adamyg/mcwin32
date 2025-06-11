@@ -624,7 +624,7 @@ vio_init(void)
         oimage = vio.image;
         vio.image = (WCHAR_INFO *)calloc(vio.size, sizeof(WCHAR_INFO));
         if (oimage) {                           // screen has resized
-            const WCHAR_INFO wblank = {{0, FOREGROUND_INTENSITY}, ' '};
+            const WCHAR_INFO wblank = {{0, FOREGROUND_INTENSITY}, {' '}};
             const int screencols = vio.cols;
             const int cnt =
                 (cols > screencols ? screencols : cols) * sizeof(WCHAR_INFO);

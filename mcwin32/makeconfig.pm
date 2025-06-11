@@ -1,4 +1,4 @@
-# $Id: makeconfig.pm,v 1.8 2025/04/08 10:28:51 cvsuser Exp $
+# $Id: makeconfig.pm,v 1.9 2025/06/11 17:33:56 cvsuser Exp $
 # Makefile generation under Win32.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -520,7 +520,7 @@ set_msvc_runtime($;$)
         if (! defined $suffix);
 
     die "set_msvc_runtime: invalid toolchain <$TOOLCHAIN>\n"
-        if ($TOOLCHAIN !~ /^vs/);
+        if ($TOOLCHAIN !~ /^vs/ && $TOOLCHAIN !~ /^clangcl/);
 
     # Select
     if ($type eq 'dynamic') {

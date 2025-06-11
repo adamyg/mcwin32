@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.28 2025/05/23 11:21:14 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_shell_c,"$Id: w32_shell.c,v 1.29 2025/06/11 17:33:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -1396,7 +1396,7 @@ StartRedirectThread(
     p->hDupPipe = hDupPipe;
     p->fd = fd;
 
-    if ((hThread = CreateThread(NULL, 0, RedirectThread, (LPVOID)p, 0, &tid)) == 0) {
+    if ((hThread = CreateThread(NULL, 0, RedirectThread, (LPVOID)p, 0, &tid)) == NULL) {
         InternalError("CreateThread");
     }
 
