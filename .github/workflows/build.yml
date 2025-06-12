@@ -100,6 +100,7 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="owc19"   call .\mcwin32\support\owc19setenv.bat C:\Watcom
         @set BUSYBOX=./support/busybox
         @if "${{ matrix.config.toolchain }}"=="mingw64" set BUSYBOX=./support/busybox64
+        @if "${{ matrix.config.toolchain }}"=="clangcl" set PATH=%PATH:C:\Program Files\LLVM\bin;=%
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         c:/Strawberry/perl/bin/perl makelib.pl --perlpath=c:/Strawberry/perl/bin --busybox=%BUSYBOX% "${{ matrix.config.toolchain }}"
@@ -115,6 +116,7 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="owc19"   call .\mcwin32\support\owc19setenv.bat C:\Watcom
         @if "${{ matrix.config.toolchain }}"=="owc19"   set PATH=%PATH%;c:\msys64\mingw64\bin
         @if "${{ matrix.config.toolchain }}"=="vc2022"  set PATH=%PATH%;c:\msys64\mingw64\bin
+        @if "${{ matrix.config.toolchain }}"=="clangcl" set PATH=%PATH:C:\Program Files\LLVM\bin;=%
         @if "${{ matrix.config.toolchain }}"=="clangcl" set PATH=%PATH%;c:\msys64\mingw64\bin
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
