@@ -15,6 +15,12 @@ jobs:
             toolversion: vs170
           }
         - {
+            name: "Windows Latest Clang-cl",
+            os: windows-latest,
+            toolchain: clangcl,
+            toolversion: ccl
+          }
+        - {
            name: "Windows Latest MinGW32",
            os: windows-latest,
            toolchain: mingw32,
@@ -50,7 +56,7 @@ jobs:
 
     - name: MSVC setup
       uses: ilammy/msvc-dev-cmd@v1
-      if: startsWith(matrix.config.name, 'Windows Latest MSVC')
+      if: contains(matrix.config.name, 'MSVC') || contains(matrix.config.name, 'Clang-cl')
       with:
         arch: x86
 
@@ -80,7 +86,7 @@ jobs:
         location: "C:\\Watcom"
 
     - name: Windows extra
-      if: contains(matrix.config.name, 'MSVC') || contains(matrix.config.name, 'OWC')
+      if: contains(matrix.config.name, 'MSVC') || contains(matrix.config.name, 'Clang-cl') || contains(matrix.config.name, 'OWC')
       run: |
         c:\msys64\usr\bin\pacman --noconfirm -S mingw-w64-x86_64-gettext-tools
 
@@ -109,6 +115,7 @@ jobs:
         @if "${{ matrix.config.toolchain }}"=="owc19"   call .\mcwin32\support\owc19setenv.bat C:\Watcom
         @if "${{ matrix.config.toolchain }}"=="owc19"   set PATH=%PATH%;c:\msys64\mingw64\bin
         @if "${{ matrix.config.toolchain }}"=="vc2022"  set PATH=%PATH%;c:\msys64\mingw64\bin
+        @if "${{ matrix.config.toolchain }}"=="clangcl" set PATH=%PATH%;c:\msys64\mingw64\bin
         @set PERL=c:/Strawberry/perl/bin/perl
         cd mcwin32
         .\support\gmake-42 release build
