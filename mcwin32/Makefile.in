@@ -778,6 +778,8 @@ endif
 AUTOUPDATER=	no
 ifeq (vs,$(findstring vs,"@TOOLCHAIN@"))
 AUTOUPDATER=	yes
+else ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+AUTOUPDATER=	yes
 else ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
 AUTOUPDATER=	yes
 else ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
