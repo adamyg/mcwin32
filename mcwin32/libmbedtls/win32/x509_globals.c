@@ -1,15 +1,14 @@
-//$Id: x509_globals.c,v 1.5 2025/01/31 17:12:09 cvsuser Exp $
+//$Id: x509_globals.c,v 1.6 2025/06/12 18:02:33 cvsuser Exp $
 //
 //  libmetlx509 support
 //
 
-#if defined(_MSC_VER)
+#if defined(HAVE_X509_INET_XTOX)
 #if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x600)
 #undef  WINVER
 #undef  _WIN32_WINNT
 #define WINVER 0x600
 #define _WIN32_WINNT 0x600
-#define NEED_INET_XTOX
 #endif
 #endif
 
@@ -39,7 +38,7 @@ get_mbedtls_x509_crt_profile_suiteb(void) {
  *  inet_ntop - convert IPv4 and IPv6 addresses from binary to text.
  */
 
-#if defined(NEED_INET_XTOX)
+#if defined(HAVE_X509_INET_XTOX)
 
 #if !defined(_WINSOCK_DEPRECATED_NO_WARNINGS)
 #define _WINSOCK_DEPRECATED_NO_WARNINGS 1
@@ -49,7 +48,7 @@ get_mbedtls_x509_crt_profile_suiteb(void) {
 #include <Ws2ipdef.h>
 
 int
-/*mbedtls_*/ inet_pton(int af, const char *src, void *dst)
+/*mbedtls_*/ x509_inet_pton(int af, const char *src, void *dst)
 {
     int rc = -1, srclen = (src ? strlen(src) : 0);
 
@@ -70,7 +69,7 @@ int
 
 
 const char *
-/*mbedtls_*/ inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size)
+/*mbedtls_*/ x509_inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size)
 {
     struct sockaddr_storage ss = {0};
     unsigned long s = (unsigned long)size;
@@ -89,7 +88,7 @@ const char *
     return (WSAAddressToStringA((struct sockaddr *)&ss, sizeof(ss), NULL, dst, &s) == 0) ? dst : NULL;
 }
 
-#endif //INET_NTOP
+#endif //HAVE_X509_INET_XTOX
 
 //end
 
