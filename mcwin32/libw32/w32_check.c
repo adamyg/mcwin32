@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.17 2025/06/11 17:33:57 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_check_c,"$Id: w32_check.c,v 1.18 2025/06/12 12:28:08 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -120,7 +120,9 @@ struct __packed_pre__ mypackedstruct {
 } __packed_post__;
 #include <sys/pack0.h>
 
-extern int __w32_check_attr(mode_t mode);
+int __w32_check_attr(mode_t mode);
+int __w32_check_errno(int rc);
+
 
 /*
  *  check for unique mode bits ...
@@ -174,6 +176,14 @@ __w32_check_attr(mode_t mode)
     return FALSE;
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//  errno mapping
+
+#include <errno.h>
+#include "win32_errno.h"
+#include <errno.h>
+#include "win32_errno.h"
 
 int
 __w32_check_errno(int rc)

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.28 2025/06/11 17:30:58 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.29 2025/06/12 12:27:56 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -718,9 +718,12 @@ NetworkEnum(unsigned ndrives)
     // enumeration worker
     if (trigger) {
         if (InterlockedCompareExchange(&x_nestat.status, NCRunning, NCIdle) == NCIdle) {
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#endif
             DWORD dwThreadId = 0;
             HANDLE thread =
-                CreateThread(NULL, 0, NetworkEnumThread, (void*)(ndrives), 0, &dwThreadId);
+                CreateThread(NULL, 0, NetworkEnumThread, (void *)(ndrives), 0, &dwThreadId);
             if (thread != NULL) {
                 CloseHandle(thread); // detach
             } else { // thread failure
@@ -775,6 +778,9 @@ NetworkCached(struct StatBlock *sb)
 static DWORD WINAPI
 NetworkEnumThread(LPVOID lpParam)
 {
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#endif
     const unsigned ndrives = (unsigned)(lpParam);
     struct StatBlock *previous = NULL, *sb;
     const time_t then = time(NULL);
@@ -879,3 +885,4 @@ drive_mask(int drive)
 }
 
 /*end*/
+

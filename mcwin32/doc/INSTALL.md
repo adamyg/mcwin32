@@ -7,6 +7,7 @@ The project can be built from source, using one of several supported tool-chains
 The following environments and toolchains are supported.
 
   * Microsoft Visual C++ (MSVC) 2015 - 2022; or
+  * clang-cl using MSVC the linker; or
   * Open-Watcom (OWC) 1.9 or 2.0; or
   * Mingw64, both 32 and 64 bit targets.
 
@@ -76,6 +77,10 @@ Several alternative profiles are available:
     * vc2017config - Visual Studio C/C++ 2017.
     * vc2019config - Visual Studio C/C++ 2019.
     * vc2022config - Visual Studio C/C++ 2022.
+    
+  * clang-cl; or
+  
+    * cclconfig - Clang cl driver, using MSVC tool-chain. See MSVC setup for primary configuration details.
 
   * Open-Watcom (OWC) 1.9 or 2.0; or
 
@@ -169,7 +174,7 @@ The follow offers a more detailed discussion of the requirements and instruction
   - [Native builds using Open-Watcom](#native-builds-using-openwatcom-c-c)
   - [Native builds using Visual C++](#native-builds-using-visual-c-c)
   - [Native builds using MinGW64](#native-builds-using-mingw)
-
+  
 Finally, please review the packaged example alternative configurations as win32 development environments can be problematic, dependent on the host setup:
 
   - .github/workflows, github build actions for owc, msvc and mingw64 toolchains.
