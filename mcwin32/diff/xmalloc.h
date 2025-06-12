@@ -19,11 +19,11 @@
 #ifndef XMALLOC_H
 #define XMALLOC_H
 
-#if defined(_WIN32)
+#if !defined(__GNUC__) && !defined(__clang__)
 #if !defined(__attribute__)
-#define __attribute__(__x)
+#define __attribute__(__x)              /**/
 #endif
-#endif
+#endif //GNUC || Clang
 
 void	*xmalloc(size_t);
 void	*xcalloc(size_t, size_t);

@@ -103,10 +103,13 @@ CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-function
 CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
 endif
 ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CWARN+=		-Wno-deprecated-declarations
 CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-function
 CWARN+=		-Wno-unused-local-typedef
 CWARN+=		-Wno-int-conversion
-CWARN+=		-Wno-deprecated-declarations
+CWARN+=		-Wno-string-plus-int
+CWARN+=		-Wno-sometimes-uninitialized
+CWARN+=		-Wno-return-type
 endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
