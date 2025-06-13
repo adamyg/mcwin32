@@ -1,7 +1,7 @@
 #ifndef MANDOC_CONFIG_H_INCLUDED
 #define MANDOC_CONFIG_H_INCLUDED
 /* -*- mode: c; indent-width: 4; -*- */
-/* $Id: config.h,v 1.3 2025/04/06 14:48:30 cvsuser Exp $
+/* $Id: config.h,v 1.4 2025/06/12 15:15:28 cvsuser Exp $
  * mandoc config.h
  *
  * Copyright (c) 2014 - 2025, Adam Young.
@@ -235,10 +235,10 @@ extern long long                strtonum(const char *numstr, long long minval, l
 #endif
 
 #if !defined(__GNUC__) && !defined(__clang__)
-#ifndef __attribute__           //FIXME: HAVE_ATTRIBUTE
-#define __attribute__(__x)
+#ifndef __attribute__
+#define __attribute__(__x)              /**/
 #endif
-#endif
+#endif //GNUC || Clang
 
 #include "portable_endian.h"
 

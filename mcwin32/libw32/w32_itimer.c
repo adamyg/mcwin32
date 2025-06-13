@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_itimer_c,"$Id: w32_itimer.c,v 1.9 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_itimer_c,"$Id: w32_itimer.c,v 1.10 2025/06/11 17:33:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -199,7 +199,7 @@ setitimer(int which, const struct itimerval *value, struct itimerval *ovalue)
             //possible initialisation race; rare if never.
 #if defined(USE_THREAD)
         if (NULL != (itimer.handle = CreateEvent(NULL, TRUE, FALSE, NULL))) {
-            if (INVALID_HANDLE_VALUE == (itimer.task = CreateThread(NULL, 0, timer_thread, NULL, 0, NULL))) {
+            if (NULL == (itimer.task = CreateThread(NULL, 0, timer_thread, NULL, 0, NULL))) {
                 CloseHandle(itimer.handle);
                 itimer.handle = NULL;
             }

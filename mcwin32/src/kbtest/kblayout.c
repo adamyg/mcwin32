@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(kblayout_c, "$Id: kblayout.c,v 1.8 2025/01/29 13:33:04 cvsuser Exp $")
+__CIDENT_RCSID(kblayout_c, "$Id: kblayout.c,v 1.9 2025/06/11 17:33:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -62,6 +62,10 @@ KBLayoutDefault(void)
 #define EK(__k)		(__V(VK_##__k)|VK_ISENHANCED)	// Enhanced VK_xxx
 #define NK()		(0xfff)				// NUL key
 #define AS(__c)		(__c)				// ASCII
+
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#endif
 
 	//  US/AU/HK
 	//

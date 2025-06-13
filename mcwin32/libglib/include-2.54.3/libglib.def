@@ -4,6 +4,8 @@ EXPORTS
 ; see: GLIBVAR definitions
 ;
 	g_utf8_skip DATA
+        g_ascii_table DATA
+;       
 	glib_major_version DATA
 	glib_minor_version DATA
 	glib_micro_version DATA
@@ -12,5 +14,15 @@ EXPORTS
 ;
 	g_mem_gc_friendly DATA
 	glib_mem_profiler_table DATA
+;
+;       g_child_watch_funcs DATA
+;       g_idle_funcs DATA
+;       g_io_watch_funcs DATA
+;       g_test_config_vars DATA
+;       g_thread_functions_for_glib_use DATA
+;       g_thread_gettime already DATA
+;       g_thread_use_default_impl DATA
+;       g_threads_got_initialized DATA
+;       g_timeout_funcs DATA
 ;
 ; end

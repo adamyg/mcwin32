@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.15 2025/02/24 11:28:24 cvsuser Exp $
+# $Id: Makefile.in,v 1.16 2025/06/11 17:33:56 cvsuser Exp $
 # libmagic makefile
 #
 #
@@ -65,6 +65,9 @@ CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
 ifeq ("gcc","@CC@")
 CWARN+=		-Wno-unused-const-variable
+endif
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CWARN+=		-Wno-infinite-recursion -Wno-unneeded-internal-declaration
 endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@

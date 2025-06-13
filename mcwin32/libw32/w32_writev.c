@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.9 2025/03/30 17:16:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_writev_c,"$Id: w32_writev.c,v 1.11 2025/06/09 05:03:38 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -97,49 +97,65 @@ LIBW32_API int /*ssize_t*/
 writev(int fildes, const struct iovec *iov, int iovcnt)
 {
     SOCKET s = (SOCKET)-1;
-    int i, ret = -1;
+    int i, ret = 0;
 
     if (fildes < 0) {
         errno = EBADF;
+        return -1;
 
     } else if (NULL == iov || iovcnt <= 0){
         errno = EINVAL;
+        return -1;
 
-    } else if (w32_issockfd(fildes, &s)) {
-        ret = 0;
+    } else {
+        size_t bytes = 0;
+
+        for (i = 0; i < iovcnt; ++i) { // overflow check
+            if (SSIZE_MAX - bytes < iov[i].iov_len) {
+                errno = EINVAL;
+                return -1;
+            }
+            bytes += iov[i].iov_len;
+        }
+    }
+     
+    if (w32_issockfd(fildes, &s)) {
         for (i = 0; i < iovcnt; ++i) {
 #undef sendto
-            const int cnt = sendto(s, iov[i].iov_base, iov[i].iov_len, 0, NULL, 0);
-            if (cnt > 0) {
-                ret += cnt;
-            } else if (0 == cnt) {
-                break;
-            } else { /*SOCKET_ERROR*/
-                if (0 == ret) {
-                    w32_neterrno_set();
-                    ret = -1;
+            if (iov[i].iov_len) {
+                const int cnt = sendto(s, iov[i].iov_base, iov[i].iov_len, 0, NULL, 0);
+                if (cnt > 0) {
+                    ret += cnt;
+                } else if (0 == cnt) {
+                    break;
+                } else { /*SOCKET_ERROR*/
+                    if (0 == ret) {
+                        w32_neterrno_set();
+                        ret = -1;
+                    }
+                    break;
                 }
-                break;
             }
-            ++i;
         }
 
     } else {
-        ret = 0;
         for (i = 0; i < iovcnt; ++i) {
-            const int cnt = _write(fildes, iov[i].iov_base, iov[i].iov_len);
-            if (cnt > 0) {
-                ret += cnt;
-            } else if (0 == cnt) {
-                break;
-            } else if (errno == EINTR) {
-                continue;
-            } else {
-                if (ret == 0) ret = -1;
-                break;
+            if (iov[i].iov_len) {
+                const int cnt = _write(fildes, iov[i].iov_base, iov[i].iov_len);
+                if (cnt > 0) {
+                    ret += cnt;
+                } else if (0 == cnt) {
+                    break;
+                } else if (errno == EINTR) {
+                    continue;
+                } else {
+                    if (ret == 0) ret = -1;
+                    break;
+                }
             }
         }
     }
+
     return ret;
 }
 

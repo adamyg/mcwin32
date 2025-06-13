@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.51 2025/05/13 15:42:25 cvsuser Exp $
+# $Id: makelib.pl,v 1.52 2025/06/11 17:33:56 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -517,12 +517,12 @@ my %x_environment   = (
             CFLAGS          => '-nologo @RTLIBRARY@ -fp:precise',
             CXXFLAGS        => '-nologo @RTLIBRARY@ -EHsc -fp:precise -Zc:offsetof-',
             CDEBUG          => '-Zi -RTC1 -Od',
-            CRELEASE        => '-O2 -GL -Gy -DNDEBUG',
+            CRELEASE        => '-O2 -Gy -DNDEBUG',
             CWARN           => '-W3',
             CXXWARN         => '-W3',
             LDFLAGS         => '-nologo @RTLIBRARY@',
             LDDEBUG         => '-Zi -RTC1',
-            LDRELEASE       => '-GL',
+            LDRELEASE       => '',
             LDMAPFILE       => '-MAP:$(MAPFILE)',
                         # -Fm:  if positioned before /link
                         # -MAP: if positioned afer /link
@@ -536,6 +536,29 @@ my %x_environment   = (
           # MFCLIBS         => '/LIBPATH:$(MFCDIR)\lib\atl\i386 /LIBPATH:$(MFCDIR)\lib\mfc\i386'
             MFCCINCLUDE     => '',
             MFCLIBS         => ''
+            },
+
+        'clangcl'       => {    # clangcl
+            TOOLCHAIN       => 'clangcl',
+            TOOLCHAINEXT    => '.ccl',
+            TOOLCHAINNAME   => 'Clang-cl',
+            COMPILERPATHS   => '%VCINSTALLDIR%/Tools/Llvm/bin',
+            COMPILERPATH    => '',
+            CC              => 'clang-cl',
+            VSWITCH         => '--version',
+            VPATTERN        => 'clang version ([0-9\.]+)'
+            },
+
+        'clangcl_x64'    => {   # clangcl (x64)
+            TOOLCHAIN       => 'clangcl',
+            TOOLCHAINEXT    => '.ccl',
+            TOOLCHAINNAME   => 'Clang-cl',
+            COMPILERPATHS   => '%VCINSTALLDIR%/Tools/Llvm/x64/bin',
+            COMPILERPATH    => '',
+            CC              => 'clang-cl',
+            VSWITCH         => '--version',
+            VPATTERN        => 'clang version ([0-9\.]+)',
+            ISWIN64         => 'yes'
             },
 
         'wc1300'        => {    # Watcom 11
@@ -960,12 +983,11 @@ my %x_tokens        = (
         );
 
 my %x_tokendefs     = (
+        # token associations, from which defaults are derived
         CXX                 => 'CC',
         CXXFLAGS            => 'CFLAGS',
         CXXDEBUG            => 'CDEBUG',
         CXXRELEASE          => 'CRELEASE'
-    #   CLD                 => 'CC',
-    #   CXXLD               => 'CXX',
         );
 
 my @x_headers       = (     #headers
@@ -1045,6 +1067,7 @@ my @x_predefines    = (
         '_WIN32|_WIN64',
         '__WATCOMC__',
         '__GNUC__|__GNUC_MINOR__',
+        '__clang__|__clang_major__|__clang_minor__',
         '__MINGW32__|__MINGW64__|__MINGW64_VERSION_MAJOR|__MINGW64_VERSION_MINOR',
         '__STDC__|__STDC_VERSION__',
         '_M_IX86|_M_IA64|_M_X64|_M_AMD64|_M_ARM',
@@ -1178,7 +1201,6 @@ my @x_functions     = (
         '__iscsym',                             # msvc
         'printf', 'vprintf', 'doprnt',
         'snprintf', '_snprintf', 'vsnprintf', '_vsnprintf',
-        'strrchr', 'strdup',
         'asnprintf', 'vasnprintf',
         'setlocale',
         'mbrtowc', 'wcrtomb', 'wcsrtombs', 'wcstombs', 'wcscmp', 'wcscpy', 'wcslen', 'wctomb',
@@ -1365,6 +1387,14 @@ main()
     elsif ('vc1910' eq $cmd)    { $o_version = 1910; $cmd = 'vc'  } elsif ('vc2017' eq $cmd) { $o_version = 1910; $cmd = 'vc' }
     elsif ('vc1920' eq $cmd)    { $o_version = 1920; $cmd = 'vc'  } elsif ('vc2019' eq $cmd) { $o_version = 1920; $cmd = 'vc' }
     elsif ('vc1930' eq $cmd)    { $o_version = 1930; $cmd = 'vc'  } elsif ('vc2022' eq $cmd) { $o_version = 1930; $cmd = 'vc' }
+    elsif ('clangcl' eq $cmd) {                 # Clang
+        $o_version = 1930;
+        $cmd = 'clangcl';
+    }
+    elsif ($cmd =~ /^clangcl=(\d+)$/) {         # Clang, explicit version
+        $o_version = $1;
+        $cmd = 'clangcl';
+    }
     elsif ('owc19' eq $cmd)     { $o_version = 1900; $cmd = 'owc' }
     elsif ('owc20' eq $cmd)     { $o_version = 2000; $cmd = 'owc' }
     elsif ('mingw' eq $cmd)     { $o_version = 0;    $cmd = 'mingw' }
@@ -1372,16 +1402,36 @@ main()
     elsif ('mingw64' eq $cmd)   { $o_version = 64;   $cmd = 'mingw' }
 
     if (! $o_version) { # default versions
-        if ($cmd eq 'vc')       { $o_version = 1400; } # review???
+        if ($cmd eq 'vc')       { $o_version = 1900; }
         elsif ($cmd eq 'wc')    { $o_version = 1300; }
         elsif ($cmd eq 'owc')   { $o_version = 1900; }
         else { $o_version = 0; }
     }
 
-    $o_version .= '_x64'
-        if ($options && $options =~ /x64/);
+    my $x64 = ($options && $options =~ /x64/);
 
-    if ($cmd eq 'vc' ||
+    if ($cmd eq 'clangcl') {                    # generate profile
+        my $target = ($x64 ? 'clangcl_x64' : 'clangcl');
+        my $source = "vc${o_version}";
+
+        die "makelib:  unknown <${target}> target visual studio tool-chain <${source}\n"
+            if (! exists $x_environment{$source});
+
+        my $senv = $x_environment{$source};
+        my $env = $x_environment{$target};
+
+        foreach my $key (keys %$senv) {
+            $$env{$key} = $$senv{$key}          # import omitted vc profile element
+                if (! exists $$env{$key});
+        }
+
+        $o_version = '';
+    }
+
+    $o_version .= '_x64'
+        if ($x64);
+
+    if ($cmd eq 'vc' || $cmd eq 'clangcl' ||
             $cmd eq 'owc' || $cmd eq 'wc' ||
             $cmd eq 'dj' ||  $cmd eq 'mingw') {
 
@@ -1601,7 +1651,7 @@ Configure($$$)          # (type, version, options)
 
     if (! exists $x_environment{$signature}) {
          if ($signature =~ /(.*)_x64(.*)/) {    # derive x64 profile
-            my $base  = $1.$2;
+            my $base = $1.$2;
             if (exists $x_environment{$base}) {
                 $x_environment{$signature} = $x_environment{$base};
                 $x_environment{$signature}->{TOOLCHAIN} .= '_x64';
@@ -1642,7 +1692,7 @@ Configure($$$)          # (type, version, options)
     (-d $x_workdir || mkdir($x_workdir)) or
         die "makelib: unable to access/create workdir <$x_workdir> : $!\n";
 
-    $x_tmpdir = "${x_workdir}/${type}${version}";
+    $x_tmpdir = "${x_workdir}/${signature}";
 
     (-d $x_tmpdir || mkdir($x_tmpdir)) or
         die "makelib: unable to access/create tmpdir <$x_tmpdir> : $!\n";
@@ -1895,7 +1945,10 @@ Configure($$$)          # (type, version, options)
 
     # compiler/environment
     # TODO: move to sub-module .... extension of TESTLIBRARIES
-    if ($type eq 'vc' || $type eq 'wc' || $type eq 'owc' || $type eq 'mingw') {
+    if ($type eq 'vc' || $type eq 'clangcl' ||
+            $type eq 'wc' || $type eq 'owc' || 
+            $type eq 'mingw') {
+                                                # Visual C/C++, Watcom C/C++ and Ming toolchains
         my $gnuwin32lib = undef;
         my $gnuwin32inc = undef;
 
@@ -2314,29 +2367,34 @@ sub
 CheckCompiler($$)       # (type, env)
 {
     my ($type, $env) = @_;
+    my $CC = undef;
 
-    if (!defined $$env{COMPILERPATH} || $$env{COMPILERPATH} eq '') {
+    if (! defined $$env{COMPILERPATH} || $$env{COMPILERPATH} eq '') {
         if (exists $$env{COMPILERPATHS}) {
             my $compilerpath = which $$env{CC};
+
             if ($compilerpath) {                # resolved path
                 $$env{COMPILERPATH} = dirname($compilerpath);
 
             } else {
                 my @PATHS = split(/\|/, $$env{COMPILERPATHS});
-                foreach (@PATHS) {
+                foreach (@PATHS) {              # search paths
                     my $path = ExpandENV($_);
+
                     if (-e $path && -d $path) {
                         $compilerpath = realpath($path);
                         my $ccpath = "${compilerpath}/".$$env{CC};
 
                         if (-f $ccpath || -f "${ccpath}.exe") {
                             $$env{COMPILERPATH} = $compilerpath;
+                            $CC = $ccpath;
                             last;
                         }
                     }
                 }
             }
         }
+
         $x_compiler  = $$env{COMPILERPATH}.'/'
             if (exists $$env{COMPILERPATH});
 
@@ -2345,12 +2403,24 @@ CheckCompiler($$)       # (type, env)
             if (exists $$env{COMPILERPATH});
     }
 
-    $x_compiler .= $$env{CC};
-    $x_compiler =~ s/\//\\/g;
-    $x_command   = "\"$x_compiler\" ";
+    if ($CC) {                                  # fully resolved path
+        $x_tokens{CC} = $CC;
+        $x_tokens{CC} = "\"${CC}\""
+            if ($CC =~ /[ ]/);
+        $x_compiler = $CC;
+    } else {
+        $x_compiler .= $$env{CC};               # within path.
+    }
 
-    (-1 != System("$x_command junk-command-line >${x_tmpdir}/compiler.out 2>&1")) or
-        die "makelib: unable to access compiler <$x_compiler>\n";
+    $x_compiler =~ s/\//\\/g;
+    if ($x_compiler =~ /[ ]/) {                 # quote argv[0]
+        $x_command  = "\"$x_compiler\"";
+    } else {
+        $x_command  = ${x_compiler};
+    }
+
+    (-1 != System("${x_command} junk-command-line >${x_tmpdir}/compiler.out 2>&1")) or
+        die "makelib: unable to access compiler <${x_compiler}>\n";
 
     if (exists $$env{VPATTERN}) {               # version information
         my $vpattern = $$env{VPATTERN};
@@ -2377,25 +2447,34 @@ CheckCompiler($$)       # (type, env)
         }
     }
 
-    if ($x_compiler eq 'gcc') {
+    if ($type eq 'gcc' || $type eq 'clangcl') {
         #   #include <...> search starts here:
         #    c:\mingw\bin\../lib/gcc/mingw32/9.2.0/include
         #    c:\mingw\bin\../lib/gcc/mingw32/9.2.0/../../../../include
         #    c:\mingw\bin\../lib/gcc/mingw32/9.2.0/include-fixed
         #   End of search list.
-        (-1 != System("gcc -E -Wp,-v - <NUL >${x_tmpdir}/gcc.out 2>&1")) or
-            die "makelib: unable to access compiler <cpp -v>\n";
 
-        open(GCC, "${x_tmpdir}/gcc.out") or
-            die "makelib: cannot open <${x_tmpdir}/gcc.out> : $!";
+        my $out = "${x_tmpdir}/sysincludes.out";
+
+        if ($type eq 'clangcl') {
+            (-1 != System("${x_command} -E /showIncludes -v - <NUL >${out} 2>&1")) or
+                die "makelib: unable to access compiler <cpp -v>\n";
+        } else {
+            (-1 != System("${x_command} -E -Wp,-v - <NUL >${out} 2>&1")) or
+                die "makelib: unable to access compiler <cpp -v>\n";
+        }
+
+        open(SYSINCLUDES, $out) or
+            die "makelib: cannot open <${out}> : $!";
+
         my $line;
-        while (defined($line = <GCC>)) {
+        while (defined($line = <SYSINCLUDES>)) {
             if ($line =~ /^#include </) {
-                while (defined($line = <GCC>)) {
+                while (defined($line = <SYSINCLUDES>)) {
                     last if ($line =~ /^End of/i);
                     $line =~ s/^\s+|\s+$//g;
                     my $path = realpath($line);
-                    print "gccinc:   <$path>\n";
+                    print "sysinc:   <$path>\n";
                     push @x_sysinclude, $path
                         if ($path);
                 }
@@ -2442,7 +2521,7 @@ CheckCompiler($$)       # (type, env)
     print "SysInc:   @{x_sysinclude}\n";
 
     # build final command
-    $x_command  .= "__FLAGS__ ";
+    $x_command  .= " __FLAGS__ ";
     $x_command  .= $INCLUDES;
     $x_command  .= "$$env{OSWITCH}__OBJ__ "
         if ($$env{OSWITCH} ne '');
@@ -3292,7 +3371,7 @@ Makefile($$$)           # (type, dir, file)
             $continuation = (/[\\]$/ ? 1 : 0);
 
         } else {
-            if ($type eq 'vc' || $type eq 'wc') {
+            if ($type eq 'vc' || $type eq 'clangcl' || $type eq 'wc') {
                 if (! /LIBTOOL/) {              # not LIBTOOL command lines
 
                     # option conversion
@@ -3301,7 +3380,7 @@ Makefile($$$)           # (type, dir, file)
 
                     s/(\$\(LDFLAGS\).*) -o \$\@/$1 -Fe\$@ -Fd\$(\@D)\//;
 
-                    if ($type eq 'vc') {
+                    if ($type eq 'vc' || $type eq 'clangcl') {
                         s/-L/\/link \/LIBPATH:/;
                     } else {
                         s/-L([^\s]+)/-"LIBPATH $1"/;
@@ -3393,7 +3472,8 @@ Makefile($$$)           # (type, dir, file)
     if ('dj' eq $type || 'mingw' eq $type) {    # almost unix
         $text =~ s/\nE=\S*\n/\nE=\t\t.exe\n/g;
 
-    } elsif ($type eq 'vc' || $type eq 'wc' || $type eq 'owc') {
+    } elsif ($type eq 'vc' || $type eq 'clangcl' || 
+                $type eq 'wc' || $type eq 'owc') {
                                                 # Visual C/C++ and Watcom C/C++
         # extensions
         $text =~ s/\nO=\s*\.o/\nO=\t\t.obj/g;
@@ -3657,11 +3737,12 @@ Profile($)
  -                   Version: $config->{PACKAGE_VERSION}
  -
  -                 ToolChain: $$env{TOOLCHAINNAME}
- -                  Compiler: $$env{CC} / $$env{CXX}
- -                    CFLAGS: $$env{CFLAGS}
- -                  CXXFLAGS: $$env{CXXFLAGS}
- -                       Release: $$env{CRELEASE}
- -                       Debug:   $$env{CDEBUG}
+ -                  Compiler: $x_tokens{CC}
+ -                        and $x_tokens{CXX}
+ -                    CFLAGS: $x_tokens{CFLAGS}
+ -                  CXXFLAGS: $x_tokens{CXXFLAGS}
+ -                       Release: $x_tokens{CRELEASE}
+ -                       Debug:   $x_tokens{CDEBUG}
  -                   LDFLAGS: $x_tokens{LDFLAGS}
  -                      LIBS: $x_tokens{LIBS}
  -                 EXTRALIBS: $x_tokens{EXTRALIBS}

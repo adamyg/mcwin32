@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_fopen_c, "$Id: w32_fopen.c,v 1.2 2025/04/01 16:15:14 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_fopen_c, "$Id: w32_fopen.c,v 1.3 2025/05/23 11:21:14 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -49,6 +49,7 @@ __CIDENT_RCSID(gr_w32_fopen_c, "$Id: w32_fopen.c,v 1.2 2025/04/01 16:15:14 cvsus
 #endif
 
 #include "win32_internal.h"
+#include "win32_misc.h"
 #include "win32_io.h"
 
 static FILE *W32OpenStreamA(const char *path, const char *mode);
@@ -170,6 +171,27 @@ w32_fopenA(const char *path, const char *mode)
     if (0 == w32_iostricmpA(path, "/dev/null")) {
         path = "NUL";                           // redirect
 
+    } else if (0 == w32_iostricmpA(path, "/dev/stdin")) {
+        const int flags = _O_RDONLY | (strchr(mode, 'b') ? 0 : _O_TEXT);
+        int fd = w32_osfdup(GetStdHandle(STD_INPUT_HANDLE), flags);
+        if (fd != -1) {
+            return fdopen(fd, mode);
+        }
+
+    } else if (0 == w32_iostricmpA(path, "/dev/stdout")) {
+        const int flags = _O_APPEND | _O_WRONLY | (strchr(mode, 'b') ? 0 : _O_TEXT);
+        int fd = w32_osfdup(GetStdHandle(STD_OUTPUT_HANDLE), flags);
+        if (fd != -1) {
+            return fdopen(fd, mode);
+        }
+
+    } else if (0 == w32_iostricmpA(path, "/dev/stderr")) {
+        const int flags = _O_APPEND | _O_WRONLY | (strchr(mode, 'b') ? 0 : _O_TEXT);
+        int fd = w32_osfdup(GetStdHandle(STD_ERROR_HANDLE), flags);
+        if (fd != -1) {
+            return _fdopen(fd, mode);
+        }
+
     } else if (w32_resolvelinkA(path, symbuf, _countof(symbuf), &ret) == NULL) {
         if (ret < 0) {
            if ((mode[0] != 'r') &&              // attempt creation
@@ -212,6 +234,27 @@ w32_fopenW(const wchar_t *path, const wchar_t *mode)
     if (0 == w32_iostricmpW(path, "/dev/null")) {
         path = L"NUL";                          // redirect
 
+    } else if (0 == w32_iostricmpW(path, "/dev/stdin")) {
+        const int flags = _O_RDONLY | (wcschr(mode, 'b') ? 0 : _O_TEXT);
+        int fd = w32_osfdup(GetStdHandle(STD_INPUT_HANDLE), flags);
+        if (fd != -1) {
+            return _wfdopen(fd, mode);
+        }
+
+    } else if (0 == w32_iostricmpW(path, "/dev/stdout")) {
+        const int flags = _O_APPEND | _O_WRONLY | (wcschr(mode, 'b') ? 0 : _O_TEXT);
+        int fd = w32_osfdup(GetStdHandle(STD_OUTPUT_HANDLE), flags);
+        if (fd != -1) {
+            return _wfdopen(fd, mode);
+        }
+
+    } else if (0 == w32_iostricmpW(path, "/dev/stderr")) {
+        const int flags = _O_APPEND | _O_WRONLY | (wcschr(mode, 'b') ? 0 : _O_TEXT);
+        int fd = w32_osfdup(GetStdHandle(STD_ERROR_HANDLE), flags);
+        if (fd != -1) {
+            return _wfdopen(fd, mode);
+        }
+
     } else if (w32_resolvelinkW(path, symbuf, _countof(symbuf), &ret) == NULL) {
         if (ret < 0) {
             if ((mode[0] != 'r') &&             // attempt creation
@@ -226,7 +269,7 @@ w32_fopenW(const wchar_t *path, const wchar_t *mode)
         path = symbuf;                          // follow link
     }
 
-    if ((file = W32OpenStreamW(path, mode)) == NULL) {
+    if (ret < 0 || (file = W32OpenStreamW(path, mode)) == NULL) {
         if (ENOTDIR == errno || ENOENT == errno) {
             if (path != symbuf &&               // component error, expand embedded shortcut
                     w32_expandlinkW(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {

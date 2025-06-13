@@ -1429,7 +1429,9 @@ system_impl (int flags, const char *shell, const char *cmd)
                 (argc = system_bustargs (cbuf, argv, MAX_ARGV)) <= MAX_ARGV && argc > 0) {
 
             if (0 == strcmp (argv[0], "set")) {
-                return system_SET (argc, argv);
+                if (0 == system_SET (argc, argv)) {
+                    return 0;
+                }
 
             } else if (use_internal_busybox) {
                 const size_t cmdlen = strlen (argv[0]);
@@ -1533,6 +1535,10 @@ system_SET(int argc, const char **argv)
         // set or lookup
         const wchar_t *wname;
 
+        if (strpbrk (argv[1], "<>|") != NULL) {
+            return 1;                           // redirection or pipe, via shell
+        }
+
         if (NULL != (wname = w32_utf2wca (argv[1], NULL))) {
             wchar_t *wvalue;
 
@@ -1555,7 +1561,8 @@ system_SET(int argc, const char **argv)
             free ((void *)wname);
         }
     }
-    return 0;
+
+    return 0;                                   // complete
 }
 
 
@@ -1846,7 +1853,7 @@ win32_popen(const char *cmd, const char *mode)
             HANDLE hThread;
 
             pe_stream = file;
-            if (0 != (hThread = CreateThread (NULL, 0, pipe_thread, NULL, 0, NULL))) {
+            if (NULL != (hThread = CreateThread (NULL, 0, pipe_thread, NULL, 0, NULL))) {
                 SetThreadPriority (hThread, THREAD_PRIORITY_ABOVE_NORMAL);
                 CloseHandle (hThread);
                 sleep (3);                      // yield

@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.28 2025/05/14 13:42:32 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_child_c,"$Id: w32_child.c,v 1.29 2025/06/11 17:33:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -68,7 +68,6 @@ typedef struct {
 
 static int              cmdisA(const char *shell, size_t slen, const char *cmd);
 static int              cmdisW(const wchar_t *shell, size_t slen, const wchar_t *cmd);
-static int              TOLOWER(wchar_t ch);
 
 static BOOL             SendCloseMessage(HANDLE hProc);
 static BOOL             WASNOT_ENOENT(void);
@@ -701,7 +700,7 @@ w32_child_execA(
     }
 
     assert((NULL != args->cmd && NULL == args->argv) || (NULL == args->cmd && NULL != args->argv));
-    if (! BuildVectorsA(args, &argblk, &envblk) != 0) {
+    if (! BuildVectorsA(args, &argblk, &envblk)) {
         InternalError("BuildVector");
         return 0;
     }

@@ -353,7 +353,7 @@ ShellAssociation(const wchar_t *argv0)
 static BOOL
 IsOpenWith(const wchar_t* argv0)
 {
-    const wchar_t *ext = wcschr(argv0, '.');
+    const wchar_t *ext = wcsrchr(argv0, '.');
     BOOL ret = FALSE;
 
     if (ext) {
@@ -415,7 +415,7 @@ QueryAssociation(const wchar_t* cmd)
 
     wchar_t buffer[256];
     DWORD buflen = _countof(buffer);
-    const wchar_t* ext = wcschr(cmd, '.');
+    const wchar_t *ext = wcsrchr(cmd, '.');
     HRESULT hres;
 
     if (ext) {

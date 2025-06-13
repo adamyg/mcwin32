@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.15 2025/01/27 15:10:28 cvsuser Exp $
+# $Id: Makefile.in,v 1.17 2025/06/11 17:33:56 cvsuser Exp $
 # libglib makefile.
 #
 #
@@ -32,6 +32,10 @@
 ROOT=		@abs_top_builddir@
 top_builddir=	@top_builddir@
 
+# see: config.h.win32
+
+PACKAGE		= glib20
+
 # File extensions
 
 E=
@@ -50,6 +54,7 @@ CC=		@CC@
 AR=		@AR@
 RANLIB=		@RANLIB@
 RM=		@RM@
+MKDIR_P=	@MKDIR_P@
 CP=		@CP@
 PERL=		@PERL@
 LIBTOOL=	@LIBTOOL@
@@ -81,6 +86,11 @@ D_BIN=		$(ROOT)/bin@TOOLCHAINEXT@/$(BUILD_TYPE)
 D_LIB=		$(ROOT)/lib@TOOLCHAINEXT@/$(BUILD_TYPE)
 D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libglib
 
+D_ETC=		$(D_BIN)/etc
+D_SHARE=	$(D_BIN)/share
+D_DOC=		$(D_BIN)/doc
+D_LOCALE=	$(D_BIN)/share/locale
+
 # Common flags
 
 XFLAGS=
@@ -89,9 +99,17 @@ CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@
 ifeq ("gcc","@CC@")
 CWARN+=		-Wno-shadow -Wno-sign-compare -Wno-type-limits
-CWARN+=		-Wno-unused-variable -Wno-unused-parameter
-CWARN+=		-Wno-unused-parameter -Wno-unused-function
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-function
 CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CWARN+=		-Wno-deprecated-declarations
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-function
+CWARN+=		-Wno-unused-local-typedef
+CWARN+=		-Wno-int-conversion
+CWARN+=		-Wno-string-plus-int
+CWARN+=		-Wno-sometimes-uninitialized
+CWARN+=		-Wno-return-type
 endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
@@ -132,6 +150,7 @@ GLIBBASE=	./glib-$(VERSION)
 GLIBSRC=	$(GLIBBASE)/glib
 GLIBINCLUDE=	$(GLIBBASE)/glib
 GMODULESRC=	$(GLIBBASE)/gmodule
+POSRC=		$(GLIBBASE)/po
 
 CINCLUDE+=	-I$(GLIBBASE) -I./include-$(VERSION) -I./sdk
 CEXTRA+=	-D_WIN32
@@ -161,6 +180,11 @@ CEXTRA_PCRE = \
 ##	-DPCRE_STATIC			##global
 ##	-DG_LOG_DOMAIN="GLib-GRegex"	#see config.h
 ##	-DNEWLINE=-1			#see config.h
+
+MSGLANGS=		$(notdir $(wildcard $(POSRC)/*.po))
+BASEMSGDIRS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=))
+MSGDIRS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=/LC_MESSAGES/.created))
+MSGOBJS=		$(addprefix $(D_LOCALE)/,$(MSGLANGS:.po=/LC_MESSAGES/$(PACKAGE).mo))
 
 CEXTRA_GTHREAD = \
 	-DG_LOG_DOMAIN="GThread"
@@ -366,14 +390,18 @@ INSTALLED=
 ############################################################
 # Rules
 
-.PHONY: 	build release debug
+.PHONY: 	build release debug gettext
 build:			source unpacked
-unpacked:		object $(LIBS) $(TSKS) installheaders
+unpacked:		object targets installheaders gettext
 
 release:
 		$(MAKE) BUILD_TYPE=release $(filter-out release, $(MAKECMDGOALS))
 debug:
 		$(MAKE) BUILD_TYPE=debug $(filter-out debug, $(MAKECMDGOALS))
+
+targets:			$(LIBS) $(TSKS)
+
+gettext:			$(MSGDIRS) $(MSGOBJS)
 
 #see: gtypes.h (+ GLIB_COMPILATION above)
 
@@ -506,7 +534,7 @@ installheaders:		Makefile ../include/.created \
 		@$(CP) $(GMODULESRC)/gmodule.h			../include/glib-2.0
 
 %/.created:
-		-@mkdir $(@D)
+		-@$(MKDIR_P) $(@D)
 		@echo "do not delete, managed directory" > $@
 
 clean:
@@ -516,6 +544,8 @@ clean:
 		-@$(RM) $(subst /,\,$(RMFLAGS) $(BAK) $(TSKS) $(INSTALLED) $(LIBS) $(CLEAN) $(XCLEAN) $(QUIETOUT))
 		-@$(RM) $(subst /,\,$(GLIBLIBOBJS) $(QUIETOUT))
 		-@$(RM) $(subst /,\,$(GMODULELIBOBJS) $(QUIETOUT))
+		-$(RMDIR) $(subst /,\,$(call reverse, $(BASEMSGDIRS) $(dir $(MSGDIRS)))) $(QUIETOUT))
+		-$(RM) $(subst /,\,$(MSGOBJS) $(MSGDIRS) $(QUIETOUT))
 
 
 ############################################################
@@ -560,5 +590,11 @@ $(D_OBJ)/%.res:		%.rc
 
 $(D_OBJ)/%_res.o:	%.rc
 		$(RC) -o $@ $<
+
+#  mo
+
+$(D_LOCALE)/%/LC_MESSAGES/$(PACKAGE).mo: $(POSRC)/%.po
+		@echo build $@ ..
+		msgfmt -c -o $@ $(POSRC)/$*.po
 
 #end

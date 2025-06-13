@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_errno_c,"$Id: w32_errno.c,v 1.17 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_errno_c,"$Id: w32_errno.c,v 1.18 2025/06/11 17:33:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -504,8 +504,8 @@ w32_errno_set(void)
 LIBW32_API const char *
 w32_strerror(int errnum)
 {
+    static char errbuffer[32];                  // TODO/TLS
     const char *err = NULL;
-    char errbuffer[32];
 
 #undef strerror
     if (errnum >= 0 && errnum < _sys_nerr) {

@@ -169,14 +169,14 @@ main(int argc, char *argv[])
 
                 if ((val = isoption(option, "--dispname=")) != NULL) {
                         for (i = 0; i < _countof(locales); ++i) {
-                                if (stricmp(val, locales[i].dispname) == 0) {
+                                if (_stricmp(val, locales[i].dispname) == 0) {
                                         setlcid = locales[i].lcid;
                                         break;
                                 }
                         }
                 } else if ((val = isoption(option, "--cilocale=")) != NULL) {
                         for (i = 0; i < _countof(locales); ++i) {
-                                if (stricmp(val, locales[i].cilocale) == 0) {
+                                if (_stricmp(val, locales[i].cilocale) == 0) {
                                         setlcid = locales[i].lcid;
                                         break;
                                 }

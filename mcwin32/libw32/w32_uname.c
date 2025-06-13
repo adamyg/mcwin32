@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.14 2025/03/30 17:16:03 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_uname_c,"$Id: w32_uname.c,v 1.15 2025/06/11 17:33:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -81,8 +81,8 @@ struct CurrentVersion {
 static BOOL IsWow64(void);
 static void RegCurrentVersion(struct CurrentVersion *cv);
 
-#if _UTSNAME_LENGTH <= 64
-#define ULENGTH (64 + 1)
+#if _UTSNAME_LENGTH < 64
+#define ULENGTH (64)
 #else
 #define ULENGTH _UTSNAME_LENGTH 
 #endif
@@ -492,11 +492,18 @@ uname(struct utsname *u)
     if (u) {
         memset(u, 0, sizeof(*u));
 
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
         strncpy(u->sysname, u_sysname, sizeof(u->sysname) - 1);
         u->nodename[0] = '\0';                  /* not available */
         strncpy(u->release, u_release, sizeof(u->release) - 1);
         strncpy(u->version, u_version, sizeof(u->version) - 1);
         strncpy(u->machine, u_machine, sizeof(u->machine) - 1);
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
     }
     return 0;
 }

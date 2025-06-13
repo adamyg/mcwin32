@@ -225,6 +225,11 @@ CWARN+=		-Wno-sign-compare -Wno-missing-prototypes -Wno-type-limits
 CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function -Wno-unused-label
 CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
 endif
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CWARN+=		-Wno-sign-compare -Wno-missing-prototypes -Wno-type-limits
+CWARN+=		-Wno-unused-variable -Wno-unused-parameter -Wno-unused-parameter -Wno-unused-function -Wno-unused-label -Wno-unused-local-typedef
+CWARN+=		-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
 CWARN+=		-wcd=118 -wcd=135
 endif
@@ -740,6 +745,7 @@ TARGETS=\
 	$(D_BIN)/mcmandoc$(E)			\
 	$(D_BIN)/kbtest$(E)			\
 	$(D_BIN)/coninfo$(E)			\
+	$(D_BIN)/volinfo$(E)			\
 	$(D_BIN)/man2hlp.pl
 
 IMPORT=\
@@ -771,6 +777,8 @@ endif
 
 AUTOUPDATER=	no
 ifeq (vs,$(findstring vs,"@TOOLCHAIN@"))
+AUTOUPDATER=	yes
+else ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
 AUTOUPDATER=	yes
 else ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
 AUTOUPDATER=	yes
@@ -868,7 +876,7 @@ directories:			$(DIRECTORIES)
 artifacts:			buildinfo busyboxcmds BUILDNUMBER
 
 %/.created:
-		-@$(PERL) ./support/mkdir_p.pl $(@D)
+		-@$(MKDIR_P) $(@D)
 		@echo "++ do not delete, midnight commander managed content ++" > $@
 
 targets:			$(LIBRARIES) $(TARGETS)
@@ -973,6 +981,7 @@ clean:
 		$(MAKE) -C mandoc clean
 		$(MAKE) -C src/kbtest clean
 		$(MAKE) -C src/coninfo clean
+		$(MAKE) -C src/volinfo clean
 		$(MAKE) -C autoupdater clean
 		-$(RM) $(MSGOBJS) $(MSGDIRS) $(QUIETOUT)
 		-$(RM) $(CONFIGURATION) $(QUIETOUT)
@@ -1007,6 +1016,9 @@ $(D_BIN)/kbtest$(E):
 
 $(D_BIN)/coninfo$(E):
 		$(MAKE) -C src/coninfo
+
+$(D_BIN)/volinfo$(E):
+		$(MAKE) -C src/volinfo
 
 $(MC_RES):			config.h buildinfo.h
 

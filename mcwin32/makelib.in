@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.20 2025/04/08 10:28:51 cvsuser Exp $
+# $Id: makelib.in,v 1.22 2025/06/11 17:33:56 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #
@@ -96,6 +96,7 @@ $PACKAGE_FILE	= 'package.h';
 	'libglib',
 	'src/kbtest',
 	'src/coninfo',
+	'src/volinfo',
 	'diff',
 	'mandoc',
 	'apps',
@@ -190,7 +191,7 @@ Configure()
 	################################################################################
 	# Visual studio
 
-	if ($TOOLCHAIN =~ /^vs/) {
+	if ($TOOLCHAIN =~ /^vs/ || $TOOLCHAIN =~ /^clangcl/) {
 
 		set_msvc_runtime('dynamic', '$(RTSUFFIX)');
 

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.20 2025/01/31 17:12:09 cvsuser Exp $
+# $Id: Makefile.in,v 1.21 2025/06/11 17:33:56 cvsuser Exp $
 # libmbedtls makefile.
 #
 #
@@ -81,6 +81,9 @@ XFLAGS=
 CFLAGS=		@CFLAGS@
 ifeq (mingw,$(findstring mingw,"@TOOLCHAIN@"))
 CFLAGS+=	-mpclmul -msse2 -maes
+endif
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CFLAGS+=	/clang:-mpclmul /clang:-msse2 /clang:-maes
 endif
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
 CFLAGS+=	-wcd=124 -wcd=136 -wcd=200 -wcd=201 -wcd=202

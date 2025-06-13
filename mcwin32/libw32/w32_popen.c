@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.20 2025/03/06 16:59:46 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_popen_c,"$Id: w32_popen.c,v 1.21 2025/06/09 05:13:44 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -189,7 +189,7 @@ w32_popenW(const wchar_t *cmd, const char *mode)
 static FILE *
 PipeA(const char *cmd, const char *mode)
 {
-#if (defined(_MSVC_VER) || defined(__WATCOMC__)) && \
+#if (defined(_MSC_VER) || defined(__WATCOMC__)) && \
         defined(USE_NATIVE_POPEN)
     return _popen(cmd, mode);
 
@@ -245,7 +245,7 @@ PipeA(const char *cmd, const char *mode)
     // detect the type of shell
     argv[0] = shell;
     if (w32_iscommand(shell)) {
-        // String is processed by examining the first character to verify whether it is an opening quotation mark. 
+        // String is processed by examining the first character to verify whether it is an opening quotation mark.
         // If the first character is an opening quotation mark, it is stripped along with the closing quotation mark.
         // Any text following the closing quotation marks is preserved.
         const char *arg = cmd;
@@ -310,9 +310,9 @@ PipeA(const char *cmd, const char *mode)
     assert('r' == p->readOrWrite || 'w' == p->readOrWrite);
 
     if ('r' == p->readOrWrite) {
-        const int fd = 
+        const int fd =
             _open_osfhandle((OSFHANDLE)out_read, _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT) | _O_RDONLY);
-        if (-1 == fd) 
+        if (-1 == fd)
             goto pipe_error;
 
         out_read = INVALID_HANDLE_VALUE;        // fd has ownership
@@ -325,7 +325,7 @@ PipeA(const char *cmd, const char *mode)
     } else {
         const int fd =
             _open_osfhandle((OSFHANDLE)in_write, _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT));
-        if (-1 == fd) 
+        if (-1 == fd)
             goto pipe_error;
 
         in_write = INVALID_HANDLE_VALUE;        // fd has ownership
@@ -389,7 +389,7 @@ enomem:
 static FILE *
 PipeW(const wchar_t *cmd, const char *mode)
 {
-#if (defined(_MSVC_VER) || defined(__WATCOMC__)) && \
+#if (defined(_MSC_VER) || defined(__WATCOMC__)) && \
         defined(USE_NATIVE_POPEN)
     return _wpopen(cmd, mode);
 
@@ -446,7 +446,7 @@ PipeW(const wchar_t *cmd, const char *mode)
     argv[0] = shell;
 
     if (w32_iscommandW(shell)) {
-        // String is processed by examining the first character to verify whether it is an opening quotation mark. 
+        // String is processed by examining the first character to verify whether it is an opening quotation mark.
         // If the first character is an opening quotation mark, it is stripped along with the closing quotation mark.
         // Any text following the closing quotation marks is preserved.
         const wchar_t *arg = cmd;
@@ -508,9 +508,9 @@ PipeW(const wchar_t *cmd, const char *mode)
     }
 
     if ('r' == p->readOrWrite) {
-        const int fd = 
+        const int fd =
             _open_osfhandle((OSFHANDLE)out_read, _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT) | _O_RDONLY);
-        if (-1 == fd) 
+        if (-1 == fd)
             goto pipe_error;
 
         out_read = INVALID_HANDLE_VALUE;        // fd has ownership
@@ -523,7 +523,7 @@ PipeW(const wchar_t *cmd, const char *mode)
     } else {
         const int fd =
             _open_osfhandle((OSFHANDLE)in_write, _O_NOINHERIT | ('b' == textOrBinary ? _O_BINARY : _O_TEXT));
-        if (-1 == fd) 
+        if (-1 == fd)
             goto pipe_error;
 
         in_write = INVALID_HANDLE_VALUE;        // fd has ownership

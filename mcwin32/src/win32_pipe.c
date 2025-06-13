@@ -100,7 +100,7 @@ mc_popen2 (const char *command, int *fds, GError **error)
 
 
 static mc_pipe_t *
-pipe_open (const char *xcommand, gboolean fdout, gboolean fderr, gboolean fdin, GError ** error)
+pipe_open (const char *ocommand, gboolean fdout, gboolean fderr, gboolean fdin, GError ** error)
 {
     win32_exec_t *args = NULL;
     const char *busybox = mc_BUSYBOX();
@@ -110,16 +110,16 @@ pipe_open (const char *xcommand, gboolean fdout, gboolean fderr, gboolean fdin, 
 
     if (error) *error = NULL;
 
-    if (xcommand) {
+    if (ocommand) {
         char *command;
 
-        while (' ' == *xcommand) ++xcommand;    // consume leading whitespace (if any).
+        while (' ' == *ocommand) ++ocommand;    // consume leading whitespace (if any).
             /* whitespace within "#! xxx" shall be visible; confusing matching logic below */
 
-        win32Trace(("mc_popen: in:<%s>", xcommand ? xcommand : ""))
-     // my_unquote_test();
+        win32Trace(("mc_popen: in:<%s>", ocommand ? ocommand : ""))
+      //my_unquote_test();
 
-        if (NULL == (command = my_unquote(xcommand, TRUE))) {
+        if (NULL == (command = my_unquote(ocommand, TRUE))) {
             goto error;
         }
 
@@ -163,7 +163,7 @@ pipe_open (const char *xcommand, gboolean fdout, gboolean fderr, gboolean fdin, 
 
             } else if (space) {
                 /*
-                 *  If busybox <cmd>, execute as <\"busybox\" sh -c `cmd` ...>
+                 *  If busybox <cmd>, execute as <\"busybox\" sh -c "cmd" ...>
                  */
                 unsigned i, count = 0;
                 const char **busybox_cmds = mc_busybox_exts(&count);
@@ -172,8 +172,8 @@ pipe_open (const char *xcommand, gboolean fdout, gboolean fderr, gboolean fdin, 
                 for (i = 0; i < count; ++i)  {
                     if (0 == strncmp(busybox_cmds[i], command, commandlen)) {
                         char *t_cmd = NULL;
-
-                        if (NULL == (t_cmd = g_strconcat("\"", busybox, "\" sh -c \"", command, "\"", NULL))) {
+                                                // note: original command, busybox behaves as expected
+                        if (NULL == (t_cmd = g_strconcat("\"", busybox, "\" sh -c \"", ocommand, "\"", NULL))) {
                            free((void *)command);
                            x_errno = ENOMEM;
                            goto error;
@@ -226,11 +226,11 @@ pipe_open (const char *xcommand, gboolean fdout, gboolean fderr, gboolean fdin, 
     }
 
     p->out.len = MC_PIPE_BUFSIZE;               // read buffer length.
-    p->out.null_term = FALSE;                   // whether buf is null-terminated or not.
+    p->out.null_term = FALSE;                   // whether buffer is null-terminated or not.
     p->out.buf[0] = '\0';
 
     p->err.len = MC_PIPE_BUFSIZE;               // read buffer length.
-    p->err.null_term = FALSE;                   // whether buf is null-terminated or not.
+    p->err.null_term = FALSE;                   // whether buffer is null-terminated or not.
     p->err.buf[0] = '\0';
 
     return p;

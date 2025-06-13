@@ -23,7 +23,7 @@
 #pragma disable_message(302)            /* Expression is only useful for its side effects */
 #endif
 
-#if !defined(__GNUC__)
+#if !defined(__GNUC__) && !defined(__clang__)
 #define __attribute__(x)                /**/
 #endif
 

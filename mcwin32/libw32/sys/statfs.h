@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_STATFS_H_INCLUDED
 #define LIBW32_SYS_STATFS_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_statfs_h,"$Id: statfs.h,v 1.13 2025/03/12 17:38:50 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_statfs_h,"$Id: statfs.h,v 1.14 2025/06/09 05:13:44 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -41,7 +41,7 @@ __CPRAGMA_ONCE
 
 #define FS_MAGIC    0x11954                     /* Taken from HP-UX */
 
-#define MFSNAMELEN  16                          /* length of fs type name, including null */
+#define MFSNAMELEN  16                          /* length of file system type name, including null */
 #define MNAMELEN    90                          /* length of buffer for returned name */
 
 typedef struct fsid {                           /* file system id type */
@@ -52,16 +52,16 @@ struct statfs {
     unsigned long   f_bsize;                    /* fundamental file system block size */
     unsigned long   f_iosize;                   /* optimal transfer block size */
     fsblkcnt_t      f_blocks;                   /* total data blocks in file system */
-    fsblkcnt_t      f_bfree;                    /* free blocks in fs */
+    fsblkcnt_t      f_bfree;                    /* free blocks in file system */
     fsblkcnt_t      f_bavail;                   /* free blocks avail to non-superuser */
     fsfilcnt_t      f_files;                    /* total file nodes in file system */
-    fsfilcnt_t      f_ffree;                    /* free file nodes in fs */
+    fsfilcnt_t      f_ffree;                    /* free file nodes in file system */
     fsid_t          f_fsid;                     /* file system id */
     uid_t           f_owner;                    /* user that mounted the filesystem */
     int             f_type;                     /* type of filesystem (see below) */
     int             f_flags;                    /* copy of mount flags */
     long            f_spare[2];                 /* spare for later */
-    char            f_fstypename[MFSNAMELEN];   /* fs type name */
+    char            f_fstypename[MFSNAMELEN];   /* file system type name */
     char            f_mntonname[MNAMELEN];      /* directory on which mounted */
     char            f_mntfromname[MNAMELEN];    /* mounted filesystem */
 };

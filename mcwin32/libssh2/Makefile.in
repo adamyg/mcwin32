@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.24 2025/02/13 17:55:07 cvsuser Exp $
+# $Id: Makefile.in,v 1.25 2025/06/11 17:33:56 cvsuser Exp $
 # libssh2 makefile.
 #
 #
@@ -80,6 +80,9 @@ D_OBJ=		$(ROOT)/obj@TOOLCHAINEXT@/$(BUILD_TYPE)/libssh2
 XFLAGS=
 
 CFLAGS=		@CFLAGS@
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CFLAGS+=	-Wno-nonportable-include-path
+endif
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
 CFLAGS+=	-wcd=124 -wcd=125 -wcd=136
 endif

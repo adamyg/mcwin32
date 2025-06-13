@@ -177,6 +177,11 @@
                 +   __declspec(dllimport)
                 +   #endif
                     extern const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_none;
+                    
+            library\x590_crt.c: (Legacy support)
+                   
+                -  #ifdef _MSC_VER
+                +  #if defined(_MSC_VER) && _WIN32_WINNT >= 0x0600 //#ifdef _MSC_VER
 
             library\x509_create.c: (OWC support)
 

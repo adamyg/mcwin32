@@ -1,7 +1,7 @@
 #ifndef TERMEMU_VIO_H_INCLUDED
 #define TERMEMU_VIO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.13 2025/03/12 17:38:50 cvsuser Exp $")
+__CIDENT_RCSID(termemu_vio_h,"$Id: termemu_vio.h,v 1.14 2025/05/20 12:17:30 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -130,6 +130,8 @@ __BEGIN_DECLS
 
 LIBVIO_API void             vio_save(void);
 LIBVIO_API void             vio_restore(void);
+LIBVIO_API void             vio_save_lines(int active);
+LIBVIO_API void             vio_restore_lines(int top, int bottom, int to);
 LIBVIO_API int              vio_screenbuffersize(void);
 
 LIBVIO_API int              vio_open(int *rows, int *cols);

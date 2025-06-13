@@ -1,4 +1,4 @@
-//$Id: x509_globals.h,v 1.2 2020/05/01 14:33:00 cvsuser Exp $
+//$Id: x509_globals.h,v 1.3 2025/06/12 18:02:33 cvsuser Exp $
 //
 //  libmetlx509 support
 //
@@ -28,3 +28,10 @@
 MBEDAPI const mbedtls_x509_crt_profile * get_mbedtls_x509_crt_profile_default(void);
 MBEDAPI const mbedtls_x509_crt_profile * get_mbedtls_x509_crt_profile_next(void);
 MBEDAPI const mbedtls_x509_crt_profile * get_mbedtls_x509_crt_profile_suiteb(void);
+
+#if defined(HAVE_X509_INET_XTOX)
+int x509_inet_pton(int af, const char *src, void *dst);
+const char *x509_inet_ntop(int af, const void *src, char *dst, size_t /*socklen_t*/ size);
+#endif
+
+//end

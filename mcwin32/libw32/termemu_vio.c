@@ -28,7 +28,7 @@
 /*
  * Notes:
  *   o 256 color mode available under both Legacy and Win10 enhanced console.
- *   o Use of non-monospaced fonts are not advised unless UNICODE characters are required.
+ *   o Use of non monospaced fonts are not advised unless UNICODE characters are required.
  *   o Neither wide nor combined characters are fully addressed.
  */
 
@@ -189,7 +189,7 @@ struct sline {
     WCHAR_INFO *        text;
 };
 
-typedef struct copyoutctx {
+typedef struct CopyOutCtx {
     int                 active;
     int                 cursormode;
     int                 codepagemode;           // code-page to restore.
@@ -197,7 +197,14 @@ typedef struct copyoutctx {
     CONSOLE_CURSOR_INFO cursorinfo;             // current cursor state.
     RECT                devicerect;             // current display area.
     UINT                codepage;               // current code page.
-}  copyoutctx_t;
+} CopyOutCtx_t;
+
+typedef struct VioState {
+    CHAR_INFO *         image;
+    unsigned            top;
+    unsigned            rows;
+    unsigned            cols;
+} VioState_t;
 
 #define SWAPFGBG(__f, __b) \
         { int t_color = __f; __f = __b; __b = t_color; }
@@ -231,18 +238,18 @@ static __inline int     winnormal(const int color);
 static __inline int     vtnormal(const int color);
 
 static void             CopyIn(unsigned pos, unsigned cnt, WCHAR_INFO *image);
-static void             CopyOut(copyoutctx_t *ctx, unsigned offset, unsigned len, unsigned flags);
-static void             CopyOutLegacy(copyoutctx_t* ctx, unsigned pos, unsigned cnt, unsigned flags);
+static void             CopyOut(CopyOutCtx_t *ctx, unsigned offset, unsigned len, unsigned flags);
+static void             CopyOutLegacy(CopyOutCtx_t* ctx, unsigned pos, unsigned cnt, unsigned flags);
 #if defined(WIN32_CONSOLEEXT)
 #if defined(WIN32_CONSOLE256)
-static void             CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags);
+static void             CopyOutEx(CopyOutCtx_t *ctx, unsigned pos, unsigned cnt, unsigned flags);
 #define WIN32_CONSOLEVIRTUAL
 #if defined(WIN32_CONSOLEVIRTUAL)
-static void             CopyOutVirtual(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags);
+static void             CopyOutVirtual(CopyOutCtx_t *ctx, size_t pos, size_t cnt, unsigned flags);
 #endif  //WIN32_CONSOLEVIRTUAL
 #endif  //WIN32_CONSOLE256
-static void             UnderOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt);
-static void             StrikeOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt);
+static void             UnderOutEx(CopyOutCtx_t *ctx, unsigned pos, unsigned cnt);
+static void             StrikeOutEx(CopyOutCtx_t *ctx, unsigned pos, unsigned cnt);
 #endif  //WIN32_CONSOLEEXT
 
 #if defined(WIN32_CONSOLE256)
@@ -251,8 +258,10 @@ static void             consolefontsenum(void);
 static HFONT            consolefontcreate(int height, int width, int weight, int italic, const char *facename);
 #endif
 
-static void             ImageSave(HANDLE console, unsigned pos, unsigned cnt);
-static void             ImageRestore(HANDLE console, unsigned pos, unsigned cnt);
+static BOOL             ImageInit(VioState_t *state, unsigned rows, unsigned cols);
+static BOOL             ImageSize(VioState_t *state, unsigned rows, unsigned cols);
+static void             ImageSave(HANDLE console, VioState_t *state, unsigned at, unsigned nrows);
+static void             ImageRestore(HANDLE console, VioState_t *state, unsigned at, unsigned nrows);
 
 #define FACENAME_MAX    64
 #define FONTS_MAX       64
@@ -266,11 +275,10 @@ typedef BOOL   (WINAPI *SetCurrentConsoleFontEx_t)(HANDLE, BOOL, CONSOLE_FONT_IN
 typedef BOOL   (WINAPI *GetConsoleScreenBufferInfoEx_t)(HANDLE, CONSOLE_SCREEN_BUFFER_INFOEX *);
 
 static struct {
-    CHAR_INFO *         image;
-    CONSOLE_CURSOR_INFO cursorinfo;
-    COORD               cursorcoord;
-    int                 rows;
-    int                 cols;
+    CONSOLE_CURSOR_INFO cursorinfo;             // Original cursor information.
+    COORD               cursorcoord;            // Original cursor position.
+    VioState_t          active;                 // Optional visible buffer; end-of-buffer.
+    VioState_t          alt;                    // Alt screen; top-of-buffer.
 } vio_state;
 
 static struct {                                 /* Video state */
@@ -616,7 +624,7 @@ vio_init(void)
         oimage = vio.image;
         vio.image = (WCHAR_INFO *)calloc(vio.size, sizeof(WCHAR_INFO));
         if (oimage) {                           // screen has resized
-            const WCHAR_INFO wblank = {{0, FOREGROUND_INTENSITY}, ' '};
+            const WCHAR_INFO wblank = {{0, FOREGROUND_INTENSITY}, {' '}};
             const int screencols = vio.cols;
             const int cnt =
                 (cols > screencols ? screencols : cols) * sizeof(WCHAR_INFO);
@@ -1475,7 +1483,7 @@ AttributesShadow(const struct WCHAR_COLORINFO *color)
  *      nothing.
  **/
 static void
-CopyOutInit(copyoutctx_t *ctx)
+CopyOutInit(CopyOutCtx_t *ctx)
 {
     (void) memset(ctx, 0, sizeof(*ctx));
     ctx->cursormode = -1;
@@ -1485,7 +1493,7 @@ CopyOutInit(copyoutctx_t *ctx)
 
 
 static void
-CopyOutFinal(copyoutctx_t *ctx)
+CopyOutFinal(CopyOutCtx_t *ctx)
 {
     assert(42 == ctx->active);
     if (42 != ctx->active) return;
@@ -1510,7 +1518,7 @@ CopyOutFinal(copyoutctx_t *ctx)
 
 
 static void
-CopyOut(copyoutctx_t* ctx, unsigned pos, unsigned cnt, unsigned flags)
+CopyOut(CopyOutCtx_t* ctx, unsigned pos, unsigned cnt, unsigned flags)
 {
 #if defined(WIN32_CONSOLEVIRTUAL)
     //
@@ -1528,7 +1536,7 @@ CopyOut(copyoutctx_t* ctx, unsigned pos, unsigned cnt, unsigned flags)
 
 
 static void
-CopyOutLegacy(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
+CopyOutLegacy(CopyOutCtx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
 {
     const unsigned activecolors = (vio.displaymode || 0 == vio.activecolors ? 16 : vio.activecolors);
     const int /*rows = vio.rows,*/ cols = vio.cols;
@@ -1834,7 +1842,7 @@ SameAttributesBG(const WCHAR_INFO *cell, const struct WCHAR_COLORINFO *info, con
  *      nothing.
  **/
 static void
-CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
+CopyOutEx(CopyOutCtx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
 {
     const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
     const int rows = vio.rows, cols = vio.cols;
@@ -2008,7 +2016,7 @@ CopyOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt, unsigned flags)
  *      https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
  */
 static void
-CopyOutVirtual(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
+CopyOutVirtual(CopyOutCtx_t *ctx, size_t pos, size_t cnt, unsigned flags)
 {
     const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
     HANDLE chandle = vio.chandle;
@@ -2164,7 +2172,7 @@ CopyOutVirtual(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
 /*  Function:           UnderOutEx
  *      Underline characters within the specified region.
  *
- *  Parameters
+ *  Parameters:
  *      pos - Starting offset in video cells from top left.
  *      cnt - Video cell count.
  *
@@ -2172,7 +2180,7 @@ CopyOutVirtual(copyoutctx_t *ctx, size_t pos, size_t cnt, unsigned flags)
  *      nothing.
  **/
 static void
-UnderOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt)
+UnderOutEx(CopyOutCtx_t *ctx, unsigned pos, unsigned cnt)
 {
     const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
     const int rows = vio.rows, cols = vio.cols;
@@ -2235,7 +2243,7 @@ UnderOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt)
 /*  Function:           StrikeOutEx
  *      Over-strike characters within the specified region.
  *
- *  Parameters
+ *  Parameters:
  *      pos - Starting offset in video cells from top left.
  *      cnt - Video cell count.
  *
@@ -2243,7 +2251,7 @@ UnderOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt)
  *      nothing.
  **/
 static void
-StrikeOutEx(copyoutctx_t *ctx, unsigned pos, unsigned cnt)
+StrikeOutEx(CopyOutCtx_t *ctx, unsigned pos, unsigned cnt)
 {
     const WCHAR_INFO *cursor = vio.image + pos, *end = cursor + cnt;
     const int rows = vio.rows, cols = vio.cols;
@@ -2606,14 +2614,15 @@ consolefontset(int height, int width, const char *facename)
 #if defined(DO_TRACE_LOG)
         {   DWORD dwGlyphSize;
 
-            if ((dwGlyphSize = GetFontUnicodeRanges(wdc, NULL)) > 0) {
+            if ((dwGlyphSize = GetFontUnicodeRanges(wdc, NULL)) != 0) {
                 GLYPHSET *glyphsets;
                 DWORD r;
                                                 // TODO -- not supported mapping
-                if (NULL != (glyphsets = calloc(dwGlyphSize, 1))) {
+                if (NULL != (glyphsets = calloc(1, dwGlyphSize))) {
                     glyphsets->cbThis = dwGlyphSize;
                     TRACE_LOG(("Font UNICODE Support\n"))
-                    if (GetFontUnicodeRanges(wdc, glyphsets) > 0) {
+
+                    if (GetFontUnicodeRanges(wdc, glyphsets)) {
                         TRACE_LOG(("  flAccel: %u\n", glyphsets->flAccel))
                         TRACE_LOG(("  total:   %u\n", glyphsets->cGlyphsSupported))
                         for (r = 0; r < glyphsets->cRanges; ++r) {
@@ -2621,7 +2630,7 @@ consolefontset(int height, int width, const char *facename)
                                 glyphsets->ranges[r].wcLow, glyphsets->ranges[r].wcLow+glyphsets->ranges[r].cGlyphs))
                         }
                     }
-                    free(glyphsets);
+                    free((void *) glyphsets);
                 }
             }
         }
@@ -2672,7 +2681,7 @@ consolefontcreate(int height, int width, int weight, int italic, const char *fac
         ANSI_CHARSET,                           // DEFAULT (locale), ANSI, OEM ...
                         // DEFAULT, ANSI, BALTIC, CHINESEBIG5, EASTEUROPE, GB2312, GREEK, HANGUL,
                         // MAC_CHARSET, OEM, RUSSIAN, SHIFTJIS, TURKISH, VIETNAMESE
-                                                // .. should we match the locale/codepage ?
+                                                // .. should we match the locale/code-page ?
         (isTerminal ? OUT_RASTER_PRECIS : OUT_TT_PRECIS),
         CLIP_DEFAULT_PRECIS,                    // default clipping behavior.
         (italic ? PROOF_QUALITY : ANTIALIASED_QUALITY),
@@ -2764,8 +2773,9 @@ parse_color(const char *color, const char *defname, const struct attrmap *map, i
         const int len = (int)(a - color);
 
         strncpy(t_name, color, sizeof(t_name)-1);// remove attribute component.
-        if (len < (int)sizeof(t_name))
+        if (len < (int)sizeof(t_name)) {
             t_name[len] = 0;
+        }
         color = t_name;
 
         *attr = parse_attributes(a);
@@ -2884,7 +2894,7 @@ check_activecolors(void)
 /*  Function:       winnormal
  *      Apply color foreground/background defaults for WIN_COLOR specifications.
  *
- *  Parameters
+ *  Parameters:
  *      color - WIN_COLOR value.
  *
  *  Returns:
@@ -2902,7 +2912,7 @@ winnormal(const int color)
 /*  Function:       vtnormal
  *      Apply color foreground/background defaults for VT_COLOR specifications.
  *
- *  Parameters
+ *  Parameters:
  *      color - VT_COLOR value.
  *
  *  Returns:
@@ -2918,172 +2928,110 @@ vtnormal(const int color)
 
 
 /*
- *  vio_save ---
+ *  vio_save_lines ---
  *      Save the buffer screen state; for later restoration via via_restore()
+ *
+ *  Parameter:
+ *      active - If non-zero, save the active visible screen (generally the end-of-buffer),
+ *          in addition to the top-of-buffer alternative screen area. Otherwise the behavior
+ *          is the same as vio_save().
+ *
+ *  Returns:
+ *      Nothing
  **/
 LIBVIO_API void
-vio_save(void)
+vio_save_lines(int active)
 {
-    HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
-    COORD cursor, home = {0, 0};
+    HANDLE console = (vio.inited ?              // console handle
+            vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
+    const COORD home = { 0, 0 };
+    COORD cursor;
     int rows, cols;
 
-    /*
-     *  Size arena
-     */
+    // size working buffers
     cursor = vio_size(console, &rows, &cols);
 
-    if (!vio_state.image ||                     // initial or size change
-            vio_state.rows != rows || vio_state.cols != cols) {
-        CHAR_INFO *nimage;
-
-        if (rows <= 0 || cols <= 0 ||
-                NULL == (nimage = calloc(rows * cols, sizeof(CHAR_INFO)))) {
-            return;
-        }
-        free(vio_state.image);                  // release previous; if any
-        vio_state.image = nimage;
-        vio_state.rows = rows;
-        vio_state.cols = cols;
+    if ((active && !ImageInit(&vio_state.active, rows, cols)) ||
+            !ImageInit(&vio_state.alt, rows, cols)) {
+        return;
     }
 
-    /*
-     *  Save cursor and image
-     */
+    // original cursor state
     vio_state.cursorcoord = cursor;
     GetConsoleCursorInfo(console, &vio_state.cursorinfo);
-    SetConsoleCursorPosition(console, home);    // home cursor.
 
-    ImageSave(console, 0, rows * cols);         // read image.
+    // original screen lines; end-of-buffer
+    vio_state.active.top = 0;                   // non-zero active
+
+    if (active) {
+        CONSOLE_SCREEN_BUFFER_INFO csbi = { 0, 0 };
+
+        GetConsoleScreenBufferInfo(console, &csbi);
+        if (csbi.srWindow.Top) {                // differs from top-of-buffer
+            // Legacy console support
+            // https://learn.microsoft.com/en-us/windows/console/classic-vs-vt
+            vio_state.active.top = csbi.srWindow.Top;
+            ImageSave(console, &vio_state.active, 0, rows);
+        }
+    }
+
+    // alternative screen; top-of-buffer
+    ImageSave(console, &vio_state.alt, 0, rows);
+    SetConsoleCursorPosition(console, home);
 }
 
 
-static void
-ImageSave(HANDLE console, unsigned pos, unsigned cnt)
+LIBVIO_API void
+vio_save(void)
 {
-    const int rows = vio_state.rows, cols = vio_state.cols;
-    COORD is = {0}, ic = {0};
-    SMALL_RECT wr = {0};
-    DWORD rc;
-
-    assert(pos < (unsigned)(rows * cols));
-    assert(cnt && 0 == (pos % cols));
-    assert((pos + cnt) <= (unsigned)(rows * cols));
-
-    wr.Left   = 0;                              // src. screen rectangle.
-    wr.Right  = (SHORT)(cols - 1);
-    wr.Top    = (SHORT)(pos / cols);
-    wr.Bottom = (SHORT)((pos + (cnt - 1)) / cols);
-
-    is.Y      = (SHORT)(rows - wr.Top);         // size of image.
-    is.X      = (SHORT)(cols);
-
-    ic.X      = 0;                              // top left src cell in image.
-    ic.Y      = 0;
-                                                // read in image.
-    rc = ReadConsoleOutputW(console, vio_state.image + pos, is, ic, &wr);
-
-    if (0 == rc && ERROR_NOT_ENOUGH_MEMORY == GetLastError()) {
-        if (cnt > ((unsigned)cols * 2)) {       // sub-divide request (max 8k).
-            const int cnt2 = (cnt / (cols * 2)) * cols;
-
-            ImageSave(console, pos, cnt2);
-            ImageSave(console, pos + cnt2, cnt - cnt2);
-        }
-    }
+    vio_save_lines(0);
 }
 
 
 /*
- *  vio_restore ---
- *      Restore the buffer; from a previous via_save()
+ *  vio_restore_lines ---
+ *      Restore the buffer; from a previous save lines.
  **/
 LIBVIO_API void
 vio_restore_lines(int top, int bottom, int to)
 {
-    HANDLE console = (vio.inited ? vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
-    int rows = 0, cols = 0;
+    VioState_t *state = (vio_state.active.top ? // restore buffer
+            &vio_state.active : (to >= 0 ? &vio_state.alt : NULL));
+    HANDLE console = (vio.inited ?              // console handle
+        vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
 
-    if (NULL == vio_state.image)                // initialised ?
-        return;
+    int rows = 0, cols = 0;
 
     assert(to >= -1);
 
-    vio_size(console, &rows, &cols);
-    if (0 == rows || 0 == cols)
+    if (NULL == state || NULL == state->image)  // uninitialised
         return;
 
-    // resize; if required, space fill
-    if ((rows != vio_state.rows || cols != vio_state.cols)) {
-        CHAR_INFO *nimage;
+    // Size arena
+    vio_size(console, &rows, &cols);
 
-        if ((nimage = calloc(rows * cols, sizeof(CHAR_INFO))) != NULL) {
+    if (! ImageSize(state, rows, cols)) {
+        return;
+    }
 
-            const CHAR_INFO blank = { {' '}, FOREGROUND_INTENSITY };
-            const int cnt = (cols > vio_state.cols ? vio_state.cols : cols) * sizeof(CHAR_INFO);
-            int r, c;
+    // Update selection
+    if (bottom > rows)
+        bottom = rows;                          // lower limit.
 
-            for (r = 0; r < rows; ++r) {
-                if (r < vio_state.rows) {       // merge previous image.
-                    memcpy(nimage + (r * cols),
-                        (const void *)(vio_state.image + (r * vio_state.cols)), cnt);
-                }
-                                                // blank new cells.
-                if ((c = (r >= vio_state.rows ? 0 : vio_state.cols)) < cols) {
-                    CHAR_INFO *p = nimage + (r *cols) + c;
-                    do {
-                        *p++ = blank;
-                    } while (++c < cols);
-                }
-            }
+    if (top < 0)
+        top = 0;                                // upper limit.
 
-            free((void *)vio_state.image);      // replace image.
-            vio_state.image = nimage;
-            vio_state.rows = rows;
-            vio_state.cols = cols;
+    if (to == -1) {
+        if (top < bottom) {                     // non-inclusive bottom.
+            const unsigned lines = (unsigned)(bottom - top);
+            ImageRestore(console, state, top, lines);
         }
     }
 
-    // Restore to console
-    if (top == -1 && bottom == -1) {
-        // Full restore, image and cursor.
-
-        top = 0;
-        bottom = rows - 1;
-
-        if (to == -1) {
-            COORD iHome = {0, 0};               // home cursor.
-
-            SetConsoleCursorPosition(console, iHome);
-            ImageRestore(console, 0, rows * cols);
-
-                                                // original cursor.
-            SetConsoleCursorPosition(console, vio_state.cursorcoord);
-            SetConsoleCursorInfo(console, &vio_state.cursorinfo);
-        }
-
-    } else {
-        // Update selection
-
-        if (bottom > rows) 
-            bottom = rows;                      // lower limit.
-
-        if (top < 0)
-            top = 0;                            // upper limit.
-
-        if (to == -1) {
-            if (top < bottom) {                 // non-inclusive bottom.
-                const unsigned lines = (unsigned)(bottom - top);
-
-                ImageRestore(console, top * cols, lines * cols);
-            }
-        }
-    }
-    
     // Publish to buffer
     if (to >= 0) {
         for (; top < bottom && to < rows; ++top, ++to) {
-            const CHAR_INFO *icursor = vio_state.image + (top * cols);
+            const CHAR_INFO *icursor = state->image + (top * cols);
             WCHAR_INFO *cursor = vio.c_screen[to].text, *end = cursor + cols;
             WCHAR_INFO nchr = {0};
             unsigned flags = 0;
@@ -3109,45 +3057,196 @@ vio_restore_lines(int top, int bottom, int to)
 }
 
 
+/*
+ *  vio_restore ---
+ *      Restore the buffer state.
+ **/
 LIBVIO_API void
 vio_restore(void)
 {
-    vio_restore_lines(-1, -1, -1);
+    HANDLE console = (vio.inited ?              // console handle
+        vio.chandle : GetStdHandle(STD_OUTPUT_HANDLE));
+    int rows = 0, cols = 0;
+
+    if (NULL == vio_state.alt.image)            // uninitialised
+        return;
+
+    // Size arena
+    vio_size(console, &rows, &cols);
+
+    if ((vio_state.active.top && !ImageSize(&vio_state.active, rows, cols)) ||
+            !ImageSize(&vio_state.alt, rows, cols)) {
+        return;
+    }
+
+    // original end-of-buffer.
+    if (vio_state.active.top) {
+        ImageRestore(console, &vio_state.active, 0, rows);
+    }
+
+    // original cursor.
+    SetConsoleCursorPosition(console, vio_state.cursorcoord);
+    SetConsoleCursorInfo(console, &vio_state.cursorinfo);
+
+    // original top-of-buffer; alternative screen.
+    ImageRestore(console, &vio_state.alt, 0, rows);
 }
 
 
-static void
-ImageRestore(HANDLE console, unsigned pos, unsigned cnt)
+/*
+ *  Save state initialise or reinitialisation.
+ */
+static BOOL
+ImageInit(VioState_t *state, unsigned rows, unsigned cols)
 {
-    const int rows = vio_state.rows, cols = vio_state.cols;
+    const size_t elements = rows * cols;
+
+    if (state->image && state->rows == rows && state->cols == cols) {
+        memset(state->image, 0, elements * sizeof(CHAR_INFO));
+
+    } else {
+        CHAR_INFO *nimage;
+
+        if (rows == 0 || rows > 0x7fff || cols == 0 || cols > 0x7fff ||
+                NULL == (nimage = calloc(elements, sizeof(CHAR_INFO)))) {
+            return FALSE;
+        }
+
+        free((void *)state->image);             // release previous; if any
+
+        state->image = nimage;
+        state->rows = rows;
+        state->cols = cols;
+    }
+    return TRUE;
+}
+
+
+/*
+ *  Save state resize, on a size change reorganizing the buffer,
+ *  either extending by padding or remove unneeded cells.
+ */
+static BOOL
+ImageSize(VioState_t *state, unsigned rows, unsigned cols)
+{
+    if (state->rows != rows || state->cols != cols) {
+        const size_t elements = rows * cols;
+        CHAR_INFO *nimage;
+
+        if (rows == 0 || rows > 0x7fff || cols == 0 || cols > 0x7fff ||
+                NULL == (nimage = calloc(elements, sizeof(CHAR_INFO)))) {
+            return FALSE;
+
+        } else {
+            const CHAR_INFO blank = { {' '}, FOREGROUND_INTENSITY };
+            const unsigned cnt = (cols > state->cols ? state->cols : cols) * sizeof(CHAR_INFO);
+            unsigned r, c;
+
+            for (r = 0; r < rows; ++r) {
+                if (r < state->rows) {          // merge previous image.
+                    memcpy(nimage + (r * cols),
+                        (const void*)(state->image + (r * state->cols)), cnt);
+                }
+
+                // blank new cells.
+                if ((c = (r >= state->rows ? 0 : state->cols)) < cols) {
+                    CHAR_INFO *p = nimage + (r * cols) + c;
+
+                    do {
+                        *p++ = blank;
+                    } while (++c < cols);
+                }
+            }
+
+            free((void*)state->image);          // replace image.
+
+            state->image = nimage;
+            state->rows = rows;
+            state->cols = cols;
+        }
+    }
+
+    return TRUE;
+}
+
+
+/*
+ *  Import the screen buffer.
+ */
+static void
+ImageSave(HANDLE console, VioState_t *state, unsigned at, unsigned nrows)
+{
+    const unsigned top = state->top,
+        rows = state->rows, cols = state->cols;
+
     COORD is = {0}, ic = {0};
     SMALL_RECT wr = {0};
     DWORD rc;
 
-    assert(pos < (unsigned)(rows * cols));
-    assert(0 == (pos % cols));                  // col=0  
-    assert(cnt && 0 == (cnt % cols));           // and column width
-    assert((pos + cnt) <= (unsigned)(rows * cols));
+    assert(at < rows);
+    assert(nrows && nrows <= rows);
+    assert((at + nrows) <= rows);
 
-    wr.Left   = 0;                              // src. screen rectangle.
-    wr.Right  = (SHORT)(cols - 1);
-    wr.Top    = (SHORT)(pos / cols);
-    wr.Bottom = (SHORT)((pos + (cnt - 1)) / cols);
+    wr.Left = 0;                                // readRegion, screen rectangle.
+    wr.Right = (SHORT)(cols - 1);
+    wr.Top = (SHORT)(top + at);
+    wr.Bottom = (SHORT)(top + nrows - 1);
 
-    is.Y      = (SHORT)(vio.rows - wr.Top);     // size of image.
-    is.X      = (SHORT)vio.cols;
+    is.Y = (SHORT)(nrows);                      // bufferSize, size of image.
+    is.X = (SHORT)(cols);
 
-    ic.X      = 0;                              // top left src cell in image.
-    ic.Y      = 0;
+    ic.X = 0;                                   // bufferCoord, top left src cell in image.
+    ic.Y = 0;
                                                 // read in image.
-    rc = WriteConsoleOutputW(console, vio_state.image + pos, is, ic, &wr);
+    rc = ReadConsoleOutputW(console, state->image + (at * cols), is, ic, &wr);
 
     if (0 == rc && ERROR_NOT_ENOUGH_MEMORY == GetLastError()) {
-        if (cnt > ((unsigned)cols * 2)) {       // sub-divide request.
-            const int cnt2 = (cnt / (cols * 2)) * cols;
+        if (nrows >= 2) {                       // sub-divide request (max 8k).
+            const unsigned slice = nrows / 2;
 
-            ImageRestore(console, pos, cnt2);
-            ImageRestore(console, pos + cnt2, cnt - cnt2);
+            ImageSave(console, state, at, slice);
+            ImageSave(console, state, at + slice, nrows - slice);
+        }
+    }
+}
+
+
+/*
+ *  Restore the screen buffer.
+ */
+static void
+ImageRestore(HANDLE console, VioState_t *state, unsigned at, unsigned nrows)
+{
+    const unsigned top = state->top,
+            rows = state->rows, cols = state->cols;
+
+    COORD is = {0}, ic = {0};
+    SMALL_RECT wr = {0};
+    DWORD rc;
+
+    assert(at < rows);
+    assert(nrows && nrows <= rows);
+    assert((at + nrows) <= rows);
+
+    wr.Left = 0;                                // writeRegion, screen rectangle.
+    wr.Right = (SHORT)(cols - 1);
+    wr.Top = (SHORT)(top + at);
+    wr.Bottom = (SHORT)(top + nrows - 1);
+
+    is.Y = (SHORT)(nrows);                      // bufferSize, size of image.
+    is.X = (SHORT)(cols);
+
+    ic.X = 0;                                   // bufferCoord, top left src cell in image.
+    ic.Y = 0;
+                                                // write out image.
+    rc = WriteConsoleOutputW(console, state->image + (at * cols), is, ic, &wr);
+
+    if (0 == rc && ERROR_NOT_ENOUGH_MEMORY == GetLastError()) {
+        if (nrows >= 2) {                       // sub-divide request (max 8k).
+            const unsigned slice = nrows / 2;
+
+            ImageRestore(console, state, at, slice);
+            ImageRestore(console, state, at + slice, nrows - slice);
         }
     }
 }
@@ -3785,7 +3884,7 @@ vio_normal_video(void)
 LIBVIO_API void
 vio_flush(void)
 {
-    copyoutctx_t ctx = {0};
+    CopyOutCtx_t ctx = {0};
     const int trashed = vio.c_trashed;
     int l, updates;
 

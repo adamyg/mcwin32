@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_open_c, "$Id: w32_open.c,v 1.3 2025/04/09 08:54:10 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_open_c, "$Id: w32_open.c,v 1.5 2025/05/23 12:01:53 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -49,6 +49,7 @@ __CIDENT_RCSID(gr_w32_open_c, "$Id: w32_open.c,v 1.3 2025/04/09 08:54:10 cvsuser
 #endif
 
 #include "win32_internal.h"
+#include "win32_misc.h"
 #include "win32_io.h"
 
 static int W32OpenA(const char *path, int oflag, int mode);
@@ -364,6 +365,15 @@ w32_openA(const char* path, int oflag, int mode)
     if (0 == w32_iostricmpA(path, "/dev/null")) {
         path = "NUL";                           // redirect
 
+    } else if (0 == w32_iostricmpA(path, "/dev/stdin")) {
+        return w32_osfdup(GetStdHandle(STD_INPUT_HANDLE), oflag);
+
+    } else if (0 == w32_iostricmpA(path, "/dev/stdout")) {
+        return w32_osfdup(GetStdHandle(STD_OUTPUT_HANDLE), oflag);
+
+    } else if (0 == w32_iostricmpA(path, "/dev/stderr")) {
+        return w32_osfdup(GetStdHandle(STD_ERROR_HANDLE), oflag);
+
     } else if (w32_resolvelinkA(path, symbuf, _countof(symbuf), &ret) == NULL) {
         /*
          *  If O_CREAT create the file if it does not exist.
@@ -433,7 +443,16 @@ w32_openW(const wchar_t *path, int oflag, int mode)
 
     // specials
     if (0 == w32_iostricmpW(path, "/dev/null")) {
-        path = L"NUL";                          // redirect
+        path = L"NUL";                          // nul device
+
+    } else if (0 == w32_iostricmpW(path, "/dev/stdin")) {
+        return w32_osfdup(GetStdHandle(STD_INPUT_HANDLE), oflag);
+
+    } else if (0 == w32_iostricmpW(path, "/dev/stdout")) {
+        return w32_osfdup(GetStdHandle(STD_OUTPUT_HANDLE), oflag);
+
+    } else if (0 == w32_iostricmpW(path, "/dev/stderr")) {
+        return w32_osfdup(GetStdHandle(STD_ERROR_HANDLE), oflag);
 
     } else if (w32_resolvelinkW(path, symbuf, _countof(symbuf), &ret) == NULL) {
         /*
