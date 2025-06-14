@@ -14,12 +14,12 @@ jobs:
             toolchain: vc2022,
             toolversion: vs170
           }
-#       - {
-#           name: "Windows Latest Clang-cl",
-#           os: windows-latest,
-#           toolchain: clangcl,
-#           toolversion: ccl
-#         }
+        - {
+            name: "Windows Latest Clang-cl",
+            os: windows-latest,
+            toolchain: clangcl,
+            toolversion: ccl
+          }
         - {
            name: "Windows Latest MinGW32",
            os: windows-latest,
