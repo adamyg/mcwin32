@@ -19,7 +19,7 @@ jobs:
             os: windows-latest,
             toolchain: clangcl,
             toolversion: ccl
-          
+          }
         - {
            name: "Windows Latest MinGW32",
            os: windows-latest,
