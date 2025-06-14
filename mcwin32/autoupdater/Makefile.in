@@ -62,10 +62,11 @@ XFLAGS=
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@ $(CWALL)
 ifeq ("gcc","@CC@")
-#CWARN+=	-Wno-shadow -Wno-sign-compare -Wno-type-limits
-#CWARN+=	-Wno-unused-variable -Wno-unused-parameter
-#CWARN+=	-Wno-unused-parameter -Wno-unused-function
-#CWARN+=	-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CXXWARN+=	-Wno-unused-command-line-argument
+CXXWARN+=	-Wno-deprecated-declarations
+CXXWARN+=	-Wno-inconsistent-missing-override
 endif
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
 CFLAGS+=	-wcd=124
@@ -117,7 +118,7 @@ RMDFLAGS=	-rf
 #########################################################################################
 # Targets
 
-VERSION=	1.0.3
+VERSION=	1.0.4
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 
 UPDATERDLL=	$(D_LIB)/$(LP)autoupdater.la
