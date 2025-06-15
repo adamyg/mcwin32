@@ -69,7 +69,7 @@ CXXWARN+=	-Wno-deprecated-declarations
 CXXWARN+=	-Wno-inconsistent-missing-override
 endif
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
-CFLAGS+=	-wcd=124
+CFLAGS+=	-wcd=124 -wcd=201
 endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
