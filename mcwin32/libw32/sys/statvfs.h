@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_STATVFS_H
 #define LIBW32_SYS_STATVFS_H
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_statvfs_h,"$Id: statvfs.h,v 1.11 2025/03/08 16:40:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_statvfs_h,"$Id: statvfs.h,v 1.12 2025/07/20 17:27:33 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -146,8 +146,11 @@ struct statvfs {
 
 __BEGIN_DECLS
 
-LIBW32_API int          statvfs (const char *path, struct statvfs *fs);
-LIBW32_API int          fstatvfs (int, struct statvfs *);
+LIBW32_API int          statvfs (const char *path, struct statvfs *sb);
+LIBW32_API int          statvfsA (const char *path, struct statvfs *sb);
+LIBW32_API int          statvfsW (const wchar_t *path, struct statvfs *sb);
+
+LIBW32_API int          fstatvfs (int fildes, struct statvfs *sb);
 
 __END_DECLS
 

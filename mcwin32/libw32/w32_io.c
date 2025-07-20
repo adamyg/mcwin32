@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.42 2025/05/23 11:21:14 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.43 2025/07/20 17:26:06 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -145,10 +145,8 @@ static int                  W32StatLinkW(const wchar_t *path, struct StatHandle 
 static int                  W32StatHandle(int fildes, struct StatHandle *sb);
 static void                 W32StatPipe(HANDLE handle, DWORD ftype, struct StatHandle *sb);
 
-static DWORD                my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR name, int length);
 static DWORD WINAPI         my_GetFinalPathNameByHandleWImp(HANDLE handle, LPWSTR name, DWORD length, DWORD dwFlags);
 
-static DWORD                my_GetFinalPathNameByHandleA(HANDLE handle, LPSTR name, int length);
 static DWORD WINAPI         my_GetFinalPathNameByHandleAImp(HANDLE handle, LPSTR name, DWORD length, DWORD dwFlags);
 
 static DWORD                my_GetFileInformationByHandleEx(HANDLE handle, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
@@ -910,7 +908,7 @@ W32StatHandle(int fildes, struct StatHandle *sb)
                     size_t namelen;
 
                     fullname[0] = 0;
-                    namelen = my_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
+                    namelen = w32_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
                     if (! W32StatCommon(handle, NULL, sb, fullname, namelen)) {
                         ret = -EIO;
                     }
@@ -988,12 +986,12 @@ W32StatPipe(HANDLE handle, DWORD ftype, struct StatHandle *sb)
 
 
 //
-//  my_GetFinalPathNameByHandleW ---
+//  w32_GetFinalPathNameByHandleW ---
 //      GetFinalPathNameByHandleW dynamic binding.
 //
 
-static DWORD
-my_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR path, int length)
+DWORD
+w32_GetFinalPathNameByHandleW(HANDLE handle, LPWSTR path, int length)
 {
     static GetFinalPathNameByHandleW_t x_GetFinalPathNameByHandleW = NULL;
 
@@ -1093,12 +1091,12 @@ my_GetFinalPathNameByHandleWImp(HANDLE handle, LPWSTR path, DWORD length, DWORD 
 
 
 //
-//  my_GetFinalPathNameByHandleA ---
+//  w32_GetFinalPathNameByHandleA ---
 //      GetFinalPathNameByHandleA dynamic binding.
 //
 
-static DWORD
-my_GetFinalPathNameByHandleA(HANDLE handle, char *path, int length)
+DWORD
+w32_GetFinalPathNameByHandleA(HANDLE handle, char *path, int length)
 {
     static GetFinalPathNameByHandleA_t x_GetFinalPathNameByHandleA = NULL;
 
@@ -3129,7 +3127,7 @@ W32StatAFile(const char *name, struct StatHandle *sb)
             }
 
             if (INVALID_HANDLE_VALUE != file) {
-                wnamelen = my_GetFinalPathNameByHandleW(file, resolved.wname, _countof(resolved.wname));
+                wnamelen = w32_GetFinalPathNameByHandleW(file, resolved.wname, _countof(resolved.wname));
                 if (wnamelen) {
                     wfullname = resolved.wname;
                 }
@@ -3315,7 +3313,7 @@ W32StatByNameA(const char *name, struct StatHandle *sb)
         size_t namelen;
 
         fullname[0] = 0;
-        namelen = my_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
+        namelen = w32_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
         ret = W32StatCommon(handle, NULL, sb, fullname, namelen);
         CloseHandle(handle);
     }
@@ -3350,7 +3348,7 @@ W32StatByNameW(const wchar_t *name, struct StatHandle *sb)
         size_t namelen;
 
         fullname[0] = 0;
-        namelen = my_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
+        namelen = w32_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname));
         ret = W32StatCommon(handle, NULL, sb, fullname, namelen);
         CloseHandle(handle);
     }

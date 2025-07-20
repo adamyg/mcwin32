@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.29 2025/06/12 12:27:56 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.30 2025/07/20 17:26:06 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -41,12 +41,15 @@ __CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.29 2025/06/12 12:27:56 cvs
 #endif
 
 #include "win32_internal.h"
+#include "win32_misc.h"
+#include "win32_io.h"
 
 #include <sys/statfs.h>
 #include <sys/statvfs.h>
 #include <sys/mount.h>
 #include <assert.h>
 
+#pragma comment(lib, "Mpr.lib")
 
 /*
 //  NAME
@@ -123,9 +126,36 @@ statfs(const char *path, struct statfs *buf)
 
 
 int
+fstatfs(int fildes, struct statfs *sb)
+{
+    HANDLE handle = 0;
+    int ret = -1;
+
+    if (sb == NULL) {
+        errno = EFAULT;
+
+    } else if ((handle = w32_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
+        errno = EBADF;                          // socket or invalid file-descriptor
+
+    } else {
+        wchar_t fullname[WIN32_PATH_MAX];
+        size_t namelen;
+
+        fullname[0] = 0;
+        if ((namelen = w32_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname))) == 0) {
+            errno = ENOENT;
+        } else {
+            return statfsW(fullname, sb);
+        }
+    }
+    return -1;
+}
+
+
+int
 statfsA(const char *path, struct statfs *sb)
 {
-    char   volName[MNAMELEN], fsName[MFSNAMELEN];
+    char   drive[4] = { "X:\\" }, volName[MNAMELEN], fsName[MFSNAMELEN];
     DWORD  MaximumComponentLength, FileSystemFlags;
     BOOL   ready = FALSE, query_free = FALSE;
     size_t mnamelen;
@@ -139,6 +169,15 @@ statfsA(const char *path, struct statfs *sb)
     (void) memset(sb, 0, sizeof(*sb));
 
     EMODESUPPRESS()
+
+    if (0 == memcmp(path, "\\\\?\\", 4)) {
+        path += 4;                              /* UNC prefix "\\?\" */
+    }
+
+    if (path[1] == ':') {
+        drive[0] = path[0];                     /* X:\ */
+        path = drive;
+    }
 
     strncpy(sb->f_mntonname, path, MNAMELEN-1); /* mount point */
     w32_dos2unixA(sb->f_mntonname);
@@ -221,7 +260,7 @@ statfsA(const char *path, struct statfs *sb)
 int
 statfsW(const wchar_t *path, struct statfs *sb)
 {
-    wchar_t volName[MNAMELEN], fsName[MFSNAMELEN];
+    wchar_t drive[4] = { L"X:\\" }, volName[MNAMELEN], fsName[MFSNAMELEN];
     DWORD   MaximumComponentLength, FileSystemFlags;
     BOOL    ready = FALSE, query_free = FALSE;
     size_t  mnamelen;
@@ -235,6 +274,15 @@ statfsW(const wchar_t *path, struct statfs *sb)
     (void) memset(sb, 0, sizeof(*sb));
 
     EMODESUPPRESS()
+
+    if (0 == wmemcmp(path, L"\\\\?\\", 4)) {
+        path += 4;                              /* UNC prefix "\\?\" */
+    }
+
+    if (path[1] == ':') {
+        drive[0] = path[0];                     /* X:\ */
+        path = drive;
+    }
 
     w32_wc2utf(path, sb->f_mntonname, sizeof(sb->f_mntonname));
     w32_dos2unixA(sb->f_mntonname);
@@ -314,9 +362,14 @@ statfsW(const wchar_t *path, struct statfs *sb)
 
 
 int
-statvfs(const char *path, struct statvfs *vfs)
+statvfs(const char* path, struct statvfs *vfs)
 {
-    struct statfs sb = {0};
+    struct statfs sb;
+
+    if (NULL == path || NULL == vfs) {
+        errno = EFAULT;
+        return -1;
+    }
 
     if (statfs(path, &sb) != 0) {
         return -1;
@@ -332,6 +385,87 @@ statvfs(const char *path, struct statvfs *vfs)
     vfs->f_ffree  = sb.f_ffree;
     vfs->f_favail = sb.f_ffree;
     return 0;
+}
+
+
+int
+statvfsA(const char *path, struct statvfs *vfs)
+{
+    struct statfs sb = {0};
+
+    if (NULL == path || NULL == vfs) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (statfsA(path, &sb) != 0) {
+        return -1;
+    }
+
+    (void) memset(vfs, 0, sizeof(*vfs));
+    vfs->f_bsize  = sb.f_bsize;
+    vfs->f_frsize = sb.f_bsize;
+    vfs->f_blocks = sb.f_blocks;
+    vfs->f_bfree  = sb.f_bfree;
+    vfs->f_bavail = sb.f_bavail;
+    vfs->f_files  = sb.f_files;
+    vfs->f_ffree  = sb.f_ffree;
+    vfs->f_favail = sb.f_ffree;
+    return 0;
+}
+
+
+int
+statvfsW(const wchar_t *path, struct statvfs* vfs)
+{
+    struct statfs sb;
+
+    if (NULL == path || NULL == vfs) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (statfsW(path, &sb) != 0) {
+        return -1;
+    }
+
+    (void) memset(vfs, 0, sizeof(*vfs));
+    vfs->f_bsize  = sb.f_bsize;
+    vfs->f_frsize = sb.f_bsize;
+    vfs->f_blocks = sb.f_blocks;
+    vfs->f_bfree  = sb.f_bfree;
+    vfs->f_bavail = sb.f_bavail;
+    vfs->f_files  = sb.f_files;
+    vfs->f_ffree  = sb.f_ffree;
+    vfs->f_favail = sb.f_ffree;
+    return 0;
+}
+
+
+int
+fstatvfs(int fildes, struct statvfs *vfs)
+{
+    HANDLE handle = 0;
+    int ret = -1;
+
+    if (NULL == vfs) {
+        errno = EFAULT;
+
+    } else if ((handle = w32_osfhandle(fildes)) == INVALID_HANDLE_VALUE) {
+        errno = EBADF;                          // socket or invalid file-descriptor
+
+    } else {
+        wchar_t fullname[WIN32_PATH_MAX];
+        size_t namelen;
+
+        fullname[0] = 0;
+        if ((namelen = w32_GetFinalPathNameByHandleW(handle, fullname, _countof(fullname))) == 0) {
+            errno = ENOENT;
+        } else {
+            return statvfsW(fullname, vfs);
+        }
+    }
+    return -1;
 }
 
 
@@ -369,27 +503,27 @@ statvfs(const char *path, struct statvfs *vfs)
 //      The getmntinfo() function first appeared in 4.4BSD.
 //
 //  BUGS
-//      The getmntinfo() function writes the array of structures to an internal static object and returns a pointer to that object.
-//      Subsequent calls to getmntinfo() will modify the same object.
+//      The getmntinfo() function writes the array of structures to an internal static object and returns a pointer
+//      to that object. Subsequent calls to getmntinfo() will modify the same object.
 //
 //      The memory allocated by getmntinfo() cannot be free'd by the application.
 */
 
 struct StatBlock {
-    LONG references;
+    uint32_t references;
     uint32_t count;
     uint32_t alloced;
-    uint32_t drives;
+    uint32_t mask;
     struct statfs result[1];
 };
 
-enum { NCUninit = 0, NCIdle, NCRunning };
+enum Status { NCUninit = 0, NCIdle, NCRunning };
 
 struct NetworkConnections {
-    LONG status;
+    CRITICAL_SECTION lock;
+    enum Status status;
     unsigned ndrives;
     time_t timestamp;
-    CRITICAL_SECTION lock;
     struct StatBlock *sb;
 };
 
@@ -403,12 +537,13 @@ static DWORD WINAPI NetworkEnumThread(LPVOID lpParam);
 
 static struct StatBlock *sbcreate(size_t count);
 static struct statfs *sballoc(struct StatBlock *sb);
-static struct StatBlock *sbacquire(struct StatBlock *sb);
+
+static struct StatBlock *sbacquire(void);
 static void sbrelease(struct StatBlock *sb);
 
 static uint32_t drive_mask(int drive);
 
-static struct StatBlock *x_getmntinfo;          // global instance; TLS?
+static DWORD x_getmntinfo = (DWORD)-1;          // TLS instance.
 static struct NetworkConnections x_nestat;      // enumeration status
 
 
@@ -461,7 +596,7 @@ getfsstat(struct statfs *buf, long bufsize, int mode)
 int
 getmntinfo(struct statfs **psb, int flags)
 {
-    struct StatBlock *sb;
+    struct StatBlock *previous, *sb;
 
     if (! psb) {                                // invalid
         errno = EINVAL;
@@ -477,8 +612,10 @@ getmntinfo(struct statfs **psb, int flags)
         return -1;
     }
 
-    sbrelease(x_getmntinfo);                    // release previous result
-    x_getmntinfo = sb;
+    assert(x_getmntinfo != (DWORD)-1);
+    previous = TlsGetValue(x_getmntinfo);
+    TlsSetValue(x_getmntinfo, sb);
+    sbrelease(previous);                        // release previous result
 
     if (sb->count) {
         *psb = sb->result;
@@ -492,7 +629,7 @@ enum_mounts(int flags)
 {
     wchar_t szDrivesAvail[32 * 4], *cursor;
     struct StatBlock *sb;
-    size_t ndrives = 0;
+    uint32_t ndrives = 0;
 
     (void) GetLogicalDriveStringsW(_countof(szDrivesAvail), szDrivesAvail);
     for (cursor = szDrivesAvail; *cursor; cursor += 4) {
@@ -525,7 +662,7 @@ enum_mounts(int flags)
                 continue;                       // skip floppies/removable
             }
 
-            if ((mask & sb->drives) == 0) {     // not enumerated
+            if ((mask & sb->mask) == 0) {       // not enumerated
                 struct statfs *sf;
 
                 if (NULL != (sf = sballoc(sb))) {
@@ -542,7 +679,6 @@ enum_mounts(int flags)
             }
         }
     }
-
     return sb;
 }
 
@@ -599,7 +735,7 @@ enum_volumes(struct StatBlock *sb)
                         if (NULL != (sf = sballoc(sb))) {
                             if (0 == statfsW(cursor, sf)) {
                                 if (sf->f_mntonname[1] == ':') {
-                                    sb->drives |= drive_mask(sf->f_mntonname[0]);
+                                    sb->mask |= drive_mask(sf->f_mntonname[0]);
                                 }
                                 ++sb->count;
                             }
@@ -660,14 +796,14 @@ enum_connections(struct StatBlock *sb)
                     if (disk && netResource->lpLocalName[1] == ':') {
                         const uint32_t mask = drive_mask(disk);
 
-                        if ((mask & sb->drives) == 0) {
+                        if ((mask & sb->mask) == 0) {
                             wchar_t drive[4] = { L"X:\\" };
                             struct statfs *sf;
 
                             drive[0] = disk;
                             if (NULL != (sf = sballoc(sb))) {
                                 if (0 == statfsW(drive, sf)) {
-                                    sb->drives |= mask;
+                                    sb->mask |= mask;
                                     ++sb->count;
                                 }
                             }
@@ -691,44 +827,41 @@ static void
 NetworkEnum(unsigned ndrives)
 {
     BOOL trigger = FALSE;
-    const LONG status =
-        InterlockedCompareExchange(&x_nestat.status, NCIdle, NCUninit);
 
     // verify cache age/state
-    if (status == NCUninit) {
-#if defined(_MSC_VER)
-#pragma warning(suppress:28125)                 // InitializeCriticalSection() try/catch
-#endif
-        InitializeCriticalSection(&x_nestat.lock);
-        trigger = TRUE;
-
-    } else if (status == NCIdle) {
+    assert(x_nestat.status != NCUninit);
+    if (x_nestat.status == NCIdle) {
         const time_t now = time(NULL);
 
         EnterCriticalSection(&x_nestat.lock);   // --- network enum lock
-
-        if (ndrives != x_nestat.ndrives ||      // drive change or stale result (60 seconds)
-                now >= (x_nestat.timestamp + 60)) {
-            trigger = TRUE;
+        if (x_nestat.status == NCIdle) {
+            if (ndrives != x_nestat.ndrives ||  // drive change or stale result (60 seconds)
+                    now >= (x_nestat.timestamp + 60)) {
+                x_nestat.status = NCRunning;
+                trigger = TRUE;
+            }
         }
-
         LeaveCriticalSection(&x_nestat.lock);   // --- network enum release
     }
 
     // enumeration worker
     if (trigger) {
-        if (InterlockedCompareExchange(&x_nestat.status, NCRunning, NCIdle) == NCIdle) {
+        DWORD dwThreadId = 0;
 #if defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
 #endif
-            DWORD dwThreadId = 0;
-            HANDLE thread =
-                CreateThread(NULL, 0, NetworkEnumThread, (void *)(ndrives), 0, &dwThreadId);
-            if (thread != NULL) {
-                CloseHandle(thread); // detach
-            } else { // thread failure
-                InterlockedExchange(&x_nestat.status, NCIdle);
-            }
+#if defined(_MSC_VER)
+#pragma warning(suppress:28125)                 // CreateThread() try/catch
+#pragma warning(disable:4312)                   // type cast
+#endif
+        HANDLE thread =
+            CreateThread(NULL, 0, NetworkEnumThread, (void *)(ndrives), 0, &dwThreadId);
+        if (thread != NULL) {
+            CloseHandle(thread); // detach
+        } else { // thread failure
+            EnterCriticalSection(&x_nestat.lock);
+            x_nestat.status = NCIdle;
+            LeaveCriticalSection(&x_nestat.lock);
         }
     }
 }
@@ -739,14 +872,7 @@ NetworkCached(struct StatBlock *sb)
 {
     struct StatBlock *active;
 
-    EnterCriticalSection(&x_nestat.lock);       // --- network enum lock
-
-    active = sbacquire(x_nestat.sb);
-
-    LeaveCriticalSection(&x_nestat.lock);       // --- network enum release
-
-    if (active)
-    {
+    if (NULL != (active = sbacquire())) {
         const struct statfs *nsf, *nend;
 
         nsf = active->result;
@@ -758,12 +884,12 @@ NetworkCached(struct StatBlock *sb)
             if (disk && nsf->f_mntonname[1] == ':') {
                 const uint32_t mask = drive_mask(disk);
 
-                if ((mask & sb->drives) == 0) { // import
+                if ((mask & sb->mask) == 0) {   // import
                     struct statfs *sf;
 
                     if (NULL != (sf = sballoc(sb))) {
                         *sf = *nsf;             // re-statfs() local connections?
-                        sb->drives |= mask;
+                        sb->mask |= mask;
                         ++sb->count;
                     }
                 }
@@ -781,6 +907,9 @@ NetworkEnumThread(LPVOID lpParam)
 #if defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
 #endif
+#if defined(_MSC_VER)
+#pragma warning(disable:4311)                   // type cast
+#endif
     const unsigned ndrives = (unsigned)(lpParam);
     struct StatBlock *previous = NULL, *sb;
     const time_t then = time(NULL);
@@ -788,6 +917,7 @@ NetworkEnumThread(LPVOID lpParam)
     // enumerate network connections
     if (NULL != (sb = sbcreate(ndrives))) {
         enum_connections(sb);
+        sb->references = 1;
     }
 
     // publish results
@@ -797,11 +927,11 @@ NetworkEnumThread(LPVOID lpParam)
     x_nestat.timestamp = then;                  // creation time-stamp
     previous = x_nestat.sb;                     // previous result
     x_nestat.sb = sb;                           // update
+    x_nestat.status = NCIdle;
 
     LeaveCriticalSection(&x_nestat.lock);       // --- network enum release
 
     // cleanup
-    InterlockedExchange(&x_nestat.status, NCIdle);
     sbrelease(previous);
 
     return 0;
@@ -818,8 +948,8 @@ sbcreate(size_t count)
         if (NULL != (sb =                       // preliminary block
                 (struct StatBlock *) malloc(sizeof(struct StatBlock) + sbbytes))) {
             memset(sb, 0, sizeof(*sb));
-            sb->references = 1;
-            sb->alloced = count;
+            sb->references = 0;
+            sb->alloced = (uint32_t)count;
             return sb;
         }
     }
@@ -830,7 +960,7 @@ sbcreate(size_t count)
 static struct statfs *
 sballoc(struct StatBlock *sb)
 {
-    assert(sb->references == 1);                // single-ownership
+    assert(sb->references == 0);                // single-ownership
 
     if (sb->count >= sb->alloced) {
         const size_t sbbytes = (sizeof(struct statfs) * (sb->alloced + 8));
@@ -849,14 +979,19 @@ sballoc(struct StatBlock *sb)
 
 
 static struct StatBlock *
-sbacquire(struct StatBlock *sb)
+sbacquire(void)
 {
-    if (sb) {
-        InterlockedIncrement(&sb->references);
-        assert(sb->references > 1);
-        return sb;
+    struct StatBlock *sb;
+
+    EnterCriticalSection(&x_nestat.lock);       // --- network enum lock
+
+    if (NULL != (sb = x_nestat.sb)) {
+        assert(sb->references);                 // shared-ownership
+        ++sb->references;
     }
-    return NULL;
+
+    LeaveCriticalSection(&x_nestat.lock);       // --- network enum release
+    return sb;
 }
 
 
@@ -864,9 +999,18 @@ static void
 sbrelease(struct StatBlock *sb)
 {
     if (sb) {
-        if (InterlockedDecrement(&sb->references) == 0) {
-            free((void *)sb);
+        if (sb->references) {
+            uint32_t references;                // --- network enum reference
+
+            EnterCriticalSection(&x_nestat.lock);
+            references = --sb->references;
+            LeaveCriticalSection(&x_nestat.lock);
+
+            if (references) {
+                return;
+            }
         }
+        free((void*)sb);
     }
 }
 
@@ -884,5 +1028,29 @@ drive_mask(int drive)
     return 0;
 }
 
-/*end*/
 
+/*
+ *  Run-time initialization function.
+ */
+
+#define CRTMODULE statfs                        // our module name
+
+#include "win32_crtinit.h"
+
+static void
+crtinit(void)
+{
+    if (x_getmntinfo == (DWORD)-1) {
+        x_getmntinfo = TlsAlloc();              // allocate TLS index
+    }
+
+    if (x_nestat.status == NCUninit) {
+#if defined(_MSC_VER)
+#pragma warning(suppress:28125)                 // InitializeCriticalSection() try/catch
+#endif
+        (void) InitializeCriticalSectionAndSpinCount(&x_nestat.lock, 0x400);
+        x_nestat.status = NCIdle;
+    }
+}
+
+/*end*/

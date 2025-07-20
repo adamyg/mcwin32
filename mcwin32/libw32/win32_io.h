@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_IO_H_INCLUDED
 #define LIBW32_WIN32_IO_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.31 2025/04/01 16:15:15 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_io_h,"$Id: win32_io.h,v 1.32 2025/07/20 17:26:06 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -161,6 +161,9 @@ LIBW32_API int          w32_errno_set (void);
 LIBW32_API int          w32_errno_setas (unsigned nerrno);
 LIBW32_API int          w32_errno_cnv (unsigned rc);
 LIBW32_API int          w32_neterrno_set (void);
+
+extern DWORD            w32_GetFinalPathNameByHandleA (HANDLE handle, char *path, int length);
+extern DWORD            w32_GetFinalPathNameByHandleW (HANDLE handle, LPWSTR path, int length);
 
 __END_DECLS
 
