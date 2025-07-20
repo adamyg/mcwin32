@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.5 2025/03/20 17:23:09 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.6 2025/07/18 14:34:13 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -298,7 +298,7 @@ typedef ULONGLONG (WINAPI * GetTickCount64_t)(void);
 //  SYNOPSIS
 //      #include <sys/sysinfo.h>
 //
-//      int sysinfo(struct sysinfo* info);
+//      int sysinfo(struct sysinfo *info);
 //
 //  DESCRIPTION
 //      sysinfo() returns certain statistics on memoryand swap usage, as well as the load average.
@@ -311,6 +311,7 @@ legacy_get_tick_count(void)
 #if defined(_MSC_VER)
 #pragma warning(suppress:28159)
 #endif
+    // GetTickCount() wraps around every 49.7 days, beyond which time shall be incorrectly reported.
     return GetTickCount();
 }
 
@@ -332,7 +333,7 @@ get_tick_count(void)
                 (GetTickCount64_t) GetProcAddress(kernel32, "GetTickCount64");
         }
 
-        if (fnGetTickCount64 == NULL) {
+        if (fnGetTickCount64 == NULL) {         // XP
             fnGetTickCount64 = legacy_get_tick_count;
         }
     }
@@ -370,7 +371,8 @@ sysinfo(struct sysinfo *info)
                 (NtQuerySystemInformation_t) GetProcAddress(ntdll, "NtQuerySystemInformation");
         }
 
-        if (fNtQuerySystemInformation &&        // uptime
+        // https://learn.microsoft.com/en-us/windows/win32/sysinfo/zwquerysysteminformation
+        if (fNtQuerySystemInformation &&        // uptime, normal case
                 NO_ERROR == fNtQuerySystemInformation(SystemTimeOfDayInformation, (PVOID) &sti, sizeof(sti), NULL)) {
             uptime = (long)((sti.CurrentTime.QuadPart - sti.BootTime.QuadPart) / 10000000ULL);
         } else {                                // ticks / 1000
