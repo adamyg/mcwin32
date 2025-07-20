@@ -129,7 +129,6 @@ int
 fstatfs(int fildes, struct statfs *sb)
 {
     HANDLE handle = 0;
-    int ret = -1;
 
     if (sb == NULL) {
         errno = EFAULT;
@@ -446,7 +445,6 @@ int
 fstatvfs(int fildes, struct statvfs *vfs)
 {
     HANDLE handle = 0;
-    int ret = -1;
 
     if (NULL == vfs) {
         errno = EFAULT;
