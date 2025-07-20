@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_STATVFS_H
 #define LIBW32_SYS_STATVFS_H
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_statvfs_h,"$Id: statvfs.h,v 1.12 2025/07/20 17:27:33 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_statvfs_h,"$Id: statvfs.h,v 1.13 2025/07/20 17:43:01 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -119,6 +119,7 @@ __CPRAGMA_ONCE
 
 #include <sys/cdefs.h>          /* __BEGIN/__END/.. */
 #include <sys/utypes.h>         /* fsblkcnt_t and fsfilcnt_t */
+#include <wchar.h>
 
 #define FSTYPSZ         16
 
