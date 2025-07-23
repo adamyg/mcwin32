@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_fopen_c, "$Id: w32_fopen.c,v 1.3 2025/05/23 11:21:14 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_fopen_c, "$Id: w32_fopen.c,v 1.4 2025/07/23 15:04:07 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -52,8 +52,17 @@ __CIDENT_RCSID(gr_w32_fopen_c, "$Id: w32_fopen.c,v 1.3 2025/05/23 11:21:14 cvsus
 #include "win32_misc.h"
 #include "win32_io.h"
 
+static const char dev_null[] = "/dev/null";
+static const char dev_stdin[] = "/dev/stdin";
+static const char dev_stdout[] = "/dev/stdout";
+static const char dev_stderr[] = "/dev/stderr";
+
+static int   W32OpenModeA(const char *mode);
+static int   W32OpenModeW(const wchar_t *mode);
+
 static FILE *W32OpenStreamA(const char *path, const char *mode);
 static FILE *W32OpenStreamW(const wchar_t *path, const wchar_t *mode);
+
 
 /*
 //  NAME
@@ -161,35 +170,34 @@ w32_fopenA(const char *path, const char *mode)
 {
     char symbuf[WIN32_PATH_MAX];
     FILE *file = NULL;
-    int ret = 0;
+    int flags, fd, ret = 0;
 
     if (NULL == path || NULL == mode) {
         errno = EFAULT;
         return NULL;
     }
 
-    if (0 == w32_iostricmpA(path, "/dev/null")) {
+    if ((flags = W32OpenModeA(mode)) == -1) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    if (0 == w32_iostricmpA(path, dev_null)) {
         path = "NUL";                           // redirect
 
-    } else if (0 == w32_iostricmpA(path, "/dev/stdin")) {
-        const int flags = _O_RDONLY | (strchr(mode, 'b') ? 0 : _O_TEXT);
-        int fd = w32_osfdup(GetStdHandle(STD_INPUT_HANDLE), flags);
-        if (fd != -1) {
+    } else if (0 == w32_iostricmpA(path, dev_stdin)) {
+        if ((fd = w32_osfdup(GetStdHandle(STD_INPUT_HANDLE), flags)) != -1) {
             return fdopen(fd, mode);
         }
 
-    } else if (0 == w32_iostricmpA(path, "/dev/stdout")) {
-        const int flags = _O_APPEND | _O_WRONLY | (strchr(mode, 'b') ? 0 : _O_TEXT);
-        int fd = w32_osfdup(GetStdHandle(STD_OUTPUT_HANDLE), flags);
-        if (fd != -1) {
+    } else if (0 == w32_iostricmpA(path, dev_stdout)) {
+        if ((fd = w32_osfdup(GetStdHandle(STD_OUTPUT_HANDLE), flags)) != -1) {
             return fdopen(fd, mode);
         }
 
-    } else if (0 == w32_iostricmpA(path, "/dev/stderr")) {
-        const int flags = _O_APPEND | _O_WRONLY | (strchr(mode, 'b') ? 0 : _O_TEXT);
-        int fd = w32_osfdup(GetStdHandle(STD_ERROR_HANDLE), flags);
-        if (fd != -1) {
-            return _fdopen(fd, mode);
+    } else if (0 == w32_iostricmpA(path, dev_stderr)) {
+        if ((fd = w32_osfdup(GetStdHandle(STD_ERROR_HANDLE), flags)) != -1) {
+            return fdopen(fd, mode);
         }
 
     } else if (w32_resolvelinkA(path, symbuf, _countof(symbuf), &ret) == NULL) {
@@ -201,7 +209,6 @@ w32_fopenA(const char *path, const char *mode)
                 errno = -ret;
             }
         }
-
     } else {
         path = symbuf;                          // follow link
     }
@@ -209,7 +216,7 @@ w32_fopenA(const char *path, const char *mode)
     if (ret < 0 || (file = W32OpenStreamA(path, mode)) == NULL) {
         if (ENOTDIR == errno || ENOENT == errno) {
             if (path != symbuf &&               // component error, expand embedded shortcut
-                    w32_expandlinkA(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
+                w32_expandlinkA(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
                 file = W32OpenStreamA(symbuf, mode);
             }
         }
@@ -219,39 +226,38 @@ w32_fopenA(const char *path, const char *mode)
 }
 
 
-FILE *
-w32_fopenW(const wchar_t *path, const wchar_t *mode)
+FILE*
+w32_fopenW(const wchar_t* path, const wchar_t* mode)
 {
     wchar_t symbuf[WIN32_PATH_MAX];
     FILE *file = NULL;
-    int ret = 0;
+    int flags, fd, ret = 0;
 
     if (NULL == path || NULL == mode) {
         errno = EFAULT;
         return NULL;
     }
 
-    if (0 == w32_iostricmpW(path, "/dev/null")) {
+    if ((flags = W32OpenModeW(mode)) == -1) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    if (0 == w32_iostricmpW(path, dev_null)) {
         path = L"NUL";                          // redirect
 
-    } else if (0 == w32_iostricmpW(path, "/dev/stdin")) {
-        const int flags = _O_RDONLY | (wcschr(mode, 'b') ? 0 : _O_TEXT);
-        int fd = w32_osfdup(GetStdHandle(STD_INPUT_HANDLE), flags);
-        if (fd != -1) {
+    } else if (0 == w32_iostricmpW(path, dev_stdin)) {
+        if ((fd = w32_osfdup(GetStdHandle(STD_INPUT_HANDLE), flags)) != -1) {
             return _wfdopen(fd, mode);
         }
 
-    } else if (0 == w32_iostricmpW(path, "/dev/stdout")) {
-        const int flags = _O_APPEND | _O_WRONLY | (wcschr(mode, 'b') ? 0 : _O_TEXT);
-        int fd = w32_osfdup(GetStdHandle(STD_OUTPUT_HANDLE), flags);
-        if (fd != -1) {
+    } else if (0 == w32_iostricmpW(path, dev_stdout)) {
+        if ((fd = w32_osfdup(GetStdHandle(STD_OUTPUT_HANDLE), flags)) != -1) {
             return _wfdopen(fd, mode);
         }
 
-    } else if (0 == w32_iostricmpW(path, "/dev/stderr")) {
-        const int flags = _O_APPEND | _O_WRONLY | (wcschr(mode, 'b') ? 0 : _O_TEXT);
-        int fd = w32_osfdup(GetStdHandle(STD_ERROR_HANDLE), flags);
-        if (fd != -1) {
+    } else if (0 == w32_iostricmpW(path, dev_stderr)) {
+        if ((fd = w32_osfdup(GetStdHandle(STD_ERROR_HANDLE), flags)) != -1) {
             return _wfdopen(fd, mode);
         }
 
@@ -272,13 +278,97 @@ w32_fopenW(const wchar_t *path, const wchar_t *mode)
     if (ret < 0 || (file = W32OpenStreamW(path, mode)) == NULL) {
         if (ENOTDIR == errno || ENOENT == errno) {
             if (path != symbuf &&               // component error, expand embedded shortcut
-                    w32_expandlinkW(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
+                w32_expandlinkW(path, symbuf, _countof(symbuf), SHORTCUT_COMPONENT)) {
                 file = W32OpenStreamW(symbuf, mode);
             }
         }
     }
 
     return file;
+}
+
+
+static int
+W32OpenModeA(const char *mode)
+{
+    int plus = 0, done = 0, flags = 0, fmode = 0;
+
+    //
+    //  r or rb             Open file for reading.
+    //  w or wb             Truncate to zero length or create file for writing.
+    //  a or ab             Append; open or create file for writing at end-of-file.
+    //  r+ or rb+ or r+b    Open file for update (reading and writing).
+    //  w+ or wb+ or w+b    Truncate to zero length or create file for update.
+    //  a+ or ab+ or a+b    Append; open or create file for update, writing at end-of-file.
+    //
+    //  b=binary, otherwise t=text
+    //
+
+    switch (*mode++) {
+    case 'r': flags |= _O_RDONLY; break;
+    case 'w': flags |= _O_WRONLY|_O_TRUNC; break;
+    case 'a': flags |= _O_WRONLY|_O_APPEND; break;
+    default:
+        return -1;
+    }
+
+    while (*mode && ! done) {
+        switch (*mode++) {
+        case '+': // update
+            if (! plus) {
+                flags &= ~(_O_RDONLY | _O_WRONLY);
+                flags |= _O_RDWR;
+                plus = 1;
+            } else {
+                done = 1;
+            }
+            break;
+        case 't': // text
+            if (! fmode) {
+                flags |= _O_TEXT;
+                fmode = 1;
+            } else {
+                done = 1;
+            }
+            break;
+        case 'b': // binary
+            if (! fmode) {
+                flags |= _O_BINARY;
+                fmode = 1;
+            } else {
+                done = 1;
+            }
+            break;
+        default: // other; ignore
+            done = 1;
+            break;
+        }
+    }
+
+    if (! fmode) { // default mode
+#if defined(__WATCOMC__)
+        flags |= _fmode;
+#else
+        if (0 == _get_fmode(&fmode)) {
+            flags |= fmode;
+        }
+#endif
+    }
+
+    return flags;
+}
+
+
+static int
+W32OpenModeW(const wchar_t *mode)
+{
+    unsigned length = 0;
+    char amode[8] = {0};
+
+    while (*mode && *mode < 0x7f && length != (_countof(amode) - 1)) {
+        amode[length++] = (char) *mode++;       // import ascii
+    }
+    return W32OpenModeA(amode);
 }
 
 
@@ -297,7 +387,7 @@ W32OpenStreamA(const char *path, const char *mode)
         w32_fdregister(_fileno(file));
     }
 
-    free((void*)expath);                        // release temporary
+    free((void *)expath);                       // release temporary
 
     return file;
 }
@@ -318,7 +408,7 @@ W32OpenStreamW(const wchar_t *path, const wchar_t *mode)
         w32_fdregister(_fileno(file));
     }
 
-    free((void*)expath);                        // release temporary
+    free((void *)expath);                       // release temporary
 
     return file;
 }
