@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.in,v 1.22 2025/06/11 17:33:56 cvsuser Exp $
+# $Id: makelib.in,v 1.23 2025/07/23 17:41:58 cvsuser Exp $
 # -*- mode: perl; tabs: 8; indent-width: 4; -*-
 # makelib configuration
 #

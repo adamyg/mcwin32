@@ -1,3 +1,12 @@
+Thu Jul 24 00:10:31 2025 adamy
+
+	* build-236
+
+		o X86 intrinsic atomic function usage replace, arm64 (#157)
+		o XP compatible (#156)
+		o libappupdater upgrade (chang-cl support)
+		o libw32: additional compliance changes
+
 Thu May 22 14:03:24 2025 adamy
 
 	* build-235

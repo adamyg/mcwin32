@@ -14,9 +14,9 @@ that represents a modern clone of Norton Commander (NC) from the 1990's.
 
 Features include the ability work with common archive formats as if they were simply another
 directory, and to function as an SFTP/FTP client. Midnight Commander also includes an built-in
-editor/viewer, features include syntax highlighting for many languages, macros, code snippets, 
+editor/viewer, features include syntax highlighting for many languages, macros, code snippets,
 simple integration with external tools, automatic indentation, mouse support, clipboard and the
-ability to work in both ASCII and hex modes. Both the editor and viewer are available 
+ability to work in both ASCII and hex modes. Both the editor and viewer are available
 standalone, as _mcedit_ and _mcview_.
 
 Midnight Commander supports accessing remote filesystems through several methods, including
@@ -29,6 +29,28 @@ using wildcard characters.
 
    Version         Build   Notes
    -------------------------------------------------------------------------------------------
+   4.8.33          236
+                           - upgrades/bug-fixes
+
+                                   o X86 intrinsic atomic function usage replace, arm64 (#157)
+                                   o XP compatible (#156)
+                                   o libappupdater upgrade (chang-cl support)
+                                   o libw32: additional compliance changes
+
+   4.8.33          235
+
+                           - upgrades/bug-fixes
+
+                                   o network drive interaction (#141)
+                                   o filename spaces + redirection (#142)
+                                   o screen save/restore (#143)
+                                   o locale/utf8 support (#147)
+                                   o document solutions (#148)
+                                   o background netenum (#149)
+                                   o increment bugfix / compliance testing (#150)
+                                   o clang-cl (#153)
+                                   o extension handling (#154)
+
    4.8.33          234
 
                            - upgrades/bug-fixes
@@ -286,6 +308,7 @@ A few items are unix specific (e.g. chown), which shall be updated over
 time.
 
 -end-
+
 
 
 
