@@ -84,8 +84,9 @@ $PACKAGE_FILE	= 'package.h';
 @MAKEFILES	= (	# local makefiles
 	'.',
 	'libw32',
+	'^libw32/unittest',
 	'libregex',
-	#'libregex/new',
+	'^libregex/new',
 	'libz',
 	'libpcre2',
 	'libmbedtls',

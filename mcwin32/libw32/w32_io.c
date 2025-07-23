@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.43 2025/07/20 17:26:06 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.44 2025/07/23 15:05:11 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -99,7 +99,9 @@ __CIDENT_RCSID(gr_w32_io_c, "$Id: w32_io.c,v 1.43 2025/07/20 17:26:06 cvsuser Ex
 
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "psapi.lib")
+#pragma comment(lib, "version.lib")
 #pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "oleaut32.lib")
 #pragma comment(lib, "uuid.lib")
 
 #if defined(_MSC_VER)
@@ -1292,15 +1294,15 @@ my_GetVolumeInformationByHandleImp(HANDLE hFile,
         LPDWORD lpVolumeSerialNumber, LPDWORD lpMaximumComponentLength, LPDWORD lpFileSystemFlags, LPWSTR lpFileSystemNameBuffer, DWORD nFileSystemNameSize)
 {
     __CUNUSED(hFile)
-        __CUNUSED(lpVolumeNameBuffer)
-        __CUNUSED(nVolumeNameSize)
-        __CUNUSED(lpVolumeSerialNumber)
-        __CUNUSED(lpMaximumComponentLength)
-        __CUNUSED(lpFileSystemFlags)
-        __CUNUSED(lpFileSystemNameBuffer)
-        __CUNUSED(nFileSystemNameSize)
+    __CUNUSED(lpVolumeNameBuffer)
+    __CUNUSED(nVolumeNameSize)
+    __CUNUSED(lpVolumeSerialNumber)
+    __CUNUSED(lpMaximumComponentLength)
+    __CUNUSED(lpFileSystemFlags)
+    __CUNUSED(lpFileSystemNameBuffer)
+    __CUNUSED(nFileSystemNameSize)
 
-        SetLastError(ERROR_NOT_SUPPORTED);          // not implemented
+    SetLastError(ERROR_NOT_SUPPORTED);          // not implemented
     return FALSE;
 }
 
@@ -1560,7 +1562,7 @@ w32_symlink(const char *name1, const char *name2)
 
 
 LIBW32_API int
-w32_symlinkW(const wchar_t* name1, const wchar_t* name2)
+w32_symlinkW(const wchar_t *name1, const wchar_t *name2)
 {
     int ret = -1;
 
@@ -2289,7 +2291,7 @@ static const char *     exec_exclude[]  = {
     ".a",   ".lib", ".dll",                     /* libraries */
                                                 /* archives */
     ".zip", ".gz",  ".tar", ".tgz", ".bz2", ".rar",
-    ".doc", ".txt",                             /* documents */
+    ".doc", ".docx", ".txt", ".html",           /* documents */
     ".hlp", ".chm",                             /* help */
     ".dat"                                      /* data files */
     };
@@ -2812,7 +2814,7 @@ static int
 ReadShortcutA(const char *name, char *buf, size_t maxlen)
 {
     WIN32_FIND_DATA wfd = {0};
-    IShellLinkA *pShLink;
+    IShellLinkA *pShLink = NULL;
     HRESULT hres = FALSE;
 
     (void) CoInitialize(NULL);
@@ -2864,7 +2866,7 @@ static int
 ReadShortcutW(const wchar_t *name, wchar_t *buf, size_t maxlen)
 {
     WIN32_FIND_DATAW wfd = {0};
-    IShellLinkW *pShLink;
+    IShellLinkW *pShLink = NULL;
     HRESULT hres = FALSE;
 
     (void) CoInitialize(NULL);
@@ -2906,7 +2908,7 @@ ReadShortcutW(const wchar_t *name, wchar_t *buf, size_t maxlen)
 static int
 CreateShortcutA(const char *link, const char *name, const char *working, const char *desc)
 {
-    IShellLinkA *pShLink;
+    IShellLinkA *pShLink = NULL;
     HRESULT hres;
 
     (void) CoInitialize(NULL);
@@ -2916,37 +2918,38 @@ CreateShortcutA(const char *link, const char *name, const char *working, const c
                 CLSCTX_INPROC_SERVER, &x_IID_IShellLinkA, (PVOID *) &pShLink);
 
     if (SUCCEEDED(hres)) {
-        IPersistFile *ppf;
+        IPersistFile *ppf = NULL;
 
         // Attributes.
         if (name) {
             char resolved[WIN32_PATH_MAX];
 
-            if (GetFullPathNameA(name, (DWORD)sizeof(resolved), resolved, 0)) {
-                pShLink->lpVtbl->SetPath(pShLink, (LPCSTR)resolved);
+            if (GetFullPathNameA(name, (DWORD)_countof(resolved), resolved, 0)) {
+                pShLink->lpVtbl->SetPath(pShLink, /*(LPCSTR)*/resolved);
             } else {
-                pShLink->lpVtbl->SetPath(pShLink, (LPCSTR)name);
+                pShLink->lpVtbl->SetPath(pShLink, /*(LPCSTR)*/name);
             }
         }
 
         if (working && *working) {
-            pShLink->lpVtbl->SetWorkingDirectory(pShLink, (LPCSTR)working);
+            pShLink->lpVtbl->SetWorkingDirectory(pShLink, /*(LPCSTR)*/working);
         }
 
-        if (desc) {
-            pShLink->lpVtbl->SetDescription(pShLink, (LPCSTR)desc);
+        if (desc && *desc) {
+            pShLink->lpVtbl->SetDescription(pShLink, /*(LPCSTR)*/desc);
         }
 
         // IPersistFile interface, for saving the shortcut in persistent storage.
         hres = pShLink->lpVtbl->QueryInterface(pShLink, &x_IID_IPersistFile, (PVOID *) &ppf);
 
         if (SUCCEEDED(hres)) {
-            wchar_t wlink[WIN32_PATH_MAX];
+            wchar_t wlink[WIN32_PATH_MAX] = {0};
 
             w32_utf2wc(link, wlink, _countof(wlink));
             hres = ppf->lpVtbl->Save(ppf, wlink, TRUE);
             ppf->lpVtbl->Release(ppf);
         }
+
         pShLink->lpVtbl->Release(pShLink);
     }
 
@@ -2959,7 +2962,7 @@ CreateShortcutA(const char *link, const char *name, const char *working, const c
 static int
 CreateShortcutW(const wchar_t *link, const wchar_t *name, const wchar_t *working, const wchar_t *desc)
 {
-    IShellLinkW *pShLink;
+    IShellLinkW *pShLink = NULL;
     HRESULT hres;
 
     (void) CoInitialize(NULL);
@@ -2976,18 +2979,18 @@ CreateShortcutW(const wchar_t *link, const wchar_t *name, const wchar_t *working
             wchar_t resolved[WIN32_PATH_MAX];
 
             if (GetFullPathNameW(name, (DWORD)_countof(resolved), resolved, 0)) {
-                pShLink->lpVtbl->SetPath(pShLink, (LPCWSTR)resolved);
+                pShLink->lpVtbl->SetPath(pShLink, /*(LPCWSTR)*/resolved);
             } else {
-                pShLink->lpVtbl->SetPath(pShLink, (LPCWSTR)name);
+                pShLink->lpVtbl->SetPath(pShLink, /*(LPCWSTR)*/name);
             }
         }
 
         if (working && *working) {
-            pShLink->lpVtbl->SetWorkingDirectory(pShLink, (LPCWSTR)working);
+            pShLink->lpVtbl->SetWorkingDirectory(pShLink, /*(LPCWSTR)*/working);
         }
 
-        if (desc) {
-            pShLink->lpVtbl->SetDescription(pShLink, (LPCWSTR)desc);
+        if (desc && *desc) {
+            pShLink->lpVtbl->SetDescription(pShLink, /*(LPCWSTR)*/desc);
         }
 
         // IPersistFile interface, for saving the shortcut in persistent storage.
@@ -2997,6 +3000,7 @@ CreateShortcutW(const wchar_t *link, const wchar_t *name, const wchar_t *working
             hres = ppf->lpVtbl->Save(ppf, link, TRUE);
             ppf->lpVtbl->Release(ppf);
         }
+
         pShLink->lpVtbl->Release(pShLink);
     }
 
