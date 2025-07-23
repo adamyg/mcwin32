@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.30 2025/07/20 17:26:06 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_statfs_c,"$Id: w32_statfs.c,v 1.31 2025/07/23 14:40:22 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -1031,12 +1031,11 @@ drive_mask(int drive)
  *  Run-time initialization function.
  */
 
-#define CRTMODULE statfs                        // our module name
-
+#define CRTINIT rtstatfs                        // our module name
 #include "win32_crtinit.h"
 
 static void
-crtinit(void)
+rtstatfs(void)
 {
     if (x_getmntinfo == (DWORD)-1) {
         x_getmntinfo = TlsAlloc();              // allocate TLS index

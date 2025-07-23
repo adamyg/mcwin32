@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_CRTDLL_H_INCLUDED
 #define LIBW32_WIN32_CRTDLL_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_crtdll,"$Id: win32_crtdll.h,v 1.1 2025/07/20 06:59:27 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_crtdll,"$Id: win32_crtdll.h,v 1.2 2025/07/23 14:39:52 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -96,7 +96,7 @@ extern void *__CRTDLL = __crtdll;
 #   endif
 
 #else
-#   error Unsupported compiler is not supported.
+#   error Unsupported compiler
 #endif
 
 static void WINAPI

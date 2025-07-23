@@ -1,8 +1,8 @@
 #ifndef LIBW32_WIN32_CRTINIT_H_INCLUDED
 #define LIBW32_WIN32_CRTINIT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_crtinit,"$Id: win32_crtinit.h,v 1.1 2025/07/20 06:59:27 cvsuser Exp $")
-__CPRAGMA_ONCE
+__CIDENT_RCSID(gr_libw32_win32_crtinit,"$Id: win32_crtinit.h,v 1.2 2025/07/23 14:39:52 cvsuser Exp $")
+#endif //LIBW32_WIN32_CRTINIT_H_INCLUDED
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -34,33 +34,48 @@ __CPRAGMA_ONCE
 
 #include <sys/cdefs.h>
 
- /*
-  * We need to put the following marker variables into the .CRT section.
-  *
-  * The .CRT section contains arrays of function pointers.
-  * The compiler creates functions and adds pointers to this section
-  * for things like C++ global constructors.
-  *
-  * The XIA, XCA etc are group names with in the section.
-  * The compiler sorts the contributions by the group name.
-  * For example, .CRT$XCA followed by .CRT$XCB, ... .CRT$XCZ.
-  * The marker variables below let us get pointers
-  * to the beginning/end of the arrays of function pointers.
-  *
-  * For example, standard groups are:
-  *
-  *      XCA         begin marker
-  *      XCC         compiler inits
-  *      XCL         library inits
-  *      XCU         user inits
-  *
-  * Runtime hooks:
-  *
-  *      XCA/XCZ     C++ initializers
-  *      XIA/XIZ     C initializers
-  *      XPA/XPZ     C pre-terminators
-  *      XTA/XTZ     C terminators
-  */
+/* Usage:
+ *
+ *  #define CRTINIT rtinit
+ *  #include "win32_crtinit.h"
+ *
+ *  static void
+ *  rtinit(void)
+ *  {
+ *      tls = TlsAlloc();
+ *      InitializeCriticalSection(&lock, 0x400); 
+ *  }
+ *
+ */
+
+/*  MSVC/Mingw64
+ * 
+ *  We need to put the following marker variables into the .CRT section.
+ *
+ *  The .CRT section contains arrays of function pointers.
+ *  The compiler creates functions and adds pointers to this section
+ *  for things like C++ global constructors.
+ *
+ *  The XIA, XCA etc are group names with in the section.
+ *  The compiler sorts the contributions by the group name.
+ *  For example, .CRT$XCA followed by .CRT$XCB, ... .CRT$XCZ.
+ *  The marker variables below let us get pointers
+ *  to the beginning/end of the arrays of function pointers.
+ *
+ *  For example, standard groups are:
+ *
+ *      XCA         Begin marker
+ *      XCC         Compiler initialisations
+ *      XCL         Library initialisations
+ *      XCU         User initialisations
+ *
+ *  Runtime hooks:
+ *
+ *      XCA/XCZ     C++ initializers
+ *      XIA/XIZ     C initializers
+ *      XPA/XPZ     C pre-terminators
+ *      XTA/XTZ     C terminators
+ */
 
 #ifdef _UCRT
 #include <corecrt_startup.h>
@@ -68,40 +83,47 @@ __CPRAGMA_ONCE
 typedef void (__cdecl *_PVFV)(void);
 #endif
 
-static void crtinit(void);
-static void __cdecl __crtinit(void);
-
-#if !defined(CRTMODULE)
-#error "You must define CRTMODULE to the name of your module."
+#if !defined(CRTINIT)
+#error "You must define CRTINIT to the name of interface before including."
     // CRTMODULE is used to identify the module for which the CRT section is being created.
     // It should be defined before including win32_crtinit.h.
 #endif
-#define ___CRTAPPEND(__prefix, __module) __prefix##__module
-#define __CRTAPPEND(__prefix, __module) ___CRTAPPEND(__prefix, __module)
-#define __CRTINIT __CRTAPPEND(__crtinit_, CRTMODULE)
+
+static void CRTINIT (void); // user callback
+
+#if !defined(__CRTCONCAT)
+#define ___CRTCONCAT(__prefix, __module) __prefix##__module
+#define __CRTCONCAT(__prefix, __module) ___CRTCONCAT(__prefix, __module)
+#endif
+
+#define __CRTINITI __CRTCONCAT(__crti_, CRTINIT) // initialisation object
+#define __CRTINITC __CRTCONCAT(__crtc_, CRTINIT) // callback; if required
 
 #if defined(__GNUC__) || defined(__clang__)
-__attribute__((section(".CRT$XCU"), used)) _PVFV __CRTINIT = __crtinit;
+static void __cdecl __CRTINITC (void);
+__attribute__((section(".CRT$XCU"), used)) _PVFV __CRTINITI = __CRTINITC;
 
 #elif defined(_MSC_VER)
+static void __cdecl __CRTINITC (void);
 #   pragma warning(disable:4152)
 #   if (_MSC_VER >= 1600) || defined(_M_IA64)
 #       pragma section(".CRT$XCU", long, read)
-__declspec(allocate(".CRT$XCU")) extern void *__CRTINIT = __crtinit;
+__declspec(allocate(".CRT$XCU")) extern void *__CRTINITI = __CRTINITC;
 #   else
 #       pragma data_seg(".CRT$XCU")
-extern void *__CRTINIT = __crtinit;
+extern void *__CRTINITI = __CRTINITC;
 #       pragma data_seg()
 #   endif
 
 #elif defined(__WATCOMC__)
-// see: open-watcom/rtinit.h
 #   if !defined(__386__)
 #       error __386__ not defined
 #   endif
+
+#if !defined(RTINIT)
 #   pragma warning(disable:4103)
 #   pragma pack(push,1)
-struct rt_init {
+struct rt_init { // see: watcom/rtinit.h
     unsigned char type;
     unsigned char priority;
     void (*fn)(void);
@@ -110,25 +132,31 @@ struct rt_init {
 
 #   define RTINIT(seg, label, routine, priority) \
 struct rt_init __based( __segname( seg ) ) label = \
-    { 0, priority, routine };
-#define INIT_PRIORITY_PROGRAM 64
+        { 0, priority, routine };
+#   define INIT_PRIORITY_PROGRAM 64
 
-static unsigned assert_sizeof[sizeof(struct rt_init) == 6 ? 1 : -1]; // shall fail when wrong
-RTINIT("XI", __CRTINIT, crtinit, INIT_PRIORITY_PROGRAM)
+typedef unsigned crinit_assert_t[sizeof(struct rt_init) == 6 ? 1 : -1]; // negative size on failure
+#endif
+#undef __CRTINITC // callback not required
+RTINIT("XI", __CRTINITI, CRTINIT, INIT_PRIORITY_PROGRAM)
 
 #else
-#   error Unsupported compiler is not supported.
+#   error Unsupported compiler
 #endif
 
+#if defined(__CRTINITC)
 static void __cdecl
-__crtinit(void)
+__CRTINITC (void)
 {
 #if defined(_MSC_VER)
-    (void)__CRTINIT; // otherwise global optimisation may remove
+    (void) __CRTINITI; // otherwise global optimisation may remove
 #endif
-    crtinit(); // application hook
+    CRTINIT (); // application hook
 }
+#endif
 
-#undef CRTMODULE
+#undef __CRTINITI
+#undef __CRTINITC
+#undef CRTINIT
 
-#endif /*LIBW32_WIN32_CRTINIT_H_INCLUDED*/
+//end
