@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.24 2025/04/05 17:56:43 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_util_c,"$Id: w32_util.c,v 1.25 2025/07/23 15:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -912,7 +912,7 @@ w32_getprogdirA(char* buf, int maxlen)
                 cp[1] = '\0';                   // remove program
                 return (int)((cp - buf) + 1);
             }
-            return len;
+            return (int)len;
         }
     }
     return -1;
@@ -933,7 +933,7 @@ w32_getprogdirW(wchar_t *buf, int maxlen)
                 cp[1] = '\0';                   // remove program
                 return (int)((cp - buf) + 1);
             }
-            return len;
+            return (int)len;
         }
     }
     return -1;
