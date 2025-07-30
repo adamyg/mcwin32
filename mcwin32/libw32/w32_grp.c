@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.21 2025/03/23 18:19:06 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_grp_c, "$Id: w32_grp.c,v 1.22 2025/07/20 07:00:57 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -536,10 +536,17 @@ fill_groups(void)
 
             // allocate/expand
             if (x_groups) {
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
                 struct group *t_groups = (struct group *)realloc(x_groups,
                                             (sizeof(struct group) * ntotal) + cbufsz + bufsz);
                 const ptrdiff_t addrdiff = ((char *)t_groups - (char *)x_groups) +
                                             (sizeof(struct group) * count);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
                 if (NULL == t_groups) {         // realloc failure
                     NetApiBufferFree(groups);

@@ -1,7 +1,7 @@
 #ifndef GR_ENDIAN_H_INCLUDED
 #define GR_ENDIAN_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_endian_h,"$Id: endian.h,v 1.7 2025/03/08 16:40:00 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_endian_h,"$Id: endian.h,v 1.8 2025/07/20 07:03:17 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*-
@@ -48,7 +48,9 @@ __CPRAGMA_ONCE
 #elif defined(IS_BIG_ENDIAN)
 #define __BYTE_ORDER        _BIG_ENDIAN
 #else
-#   if defined(_M_IX86)
+#   if defined(_M_IA64) || defined(_M_AMD64) // 64-bit Intel/AMD
+#       define IS_LITTLE_ENDIAN 1
+#   elif defined(_M_IX86)   // 32-bit Intel
 #       define IS_LITTLE_ENDIAN 1
 #   elif defined(_M_MRX000)
 #       define IS_LITTLE_ENDIAN 1

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: makelib.pl,v 1.52 2025/06/11 17:33:56 cvsuser Exp $
+# $Id: makelib.pl,v 1.53 2025/07/30 13:40:40 cvsuser Exp $
 # Makefile generation under WIN32 (MSVC/WATCOMC/MINGW) and DJGPP.
 # -*- perl; tabs: 8; indent-width: 4; -*-
 # Automake emulation for non-unix environments.
@@ -1321,6 +1321,7 @@ sub Makefile($$$);
 sub MakefileDir($);
 sub Config($$$);
 sub Profile($);
+sub Format($$$$);
 
 exit &main();
 
@@ -3729,6 +3730,8 @@ Profile($)
     my ($config) = @_;                          # configuration
 
     my $env = $x_environment{$x_signature};     # active environment
+    my $libs = Format($x_tokens{LIBS}, " -", 30, 120);
+    my $extralibs = Format($x_tokens{EXTRALIBS}, " -", 30, 120);
     my $text = <<EOT;
  -
  -  Configuration:
@@ -3744,8 +3747,8 @@ Profile($)
  -                       Release: $x_tokens{CRELEASE}
  -                       Debug:   $x_tokens{CDEBUG}
  -                   LDFLAGS: $x_tokens{LDFLAGS}
- -                      LIBS: $x_tokens{LIBS}
- -                 EXTRALIBS: $x_tokens{EXTRALIBS}
+ -                      LIBS:$libs
+ -                 EXTRALIBS:$extralibs
  -
 EOT
 
@@ -3760,6 +3763,33 @@ EOT
     }
 
     print $text;                                # result
+}
+
+
+sub 
+Format($$$$)            # (value, prefix, margin, length)
+{
+    my ($value, $prefix, $margin, $width) = @_;
+    my @parts = split(/\s+/, $value); 
+    my $llength = $margin;
+    my $result = '';
+    my $line = '';
+
+    foreach my $part (@parts) {
+        my $ilength = length($part);
+
+        if ($line && ($llength + $ilength) > $width) {
+            $result .= $line . "\n";
+            $line = sprintf("%-*s", $margin - 1, $prefix);
+            $llength = length($line);
+        }
+
+        $llength += $ilength + 1;
+        $line .= " " . $part;
+    }
+
+    $result .= $line;
+    return $result;
 }
 
 

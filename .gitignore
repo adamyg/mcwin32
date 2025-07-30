@@ -1,7 +1,7 @@
 CVS/
 gtk*/
 mcgit/
-mcmerge/
+mcmerge*/
 busybox/
 mcwin32/bin/
 inno/
