@@ -1,7 +1,7 @@
 #ifndef LIBW32_WIN32_CRTINIT_H_INCLUDED
 #define LIBW32_WIN32_CRTINIT_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_win32_crtinit,"$Id: win32_crtinit.h,v 1.2 2025/07/23 14:39:52 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_win32_crtinit,"$Id: win32_crtinit.h,v 1.4 2025/07/29 09:27:43 cvsuser Exp $")
 #endif //LIBW32_WIN32_CRTINIT_H_INCLUDED
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -43,13 +43,13 @@ __CIDENT_RCSID(gr_libw32_win32_crtinit,"$Id: win32_crtinit.h,v 1.2 2025/07/23 14
  *  rtinit(void)
  *  {
  *      tls = TlsAlloc();
- *      InitializeCriticalSection(&lock, 0x400); 
+ *      InitializeCriticalSection(&lock, 0x400);
  *  }
  *
  */
 
 /*  MSVC/Mingw64
- * 
+ *
  *  We need to put the following marker variables into the .CRT section.
  *
  *  The .CRT section contains arrays of function pointers.
@@ -68,13 +68,60 @@ __CIDENT_RCSID(gr_libw32_win32_crtinit,"$Id: win32_crtinit.h,v 1.2 2025/07/23 14
  *      XCC         Compiler initialisations
  *      XCL         Library initialisations
  *      XCU         User initialisations
+ *      XCZ         End marker
  *
  *  Runtime hooks:
  *
- *      XCA/XCZ     C++ initializers
- *      XIA/XIZ     C initializers
- *      XPA/XPZ     C pre-terminators
- *      XTA/XTZ     C terminators
+ *      XIA/XIZ     C initializers (int return, non-zero terminates)
+ *      XCA/XCZ     C++ initializers (void return)
+ *
+ *      XPA/XPZ     C pre-terminators (void return)
+ *      XTA/XTZ     C terminators (void return)
+ *
+ *  Example Implementation:
+ *
+        extern _CRTALLOC(".CRT$XIA") _PIFV __xi_a[];
+        extern _CRTALLOC(".CRT$XIZ") _PIFV __xi_z[];    // C initializers
+        extern _CRTALLOC(".CRT$XCA") _PVFV __xc_a[];
+        extern _CRTALLOC(".CRT$XCZ") _PVFV __xc_z[];    // C++ initializers
+        extern _CRTALLOC(".CRT$XPA") _PVFV __xp_a[];
+        extern _CRTALLOC(".CRT$XPZ") _PVFV __xp_z[];    // C pre-terminators
+        extern _CRTALLOC(".CRT$XTA") _PVFV __xt_a[];
+        extern _CRTALLOC(".CRT$XTZ") _PVFV __xt_z[];    // C terminators
+
+        static void _initterm_e(_PIFV *a, _PIFV *b) {
+           while (a != b) {
+                if (*a) {
+                    const int result = (**a)();         // non-zero terminate
+                    if (result != 0) {
+                        if (IsDebuggerPresent()) __debugbreak();
+                        ExitProcess(0);
+                    }
+                }
+                ++a;
+            }
+        }
+
+        static void _initterm(_PVFV *a, _PVFV *b) {
+            while (a != b) {
+                if (*a) {
+                    (**a)();
+                }
+                ++a;
+            }
+        }
+
+        void w32_crtinit() {
+            _initterm_e(__xi_a, __xi_z);                // C initializers
+            _initterm(__xc_a, __xc_z);                  // C++ initializers
+        }
+
+        void w32_crtexit() {
+            _initterm(__xp_a, __xp_z);                  // C pre-terminators
+            _initterm(__xt_a, __xt_z);                  // C terminators
+        }
+
+ *
  */
 
 #ifdef _UCRT
@@ -89,7 +136,7 @@ typedef void (__cdecl *_PVFV)(void);
     // It should be defined before including win32_crtinit.h.
 #endif
 
-static void CRTINIT (void); // user callback
+static void CRTINIT (void);                     // user callback
 
 #if !defined(__CRTCONCAT)
 #define ___CRTCONCAT(__prefix, __module) __prefix##__module
@@ -98,6 +145,16 @@ static void CRTINIT (void); // user callback
 
 #define __CRTINITI __CRTCONCAT(__crti_, CRTINIT) // initialisation object
 #define __CRTINITC __CRTCONCAT(__crtc_, CRTINIT) // callback; if required
+
+
+#if defined(_MSC_VER)
+#   if defined(_M_X64)                          // import TLS Directory.
+#       pragma comment (linker, "/INCLUDE:_tls_used")
+#   else
+#       pragma comment (linker, "/INCLUDE:__tls_used")
+#   endif
+#endif
+
 
 #if defined(__GNUC__) || defined(__clang__)
 static void __cdecl __CRTINITC (void);
@@ -108,14 +165,17 @@ static void __cdecl __CRTINITC (void);
 #   pragma warning(disable:4152)
 #   if (_MSC_VER >= 1600) || defined(_M_IA64)
 #       pragma section(".CRT$XCU", long, read)
-__declspec(allocate(".CRT$XCU")) extern void *__CRTINITI = __CRTINITC;
+__declspec(allocate(".CRT$XCU")) extern _PVFV __CRTINITI = __CRTINITC;
 #   else
 #       pragma data_seg(".CRT$XCU")
-extern void *__CRTINITI = __CRTINITC;
+extern _PVFV __CRTINITI = __CRTINITC;
 #       pragma data_seg()
 #   endif
 
 #elif defined(__WATCOMC__)
+#   if !defined(__NT__)
+#       error __NT__ not defined
+#   endif
 #   if !defined(__386__)
 #       error __386__ not defined
 #   endif
@@ -123,10 +183,10 @@ extern void *__CRTINITI = __CRTINITC;
 #if !defined(RTINIT)
 #   pragma warning(disable:4103)
 #   pragma pack(push,1)
-struct rt_init { // see: watcom/rtinit.h
+struct rt_init {        // see: watcom/rtinit.h
     unsigned char type;
     unsigned char priority;
-    void (*fn)(void);
+    void __near (*fn)(void);
 };
 #   pragma pack(pop)
 
@@ -137,7 +197,7 @@ struct rt_init __based( __segname( seg ) ) label = \
 
 typedef unsigned crinit_assert_t[sizeof(struct rt_init) == 6 ? 1 : -1]; // negative size on failure
 #endif
-#undef __CRTINITC // callback not required
+#undef __CRTINITC       // callback not required
 RTINIT("XI", __CRTINITI, CRTINIT, INIT_PRIORITY_PROGRAM)
 
 #else
@@ -149,9 +209,9 @@ static void __cdecl
 __CRTINITC (void)
 {
 #if defined(_MSC_VER)
-    (void) __CRTINITI; // otherwise global optimisation may remove
+    (void) __CRTINITI;  // otherwise global optimisation may remove
 #endif
-    CRTINIT (); // application hook
+    CRTINIT ();         // application hook
 }
 #endif
 
