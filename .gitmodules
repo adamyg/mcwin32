@@ -1,3 +1,6 @@
 [submodule "mcwin32/autoupdater/libappupdater"]
 	path = mcwin32/autoupdater/libappupdater
 	url = https://github.com/adamyg/libappupdater
+[submodule "mcwin32/bcrypt-xp"]
+	path = mcwin32/bcrypt-xp
+	url = https://github.com/adamyg/bcrypt-XP.git

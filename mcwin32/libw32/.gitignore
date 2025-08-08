@@ -1,3 +1,4 @@
+unittest/
 util/
 ref*/
 Makefile

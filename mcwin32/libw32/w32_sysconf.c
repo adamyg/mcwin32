@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.5 2025/03/20 17:23:09 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_sysconf_c,"$Id: w32_sysconf.c,v 1.6 2025/07/18 14:34:13 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -289,6 +289,8 @@ typedef struct _SYSTEM_TIMEOFDAY_INFORMATION {
 typedef DWORD (WINAPI * NtQuerySystemInformation_t)(
                 SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
 
+typedef ULONGLONG (WINAPI * GetTickCount64_t)(void);
+
 /*
 //  NAME
 //      sysinfo -- return system information.
@@ -296,12 +298,51 @@ typedef DWORD (WINAPI * NtQuerySystemInformation_t)(
 //  SYNOPSIS
 //      #include <sys/sysinfo.h>
 //
-//      int sysinfo(struct sysinfo* info);
+//      int sysinfo(struct sysinfo *info);
 //
 //  DESCRIPTION
 //      sysinfo() returns certain statistics on memoryand swap usage, as well as the load average.
 //
 */
+
+static ULONGLONG WINAPI
+legacy_get_tick_count(void)
+{
+#if defined(_MSC_VER)
+#pragma warning(suppress:28159)
+#endif
+    // GetTickCount() wraps around every 49.7 days, beyond which time shall be incorrectly reported.
+    return GetTickCount();
+}
+
+
+static ULONGLONG
+get_tick_count(void)
+{
+    static GetTickCount64_t fnGetTickCount64 = NULL;
+
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+    if (fnGetTickCount64 == NULL) {
+        HMODULE kernel32;
+
+        if ((kernel32 = GetModuleHandleA("Kernel32.dll")) != NULL) {
+            fnGetTickCount64 = 
+                (GetTickCount64_t) GetProcAddress(kernel32, "GetTickCount64");
+        }
+
+        if (fnGetTickCount64 == NULL) {         // XP
+            fnGetTickCount64 = legacy_get_tick_count;
+        }
+    }
+#if defined(GCC_VERSION) && (GCC_VERSION >= 80000)
+#pragma GCC diagnostic pop
+#endif
+    return fnGetTickCount64();
+}
+
 
 int
 sysinfo(struct sysinfo *info) 
@@ -322,16 +363,22 @@ sysinfo(struct sysinfo *info)
 #endif
     {   SYSTEM_TIMEOFDAY_INFORMATION sti = {0};
         HMODULE ntdll = GetModuleHandleA("ntdll");
-        NtQuerySystemInformation_t fNtQuerySystemInformation =
-                (NtQuerySystemInformation_t) GetProcAddress(ntdll, "NtQuerySystemInformation");
+        NtQuerySystemInformation_t fNtQuerySystemInformation = NULL;
         long uptime = 0;
 
-        if (fNtQuerySystemInformation &&        // uptime
+        if ((ntdll = GetModuleHandleA("ntdll")) != NULL) {
+            fNtQuerySystemInformation =
+                (NtQuerySystemInformation_t) GetProcAddress(ntdll, "NtQuerySystemInformation");
+        }
+
+        // https://learn.microsoft.com/en-us/windows/win32/sysinfo/zwquerysysteminformation
+        if (fNtQuerySystemInformation &&        // uptime, normal case
                 NO_ERROR == fNtQuerySystemInformation(SystemTimeOfDayInformation, (PVOID) &sti, sizeof(sti), NULL)) {
             uptime = (long)((sti.CurrentTime.QuadPart - sti.BootTime.QuadPart) / 10000000ULL);
         } else {                                // ticks / 1000
-            uptime = (long)(GetTickCount64() / 1000ULL);
+            uptime = (long)(get_tick_count() / 1000ULL);
         }
+
         info->uptime = uptime;
     }
 #if defined(GCC_VERSION) && (GCC_VERSION >= 80000)

@@ -1,5 +1,5 @@
 # -*- mode: mak; indent-tabs-mode: t; tab-width: 8 -*-
-# $Id: Makefile.in,v 1.17 2025/04/22 18:24:21 cvsuser Exp $
+# $Id: Makefile.in,v 1.19 2025/07/20 17:28:52 cvsuser Exp $
 # libautoupdater and utils makefile
 #
 #
@@ -62,13 +62,14 @@ XFLAGS=
 CFLAGS=		@CFLAGS@
 CWARN=		@CWARN@ $(CWALL)
 ifeq ("gcc","@CC@")
-#CWARN+=	-Wno-shadow -Wno-sign-compare -Wno-type-limits
-#CWARN+=	-Wno-unused-variable -Wno-unused-parameter
-#CWARN+=	-Wno-unused-parameter -Wno-unused-function
-#CWARN+=	-Wno-missing-field-initializers -Wno-implicit-fallthrough
+endif
+ifeq (clangcl,$(findstring clangcl,"@TOOLCHAIN@"))
+CXXWARN+=	-Wno-unused-command-line-argument
+CXXWARN+=	-Wno-deprecated-declarations
+CXXWARN+=	-Wno-inconsistent-missing-override
 endif
 ifeq (owc,$(findstring owc,"@TOOLCHAIN@"))
-CFLAGS+=	-wcd=124
+CFLAGS+=	-wcd=124 -wcd=201
 endif
 CDEBUG=		@CDEBUG@
 CRELEASE=	@CRELEASE@
@@ -117,7 +118,7 @@ RMDFLAGS=	-rf
 #########################################################################################
 # Targets
 
-VERSION=	1.0.3
+VERSION=	1.0.4
 VERSIONSPEC=	$(subst .,:,$(VERSION))
 
 UPDATERDLL=	$(D_LIB)/$(LP)autoupdater.la

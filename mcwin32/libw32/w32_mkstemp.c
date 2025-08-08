@@ -1,5 +1,5 @@
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.20 2025/03/30 17:16:02 cvsuser Exp $")
+__CIDENT_RCSID(gr_w32_mkstemp_c, "$Id: w32_mkstemp.c,v 1.21 2025/07/23 15:05:00 cvsuser Exp $")
 
 /* -*- mode: c; indent-width: 4; -*- */
 /*
@@ -365,6 +365,29 @@ w32_mkdtempsW(wchar_t *path, int suffixlen)
 /////////////////////////////////////////////////////////////////////////////////////////
 //  Implementation
 
+#if defined(_O_TEMPORARY)
+#if defined(_O_NOINHERIT)
+#define O_MODEX     (O_CREAT|O_EXCL|O_RDWR|O_BINARY|_O_TEMPORARY|_O_NOINHERIT)
+#else
+#define O_MODEX     (O_CREAT|O_EXCL|O_RDWR|O_BINARY|_O_TEMPORARY)
+#endif
+#define ISTEMPORARY 1
+
+#elif defined(O_TEMPORARY)
+#if defined(O_NOINHERIT)
+#define O_MODEX     (O_CREAT|O_EXCL|O_RDWR|O_BINARY|O_TEMPORARY|O_NOINHERIT)
+#else
+#define O_MODEX     (O_CREAT|O_EXCL|O_RDWR|O_BINARY|O_TEMPORARY)
+#endif
+#define ISTEMPORARY 1
+
+#else
+#define O_MODEX     (O_CREAT|O_EXCL|O_RDWR|O_BINARY)
+#endif
+
+#define O_MODE      (O_CREAT|O_EXCL|O_RDWR|O_BINARY)
+
+
 static unsigned
 generate_seed(void)
 {
@@ -419,6 +442,31 @@ gettempA_tmp(char *result, const char *path, int suffixlen, int *fildes, unsigne
 }
 
 
+#if !defined(ISTEMPORARY)
+static int
+OpenTemporaryA(const char *path)
+{
+    const DWORD desiredAccess = GENERIC_READ | GENERIC_WRITE; // O_RDWR
+    const DWORD shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE; // 0600
+    const DWORD creationDisposition = CREATE_NEW; // O_EXCL
+    const DWORD flagsAndAttributes = FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY;
+    HANDLE handle;
+    int fd = -1;
+
+    handle = CreateFileA(path,
+        desiredAccess, shareMode, NULL /*O_NOINHERIT*/, creationDisposition, flagsAndAttributes, NULL);
+    if (INVALID_HANDLE_VALUE != handle) {
+        (void) DeleteFileA(path); // delete-on-close, needs FILE_SHARE_DELETE
+        if ((fd = _open_osfhandle((intptr_t)handle, _O_RDWR | _O_BINARY)) < 0) {
+            CloseHandle(handle);
+            errno = ENFILE; // file limit
+        }
+    }
+    return fd;
+}
+#endif //ISTEMPORARY
+
+
 static int
 gettempA(char *path, int suffixlen, int *fildes, unsigned flags, char *save)
 {
@@ -446,7 +494,7 @@ gettempA(char *path, int suffixlen, int *fildes, unsigned flags, char *save)
     end = trv;
     if (suffixlen < 0 || trv <= path ||         /* out-of-bounds? */
             NULL != strchr(end, '/') || NULL != strchr(end, '\\')) {
-	errno = EINVAL;
+        errno = EINVAL;
         return GETTEMP_ERROR;
     }
 
@@ -457,7 +505,7 @@ gettempA(char *path, int suffixlen, int *fildes, unsigned flags, char *save)
     }
 
     if ((trv + 1) == end) {                     /* missing template? */
-	errno = EINVAL;
+        errno = EINVAL;
         return GETTEMP_ERROR;
     }
 
@@ -494,30 +542,38 @@ gettempA(char *path, int suffixlen, int *fildes, unsigned flags, char *save)
     /*
      *  Create file as temporary; file is deleted when last file descriptor is closed.
      */
-#if defined(_O_TEMPORARY)
-#define O_MODEX     (O_CREAT|O_EXCL|O_RDWR|O_BINARY|_O_TEMPORARY)
-#elif defined(O_TEMPORARY)
-#define O_MODEX	    (O_CREAT|O_EXCL|O_RDWR|O_BINARY|O_TEMPORARY)
-#else
-#define O_MODEX	    (O_CREAT|O_EXCL|O_RDWR|O_BINARY)
-#endif
-
-#define O_MODE	    (O_CREAT|O_EXCL|O_RDWR|O_BINARY)
-
     for (;;) {
         errno = 0;
         if (DO_MKDIR & flags) {
             if (0 == w32_mkdirA(path, 0700)) {
                 return GETTEMP_SUCCESS;
             }
+
             if (EEXIST != errno) {
                 return GETTEMP_ERROR;
             }
 
         } else if (fildes) {
+#if defined(ISTEMPORARY)
             if ((*fildes = WIN32_OPEN(path, ((DO_TEMPORARY & flags) ? O_MODEX : O_MODE), 0600)) >= 0) {
+                if (DO_TEMPORARY & flags) {
+                    DWORD attrs;
+
+                    if (INVALID_FILE_ATTRIBUTES != (attrs = GetFileAttributesA(path))) {
+                        if (0 == (attrs & FILE_ATTRIBUTE_TEMPORARY)) { // signal temporary storage
+                            (void) SetFileAttributesA(path, FILE_ATTRIBUTE_TEMPORARY | attrs);
+                        }
+                    }
+                }
                 return GETTEMP_SUCCESS;
             }
+#else
+            if ((*fildes = ((DO_TEMPORARY & flags) ? OpenTemporaryA(path) :
+                    WIN32_OPEN(path, O_MODE, 0600))) >= 0) {
+                return GETTEMP_SUCCESS;
+            }
+#endif //ISTEMPORARY
+
             if (EEXIST != errno) {
                 return GETTEMP_ERROR;
             }
@@ -594,6 +650,31 @@ gettempW_tmp(wchar_t *result, const wchar_t *path, int suffixlen, int *fildes, u
 }
 
 
+#if !defined(ISTEMPORARY)
+static int
+OpenTemporaryW(const wchar_t *path)
+{
+    const DWORD desiredAccess = GENERIC_READ | GENERIC_WRITE; // O_RDWR
+    const DWORD shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE; // 0600 + delete
+    const DWORD creationDisposition = CREATE_NEW; // O_EXCL
+    const DWORD flagsAndAttributes = FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY;
+    HANDLE handle;
+    int fd = -1;
+
+    handle = CreateFileW(path,
+    desiredAccess, shareMode, NULL /*O_NOINHERIT*/, creationDisposition, flagsAndAttributes, NULL);
+    if (INVALID_HANDLE_VALUE != handle) {
+        (void) DeleteFileW(path); // delete-on-close, needs FILE_SHARE_DELETE
+        if ((fd = _open_osfhandle((intptr_t)handle, _O_RDWR|_O_BINARY)) < 0) {
+            CloseHandle(handle);
+            errno = ENFILE; // file limit
+        }
+    }
+    return fd;
+}
+#endif //ISTEMPORARY
+
+
 static int
 gettempW(wchar_t *path, int suffixlen, int *fildes, unsigned flags, wchar_t *save)
 {
@@ -621,7 +702,7 @@ gettempW(wchar_t *path, int suffixlen, int *fildes, unsigned flags, wchar_t *sav
     end = trv;
     if (suffixlen < 0 || trv <= path ||         /* out-of-bounds? */
             NULL != wcschr(end, '/') || NULL != wcschr(end, '\\')) {
-	errno = EINVAL;
+        errno = EINVAL;
         return GETTEMP_ERROR;
     }
 
@@ -632,7 +713,7 @@ gettempW(wchar_t *path, int suffixlen, int *fildes, unsigned flags, wchar_t *sav
     }
 
     if ((trv + 1) == end) {                     /* missing template? */
-	errno = EINVAL;
+        errno = EINVAL;
         return GETTEMP_ERROR;
     }
 
@@ -668,30 +749,38 @@ gettempW(wchar_t *path, int suffixlen, int *fildes, unsigned flags, wchar_t *sav
     /*
      *  Create file as temporary; file is deleted when last file descriptor is closed.
      */
-#if defined(_O_TEMPORARY)
-#define O_MODEX     (O_CREAT|O_EXCL|O_RDWR|O_BINARY|_O_TEMPORARY)
-#elif defined(O_TEMPORARY)
-#define O_MODEX	    (O_CREAT|O_EXCL|O_RDWR|O_BINARY|O_TEMPORARY)
-#else
-#define O_MODEX	    (O_CREAT|O_EXCL|O_RDWR|O_BINARY)
-#endif
-
-#define O_MODE	    (O_CREAT|O_EXCL|O_RDWR|O_BINARY)
-
     for (;;) {
         errno = 0;
         if (DO_MKDIR & flags) {
             if (0 == w32_mkdirW(path, 0700)) {
                 return GETTEMP_SUCCESS;
             }
+
             if (EEXIST != errno) {
                 return GETTEMP_ERROR;
             }
 
         } else if (fildes) {
+#if defined(ISTEMPORARY)
             if ((*fildes = WIN32_WOPEN(path, ((DO_TEMPORARY & flags) ? O_MODEX : O_MODE), 0600)) >= 0) {
+                if (DO_TEMPORARY & flags) {
+                    DWORD attrs;
+
+                    if (INVALID_FILE_ATTRIBUTES != (attrs = GetFileAttributesW(path))) {
+                        if (0 == (attrs & FILE_ATTRIBUTE_TEMPORARY)) { // signal temporary storage
+                            (void) SetFileAttributesW(path, FILE_ATTRIBUTE_TEMPORARY | attrs);
+                        }
+                    }
+                }
                 return GETTEMP_SUCCESS;
             }
+#else
+            if ((*fildes = ((DO_TEMPORARY & flags) ? OpenTemporaryW(path) :
+                    WIN32_WOPEN(path, O_MODE, 0600))) >= 0) {
+                return GETTEMP_SUCCESS;
+            }
+#endif //ISTEMPORARY
+
             if (EEXIST != errno) {
                 return GETTEMP_ERROR;
             }

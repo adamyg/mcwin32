@@ -1,7 +1,7 @@
 #ifndef LIBW32_SYS_SOCKET_H_INCLUDED
 #define LIBW32_SYS_SOCKET_H_INCLUDED
 #include <edidentifier.h>
-__CIDENT_RCSID(gr_libw32_sys_socket_h,"$Id: socket.h,v 1.17 2025/02/13 17:55:24 cvsuser Exp $")
+__CIDENT_RCSID(gr_libw32_sys_socket_h,"$Id: socket.h,v 1.18 2025/07/20 07:03:17 cvsuser Exp $")
 __CPRAGMA_ONCE
 
 /* -*- mode: c; indent-width: 4; -*- */
@@ -265,7 +265,8 @@ typedef struct addrinfo ADDRINFOA, *PADDRINFOA;
 VOID WSAAPI freeaddrinfo(PADDRINFOA pAddrInfo);
 #endif
 
-#if defined(__WATCOMC__)
+#if defined(__WATCOMC__) || \
+        (defined(_MSC_VER) && (_MSC_VER <= 1600 /*2010*/))
 #if !defined(HAVE_TIMESPEC)                     /* missing definitions */
 #define HAVE_TIMESPEC
 #endif
