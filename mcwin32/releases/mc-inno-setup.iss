@@ -19,20 +19,32 @@
 ;
 
 #if defined(BUILD_INFO)
-#include "../buildinfo.h"
+  #include "..\buildinfo.h"
 #else
-#include "../packageinfo.h"
+  #include "..\packageinfo.h"
 #endif
 
 #if defined(BUILD_TOOLCHAIN)
-#if defined(BUILD_TYPE)
-#define BinDir "bin" + BUILD_TOOLCHAIN + "\\" + BUILD_TYPE
+   #if defined(BUILD_TYPE)
+      #define BinDir "bin" + BUILD_TOOLCHAIN + "\" + BUILD_TYPE
+   #else
+      #define BinDir "bin" + BUILD_TOOLCHAIN
+   #endif
 #else
-#define BinDir "bin" + BUILD_TOOLCHAIN
+   #define BinDir "bin"
 #endif
+
+#define APP_NAME          "Midnight Commander"
+#if defined(BUILD_ISWIN64)
+    #define FULL_APP_NAME "GNU " + APP_NAME
 #else
-#define BinDir "bin"
+    #define FULL_APP_NAME "GNU " + APP_NAME + " 64bit"
 #endif
+#define APP_PUBLISHER_URL "https://www.midnight-commander.org/"
+#define APP_SUPPORT_URL   "https://github/adamyg/mcwin32/"
+#define APP_AUTHOR        "The Free Software Foundation, Inc."
+#define CURRENT_YEAR      GetDateTimeString('yyyy','','')
+#define APP_COPYRIGHT     "(c) " + APP_AUTHOR + " " + CURRENT_YEAR
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -40,38 +52,59 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 ;
 AppId={{CBB4464D-7081-4F1D-9F6D-F5288A4A9B82}
-AppName=GNU Midnight Commander
-VersionInfoVersion={#VERSION_1}.{#VERSION_2}.{#VERSION_3}.{#VERSION_4}
+AppName={#FULL_APP_NAME}
 AppVersion={#VERSION} (build: {#BUILD_DATE}-{#BUILD_NUMBER})
-AppPublisher=The Free Software Foundation, Inc.
-AppPublisherURL=https://www.midnight-commander.org/
-AppSupportURL=https://github/adamyg/mcwin32/
-AppUpdatesURL=https://github/adamyg/mcwin32/
+AppVerName={#FULL_APP_NAME} {#VERSION} (build: {#BUILD_DATE}-{#BUILD_NUMBER})
 
-DefaultDirName={pf}\Midnight Commander
-DefaultGroupName=Midnight Commander
+VersionInfoVersion={#VERSION_1}.{#VERSION_2}.{#VERSION_3}.{#VERSION_4}
+VersionInfoDescription={#APP_NAME} installer
+VersionInfoProductName={#APP_NAME}
+
+UninstallDisplayName={#APP_NAME} {#VERSION_1}.{#VERSION_2}.{#VERSION_3}.{#VERSION_4}
+UninstallDisplayIcon={app}\mc.exe
+AppPublisher={#APP_AUTHOR}
+
+AppPublisherURL={#APP_PUBLISHER_URL}
+AppSupportURL={#APP_SUPPORT_URL}
+AppUpdatesURL={#APP_SUPPORT_URL}
+
+DefaultDirName={commonpf}\{#APP_NAME}
+DefaultGroupName={#APP_NAME}
 LicenseFile=..\{#BinDir}\doc\COPYING
+
+ShowLanguageDialog=yes
+UsePreviousLanguage=no
+LanguageDetectionMethod=uilanguage
 
 OutputDir=.
 #if defined(BUILD_TOOLNAME)
-OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-{#BUILD_TOOLNAME}-setup
+   OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-{#BUILD_TOOLNAME}-setup
 #else
-OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
+   OutputBaseFilename=mcwin32-build{#BUILD_NUMBER}-setup
 #endif
 #if defined(BUILD_ISWIN64)
-ArchitecturesInstallIn64BitMode=x64
+   ArchitecturesInstallIn64BitMode=x64
 #endif
 Compression=lzma
 SolidCompression=yes
 ChangesEnvironment=true
 
-UninstallDisplayIcon={app}\mc.exe
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
+
+[CustomMessages]
+english.AddFolderToPath=Add application directory to your environmental path
+english.AlreadyInstalled=is currently installed.'
+english.UninstallProgramFirst=Do you want to uninstall it first?
+
+italian.AddFolderToPath=Aggiungi la cartella dell'applicazione alla variabile ambiente PATH
+italian.AlreadyInstalled=è attualmnte installatao.'
+italian.UninstallProgramFirst=Vuoi disinstallarlo?
 
 [Tasks]
-Name: modifypath; Description: Add application directory to your environmental path; Flags: unchecked
+Name: modifypath; Description: {cm:AddFolderToPath}; Flags: unchecked
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
@@ -129,9 +162,9 @@ Source: "..\{#BinDir}\locale\*";      Excludes: ".created"; DestDir: "{app}\loca
 ; NOTE: Dont use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{group}\GNU Midnight Commander"; Filename: "{app}\mc.exe"
-Name: "{commondesktop}\GNU Midnight Commander"; Filename: "{app}\mc.exe"; Tasks: desktopicon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\GNU Midnight Commander"; Filename: "{app}\mc.exe"; Tasks: quicklaunchicon
+Name: "{group}\{#FULL_APP_NAME}"; Filename: "{app}\mc.exe"
+Name: "{commondesktop}\{#FULL_APP_NAME}"; Filename: "{app}\mc.exe"; Tasks: desktopicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#FULL_APP_NAME}"; Filename: "{app}\mc.exe"; Tasks: quicklaunchicon
 
 [Run]
 Filename: "{app}\mc.exe"; Description: "{cm:LaunchProgram,GNU Midnight Commander}"; Flags: nowait postinstall skipifsilent
@@ -159,7 +192,7 @@ begin
         if MidnightCommanderInstalled(version,uninst)
         then
                 begin
-                msgres:= MsgBox('Midnight Commander-'+version+' is currently installed.'+#13#13 +'Do you want to uninstall it first?.', mbError, MB_YESNOCANCEL);
+                msgres:= MsgBox('{#APP_NAME} '+version+' {cm:AlreadyInstalled}'+#13#13+'{cm:UninstallProgramFirst}', mbError, MB_YESNOCANCEL);
                 case msgres of
                 IdYes: begin
                         Exec(uninst, '', '', SW_SHOWNORMAL, true, execres);
